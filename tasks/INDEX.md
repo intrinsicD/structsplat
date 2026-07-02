@@ -1,7 +1,7 @@
 # Task index
 
 Status: `done` (reference implemented + validated) · `partial` · `todo`. Areas: CORE, INIT, FIT,
-HIER, BENCH, ABL, FF, COMP, PORT. Work items are picked up via the `task-workflow` skill.
+HIER, BENCH, ABL, FF, COMP, PORT, MERGE. Work items are picked up via the `task-workflow` skill.
 
 | ID | Title | Status | Depends on |
 |----|-------|--------|-----------|
@@ -20,6 +20,7 @@ HIER, BENCH, ABL, FF, COMP, PORT. Work items are picked up via the `task-workflo
 | GEN-001 | Generative 2D Gaussians via SDS distillation (no dataset) | todo | CORE-001, ADR-0006 |
 | COMP-001 | Quantization + entropy/VQ codec (rate-distortion) | todo | FIT-001 |
 | PORT-001 | CUDA tile rasterizer → IntrinsicEngine RHI pass | todo | CORE-001 |
+| MERGE-001 | Integrate Claude core optimizations and Codex stage search into main | todo | CORE, INIT, FIT, HIER, BENCH, ABL, COMP |
 
 "done (reference)" means a correct, validated NumPy/PyTorch version exists — not that it is the
 performant or final form. Perf and scale live in PORT-001.
