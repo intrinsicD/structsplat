@@ -1,6 +1,9 @@
 # MERGE-001: Integrate Claude core optimizations and Codex stage search into main
 
-**Status: todo.** Create an integration branch from `main`, combine both experimental branches, and merge only after the combined result beats the current branch-local screenings.
+**Status: partial.** Integration branch `merge/claude-codex-structsplat` created; both branches
+combined by a real git merge (both parents preserved) with the 8 shared core files resolved as a
+semantic merge (ADR-0009). Code-level acceptance criteria pass; the large COCO/CUDA confirmation is
+pending a GPU + dataset (see below). Merge to `main` by PR only after that run.
 
 ## Source branches
 - Claude optimized core: `origin/claude/approach-review-optimize-gkhhds` (`f465f57`).
@@ -40,16 +43,16 @@ The current screening evidence is:
    - Pyramid and residual-add should remain candidates, not defaults, until a larger run proves them.
 
 ## Acceptance criteria
-- [ ] Combined branch imports cleanly and `structsplat --help` exposes `fit`, `ablation`, and `stage-search`.
-- [ ] Existing StructSplat tests pass.
-- [ ] New/updated tests cover Claude renderer behavior, sampling behavior, fit dynamics, Codex stage-search CLI, and optional opacity/additive paths.
-- [ ] `ruff check src benchmarks tests` passes.
-- [ ] Re-run the 4-image screening with the combined branch and include both Claude defaults and Codex stage variants.
-- [ ] Combined best config matches or exceeds Claude `flanking_split32` within tolerance: PSNR no worse than 0.10 dB, MS-SSIM no worse than 0.001, and total time no more than 25% slower.
-- [ ] Combined fast config matches or exceeds Claude `onedge` within tolerance or clearly documents the speed/quality tradeoff.
-- [ ] Re-run a larger confirmation: at least 20 COCO images, 512 and 1024 Gaussians, 3 seeds for finalist configs.
-- [ ] Update `README.md`, `docs/architecture.md`, and relevant ADR/task files to state the chosen default and why.
-- [ ] Do not merge raw datasets, checkpoints, worktree folders, cache folders, or large run directories.
+- [x] Combined branch imports cleanly and `structsplat --help` exposes `fit`, `ablation`, and `stage-search`.
+- [x] Existing StructSplat tests pass (33 passed).
+- [x] New/updated tests cover Claude renderer behavior, sampling behavior, fit dynamics, Codex stage-search CLI, and optional opacity/additive paths (Codex `test_render`/`test_smoke`/`test_gaussians`/`test_stage_search` + Claude `test_codec`/`test_fit_dynamics`, all green on the merged branch).
+- [x] `ruff check src benchmarks tests` passes.
+- [x] Re-run the screening with the combined branch and include both Claude defaults and Codex stage variants — run at reduced scale (4 local images, budget 512, 40 iters, max-side 160, **CPU**) since this environment has no GPU or COCO dataset; `structsplat stage-search` produced ranked JSON/CSV/summary and Claude's `aniso_flanking`/`aniso_onedge` init remained the top configs.
+- [~] Combined best config matches or exceeds Claude `flanking_split32` within tolerance (PSNR ≤0.10 dB, MS-SSIM ≤0.001, ≤25% slower): **cannot verify the exact numbers** without the original screening's image set/GPU; the merge preserves Claude's renderer/sampler/fitter code paths verbatim, so behavior is expected to match. Confirm in the COCO/CUDA run.
+- [~] Combined fast config matches or exceeds Claude `onedge` within tolerance — same caveat.
+- [ ] Re-run a larger confirmation: at least 20 COCO images, 512 and 1024 Gaussians, 3 seeds for finalist configs. **Blocked**: needs a GPU + the COCO val2017 dataset (neither present here). This is the remaining gate before merging to `main`.
+- [x] Update `README.md`, `docs/architecture.md`, and relevant ADR/task files to state the chosen default and why (ADR-0009; INDEX/task statuses; README/architecture).
+- [x] Do not merge raw datasets, checkpoints, worktree folders, cache folders, or large run directories (screening outputs were written under the scratch dir, not the repo).
 
 ## Validation commands
 ```bash

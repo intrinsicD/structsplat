@@ -58,9 +58,10 @@ Typical loop: `core` → `task-workflow` → `method` (if adding a component) �
 ## Layout
 ```
 src/structsplat/   structure_tensor, density, sampling (NumPy) · gaussians, render, metrics,
-                   init, fit, pyramid, cli (torch)
+                   init, fit, pyramid, codec, cli (torch)
 tests/             pytest (NumPy tests run anywhere; torch tests skip without torch)
-benchmarks/        ablation.py (ABL-001), stage_search.py (ABL-002), fitness hooks
+benchmarks/        ablation.py (ABL-001), stage_search.py (ABL-002), rate_distortion.py
+                   (COMP-001), fitness hooks
 docs/              adr/ · architecture.md · theory.md
 tasks/             INDEX.md + task files
 ```

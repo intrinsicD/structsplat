@@ -23,10 +23,19 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
 ```
 
 ## Module responsibilities
-- **NumPy, init-time, no autograd:** `structure_tensor`, `density`, `sampling`, `config`.
-- **torch, autograd:** `gaussians`, `render`, `metrics`, `init` (bridge), `fit`, `pyramid`,
-  `codec` (post-fit quantization/entropy coding, ADR-0007).
-- **entry:** `cli` (`structsplat fit` / `structsplat ablation`).
+- **NumPy, init-time, no autograd:** `structure_tensor` (selectable central/sobel/scharr operator),
+  `density` (structure/gradient/variance/hybrid/uniform modes), `sampling`, `config`.
+- **torch, autograd:** `gaussians` (RS + optional opacity), `render` (normalized default +
+  additive, ADR-0006, sharing one accumulator), `metrics`, `init` (bridge), `fit` (selectable
+  loss/optimizer/LR-schedule/split-mode), `pyramid`, `codec` (post-fit quantization, ADR-0007).
+- **entry:** `cli` (`structsplat fit` / `ablation` / `stage-search`).
+
+## Stage-search (ABL-002)
+`benchmarks/stage_search.py` sweeps *complete* configurations across every swappable stage — tensor
+operator, density mode, sampling mode, init strategy, color mode, scale mode, opacity, renderer,
+loss, optimizer, LR schedule, refinement, pyramid — and emits ranked JSON/CSV/markdown. The shipped
+defaults (ADR-0009) are one named cell in that space; everything else is a candidate the screening
+can promote. `benchmarks/ablation.py` (ABL-001) stays the focused init-strategy × budget sweep.
 
 ## Performance notes (reference is the oracle; these keep it usable at N~20k on CPU)
 - `sampling.eliminate` builds the WSE conflict graph vectorized over grid-cell offsets (only the
