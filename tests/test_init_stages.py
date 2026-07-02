@@ -63,6 +63,20 @@ def test_scale_mode_knn_tracks_local_spacing():
     assert (s > 0).all() and float(s.max()) < 64.0
 
 
+def test_two_sided_colors_stay_on_the_center_side():
+    # step edge: a two_sided color must come from the side of the edge its center is on
+    # (the parity sign used for flanking is arbitrary for off-ridge starts)
+    img = np.full((64, 64, 3), 0.1, np.float32)
+    img[:, 32:] = 0.9
+    f = I.build_field(img, InitConfig(strategy="aniso_flanking", num_gaussians=400,
+                                      color_mode="two_sided", seed=0))
+    x = f.means[:, 0].numpy()
+    c = f.colors[:, 0].numpy()
+    near = np.abs(x - 31.5) < 4
+    agree = np.mean((x[near] > 31.5) == (c[near] > 0.5))
+    assert agree > 0.98
+
+
 def test_jittered_grid_drops_evenly():
     # a count that forces truncation: with bottom-row dropping the max y-gap doubles
     img = _toy(H=60, W=60)

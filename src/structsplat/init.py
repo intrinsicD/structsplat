@@ -213,7 +213,16 @@ def build_field(img: np.ndarray, icfg: InitConfig,
             pts[:, 0] = np.clip(pts[:, 0], 0, W - 1)
             pts[:, 1] = np.clip(pts[:, 1], 0, H - 1)
             if icfg.color_mode == "two_sided":
-                color_pts = pts + (sign * s_across * icfg.color_radius)[:, None] * normal * is_edge
+                # Sample the flat color on the DOWN-energy side of the edge as seen from the
+                # flanked center. The parity sign only says which flank the center was pushed
+                # toward; for off-ridge starts it can point back across the edge (measured:
+                # ~10% wrong-side colors on a step edge). The step floors at the blur width
+                # so it clears the transition zone instead of resampling mid-tones.
+                eps = np.maximum(s_across * icfg.color_radius, edge_w)
+                e_pos = _nearest(tensor.energy, pts + eps[:, None] * normal)
+                e_neg = _nearest(tensor.energy, pts - eps[:, None] * normal)
+                away = np.where(e_pos <= e_neg, 1.0, -1.0)
+                color_pts = pts + (away * eps)[:, None] * normal * is_edge
                 color_pts[:, 0] = np.clip(color_pts[:, 0], 0, W - 1)
                 color_pts[:, 1] = np.clip(color_pts[:, 1], 0, H - 1)
 
