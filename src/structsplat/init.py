@@ -1,0 +1,121 @@
+"""Initialization strategies — the variables the core ablation (ABL-001) compares.
+
+STRATEGIES:
+  random            uniform positions, isotropic                         (3DGS-style baseline)
+  grid              uniform grid, isotropic                              (GaussianVision baseline)
+  iso_blue_noise    density-adaptive isotropic blue noise                (feature-aware, no anisotropy)
+  aniso_onedge      anisotropic blue noise, centers ON features          (tensor-oriented)
+  aniso_flanking    anisotropic blue noise, edge centers pushed to flanks (the proposed default)
+
+The last three all share the structure tensor (orientation + density) and WSE (INIT-003).
+`build_field` also accepts a precomputed density/tensor so the pyramid can drive placement from
+the residual (HIER-001). Colors are always sampled from the *target* image (see ADR-0003).
+Requires torch (only to assemble the GaussianField); the heavy math stays NumPy.
+"""
+from __future__ import annotations
+import numpy as np
+
+from . import structure_tensor as st
+from . import density as de
+from . import sampling as sa
+from .config import InitConfig, StructureTensorConfig
+from .gaussians import GaussianField
+
+STRATEGIES = ("random", "grid", "iso_blue_noise", "aniso_onedge", "aniso_flanking")
+
+
+def _bilinear(img: np.ndarray, pts: np.ndarray) -> np.ndarray:
+    H, W = img.shape[:2]
+    x = np.clip(pts[:, 0], 0, W - 1.001)
+    y = np.clip(pts[:, 1], 0, H - 1.001)
+    x0, y0 = np.floor(x).astype(int), np.floor(y).astype(int)
+    x1, y1 = x0 + 1, y0 + 1
+    fx, fy = (x - x0)[:, None], (y - y0)[:, None]
+    c = (img[y0, x0] * (1 - fx) * (1 - fy) + img[y0, x1] * fx * (1 - fy)
+         + img[y1, x0] * (1 - fx) * fy + img[y1, x1] * fx * fy)
+    return c.astype(np.float32)
+
+
+def _nearest(map2d: np.ndarray, pts: np.ndarray) -> np.ndarray:
+    H, W = map2d.shape[:2]
+    xi = np.clip(np.round(pts[:, 0]).astype(int), 0, W - 1)
+    yi = np.clip(np.round(pts[:, 1]).astype(int), 0, H - 1)
+    return map2d[yi, xi]
+
+
+def _radius_map(density: np.ndarray, n: int, r_min=0.5, r_max=20.0) -> np.ndarray:
+    lam = np.maximum(n * density, 1e-9)          # expected points per pixel
+    return np.clip(np.sqrt(1.0 / (np.pi * lam)), r_min, r_max)
+
+
+def _blue_noise_positions(img, density, tensor, icfg, anisotropic, rng):
+    n = icfg.num_gaussians
+    rmap = _radius_map(density, n)
+    cand = de.sample_candidates(density, int(icfg.candidate_oversample * n), rng)
+    r_i = _nearest(rmap, cand)
+    metric = None
+    if anisotropic:
+        angle = _nearest(tensor.across_edge_angle, cand)
+        coh = _nearest(tensor.coherence, cand)
+        ratio = 1.0 + (icfg.max_axis_ratio - 1.0) * coh
+        metric = sa.anisotropy_metric(angle, ratio)
+    keep = sa.eliminate(cand, n, r_i, metric=metric)
+    return cand[keep], r_i[keep]
+
+
+def build_field(img: np.ndarray, icfg: InitConfig,
+                scfg: StructureTensorConfig | None = None,
+                density: np.ndarray | None = None,
+                tensor: st.StructureTensor | None = None,
+                device: str = "cpu") -> GaussianField:
+    H, W = img.shape[:2]
+    rng = np.random.default_rng(icfg.seed)
+    n = icfg.num_gaussians
+    strat = icfg.strategy
+    diag = float(np.hypot(H, W))
+
+    if strat == "random":
+        pts = rng.random((n, 2)) * np.array([W, H])
+        spacing = np.full(n, diag / np.sqrt(n))
+        angles = np.zeros(n)
+        ratios = np.ones(n)
+    elif strat == "grid":
+        gw = int(round(np.sqrt(n * W / H)))
+        gh = int(np.ceil(n / max(gw, 1)))
+        xs = (np.arange(gw) + 0.5) * W / gw
+        ys = (np.arange(gh) + 0.5) * H / gh
+        gx, gy = np.meshgrid(xs, ys)
+        pts = np.stack([gx.ravel(), gy.ravel()], 1)[:n]
+        spacing = np.full(len(pts), np.sqrt((W / gw) * (H / gh)))
+        angles = np.zeros(len(pts))
+        ratios = np.ones(len(pts))
+    else:
+        if tensor is None:
+            tensor = st.compute(img, scfg)
+        if density is None:
+            density = de.density_from_energy(tensor.energy, icfg.density_base, icfg.density_power)
+        anisotropic = strat in ("aniso_onedge", "aniso_flanking")
+        pts, spacing = _blue_noise_positions(img, density, tensor, icfg, anisotropic, rng)
+        angles = _nearest(tensor.along_edge_angle, pts)      # elongate along the edge
+        coh = _nearest(tensor.coherence, pts)
+        ratios = 1.0 + (icfg.max_axis_ratio - 1.0) * coh if anisotropic else np.ones(len(pts))
+        if strat == "aniso_flanking":
+            label = _nearest(tensor.label, pts)
+            across = _nearest(tensor.across_edge_angle, pts)
+            normal = np.stack([np.cos(across), np.sin(across)], 1)
+            s_across = spacing / np.sqrt(np.maximum(ratios, 1.0))
+            sign = np.where((np.arange(len(pts)) % 2) == 0, 1.0, -1.0)
+            offset = (sign * s_across * icfg.flank_offset_frac)[:, None] * normal
+            is_edge = (label == 1)[:, None]
+            pts = pts + offset * is_edge                     # only edges get flanked
+            pts[:, 0] = np.clip(pts[:, 0], 0, W - 1)
+            pts[:, 1] = np.clip(pts[:, 1], 0, H - 1)
+
+    n_out = len(pts)
+    m = icfg.init_scale_mult
+    ratios = np.maximum(ratios, 1.0)
+    s_along = spacing * np.sqrt(ratios) * m
+    s_across = spacing / np.sqrt(ratios) * m
+    scales = np.stack([s_along, s_across], 1)                # sx along tangent, sy across
+    colors = _bilinear(img, pts)
+    return GaussianField.from_numpy(pts, scales, angles[:n_out], colors, device=device)
