@@ -1,4 +1,4 @@
-"""Anisotropic, density-adaptive blue-noise sampling via Weighted Sample Elimination.
+"""Anisotropic, density-adaptive point sampling: WSE blue noise + alternative samplers.
 
 WSE (Yuksel, EGSR 2015) turns a dense candidate set into a blue-noise subset of exactly N
 points. We extend it two ways (ADR-0005):
@@ -10,6 +10,11 @@ points. We extend it two ways (ADR-0005):
 Pair discovery and the initial crowding weights are fully vectorized over grid-cell offsets;
 only the greedy heap loop stays in Python (it is inherently sequential but touches just each
 removed point's neighbor list). Pure NumPy; runs once per image at init time.
+
+The alternative samplers (`dart_throwing`, `farthest_point`, `cvt`, `halton_unit`) exist so the
+stage ablation (ABL-002 / ADR-0010) can measure how much of the result is owed to WSE blue noise
+specifically versus any reasonably even, density-adaptive point set. They share WSE's
+(candidates, n, r_i, metric) interface where the algorithm permits.
 """
 from __future__ import annotations
 import heapq
@@ -180,3 +185,179 @@ def eliminate(points: np.ndarray, n: int, r_i: np.ndarray,
             push(heap, (-weights[j], j, version[j]))
 
     return np.nonzero(alive)[0]
+
+
+def _pair_d2(points: np.ndarray, j: int, metric: np.ndarray | None) -> np.ndarray:
+    """Squared distance from every point to point j (Euclidean or averaged-metric Mahalanobis)."""
+    dv = points - points[j]
+    if metric is None:
+        return dv[:, 0] ** 2 + dv[:, 1] ** 2
+    Mm = 0.5 * (metric + metric[j])
+    return (Mm[:, 0, 0] * dv[:, 0] ** 2 + 2.0 * Mm[:, 0, 1] * dv[:, 0] * dv[:, 1]
+            + Mm[:, 1, 1] * dv[:, 1] ** 2)
+
+
+def dart_throwing(points: np.ndarray, n: int, r_i: np.ndarray,
+                  metric: np.ndarray | None = None, rng: np.random.Generator | None = None,
+                  beta: float = 0.75) -> np.ndarray:
+    """Variable-radius Poisson-disk (sequential dart throwing) subset of exactly `n` points.
+
+    Candidates are visited in a random order; one is accepted iff its (metric) distance to
+    every already-accepted point is at least beta * (r_cand + r_accepted). If the disks are
+    too greedy to reach `n`, the shortfall is filled farthest-first from the rejects, so the
+    exact-N contract of `eliminate` is preserved. Classic Poisson disk, unlike WSE, never
+    revisits a decision — the ablation uses it to price WSE's global elimination.
+    """
+    M = points.shape[0]
+    if n >= M:
+        return np.arange(M)
+    rng = rng or np.random.default_rng(0)
+    points = np.asarray(points, dtype=np.float64)
+    r_i = np.asarray(r_i, dtype=np.float64)
+
+    # Euclidean inflation bound, same reasoning as _neighbor_pairs: d_E <= d_M / sqrt(lam_min).
+    infl = 1.0
+    if metric is not None:
+        infl = 1.0 / np.sqrt(max(float(_metric_min_eigenvalue(metric).min()), 1e-12))
+    cell = max(float(np.median(2.0 * beta * r_i)), 1e-6)
+    mn = points.min(axis=0)
+    gxy = np.floor((points - mn) / cell).astype(np.int64)
+
+    order = rng.permutation(M)
+    grid: dict[tuple[int, int], list[int]] = {}
+    accepted: list[int] = []
+    taken = np.zeros(M, dtype=bool)
+    r_acc_max = 0.0
+    for i in order:
+        reach = beta * (r_i[i] + r_acc_max) * infl
+        # floor+1, not ceil: cell indices are floors, so a distance of exactly k*cell can
+        # still straddle k+1 cell boundaries
+        k = int(np.floor(reach / cell)) + 1
+        gx, gy = int(gxy[i, 0]), int(gxy[i, 1])
+        neigh = []
+        for dy in range(-k, k + 1):
+            for dx in range(-k, k + 1):
+                neigh += grid.get((gx + dx, gy + dy), [])
+        if neigh:
+            nb = np.asarray(neigh, dtype=np.int64)
+            dv = points[nb] - points[i]
+            if metric is None:
+                d2 = dv[:, 0] ** 2 + dv[:, 1] ** 2
+            else:
+                Mm = 0.5 * (metric[nb] + metric[i])
+                d2 = (Mm[:, 0, 0] * dv[:, 0] ** 2 + 2.0 * Mm[:, 0, 1] * dv[:, 0] * dv[:, 1]
+                      + Mm[:, 1, 1] * dv[:, 1] ** 2)
+            lim = beta * (r_i[nb] + r_i[i])
+            if bool((d2 < lim * lim).any()):
+                continue
+        accepted.append(int(i))
+        taken[i] = True
+        grid.setdefault((gx, gy), []).append(int(i))
+        r_acc_max = max(r_acc_max, float(r_i[i]))
+        if len(accepted) == n:
+            break
+
+    if len(accepted) < n:  # disks too greedy: fill farthest-first from the rejects
+        rest = np.nonzero(~taken)[0]
+        dmin = np.full(rest.shape[0], np.inf)
+        for j in accepted:
+            dv = points[rest] - points[j]
+            d = (dv[:, 0] ** 2 + dv[:, 1] ** 2) / np.maximum(r_i[rest] + r_i[j], 1e-12) ** 2
+            np.minimum(dmin, d, out=dmin)
+        while len(accepted) < n:
+            b = int(np.argmax(dmin))
+            j = int(rest[b])
+            accepted.append(j)
+            dmin[b] = -np.inf
+            dv = points[rest] - points[j]
+            d = (dv[:, 0] ** 2 + dv[:, 1] ** 2) / np.maximum(r_i[rest] + r_i[j], 1e-12) ** 2
+            np.minimum(dmin, d, out=dmin)
+    return np.asarray(sorted(accepted), dtype=np.int64)
+
+
+def farthest_point(points: np.ndarray, n: int, r_i: np.ndarray | None = None,
+                   metric: np.ndarray | None = None,
+                   rng: np.random.Generator | None = None) -> np.ndarray:
+    """Greedy maximin (farthest-point) subset of exactly `n` points. O(M*n).
+
+    Distance is radius-normalized (d / (r_i + r_j)) when `r_i` is given, which makes the
+    maximin objective density-adaptive, and Mahalanobis in the averaged metric when `metric`
+    is given. Deterministic given the candidate set and rng. Strong uniformity, no blue-noise
+    spectrum — the ablation's 'even but not blue' probe.
+    """
+    M = points.shape[0]
+    if n >= M:
+        return np.arange(M)
+    rng = rng or np.random.default_rng(0)
+    points = np.asarray(points, dtype=np.float64)
+
+    def dist2_to(j: int) -> np.ndarray:
+        d2 = _pair_d2(points, j, metric)
+        if r_i is not None:
+            d2 = d2 / np.maximum(r_i + r_i[j], 1e-12) ** 2
+        return d2
+
+    sel = np.empty(n, dtype=np.int64)
+    sel[0] = int(rng.integers(M))
+    dmin = dist2_to(int(sel[0]))
+    for t in range(1, n):
+        j = int(np.argmax(dmin))
+        sel[t] = j
+        np.minimum(dmin, dist2_to(j), out=dmin)
+    return np.sort(sel)
+
+
+def cvt(points: np.ndarray, n: int, iters: int = 8,
+        rng: np.random.Generator | None = None) -> np.ndarray:
+    """Lloyd/k-means relaxation of a density-drawn candidate set -> ~centroidal Voronoi points.
+
+    Because the candidates are distributed like the density, the k-means centroids approximate
+    a density-adaptive CVT. Returns (n,2) *positions* (centroids move off the candidate set).
+    Brute-force chunked assignment: fine at screening budgets (n <= ~5k), slow beyond — the
+    reference-code caveat in CLAUDE.md applies.
+    """
+    M = points.shape[0]
+    points = np.asarray(points, dtype=np.float64)
+    if n >= M:
+        return points.copy()
+    rng = rng or np.random.default_rng(0)
+    centers = points[rng.choice(M, size=n, replace=False)].copy()
+    chunk = max(1, int(4e6) // max(n, 1))
+    for _ in range(iters):
+        assign = np.empty(M, dtype=np.int64)
+        for s in range(0, M, chunk):
+            block = points[s:s + chunk]
+            d2 = ((block[:, None, :] - centers[None, :, :]) ** 2).sum(-1)
+            assign[s:s + chunk] = np.argmin(d2, axis=1)
+        sums = np.zeros((n, 2))
+        np.add.at(sums, assign, points)
+        counts = np.bincount(assign, minlength=n).astype(np.float64)
+        empty = counts == 0
+        counts[empty] = 1.0
+        centers = sums / counts[:, None]
+        if empty.any():  # reseed dead centers so the count contract holds
+            centers[empty] = points[rng.choice(M, size=int(empty.sum()), replace=False)]
+    return centers
+
+
+def _van_der_corput(i: np.ndarray, base: int) -> np.ndarray:
+    v = np.zeros(i.shape, dtype=np.float64)
+    denom = np.ones(i.shape, dtype=np.float64)
+    ii = i.astype(np.int64).copy()
+    while np.any(ii > 0):
+        denom *= base
+        v += (ii % base) / denom
+        ii //= base
+    return v
+
+
+def halton_unit(n: int, rng: np.random.Generator | None = None) -> np.ndarray:
+    """Halton (2,3) low-discrepancy points in the unit square with a Cranley-Patterson rotation.
+
+    The random toroidal shift keeps the low-discrepancy structure while making the set
+    seed-dependent (reproducibility invariant: the shift comes from the caller's rng).
+    """
+    i = np.arange(n, dtype=np.int64)
+    u = np.stack([_van_der_corput(i, 2), _van_der_corput(i, 3)], axis=1)
+    shift = (rng or np.random.default_rng(0)).random(2)
+    return (u + shift) % 1.0

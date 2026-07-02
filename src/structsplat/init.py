@@ -82,25 +82,55 @@ def _jittered_grid_positions(H: int, W: int, n: int, rng: np.random.Generator) -
     xs = (np.arange(gw) + rng.random(gw)) * cell_w
     ys = (np.arange(gh) + rng.random(gh)) * cell_h
     gx, gy = np.meshgrid(xs, ys)
-    pts = np.stack([gx.ravel(), gy.ravel()], 1)[:n]
+    pts = np.stack([gx.ravel(), gy.ravel()], 1)
+    if len(pts) > n:  # drop evenly across the grid, not the bottom rows
+        pts = pts[np.round(np.linspace(0, len(pts) - 1, n)).astype(int)]
     spacing = np.full(len(pts), np.sqrt(cell_w * cell_h))
     return pts, spacing
+
+
+def _nn_spacing(pts: np.ndarray, r_min: float = 0.5, r_max: float = 40.0,
+                chunk: int = 2048) -> np.ndarray:
+    """Per-point distance to the nearest other point (chunked brute force)."""
+    n = len(pts)
+    if n < 2:
+        return np.full(n, r_max)
+    out = np.empty(n)
+    for s in range(0, n, chunk):
+        d2 = ((pts[s:s + chunk, None, :] - pts[None, :, :]) ** 2).sum(-1)
+        for k in range(d2.shape[0]):
+            d2[k, s + k] = np.inf
+        out[s:s + chunk] = np.sqrt(d2.min(axis=1))
+    return np.clip(out, r_min, r_max)
+
+
+SAMPLING_MODES = ("wse", "density_random", "jittered_grid", "dart_throwing", "halton",
+                  "farthest_point", "cvt")
 
 
 def _blue_noise_positions(img, density, tensor, icfg, anisotropic, rng):
     n = icfg.num_gaussians
     rmap = _radius_map(density, n)
     H, W = density.shape
-    if icfg.sampling_mode == "density_random":
+    mode = icfg.sampling_mode
+    if mode == "density_random":
         pts = de.sample_candidates(density, n, rng)
         return pts, _nearest(rmap, pts)
-    if icfg.sampling_mode == "jittered_grid":
+    if mode == "jittered_grid":
         return _jittered_grid_positions(H, W, n, rng)
-    if icfg.sampling_mode != "wse":
+    if mode == "halton":
+        pts = de.warp_unit_points(sa.halton_unit(n, rng), density)
+        return pts, _nearest(rmap, pts)
+    if mode not in ("wse", "dart_throwing", "farthest_point", "cvt"):
         raise ValueError(
-            f"unknown sampling_mode {icfg.sampling_mode!r}; expected wse, density_random, or jittered_grid"
+            f"unknown sampling_mode {mode!r}; expected one of {SAMPLING_MODES}"
         )
     cand = de.sample_candidates(density, int(icfg.candidate_oversample * n), rng)
+    if mode == "cvt":
+        pts = sa.cvt(cand, n, rng=rng)
+        pts[:, 0] = np.clip(pts[:, 0], 0.0, W - 1.0)
+        pts[:, 1] = np.clip(pts[:, 1], 0.0, H - 1.0)
+        return pts, _nearest(rmap, pts)
     r_i = _nearest(rmap, cand)
     metric = None
     if anisotropic:
@@ -108,7 +138,12 @@ def _blue_noise_positions(img, density, tensor, icfg, anisotropic, rng):
         coh = np.clip(_nearest(tensor.coherence, cand), 0.0, 1.0) ** icfg.coherence_power
         ratio = 1.0 + (icfg.max_axis_ratio - 1.0) * coh
         metric = sa.anisotropy_metric(angle, ratio)
-    keep = sa.eliminate(cand, n, r_i, metric=metric)
+    if mode == "dart_throwing":
+        keep = sa.dart_throwing(cand, n, r_i, metric=metric, rng=rng)
+    elif mode == "farthest_point":
+        keep = sa.farthest_point(cand, n, r_i=r_i, metric=metric, rng=rng)
+    else:
+        keep = sa.eliminate(cand, n, r_i, metric=metric)
     return cand[keep], r_i[keep]
 
 
@@ -174,10 +209,23 @@ def build_field(img: np.ndarray, icfg: InitConfig,
     n_out = len(pts)
     m = icfg.init_scale_mult
     ratios = np.maximum(ratios, 1.0)
+    # orientation stage: 'tensor' keeps the strategy's angles (structure-tensor tangent for the
+    # feature-aware strategies, zero for random/grid); the alternatives ablate how much the
+    # tensor *orientation* specifically contributes, independent of the anisotropy magnitude.
+    if icfg.orientation_mode == "random":
+        angles = rng.uniform(0.0, np.pi, n_out)
+    elif icfg.orientation_mode == "zero":
+        angles = np.zeros(n_out)
+    elif icfg.orientation_mode != "tensor":
+        raise ValueError(
+            f"unknown orientation_mode {icfg.orientation_mode!r}; expected tensor, random, or zero"
+        )
     if icfg.scale_mode == "uniform":
         spacing = np.full(n_out, diag / np.sqrt(max(n_out, 1)))
+    elif icfg.scale_mode == "knn":
+        spacing = _nn_spacing(np.asarray(pts, dtype=np.float64))
     elif icfg.scale_mode != "spacing":
-        raise ValueError(f"unknown scale_mode {icfg.scale_mode!r}; expected spacing or uniform")
+        raise ValueError(f"unknown scale_mode {icfg.scale_mode!r}; expected spacing, uniform, or knn")
     s_along = spacing * np.sqrt(ratios) * m
     s_across = spacing / np.sqrt(ratios) * m
     scales = np.stack([s_along, s_across], 1)                # sx along tangent, sy across

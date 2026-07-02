@@ -98,13 +98,28 @@ class StructureTensor:
 
 def compute(img: np.ndarray, cfg: StructureTensorConfig | None = None) -> StructureTensor:
     cfg = cfg or StructureTensorConfig()
-    g = to_luma(img)
-    g = gaussian_blur(g, cfg.grad_sigma)
+    img = np.asarray(img, dtype=np.float32)
+    if cfg.color_space == "rgb" and img.ndim == 3:
+        # Di Zenzo multi-channel tensor: J = sum_c grad I_c grad I_c^T. Sees iso-luminant
+        # (chroma-only) edges that the luma tensor misses.
+        channels = [gaussian_blur(img[..., c], cfg.grad_sigma) for c in range(min(3, img.shape[-1]))]
+    elif cfg.color_space in ("luma", "rgb"):
+        channels = [gaussian_blur(to_luma(img), cfg.grad_sigma)]
+    else:
+        raise ValueError(f"unknown color_space {cfg.color_space!r}; expected luma or rgb")
+    g = channels[0]
 
-    iy, ix = gradients(g, cfg.gradient_operator)
-    Jxx = gaussian_blur(ix * ix, cfg.tensor_sigma)
-    Jxy = gaussian_blur(ix * iy, cfg.tensor_sigma)
-    Jyy = gaussian_blur(iy * iy, cfg.tensor_sigma)
+    Jxx = np.zeros(g.shape, dtype=np.float32)
+    Jxy = np.zeros(g.shape, dtype=np.float32)
+    Jyy = np.zeros(g.shape, dtype=np.float32)
+    for ch in channels:
+        iy, ix = gradients(ch, cfg.gradient_operator)
+        Jxx += ix * ix
+        Jxy += ix * iy
+        Jyy += iy * iy
+    Jxx = gaussian_blur(Jxx, cfg.tensor_sigma)
+    Jxy = gaussian_blur(Jxy, cfg.tensor_sigma)
+    Jyy = gaussian_blur(Jyy, cfg.tensor_sigma)
 
     half = 0.5 * (Jxx + Jyy)
     diff = 0.5 * (Jxx - Jyy)

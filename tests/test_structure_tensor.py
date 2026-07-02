@@ -40,3 +40,19 @@ def test_gradient_operator_variants_find_edge():
         edge = t.energy[:, 30:34].mean()
         flat = t.energy[:, 5:15].mean()
         assert edge > 5 * (flat + 1e-9)
+
+
+def test_rgb_tensor_sees_isoluminant_edge():
+    from structsplat.config import StructureTensorConfig
+
+    # red|green edge with identical Rec.709 luma: invisible to the luma tensor
+    img = np.zeros((32, 32, 3), np.float32)
+    img[:, :16] = [1.0, 0.0, 0.0]
+    img[:, 16:] = [0.0, 0.2126 / 0.7152, 0.0]
+    t_luma = st.compute(img, StructureTensorConfig(color_space="luma"))
+    t_rgb = st.compute(img, StructureTensorConfig(color_space="rgb"))
+    assert t_rgb.energy.max() > 50 * (t_luma.energy.max() + 1e-9)
+    # and on a luma edge both agree on the orientation
+    t2 = st.compute(_vertical_edge(), StructureTensorConfig(color_space="rgb"))
+    ang = np.mod(t2.across_edge_angle[:, 32], np.pi)
+    assert np.mean((ang < 0.25) | (ang > np.pi - 0.25)) > 0.8

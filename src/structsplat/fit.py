@@ -105,7 +105,9 @@ def _render(field: GaussianField, cfg: FitConfig, H: int, W: int) -> torch.Tenso
 
 
 def _target_list(cfg: FitConfig) -> list[float]:
-    vals = list(cfg.target_psnrs)
+    # normalize to float so the history keys are always str(float); an int in target_psnrs
+    # would otherwise produce a "35" key that str(float(target_psnr)) == "35.0" never finds
+    vals = [float(v) for v in cfg.target_psnrs]
     if cfg.target_psnr is not None:
         vals.append(float(cfg.target_psnr))
     return sorted(set(vals))
