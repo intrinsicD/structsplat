@@ -66,9 +66,12 @@ def cmd_fit(args):
                      split_scale=args.split_scale, max_gaussians=args.max_gaussians)
 
     if args.pyramid:
+        # honor --iters when --iters-per-level is not given, so the pyramid spends the
+        # same total optimization budget the user asked for
+        per_level = args.iters_per_level or max(1, args.iters // max(1, args.pyramid_levels))
         pcfg = PyramidConfig(levels=args.pyramid_levels,
                              level_fractions=args.level_fractions,
-                             iters_per_level=args.iters_per_level)
+                             iters_per_level=per_level)
         out = fit_pyramid(img, target, icfg, fcfg, pcfg, scfg)
     else:
         field = _init.build_field(img, icfg, scfg, device=device)
@@ -134,7 +137,8 @@ def main():
     f.add_argument("--pyramid", action="store_true")
     f.add_argument("--pyramid-levels", type=int, default=4)
     f.add_argument("--level-fractions", type=float, nargs="+", default=[0.1, 0.2, 0.3, 0.4])
-    f.add_argument("--iters-per-level", type=int, default=500)
+    f.add_argument("--iters-per-level", type=int, default=None,
+                   help="default: --iters / --pyramid-levels")
     f.add_argument("--target-psnr", type=float, default=None, dest="target_psnr")
     f.add_argument("--chunk", type=int, default=512)
     f.add_argument("--tensor-operator", choices=["central", "sobel", "scharr"], default="central")

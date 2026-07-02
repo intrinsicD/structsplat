@@ -18,7 +18,10 @@ def density_from_energy(energy: np.ndarray, base: float, power: float) -> np.nda
     ref = np.percentile(e, 99.0) + 1e-12
     d = np.clip(e / ref, 0.0, 1.0) ** power
     d = base + (1.0 - base) * d
-    return (d / d.sum()).astype(np.float64)  # normalized pmf over pixels
+    s = d.sum()
+    if not s > 0.0:  # identically-zero feature (flat image / zero residual) with base=0
+        return np.full(d.shape, 1.0 / d.size, dtype=np.float64)
+    return (d / s).astype(np.float64)  # normalized pmf over pixels
 
 
 def local_variance(img: np.ndarray, sigma: float = 2.0) -> np.ndarray:
@@ -63,11 +66,18 @@ def density_from_image(img: np.ndarray, icfg: InitConfig,
 
 
 def density_from_residual(residual: np.ndarray, base: float, power: float,
-                          grad_sigma: float, mode: str = "structure") -> np.ndarray:
-    """Residual-driven density for pyramid level ell: chase leftover error (HIER-001)."""
-    scfg = StructureTensorConfig(grad_sigma=grad_sigma)
-    tensor = st.compute(np.abs(residual), scfg)
-    feature = feature_for_mode(np.abs(residual), tensor, mode, scfg)
+                          scfg: StructureTensorConfig | None = None,
+                          mode: str = "structure") -> np.ndarray:
+    """Residual-driven density for pyramid level ell: chase leftover error (HIER-001).
+
+    Takes the full StructureTensorConfig (not just grad_sigma) so the residual density honors
+    the same tensor operator / sigma / thresholds as the orientation tensor. Prefer computing
+    the tensor once and calling density_from_tensor_and_image when you also need orientations.
+    """
+    scfg = scfg or StructureTensorConfig()
+    resid = np.abs(residual)
+    tensor = st.compute(resid, scfg)
+    feature = feature_for_mode(resid, tensor, mode, scfg)
     return density_from_energy(feature, base, power)
 
 

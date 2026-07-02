@@ -68,6 +68,29 @@ def test_rotation_period_invariance():
     assert float(dec.rotations.max()) <= np.pi + 1e-5
 
 
+def test_opacity_roundtrip_and_render_parity():
+    img = _toy()
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="aniso_flanking", num_gaussians=96,
+                                              opacity_mode="constant", init_opacity=0.7, seed=0))
+    fcfg = FitConfig()
+    blob = codec.encode(field, 48, 48, codec.CodecConfig())
+    dec = codec.decode(blob)
+    assert dec.opacities is not None
+    p_orig = field.opacity_values()
+    p_dec = dec.opacity_values()
+    assert float((p_orig.sort().values - p_dec.sort().values).abs().max()) < 1.0 / 255 + 1e-3
+    # decoded render (with opacities applied) must track the original opacity render
+    a = render(field.means, field.conics(), field.colors, field.radii(3.0), 48, 48,
+               opacities=field.opacity_values())
+    b = render(dec.means, dec.conics(), dec.colors, dec.radii(3.0), 48, 48,
+               opacities=dec.opacity_values())
+    assert float((a - b).abs().mean()) < 0.02
+    # and rd_point must run the opacity path end to end
+    r = codec.rd_point(field, target, fcfg, codec.CodecConfig())
+    assert np.isfinite(r["psnr"]) and r["raw_bpp"] > 0
+
+
 def test_qat_improves_coarse_quantization():
     img = _toy()
     target = torch.as_tensor(img)

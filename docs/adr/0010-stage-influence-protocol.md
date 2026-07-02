@@ -17,10 +17,12 @@ variant differs from the baseline in exactly one stage, and the summary (`influe
 **paired deltas** — per (image, budget, seed) cell — for quality (PSNR, MS-SSIM, LPIPS),
 convergence (iters-to-target, PSNR-AUC over the training trajectory), and speed (init/fit
 seconds, seconds-to-target). Factorial mode remains for finding the best combination; both modes
-now **canonicalize and deduplicate** configs whose differing stage is provably inert
-(random/grid ignore tensor/density/sampling/orientation; `iso_blue_noise` ignores orientation;
-`jittered_grid` placement ignores density; `two_sided` color equals `bilinear` outside
-`aniso_flanking`).
+now **canonicalize and deduplicate** configs that provably produce the identical initial field
+(random/grid ignore tensor/density/sampling and have zero angles under both `tensor` and `zero`
+orientation; `jittered_grid` placement ignores density; `two_sided` color equals `bilinear`
+outside `aniso_flanking`). Orientation is deliberately *not* pinned for isotropic inits: equal
+initial axes still break symmetry through fitting — the rotation decides which axis each scale
+gradient feeds.
 
 ## Consequences
 

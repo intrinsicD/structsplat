@@ -113,24 +113,27 @@ def _config_label(c: dict[str, Any]) -> str:
 
 
 def _canonicalize(cfg: dict[str, Any], canonical: dict[str, str]) -> dict[str, Any]:
-    """Pin stage fields that provably cannot affect this config's output.
+    """Pin stage fields that provably produce the IDENTICAL initial field for this config.
 
     Two configs that only differ in a pinned field are the *same experiment*; running both
-    would double-count one cell and bias any per-stage marginal statistics.
-      * random/grid ignore the tensor, density, and sampling stages entirely, and their
-        axis ratios are 1 so orientation is invisible.
-      * iso_blue_noise has ratio 1 everywhere -> orientation is invisible.
+    would double-count one cell and bias any per-stage marginal statistics. Only exact
+    init-level equivalences are pinned — in particular, orientation is NOT pinned for
+    isotropic inits (equal initial axes still break symmetry through fitting: the rotation
+    decides which axis each scale gradient feeds), except where the angles are exactly equal:
+      * random/grid never compute the tensor: tensor/tensor_color/density/sampling are inert,
+        and orientation 'tensor' == 'zero' (both give zero angles; 'random' stays distinct).
       * jittered_grid placement never reads the density map (angles/ratios come from the
-        tensor, not the density), so the density stage is invisible under it.
+        tensor, not the density), so the density stage is inert under it.
       * two_sided color sampling only diverges from bilinear inside the aniso_flanking branch.
     """
     c = dict(cfg)
     strat = c["strategy"]
     if strat in ("random", "grid"):
-        for k in ("tensor", "tensor_color", "density", "sampling", "orientation"):
+        for k in ("tensor", "tensor_color", "density", "sampling"):
             c[k] = canonical[k]
-    elif strat == "iso_blue_noise":
-        c["orientation"] = canonical["orientation"]
+        if c["orientation"] in ("tensor", "zero"):
+            c["orientation"] = "tensor" if canonical["orientation"] in ("tensor", "zero") \
+                else "zero"
     if strat not in ("random", "grid") and c["sampling"] == "jittered_grid":
         c["density"] = canonical["density"]
     if strat != "aniso_flanking" and c["color"] == "two_sided":
@@ -283,6 +286,11 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
 
     history = out.get("history", {})
     iters_to_target = out.get("iters_to_target")
+    fit_seconds = float(out.get("fit_seconds", 0.0))
+    if cfg["pyramid"] == "pyramid":
+        # fit_pyramid aggregates per-level fit time; the rest of the wall clock is the
+        # interleaved init/density/tensor work, i.e. this mode's init cost
+        init_seconds = max(elapsed - fit_seconds, 0.0)
     return {
         "psnr": round(float(out["psnr"]), 4),
         "ssim": round(float(out["ssim"]), 5),
@@ -294,7 +302,7 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         "seconds_to_target": _seconds_to_target(history, iters_to_target),
         "n_gaussians": int(out["n_gaussians"]),
         "init_seconds": init_seconds,
-        "fit_seconds": float(out.get("fit_seconds", 0.0)) if cfg["pyramid"] == "single" else elapsed,
+        "fit_seconds": fit_seconds,
         "total_seconds": elapsed,
         "history": history,
         "prefix_metrics": out.get("prefix_metrics"),

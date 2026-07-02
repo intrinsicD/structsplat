@@ -206,7 +206,12 @@ def _add_from_residual(field: GaussianField, target: torch.Tensor, render_img: t
     log_scales = torch.full((k, 2), math.log(max(base_scale, 0.35)),
                             device=target.device, dtype=target.dtype)
     rotations = torch.zeros(k, device=target.device, dtype=target.dtype)
-    colors = target[y, x]
+    if cfg.renderer == "additive":
+        # additive stacks on the existing accumulation: injecting full target colors
+        # overshoots; the residual color is what the new Gaussian should contribute
+        colors = (target - render_img)[y, x]
+    else:
+        colors = target[y, x]
     return field.append(GaussianField(means, log_scales, rotations, colors)), k
 
 
@@ -244,11 +249,16 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
 
         keep = None
         added = 0
-        if cfg.prune_every is not None and cfg.prune_every > 0 and (it + 1) % cfg.prune_every == 0:
+        # never restructure on the final iteration: the returned field/metrics would include
+        # Gaussians that no optimizer step ever touched
+        last_it = it == cfg.iters - 1
+        if (not last_it and cfg.prune_every is not None and cfg.prune_every > 0
+                and (it + 1) % cfg.prune_every == 0):
             field, keep = _maybe_prune(field, cfg, H, W)
             if verbose and keep is not None:
                 print(f"  prune {int((~keep).sum())} -> {field.n} gaussians")
-        if cfg.split_every is not None and cfg.split_every > 0 and (it + 1) % cfg.split_every == 0:
+        if (not last_it and cfg.split_every is not None and cfg.split_every > 0
+                and (it + 1) % cfg.split_every == 0):
             if cfg.split_mode == "duplicate":
                 field, added = _split_from_residual(field, target, img, cfg)
             elif cfg.split_mode == "residual_add":
@@ -272,7 +282,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             if verbose:
                 print(f"  iter {it:5d}  psnr {p_now:6.2f}  loss {loss.item():.5f}")
 
-    with torch.no_grad():
+    fit_seconds = time.time() - start_time  # before the final eval: metrics (esp. LPIPS
+    with torch.no_grad():                   # model construction) must not pollute the timing
         img = _render(field, cfg, H, W)
         out = {
             "field": field, "history": hist, "render": img,
@@ -285,6 +296,6 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             ),
             "iters_to_targets": iters_to_targets,
             "n_gaussians": field.n,
-            "fit_seconds": time.time() - start_time,
+            "fit_seconds": fit_seconds,
         }
     return out

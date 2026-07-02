@@ -66,6 +66,13 @@ def _radius_map(density: np.ndarray, n: int, r_min=0.5, r_max=20.0) -> np.ndarra
     return np.clip(np.sqrt(1.0 / (np.pi * lam)), r_min, r_max)
 
 
+# The samplers work with the exclusion-disk radius r = sqrt(area/pi); the *scale* init works
+# with the per-point cell side sqrt(area) — the definition random/grid use. Returning r as
+# "spacing" would hand the feature-aware strategies a systematically sqrt(pi)~1.77x smaller
+# initial scale at identical local density: a confound in the strategy ablation, not a choice.
+_SPACING_PER_RADIUS = float(np.sqrt(np.pi))
+
+
 def _opacity_logits(n: int, mode: str, init_opacity: float) -> np.ndarray | None:
     if mode == "none":
         return None
@@ -79,10 +86,14 @@ def _jittered_grid_positions(H: int, W: int, n: int, rng: np.random.Generator) -
     gw = int(round(np.sqrt(n * W / H)))
     gh = int(np.ceil(n / max(gw, 1)))
     cell_w, cell_h = W / max(gw, 1), H / max(gh, 1)
-    xs = (np.arange(gw) + rng.random(gw)) * cell_w
-    ys = (np.arange(gh) + rng.random(gh)) * cell_h
-    gx, gy = np.meshgrid(xs, ys)
-    pts = np.stack([gx.ravel(), gy.ravel()], 1)
+    gx, gy = np.meshgrid(np.arange(gw), np.arange(gh))
+    # independent jitter per CELL (stratified sampling); a shared jitter per row/column would
+    # collapse this to a randomized lattice. -0.5 keeps pixel centers at integer coords.
+    u = rng.random((gh, gw))
+    v = rng.random((gh, gw))
+    xs = (gx + u) * cell_w - 0.5
+    ys = (gy + v) * cell_h - 0.5
+    pts = np.stack([xs.ravel(), ys.ravel()], 1)
     if len(pts) > n:  # drop evenly across the grid, not the bottom rows
         pts = pts[np.round(np.linspace(0, len(pts) - 1, n)).astype(int)]
     spacing = np.full(len(pts), np.sqrt(cell_w * cell_h))
@@ -115,12 +126,12 @@ def _blue_noise_positions(img, density, tensor, icfg, anisotropic, rng):
     mode = icfg.sampling_mode
     if mode == "density_random":
         pts = de.sample_candidates(density, n, rng)
-        return pts, _nearest(rmap, pts)
+        return pts, _nearest(rmap, pts) * _SPACING_PER_RADIUS
     if mode == "jittered_grid":
         return _jittered_grid_positions(H, W, n, rng)
     if mode == "halton":
         pts = de.warp_unit_points(sa.halton_unit(n, rng), density)
-        return pts, _nearest(rmap, pts)
+        return pts, _nearest(rmap, pts) * _SPACING_PER_RADIUS
     if mode not in ("wse", "dart_throwing", "farthest_point", "cvt"):
         raise ValueError(
             f"unknown sampling_mode {mode!r}; expected one of {SAMPLING_MODES}"
@@ -130,7 +141,7 @@ def _blue_noise_positions(img, density, tensor, icfg, anisotropic, rng):
         pts = sa.cvt(cand, n, rng=rng)
         pts[:, 0] = np.clip(pts[:, 0], 0.0, W - 1.0)
         pts[:, 1] = np.clip(pts[:, 1], 0.0, H - 1.0)
-        return pts, _nearest(rmap, pts)
+        return pts, _nearest(rmap, pts) * _SPACING_PER_RADIUS
     r_i = _nearest(rmap, cand)
     metric = None
     if anisotropic:
@@ -144,7 +155,7 @@ def _blue_noise_positions(img, density, tensor, icfg, anisotropic, rng):
         keep = sa.farthest_point(cand, n, r_i=r_i, metric=metric, rng=rng)
     else:
         keep = sa.eliminate(cand, n, r_i, metric=metric)
-    return cand[keep], r_i[keep]
+    return cand[keep], r_i[keep] * _SPACING_PER_RADIUS
 
 
 def build_field(img: np.ndarray, icfg: InitConfig,

@@ -2,6 +2,14 @@
 
 LPIPS is optional (pip install lpips); import is guarded so the repo runs without it.
 Images are (H,W,3) or (B,3,H,W) in [0,1]. BENCH-001 fixes the exact protocol.
+
+Protocol notes (deliberate deviations from the reference implementations — consistent across
+every cell of a comparison, but do not quote these numbers against papers without checking):
+  * ssim() uses zero-padded convolutions and averages over all pixels, which biases border
+    windows relative to the valid-window formulation (Wang et al. use valid windows).
+  * ms_ssim() applies the full SSIM (including luminance) at every scale instead of
+    contrast*structure at the fine scales; negatives are clamped before the power. For
+    paper-comparable numbers install pytorch-msssim (the `[metrics]` extra) and report that.
 """
 from __future__ import annotations
 import torch

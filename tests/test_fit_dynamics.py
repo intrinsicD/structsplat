@@ -55,3 +55,26 @@ def test_fit_with_decay_prune_split_still_improves():
     ), verbose=False)
     assert np.isfinite(out["psnr"])
     assert out["history"]["psnr"][-1] >= out["history"]["psnr"][0] - 0.5
+
+
+def test_no_restructure_on_final_iteration():
+    # iters divisible by split_every: the last split window must be skipped, otherwise the
+    # returned field contains Gaussians no optimizer step ever touched
+    img = np.zeros((16, 16, 3), np.float32)
+    img[:, 8:] = 1.0
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=8, seed=0))
+    out = fit(field, target, FitConfig(iters=10, log_every=5, split_every=5, split_count=4,
+                                       split_mode="residual_add"), verbose=False)
+    assert out["n_gaussians"] == 12  # one split at it=4, none at it=9
+
+
+def test_int_target_psnrs_are_recorded():
+    img = np.zeros((16, 16, 3), np.float32)
+    img[:, 8:] = 1.0
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=16, seed=0))
+    out = fit(field, target, FitConfig(iters=3, log_every=1, target_psnr=1,
+                                       target_psnrs=[1, 2.0]), verbose=False)
+    assert out["iters_to_target"] is not None       # str(int) vs str(float) key mismatch
+    assert set(out["iters_to_targets"]) == {"1.0", "2.0"}

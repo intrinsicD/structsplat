@@ -68,11 +68,14 @@ def gradients(g: np.ndarray, operator: str = "central") -> tuple[np.ndarray, np.
     if operator == "central":
         iy, ix = np.gradient(g)
         return iy.astype(np.float32), ix.astype(np.float32)
+    # _conv2d is a cross-correlation, so the +1 column must sit at +x for d/dx to match
+    # np.gradient's sign convention (the tensor J is sign-invariant, but callers of this
+    # function are not necessarily)
     if operator == "sobel":
-        kx = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]], dtype=np.float32) / 8.0
+        kx = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=np.float32) / 8.0
         ky = kx.T
     elif operator == "scharr":
-        kx = np.array([[3, 0, -3], [10, 0, -10], [3, 0, -3]], dtype=np.float32) / 32.0
+        kx = np.array([[-3, 0, 3], [-10, 0, 10], [-3, 0, 3]], dtype=np.float32) / 32.0
         ky = kx.T
     else:
         raise ValueError(f"unknown gradient_operator {operator!r}; expected central, sobel, or scharr")

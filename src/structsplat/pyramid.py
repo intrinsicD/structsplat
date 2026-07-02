@@ -39,6 +39,7 @@ def _level_tensor_cfg(base: StructureTensorConfig | None, pcfg: PyramidConfig,
         grad_sigma=_level_value(pcfg.level_grad_sigmas, lvl, default_grad_sigma),
         tensor_sigma=_level_value(pcfg.level_tensor_sigmas, lvl, base.tensor_sigma),
         gradient_operator=base.gradient_operator,
+        color_space=base.color_space,
         flat_frac=base.flat_frac,
         corner_frac=base.corner_frac,
     )
@@ -71,11 +72,24 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
     device = target.device
     total = icfg.num_gaussians
     fracs = pcfg.level_fractions[:pcfg.levels]
+    if len(fracs) < pcfg.levels:
+        raise ValueError(
+            f"PyramidConfig.levels={pcfg.levels} but only {len(fracs)} level_fractions given; "
+            "silently running fewer levels would misreport the compute budget")
+    if not fracs or sum(fracs) <= 0:
+        raise ValueError("level_fractions must contain positive values")
     fracs = [f / sum(fracs) for f in fracs]
 
     field = None
     counts = []
     level_summaries = []
+    # global (across-level) trajectory so convergence metrics cover the WHOLE pyramid run,
+    # not just the final level's re-fit
+    combined = {"iter": [], "psnr": [], "loss": [], "n_gaussians": [], "elapsed": []}
+    combined_itt: dict[str, int | None] = {}
+    fit_seconds_total = 0.0
+    iter_offset = 0
+    elapsed_offset = 0.0
     level_cfg = FitConfig(**{**fcfg.__dict__, "iters": pcfg.iters_per_level})
     for lvl, frac in enumerate(fracs):
         n_lvl = max(1, int(round(total * frac)))
@@ -89,9 +103,10 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
                                    field.radii(fcfg.sigma_cutoff, fcfg.aa_dilation), H, W,
                                    fcfg.render_chunk, fcfg.renderer, field.opacity_values())
                 residual = (target - cur).abs().cpu().numpy()
-            dens = de.density_from_residual(residual, icfg.density_base, icfg.density_power,
-                                            scfg_lvl.grad_sigma, icfg.density_mode)
+            # one tensor drives both density and orientation, under the full level config
+            # (previously the density tensor silently used default operator/sigma/thresholds)
             tensor = st.compute(residual, scfg_lvl)
+            dens = de.density_from_tensor_and_image(residual, tensor, icfg_lvl, scfg_lvl)
             new = _init.build_field(img, icfg_lvl, scfg_lvl, density=dens, tensor=tensor,
                                     device=device)
         field = new if field is None else _concat(field, new)
@@ -101,6 +116,19 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
         out = fit(field, target, level_cfg, verbose=verbose)
         field = out["field"]
         counts[-1] = field.n
+        h = out["history"]
+        combined["iter"] += [iter_offset + i for i in h["iter"]]
+        combined["elapsed"] += [elapsed_offset + e for e in h["elapsed"]]
+        for k in ("psnr", "loss", "n_gaussians"):
+            combined[k] += h[k]
+        for key, v in out.get("iters_to_targets", {}).items():
+            combined_itt.setdefault(key, None)
+            if combined_itt[key] is None and v is not None:
+                combined_itt[key] = iter_offset + v
+        fit_seconds_total += float(out.get("fit_seconds", 0.0))
+        iter_offset += level_cfg.iters
+        if combined["elapsed"]:
+            elapsed_offset = combined["elapsed"][-1]
         level_summaries.append({
             "level": lvl,
             "added": new.n,
@@ -109,8 +137,17 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
             "ms_ssim": out["ms_ssim"],
         })
 
+    out["history"] = combined
+    out["iters_to_targets"] = combined_itt
+    out["iters_to_target"] = (combined_itt.get(str(float(fcfg.target_psnr)))
+                              if fcfg.target_psnr is not None else None)
+    out["fit_seconds"] = fit_seconds_total
     out["level_summaries"] = level_summaries
     out["level_counts"] = counts
     if pcfg.evaluate_prefixes:
-        out["prefix_metrics"] = prefix_metrics(field, counts, target, fcfg)
+        restructures = (((level_cfg.prune_every or 0) > 0 and level_cfg.prune_min_activity > 0)
+                        or ((level_cfg.split_every or 0) > 0 and level_cfg.split_count > 0))
+        # pruning/splitting reorders and reshapes the field, so "the first n_l Gaussians"
+        # no longer corresponds to levels 0..l — a prefix render would be a fabrication
+        out["prefix_metrics"] = None if restructures else prefix_metrics(field, counts, target, fcfg)
     return out
