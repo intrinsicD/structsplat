@@ -1,0 +1,2 @@
+"""StructSplat CUDA extension helpers."""
+

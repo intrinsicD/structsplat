@@ -1,0 +1,67 @@
+session:
+  id: "2026-07-03_001"
+  date: "2026-07-03"
+  started: "2026-07-03T00:24"
+  last_turn: "2026-07-03T00:31"
+  turn_count: 2
+  summary: "Ran a current four-image, multi-resolution, multi-iteration matched comparison against local repo-inspired GaussianImage, GaussianImage++, Image-GS, and Instant-GI policies, then committed all non-ignored project changes."
+
+events_logged:
+  - turn: 1
+    type: experiment
+    id: "N17"
+    routing: direct
+    provenance: ai-executed
+    summary: "Ran 120-row exact-CUDA cross-repo matrix; StructSplat won PSNR overall, GaussianImage led MS-SSIM, Instant-GI quadtree led LPIPS."
+  - turn: 1
+    type: observation
+    id: "O14"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged metric-split claim: StructSplat is PSNR-dominant but not MS-SSIM/LPIPS dominant."
+
+ai_actions:
+  - turn: 1
+    action: "Created multi-resolution matched cross-repo comparison benchmark."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/cross_repo_matrix_compare.py"
+  - turn: 1
+    action: "Ran smoke benchmark and full 120-row four-image matrix with exact CUDA and LPIPS."
+    provenance: ai-executed
+    files_changed:
+      - "results/cross_repo_matrix_smoke/"
+      - "results/cross_repo_matrix_current_4img/run.log"
+      - "results/cross_repo_matrix_current_4img/metrics.csv"
+      - "results/cross_repo_matrix_current_4img/metrics.json"
+      - "results/cross_repo_matrix_current_4img/selected.json"
+      - "results/cross_repo_matrix_current_4img/summary.md"
+      - "results/cross_repo_matrix_current_4img/grids/"
+      - "results/cross_repo_matrix_current_4img/reconstructions/"
+  - turn: 1
+    action: "Generated compact analysis with deltas, winner counts, difficult-image split, and iteration-gain table."
+    provenance: ai-executed
+    files_changed:
+      - "results/cross_repo_matrix_current_4img/analysis.md"
+  - turn: 2
+    action: "Committed all non-ignored source, benchmark, documentation, test, and ARA changes."
+    provenance: ai-executed
+    files_changed: []
+
+claims_touched: []
+
+key_context:
+  - turn: 1
+    excerpt: "User asked how the current version compares against other repositories using four COCO images again, including two difficult ones, with varied metrics, resolutions, and iteration counts."
+  - turn: 2
+    excerpt: "User asked to commit all changes accordingly."
+
+open_threads:
+  - "Run native repo pipelines if GaussianImage/GaussianImage++/Image-GS/Instant-GI extension and checkpoint blockers are resolved."
+  - "Investigate why GaussianImage slightly leads MS-SSIM while StructSplat leads PSNR."
+  - "Investigate why Instant-GI quadtree wins LPIPS despite visible block artifacts in some visual grids."
+  - "Reduce StructSplat total-time overhead from tensor/WSE initialization and residual growth now that fit time is CUDA-fast."
+  - "Decide whether future searches should optimize PSNR, MS-SSIM, LPIPS, or a multi-metric score."
+
+ai_suggestions_pending:
+  - "Run a metric-aligned stage search using LPIPS/MS-SSIM-aware selection on a larger held-out set."

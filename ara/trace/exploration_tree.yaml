@@ -1,0 +1,331 @@
+tree:
+  - id: N01
+    type: question
+    title: "Compare StructSplat fairly"
+    provenance: user
+    timestamp: "2026-07-02T20:50"
+    description: >
+      Compare the current StructSplat approach against local GaussianImage,
+      GaussianImage_plus, image-gs, and Instant-GI repositories.
+    status: resolved
+  - id: N02
+    type: experiment
+    title: "StructSplat local tests"
+    provenance: ai-executed
+    timestamp: "2026-07-02T20:50"
+    result: >
+      `python -m pytest -q` passed 33 tests in 108.55 seconds in
+      `/home/alex/Documents/structsplat`.
+    evidence:
+      - "pytest-2026-07-02"
+    status: resolved
+  - id: N03
+    type: experiment
+    title: "COCO matched fit comparison"
+    provenance: ai-executed
+    timestamp: "2026-07-02T21:01"
+    result: >
+      Ran a matched reference comparison on four COCO train2014 images at max-side 160,
+      512 Gaussian cap, and 80 iterations. StructSplat had the highest mean PSNR
+      in this reference run: 24.833 dB vs GaussianImage 21.990, GaussianImage++
+      20.191, Image-GS 20.996, and Instant-GI quadtree 18.350. Native repo
+      CUDA/checkpoint runs remained blocked, so the result isolates
+      initialization/growth policy under one renderer and fitter.
+    evidence:
+      - "coco-fit-compare-2026-07-02"
+    status: resolved
+  - id: N04
+    type: experiment
+    title: "COCO matched fit comparison rerun after update"
+    provenance: ai-executed
+    timestamp: "2026-07-02T21:07"
+    result: >
+      Preserved the prior comparison grid and metrics under before_update filenames, then
+      reran the same four-image COCO train2014 matched reference comparison at max-side
+      160, 512 Gaussian cap, seed 0, and 80 iterations. New mean PSNR: StructSplat
+      24.039 dB, GaussianImage 21.991, GaussianImage++ 20.191, Image-GS 20.542,
+      and Instant-GI quadtree 18.362. Relative to the prior run, StructSplat changed
+      by -0.794 dB and Image-GS by -0.455 dB, while random baselines were effectively
+      unchanged.
+    evidence:
+      - "coco-fit-compare-rerun-2026-07-02"
+    status: resolved
+  - id: N05
+    type: experiment
+    title: "COCO four-image stage-search screening"
+    provenance: ai-executed
+    timestamp: "2026-07-02T21:24"
+    result: >
+      Started the unmodified `scripts/run_stage_search_screening.sh` on the four selected
+      COCO images, then interrupted it after 10 completed fits because its default
+      1024/2048-budget, 300-iteration, 256-config schedule projected to a multi-hour run.
+      Completed a bounded stage-search screening over the same sampled stage axes at
+      max-side 160, budget 512, seed 0, 80 iterations, and 64 shuffled configs, producing
+      256 rows across four images. Best sampled aggregate config reached 24.293 dB mean
+      PSNR and 0.95292 mean MS-SSIM: aniso_flanking, central/luma tensor, variance
+      density, WSE sampling, bilinear color, spacing scale, constant opacity,
+      Charbonnier loss, Adam, no LR schedule, no refinement, single-level fit.
+    evidence:
+      - "stage-search-coco4-after-update-2026-07-02"
+    status: resolved
+  - id: N06
+    type: experiment
+    title: "Stage-search best visual comparison"
+    provenance: ai-executed
+    timestamp: "2026-07-02T21:29"
+    result: >
+      Rendered the best sampled stage-search configuration on the same four selected
+      COCO images and compared it visually and numerically against the previous
+      StructSplat row from the after-update comparison. Mean PSNR improved from
+      24.0391 dB to 24.2925 dB (+0.2534). Per-image deltas were -0.0943,
+      +0.3111, +0.0587, and +0.7381 dB for images 000000000009, 000000000025,
+      000000000030, and 000000000034 respectively. Runtime analysis added at
+      2026-07-02T21:35 found fit-only runtime changed from 2.0443 s to 1.9626 s
+      (-3.99%), while total runtime changed to 2.0563 s (+0.59%).
+    evidence:
+      - "stage-search-best-visual-compare-2026-07-02"
+    status: resolved
+  - id: N07
+    type: experiment
+    title: "Optimization follow-up on held-out COCO images"
+    provenance: ai-executed
+    timestamp: "2026-07-02T21:53"
+    result: >
+      Implemented opt-in early stopping and a follow-up benchmark, then ran it on
+      eight held-out COCO train2014 images at max-side 160, budget 512, seed 0,
+      80 iterations, and render chunk 512. Stage-search top1 generalized best
+      among same-budget candidates at 24.5490 dB mean PSNR, versus 24.3392 dB
+      for the current baseline, but took 2.298 s total versus 2.104 s. WSE
+      oversample 4 gave the best PSNR at 24.5665 dB, while oversample 3 was the
+      better speed/quality tradeoff at 24.5395 dB and 2.285 s total. Conservative
+      early stopping did not trigger in any run. Current residual-add refinement
+      did not improve mean PSNR, and current pyramid variants fell to about
+      22.91 dB while running slower. The exact Python tile-local render prototype
+      matched the reference forward pass within about 6e-7 max absolute error but
+      was roughly 10-12x slower on the measured 160px/512G cases.
+    evidence:
+      - "optimization-followup-2026-07-02"
+    status: resolved
+  - id: N08
+    type: experiment
+    title: "Quadtree aggregate initialization comparison"
+    provenance: ai-executed
+    timestamp: "2026-07-02T22:11"
+    result: >
+      Implemented a `quadtree_aggregate` initializer that recursively splits
+      density-mass cells and assigns Gaussians from per-cell aggregate color,
+      weighted centroid, tensor orientation, and coherence. Ran a focused
+      comparison on the same eight held-out COCO train2014 images at max-side
+      160, budget 512, seed 0, 80 iterations, and render chunk 512. Quadtree
+      variants improved initial PSNR over stage_top1: aggregate-variance
+      18.4563 dB, aggregate-structure 18.4912 dB, and bilinear-variance
+      18.3986 dB versus stage_top1 18.1357 dB. After fitting, stage_top1
+      remained best at 24.5490 dB mean PSNR; quadtree_bilinear_variance reached
+      24.3506, quadtree_agg_variance 24.3340, quadtree_agg_structure 24.2493,
+      and current_baseline 24.3390. Full pytest passed 71 tests in 4.31 s.
+    evidence:
+      - "quadtree-init-compare-2026-07-02"
+    status: resolved
+  - id: N09
+    type: experiment
+    title: "Hybrid and quadtree-allocated WSE initialization"
+    provenance: ai-executed
+    timestamp: "2026-07-02T22:21"
+    result: >
+      Implemented `quadtree_hybrid` and `quadtree_wse` initialization variants,
+      then reran the eight-image held-out COCO comparison at max-side 160,
+      budget 512, seed 0, 80 iterations, and render chunk 512. `quadtree_wse`
+      reached 24.4847 dB mean PSNR, winning 3 of 8 images versus stage_top1 but
+      trailing stage_top1 by 0.0644 dB on average. `quadtree_hybrid` with
+      aggregate smooth cells reached 24.4838 dB and won 2 of 8 images, trailing
+      stage_top1 by 0.0653 dB. `quadtree_hybrid` with bilinear colors reached
+      24.4798 dB and won 1 of 8 images. All hybrid/quadtree-WSE variants were
+      substantially closer to stage_top1 than the naive aggregate-only quadtree
+      variants, but none beat stage_top1's 24.5491 dB mean PSNR. Full pytest
+      passed 75 tests in 4.13 s.
+    evidence:
+      - "quadtree-hybrid-wse-compare-2026-07-02"
+    status: resolved
+  - id: N10
+    type: experiment
+    title: "Feature-adaptive scale caps for spike suppression"
+    provenance: ai-executed
+    timestamp: "2026-07-02T22:44"
+    result: >
+      Implemented per-Gaussian scale caps carried by `GaussianField`, enforced
+      during optimization, with hard caps and a feature-adaptive cap that walks
+      along the structure-tensor tangent until edge energy drops or a corner is
+      hit. Reran the eight-image COCO quadtree comparison at max-side 160,
+      budget 512, seed 0, 80 iterations, and render chunk 512. Uncapped
+      stage_top1 had 24.5490 dB mean PSNR, 72.740 mean final max scale, 25.818
+      mean final p95 scale, and 2.293 s total runtime. `stage_top1_feature_cap12`
+      reached 24.6423 dB, capped final max/p95 scale to 12.0, won 7 of 8
+      images, and cut total runtime to 1.269 s. `quadtree_wse_feature_cap12`
+      reached the best mean PSNR at 24.6528 dB, capped final max/p95 scale to
+      12.0, won 7 of 8 images versus stage_top1, and ran in 1.360 s. Hard cap
+      8 reduced scale and runtime further but lowered mean PSNR versus
+      stage_top1. Full pytest passed 77 tests in 4.22 s.
+    evidence:
+      - "feature-scale-cap-compare-2026-07-02"
+    status: resolved
+  - id: N11
+    type: question
+    title: "Analyze remaining blockers and external techniques"
+    provenance: user
+    timestamp: "2026-07-02T22:54"
+    description: >
+      Analyze what is still holding StructSplat back after the quadtree/cap
+      experiments, and compare against techniques from local GaussianImage,
+      GaussianImage_plus, image-gs, Instant-GI repositories plus 3D Gaussian
+      Splatting literature and surveys.
+    status: resolved
+  - id: N12
+    type: decision
+    title: "Promote renderer and density-control ideas to search stages"
+    provenance: user
+    timestamp: "2026-07-02T23:19"
+    choice: >
+      Reuse the local CUDA renderer path where possible, and expose the other
+      blocker-analysis ideas as searchable stages unless a previous result made
+      one alternative clearly better.
+    alternatives:
+      - "Keep ideas as analysis-only recommendations."
+      - "Replace existing defaults wholesale without stage-search controls."
+      - "Expose them as opt-in stages and promote only clearly supported defaults."
+    evidence:
+      - "docs/blockers_and_external_techniques.md"
+      - "feature-scale-cap-compare-2026-07-02"
+    status: resolved
+  - id: N13
+    type: experiment
+    title: "CUDA renderer and expanded stage controls implementation"
+    provenance: ai-executed
+    timestamp: "2026-07-02T23:19"
+    result: >
+      Implemented optional `cuda`/`gsplat` renderer mode backed by the local
+      GaussianImage++ gsplat API, with CPU/device/extension guardrails. Added
+      `scale_cap` as a stage-search axis with `feature12` as the baseline,
+      exposed quadtree strategies in influence defaults, and added
+      `support_duplicate`, `residual_tensor_add`, and
+      `prune_residual_tensor_add` refinement modes. Updated fit/pyramid render
+      calls, CLI options, and regression tests. Full `pytest -q` passed 79
+      tests in 4.48 s. A direct CUDA smoke call reached the guarded failure:
+      local gsplat extension cannot load because `/home/alex/miniconda3/.../libstdc++.so.6`
+      lacks `CXXABI_1.3.15` for the cached `gsplat_cuda.so`.
+    evidence:
+      - "src/structsplat/render.py"
+      - "src/structsplat/fit.py"
+      - "benchmarks/stage_search.py"
+      - "pytest-2026-07-02-79"
+    also_depends_on: [N10, N11, N12]
+    status: resolved
+  - id: N14
+    type: experiment
+    title: "CUDA renderer speed benchmark"
+    provenance: ai-executed
+    timestamp: "2026-07-02T23:27"
+    result: >
+      Ran a CUDA renderer speed test on an NVIDIA GeForce RTX 3050 using
+      `LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6` to work around the
+      local gsplat extension CXXABI mismatch. Render+backward microbenchmark
+      on COCO image 000000000009 showed 14.46x, 5.03x, and 12.75x speedups
+      versus the additive PyTorch reference at budgets 512, 1024, and 2048.
+      Four-image 80-iteration fit loop at max-side 160, budget 512 showed
+      mean wall time 0.241 s for `cuda` versus 1.082 s additive and 1.262 s
+      normalized, giving 4.49x and 5.23x speedups respectively. However,
+      dense-overlap parity was poor: additive reference versus CUDA mean abs
+      pixel difference was 0.62755 with max 5.20287, and mean PSNR dropped to
+      20.8340 for CUDA versus 23.1776 additive and 24.0452 normalized.
+    evidence:
+      - "results/cuda_renderer_speed_test/summary.md"
+      - "results/cuda_renderer_speed_test/fitbench.csv"
+      - "results/cuda_renderer_speed_test/microbench.csv"
+    also_depends_on: [N13]
+    status: resolved
+  - id: N15
+    type: experiment
+    title: "Exact StructSplat CUDA renderer"
+    provenance: ai-executed
+    timestamp: "2026-07-02T23:39"
+    result: >
+      Implemented an owned PyTorch CUDA extension for StructSplat's exact
+      clipped-support normalized and additive renderer equations. `renderer=cuda`
+      now maps to exact normalized CUDA; `renderer=cuda_additive` maps to exact
+      additive CUDA; `renderer=gsplat` remains the GaussianImage++ alpha/sum
+      comparator. On the COCO image 000000000009 parity smoke at budget 512,
+      normalized versus CUDA had mean abs diff 4.0e-8 and max diff 5.4e-7;
+      additive versus CUDA additive had mean abs diff 1.2e-7 and max diff
+      2.9e-6. Four-image 80-iteration fit loop at max-side 160, budget 512
+      showed mean wall time 0.181 s for exact CUDA normalized versus 1.181 s
+      for normalized reference, preserving mean PSNR/MS-SSIM (24.0456/0.94853
+      versus 24.0461/0.94849). Exact CUDA additive ran in 0.177 s versus 0.795 s
+      additive reference, preserving mean PSNR/MS-SSIM. Full CUDA-enabled pytest
+      with the system libstdc++ preload passed 81 tests in 5.74 s; normal pytest
+      without preload passed 79 and skipped the 2 CUDA-extension tests.
+    evidence:
+      - "src/structsplat/cuda_render.py"
+      - "src/structsplat/cuda/render_ext.cpp"
+      - "src/structsplat/cuda/render_ext.cu"
+      - "results/cuda_exact_renderer_compare/summary.md"
+      - "pytest-2026-07-02-81-cuda"
+    also_depends_on: [N13, N14]
+    status: resolved
+  - id: N16
+    type: experiment
+    title: "Exact CUDA expanded stage-search rerun"
+    provenance: ai-executed
+    timestamp: "2026-07-02T23:47"
+    result: >
+      Reran the bounded four-image COCO stage search with the exact CUDA
+      renderers and expanded stage axes: max-side 160, budget 512, seed 0,
+      80 iterations, 64 shuffled configs, `cuda`/`cuda_additive` renderer
+      stages, feature/hard/no scale caps, quadtree strategies, and
+      residual_tensor refinement modes. The best sampled config reached
+      24.4656 dB mean PSNR and 0.95407 mean MS-SSIM with 0.248 s mean fit
+      time: aniso_flanking, scharr/rgb tensor, structure density, WSE sampling,
+      two-sided color, spacing scale, feature12 scale cap, no opacity,
+      exact normalized CUDA, Charbonnier loss, Adam, no LR schedule,
+      residual_tensor_add, single-level fit. Against the previous bounded
+      normalized screen's best row, this is +0.1728 dB PSNR, +0.00115 MS-SSIM,
+      and 7.9x faster by best-row mean fit time. Across all 256 sampled rows,
+      mean fit time improved from 2.454 s to 0.240 s and mean total row time
+      from 2.534 s to 0.369 s, while `cuda` rows averaged 21.5830 dB PSNR
+      versus 17.3759 dB for `cuda_additive`.
+    evidence:
+      - "results/stage_search_coco4_exact_cuda/summary.md"
+      - "results/stage_search_coco4_exact_cuda/compare_to_previous.md"
+      - "results/stage_search_coco4_exact_cuda/stage_search.csv"
+      - "results/stage_search_coco4_exact_cuda/stage_search.json"
+    also_depends_on: [N05, N10, N13, N15]
+    status: resolved
+  - id: N17
+    type: experiment
+    title: "Current cross-repo multi-resolution matrix"
+    provenance: ai-executed
+    timestamp: "2026-07-03T00:24"
+    result: >
+      Added `benchmarks/cross_repo_matrix_compare.py` and ran a matched
+      executable comparison against local repo-inspired GaussianImage,
+      GaussianImage++, Image-GS, and Instant-GI quadtree policies. The run used
+      four COCO train2014 images, marking 000000000025 and 000000000034 as
+      difficult; max-side 160/240/320; iteration counts 80/200; area-scaled
+      Gaussian caps 640/1440/2560; exact CUDA renderer; LPIPS; PSNR, SSIM,
+      MS-SSIM, PSNR-AUC, MAE, edge-MAE, scale stats, and runtime. All 120 rows
+      completed with no errors and six visual grids were written. Overall,
+      StructSplat current reached 26.0318 dB mean PSNR versus the best external
+      analogue GaussianImage at 24.5942 dB (+1.4376), but trailed GaussianImage
+      on mean MS-SSIM by 0.00155 and trailed Instant-GI quadtree on LPIPS by
+      0.0475. StructSplat won PSNR in all 6 aggregate resolution/iteration
+      settings and 23/24 per-image cells; GaussianImage won 4/6 aggregate
+      MS-SSIM settings and Instant-GI quadtree won 5/6 aggregate LPIPS settings.
+      Fit time is now comparable across methods (StructSplat 0.441 s mean vs
+      GaussianImage 0.425 s), while StructSplat total time remains higher
+      because of tensor/WSE initialization and residual growth overhead.
+    evidence:
+      - "benchmarks/cross_repo_matrix_compare.py"
+      - "results/cross_repo_matrix_current_4img/summary.md"
+      - "results/cross_repo_matrix_current_4img/analysis.md"
+      - "results/cross_repo_matrix_current_4img/metrics.csv"
+      - "results/cross_repo_matrix_current_4img/grids/"
+    also_depends_on: [N01, N03, N15, N16]
+    status: resolved

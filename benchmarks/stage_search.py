@@ -31,7 +31,8 @@ from structsplat.config import FitConfig, InitConfig, PyramidConfig, StructureTe
 # stage axes, in label order; values = the swappable options each stage exposes
 STAGE_KEYS = [
     "strategy", "tensor", "tensor_color", "density", "sampling", "orientation", "color",
-    "scale", "opacity", "renderer", "loss", "optimizer", "lr_schedule", "refine", "pyramid",
+    "scale", "scale_cap", "opacity", "renderer", "loss", "optimizer", "lr_schedule",
+    "refine", "pyramid",
 ]
 
 FACTORIAL_DEFAULTS: dict[str, tuple[str, ...]] = {
@@ -43,6 +44,7 @@ FACTORIAL_DEFAULTS: dict[str, tuple[str, ...]] = {
     "orientation_modes": ("tensor",),
     "color_modes": ("bilinear", "local_mean", "two_sided"),
     "scale_modes": ("spacing",),
+    "scale_cap_modes": ("feature12",),
     "opacity_modes": ("none",),
     "renderers": ("normalized",),
     "pixel_losses": ("l1", "charbonnier"),
@@ -54,7 +56,10 @@ FACTORIAL_DEFAULTS: dict[str, tuple[str, ...]] = {
 
 # influence mode: first value per axis = the baseline (ADR-0009 defaults), rest = the variants
 INFLUENCE_DEFAULTS: dict[str, tuple[str, ...]] = {
-    "strategies": ("aniso_flanking", "aniso_onedge", "iso_blue_noise", "grid", "random"),
+    "strategies": (
+        "aniso_flanking", "quadtree_wse", "quadtree_hybrid", "quadtree_aggregate",
+        "aniso_onedge", "iso_blue_noise", "grid", "random"
+    ),
     "tensor_operators": ("central", "sobel", "scharr"),
     "tensor_colors": ("luma", "rgb"),
     "density_modes": ("structure", "gradient", "variance", "hybrid", "uniform"),
@@ -63,12 +68,16 @@ INFLUENCE_DEFAULTS: dict[str, tuple[str, ...]] = {
     "orientation_modes": ("tensor", "random", "zero"),
     "color_modes": ("bilinear", "local_mean", "two_sided"),
     "scale_modes": ("spacing", "uniform", "knn"),
+    "scale_cap_modes": ("feature12", "none", "hard8"),
     "opacity_modes": ("none", "constant"),
-    "renderers": ("normalized", "additive"),
+    "renderers": ("normalized", "additive", "cuda", "cuda_additive"),
     "pixel_losses": ("l1", "l2", "charbonnier"),
     "optimizers": ("adam", "adamw"),
     "lr_schedules": ("none", "cosine", "step"),
-    "refine_modes": ("none", "prune", "duplicate", "residual_add", "prune_residual_add"),
+    "refine_modes": (
+        "none", "prune", "duplicate", "support_duplicate", "residual_add",
+        "residual_tensor_add", "prune_residual_add", "prune_residual_tensor_add"
+    ),
     "pyramid_modes": ("single", "pyramid"),
 }
 
@@ -76,7 +85,8 @@ _AXIS_TO_KEY = {
     "strategies": "strategy", "tensor_operators": "tensor", "tensor_colors": "tensor_color",
     "density_modes": "density", "sampling_modes": "sampling",
     "orientation_modes": "orientation", "color_modes": "color", "scale_modes": "scale",
-    "opacity_modes": "opacity", "renderers": "renderer", "pixel_losses": "loss",
+    "scale_cap_modes": "scale_cap", "opacity_modes": "opacity", "renderers": "renderer",
+    "pixel_losses": "loss",
     "optimizers": "optimizer", "lr_schedules": "lr_schedule", "refine_modes": "refine",
     "pyramid_modes": "pyramid",
 }
@@ -120,8 +130,9 @@ def _canonicalize(cfg: dict[str, Any], canonical: dict[str, str]) -> dict[str, A
     init-level equivalences are pinned — in particular, orientation is NOT pinned for
     isotropic inits (equal initial axes still break symmetry through fitting: the rotation
     decides which axis each scale gradient feeds), except where the angles are exactly equal:
-      * random/grid never compute the tensor: tensor/tensor_color/density/sampling are inert,
-        and orientation 'tensor' == 'zero' (both give zero angles; 'random' stays distinct).
+      * random/grid do not read density/sampling. Tensor/tensor_color are inert there unless
+        the scale-cap stage is feature-based, because that cap computes tensor run lengths.
+        orientation 'tensor' == 'zero' (both give zero angles; 'random' stays distinct).
       * jittered_grid placement never reads the density map (angles/ratios come from the
         tensor, not the density), so the density stage is inert under it.
       * two_sided color sampling only diverges from bilinear inside the aniso_flanking branch.
@@ -129,7 +140,11 @@ def _canonicalize(cfg: dict[str, Any], canonical: dict[str, str]) -> dict[str, A
     c = dict(cfg)
     strat = c["strategy"]
     if strat in ("random", "grid"):
-        for k in ("tensor", "tensor_color", "density", "sampling"):
+        feature_cap = str(c.get("scale_cap", "none")).startswith("feature")
+        inert = ("density", "sampling") if feature_cap else (
+            "tensor", "tensor_color", "density", "sampling"
+        )
+        for k in inert:
             c[k] = canonical[k]
         if c["orientation"] in ("tensor", "zero"):
             c["orientation"] = "tensor" if canonical["orientation"] in ("tensor", "zero") \
@@ -165,22 +180,51 @@ def _refine_kwargs(mode: str, split_every: int | None, split_count: int,
             "prune_every": prune_every,
             "prune_min_activity": prune_min_activity,
         }
-    if mode in ("duplicate", "residual_add"):
+    if mode in ("duplicate", "support_duplicate", "residual_add", "residual_tensor_add"):
         return {
             "split_every": split_every,
             "split_count": split_count,
             "split_mode": mode,
         }
-    if mode == "prune_residual_add":
+    if mode in ("prune_residual_add", "prune_residual_tensor_add"):
         return {
             "prune_every": prune_every,
             "prune_min_activity": prune_min_activity,
             "split_every": split_every,
             "split_count": split_count,
-            "split_mode": "residual_add",
+            "split_mode": "residual_tensor_add"
+            if mode == "prune_residual_tensor_add" else "residual_add",
         }
     raise ValueError(
-        f"unknown refine mode {mode!r}; expected none, prune, duplicate, residual_add, prune_residual_add"
+        f"unknown refine mode {mode!r}; expected none, prune, duplicate, support_duplicate, "
+        "residual_add, residual_tensor_add, prune_residual_add, or prune_residual_tensor_add"
+    )
+
+
+def _scale_cap_kwargs(mode: str) -> dict[str, Any]:
+    if mode in ("none", "uncapped"):
+        return {"scale_cap_mode": "none", "scale_cap_max": None}
+    aliases = {
+        "hard8": ("hard", 8.0),
+        "hard12": ("hard", 12.0),
+        "feature8": ("feature", 8.0),
+        "feature12": ("feature", 12.0),
+        "feature_cap8": ("feature", 8.0),
+        "feature_cap12": ("feature", 12.0),
+    }
+    if mode in aliases:
+        cap_mode, cap = aliases[mode]
+        return {"scale_cap_mode": cap_mode, "scale_cap_max": cap}
+    for prefix, cap_mode in (("feature_cap", "feature"), ("feature", "feature"), ("hard", "hard")):
+        if mode.startswith(prefix):
+            suffix = mode[len(prefix):].lstrip("_")
+            try:
+                cap = float(suffix)
+            except ValueError as exc:
+                raise ValueError(f"cannot parse scale cap mode {mode!r}") from exc
+            return {"scale_cap_mode": cap_mode, "scale_cap_max": cap}
+    raise ValueError(
+        f"unknown scale_cap mode {mode!r}; expected none, hard8, hard12, feature8, or feature12"
     )
 
 
@@ -237,6 +281,7 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         coherence_power=coherence_power,
         orientation_mode=cfg["orientation"],
         scale_mode=cfg["scale"],
+        **_scale_cap_kwargs(cfg["scale_cap"]),
         init_scale_mult=init_scale_mult,
         flank_offset_frac=flank_offset,
         color_mode=cfg["color"],
@@ -324,6 +369,7 @@ def run_stage_search(
     orientation_modes=None,
     color_modes=None,
     scale_modes=None,
+    scale_cap_modes=None,
     opacity_modes=None,
     renderers=None,
     pixel_losses=None,
@@ -377,6 +423,7 @@ def run_stage_search(
         "tensor_colors": tensor_colors, "density_modes": density_modes,
         "sampling_modes": sampling_modes, "orientation_modes": orientation_modes,
         "color_modes": color_modes, "scale_modes": scale_modes,
+        "scale_cap_modes": scale_cap_modes,
         "opacity_modes": opacity_modes, "renderers": renderers,
         "pixel_losses": pixel_losses, "optimizers": optimizers,
         "lr_schedules": lr_schedules, "refine_modes": refine_modes,
@@ -655,6 +702,8 @@ def main():
     p.add_argument("--orientation-modes", nargs="+", default=None)
     p.add_argument("--color-modes", nargs="+", default=None)
     p.add_argument("--scale-modes", nargs="+", default=None)
+    p.add_argument("--scale-cap-modes", nargs="+", default=None,
+                   help="none, hard8/hard12, feature8/feature12, or feature_cap<N>")
     p.add_argument("--opacity-modes", nargs="+", default=None)
     p.add_argument("--renderers", nargs="+", default=None)
     p.add_argument("--pixel-losses", nargs="+", default=None)
@@ -691,7 +740,8 @@ def main():
         max_side=a.max_side, strategies=a.strategies, tensor_operators=a.tensor_operators,
         tensor_colors=a.tensor_colors, density_modes=a.density_modes,
         sampling_modes=a.sampling_modes, orientation_modes=a.orientation_modes,
-        color_modes=a.color_modes, scale_modes=a.scale_modes, opacity_modes=a.opacity_modes,
+        color_modes=a.color_modes, scale_modes=a.scale_modes,
+        scale_cap_modes=a.scale_cap_modes, opacity_modes=a.opacity_modes,
         renderers=a.renderers, pixel_losses=a.pixel_losses, optimizers=a.optimizers,
         lr_schedules=a.lr_schedules, refine_modes=a.refine_modes,
         pyramid_modes=a.pyramid_modes, render_chunk=a.chunk,

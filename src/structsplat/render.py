@@ -1,7 +1,9 @@
-"""Differentiable reference rasterizer (ADR-0003 normalized default; additive via ADR-0006).
+"""Differentiable rasterizers (ADR-0003 normalized default; additive via ADR-0006).
 
 Normalized: I_hat(p) = sum_i c_i o_i G_i(p) / (sum_i o_i G_i(p) + eps)
 Additive  : I_hat(p) = sum_i c_i o_i G_i(p)              (opt-in, ADR-0006)
+CUDA      : exact normalized/additive CUDA extension      (opt-in)
+gsplat    : optional GaussianImage++ alpha/sum renderer   (experimental)
 with G_i(p) = exp(-1/2 (p-mu_i)^T Sigma_i^-1 (p-mu_i)) and optional per-Gaussian opacity o_i.
 
 Each Gaussian is evaluated exactly on the pixels of its own support rectangle — the axis-aligned
@@ -12,7 +14,7 @@ Slices bound peak memory. Fully differentiable w.r.t. means, conics, colors, opa
 This is the *reference*; the CUDA/Vulkan tile rasterizer (PORT-001) is the performance path and
 the piece that ports into IntrinsicEngine as an RHI pass.
 
-Requires torch.
+Requires torch. The CUDA path additionally requires a local CUDA toolchain for the extension.
 """
 from __future__ import annotations
 import torch
@@ -102,13 +104,82 @@ def render_additive(means, conics, colors, radii, H: int, W: int, chunk: int = 4
     return _accumulate(means, conics, colors, radii, H, W, chunk, opacities, normalize=False)
 
 
+def _gsplat_import_error(exc: BaseException) -> RuntimeError:
+    return RuntimeError(
+        "renderer='gsplat' requires a working local gsplat CUDA extension. "
+        "The Python package may import successfully while the compiled extension still fails "
+        "to load; check CUDA/PyTorch/libstdc++ compatibility. "
+        f"Original error: {exc}"
+    )
+
+
+def render_cuda_sum(means, scales, rotations, colors, H: int, W: int,
+                    opacities=None, block: int = 16, radius_clip: float = 1.0):
+    """CUDA additive/sum rasterizer backed by GaussianImage/GaussianImage++ gsplat.
+
+    The local gsplat kernel uses pixel-coordinate 2D means/scales/rotations, matching
+    StructSplat's field parameterization. It is intentionally exposed as a separate additive
+    renderer stage because it does not implement the normalized weighted-sum reference.
+    """
+    if not means.is_cuda:
+        raise RuntimeError("renderer='cuda' requires CUDA tensors; pass device='cuda'.")
+    try:
+        from gsplat import project_gaussians_2d_scale_rot, rasterize_gaussians_plus
+    except Exception as exc:  # pragma: no cover - environment dependent
+        raise _gsplat_import_error(exc) from exc
+
+    if means.numel() == 0:
+        return torch.zeros(H, W, 3, device=means.device, dtype=colors.dtype)
+    scales = scales.to(device=means.device, dtype=means.dtype)
+    rotations = rotations.reshape(-1, 1).to(device=means.device, dtype=means.dtype)
+    opacity = (
+        torch.ones(means.shape[0], 1, device=means.device, dtype=means.dtype)
+        if opacities is None
+        else opacities.reshape(-1, 1).to(device=means.device, dtype=means.dtype)
+    )
+    colors = colors.to(device=means.device, dtype=means.dtype)
+    tile_bounds = ((W + block - 1) // block, (H + block - 1) // block, 1)
+    background = torch.zeros(3, device=means.device, dtype=means.dtype)
+    try:
+        xys, depths, cuda_radii, cuda_conics, num_tiles_hit = project_gaussians_2d_scale_rot(
+            means, scales, rotations, H, W, tile_bounds, coords_norm=False,
+            radius_clip=radius_clip,
+        )
+        out = rasterize_gaussians_plus(
+            xys, depths, cuda_radii, cuda_conics, num_tiles_hit, colors, opacity,
+            H, W, block, block, background=background, return_alpha=False,
+            radius_clip=radius_clip,
+        )
+    except Exception as exc:  # pragma: no cover - environment dependent
+        raise _gsplat_import_error(exc) from exc
+    if isinstance(out, tuple):
+        out = out[0]
+    return out.reshape(H, W, -1)[..., :3]
+
+
 def render_field(means, conics, colors, radii, H: int, W: int,
-                 chunk: int = 4096, mode: str = "normalized", opacities=None):
+                 chunk: int = 4096, mode: str = "normalized", opacities=None,
+                 scales=None, rotations=None):
     if mode == "normalized":
         return render(means, conics, colors, radii, H, W, chunk, opacities)
     if mode == "additive":
         return render_additive(means, conics, colors, radii, H, W, chunk, opacities)
-    raise ValueError(f"unknown renderer {mode!r}; expected normalized or additive")
+    if mode in ("cuda", "cuda_normalized"):
+        from .cuda_render import render_cuda_exact
+        return render_cuda_exact(means, conics, colors, radii, H, W, opacities=opacities,
+                                 normalize=True, eps=_EPS)
+    if mode == "cuda_additive":
+        from .cuda_render import render_cuda_exact
+        return render_cuda_exact(means, conics, colors, radii, H, W, opacities=opacities,
+                                 normalize=False, eps=_EPS)
+    if mode in ("gsplat", "cuda_gsplat"):
+        if scales is None or rotations is None:
+            raise ValueError("renderer='gsplat' requires scales and rotations")
+        return render_cuda_sum(means, scales, rotations, colors, H, W, opacities=opacities)
+    raise ValueError(
+        f"unknown renderer {mode!r}; expected normalized, additive, cuda, "
+        "cuda_additive, or gsplat"
+    )
 
 
 @torch.no_grad()

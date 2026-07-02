@@ -43,6 +43,77 @@ def test_additive_renderer_runs_and_differs():
     assert add[3, 3, 0] > norm[3, 3, 0]
 
 
+def test_cuda_renderer_is_explicit_about_requirements():
+    means = np.array([[3.0, 3.0]])
+    scales = np.full((1, 2), 1.5)
+    colors = np.array([[1.0, 0, 0]])
+    g = GaussianField.from_numpy(means, scales, np.zeros(1), colors)
+    with pytest.raises(RuntimeError, match="requires CUDA tensors"):
+        render_field(g.means, g.conics(), g.colors, g.radii(3.0), 10, 10, mode="cuda")
+    with pytest.raises(ValueError, match="requires scales and rotations"):
+        render_field(g.means, g.conics(), g.colors, g.radii(3.0), 10, 10, mode="gsplat")
+    if not torch.cuda.is_available():
+        with pytest.raises(RuntimeError, match="requires CUDA tensors"):
+            render_field(
+                g.means, g.conics(), g.colors, g.radii(3.0), 10, 10,
+                mode="cuda_additive",
+            )
+
+
+def test_cuda_exact_matches_reference_when_available():
+    if not torch.cuda.is_available():
+        pytest.skip("CUDA not available")
+    rng = np.random.default_rng(1)
+    N, H, W = 24, 18, 20
+    means = np.stack([rng.uniform(-2, W + 2, N), rng.uniform(-2, H + 2, N)], 1)
+    scales = np.exp(rng.uniform(np.log(0.7), np.log(4.0), (N, 2)))
+    angles = rng.uniform(0, np.pi, N)
+    colors = rng.random((N, 3))
+    g = GaussianField.from_numpy(means, scales, angles, colors, device="cuda").trainable()
+    try:
+        ref = render_field(g.means, g.conics(), g.colors, g.radii(3.0), H, W,
+                           mode="normalized")
+        cu = render_field(g.means, g.conics(), g.colors, g.radii(3.0), H, W,
+                          mode="cuda")
+        add_ref = render_field(g.means, g.conics(), g.colors, g.radii(3.0), H, W,
+                               mode="additive")
+        add_cu = render_field(g.means, g.conics(), g.colors, g.radii(3.0), H, W,
+                              mode="cuda_additive")
+        torch.cuda.synchronize()
+    except RuntimeError as exc:
+        pytest.skip(str(exc))
+    assert torch.allclose(cu, ref, atol=2e-5, rtol=2e-5)
+    assert torch.allclose(add_cu, add_ref, atol=2e-5, rtol=2e-5)
+
+
+def test_cuda_exact_backward_matches_reference_when_available():
+    if not torch.cuda.is_available():
+        pytest.skip("CUDA not available")
+    rng = np.random.default_rng(2)
+    N, H, W = 18, 14, 16
+    means = np.stack([rng.uniform(0, W - 1, N), rng.uniform(0, H - 1, N)], 1)
+    scales = np.exp(rng.uniform(np.log(0.8), np.log(3.0), (N, 2)))
+    angles = rng.uniform(0, np.pi, N)
+    colors = rng.random((N, 3))
+    target = torch.rand(H, W, 3, device="cuda")
+
+    def run(mode):
+        f = GaussianField.from_numpy(means, scales, angles, colors, device="cuda").trainable()
+        img = render_field(f.means, f.conics(), f.colors, f.radii(3.0), H, W, mode=mode)
+        loss = (img - target).square().mean()
+        loss.backward()
+        torch.cuda.synchronize()
+        return img.detach(), f.means.grad.detach(), f.log_scales.grad.detach(), f.colors.grad.detach()
+
+    try:
+        ref = run("normalized")
+        cu = run("cuda")
+    except RuntimeError as exc:
+        pytest.skip(str(exc))
+    for got, exp in zip(cu, ref, strict=True):
+        assert torch.allclose(got, exp, atol=2e-4, rtol=2e-4)
+
+
 def _naive_render(g, H, W, opacities=None):
     """Dense O(N*H*W) reference: every Gaussian on every pixel, no support window."""
     ys, xs = torch.meshgrid(torch.arange(H, dtype=torch.float32),

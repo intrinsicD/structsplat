@@ -1,0 +1,155 @@
+observations:
+  - id: O01
+    timestamp: "2026-07-02T20:50"
+    provenance: ai-suggested
+    content: "StructSplat is currently strongest as an initialization research harness and weakest as a production CUDA codec."
+    context: "Local comparison of StructSplat with GaussianImage, GaussianImage_plus, image-gs, and Instant-GI."
+    potential_type: claim
+    bound_to: [N01, N02]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O02
+    timestamp: "2026-07-02T20:50"
+    provenance: ai-suggested
+    content: "Image-GS is StructSplat's closest conceptual peer for adaptive placement and progressive hierarchy, but uses gradient/saliency/error sampling rather than tensor-driven anisotropic blue-noise flanking."
+    context: "Code and README comparison across local related repositories."
+    potential_type: claim
+    bound_to: [N01]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O03
+    timestamp: "2026-07-02T20:50"
+    provenance: ai-suggested
+    content: "Fair cross-repo evaluation should match image set, resolution, Gaussian budgets, stopping modes, metrics, seeds, and should separate representation quality from codec bpp."
+    context: "Derived benchmark protocol after inspecting differing repo goals and bpp definitions."
+    potential_type: heuristic
+    bound_to: [N01]
+    promoted: true
+    promoted_to: "logic/solution/heuristics.md:H01"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O04
+    timestamp: "2026-07-02T21:37"
+    provenance: ai-suggested
+    content: "The bounded stage-search screen suggests low-risk default candidates: spacing scale, single-level fitting, WSE sampling, no LR schedule, and avoiding uniform scale/cosine/pyramid for short 512-budget fits."
+    context: "Optimization analysis after the four-image COCO stage-search screen and best-vs-previous runtime comparison."
+    potential_type: heuristic
+    bound_to: [N05, N06]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O05
+    timestamp: "2026-07-02T21:37"
+    provenance: ai-suggested
+    content: "A renderer-side tile or spatial hierarchy is the most plausible speed path for higher resolutions and Gaussian counts; it should be evaluated separately from the current image-pyramid fitting stage, which underperformed in the bounded screen."
+    context: "Optimization analysis of stage-search runtime, render.py reference rasterizer, and pyramid-vs-single marginal results."
+    potential_type: architecture
+    bound_to: [N05, N06]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O06
+    timestamp: "2026-07-02T22:11"
+    provenance: ai-suggested
+    content: "Naive quadtree aggregate initialization appears useful for improving the initial approximation, but should be hybridized with WSE or restricted to low-variance cells before treating it as a replacement for the current best initialization."
+    context: "Focused quadtree aggregate initializer benchmark on eight held-out COCO images."
+    potential_type: heuristic
+    bound_to: [N08]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O07
+    timestamp: "2026-07-02T22:21"
+    provenance: ai-suggested
+    content: "Quadtree allocation is promising as an image-adaptive routing signal because hybrid and local-WSE variants win individual images and narrow the mean gap, but current fixed ratios/cell counts are not yet better than stage_top1."
+    context: "Expanded quadtree benchmark after implementing hybrid smooth-cell aggregation and quadtree-allocated local WSE."
+    potential_type: heuristic
+    bound_to: [N09]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O08
+    timestamp: "2026-07-02T22:44"
+    provenance: ai-suggested
+    content: "Feature-adaptive scale caps are a strong default candidate for spike suppression because they cap final support size, improve mean PSNR, win most held-out images, and reduce runtime in the 512/80/160 COCO setting."
+    context: "Feature/hard scale-cap benchmark after visual concern about long spiky overshooting Gaussians."
+    potential_type: heuristic
+    bound_to: [N10]
+    promoted: true
+    promoted_to: "logic/solution/heuristics.md:H02"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O09
+    timestamp: "2026-07-02T22:54"
+    provenance: ai-suggested
+    content: "The main remaining blocker is no longer first-placement alone; it is making adaptive density control competitive after capped initialization."
+    context: "Analysis of quadtree/cap results, local related repos, and 3DGS densification literature."
+    potential_type: architecture
+    bound_to: [N07, N08, N09, N10, N11]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O10
+    timestamp: "2026-07-02T22:54"
+    provenance: ai-suggested
+    content: "The most direct next experiment is capped stage/quadtree initialization followed by tuned residual densification that inherits local tensor orientation, residual or target color, and the feature scale cap."
+    context: "Recommended direction in docs/blockers_and_external_techniques.md after reviewing GaussianImage++, Image-GS, Instant-GI, and 3DGS density-control techniques."
+    potential_type: heuristic
+    bound_to: [N07, N10, N11]
+    promoted: true
+    promoted_to: "logic/solution/heuristics.md:H03"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O11
+    timestamp: "2026-07-02T23:19"
+    provenance: ai-suggested
+    content: "The optional gsplat CUDA renderer stage is implemented but currently blocked locally by a libstdc++ CXXABI_1.3.15 mismatch when loading the cached gsplat CUDA extension."
+    context: "Direct CUDA smoke call after adding the `cuda`/`gsplat` renderer branch."
+    potential_type: constraint
+    bound_to: [N13]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O12
+    timestamp: "2026-07-02T23:27"
+    provenance: ai-suggested
+    content: "The current gsplat CUDA renderer is speed-promising but not a drop-in renderer replacement because dense-overlap compositing differs substantially from StructSplat additive/normalized semantics."
+    context: "CUDA speed benchmark using LD_PRELOAD workaround on four COCO images and a render/backward microbenchmark."
+    potential_type: constraint
+    bound_to: [N14]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O13
+    timestamp: "2026-07-02T23:39"
+    provenance: ai-suggested
+    content: "The owned exact CUDA renderer preserves StructSplat normalized/additive quality in the current four-image benchmark and substantially reduces fit-loop wall time, but this workspace still needs a system libstdc++ preload for CUDA extension loading."
+    context: "Exact StructSplat CUDA extension implementation and speed/quality benchmark."
+    potential_type: claim
+    bound_to: [N15]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O14
+    timestamp: "2026-07-03T00:24"
+    provenance: ai-suggested
+    content: "Current StructSplat is PSNR-dominant in the matched exact-CUDA cross-repo matrix, but it is not yet structurally or perceptually dominant: GaussianImage slightly leads mean MS-SSIM and Instant-GI quadtree leads mean LPIPS despite lower PSNR."
+    context: "Four-image, multi-resolution, multi-iteration comparison against local repo-inspired GaussianImage, GaussianImage++, Image-GS, and Instant-GI policies."
+    potential_type: claim
+    bound_to: [N17]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

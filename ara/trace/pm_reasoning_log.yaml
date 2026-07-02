@@ -1,0 +1,89 @@
+entries:
+  - turn: "2026-07-02_001#1"
+    notes:
+      - "Initialized ARA because the turn created a research comparison artifact."
+      - "Routed the user's comparison request as N01 question and the pytest run as N02 experiment."
+      - "Staged interpretive comparison conclusions instead of crystallizing them because no cross-repo benchmark was run."
+  - turn: "2026-07-02_001#2"
+    notes:
+      - "Routed the matched COCO visual comparison as N03 experiment with evidence in results/coco_fit_compare."
+      - "Did not crystallize broad superiority claims because the benchmark used a shared reference renderer rather than native repo pipelines."
+      - "Kept native end-to-end benchmarking as an open thread because CUDA extension/checkpoint blockers remain."
+  - turn: "2026-07-02_001#3"
+    notes:
+      - "Routed the after-update rerun as N04 experiment with old-vs-new evidence in results/coco_fit_compare."
+      - "Crystallized O03 to H01 via artifact commitment because the benchmark and rerun now depend on the matched evaluation protocol."
+      - "Did not crystallize broad quality claims because the rerun still uses the shared reference renderer rather than native repo pipelines."
+  - turn: "2026-07-02_001#4"
+    notes:
+      - "Routed the completed bounded stage search as N05 experiment with evidence in results/stage_search_coco4_after_update."
+      - "Recorded the interrupted default wrapper as an AI action, not a dead end, because the approach was bounded for runtime rather than refuted."
+      - "Did not stage broad conclusions from the 64-config screen because it is a sampled, comparison-scale run rather than the full screening protocol."
+  - turn: "2026-07-02_001#5"
+    notes:
+      - "Routed the best-config visual comparison as N06 experiment because it produced new rendered evidence and a measured PSNR delta."
+      - "Did not crystallize a superiority claim because the best config came from a sampled search and was compared on the same four images used to select it."
+  - turn: "2026-07-02_001#6"
+    notes:
+      - "Attached runtime analysis to N06 rather than creating a new node because it reuses existing timing evidence for the same comparison artifact."
+      - "Kept the render-chunk caveat in the artifact because the previous fit grid and stage-search run used different chunk values."
+  - turn: "2026-07-02_001#7"
+    notes:
+      - "Staged O04 as heuristic because stage-search marginals suggest stage choices but are not a held-out validation."
+      - "Staged O05 as architecture because renderer-side spatial hierarchy is an implementation direction, distinct from the underperforming image-pyramid fit stage."
+  - turn: "2026-07-02_001#8"
+    notes:
+      - "Routed the optimization follow-up as N07 experiment because it produced held-out validation tables and renderer timing evidence."
+      - "Did not crystallize O04 yet because the run narrows the defaults but leaves oversample 3 vs 4 as a tradeoff rather than a settled value."
+      - "Did not crystallize O05 because the Python prototype refutes only the Python implementation path, not the broader compiled spatial-renderer direction."
+  - turn: "2026-07-02_001#9"
+    notes:
+      - "Routed the quadtree initializer implementation and COCO comparison as N08 experiment because it produced new code and measured tables."
+      - "Staged O06 as a heuristic rather than crystallizing it because the user has not yet chosen whether to pursue hybrid quadtree variants."
+      - "Did not mark quadtree aggregate as a dead end because it improved initial PSNR even though it did not beat stage_top1 after fitting."
+  - turn: "2026-07-02_001#10"
+    notes:
+      - "Routed the hybrid/local-WSE quadtree run as N09 experiment because it directly tested the two user-approved follow-up ideas."
+      - "Staged O07 instead of crystallizing because individual-image wins suggest a routing signal, but the fixed variants did not beat the current default on mean PSNR."
+      - "Did not promote O06 despite the follow-up experiment because the user has not yet commented on the empirical result."
+  - turn: "2026-07-02_001#11"
+    notes:
+      - "Routed the feature-scale-cap run as N10 experiment because it produced new code, scale statistics, runtime changes, and PSNR evidence."
+      - "Staged O08 as heuristic rather than crystallizing because visual review of capped outputs has not happened yet."
+      - "Kept O07 staged because feature caps changed the quadtree-WSE result, so the quadtree-routing interpretation needs another user decision."
+  - turn: "2026-07-02_001#12"
+    notes:
+      - "Routed the user's blocker/literature request as N11 question because the turn opened and answered a research analysis task."
+      - "Staged O09 and O10 rather than crystallizing because the recommendations are AI-suggested and have not yet been experimentally tested or user-endorsed."
+      - "Recorded the analysis report as an AI action, not an experiment, because it synthesized existing results and literature without producing a new benchmark run."
+  - turn: "2026-07-02_001#13"
+    notes:
+      - "Routed the user's implementation direction as N12 decision because they selected the blocker-analysis ideas to become searchable stages."
+      - "Routed the implementation and validation as N13 experiment because it changed code paths and produced passing tests plus a CUDA smoke result."
+      - "Crystallized O08 and O10 via artifact commitment because stage_search now defaults to feature12 and fit.py implements tensor-aware residual densification."
+      - "Staged O11 as a constraint rather than crystallizing because the local gsplat ABI blocker is environment-specific and only observed in this workspace."
+  - turn: "2026-07-02_001#14"
+    notes:
+      - "Routed the CUDA speed test as N14 experiment because it produced timing, parity, and quality evidence in results/cuda_renderer_speed_test."
+      - "Staged O12 as a constraint because the benchmark supports speed potential while showing a semantic mismatch that prevents default promotion."
+      - "Did not crystallize O05 despite speed evidence because the implemented gsplat path is not quality-preserving under dense overlap."
+  - turn: "2026-07-02_001#15"
+    notes:
+      - "Routed the exact CUDA renderer implementation and benchmark as N15 experiment because it changed the renderer semantics and produced parity/speed evidence."
+      - "Staged O13 as a claim because the four-image benchmark supports quality-preserving speedup, but larger held-out validation is still pending."
+      - "Did not crystallize O05 because the new extension is compiled support-rectangle rendering, not a full spatial hierarchy."
+      - "Left O12 staged because the gsplat alpha-compositor remains a non-equivalent experimental comparator."
+  - turn: "2026-07-02_001#16"
+    notes:
+      - "Routed the exact-CUDA stage-search rerun as N16 experiment because it produced new sampled-search metrics and comparison artifacts."
+      - "Did not crystallize O13 because the rerun strengthens the exact-CUDA speed/quality claim but remains a four-image sampled screen rather than held-out validation."
+      - "Replaced the open thread about running new-stage search with a narrower held-out/higher-budget validation thread."
+  - turn: "2026-07-03_001#1"
+    notes:
+      - "Routed the 120-row cross-repo matrix as N17 experiment because it produced new metrics, reconstructions, visual grids, and analysis artifacts."
+      - "Staged O14 as a claim because the result is a matched policy benchmark, not native repo execution, and the metric split needs user review before crystallization."
+      - "Opened follow-up threads around native pipelines, metric alignment, LPIPS/block-artifact interpretation, and StructSplat init overhead."
+  - turn: "2026-07-03_001#2"
+    notes:
+      - "Recorded the git commit as an AI action in the session trace, not a new exploration node, because it packaged existing work rather than producing new research evidence."
+      - "Amended the ARA bookkeeping into the same commit to keep the worktree clean after the user's commit request."

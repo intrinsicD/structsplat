@@ -85,3 +85,43 @@ def test_jittered_grid_drops_evenly():
     assert f.n == 91
     ys = np.sort(np.unique(np.round(f.means[:, 1].numpy() / 6.0)))
     assert ys.max() >= 8  # points still reach the bottom rows of the grid
+
+
+@pytest.mark.parametrize("strategy,color", [
+    ("quadtree_aggregate", "aggregate"),
+    ("quadtree_hybrid", "aggregate"),
+    ("quadtree_wse", "bilinear"),
+])
+def test_quadtree_variants_are_exact_and_deterministic(strategy, color):
+    img = _toy()
+    cfg = InitConfig(
+        strategy=strategy,
+        num_gaussians=128,
+        density_mode="variance",
+        color_mode=color,
+        seed=0,
+    )
+    a = I.build_field(img, cfg)
+    b = I.build_field(img, cfg)
+    _assert_field_ok(a, 128)
+    assert torch.equal(a.means, b.means)
+    assert torch.equal(a.colors, b.colors)
+    assert (a.colors >= 0).all() and (a.colors <= 1).all()
+
+
+def test_hard_scale_cap_is_stored_and_applied():
+    img = _toy()
+    f = I.build_field(
+        img,
+        InitConfig(
+            strategy="aniso_flanking",
+            num_gaussians=128,
+            density_mode="variance",
+            scale_cap_mode="hard",
+            scale_cap_max=3.0,
+            seed=0,
+        ),
+    )
+    assert f.scale_max is not None
+    assert torch.isfinite(f.scale_max).all()
+    assert float(torch.exp(f.log_scales).max()) <= 3.0 + 1e-6

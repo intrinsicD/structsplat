@@ -30,8 +30,13 @@ class InitConfig:
     orientation_mode: str = "tensor"   # tensor (strategy default), random, or zero
     scale_mode: str = "spacing"        # spacing, uniform, or knn
     init_scale_mult: float = 1.0       # multiply local spacing to get initial std
+    scale_cap_mode: str = "none"       # none, hard, or feature
+    scale_cap_max: float | None = None # absolute sigma cap, in pixels
+    scale_feature_sigma: float = 3.0   # feature mode: visible half-length ~= sigma*value
+    scale_feature_min: float = 0.75    # minimum adaptive sigma cap
+    scale_feature_energy_frac: float = 0.25  # stop edge run when energy drops below this local frac
     flank_offset_frac: float = 0.5     # edge center offset in units of local minor spacing
-    color_mode: str = "bilinear"       # bilinear, local_mean, or two_sided
+    color_mode: str = "bilinear"       # bilinear, local_mean, two_sided, or aggregate (quadtree)
     color_radius: float = 1.5          # local mean radius or extra side-sample offset
     opacity_mode: str = "none"         # none or constant
     init_opacity: float = 0.9
@@ -61,7 +66,7 @@ class FitConfig:
     sigma_cutoff: float = 3.0          # render support radius in std devs
     aa_dilation: float = 0.0           # EWA-style low-pass: render with Sigma + d*I (px^2)
     render_chunk: int = 512            # reference renderer: lower chunk cuts peak memory
-    renderer: str = "normalized"       # normalized or additive
+    renderer: str = "normalized"       # normalized, additive, cuda, cuda_additive, or gsplat
     lr_schedule: str = "none"          # none, step, or cosine
     lr_decay_every: int | None = None
     lr_decay_gamma: float = 0.5
@@ -70,9 +75,12 @@ class FitConfig:
     prune_keep_min: int = 16
     split_every: int | None = None
     split_count: int = 0
-    split_mode: str = "duplicate"      # duplicate or residual_add
+    split_mode: str = "duplicate"      # duplicate, support_duplicate, residual_add, residual_tensor_add
     split_scale: float = 0.7
     max_gaussians: int | None = None
+    early_stop_patience: int | None = None  # logged evals without improvement; None disables
+    early_stop_min_delta: float = 0.0       # PSNR improvement required to reset patience
+    early_stop_min_iters: int = 0           # do not early-stop before this iteration
 
 
 @dataclass

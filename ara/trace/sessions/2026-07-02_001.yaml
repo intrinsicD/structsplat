@@ -1,0 +1,501 @@
+session:
+  id: "2026-07-02_001"
+  date: "2026-07-02"
+  started: "2026-07-02T20:50"
+  last_turn: "2026-07-02T23:47"
+  turn_count: 16
+  summary: "Compared StructSplat with related repos, ran COCO fits/stage searches, tested optimization/quadtree/capped init variants, documented blockers, implemented expanded stage controls, added an exact quality-preserving CUDA renderer, and reran the expanded exact-CUDA stage search."
+
+events_logged:
+  - turn: 1
+    type: question
+    id: "N01"
+    routing: direct
+    provenance: user
+    summary: "Requested fair comparison against four local repos."
+  - turn: 1
+    type: experiment
+    id: "N02"
+    routing: direct
+    provenance: ai-executed
+    summary: "StructSplat pytest passed: 33 tests in 108.55s."
+  - turn: 1
+    type: observation
+    id: "O01"
+    routing: staged
+    provenance: ai-suggested
+    summary: "StructSplat currently best framed as initialization research, not mature CUDA codec."
+  - turn: 1
+    type: observation
+    id: "O02"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Image-GS is closest conceptual peer for adaptive placement and progressive hierarchy."
+  - turn: 1
+    type: observation
+    id: "O03"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Fair comparison requires matched budgets, images, metrics, and separated representation/codec results."
+  - turn: 2
+    type: experiment
+    id: "N03"
+    routing: direct
+    provenance: ai-executed
+    summary: "Ran matched COCO fit comparison; StructSplat mean PSNR 24.833 dB over four images."
+  - turn: 3
+    type: experiment
+    id: "N04"
+    routing: direct
+    provenance: ai-executed
+    summary: "Reran matched COCO fit comparison after update; StructSplat mean PSNR 24.039 dB."
+  - turn: 3
+    type: heuristic
+    id: "H01"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized matched cross-repo evaluation protocol via benchmark artifact commitment."
+  - turn: 4
+    type: experiment
+    id: "N05"
+    routing: direct
+    provenance: ai-executed
+    summary: "Ran bounded stage search on four selected COCO images; best sampled mean PSNR 24.293 dB."
+  - turn: 5
+    type: experiment
+    id: "N06"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rendered best sampled stage-search config and compared it visually against previous StructSplat."
+  - turn: 6
+    type: experiment
+    id: "N06"
+    routing: direct
+    provenance: ai-executed
+    summary: "Updated best-config comparison with runtime table: fit-only -3.99%, total +0.59%."
+  - turn: 7
+    type: observation
+    id: "O04"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged low-risk default candidates from stage-search marginal results."
+  - turn: 7
+    type: observation
+    id: "O05"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged renderer-side spatial hierarchy as likely speed path needing benchmark."
+  - turn: 8
+    type: experiment
+    id: "N07"
+    routing: direct
+    provenance: ai-executed
+    summary: "Ran held-out COCO optimization follow-up; top1 generalized, Python spatial tiling was exact but slower."
+  - turn: 9
+    type: experiment
+    id: "N08"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented quadtree aggregate initialization; initial PSNR improved, final PSNR stayed below stage_top1."
+  - turn: 9
+    type: observation
+    id: "O06"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged quadtree aggregate as useful initial approximation but not current replacement."
+  - turn: 10
+    type: experiment
+    id: "N09"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented hybrid and quadtree-allocated WSE variants; both narrowed but did not close the gap to stage_top1."
+  - turn: 10
+    type: observation
+    id: "O07"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged quadtree allocation as promising image-adaptive routing but not fixed default."
+  - turn: 11
+    type: experiment
+    id: "N10"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented feature-adaptive scale caps; capped variants improved mean PSNR, scale statistics, and runtime."
+  - turn: 11
+    type: observation
+    id: "O08"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged feature-adaptive scale caps as strong default candidate pending user review."
+  - turn: 12
+    type: question
+    id: "N11"
+    routing: direct
+    provenance: user
+    summary: "Requested analysis of remaining blockers and related-repo/literature techniques."
+  - turn: 12
+    type: observation
+    id: "O09"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged adaptive density control after capped init as the main remaining blocker."
+  - turn: 12
+    type: observation
+    id: "O10"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged capped init plus tensor-aware residual densification as the next direct experiment."
+  - turn: 13
+    type: decision
+    id: "N12"
+    routing: direct
+    provenance: user
+    summary: "User chose to reuse CUDA renderer and expose blocker-analysis ideas as searchable stages."
+  - turn: 13
+    type: experiment
+    id: "N13"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented optional gsplat CUDA renderer path, scale-cap stage axis, expanded quadtree/refinement search modes, and validated with 79 passing tests."
+  - turn: 13
+    type: heuristic
+    id: "H02"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized feature12 scale cap as the stage-search baseline via code artifact commitment."
+  - turn: 13
+    type: heuristic
+    id: "H03"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized tensor-aware residual densification candidate via implementation artifact commitment."
+  - turn: 13
+    type: observation
+    id: "O11"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged local gsplat CUDA extension ABI mismatch as a constraint."
+  - turn: 14
+    type: experiment
+    id: "N14"
+    routing: direct
+    provenance: ai-executed
+    summary: "Benchmarked CUDA renderer: 4.49x fit-loop speedup vs additive and 5.23x vs normalized, but poor dense-overlap parity and lower PSNR."
+  - turn: 14
+    type: observation
+    id: "O12"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged current gsplat CUDA renderer as fast but not drop-in equivalent under dense overlap."
+  - turn: 15
+    type: experiment
+    id: "N15"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented owned exact normalized/additive CUDA renderer; parity is sub-micro and fit-loop speedup is 6.51x normalized, 4.48x additive."
+  - turn: 15
+    type: observation
+    id: "O13"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged exact CUDA renderer as quality-preserving speed path with remaining libstdc++ preload constraint."
+  - turn: 16
+    type: experiment
+    id: "N16"
+    routing: direct
+    provenance: ai-executed
+    summary: "Reran bounded expanded stage search with exact CUDA renderers; best sampled PSNR 24.466 dB, best-row fit time 7.9x faster than previous normalized screen."
+
+ai_actions:
+  - turn: 1
+    action: "Inspected READMEs and implementation files across StructSplat, GaussianImage, GaussianImage_plus, image-gs, and Instant-GI."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 1
+    action: "Ran `python -m pytest -q` in StructSplat."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 1
+    action: "Created comparison report."
+    provenance: ai-executed
+    files_changed:
+      - "docs/comparison.md"
+  - turn: 2
+    action: "Installed missing `constriction` package while probing native GaussianImage/GaussianImage++ imports."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 2
+    action: "Probed native repo execution and found native CUDA/checkpoint paths blocked."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 2
+    action: "Created and ran matched COCO fit comparison harness."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/coco_fit_compare.py"
+      - "results/coco_fit_compare/comparison_grid.png"
+      - "results/coco_fit_compare/metrics.csv"
+      - "results/coco_fit_compare/metrics.json"
+      - "results/coco_fit_compare/summary.md"
+  - turn: 3
+    action: "Preserved prior COCO comparison outputs and reran the matched comparison after update."
+    provenance: ai-executed
+    files_changed:
+      - "results/coco_fit_compare/comparison_grid_before_update.png"
+      - "results/coco_fit_compare/metrics_before_update.csv"
+      - "results/coco_fit_compare/metrics_before_update.json"
+      - "results/coco_fit_compare/summary_before_update.md"
+      - "results/coco_fit_compare/comparison_grid.png"
+      - "results/coco_fit_compare/metrics.csv"
+      - "results/coco_fit_compare/metrics.json"
+      - "results/coco_fit_compare/summary.md"
+      - "results/coco_fit_compare/delta_after_update.md"
+  - turn: 4
+    action: "Started the default stage-search screening wrapper and interrupted it after 10 fits due to projected multi-hour runtime."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 4
+    action: "Ran bounded stage-search screening on the four selected COCO images."
+    provenance: ai-executed
+    files_changed:
+      - "results/stage_search_coco4_after_update/run.log"
+      - "results/stage_search_coco4_after_update/stage_search.csv"
+      - "results/stage_search_coco4_after_update/stage_search.json"
+      - "results/stage_search_coco4_after_update/summary.md"
+  - turn: 5
+    action: "Rendered best sampled stage-search config and built visual comparison grids."
+    provenance: ai-executed
+    files_changed:
+      - "results/stage_search_coco4_after_update/best_reconstructions/"
+      - "results/stage_search_coco4_after_update/best_vs_previous_grid.png"
+      - "results/stage_search_coco4_after_update/best_added_to_comparison_grid.png"
+      - "results/stage_search_coco4_after_update/best_vs_previous.md"
+      - "results/stage_search_coco4_after_update/best_vs_previous.json"
+  - turn: 6
+    action: "Computed runtime deltas and added them to the best-vs-previous comparison artifact."
+    provenance: ai-executed
+    files_changed:
+      - "results/stage_search_coco4_after_update/best_vs_previous.md"
+  - turn: 7
+    action: "Inspected stage-search marginal results and implementation code for performance optimization candidates."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 8
+    action: "Implemented opt-in early stopping in the fit loop and added regression coverage."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/config.py"
+      - "src/structsplat/fit.py"
+      - "tests/test_fit_dynamics.py"
+  - turn: 8
+    action: "Created and ran optimization follow-up benchmark covering held-out validation, WSE oversampling, early stopping, refine/pyramid variants, and a tile-local render prototype."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/optimization_followup.py"
+      - "results/optimization_followup/summary.md"
+      - "results/optimization_followup/validation.csv"
+      - "results/optimization_followup/oversample.csv"
+      - "results/optimization_followup/early_stop.csv"
+      - "results/optimization_followup/refine_pyramid.csv"
+      - "results/optimization_followup/spatial_render.csv"
+      - "results/optimization_followup/all_fit_runs.csv"
+  - turn: 8
+    action: "Ran focused pytest suites and full `python -m pytest -q` after the implementation; full suite passed 69 tests in 4.04 s."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 9
+    action: "Implemented `quadtree_aggregate` initialization using density-prioritized cells and per-cell aggregate color/tensor statistics."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/config.py"
+      - "src/structsplat/init.py"
+      - "tests/test_init_stages.py"
+  - turn: 9
+    action: "Created and ran focused quadtree initialization comparison on eight held-out COCO images."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/quadtree_init_compare.py"
+      - "results/quadtree_init_compare/summary.md"
+      - "results/quadtree_init_compare/quadtree_init_compare.csv"
+      - "results/quadtree_init_compare/quadtree_init_compare.json"
+  - turn: 9
+    action: "Ran `python -m pytest -q`; full suite passed 71 tests in 4.31 s."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 10
+    action: "Implemented `quadtree_hybrid` and `quadtree_wse` initialization strategies."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/init.py"
+      - "tests/test_init_stages.py"
+  - turn: 10
+    action: "Extended and reran the quadtree initialization comparison with hybrid and quadtree-local WSE candidates."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/quadtree_init_compare.py"
+      - "results/quadtree_init_compare/summary.md"
+      - "results/quadtree_init_compare/quadtree_init_compare.csv"
+      - "results/quadtree_init_compare/quadtree_init_compare.json"
+  - turn: 10
+    action: "Ran `python -m pytest -q`; full suite passed 75 tests in 4.13 s."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 11
+    action: "Implemented per-Gaussian scale caps, hard/feature cap config fields, and optimizer-time scale clamping."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/config.py"
+      - "src/structsplat/fit.py"
+      - "src/structsplat/gaussians.py"
+      - "src/structsplat/init.py"
+      - "tests/test_fit_dynamics.py"
+      - "tests/test_init_stages.py"
+  - turn: 11
+    action: "Extended and reran the quadtree comparison with hard and feature-adaptive capped candidates plus final scale statistics."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/optimization_followup.py"
+      - "benchmarks/quadtree_init_compare.py"
+      - "results/quadtree_init_compare/summary.md"
+      - "results/quadtree_init_compare/quadtree_init_compare.csv"
+      - "results/quadtree_init_compare/quadtree_init_compare.json"
+  - turn: 11
+    action: "Ran focused tests and full `python -m pytest -q`; full suite passed 77 tests in 4.22 s."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 12
+    action: "Reviewed local GaussianImage, GaussianImage_plus, image-gs, and Instant-GI implementation details plus primary 2D/3D Gaussian Splatting literature and surveys."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 12
+    action: "Created blocker and external-technique analysis report."
+    provenance: ai-executed
+    files_changed:
+      - "docs/blockers_and_external_techniques.md"
+  - turn: 13
+    action: "Implemented optional CUDA/gsplat renderer branch, renderer argument plumbing in fit/pyramid, and guarded extension-load errors."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/render.py"
+      - "src/structsplat/fit.py"
+      - "src/structsplat/pyramid.py"
+      - "src/structsplat/cli.py"
+      - "tests/test_render.py"
+  - turn: 13
+    action: "Added scale-cap as a stage-search axis and exposed quadtree/refinement variants including support_duplicate and residual_tensor_add."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/stage_search.py"
+      - "src/structsplat/config.py"
+      - "src/structsplat/init.py"
+      - "tests/test_stage_search.py"
+      - "tests/test_fit_dynamics.py"
+  - turn: 13
+    action: "Ran focused tests, full `pytest -q`, CLI help checks, and a guarded CUDA smoke call."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 14
+    action: "Ran CUDA renderer smoke, render/backward microbenchmark, four-image fit-loop timing, and parity checks with LD_PRELOAD workaround."
+    provenance: ai-executed
+    files_changed:
+      - "results/cuda_renderer_speed_test/summary.md"
+      - "results/cuda_renderer_speed_test/microbench.csv"
+      - "results/cuda_renderer_speed_test/fitbench.csv"
+      - "results/cuda_renderer_speed_test/results.json"
+  - turn: 15
+    action: "Implemented owned exact CUDA renderer extension for normalized and additive StructSplat math."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/cuda_render.py"
+      - "src/structsplat/cuda/__init__.py"
+      - "src/structsplat/cuda/render_ext.cpp"
+      - "src/structsplat/cuda/render_ext.cu"
+      - "src/structsplat/render.py"
+      - "src/structsplat/fit.py"
+      - "src/structsplat/cli.py"
+      - "benchmarks/stage_search.py"
+      - "pyproject.toml"
+      - "tests/test_render.py"
+  - turn: 15
+    action: "Ran exact CUDA parity/speed benchmark and updated blocker document with the result."
+    provenance: ai-executed
+    files_changed:
+      - "results/cuda_exact_renderer_compare/summary.md"
+      - "results/cuda_exact_renderer_compare/parity.csv"
+      - "results/cuda_exact_renderer_compare/microbench.csv"
+      - "results/cuda_exact_renderer_compare/fitbench.csv"
+      - "results/cuda_exact_renderer_compare/results.json"
+      - "docs/blockers_and_external_techniques.md"
+  - turn: 15
+    action: "Ran compile checks, whitespace check, normal pytest, and CUDA-enabled pytest with LD_PRELOAD."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 16
+    action: "Reran bounded stage search on the four selected COCO images using exact CUDA normalized/additive renderers and expanded stage axes."
+    provenance: ai-executed
+    files_changed:
+      - "results/stage_search_coco4_exact_cuda/run.log"
+      - "results/stage_search_coco4_exact_cuda/stage_search.csv"
+      - "results/stage_search_coco4_exact_cuda/stage_search.json"
+      - "results/stage_search_coco4_exact_cuda/summary.md"
+  - turn: 16
+    action: "Generated compact comparison of the exact-CUDA stage-search rerun against the previous bounded normalized search."
+    provenance: ai-executed
+    files_changed:
+      - "results/stage_search_coco4_exact_cuda/compare_to_previous.md"
+      - "results/stage_search_coco4_exact_cuda/compare_to_previous.json"
+
+claims_touched: []
+
+key_context:
+  - turn: 1
+    excerpt: "User asked for a fair comparison of StructSplat with GaussianImage, GaussianImage_plus, image-gs, and Instant-GI in /home/alex/Documents."
+  - turn: 2
+    excerpt: "User clarified they wanted four COCO images and a fit comparison for each approach."
+  - turn: 3
+    excerpt: "User asked to rerun the task after the update while keeping the old comparison grid for comparison."
+  - turn: 4
+    excerpt: "User asked to run the stage search script on the same four images."
+  - turn: 5
+    excerpt: "User asked to show the images comparing the best stage-search combination with the previous results."
+  - turn: 6
+    excerpt: "User asked whether runtime was impacted in the best-vs-previous comparison."
+  - turn: 7
+    excerpt: "User asked whether stages could be made faster and better, including spatial hierarchy or other optimizations."
+  - turn: 8
+    excerpt: "User asked to work through the top four optimization points."
+  - turn: 9
+    excerpt: "User proposed fitting a quadtree to image pixels, aggregating color/features, and using the aggregate cells to initialize Gaussians."
+  - turn: 10
+    excerpt: "User confirmed trying both follow-up ideas: hybrid quadtree/WSE and quadtree budget allocation with local WSE placement."
+  - turn: 11
+    excerpt: "User reported long spiky overshooting Gaussians and asked whether feature/edge-size measurement or hard/adaptive length bounds could avoid them."
+  - turn: 12
+    excerpt: "User asked to analyze what other problems are holding the approach back and to look at related repos plus 3D Gaussian Splatting literature/surveys."
+  - turn: 13
+    excerpt: "User asked to reuse the CUDA renderer and add blocker-analysis ideas as stages for combination search, while replacing only clearly better alternatives."
+  - turn: 14
+    excerpt: "User asked to test the new renderer to see whether it is much faster."
+  - turn: 15
+    excerpt: "User asked to align the CUDA kernel with StructSplat normalized or additive math so it can be used as a quality-preserving renderer."
+  - turn: 16
+    excerpt: "User asked to rerun the stage search script after the exact CUDA renderer update."
+
+open_threads:
+  - "Run true cross-repo benchmarks under matched images, budgets, and hardware."
+  - "Test hybrid paths, especially StructSplat initialization with GaussianImage++ or Image-GS training loops."
+  - "Optional: run the full default stage-search wrapper at 1024/2048 budgets and 300 iterations if multi-hour runtime is acceptable."
+  - "Fix the local conda libstdc++ ABI issue or set the system libstdc++ preload automatically for CUDA extension loading."
+  - "Validate the exact CUDA renderer on the eight-image held-out benchmark, higher resolutions, and larger Gaussian budgets."
+  - "Evaluate more aggressive or longer-horizon early stopping policies if future runs use substantially more than 80 iterations."
+  - "Optionally validate the stage_top1 and WSE oversample-3/4 tradeoff on a larger held-out image set or higher resolution."
+  - "Tune quadtree hybrid routing ratios, local-WSE leaf counts, or image-adaptive selection before considering a quadtree-derived default."
+  - "Review visual grids for feature-capped stage_top1 and quadtree_wse variants before promoting the cap to the default initializer."
+  - "Validate the best exact-CUDA stage-search configuration on held-out images and higher budgets to separate sample luck from a robust default."
+  - "Design an image-adaptive budget/growth router using tensor/quadtree statistics and early residual concentration."
+  - "Test geometry-derived quadtree attributes using Delaunay/ellipse or local second-moment estimates."
+  - "Run metric-aligned evaluation with LPIPS/FLIP before optimizing visual-quality claims beyond PSNR/MS-SSIM."
+
+ai_suggestions_pending:
+  - "Use a two-stage fair benchmark: first disable native growth/progressive modes, then compare each repo's native end-to-end mode."
+  - "Run a paired exact-CUDA influence or ablation around the new top sampled config."

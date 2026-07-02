@@ -78,3 +78,79 @@ def test_int_target_psnrs_are_recorded():
                                        target_psnrs=[1, 2.0]), verbose=False)
     assert out["iters_to_target"] is not None       # str(int) vs str(float) key mismatch
     assert set(out["iters_to_targets"]) == {"1.0", "2.0"}
+
+
+def test_early_stop_is_opt_in_and_reports_iterations():
+    img = np.zeros((16, 16, 3), np.float32)
+    img[:, 8:] = 1.0
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=16, seed=0))
+    out = fit(
+        field,
+        target,
+        FitConfig(
+            iters=20,
+            log_every=1,
+            early_stop_patience=1,
+            early_stop_min_delta=1e6,
+        ),
+        verbose=False,
+    )
+    assert out["stopped_early"]
+    assert out["iterations_run"] < 20
+
+
+def test_fit_respects_field_scale_caps():
+    img = np.zeros((16, 16, 3), np.float32)
+    img[:, 8:] = 1.0
+    target = torch.as_tensor(img)
+    field = _init.build_field(
+        img,
+        InitConfig(
+            strategy="aniso_flanking",
+            num_gaussians=16,
+            scale_cap_mode="hard",
+            scale_cap_max=1.25,
+            seed=0,
+        ),
+    )
+    out = fit(
+        field,
+        target,
+        FitConfig(iters=6, log_every=1, lr_scales=1.0),
+        verbose=False,
+    )
+    assert float(torch.exp(out["field"].log_scales).max().detach()) <= 1.25 + 1e-6
+
+
+def test_tensor_residual_add_preserves_scale_caps():
+    img = np.zeros((16, 16, 3), np.float32)
+    img[:, 8:] = 1.0
+    target = torch.as_tensor(img)
+    field = _init.build_field(
+        img,
+        InitConfig(
+            strategy="aniso_flanking",
+            num_gaussians=12,
+            scale_cap_mode="hard",
+            scale_cap_max=1.25,
+            seed=0,
+        ),
+    )
+    out = fit(
+        field,
+        target,
+        FitConfig(
+            iters=7,
+            log_every=1,
+            split_every=3,
+            split_count=4,
+            split_mode="residual_tensor_add",
+            max_gaussians=24,
+            lr_scales=1.0,
+        ),
+        verbose=False,
+    )
+    assert out["n_gaussians"] > 12
+    assert out["field"].scale_max is not None
+    assert float(torch.exp(out["field"].log_scales).max().detach()) <= 1.25 + 1e-6

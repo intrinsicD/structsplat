@@ -14,7 +14,13 @@ import torch.nn.functional as F
 
 from .config import FitConfig
 from .gaussians import GaussianField
-from .render import gaussian_activity, render_field
+from .render import (
+    _flat_tile_slices,
+    _tile_bounds,
+    _tile_coords,
+    gaussian_activity,
+    render_field,
+)
 from . import metrics as M
 
 
@@ -101,7 +107,8 @@ def _loss_kind(cfg: FitConfig, it: int) -> str:
 def _render(field: GaussianField, cfg: FitConfig, H: int, W: int) -> torch.Tensor:
     return render_field(field.means, field.conics(cfg.aa_dilation), field.colors,
                         field.radii(cfg.sigma_cutoff, cfg.aa_dilation),
-                        H, W, cfg.render_chunk, cfg.renderer, field.opacity_values())
+                        H, W, cfg.render_chunk, cfg.renderer, field.opacity_values(),
+                        scales=field.scales(), rotations=field.rotations)
 
 
 def _target_list(cfg: FitConfig) -> list[float]:
@@ -120,6 +127,67 @@ def _nearest_image_colors(target: torch.Tensor, means: torch.Tensor) -> torch.Te
     x = torch.clamp(torch.round(xy[:, 0]).long(), 0, W - 1)
     y = torch.clamp(torch.round(xy[:, 1]).long(), 0, H - 1)
     return target[y, x]
+
+
+@torch.no_grad()
+def _nearest_scale_caps(field: GaussianField, means: torch.Tensor) -> torch.Tensor | None:
+    if field.scale_max is None:
+        return None
+    if field.n == 0 or means.numel() == 0:
+        return None
+    idx = torch.cdist(means.detach(), field.means.detach()).argmin(dim=1)
+    return field.scale_max.detach()[idx].clone()
+
+
+@torch.no_grad()
+def _clamp_new_log_scales(log_scales: torch.Tensor, scale_max: torch.Tensor | None
+                          ) -> torch.Tensor:
+    if scale_max is None:
+        return log_scales
+    scales = torch.minimum(torch.exp(log_scales), torch.clamp(scale_max, min=1e-3))
+    return torch.log(torch.clamp(scales, min=1e-3))
+
+
+@torch.no_grad()
+def _support_residual_scores(field: GaussianField, residual: torch.Tensor,
+                             cfg: FitConfig) -> torch.Tensor:
+    H, W = residual.shape
+    dev, dt = field.means.device, field.means.dtype
+    means = field.means.detach()
+    conics = field.conics(cfg.aa_dilation).detach()
+    radii = field.radii(cfg.sigma_cutoff, cfg.aa_dilation)
+    score = torch.zeros(field.n, device=dev, dtype=dt)
+    weight = torch.zeros(field.n, device=dev, dtype=dt)
+    x0, y0, Tx, n = _tile_bounds(means, radii, H, W)
+    budget = max(cfg.render_chunk, 64) * 4096
+    for s, e in _flat_tile_slices(n, budget):
+        gid, px, py = _tile_coords(x0, y0, Tx, n, s, e, dev)
+        dx = px.to(dt) - means[gid, 0]
+        dy = py.to(dt) - means[gid, 1]
+        a, b, c = conics[gid, 0], conics[gid, 1], conics[gid, 2]
+        q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
+        w = torch.exp(-0.5 * q)
+        score.index_add_(0, gid, w * residual[py, px].to(dt))
+        weight.index_add_(0, gid, w)
+    return score / (weight + 1e-8)
+
+
+def _luma(img: torch.Tensor) -> torch.Tensor:
+    return 0.2126 * img[..., 0] + 0.7152 * img[..., 1] + 0.0722 * img[..., 2]
+
+
+@torch.no_grad()
+def _image_gradients(img: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    gray = _luma(img)
+    gx = torch.zeros_like(gray)
+    gy = torch.zeros_like(gray)
+    gx[:, 1:-1] = 0.5 * (gray[:, 2:] - gray[:, :-2])
+    gx[:, 0] = gray[:, 1] - gray[:, 0] if gray.shape[1] > 1 else 0.0
+    gx[:, -1] = gray[:, -1] - gray[:, -2] if gray.shape[1] > 1 else 0.0
+    gy[1:-1, :] = 0.5 * (gray[2:, :] - gray[:-2, :])
+    gy[0, :] = gray[1, :] - gray[0, :] if gray.shape[0] > 1 else 0.0
+    gy[-1, :] = gray[-1, :] - gray[-2, :] if gray.shape[0] > 1 else 0.0
+    return gx, gy
 
 
 @torch.no_grad()
@@ -154,7 +222,10 @@ def _split_from_residual(field: GaussianField, target: torch.Tensor, render_img:
     residual = (render_img - target).abs().mean(dim=2)
     x = torch.clamp(torch.round(field.means[:, 0]).long(), 0, W - 1)
     y = torch.clamp(torch.round(field.means[:, 1]).long(), 0, H - 1)
-    scores = residual[y, x]
+    if cfg.split_mode == "support_duplicate":
+        scores = _support_residual_scores(field, residual, cfg)
+    else:
+        scores = residual[y, x]
     room = field.n if cfg.max_gaussians is None else max(0, cfg.max_gaussians - field.n)
     k = min(cfg.split_count, field.n, room)
     if k <= 0:
@@ -173,20 +244,28 @@ def _split_from_residual(field: GaussianField, target: torch.Tensor, render_img:
     log_scales = field.log_scales.detach()[idx].clone() + math.log(cfg.split_scale)
     rotations = theta.clone()
     colors = _nearest_image_colors(target, means)
-    new = GaussianField(means, log_scales, rotations, colors)
+    opacities = None if field.opacities is None else field.opacities.detach()[idx].clone()
+    scale_max = None if field.scale_max is None else field.scale_max.detach()[idx].clone()
+    log_scales = _clamp_new_log_scales(log_scales, scale_max)
+    new = GaussianField(means, log_scales, rotations, colors, opacities, scale_max)
     return field.append(new), k
 
 
 @torch.no_grad()
 def _add_from_residual(field: GaussianField, target: torch.Tensor, render_img: torch.Tensor,
-                       cfg: FitConfig) -> tuple[GaussianField, int]:
+                       cfg: FitConfig, tensor_aligned: bool = False) -> tuple[GaussianField, int]:
     if cfg.split_count <= 0:
         return field, 0
     if cfg.max_gaussians is not None and field.n >= cfg.max_gaussians:
         return field, 0
 
     H, W = target.shape[:2]
-    residual = (render_img - target).abs().mean(dim=2).reshape(-1)
+    residual_map = (render_img - target).abs().mean(dim=2)
+    if tensor_aligned:
+        score_map = F.avg_pool2d(residual_map[None, None], 3, stride=1, padding=1)[0, 0]
+        residual = (0.7 * residual_map + 0.3 * score_map).reshape(-1)
+    else:
+        residual = residual_map.reshape(-1)
     room = field.n if cfg.max_gaussians is None else max(0, cfg.max_gaussians - field.n)
     k = min(cfg.split_count, int(residual.numel()), room)
     if k <= 0:
@@ -203,16 +282,30 @@ def _add_from_residual(field: GaussianField, target: torch.Tensor, render_img: t
     means[:, 0].clamp_(0, W - 1)
     means[:, 1].clamp_(0, H - 1)
     base_scale = math.sqrt((H * W) / max(field.n + k, 1)) * cfg.split_scale
-    log_scales = torch.full((k, 2), math.log(max(base_scale, 0.35)),
-                            device=target.device, dtype=target.dtype)
-    rotations = torch.zeros(k, device=target.device, dtype=target.dtype)
-    if cfg.renderer == "additive":
+    if tensor_aligned:
+        gx, gy = _image_gradients(target)
+        grad = torch.sqrt(gx[y, x] ** 2 + gy[y, x] ** 2)
+        ref = torch.quantile(torch.sqrt(gx ** 2 + gy ** 2).reshape(-1), 0.95)
+        coherence = torch.clamp(grad / torch.clamp(ref, min=1e-6), 0.0, 1.0)
+        ratio = 1.0 + 3.0 * coherence
+        s_along = max(base_scale, 0.35) * torch.sqrt(ratio)
+        s_across = max(base_scale, 0.35) / torch.sqrt(ratio)
+        log_scales = torch.log(torch.stack([s_along, s_across], dim=1).clamp(min=0.35))
+        rotations = torch.atan2(gy[y, x], gx[y, x]) + math.pi * 0.5
+    else:
+        log_scales = torch.full((k, 2), math.log(max(base_scale, 0.35)),
+                                device=target.device, dtype=target.dtype)
+        rotations = torch.zeros(k, device=target.device, dtype=target.dtype)
+    scale_max = _nearest_scale_caps(field, means)
+    log_scales = _clamp_new_log_scales(log_scales, scale_max)
+    if cfg.renderer in ("additive", "cuda_additive", "gsplat", "cuda_gsplat"):
         # additive stacks on the existing accumulation: injecting full target colors
         # overshoots; the residual color is what the new Gaussian should contribute
         colors = (target - render_img)[y, x]
     else:
         colors = target[y, x]
-    return field.append(GaussianField(means, log_scales, rotations, colors)), k
+    return field.append(GaussianField(means, log_scales, rotations, colors,
+                                      scale_max=scale_max)), k
 
 
 def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: bool = True) -> dict:
@@ -225,8 +318,13 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
     targets = _target_list(cfg)
     iters_to_targets = {str(t): None for t in targets}
     start_time = time.time()
+    best_logged_psnr = -math.inf
+    stale_logs = 0
+    stopped_early = False
+    last_iter = -1
 
     for it in range(cfg.iters):
+        last_iter = it
         factor = _lr_factor(cfg, it)
         for g, base in zip(opt.param_groups, base_lrs):
             g["lr"] = base * factor
@@ -240,6 +338,9 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         log_now = it % cfg.log_every == 0 or it == cfg.iters - 1
         with torch.no_grad():
             field.log_scales.clamp_(lo, hi)
+            if getattr(field, "scale_max", None) is not None:
+                cap = torch.log(torch.clamp(field.scale_max, min=1e-3))
+                torch.minimum(field.log_scales, cap, out=field.log_scales)
             if targets or log_now:
                 p_now = M.psnr(img, target)
             for t in targets:
@@ -259,13 +360,16 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 print(f"  prune {int((~keep).sum())} -> {field.n} gaussians")
         if (not last_it and cfg.split_every is not None and cfg.split_every > 0
                 and (it + 1) % cfg.split_every == 0):
-            if cfg.split_mode == "duplicate":
+            if cfg.split_mode in ("duplicate", "support_duplicate"):
                 field, added = _split_from_residual(field, target, img, cfg)
-            elif cfg.split_mode == "residual_add":
-                field, added = _add_from_residual(field, target, img, cfg)
+            elif cfg.split_mode in ("residual_add", "residual_tensor_add"):
+                field, added = _add_from_residual(
+                    field, target, img, cfg, tensor_aligned=cfg.split_mode == "residual_tensor_add"
+                )
             else:
                 raise ValueError(
-                    f"unknown split_mode {cfg.split_mode!r}; expected duplicate or residual_add")
+                    f"unknown split_mode {cfg.split_mode!r}; expected duplicate, "
+                    "support_duplicate, residual_add, or residual_tensor_add")
             if verbose and added > 0:
                 print(f"  split +{added} -> {field.n} gaussians")
         if keep is not None or added > 0:
@@ -281,6 +385,17 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             hist["elapsed"].append(time.time() - start_time)
             if verbose:
                 print(f"  iter {it:5d}  psnr {p_now:6.2f}  loss {loss.item():.5f}")
+            if cfg.early_stop_patience is not None and it >= cfg.early_stop_min_iters:
+                if p_now > best_logged_psnr + cfg.early_stop_min_delta:
+                    best_logged_psnr = p_now
+                    stale_logs = 0
+                else:
+                    stale_logs += 1
+                    if stale_logs >= cfg.early_stop_patience:
+                        stopped_early = True
+                        if verbose:
+                            print(f"  early stop at iter {it}  best_psnr {best_logged_psnr:6.2f}")
+                        break
 
     fit_seconds = time.time() - start_time  # before the final eval: metrics (esp. LPIPS
     with torch.no_grad():                   # model construction) must not pollute the timing
@@ -297,5 +412,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             "iters_to_targets": iters_to_targets,
             "n_gaussians": field.n,
             "fit_seconds": fit_seconds,
+            "iterations_run": last_iter + 1,
+            "stopped_early": stopped_early,
         }
     return out

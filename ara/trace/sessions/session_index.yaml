@@ -1,0 +1,15 @@
+sessions:
+  - id: "2026-07-02_001"
+    date: "2026-07-02"
+    summary: "Compared StructSplat with four local 2D Gaussian image repos, ran bounded stage searches, tested optimization/quadtree/capped init variants, documented remaining blockers, implemented expanded stage controls, added an exact quality-preserving CUDA renderer, and reran expanded exact-CUDA stage search."
+    turn_count: 16
+    events_count: 33
+    claims_touched: []
+    open_threads: 13
+  - id: "2026-07-03_001"
+    date: "2026-07-03"
+    summary: "Ran current four-image multi-resolution/multi-iteration matched cross-repo comparison with exact CUDA, LPIPS, visual grids, and analysis; committed all non-ignored project changes."
+    turn_count: 2
+    events_count: 2
+    claims_touched: []
+    open_threads: 5

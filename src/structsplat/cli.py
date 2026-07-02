@@ -40,6 +40,8 @@ def cmd_fit(args):
                       coherence_power=args.coherence_power,
                       scale_mode=args.scale_mode,
                       init_scale_mult=args.init_scale_mult,
+                      scale_cap_mode=args.scale_cap_mode,
+                      scale_cap_max=args.scale_cap_max,
                       color_mode=args.color_mode,
                       color_radius=args.color_radius,
                       opacity_mode=args.opacity_mode,
@@ -109,7 +111,8 @@ def cmd_stage_search(args):
         density_modes=args.density_modes,
         sampling_modes=args.sampling_modes, orientation_modes=args.orientation_modes,
         color_modes=args.color_modes,
-        scale_modes=args.scale_modes, opacity_modes=args.opacity_modes, renderers=args.renderers,
+        scale_modes=args.scale_modes, scale_cap_modes=args.scale_cap_modes,
+        opacity_modes=args.opacity_modes, renderers=args.renderers,
         pixel_losses=args.pixel_losses, optimizers=args.optimizers,
         lr_schedules=args.lr_schedules, refine_modes=args.refine_modes,
         pyramid_modes=args.pyramid_modes, render_chunk=args.chunk,
@@ -154,13 +157,18 @@ def main():
                             "farthest_point", "cvt"],
                    default="wse")
     f.add_argument("--orientation-mode", choices=["tensor", "random", "zero"], default="tensor")
-    f.add_argument("--color-mode", choices=["bilinear", "local_mean", "two_sided"], default="bilinear")
+    f.add_argument("--color-mode", choices=["bilinear", "local_mean", "two_sided", "aggregate"],
+                   default="bilinear")
     f.add_argument("--color-radius", type=float, default=1.5)
     f.add_argument("--scale-mode", choices=["spacing", "uniform", "knn"], default="spacing")
     f.add_argument("--init-scale-mult", type=float, default=1.0)
+    f.add_argument("--scale-cap-mode", choices=["none", "hard", "feature"], default="none")
+    f.add_argument("--scale-cap-max", type=float, default=None)
     f.add_argument("--opacity-mode", choices=["none", "constant"], default="none")
     f.add_argument("--init-opacity", type=float, default=0.9)
-    f.add_argument("--renderer", choices=["normalized", "additive"], default="normalized")
+    f.add_argument("--renderer",
+                   choices=["normalized", "additive", "cuda", "cuda_additive", "gsplat"],
+                   default="normalized")
     f.add_argument("--optimizer", choices=["adam", "adamw"], default="adam")
     f.add_argument("--pixel-loss", choices=["l1", "l2", "charbonnier"], default="l1")
     f.add_argument("--loss-warmup-iters", type=int, default=0)
@@ -178,7 +186,10 @@ def main():
     f.add_argument("--prune-keep-min", type=int, default=16)
     f.add_argument("--split-every", type=int, default=None)
     f.add_argument("--split-count", type=int, default=0)
-    f.add_argument("--split-mode", choices=["duplicate", "residual_add"], default="duplicate")
+    f.add_argument("--split-mode",
+                   choices=["duplicate", "support_duplicate", "residual_add",
+                            "residual_tensor_add"],
+                   default="duplicate")
     f.add_argument("--split-scale", type=float, default=0.7)
     f.add_argument("--max-gaussians", type=int, default=None)
     f.add_argument("--seed", type=int, default=0)
@@ -225,6 +236,7 @@ def main():
     s.add_argument("--orientation-modes", nargs="+", default=None)
     s.add_argument("--color-modes", nargs="+", default=None)
     s.add_argument("--scale-modes", nargs="+", default=None)
+    s.add_argument("--scale-cap-modes", nargs="+", default=None)
     s.add_argument("--opacity-modes", nargs="+", default=None)
     s.add_argument("--renderers", nargs="+", default=None)
     s.add_argument("--pixel-losses", nargs="+", default=None)

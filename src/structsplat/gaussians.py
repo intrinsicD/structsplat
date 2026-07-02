@@ -13,22 +13,25 @@ import torch
 
 
 class GaussianField:
-    def __init__(self, means, log_scales, rotations, colors, opacities=None):
+    def __init__(self, means, log_scales, rotations, colors, opacities=None, scale_max=None):
         self.means = means            # (N,2) float
         self.log_scales = log_scales  # (N,2)
         self.rotations = rotations    # (N,)
         self.colors = colors          # (N,3)
         self.opacities = opacities    # optional logits, (N,)
+        self.scale_max = scale_max    # optional per-Gaussian optimization cap, (N,2)
 
     @classmethod
-    def from_numpy(cls, means, scales, angles, colors, opacities=None,
+    def from_numpy(cls, means, scales, angles, colors, opacities=None, scale_max=None,
                    device="cpu", dtype=torch.float32):
         def t(a):
             return torch.as_tensor(np.asarray(a), device=device, dtype=dtype)
 
         scales = np.clip(np.asarray(scales), 1e-3, None)
         opacity_t = None if opacities is None else t(opacities).reshape(-1)
-        return cls(t(means), torch.log(t(scales)), t(angles).reshape(-1), t(colors), opacity_t)
+        scale_max_t = None if scale_max is None else t(scale_max)
+        return cls(t(means), torch.log(t(scales)), t(angles).reshape(-1), t(colors),
+                   opacity_t, scale_max_t)
 
     @property
     def n(self) -> int:
@@ -42,6 +45,7 @@ class GaussianField:
             self.rotations.detach().clone(),
             self.colors.detach().clone(),
             None if self.opacities is None else self.opacities.detach().clone(),
+            None if self.scale_max is None else self.scale_max.detach().clone(),
         )
 
     def subset(self, idx) -> "GaussianField":
@@ -51,6 +55,7 @@ class GaussianField:
             self.rotations.detach()[idx].clone(),
             self.colors.detach()[idx].clone(),
             None if self.opacities is None else self.opacities.detach()[idx].clone(),
+            None if self.scale_max is None else self.scale_max.detach()[idx].clone(),
         )
 
     def append(self, other: "GaussianField") -> "GaussianField":
@@ -69,12 +74,22 @@ class GaussianField:
                 b = torch.full((other.n,), 10.0, device=a.device, dtype=a.dtype)
             return cat(a, b)
 
+        def cat_scale_max(a, b):
+            if a is None and b is None:
+                return None
+            if a is None:
+                a = torch.full((self.n, 2), float("inf"), device=b.device, dtype=b.dtype)
+            if b is None:
+                b = torch.full((other.n, 2), float("inf"), device=a.device, dtype=a.dtype)
+            return cat(a, b)
+
         return GaussianField(
             cat(self.means, other.means),
             cat(self.log_scales, other.log_scales),
             cat(self.rotations, other.rotations),
             cat(self.colors, other.colors),
             cat_optional(self.opacities, other.opacities),
+            cat_scale_max(self.scale_max, other.scale_max),
         )
 
     def trainable(self) -> "GaussianField":
@@ -144,6 +159,8 @@ class GaussianField:
         }
         if self.opacities is not None:
             data["opacities"] = self.opacities.detach().cpu().numpy()
+        if self.scale_max is not None:
+            data["scale_max"] = self.scale_max.detach().cpu().numpy()
         np.savez(path, **data)
 
     @classmethod
@@ -154,4 +171,5 @@ class GaussianField:
             return torch.as_tensor(z[k], device=device, dtype=torch.float32)
 
         opacities = t("opacities") if "opacities" in z.files else None
-        return cls(t("means"), t("log_scales"), t("rotations"), t("colors"), opacities)
+        scale_max = t("scale_max") if "scale_max" in z.files else None
+        return cls(t("means"), t("log_scales"), t("rotations"), t("colors"), opacities, scale_max)
