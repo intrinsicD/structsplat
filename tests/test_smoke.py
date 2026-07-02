@@ -27,6 +27,24 @@ def test_build_field_all_strategies(strategy):
         assert torch.isfinite(p).all()
 
 
+def test_build_field_stage_variants():
+    img = _toy()
+    icfg = InitConfig(
+        strategy="aniso_flanking",
+        num_gaussians=32,
+        density_mode="hybrid",
+        sampling_mode="density_random",
+        color_mode="two_sided",
+        scale_mode="uniform",
+        opacity_mode="constant",
+        seed=1,
+    )
+    field = _init.build_field(img, icfg)
+    assert field.n == 32
+    assert field.opacities is not None
+    assert torch.isfinite(field.colors).all()
+
+
 def test_fit_runs_and_improves():
     img = _toy()
     target = torch.as_tensor(img)
@@ -64,6 +82,31 @@ def test_fit_dynamic_controls_prune_split_and_track_targets():
     assert out["iters_to_targets"]["0.0"] is not None
     assert 8 <= out["n_gaussians"] <= 30
     assert len(out["history"]["n_gaussians"]) == 4
+
+
+def test_fit_residual_add_charbonnier_cosine():
+    img = _toy(24, 24)
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="aniso_flanking", num_gaussians=20))
+    out = fit(
+        field,
+        target,
+        FitConfig(
+            iters=4,
+            log_every=1,
+            pixel_loss="charbonnier",
+            loss_warmup_iters=1,
+            loss_warmup_pixel_loss="l2",
+            lr_schedule="cosine",
+            split_every=2,
+            split_count=3,
+            split_mode="residual_add",
+            max_gaussians=28,
+        ),
+        verbose=False,
+    )
+    assert np.isfinite(out["psnr"])
+    assert 20 < out["n_gaussians"] <= 28
 
 
 def test_pyramid_runs():

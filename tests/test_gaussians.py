@@ -31,3 +31,14 @@ def test_radii_positive_and_save_load(tmp_path):
     g.save(str(p))
     h = GaussianField.load(str(p))
     assert torch.allclose(g.means, h.means)
+
+
+def test_opacity_save_load(tmp_path):
+    g = GaussianField.from_numpy(np.zeros((3, 2)), np.full((3, 2), 2.0),
+                                 np.zeros(3), np.zeros((3, 3)), opacities=np.ones(3))
+    assert g.opacity_values().shape == (3,)
+    p = tmp_path / "g_opacity.npz"
+    g.save(str(p))
+    h = GaussianField.load(str(p))
+    assert h.opacities is not None
+    assert torch.allclose(g.opacity_values(), h.opacity_values())

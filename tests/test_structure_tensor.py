@@ -30,3 +30,13 @@ def test_along_edge_is_orthogonal():
     t = st.compute(_vertical_edge())
     d = np.mod(t.along_edge_angle - t.across_edge_angle, np.pi)
     assert np.allclose(d, np.pi / 2, atol=1e-4)
+
+
+def test_gradient_operator_variants_find_edge():
+    from structsplat.config import StructureTensorConfig
+
+    for operator in ("central", "sobel", "scharr"):
+        t = st.compute(_vertical_edge(), StructureTensorConfig(gradient_operator=operator))
+        edge = t.energy[:, 30:34].mean()
+        flat = t.energy[:, 5:15].mean()
+        assert edge > 5 * (flat + 1e-9)

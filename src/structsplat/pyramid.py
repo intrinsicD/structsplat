@@ -16,7 +16,7 @@ from . import init as _init
 from . import density as de
 from . import structure_tensor as st
 from .gaussians import GaussianField
-from .render import render
+from .render import render_field
 from .fit import fit
 from . import metrics as M
 
@@ -38,6 +38,7 @@ def _level_tensor_cfg(base: StructureTensorConfig | None, pcfg: PyramidConfig,
     return StructureTensorConfig(
         grad_sigma=_level_value(pcfg.level_grad_sigmas, lvl, default_grad_sigma),
         tensor_sigma=_level_value(pcfg.level_tensor_sigmas, lvl, base.tensor_sigma),
+        gradient_operator=base.gradient_operator,
         flat_frac=base.flat_frac,
         corner_frac=base.corner_frac,
     )
@@ -50,8 +51,9 @@ def prefix_metrics(field: GaussianField, counts: list[int], target: torch.Tensor
     rows = []
     for lvl, n in enumerate(counts):
         sub = field.subset(slice(0, n))
-        img = render(sub.means, sub.conics(), sub.colors, sub.radii(cfg.sigma_cutoff),
-                     H, W, cfg.render_chunk)
+        img = render_field(sub.means, sub.conics(cfg.aa_dilation), sub.colors,
+                           sub.radii(cfg.sigma_cutoff, cfg.aa_dilation),
+                           H, W, cfg.render_chunk, cfg.renderer, sub.opacity_values())
         rows.append({
             "level": lvl,
             "n_gaussians": n,
@@ -83,11 +85,12 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
             new = _init.build_field(img, icfg_lvl, scfg_lvl, device=device)
         else:
             with torch.no_grad():
-                cur = render(field.means, field.conics(), field.colors,
-                             field.radii(fcfg.sigma_cutoff), H, W, fcfg.render_chunk)
+                cur = render_field(field.means, field.conics(fcfg.aa_dilation), field.colors,
+                                   field.radii(fcfg.sigma_cutoff, fcfg.aa_dilation), H, W,
+                                   fcfg.render_chunk, fcfg.renderer, field.opacity_values())
                 residual = (target - cur).abs().cpu().numpy()
             dens = de.density_from_residual(residual, icfg.density_base, icfg.density_power,
-                                            scfg_lvl.grad_sigma)
+                                            scfg_lvl.grad_sigma, icfg.density_mode)
             tensor = st.compute(residual, scfg_lvl)
             new = _init.build_field(img, icfg_lvl, scfg_lvl, density=dens, tensor=tensor,
                                     device=device)
