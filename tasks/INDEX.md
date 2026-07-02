@@ -18,7 +18,7 @@ HIER, BENCH, ABL, FF, COMP, PORT, MERGE. Work items are picked up via the `task-
 | ABL-002 | Full stage-combination search | partial | CORE, INIT, FIT, HIER, BENCH |
 | FF-001 | Feed-forward init predictor (warm-start) | todo | INIT-003, FIT-001 |
 | GEN-001 | Generative 2D Gaussians via SDS distillation (no dataset) | todo | CORE-001, ADR-0006 |
-| COMP-001 | Quantization + entropy/VQ codec (rate-distortion) | todo | FIT-001 |
+| COMP-001 | Quantization + entropy/VQ codec (rate-distortion) | partial | FIT-001 |
 | PORT-001 | CUDA tile rasterizer → IntrinsicEngine RHI pass | todo | CORE-001 |
 | MERGE-001 | Integrate Claude core optimizations and Codex stage search into main | todo | CORE, INIT, FIT, HIER, BENCH, ABL, COMP |
 

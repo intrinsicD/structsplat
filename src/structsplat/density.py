@@ -78,7 +78,8 @@ def sample_candidates(density: np.ndarray, n: int, rng: np.random.Generator) -> 
     flat = flat / flat.sum()
     idx = rng.choice(flat.size, size=n, replace=True, p=flat)
     ys, xs = np.divmod(idx, W)
-    jitter = rng.random((n, 2))
-    xs = xs + jitter[:, 0]
-    ys = ys + jitter[:, 1]
+    # integer coords are pixel centers (renderer convention): jitter within the footprint
+    jitter = rng.random((n, 2)) - 0.5
+    xs = np.clip(xs + jitter[:, 0], 0.0, W - 1.0)
+    ys = np.clip(ys + jitter[:, 1], 0.0, H - 1.0)
     return np.stack([xs, ys], axis=1).astype(np.float64)

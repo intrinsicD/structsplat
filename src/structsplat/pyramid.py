@@ -51,7 +51,8 @@ def prefix_metrics(field: GaussianField, counts: list[int], target: torch.Tensor
     rows = []
     for lvl, n in enumerate(counts):
         sub = field.subset(slice(0, n))
-        img = render_field(sub.means, sub.conics(), sub.colors, sub.radii(cfg.sigma_cutoff),
+        img = render_field(sub.means, sub.conics(cfg.aa_dilation), sub.colors,
+                           sub.radii(cfg.sigma_cutoff, cfg.aa_dilation),
                            H, W, cfg.render_chunk, cfg.renderer, sub.opacity_values())
         rows.append({
             "level": lvl,
@@ -84,9 +85,9 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
             new = _init.build_field(img, icfg_lvl, scfg_lvl, device=device)
         else:
             with torch.no_grad():
-                cur = render_field(field.means, field.conics(), field.colors,
-                                   field.radii(fcfg.sigma_cutoff), H, W, fcfg.render_chunk,
-                                   fcfg.renderer, field.opacity_values())
+                cur = render_field(field.means, field.conics(fcfg.aa_dilation), field.colors,
+                                   field.radii(fcfg.sigma_cutoff, fcfg.aa_dilation), H, W,
+                                   fcfg.render_chunk, fcfg.renderer, field.opacity_values())
                 residual = (target - cur).abs().cpu().numpy()
             dens = de.density_from_residual(residual, icfg.density_base, icfg.density_power,
                                             scfg_lvl.grad_sigma, icfg.density_mode)
