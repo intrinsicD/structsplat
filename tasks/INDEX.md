@@ -7,6 +7,7 @@ HIER, BENCH, ABL, FF, COMP, PORT, MERGE. Work items are picked up via the `task-
 |----|-------|--------|-----------|
 | CORE-001 | Differentiable reference rasterizer (normalized weighted sum) | done | — |
 | CORE-002 | RS Gaussian parameterization + conics | done | — |
+| CORE-003 | Edge-aware render support window (off-image support + tile waste) | todo | CORE-001 |
 | INIT-001 | Structure tensor: energy, orientation, flat/edge/corner | done | — |
 | INIT-002 | Density field (image + residual) | done | INIT-001 |
 | INIT-003 | Anisotropic blue-noise sampling (WSE + metric) | partial | INIT-001, INIT-002 |
