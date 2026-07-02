@@ -14,7 +14,7 @@ import torch
 _EPS = 1e-8
 
 
-def render(means, conics, colors, radii, H: int, W: int, chunk: int = 4096):
+def render(means, conics, colors, radii, H: int, W: int, chunk: int = 4096, opacities=None):
     dev, dt = means.device, means.dtype
     N = means.shape[0]
     num = torch.zeros(H * W, 3, device=dev, dtype=dt)
@@ -41,6 +41,8 @@ def render(means, conics, colors, radii, H: int, W: int, chunk: int = 4096):
         c = conics[idx, 2][:, None, None]
         q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
         w = torch.exp(-0.5 * q)                           # (M,T,T)
+        if opacities is not None:
+            w = w * opacities[idx].reshape(-1, 1, 1)
         valid = (px >= 0) & (px < W) & (py >= 0) & (py < H)
         w = w * valid
         flat = (py.clamp(0, H - 1) * W + px.clamp(0, W - 1)).reshape(-1)
@@ -51,6 +53,50 @@ def render(means, conics, colors, radii, H: int, W: int, chunk: int = 4096):
 
     img = num / (den + _EPS)
     return img.view(H, W, 3)
+
+
+def render_additive(means, conics, colors, radii, H: int, W: int, chunk: int = 4096, opacities=None):
+    dev, dt = means.device, means.dtype
+    N = means.shape[0]
+    num = torch.zeros(H * W, 3, device=dev, dtype=dt)
+
+    order = torch.argsort(radii)
+    for start in range(0, N, chunk):
+        idx = order[start:start + chunk]
+        r = int(torch.clamp(radii[idx].max(), min=1).item())
+        mu = means[idx]
+        cx, cy = mu[:, 0], mu[:, 1]
+        ix = torch.round(cx).long()
+        iy = torch.round(cy).long()
+        off = torch.arange(-r, r + 1, device=dev)
+        oy, ox = torch.meshgrid(off, off, indexing="ij")
+        px = ix[:, None, None] + ox[None]
+        py = iy[:, None, None] + oy[None]
+        dx = px.to(dt) - cx[:, None, None]
+        dy = py.to(dt) - cy[:, None, None]
+        a = conics[idx, 0][:, None, None]
+        b = conics[idx, 1][:, None, None]
+        c = conics[idx, 2][:, None, None]
+        q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
+        w = torch.exp(-0.5 * q)
+        if opacities is not None:
+            w = w * opacities[idx].reshape(-1, 1, 1)
+        valid = (px >= 0) & (px < W) & (py >= 0) & (py < H)
+        w = w * valid
+        flat = (py.clamp(0, H - 1) * W + px.clamp(0, W - 1)).reshape(-1)
+        col = colors[idx][:, None, None, :].expand(-1, w.shape[1], w.shape[2], 3)
+        num = num.index_add(0, flat, (w[..., None] * col).reshape(-1, 3))
+
+    return num.view(H, W, 3)
+
+
+def render_field(means, conics, colors, radii, H: int, W: int,
+                 chunk: int = 4096, mode: str = "normalized", opacities=None):
+    if mode == "normalized":
+        return render(means, conics, colors, radii, H, W, chunk, opacities)
+    if mode == "additive":
+        return render_additive(means, conics, colors, radii, H, W, chunk, opacities)
+    raise ValueError(f"unknown renderer {mode!r}; expected normalized or additive")
 
 
 @torch.no_grad()

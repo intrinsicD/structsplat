@@ -36,6 +36,9 @@ structsplat fit photo.png --pyramid --num-gaussians 20000
 
 # the core experiment: init strategy x budget sweep (writes results/summary.md)
 structsplat ablation ./images --budgets 2000 5000 10000 20000 --iters 1500 --target-psnr 35
+
+# full stage-combination screening: tensor/density/sampling/color/loss/refinement/pyramid
+structsplat stage-search ./images --budgets 1024 2048 --iters 300 --outdir results/stage_search
 ```
 Strategies: `random`, `grid`, `iso_blue_noise`, `aniso_onedge`, `aniso_flanking`.
 
@@ -57,7 +60,7 @@ Typical loop: `core` → `task-workflow` → `method` (if adding a component) �
 src/structsplat/   structure_tensor, density, sampling (NumPy) · gaussians, render, metrics,
                    init, fit, pyramid, cli (torch)
 tests/             pytest (NumPy tests run anywhere; torch tests skip without torch)
-benchmarks/        ablation.py (ABL-001) + fitness() hook for a co-scientist loop
+benchmarks/        ablation.py (ABL-001), stage_search.py (ABL-002), fitness hooks
 docs/              adr/ · architecture.md · theory.md
 tasks/             INDEX.md + task files
 ```

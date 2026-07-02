@@ -14,7 +14,8 @@ HIER, BENCH, ABL, FF, COMP, PORT. Work items are picked up via the `task-workflo
 | FIT-001 | Adam fitter (L1+SSIM), PSNR history, iters-to-target | done | CORE-001/002 |
 | HIER-001 | Progressive pyramid (residual-driven densification) | partial | INIT-002, FIT-001 |
 | BENCH-001 | Metric protocol (PSNR/MS-SSIM/LPIPS + iters-to-target) | done | FIT-001 |
-| ABL-001 | Init-strategy x budget sweep (the core experiment + fitness) | todo | INIT-003/004, BENCH-001 |
+| ABL-001 | Init-strategy x budget sweep (the core experiment + fitness) | partial | INIT-003/004, BENCH-001 |
+| ABL-002 | Full stage-combination search | partial | CORE, INIT, FIT, HIER, BENCH |
 | FF-001 | Feed-forward init predictor (warm-start) | todo | INIT-003, FIT-001 |
 | GEN-001 | Generative 2D Gaussians via SDS distillation (no dataset) | todo | CORE-001, ADR-0006 |
 | COMP-001 | Quantization + entropy/VQ codec (rate-distortion) | todo | FIT-001 |

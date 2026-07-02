@@ -44,11 +44,41 @@ def _conv1d(a: np.ndarray, k: np.ndarray, axis: int) -> np.ndarray:
     return out
 
 
+def _conv2d(a: np.ndarray, k: np.ndarray) -> np.ndarray:
+    """Small reflect-padded 2D convolution for fixed gradient kernels."""
+    kh, kw = k.shape
+    rh, rw = kh // 2, kw // 2
+    ap = np.pad(a, ((rh, rh), (rw, rw)), mode="reflect")
+    out = np.zeros_like(a, dtype=np.float32)
+    for y in range(kh):
+        for x in range(kw):
+            out += np.float32(k[y, x]) * ap[y:y + a.shape[0], x:x + a.shape[1]]
+    return out
+
+
 def gaussian_blur(a: np.ndarray, sigma: float) -> np.ndarray:
     if sigma <= 0:
         return a
     k = _gaussian_kernel(sigma)
     return _conv1d(_conv1d(a, k, 0), k, 1)
+
+
+def gradients(g: np.ndarray, operator: str = "central") -> tuple[np.ndarray, np.ndarray]:
+    """Return `(iy, ix)` gradients using a selectable local operator."""
+    if operator == "central":
+        iy, ix = np.gradient(g)
+        return iy.astype(np.float32), ix.astype(np.float32)
+    if operator == "sobel":
+        kx = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]], dtype=np.float32) / 8.0
+        ky = kx.T
+    elif operator == "scharr":
+        kx = np.array([[3, 0, -3], [10, 0, -10], [3, 0, -3]], dtype=np.float32) / 32.0
+        ky = kx.T
+    else:
+        raise ValueError(f"unknown gradient_operator {operator!r}; expected central, sobel, or scharr")
+    ix = _conv2d(g, kx)
+    iy = _conv2d(g, ky)
+    return iy, ix
 
 
 @dataclass
@@ -71,8 +101,7 @@ def compute(img: np.ndarray, cfg: StructureTensorConfig | None = None) -> Struct
     g = to_luma(img)
     g = gaussian_blur(g, cfg.grad_sigma)
 
-    # central-difference gradients (axis 0 = y, axis 1 = x)
-    iy, ix = np.gradient(g)
+    iy, ix = gradients(g, cfg.gradient_operator)
     Jxx = gaussian_blur(ix * ix, cfg.tensor_sigma)
     Jxy = gaussian_blur(ix * iy, cfg.tensor_sigma)
     Jyy = gaussian_blur(iy * iy, cfg.tensor_sigma)
