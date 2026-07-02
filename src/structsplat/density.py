@@ -18,7 +18,10 @@ def density_from_energy(energy: np.ndarray, base: float, power: float) -> np.nda
     ref = np.percentile(e, 99.0) + 1e-12
     d = np.clip(e / ref, 0.0, 1.0) ** power
     d = base + (1.0 - base) * d
-    return (d / d.sum()).astype(np.float64)  # normalized pmf over pixels
+    s = d.sum()
+    if not s > 0.0:  # identically-zero feature (flat image / zero residual) with base=0
+        return np.full(d.shape, 1.0 / d.size, dtype=np.float64)
+    return (d / s).astype(np.float64)  # normalized pmf over pixels
 
 
 def local_variance(img: np.ndarray, sigma: float = 2.0) -> np.ndarray:
@@ -63,12 +66,52 @@ def density_from_image(img: np.ndarray, icfg: InitConfig,
 
 
 def density_from_residual(residual: np.ndarray, base: float, power: float,
-                          grad_sigma: float, mode: str = "structure") -> np.ndarray:
-    """Residual-driven density for pyramid level ell: chase leftover error (HIER-001)."""
-    scfg = StructureTensorConfig(grad_sigma=grad_sigma)
-    tensor = st.compute(np.abs(residual), scfg)
-    feature = feature_for_mode(np.abs(residual), tensor, mode, scfg)
+                          scfg: StructureTensorConfig | None = None,
+                          mode: str = "structure") -> np.ndarray:
+    """Residual-driven density for pyramid level ell: chase leftover error (HIER-001).
+
+    Takes the full StructureTensorConfig (not just grad_sigma) so the residual density honors
+    the same tensor operator / sigma / thresholds as the orientation tensor. Prefer computing
+    the tensor once and calling density_from_tensor_and_image when you also need orientations.
+    """
+    scfg = scfg or StructureTensorConfig()
+    resid = np.abs(residual)
+    tensor = st.compute(resid, scfg)
+    feature = feature_for_mode(resid, tensor, mode, scfg)
     return density_from_energy(feature, base, power)
+
+
+def warp_unit_points(u: np.ndarray, density: np.ndarray, chunk: int = 8192) -> np.ndarray:
+    """Map unit-square points through the separable inverse CDF of `density`.
+
+    y comes from the row-marginal CDF, x from the conditional CDF of the selected row, and the
+    remainder places the point uniformly inside the pixel cell (centers at integer coords).
+    Preserves the low-discrepancy structure of `u` (e.g. Halton) while matching the density,
+    which i.i.d. `sample_candidates` cannot do. Returns (n, 2) as (x, y) float.
+    """
+    H, W = density.shape
+    d = density.astype(np.float64) + 1e-15  # strictly positive => invertible CDF
+    row_mass = d.sum(axis=1)
+    cy = np.cumsum(row_mass)
+    ty = np.clip(u[:, 1], 0.0, 1.0 - 1e-12) * cy[-1]
+    iy = np.clip(np.searchsorted(cy, ty, side="right"), 0, H - 1)
+    fy = (ty - np.where(iy > 0, cy[np.maximum(iy - 1, 0)], 0.0)) / row_mass[iy]
+
+    n = u.shape[0]
+    ix = np.empty(n, dtype=np.int64)
+    fx = np.empty(n, dtype=np.float64)
+    row_cum = np.cumsum(d, axis=1)
+    tx_all = np.clip(u[:, 0], 0.0, 1.0 - 1e-12)
+    for s in range(0, n, chunk):  # (chunk, W) slices bound memory
+        rows = row_cum[iy[s:s + chunk]]
+        tx = tx_all[s:s + chunk] * rows[:, -1]
+        j = np.clip((rows < tx[:, None]).sum(axis=1), 0, W - 1)
+        prev = np.where(j > 0, np.take_along_axis(rows, np.maximum(j - 1, 0)[:, None], 1)[:, 0], 0.0)
+        ix[s:s + chunk] = j
+        fx[s:s + chunk] = (tx - prev) / d[iy[s:s + chunk], j]
+    xs = np.clip(ix - 0.5 + np.clip(fx, 0.0, 1.0), 0.0, W - 1.0)
+    ys = np.clip(iy - 0.5 + np.clip(fy, 0.0, 1.0), 0.0, H - 1.0)
+    return np.stack([xs, ys], axis=1)
 
 
 def sample_candidates(density: np.ndarray, n: int, rng: np.random.Generator) -> np.ndarray:

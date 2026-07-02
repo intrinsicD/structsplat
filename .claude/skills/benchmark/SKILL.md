@@ -30,3 +30,12 @@ IntrinsicEngine core/harness split).
 Expected shape (hypothesis, not fact): `aniso_flanking` >= `aniso_onedge` > `iso_blue_noise` >
 `grid` > `random` at **low** budgets, gap shrinking as budget grows. If flanking never wins, it has
 no niche — record that honestly and prefer the simpler strategy.
+
+## Stage influence (ABL-002 / ADR-0010)
+`structsplat stage-search --mode influence` measures each stage's isolated contribution:
+one-factor-at-a-time around the baseline (= first value of every stage axis; defaults are the
+ADR-0009 production config). `influence.md` reports **paired** deltas per stage option —
+ΔPSNR / ΔMS-SSIM / ΔAUC (quality + convergence) and Δiters-to-target / Δinit / Δfit seconds
+(speed) — so max-quality, max-convergence and max-speed candidates come from one run. Factorial
+mode (`--mode factorial`, default) stays the best-combination search; both dedupe configs whose
+differing stage is provably inert. Pass `--target-psnr` or iters-to-target stays empty.

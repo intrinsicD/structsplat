@@ -23,19 +23,28 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
 ```
 
 ## Module responsibilities
-- **NumPy, init-time, no autograd:** `structure_tensor` (selectable central/sobel/scharr operator),
-  `density` (structure/gradient/variance/hybrid/uniform modes), `sampling`, `config`.
+- **NumPy, init-time, no autograd:** `structure_tensor` (selectable central/sobel/scharr operator;
+  luma or Di Zenzo rgb color space), `density` (structure/gradient/variance/hybrid/uniform modes +
+  the inverse-CDF warp for low-discrepancy samplers), `sampling` (WSE blue noise, Poisson-disk
+  dart throwing, farthest-point, CVT/Lloyd, Halton), `config`.
 - **torch, autograd:** `gaussians` (RS + optional opacity), `render` (normalized default +
   additive, ADR-0006, sharing one accumulator), `metrics`, `init` (bridge), `fit` (selectable
   loss/optimizer/LR-schedule/split-mode), `pyramid`, `codec` (post-fit quantization, ADR-0007).
 - **entry:** `cli` (`structsplat fit` / `ablation` / `stage-search`).
 
-## Stage-search (ABL-002)
-`benchmarks/stage_search.py` sweeps *complete* configurations across every swappable stage — tensor
-operator, density mode, sampling mode, init strategy, color mode, scale mode, opacity, renderer,
-loss, optimizer, LR schedule, refinement, pyramid — and emits ranked JSON/CSV/markdown. The shipped
-defaults (ADR-0009) are one named cell in that space; everything else is a candidate the screening
-can promote. `benchmarks/ablation.py` (ABL-001) stays the focused init-strategy × budget sweep.
+## Stage-search (ABL-002, protocol in ADR-0010)
+`benchmarks/stage_search.py` sweeps configurations across every swappable stage — tensor operator,
+tensor color space, density mode, sampling mode, orientation mode, init strategy, color mode,
+scale mode, opacity, renderer, loss, optimizer, LR schedule, refinement, pyramid — in two modes:
+**factorial** (full product, ranked, for the best complete config) and **influence**
+(one-factor-at-a-time paired deltas vs the baseline = first value of each axis; emits
+`influence.md` with ΔPSNR/ΔMS-SSIM/ΔAUC/Δiters-to-target/Δseconds per stage option). Configs
+whose differing stage is provably inert are canonicalized and deduplicated. Every row records
+quality (PSNR/MS-SSIM/LPIPS), convergence (iters-to-target, PSNR-AUC), and speed (init/fit
+seconds) so max-quality, max-convergence-rate, and max-speed candidates can be read from the same
+run. The shipped defaults (ADR-0009) are one named cell in that space; everything else is a
+candidate the screening can promote. `benchmarks/ablation.py` (ABL-001) stays the focused
+init-strategy × budget sweep.
 
 ## Performance notes (reference is the oracle; these keep it usable at N~20k on CPU)
 - `sampling.eliminate` builds the WSE conflict graph vectorized over grid-cell offsets (only the

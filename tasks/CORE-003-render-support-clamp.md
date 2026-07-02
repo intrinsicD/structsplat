@@ -1,7 +1,11 @@
 # CORE-003: Edge-aware render support window (fix off-image support truncation + tile waste)
 
-**Status: todo.** Latent bug in the reference renderer (predates the Claude/Codex merge; present on
-both source branches). Found by the ABL-001 approach review, verified by execution.
+**Status: done.** Implemented as an asymmetric per-Gaussian tile clip (`render._tile_bounds`):
+each support AABB is intersected with the image rectangle, which is strictly tighter than the
+symmetric edge-aware bound sketched below — only in-image pixels are ever visited, the `valid`
+mask is gone, and fully-outside Gaussians get empty tiles. Latent bug in the reference renderer
+(predates the Claude/Codex merge; present on both source branches). Found by the ABL-001 approach
+review, verified by execution.
 
 ## Context
 `render._accumulate` (`render.py:57-58`) and `gaussian_activity` (`render.py:114-115`) clamp the
@@ -23,16 +27,16 @@ Bound each Gaussian's support window by its true reachable extent so no in-image
 support is ever dropped, and no off-image pixels are ever visited.
 
 ## Acceptance criteria
-- [ ] In `_accumulate` and `gaussian_activity`, replace the constant clamp with an edge-aware bound:
-      `rx = min(radii[:, 0], max(ix, (W-1)-ix))`, `ry = min(radii[:, 1], max(iy, (H-1)-iy))`,
-      clamped to `min=1` (where `ix, iy` are the rounded integer centers). Applies for in- *and*
-      off-image centers.
-- [ ] Regression test: a Gaussian centered off-image with large σ renders a smooth in-image falloff
-      (no exact-zero band); assert the cut column's value matches the analytic weight within tol.
-- [ ] Equivalence test: for in-image centers the rendered image is bit-identical to the current
-      output (the removed pixels were already `valid`-masked zeros), so no existing test regresses.
-- [ ] Numerically confirm the tile-element count drops for whole-image Gaussians (no perf
-      regression for the common small-Gaussian case).
+- [x] In `_accumulate` and `gaussian_activity`, replace the constant clamp with an edge-aware
+      bound. (Implemented tighter than sketched: `_tile_bounds` clips `[ix±rx]×[iy±ry]` to the
+      image rectangle per Gaussian; zero-area tiles for fully-outside Gaussians.)
+- [x] Regression test: a Gaussian centered off-image with large σ keeps its in-image support,
+      renders, and still receives mean gradients (`test_offimage_gaussian_keeps_inimage_support`).
+- [x] Equivalence test: `test_render_matches_naive_reference` checks against a dense O(N·H·W)
+      evaluation including off-image and highly anisotropic Gaussians; existing renderer tests
+      unchanged and passing.
+- [x] Tile-element count drops for whole-image Gaussians by construction (tiles never exceed
+      H×W; previously up to (2W+1)(2H+1)).
 
 ## Interfaces touched
 `src/structsplat/render.py` (`_accumulate`, `gaussian_activity`). No API change, no ADR

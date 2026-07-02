@@ -8,6 +8,7 @@ class StructureTensorConfig:
     grad_sigma: float = 1.0          # pre-smoothing of the image before gradients
     tensor_sigma: float = 2.0        # rho: smoothing of the outer-product tensor field
     gradient_operator: str = "central"  # central, sobel, or scharr
+    color_space: str = "luma"        # luma (Rec.709 gray) or rgb (Di Zenzo multi-channel sum)
     # classification thresholds, expressed as fractions of the 99th-percentile energy
     flat_frac: float = 0.02          # energy below this -> flat
     corner_frac: float = 0.15        # smaller eigenvalue above this*ref -> corner
@@ -21,11 +22,13 @@ class InitConfig:
     density_base: float = 0.05         # floor so flat regions still get some coverage
     density_power: float = 1.0         # density ~ energy**power
     density_mode: str = "structure"    # structure, gradient, variance, hybrid, or uniform
-    sampling_mode: str = "wse"         # wse, density_random, or jittered_grid
+    # wse, density_random, jittered_grid, dart_throwing, halton, farthest_point, or cvt
+    sampling_mode: str = "wse"
     # anisotropy: axis ratio cap for edge Gaussians (major/minor); 1.0 => isotropic
     max_axis_ratio: float = 6.0
     coherence_power: float = 1.0     # maps coherence -> anisotropy; >1 is more conservative
-    scale_mode: str = "spacing"        # spacing or uniform
+    orientation_mode: str = "tensor"   # tensor (strategy default), random, or zero
+    scale_mode: str = "spacing"        # spacing, uniform, or knn
     init_scale_mult: float = 1.0       # multiply local spacing to get initial std
     flank_offset_frac: float = 0.5     # edge center offset in units of local minor spacing
     color_mode: str = "bilinear"       # bilinear, local_mean, or two_sided

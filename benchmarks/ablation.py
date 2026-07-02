@@ -143,9 +143,12 @@ def _write(rows, outdir, write_plots=True):
         json.dump(rows, f, indent=2)
     if rows:
         with open(os.path.join(outdir, "ablation.csv"), "w", newline="") as f:
-            w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+            # nested dicts stay in the JSON; str()-ified dict cells make the CSV unusable
+            fields = [k for k in rows[0] if k not in {"history", "iters_to_targets"}]
+            w = csv.DictWriter(f, fieldnames=fields)
             w.writeheader()
-            w.writerows(rows)
+            for row in rows:
+                w.writerow({k: row.get(k) for k in fields})
     with open(os.path.join(outdir, "summary.md"), "w") as f:
         f.write(summarize(rows))
     if write_plots:
@@ -231,15 +234,17 @@ def _write_plots(rows, outdir):
 
     plt.figure(figsize=(7, 4))
     for strategy in groups:
-        curves = [r.get("history", {}) for r in rows if r["strategy"] == strategy]
-        by_iter = {}
-        for hist in curves:
-            for it, psnr in zip(hist.get("iter", []), hist.get("psnr", [])):
-                by_iter.setdefault(it, []).append(psnr)
-        if by_iter:
-            xs = sorted(by_iter)
-            ys = [mean(by_iter[it]) for it in xs]
-            plt.plot(xs, ys, label=strategy)
+        for b in budgets:  # pooling budgets would average curves of different capacity
+            curves = [r.get("history", {}) for r in rows
+                      if r["strategy"] == strategy and r["budget"] == b]
+            by_iter = {}
+            for hist in curves:
+                for it, psnr in zip(hist.get("iter", []), hist.get("psnr", [])):
+                    by_iter.setdefault(it, []).append(psnr)
+            if by_iter:
+                xs = sorted(by_iter)
+                ys = [mean(by_iter[it]) for it in xs]
+                plt.plot(xs, ys, label=f"{strategy} @ {b}")
     plt.xlabel("Iteration")
     plt.ylabel("PSNR (dB)")
     plt.legend()

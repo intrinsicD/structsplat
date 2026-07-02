@@ -34,6 +34,7 @@ def cmd_fit(args):
     icfg = InitConfig(strategy=args.strategy, num_gaussians=args.num_gaussians, seed=args.seed,
                       density_mode=args.density_mode,
                       sampling_mode=args.sampling_mode,
+                      orientation_mode=args.orientation_mode,
                       flank_offset_frac=args.flank_offset,
                       max_axis_ratio=args.max_axis_ratio,
                       coherence_power=args.coherence_power,
@@ -46,6 +47,7 @@ def cmd_fit(args):
     scfg = StructureTensorConfig(grad_sigma=args.grad_sigma,
                                  tensor_sigma=args.tensor_sigma,
                                  gradient_operator=args.tensor_operator,
+                                 color_space=args.tensor_color,
                                  flat_frac=args.flat_frac,
                                  corner_frac=args.corner_frac)
     fcfg = FitConfig(iters=args.iters, target_psnr=args.target_psnr, render_chunk=args.chunk,
@@ -64,9 +66,12 @@ def cmd_fit(args):
                      split_scale=args.split_scale, max_gaussians=args.max_gaussians)
 
     if args.pyramid:
+        # honor --iters when --iters-per-level is not given, so the pyramid spends the
+        # same total optimization budget the user asked for
+        per_level = args.iters_per_level or max(1, args.iters // max(1, args.pyramid_levels))
         pcfg = PyramidConfig(levels=args.pyramid_levels,
                              level_fractions=args.level_fractions,
-                             iters_per_level=args.iters_per_level)
+                             iters_per_level=per_level)
         out = fit_pyramid(img, target, icfg, fcfg, pcfg, scfg)
     else:
         field = _init.build_field(img, icfg, scfg, device=device)
@@ -98,10 +103,12 @@ def cmd_ablation(args):
 def cmd_stage_search(args):
     from benchmarks.stage_search import run_stage_search
     run_stage_search(
-        args.images, budgets=args.budgets, seeds=args.seeds, iters=args.iters,
+        args.images, budgets=args.budgets, seeds=args.seeds, iters=args.iters, mode=args.mode,
         max_side=args.max_side, strategies=args.strategies,
-        tensor_operators=args.tensor_operators, density_modes=args.density_modes,
-        sampling_modes=args.sampling_modes, color_modes=args.color_modes,
+        tensor_operators=args.tensor_operators, tensor_colors=args.tensor_colors,
+        density_modes=args.density_modes,
+        sampling_modes=args.sampling_modes, orientation_modes=args.orientation_modes,
+        color_modes=args.color_modes,
         scale_modes=args.scale_modes, opacity_modes=args.opacity_modes, renderers=args.renderers,
         pixel_losses=args.pixel_losses, optimizers=args.optimizers,
         lr_schedules=args.lr_schedules, refine_modes=args.refine_modes,
@@ -111,6 +118,8 @@ def cmd_stage_search(args):
         prune_min_activity=args.prune_min_activity, max_gaussians=args.max_gaussians,
         pyramid_levels=args.pyramid_levels, pyramid_fractions=args.pyramid_fractions,
         pyramid_iters_per_level=args.pyramid_iters_per_level, compute_lpips=args.lpips,
+        target_psnr=args.target_psnr, target_psnrs=args.target_psnrs,
+        log_every=args.log_every, dedupe=not args.no_dedupe,
         max_configs=args.max_configs, shuffle_configs=args.shuffle_configs,
         config_seed=args.config_seed, outdir=args.outdir, device=args.device, verbose=args.verbose,
     )
@@ -128,20 +137,26 @@ def main():
     f.add_argument("--pyramid", action="store_true")
     f.add_argument("--pyramid-levels", type=int, default=4)
     f.add_argument("--level-fractions", type=float, nargs="+", default=[0.1, 0.2, 0.3, 0.4])
-    f.add_argument("--iters-per-level", type=int, default=500)
+    f.add_argument("--iters-per-level", type=int, default=None,
+                   help="default: --iters / --pyramid-levels")
     f.add_argument("--target-psnr", type=float, default=None, dest="target_psnr")
     f.add_argument("--chunk", type=int, default=512)
     f.add_argument("--tensor-operator", choices=["central", "sobel", "scharr"], default="central")
+    f.add_argument("--tensor-color", choices=["luma", "rgb"], default="luma")
     f.add_argument("--grad-sigma", type=float, default=1.0)
     f.add_argument("--tensor-sigma", type=float, default=2.0)
     f.add_argument("--flat-frac", type=float, default=0.02)
     f.add_argument("--corner-frac", type=float, default=0.15)
     f.add_argument("--density-mode", choices=["structure", "gradient", "variance", "hybrid", "uniform"],
                    default="structure")
-    f.add_argument("--sampling-mode", choices=["wse", "density_random", "jittered_grid"], default="wse")
+    f.add_argument("--sampling-mode",
+                   choices=["wse", "density_random", "jittered_grid", "dart_throwing", "halton",
+                            "farthest_point", "cvt"],
+                   default="wse")
+    f.add_argument("--orientation-mode", choices=["tensor", "random", "zero"], default="tensor")
     f.add_argument("--color-mode", choices=["bilinear", "local_mean", "two_sided"], default="bilinear")
     f.add_argument("--color-radius", type=float, default=1.5)
-    f.add_argument("--scale-mode", choices=["spacing", "uniform"], default="spacing")
+    f.add_argument("--scale-mode", choices=["spacing", "uniform", "knn"], default="spacing")
     f.add_argument("--init-scale-mult", type=float, default=1.0)
     f.add_argument("--opacity-mode", choices=["none", "constant"], default="none")
     f.add_argument("--init-opacity", type=float, default=0.9)
@@ -195,25 +210,35 @@ def main():
 
     s = sub.add_parser("stage-search", help="search complete StructSplat stage combinations")
     s.add_argument("images", nargs="+", help="image files or a directory")
+    s.add_argument("--mode", choices=["factorial", "influence"], default="factorial",
+                   help="factorial: full product; influence: one-factor-at-a-time deltas "
+                        "around the baseline (first value of each stage axis)")
     s.add_argument("--budgets", type=int, nargs="+", default=[1024, 2048])
     s.add_argument("--seeds", type=int, nargs="+", default=[0])
     s.add_argument("--iters", type=int, default=300)
     s.add_argument("--max-side", type=int, default=320)
-    s.add_argument("--strategies", nargs="+", default=["aniso_flanking"])
-    s.add_argument("--tensor-operators", nargs="+", default=["central", "scharr"])
-    s.add_argument("--density-modes", nargs="+", default=["structure", "hybrid"])
-    s.add_argument("--sampling-modes", nargs="+", default=["wse"])
-    s.add_argument("--color-modes", nargs="+", default=["bilinear", "local_mean", "two_sided"])
-    s.add_argument("--scale-modes", nargs="+", default=["spacing"])
-    s.add_argument("--opacity-modes", nargs="+", default=["none"])
-    s.add_argument("--renderers", nargs="+", default=["normalized"])
-    s.add_argument("--pixel-losses", nargs="+", default=["l1", "charbonnier"])
-    s.add_argument("--optimizers", nargs="+", default=["adam"])
-    s.add_argument("--lr-schedules", nargs="+", default=["none", "cosine"])
-    s.add_argument("--refine-modes", nargs="+", default=["none", "residual_add"])
-    s.add_argument("--pyramid-modes", nargs="+", default=["single"])
+    s.add_argument("--strategies", nargs="+", default=None)
+    s.add_argument("--tensor-operators", nargs="+", default=None)
+    s.add_argument("--tensor-colors", nargs="+", default=None)
+    s.add_argument("--density-modes", nargs="+", default=None)
+    s.add_argument("--sampling-modes", nargs="+", default=None)
+    s.add_argument("--orientation-modes", nargs="+", default=None)
+    s.add_argument("--color-modes", nargs="+", default=None)
+    s.add_argument("--scale-modes", nargs="+", default=None)
+    s.add_argument("--opacity-modes", nargs="+", default=None)
+    s.add_argument("--renderers", nargs="+", default=None)
+    s.add_argument("--pixel-losses", nargs="+", default=None)
+    s.add_argument("--optimizers", nargs="+", default=None)
+    s.add_argument("--lr-schedules", nargs="+", default=None)
+    s.add_argument("--refine-modes", nargs="+", default=None)
+    s.add_argument("--pyramid-modes", nargs="+", default=None)
     s.add_argument("--chunk", type=int, default=512)
     s.add_argument("--ssim-weight", type=float, default=0.3)
+    s.add_argument("--target-psnr", type=float, default=None, dest="target_psnr",
+                   help="record iters/seconds-to-target (convergence-rate comparisons)")
+    s.add_argument("--target-psnrs", type=float, nargs="*", default=[])
+    s.add_argument("--log-every", type=int, default=None)
+    s.add_argument("--no-dedupe", action="store_true")
     s.add_argument("--split-every", type=int, default=None)
     s.add_argument("--split-count", type=int, default=64)
     s.add_argument("--prune-every", type=int, default=None)

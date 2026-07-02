@@ -68,11 +68,14 @@ def gradients(g: np.ndarray, operator: str = "central") -> tuple[np.ndarray, np.
     if operator == "central":
         iy, ix = np.gradient(g)
         return iy.astype(np.float32), ix.astype(np.float32)
+    # _conv2d is a cross-correlation, so the +1 column must sit at +x for d/dx to match
+    # np.gradient's sign convention (the tensor J is sign-invariant, but callers of this
+    # function are not necessarily)
     if operator == "sobel":
-        kx = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]], dtype=np.float32) / 8.0
+        kx = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=np.float32) / 8.0
         ky = kx.T
     elif operator == "scharr":
-        kx = np.array([[3, 0, -3], [10, 0, -10], [3, 0, -3]], dtype=np.float32) / 32.0
+        kx = np.array([[-3, 0, 3], [-10, 0, 10], [-3, 0, 3]], dtype=np.float32) / 32.0
         ky = kx.T
     else:
         raise ValueError(f"unknown gradient_operator {operator!r}; expected central, sobel, or scharr")
@@ -98,13 +101,28 @@ class StructureTensor:
 
 def compute(img: np.ndarray, cfg: StructureTensorConfig | None = None) -> StructureTensor:
     cfg = cfg or StructureTensorConfig()
-    g = to_luma(img)
-    g = gaussian_blur(g, cfg.grad_sigma)
+    img = np.asarray(img, dtype=np.float32)
+    if cfg.color_space == "rgb" and img.ndim == 3:
+        # Di Zenzo multi-channel tensor: J = sum_c grad I_c grad I_c^T. Sees iso-luminant
+        # (chroma-only) edges that the luma tensor misses.
+        channels = [gaussian_blur(img[..., c], cfg.grad_sigma) for c in range(min(3, img.shape[-1]))]
+    elif cfg.color_space in ("luma", "rgb"):
+        channels = [gaussian_blur(to_luma(img), cfg.grad_sigma)]
+    else:
+        raise ValueError(f"unknown color_space {cfg.color_space!r}; expected luma or rgb")
+    g = channels[0]
 
-    iy, ix = gradients(g, cfg.gradient_operator)
-    Jxx = gaussian_blur(ix * ix, cfg.tensor_sigma)
-    Jxy = gaussian_blur(ix * iy, cfg.tensor_sigma)
-    Jyy = gaussian_blur(iy * iy, cfg.tensor_sigma)
+    Jxx = np.zeros(g.shape, dtype=np.float32)
+    Jxy = np.zeros(g.shape, dtype=np.float32)
+    Jyy = np.zeros(g.shape, dtype=np.float32)
+    for ch in channels:
+        iy, ix = gradients(ch, cfg.gradient_operator)
+        Jxx += ix * ix
+        Jxy += ix * iy
+        Jyy += iy * iy
+    Jxx = gaussian_blur(Jxx, cfg.tensor_sigma)
+    Jxy = gaussian_blur(Jxy, cfg.tensor_sigma)
+    Jyy = gaussian_blur(Jyy, cfg.tensor_sigma)
 
     half = 0.5 * (Jxx + Jyy)
     diff = 0.5 * (Jxx - Jyy)

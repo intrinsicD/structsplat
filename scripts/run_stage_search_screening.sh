@@ -9,10 +9,13 @@ python -m benchmarks.stage_search "$IMAGES" \
   --seeds 0 \
   --iters 300 \
   --max-side 320 \
+  --target-psnr 30 \
   --strategies aniso_flanking aniso_onedge iso_blue_noise \
   --tensor-operators central scharr \
+  --tensor-colors luma rgb \
   --density-modes structure hybrid variance \
-  --sampling-modes wse density_random \
+  --sampling-modes wse dart_throwing halton \
+  --orientation-modes tensor \
   --color-modes bilinear local_mean two_sided \
   --scale-modes spacing uniform \
   --opacity-modes none constant \

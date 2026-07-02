@@ -40,6 +40,7 @@ class CodecConfig:
     bits_scales: int = 8      # per log-scale
     bits_rot: int = 8
     bits_colors: int = 8      # per channel
+    bits_opacity: int = 8     # only used when the field carries opacities
     morton_reorder: bool = True
     zlib_level: int = 9
     # per-channel color ranges; computed from data when None, fixed during QAT
@@ -84,7 +85,10 @@ def _params(field: GaussianField):
     log_scales = field.log_scales.detach().cpu().numpy().astype(np.float64)
     theta = np.mod(field.rotations.detach().cpu().numpy().astype(np.float64), np.pi)
     colors = field.colors.detach().cpu().numpy().astype(np.float64)
-    return means, log_scales, theta, colors
+    opacity_p = None
+    if field.opacities is not None:  # store as probabilities: bounded [0,1] quantization range
+        opacity_p = torch.sigmoid(field.opacities).detach().cpu().numpy().astype(np.float64)
+    return means, log_scales, theta, colors, opacity_p
 
 
 def color_ranges(field: GaussianField) -> tuple[list[float], list[float]]:
@@ -94,7 +98,7 @@ def color_ranges(field: GaussianField) -> tuple[list[float], list[float]]:
 
 def encode(field: GaussianField, H: int, W: int, cfg: CodecConfig | None = None) -> bytes:
     cfg = cfg or CodecConfig()
-    means, log_scales, theta, colors = _params(field)
+    means, log_scales, theta, colors, opacity_p = _params(field)
     n = means.shape[0]
     scale_hi = float(np.log(max(H, W)))
     clo = np.asarray(cfg.color_lo if cfg.color_lo is not None else colors.min(axis=0))
@@ -103,6 +107,8 @@ def encode(field: GaussianField, H: int, W: int, cfg: CodecConfig | None = None)
     if cfg.morton_reorder:
         order = _morton_order(means[:, 0], means[:, 1], H, W)
         means, log_scales, theta, colors = (a[order] for a in (means, log_scales, theta, colors))
+        if opacity_p is not None:
+            opacity_p = opacity_p[order]
 
     q_means = _quant(means, [0.0, 0.0], [W - 1.0, H - 1.0], cfg.bits_means)
     if cfg.morton_reorder:  # delta along the Morton curve; zlib eats small deltas
@@ -118,11 +124,15 @@ def encode(field: GaussianField, H: int, W: int, cfg: CodecConfig | None = None)
         _pack(q_rot, cfg.bits_rot),
         _pack(q_colors.T.ravel(), cfg.bits_colors),
     ]
+    if opacity_p is not None:
+        streams.append(_pack(_quant(opacity_p, 0.0, 1.0, cfg.bits_opacity), cfg.bits_opacity))
     header = json.dumps({
         "n": int(n), "H": int(H), "W": int(W),
         "bits": [cfg.bits_means, cfg.bits_scales, cfg.bits_rot, cfg.bits_colors],
         "morton": bool(cfg.morton_reorder),
         "color_lo": clo.tolist(), "color_hi": chi.tolist(),
+        "has_opacity": opacity_p is not None,
+        "bits_opacity": cfg.bits_opacity,
     }).encode()
     blob = _MAGIC + struct.pack("<I", len(header)) + header
     for s in streams:
@@ -140,9 +150,10 @@ def decode(blob: bytes, device: str = "cpu") -> GaussianField:
     off += hlen
     n, H, W = h["n"], h["H"], h["W"]
     b_means, b_scales, b_rot, b_colors = h["bits"]
+    has_opacity = bool(h.get("has_opacity", False))
 
     raws = []
-    for _ in range(4):
+    for _ in range(5 if has_opacity else 4):
         (zlen,) = struct.unpack_from("<I", blob, off)
         off += 4
         raws.append(zlib.decompress(blob[off:off + zlen]))
@@ -160,11 +171,17 @@ def decode(blob: bytes, device: str = "cpu") -> GaussianField:
     log_scales = _dequant(q_scales, _SCALE_LO, float(np.log(max(H, W))), b_scales)
     theta = _dequant(q_rot, 0.0, np.pi, b_rot)
     colors = _dequant(q_colors, np.asarray(h["color_lo"]), np.asarray(h["color_hi"]), b_colors)
+    opacities = None
+    if has_opacity:
+        b_op = h["bits_opacity"]
+        p = _dequant(_unpack(raws[4], b_op, n), 0.0, 1.0, b_op).clip(1e-4, 1.0 - 1e-4)
+        opacities = np.log(p / (1.0 - p)).astype(np.float32)
 
     def t(a):
         return torch.as_tensor(np.ascontiguousarray(a), device=device, dtype=torch.float32)
 
-    return GaussianField(t(means), t(log_scales), t(theta), t(colors))
+    return GaussianField(t(means), t(log_scales), t(theta), t(colors),
+                         None if opacities is None else t(opacities))
 
 
 def _ste(x: torch.Tensor, lo, hi, bits: int) -> torch.Tensor:
@@ -187,7 +204,14 @@ def quantized_view(field: GaussianField, H: int, W: int, cfg: CodecConfig) -> Ga
     log_scales = _ste(field.log_scales, _SCALE_LO, scale_hi, cfg.bits_scales)
     theta = _ste(torch.remainder(field.rotations, torch.pi), 0.0, float(np.pi), cfg.bits_rot)
     colors = _ste(field.colors, clo, chi, cfg.bits_colors)
-    return GaussianField(means, log_scales, theta, colors)
+    opacities = None
+    if field.opacities is not None:
+        # quantize in probability space (matching encode), back through the logit so
+        # opacity_values() reproduces the exact decoded probabilities
+        p = _ste(torch.sigmoid(field.opacities), 0.0, 1.0, cfg.bits_opacity)
+        p = p.clamp(1e-4, 1.0 - 1e-4)
+        opacities = torch.log(p / (1.0 - p))
+    return GaussianField(means, log_scales, theta, colors, opacities)
 
 
 def qat_finetune(field: GaussianField, target: torch.Tensor, fcfg: FitConfig,
@@ -207,7 +231,8 @@ def qat_finetune(field: GaussianField, target: torch.Tensor, fcfg: FitConfig,
     for it in range(iters):
         qf = quantized_view(field, H, W, ccfg)
         img = render(qf.means, qf.conics(fcfg.aa_dilation), qf.colors,
-                     qf.radii(fcfg.sigma_cutoff, fcfg.aa_dilation), H, W, fcfg.render_chunk)
+                     qf.radii(fcfg.sigma_cutoff, fcfg.aa_dilation), H, W, fcfg.render_chunk,
+                     opacities=qf.opacity_values())
         pix = (img - target).abs().mean()
         loss = (1 - fcfg.ssim_weight) * pix + fcfg.ssim_weight * (1 - M.ssim(img, target))
         opt.zero_grad(set_to_none=True)
@@ -229,9 +254,12 @@ def rd_point(field: GaussianField, target: torch.Tensor, fcfg: FitConfig,
     blob = encode(field, H, W, ccfg)
     dec = decode(blob, device=str(target.device))
     img = render(dec.means, dec.conics(fcfg.aa_dilation), dec.colors,
-                 dec.radii(fcfg.sigma_cutoff, fcfg.aa_dilation), H, W, fcfg.render_chunk)
+                 dec.radii(fcfg.sigma_cutoff, fcfg.aa_dilation), H, W, fcfg.render_chunk,
+                 opacities=dec.opacity_values())
     bits = [ccfg.bits_means, ccfg.bits_scales, ccfg.bits_rot, ccfg.bits_colors]
     raw_bits = field.n * (2 * bits[0] + 2 * bits[1] + bits[2] + 3 * bits[3])
+    if field.opacities is not None:
+        raw_bits += field.n * ccfg.bits_opacity
     return {
         "bpp": 8.0 * len(blob) / (H * W),
         "raw_bpp": raw_bits / (H * W),

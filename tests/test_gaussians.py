@@ -33,6 +33,20 @@ def test_radii_positive_and_save_load(tmp_path):
     assert torch.allclose(g.means, h.means)
 
 
+def test_append_preserves_none_opacity_appearance():
+    # None opacity renders as 1.0; after appending an opacity-carrying field, the padded
+    # logits of the None side must stay ~1.0, not silently become sigmoid(0)=0.5
+    a = GaussianField.from_numpy(np.zeros((2, 2)), np.full((2, 2), 2.0),
+                                 np.zeros(2), np.zeros((2, 3)))
+    b = GaussianField.from_numpy(np.ones((3, 2)), np.full((3, 2), 2.0),
+                                 np.zeros(3), np.zeros((3, 3)), opacities=np.zeros(3))
+    ab = a.append(b)
+    vals = ab.opacity_values()
+    assert torch.allclose(vals[:2], torch.ones(2), atol=1e-4)
+    ba = b.append(a)
+    assert torch.allclose(ba.opacity_values()[3:], torch.ones(2), atol=1e-4)
+
+
 def test_opacity_save_load(tmp_path):
     g = GaussianField.from_numpy(np.zeros((3, 2)), np.full((3, 2), 2.0),
                                  np.zeros(3), np.zeros((3, 3)), opacities=np.ones(3))

@@ -39,8 +39,15 @@ structsplat ablation ./images --budgets 2000 5000 10000 20000 --iters 1500 --tar
 
 # full stage-combination screening: tensor/density/sampling/color/loss/refinement/pyramid
 structsplat stage-search ./images --budgets 1024 2048 --iters 300 --outdir results/stage_search
+
+# per-stage influence: one-factor-at-a-time deltas vs the baseline (writes influence.md with
+# ΔPSNR / ΔMS-SSIM / ΔAUC / Δiters-to-target / Δseconds per stage option, ADR-0010)
+structsplat stage-search ./images --mode influence --budgets 2048 --seeds 0 1 2 \
+    --iters 500 --target-psnr 30 --outdir results/stage_influence
 ```
 Strategies: `random`, `grid`, `iso_blue_noise`, `aniso_onedge`, `aniso_flanking`.
+Samplers: `wse` (blue noise), `dart_throwing` (Poisson disk), `halton`, `cvt`, `farthest_point`,
+`density_random`, `jittered_grid`.
 
 ## Agentic workflow (Claude Code)
 This repo is built to be implemented *with* Claude Code, mirroring the IntrinsicEngine setup.

@@ -60,10 +60,13 @@ class GaussianField:
         def cat_optional(a, b):
             if a is None and b is None:
                 return None
+            # opacities=None renders as opacity 1.0; the missing side must keep that
+            # appearance after the append, so pad with a saturating logit (sigmoid(10)
+            # ~ 0.99995), not zeros (which would silently mean opacity 0.5)
             if a is None:
-                a = torch.zeros(self.n, device=b.device, dtype=b.dtype)
+                a = torch.full((self.n,), 10.0, device=b.device, dtype=b.dtype)
             if b is None:
-                b = torch.zeros(other.n, device=a.device, dtype=a.dtype)
+                b = torch.full((other.n,), 10.0, device=a.device, dtype=a.dtype)
             return cat(a, b)
 
         return GaussianField(
