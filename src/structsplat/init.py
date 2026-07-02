@@ -56,7 +56,7 @@ def _blue_noise_positions(img, density, tensor, icfg, anisotropic, rng):
     metric = None
     if anisotropic:
         angle = _nearest(tensor.across_edge_angle, cand)
-        coh = _nearest(tensor.coherence, cand)
+        coh = np.clip(_nearest(tensor.coherence, cand), 0.0, 1.0) ** icfg.coherence_power
         ratio = 1.0 + (icfg.max_axis_ratio - 1.0) * coh
         metric = sa.anisotropy_metric(angle, ratio)
     keep = sa.eliminate(cand, n, r_i, metric=metric)
@@ -97,7 +97,7 @@ def build_field(img: np.ndarray, icfg: InitConfig,
         anisotropic = strat in ("aniso_onedge", "aniso_flanking")
         pts, spacing = _blue_noise_positions(img, density, tensor, icfg, anisotropic, rng)
         angles = _nearest(tensor.along_edge_angle, pts)      # elongate along the edge
-        coh = _nearest(tensor.coherence, pts)
+        coh = np.clip(_nearest(tensor.coherence, pts), 0.0, 1.0) ** icfg.coherence_power
         ratios = 1.0 + (icfg.max_axis_ratio - 1.0) * coh if anisotropic else np.ones(len(pts))
         if strat == "aniso_flanking":
             label = _nearest(tensor.label, pts)

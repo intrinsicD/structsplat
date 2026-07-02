@@ -51,3 +51,37 @@ def render(means, conics, colors, radii, H: int, W: int, chunk: int = 4096):
 
     img = num / (den + _EPS)
     return img.view(H, W, 3)
+
+
+@torch.no_grad()
+def gaussian_activity(means, conics, radii, H: int, W: int, chunk: int = 4096):
+    """Return each Gaussian's summed unnormalized weight over the image.
+
+    This is a diagnostic/pruning helper for the reference fitter. It intentionally mirrors the
+    renderer support window so a Gaussian that contributes no weight inside the image can be
+    removed without changing the mathematical renderer.
+    """
+    dev, dt = means.device, means.dtype
+    activity = torch.zeros(means.shape[0], device=dev, dtype=dt)
+    order = torch.argsort(radii)
+    for start in range(0, means.shape[0], chunk):
+        idx = order[start:start + chunk]
+        r = int(torch.clamp(radii[idx].max(), min=1).item())
+        mu = means[idx]
+        cx, cy = mu[:, 0], mu[:, 1]
+        ix = torch.round(cx).long()
+        iy = torch.round(cy).long()
+        off = torch.arange(-r, r + 1, device=dev)
+        oy, ox = torch.meshgrid(off, off, indexing="ij")
+        px = ix[:, None, None] + ox[None]
+        py = iy[:, None, None] + oy[None]
+        dx = px.to(dt) - cx[:, None, None]
+        dy = py.to(dt) - cy[:, None, None]
+        a = conics[idx, 0][:, None, None]
+        b = conics[idx, 1][:, None, None]
+        c = conics[idx, 2][:, None, None]
+        q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
+        w = torch.exp(-0.5 * q)
+        valid = (px >= 0) & (px < W) & (py >= 0) & (py < H)
+        activity[idx] = (w * valid).flatten(1).sum(dim=1)
+    return activity

@@ -68,4 +68,6 @@ class LPIPS:
             cls._net = lpips.LPIPS(net="alex")
         p = _to_bchw(pred) * 2 - 1
         t = _to_bchw(target) * 2 - 1
-        return float(cls._net(p, t).mean())
+        cls._net = cls._net.to(device=p.device, dtype=p.dtype).eval()
+        with torch.no_grad():
+            return float(cls._net(p, t).mean())

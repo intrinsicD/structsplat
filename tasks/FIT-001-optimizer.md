@@ -8,4 +8,7 @@
 - [x] Records PSNR history + iters-to-target; returns render + metrics dict.
 
 ## Follow-ups
-Optional opacity/pruning of dead Gaussians; LR schedules; densify/split during fit (later).
+- [x] LR schedules.
+- [x] Pruning of inactive/dead Gaussians.
+- [x] Residual-driven split/densify during fit.
+- [ ] Optional opacity parameterization.

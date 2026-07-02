@@ -1,3 +1,4 @@
+# ruff: noqa: E402
 import numpy as np
 import pytest
 
@@ -35,6 +36,36 @@ def test_fit_runs_and_improves():
     assert np.isfinite(out["psnr"]) and out["psnr"] > 0
 
 
+def test_fit_dynamic_controls_prune_split_and_track_targets():
+    img = _toy(24, 24)
+    target = torch.as_tensor(img)
+    icfg = InitConfig(strategy="aniso_flanking", num_gaussians=24)
+    field = _init.build_field(img, icfg)
+    out = fit(
+        field,
+        target,
+        FitConfig(
+            iters=4,
+            log_every=1,
+            pixel_loss="l2",
+            target_psnrs=[0.0],
+            lr_decay_every=2,
+            prune_every=2,
+            prune_min_activity=1e9,
+            prune_keep_min=8,
+            split_every=2,
+            split_count=2,
+            split_scale=0.8,
+            max_gaussians=30,
+        ),
+        verbose=False,
+    )
+    assert out["lpips"] is None
+    assert out["iters_to_targets"]["0.0"] is not None
+    assert 8 <= out["n_gaussians"] <= 30
+    assert len(out["history"]["n_gaussians"]) == 4
+
+
 def test_pyramid_runs():
     img = _toy()
     target = torch.as_tensor(img)
@@ -43,3 +74,6 @@ def test_pyramid_runs():
                       PyramidConfig(levels=2, level_fractions=[0.5, 0.5], iters_per_level=8),
                       verbose=False)
     assert np.isfinite(out["psnr"])
+    assert len(out["level_counts"]) == 2
+    assert len(out["prefix_metrics"]) == 2
+    assert out["prefix_metrics"][-1]["n_gaussians"] == out["n_gaussians"]

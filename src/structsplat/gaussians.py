@@ -21,13 +21,43 @@ class GaussianField:
 
     @classmethod
     def from_numpy(cls, means, scales, angles, colors, device="cpu", dtype=torch.float32):
-        t = lambda a: torch.as_tensor(np.asarray(a), device=device, dtype=dtype)
+        def t(a):
+            return torch.as_tensor(np.asarray(a), device=device, dtype=dtype)
+
         scales = np.clip(np.asarray(scales), 1e-3, None)
         return cls(t(means), torch.log(t(scales)), t(angles).reshape(-1), t(colors))
 
     @property
     def n(self) -> int:
         return self.means.shape[0]
+
+    def detached(self) -> "GaussianField":
+        """Return a leaf-tensor copy suitable for rebuilding an optimizer."""
+        return GaussianField(
+            self.means.detach().clone(),
+            self.log_scales.detach().clone(),
+            self.rotations.detach().clone(),
+            self.colors.detach().clone(),
+        )
+
+    def subset(self, idx) -> "GaussianField":
+        return GaussianField(
+            self.means.detach()[idx].clone(),
+            self.log_scales.detach()[idx].clone(),
+            self.rotations.detach()[idx].clone(),
+            self.colors.detach()[idx].clone(),
+        )
+
+    def append(self, other: "GaussianField") -> "GaussianField":
+        def cat(a, b):
+            return torch.cat([a.detach(), b.detach()], dim=0).clone()
+
+        return GaussianField(
+            cat(self.means, other.means),
+            cat(self.log_scales, other.log_scales),
+            cat(self.rotations, other.rotations),
+            cat(self.colors, other.colors),
+        )
 
     def trainable(self) -> "GaussianField":
         for p in (self.means, self.log_scales, self.rotations, self.colors):
@@ -74,5 +104,8 @@ class GaussianField:
     @classmethod
     def load(cls, path: str, device="cpu"):
         z = np.load(path)
-        t = lambda k: torch.as_tensor(z[k], device=device, dtype=torch.float32)
+
+        def t(k):
+            return torch.as_tensor(z[k], device=device, dtype=torch.float32)
+
         return cls(t("means"), t("log_scales"), t("rotations"), t("colors"))
