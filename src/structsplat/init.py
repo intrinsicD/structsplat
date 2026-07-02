@@ -72,20 +72,21 @@ def build_field(img: np.ndarray, icfg: InitConfig,
     rng = np.random.default_rng(icfg.seed)
     n = icfg.num_gaussians
     strat = icfg.strategy
-    diag = float(np.hypot(H, W))
 
     if strat == "random":
-        pts = rng.random((n, 2)) * np.array([W, H])
-        spacing = np.full(n, diag / np.sqrt(n))
+        pts = rng.random((n, 2)) * np.array([W, H]) - 0.5   # pixel centers at integer coords
+        spacing = np.full(n, np.sqrt(H * W / n))            # mean per-point area -> spacing
         angles = np.zeros(n)
         ratios = np.ones(n)
     elif strat == "grid":
         gw = int(round(np.sqrt(n * W / H)))
         gh = int(np.ceil(n / max(gw, 1)))
-        xs = (np.arange(gw) + 0.5) * W / gw
-        ys = (np.arange(gh) + 0.5) * H / gh
+        xs = (np.arange(gw) + 0.5) * W / gw - 0.5
+        ys = (np.arange(gh) + 0.5) * H / gh - 0.5
         gx, gy = np.meshgrid(xs, ys)
-        pts = np.stack([gx.ravel(), gy.ravel()], 1)[:n]
+        pts = np.stack([gx.ravel(), gy.ravel()], 1)
+        if len(pts) > n:  # drop evenly across the grid, not the bottom rows
+            pts = pts[np.round(np.linspace(0, len(pts) - 1, n)).astype(int)]
         spacing = np.full(len(pts), np.sqrt((W / gw) * (H / gh)))
         angles = np.zeros(len(pts))
         ratios = np.ones(len(pts))
@@ -104,8 +105,12 @@ def build_field(img: np.ndarray, icfg: InitConfig,
             across = _nearest(tensor.across_edge_angle, pts)
             normal = np.stack([np.cos(across), np.sin(across)], 1)
             s_across = spacing / np.sqrt(np.maximum(ratios, 1.0))
+            # Floor the flank distance at the edge blur width: at realistic budgets the
+            # across-edge spacing is sub-pixel, so a spacing-only offset never clears the
+            # blurred transition zone and flanking degenerates to on-edge placement.
+            edge_w = 2.0 * (scfg or StructureTensorConfig()).grad_sigma
             sign = np.where((np.arange(len(pts)) % 2) == 0, 1.0, -1.0)
-            offset = (sign * s_across * icfg.flank_offset_frac)[:, None] * normal
+            offset = (sign * np.maximum(s_across, edge_w) * icfg.flank_offset_frac)[:, None] * normal
             is_edge = (label == 1)[:, None]
             pts = pts + offset * is_edge                     # only edges get flanked
             pts[:, 0] = np.clip(pts[:, 0], 0, W - 1)

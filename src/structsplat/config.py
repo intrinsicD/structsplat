@@ -30,10 +30,12 @@ class InitConfig:
 @dataclass
 class FitConfig:
     iters: int = 2000
-    lr_means: float = 2e-3
-    lr_scales: float = 5e-3
-    lr_rot: float = 2e-3
-    lr_color: float = 1e-2
+    # LRs are ~pixels/step for means under Adam; the old 2e-3 left positions nearly frozen.
+    # Retuned on the init sweep (ADR-0008): ~6x faster to a target PSNR, +2 dB at fixed iters.
+    lr_means: float = 5e-2
+    lr_scales: float = 3e-2
+    lr_rot: float = 1e-2
+    lr_color: float = 3e-2
     pixel_loss: str = "l1"             # l1 or l2; SSIM term is mixed in separately
     ssim_weight: float = 0.3           # loss = (1-w)*L1 + w*(1-SSIM); Instant-GI/AIR default
     compute_lpips: bool = False        # opt-in: loads a separate AlexNet LPIPS model
@@ -41,6 +43,7 @@ class FitConfig:
     target_psnrs: list[float] = field(default_factory=list)
     log_every: int = 100
     sigma_cutoff: float = 3.0          # render support radius in std devs
+    aa_dilation: float = 0.0           # EWA-style low-pass: render with Sigma + d*I (px^2)
     render_chunk: int = 512            # reference renderer: lower chunk cuts peak memory
     lr_decay_every: int | None = None
     lr_decay_gamma: float = 0.5

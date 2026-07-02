@@ -75,11 +75,15 @@ class GaussianField:
     def scales(self):
         return torch.exp(self.log_scales)
 
-    def conics(self):
-        """Return (a,b,c): the unique entries of the inverse covariance Sigma^-1=[[a,b],[b,c]]."""
+    def conics(self, dilation: float = 0.0):
+        """Return (a,b,c): the unique entries of the inverse covariance Sigma^-1=[[a,b],[b,c]].
+
+        `dilation` adds an isotropic EWA-style low-pass to the covariance (Sigma + d*I);
+        exact under RS since Sigma + d*I = R diag(sx^2+d, sy^2+d) R^T.
+        """
         s = self.scales()
-        inv_sx2 = 1.0 / (s[:, 0] ** 2)
-        inv_sy2 = 1.0 / (s[:, 1] ** 2)
+        inv_sx2 = 1.0 / (s[:, 0] ** 2 + dilation)
+        inv_sy2 = 1.0 / (s[:, 1] ** 2 + dilation)
         c = torch.cos(self.rotations)
         sn = torch.sin(self.rotations)
         a = c * c * inv_sx2 + sn * sn * inv_sy2
@@ -87,12 +91,19 @@ class GaussianField:
         cc = sn * sn * inv_sx2 + c * c * inv_sy2
         return torch.stack([a, b, cc], dim=1)
 
-    def radii(self, sigma_cutoff: float):
-        # eigenvalues of Sigma are sx^2, sy^2 -> max std is max(sx,sy).
+    def radii(self, sigma_cutoff: float, dilation: float = 0.0):
+        # Per-axis support half-widths (N,2): the AABB of the sigma_cutoff ellipse.
+        # Sigma_xx = c^2 sx^2 + s^2 sy^2, Sigma_yy = s^2 sx^2 + c^2 sy^2; an elongated
+        # Gaussian gets a tight rectangle instead of a square sized by its major axis.
         # Detached on purpose: radii only set the tile/bbox extent, never the loss gradient.
         with torch.no_grad():
-            smax = self.scales().max(dim=1).values
-            return torch.clamp((sigma_cutoff * smax).ceil().long(), min=1)
+            s2 = self.scales() ** 2 + dilation
+            c = torch.cos(self.rotations)
+            sn = torch.sin(self.rotations)
+            var_x = c * c * s2[:, 0] + sn * sn * s2[:, 1]
+            var_y = sn * sn * s2[:, 0] + c * c * s2[:, 1]
+            r = sigma_cutoff * torch.sqrt(torch.stack([var_x, var_y], dim=1))
+            return torch.clamp(r.ceil().long(), min=1)
 
     @torch.no_grad()
     def save(self, path: str):

@@ -17,7 +17,7 @@ HIER, BENCH, ABL, FF, COMP, PORT. Work items are picked up via the `task-workflo
 | ABL-001 | Init-strategy x budget sweep (the core experiment + fitness) | todo | INIT-003/004, BENCH-001 |
 | FF-001 | Feed-forward init predictor (warm-start) | todo | INIT-003, FIT-001 |
 | GEN-001 | Generative 2D Gaussians via SDS distillation (no dataset) | todo | CORE-001, ADR-0006 |
-| COMP-001 | Quantization + entropy/VQ codec (rate-distortion) | todo | FIT-001 |
+| COMP-001 | Quantization + entropy/VQ codec (rate-distortion) | partial | FIT-001 |
 | PORT-001 | CUDA tile rasterizer → IntrinsicEngine RHI pass | todo | CORE-001 |
 
 "done (reference)" means a correct, validated NumPy/PyTorch version exists — not that it is the
