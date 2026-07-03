@@ -99,8 +99,12 @@ class FitConfig:
 @dataclass
 class PyramidConfig:
     levels: int = 4
-    # fraction of the total budget placed at each level (coarse -> fine). Must sum ~1.
+    # fraction of the total budget placed at each level (coarse -> fine). Need not sum to 1;
+    # normalized internally and placed by largest-remainder so level budgets sum exactly to
+    # num_gaussians (HIER-002).
     level_fractions: list[float] = field(default_factory=lambda: [0.1, 0.2, 0.3, 0.4])
+    # A cosine lr_schedule spans the whole pyramid run (one decay across all levels), not a
+    # per-level warm restart, so it is comparable to a single-stage cosine (HIER-002 / ADR-0010).
     iters_per_level: int = 500
     residual_grad_sigma: float = 0.8   # structure tensor of the residual is sharper
     level_grad_sigmas: list[float] | None = None

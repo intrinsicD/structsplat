@@ -40,13 +40,20 @@ def _make_optimizer(field: GaussianField, cfg: FitConfig):
     raise ValueError(f"unknown optimizer {cfg.optimizer!r}; expected adam or adamw")
 
 
-def _lr_factor(cfg: FitConfig, it: int) -> float:
+def _lr_factor(cfg: FitConfig, it: int, sched_offset: int = 0,
+               sched_total: int | None = None) -> float:
     """LR multiplier as a pure function of the global iteration.
 
     Because it depends only on `it` (not optimizer internal state), the schedule survives the
     optimizer rebuild after a prune/split — a freshly constructed StepLR/CosineLR would silently
     reset. `lr_schedule` selects the shape; `lr_schedule="none"` with `lr_decay_every` set falls
     back to step decay for backward compatibility.
+
+    `sched_offset`/`sched_total` let a caller place this fit inside a larger run so the cosine
+    phase spans the whole run rather than restarting each call: the pyramid passes the level's
+    global start and the pyramid-wide iteration count so `lr_schedule='cosine'` measures the same
+    schedule in pyramid and single-stage cells (HIER-002). Defaults reproduce the single-stage
+    behavior (offset 0, total = cfg.iters).
     """
     schedule = cfg.lr_schedule
     if schedule == "none" and cfg.lr_decay_every is not None and cfg.lr_decay_every > 0:
@@ -55,9 +62,10 @@ def _lr_factor(cfg: FitConfig, it: int) -> float:
         return 1.0
     if schedule == "step":
         step = cfg.lr_decay_every if cfg.lr_decay_every and cfg.lr_decay_every > 0 else 500
-        return cfg.lr_decay_gamma ** (it // step)
+        return cfg.lr_decay_gamma ** ((sched_offset + it) // step)
     if schedule == "cosine":
-        return 0.5 * (1.0 + math.cos(math.pi * it / max(1, cfg.iters)))
+        total = sched_total if sched_total is not None else cfg.iters
+        return 0.5 * (1.0 + math.cos(math.pi * (sched_offset + it) / max(1, total)))
     raise ValueError(f"unknown lr_schedule {cfg.lr_schedule!r}; expected none, step, or cosine")
 
 
@@ -326,7 +334,8 @@ def _add_from_residual(field: GaussianField, target: torch.Tensor, render_img: t
                                       scale_max=scale_max)), k
 
 
-def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: bool = True) -> dict:
+def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: bool = True,
+        sched_offset: int = 0, sched_total: int | None = None) -> dict:
     H, W = target.shape[0], target.shape[1]
     field.trainable()
     opt = _make_optimizer(field, cfg)
@@ -343,7 +352,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
 
     for it in range(cfg.iters):
         last_iter = it
-        factor = _lr_factor(cfg, it)
+        factor = _lr_factor(cfg, it, sched_offset, sched_total)
         for g, base in zip(opt.param_groups, base_lrs):
             g["lr"] = base * factor
         img = _render(field, cfg, H, W)

@@ -1,6 +1,6 @@
 # HIER-002: Pyramid bookkeeping fixes (iteration accounting, budgets, schedules)
 
-**Status: todo.** Confirmed defects from the 2026-07-03 repo review (item 1 adversarially
+**Status: done.** Confirmed defects from the 2026-07-03 repo review (item 1 adversarially
 verified by execution).
 
 ## Context
@@ -25,16 +25,16 @@ Pyramid runs report exactly what they did, place exactly the nominal budget, and
 axes mean the same thing in every cell.
 
 ## Acceptance criteria
-- [ ] `iterations_run` summed across levels; `stopped_early = any(level stopped)`; test.
-- [ ] `iter_offset += out["iterations_run"]`; test: an early-stopping level produces no gap in
+- [x] `iterations_run` summed across levels; `stopped_early = any(level stopped)`; test.
+- [x] `iter_offset += out["iterations_run"]`; test: an early-stopping level produces no gap in
       the combined history iteration axis.
-- [ ] Largest-remainder allocation of level budgets (floor shares, distribute the remainder by
+- [x] Largest-remainder allocation of level budgets (floor shares, distribute the remainder by
       largest fractional part); test: `sum(level budgets) == num_gaussians` for
       representative (N, fractions) pairs including tiny N.
-- [ ] Cosine phase either spans the whole pyramid run (pass a global (offset, total) into
+- [x] Cosine phase either spans the whole pyramid run (pass a global (offset, total) into
       `fit`) or the warm-restart semantics are documented in `PyramidConfig` and ADR-0010's
       protocol notes — one or the other, decided and recorded.
-- [ ] `pytest -q` green; `tests/test_pyramid.py` extended for all three accounting fixes.
+- [x] `pytest -q` green; `tests/test_pyramid.py` extended for all three accounting fixes.
 
 ## Interfaces touched
 `src/structsplat/pyramid.py`, `src/structsplat/fit.py`, `src/structsplat/config.py`,

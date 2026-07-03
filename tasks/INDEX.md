@@ -30,7 +30,7 @@ skill.
 | FIT-002 | Fitter correctness (split colors, opacity pruning, history pairing) | done | FIT-001, CORE-004 |
 | FIT-003 | Fit-loop speed (device-side targets, SSIM hygiene, fused SSIM) | todo | FIT-001, BENCH-001 |
 | FIT-004 | Densification & convergence upgrades (fp-growth, relocation, NMS) | todo | FIT-002, BENCH-002 |
-| HIER-002 | Pyramid bookkeeping (iteration accounting, budgets, schedules) | todo | HIER-001, FIT-001 |
+| HIER-002 | Pyramid bookkeeping (iteration accounting, budgets, schedules) | done | HIER-001, FIT-001 |
 | BENCH-002 | Benchmark harness experimental-validity fixes (**gates all sweeps**) | todo | — |
 | BENCH-003 | Benchmark script consolidation + documentation | todo | BENCH-002 |
 | ABL-003 | Bisect the undiagnosed −0.794 dB flagship regression | todo | — |

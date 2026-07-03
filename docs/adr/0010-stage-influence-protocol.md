@@ -38,3 +38,14 @@ gradient feeds.
   cells).
 * Deduplication changes factorial cell counts versus the pre-ADR harness when inert combinations
   were requested; `--no-dedupe` restores the old behavior for reproducing historical sweeps.
+
+## Protocol note: LR schedule in pyramid vs single-stage cells (HIER-002)
+
+The `lr_schedule` axis must mean the same thing in every cell. A `cosine` schedule spans the
+**whole run**: `fit` accepts a `(sched_offset, sched_total)` span, and `fit_pyramid` passes the
+level's nominal start (`lvl * iters_per_level`) and the pyramid-wide iteration count
+(`levels * iters_per_level`), so a pyramid cosine is one decay across all levels — not a per-level
+warm restart — and is directly comparable to a single-stage cosine over the same total budget.
+Early stops do not reshape the schedule (it is a function of the nominal planned iteration).
+Level budgets are placed by largest-remainder allocation so they sum exactly to `num_gaussians`,
+and pyramid runs report `iterations_run`/`stopped_early` aggregated across levels.
