@@ -1,0 +1,192 @@
+[
+  {
+    "label": "before",
+    "repo": "/home/alex/Documents/Deeplearning3/external/structsplat/results/fit003_before",
+    "device": "cpu",
+    "renderer": "normalized",
+    "budget": 512,
+    "ssim_backend": "builtin",
+    "iters": 20,
+    "fit_seconds": 0.26453638076782227,
+    "wall_seconds": 0.7852999716997147,
+    "seconds_per_iter": 0.013226819038391114,
+    "psnr": 18.591365814208984,
+    "iters_to_targets": {
+      "20.0": null,
+      "25.0": null,
+      "30.0": null
+    },
+    "status": "ok"
+  },
+  {
+    "label": "after",
+    "repo": "/home/alex/Documents/Deeplearning3/external/structsplat",
+    "device": "cpu",
+    "renderer": "normalized",
+    "budget": 512,
+    "ssim_backend": "builtin",
+    "iters": 20,
+    "fit_seconds": 0.2979469299316406,
+    "wall_seconds": 0.8811977538280189,
+    "seconds_per_iter": 0.014897346496582031,
+    "psnr": 18.591365814208984,
+    "iters_to_targets": {
+      "20.0": null,
+      "25.0": null,
+      "30.0": null
+    },
+    "status": "ok"
+  },
+  {
+    "label": "before",
+    "repo": "/home/alex/Documents/Deeplearning3/external/structsplat/results/fit003_before",
+    "device": "cpu",
+    "renderer": "normalized",
+    "budget": 20000,
+    "ssim_backend": "builtin",
+    "iters": 20,
+    "fit_seconds": 0.5842673778533936,
+    "wall_seconds": 1.0998868052847683,
+    "seconds_per_iter": 0.029213368892669678,
+    "psnr": 42.32826614379883,
+    "iters_to_targets": {
+      "20.0": 0,
+      "25.0": 1,
+      "30.0": 3
+    },
+    "status": "ok"
+  },
+  {
+    "label": "after",
+    "repo": "/home/alex/Documents/Deeplearning3/external/structsplat",
+    "device": "cpu",
+    "renderer": "normalized",
+    "budget": 20000,
+    "ssim_backend": "builtin",
+    "iters": 20,
+    "fit_seconds": 0.5348939895629883,
+    "wall_seconds": 1.0886581679806113,
+    "seconds_per_iter": 0.026744699478149413,
+    "psnr": 42.32826614379883,
+    "iters_to_targets": {
+      "20.0": 0,
+      "25.0": 1,
+      "30.0": 3
+    },
+    "status": "ok"
+  },
+  {
+    "label": "before",
+    "repo": "/home/alex/Documents/Deeplearning3/external/structsplat/results/fit003_before",
+    "device": "cuda",
+    "renderer": "cuda",
+    "budget": 512,
+    "ssim_backend": "builtin",
+    "iters": 20,
+    "fit_seconds": 0.0341954231262207,
+    "wall_seconds": 0.03554197866469622,
+    "seconds_per_iter": 0.0017097711563110352,
+    "psnr": 18.591367721557617,
+    "iters_to_targets": {
+      "20.0": null,
+      "25.0": null,
+      "30.0": null
+    },
+    "status": "ok"
+  },
+  {
+    "label": "after",
+    "repo": "/home/alex/Documents/Deeplearning3/external/structsplat",
+    "device": "cuda",
+    "renderer": "cuda",
+    "budget": 512,
+    "ssim_backend": "builtin",
+    "iters": 20,
+    "fit_seconds": 0.030928373336791992,
+    "wall_seconds": 0.03272183798253536,
+    "seconds_per_iter": 0.0015464186668395995,
+    "psnr": 18.59138298034668,
+    "iters_to_targets": {
+      "20.0": null,
+      "25.0": null,
+      "30.0": null
+    },
+    "status": "ok"
+  },
+  {
+    "label": "after_fused",
+    "repo": "/home/alex/Documents/Deeplearning3/external/structsplat",
+    "device": "cuda",
+    "renderer": "cuda",
+    "budget": 512,
+    "ssim_backend": "fused",
+    "iters": 20,
+    "fit_seconds": 0.026467084884643555,
+    "wall_seconds": 0.02755133481696248,
+    "seconds_per_iter": 0.0013233542442321778,
+    "psnr": 18.591293334960938,
+    "iters_to_targets": {
+      "20.0": null,
+      "25.0": null,
+      "30.0": null
+    },
+    "status": "ok"
+  },
+  {
+    "label": "before",
+    "repo": "/home/alex/Documents/Deeplearning3/external/structsplat/results/fit003_before",
+    "device": "cuda",
+    "renderer": "cuda",
+    "budget": 20000,
+    "ssim_backend": "builtin",
+    "iters": 20,
+    "fit_seconds": 0.060353755950927734,
+    "wall_seconds": 0.06276926398277283,
+    "seconds_per_iter": 0.003017687797546387,
+    "psnr": 42.327632904052734,
+    "iters_to_targets": {
+      "20.0": 0,
+      "25.0": 1,
+      "30.0": 3
+    },
+    "status": "ok"
+  },
+  {
+    "label": "after",
+    "repo": "/home/alex/Documents/Deeplearning3/external/structsplat",
+    "device": "cuda",
+    "renderer": "cuda",
+    "budget": 20000,
+    "ssim_backend": "builtin",
+    "iters": 20,
+    "fit_seconds": 0.0474092960357666,
+    "wall_seconds": 0.049003096763044596,
+    "seconds_per_iter": 0.0023704648017883303,
+    "psnr": 42.326683044433594,
+    "iters_to_targets": {
+      "20.0": 0,
+      "25.0": 1,
+      "30.0": 3
+    },
+    "status": "ok"
+  },
+  {
+    "label": "after_fused",
+    "repo": "/home/alex/Documents/Deeplearning3/external/structsplat",
+    "device": "cuda",
+    "renderer": "cuda",
+    "budget": 20000,
+    "ssim_backend": "fused",
+    "iters": 20,
+    "fit_seconds": 0.04344296455383301,
+    "wall_seconds": 0.04473730502650142,
+    "seconds_per_iter": 0.0021721482276916503,
+    "psnr": 42.3296012878418,
+    "iters_to_targets": {
+      "20.0": 0,
+      "25.0": 1,
+      "30.0": 3
+    },
+    "status": "ok"
+  }
+]

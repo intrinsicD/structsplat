@@ -344,6 +344,17 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
     hist = {"iter": [], "psnr": [], "loss": [], "n_gaussians": [], "elapsed": []}
     targets = _target_list(cfg)
     iters_to_targets = {str(t): None for t in targets}
+    target_thresholds = None
+    target_iters_device = None
+    if targets:
+        target_thresholds = torch.as_tensor(
+            [M.psnr_mse_threshold(t) for t in targets],
+            device=target.device,
+            dtype=target.dtype,
+        )
+        target_iters_device = torch.full(
+            (len(targets),), -1, device=target.device, dtype=torch.long
+        )
     start_time = time.time()
     best_logged_psnr = -math.inf
     stale_logs = 0
@@ -360,8 +371,11 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         # logging the post-restructure field.n would pair a pre-step PSNR with a post-step N.
         n_at_render = field.n
         pix = _pixel_loss(img, target, _loss_kind(cfg, it), cfg.charbonnier_eps)
-        s = M.ssim(img, target)
-        loss = (1 - cfg.ssim_weight) * pix + cfg.ssim_weight * (1 - s)
+        if cfg.ssim_weight == 0.0:
+            loss = pix
+        else:
+            s = M.ssim(img, target, backend=cfg.ssim_backend)
+            loss = (1 - cfg.ssim_weight) * pix + cfg.ssim_weight * (1 - s)
         opt.zero_grad(set_to_none=True)
         loss.backward()
         opt.step()
@@ -371,12 +385,19 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             if getattr(field, "scale_max", None) is not None:
                 cap = torch.log(torch.clamp(field.scale_max, min=1e-3))
                 torch.minimum(field.log_scales, cap, out=field.log_scales)
-            if targets or log_now:
-                p_now = M.psnr(img, target)
-            for t in targets:
-                key = str(t)
-                if iters_to_targets[key] is None and p_now >= t:
-                    iters_to_targets[key] = it
+            mse_now = None
+            if target_thresholds is not None and target_iters_device is not None:
+                mse_now = M.mse(img, target).detach().clamp_min(1e-12)
+                newly_reached = (target_iters_device < 0) & (mse_now <= target_thresholds)
+                target_iters_device = torch.where(
+                    newly_reached,
+                    torch.full_like(target_iters_device, it),
+                    target_iters_device,
+                )
+            if log_now:
+                if mse_now is None:
+                    mse_now = M.mse(img, target).detach().clamp_min(1e-12)
+                p_now = float(M.psnr_from_mse(mse_now))
 
         keep = None
         added = 0
@@ -429,10 +450,16 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
 
     fit_seconds = time.time() - start_time  # before the final eval: metrics (esp. LPIPS
     with torch.no_grad():                   # model construction) must not pollute the timing
+        if target_iters_device is not None:
+            reached = target_iters_device.detach().cpu().tolist()
+            iters_to_targets = {
+                str(t): (None if int(v) < 0 else int(v)) for t, v in zip(targets, reached)
+            }
         img = _render(field, cfg, H, W)
         out = {
             "field": field, "history": hist, "render": img,
-            "psnr": M.psnr(img, target), "ssim": float(M.ssim(img, target)),
+            "psnr": M.psnr(img, target),
+            "ssim": float(M.ssim(img, target, backend=cfg.ssim_backend)),
             "ms_ssim": M.ms_ssim(img, target),
             "lpips": M.LPIPS.distance(img, target) if cfg.compute_lpips else None,
             "iters_to_target": (

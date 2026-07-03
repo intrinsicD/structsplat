@@ -1,0 +1,15 @@
+{
+  "date": "2026-07-03",
+  "task": "FIT-003",
+  "before_ref": "a661c75",
+  "after_ref": "working tree before FIT-003 commit",
+  "image": "results/abl003_coco_train2014/COCO_train2014_000000000009.jpg",
+  "max_side": 96,
+  "iters": 20,
+  "budgets": [512, 20000],
+  "target_psnrs": [20.0, 25.0, 30.0],
+  "ssim_weight": 0.3,
+  "cpu_renderer": "normalized",
+  "cuda_renderer": "cuda",
+  "cuda_warmup": "one 2-iteration fit per measured CUDA row to exclude extension compile/setup time"
+}

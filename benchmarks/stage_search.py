@@ -263,7 +263,7 @@ def _seconds_to_target(history: dict, iters_to_target) -> float | None:
 
 
 def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight,
-             flank_offset, max_axis_ratio, coherence_power, init_scale_mult,
+             ssim_backend, flank_offset, max_axis_ratio, coherence_power, init_scale_mult,
              density_base, density_power, flat_frac, corner_frac, grad_sigma, tensor_sigma,
              color_radius, init_opacity, lr_decay_every, lr_decay_gamma, split_every, split_count,
              prune_every, prune_min_activity, max_gaussians, pyramid_levels,
@@ -306,6 +306,7 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         iters=iters,
         render_chunk=render_chunk,
         ssim_weight=ssim_weight,
+        ssim_backend=ssim_backend,
         compute_lpips=compute_lpips,
         pixel_loss=cfg["loss"],
         optimizer=cfg["optimizer"],
@@ -390,6 +391,7 @@ def run_stage_search(
     pyramid_modes=None,
     render_chunk=512,
     ssim_weight=0.3,
+    ssim_backend="builtin",
     flank_offset=0.5,
     max_axis_ratio=6.0,
     coherence_power=1.0,
@@ -454,6 +456,7 @@ def run_stage_search(
         "images": files, "mode": mode, "budgets": list(budgets), "seeds": list(seeds),
         "iters": iters, "max_side": max_side, "axes": {k: list(v) for k, v in axes.items()},
         "render_chunk": render_chunk, "ssim_weight": ssim_weight, "split_every": split_every,
+        "ssim_backend": ssim_backend,
         "split_count": split_count, "prune_every": prune_every,
         "prune_min_activity": prune_min_activity, "max_gaussians": max_gaussians,
         "target_psnr": target_psnr, "dedupe": dedupe,
@@ -535,6 +538,7 @@ def run_stage_search(
                         metrics = _run_one(
                             img, target, cfg, budget=init_budget, seed=seed, iters=iters,
                             render_chunk=render_chunk, ssim_weight=ssim_weight,
+                            ssim_backend=ssim_backend,
                             flank_offset=flank_offset, max_axis_ratio=max_axis_ratio,
                             coherence_power=coherence_power, init_scale_mult=init_scale_mult,
                             density_base=density_base, density_power=density_power,
@@ -757,6 +761,7 @@ def main():
     p.add_argument("--pyramid-modes", nargs="+", default=None)
     p.add_argument("--chunk", type=int, default=512)
     p.add_argument("--ssim-weight", type=float, default=0.3)
+    p.add_argument("--ssim-backend", choices=["builtin", "fused", "auto"], default="builtin")
     p.add_argument("--target-psnr", type=float, default=None,
                    help="record iters/seconds-to-target for convergence-rate comparisons")
     p.add_argument("--target-psnrs", type=float, nargs="*", default=[])
@@ -789,7 +794,8 @@ def main():
         renderers=a.renderers, pixel_losses=a.pixel_losses, optimizers=a.optimizers,
         lr_schedules=a.lr_schedules, refine_modes=a.refine_modes,
         pyramid_modes=a.pyramid_modes, render_chunk=a.chunk,
-        ssim_weight=a.ssim_weight, split_every=a.split_every, split_count=a.split_count,
+        ssim_weight=a.ssim_weight, ssim_backend=a.ssim_backend,
+        split_every=a.split_every, split_count=a.split_count,
         prune_every=a.prune_every, prune_min_activity=a.prune_min_activity,
         max_gaussians=a.max_gaussians, pyramid_levels=a.pyramid_levels,
         pyramid_fractions=a.pyramid_fractions, pyramid_iters_per_level=a.pyramid_iters_per_level,

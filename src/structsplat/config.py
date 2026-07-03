@@ -66,6 +66,7 @@ class FitConfig:
     loss_warmup_iters: int = 0
     loss_warmup_pixel_loss: str = "l2"
     ssim_weight: float = 0.3           # loss = (1-w)*L1 + w*(1-SSIM); Instant-GI/AIR default
+    ssim_backend: str = "builtin"      # builtin, fused (optional), or auto
     compute_lpips: bool = False        # opt-in: loads a separate AlexNet LPIPS model
     target_psnr: float | None = None   # record iters-to-target if set
     target_psnrs: list[float] = field(default_factory=list)
@@ -101,6 +102,9 @@ class FitConfig:
         # NaN renders (CORE-004). Reject it at construction rather than mid-fit.
         if self.aa_dilation < 0.0:
             raise ValueError(f"aa_dilation must be >= 0, got {self.aa_dilation}")
+        if self.ssim_backend not in ("builtin", "fused", "auto"):
+            raise ValueError(
+                f"ssim_backend must be builtin, fused, or auto, got {self.ssim_backend!r}")
 
 
 @dataclass

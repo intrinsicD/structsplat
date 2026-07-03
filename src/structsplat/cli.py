@@ -56,6 +56,7 @@ def cmd_fit(args):
     fcfg = FitConfig(iters=args.iters, target_psnr=args.target_psnr, render_chunk=args.chunk,
                      optimizer=args.optimizer,
                      pixel_loss=args.pixel_loss, ssim_weight=args.ssim_weight,
+                     ssim_backend=args.ssim_backend,
                      loss_warmup_iters=args.loss_warmup_iters,
                      loss_warmup_pixel_loss=args.loss_warmup_pixel_loss,
                      compute_lpips=args.lpips,
@@ -120,7 +121,8 @@ def cmd_stage_search(args):
         pixel_losses=args.pixel_losses, optimizers=args.optimizers,
         lr_schedules=args.lr_schedules, refine_modes=args.refine_modes,
         pyramid_modes=args.pyramid_modes, render_chunk=args.chunk,
-        ssim_weight=args.ssim_weight, split_every=args.split_every,
+        ssim_weight=args.ssim_weight, ssim_backend=args.ssim_backend,
+        split_every=args.split_every,
         split_count=args.split_count, prune_every=args.prune_every,
         prune_min_activity=args.prune_min_activity, max_gaussians=args.max_gaussians,
         pyramid_levels=args.pyramid_levels, pyramid_fractions=args.pyramid_fractions,
@@ -178,6 +180,7 @@ def main():
     f.add_argument("--loss-warmup-iters", type=int, default=0)
     f.add_argument("--loss-warmup-pixel-loss", choices=["l1", "l2", "charbonnier"], default="l2")
     f.add_argument("--ssim-weight", type=float, default=0.3)
+    f.add_argument("--ssim-backend", choices=["builtin", "fused", "auto"], default="builtin")
     f.add_argument("--lpips", action="store_true", help="compute LPIPS after fitting")
     f.add_argument("--flank-offset", type=float, default=0.5)
     f.add_argument("--max-axis-ratio", type=float, default=6.0)
@@ -250,6 +253,7 @@ def main():
     s.add_argument("--pyramid-modes", nargs="+", default=None)
     s.add_argument("--chunk", type=int, default=512)
     s.add_argument("--ssim-weight", type=float, default=0.3)
+    s.add_argument("--ssim-backend", choices=["builtin", "fused", "auto"], default="builtin")
     s.add_argument("--target-psnr", type=float, default=None, dest="target_psnr",
                    help="record iters/seconds-to-target (convergence-rate comparisons)")
     s.add_argument("--target-psnrs", type=float, nargs="*", default=[])

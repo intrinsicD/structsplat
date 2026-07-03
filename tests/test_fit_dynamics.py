@@ -15,6 +15,7 @@ from structsplat.fit import (
     _split_from_residual,
     fit,
 )
+from structsplat import metrics as M
 
 
 def test_lr_factor_is_global_step_decay():
@@ -87,6 +88,51 @@ def test_int_target_psnrs_are_recorded():
                                        target_psnrs=[1, 2.0]), verbose=False)
     assert out["iters_to_target"] is not None       # str(int) vs str(float) key mismatch
     assert set(out["iters_to_targets"]) == {"1.0", "2.0"}
+
+
+def test_target_psnr_tracking_matches_logged_psnr_every_iteration():
+    img = np.zeros((16, 16, 3), np.float32)
+    img[:, 8:] = 1.0
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=16, seed=1))
+    out = fit(
+        field,
+        target,
+        FitConfig(iters=6, log_every=1, target_psnrs=[1.0, 2.0, 99.0]),
+        verbose=False,
+    )
+    hist = out["history"]
+    for target_psnr in [1.0, 2.0, 99.0]:
+        expected = next(
+            (it for it, psnr in zip(hist["iter"], hist["psnr"]) if psnr >= target_psnr),
+            None,
+        )
+        assert out["iters_to_targets"][str(target_psnr)] == expected
+
+
+def test_ssim_loss_is_skipped_when_weight_is_zero(monkeypatch):
+    original_ssim = M.ssim
+    calls = {"n": 0}
+
+    def counting_ssim(*args, **kwargs):
+        calls["n"] += 1
+        return original_ssim(*args, **kwargs)
+
+    monkeypatch.setattr(M, "ssim", counting_ssim)
+    img = np.zeros((16, 16, 3), np.float32)
+    img[:, 8:] = 1.0
+    target = torch.as_tensor(img)
+
+    field0 = _init.build_field(img, InitConfig(strategy="random", num_gaussians=12, seed=2))
+    fit(field0, target, FitConfig(iters=4, log_every=1, ssim_weight=0.0), verbose=False)
+    zero_weight_calls = calls["n"]
+
+    calls["n"] = 0
+    field1 = _init.build_field(img, InitConfig(strategy="random", num_gaussians=12, seed=2))
+    fit(field1, target, FitConfig(iters=4, log_every=1, ssim_weight=0.3), verbose=False)
+    weighted_calls = calls["n"]
+
+    assert weighted_calls - zero_weight_calls == 4
 
 
 def test_early_stop_is_opt_in_and_reports_iterations():

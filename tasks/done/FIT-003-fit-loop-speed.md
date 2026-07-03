@@ -1,6 +1,6 @@
 # FIT-003: Fit-loop speed (device-side target tracking, SSIM hygiene, fused SSIM)
 
-**Status: todo.** From the 2026-07-03 repo review. Ordered by payoff/effort; items 1–2 are
+**Status: done.** Completed 2026-07-03. From the 2026-07-03 repo review. Ordered by payoff/effort; items 1–2 are
 pure wins with zero semantic change.
 
 ## Context
@@ -20,16 +20,24 @@ pure wins with zero semantic change.
 Cut per-iteration overhead that is not the renderer, without changing training semantics.
 
 ## Acceptance criteria
-- [ ] Target-PSNR crossings tracked on-device: keep MSE as a tensor, precompute per-target MSE
+- [x] Target-PSNR crossings tracked on-device: keep MSE as a tensor, precompute per-target MSE
       thresholds (10^(−t/10)), update a device-side boolean per iteration, sync only at log
       points; `iters_to_targets` results identical on a fixed-seed fit.
-- [ ] SSIM window memoized keyed by (win, sigma, device, dtype); loss skips the SSIM term
+- [x] SSIM window memoized keyed by (win, sigma, device, dtype); loss skips the SSIM term
       entirely when `ssim_weight == 0`; fixed-seed loss trajectory identical when
       `ssim_weight > 0`.
-- [ ] Optional fused-ssim backend in `metrics.py` (try-import, silent fallback to the built-in
+- [x] Optional fused-ssim backend in `metrics.py` (try-import, silent fallback to the built-in
       implementation), gated like `renderer='cuda'`; parity test vs built-in SSIM within
       tolerance; wall-clock delta recorded on one GPU fit.
-- [ ] Before/after seconds-per-iteration table (CPU and GPU, 512 and 20k budgets) in notes.
+- [x] Before/after seconds-per-iteration table (CPU and GPU, 512 and 20k budgets) in notes.
+
+## Completion notes
+
+Evidence lives in `ara/evidence/fit003-speed-2026-07-03/`:
+- `summary.md` records the CPU/GPU before/after seconds-per-iteration table.
+- `speed_table.csv` mirrors the table for scripts.
+- `raw.json` contains the per-row fit outputs.
+- `config.json` records the image, budget, iteration, target, and renderer settings.
 
 ## Interfaces touched
 `src/structsplat/fit.py`, `src/structsplat/metrics.py`. No ADR (no math change; fused SSIM is
