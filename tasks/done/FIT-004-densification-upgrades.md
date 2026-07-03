@@ -1,6 +1,6 @@
 # FIT-004: Densification & convergence upgrades (function-preserving growth, relocation, NMS)
 
-**Status: partial; core modes implemented, stretch items open.** From the 2026-07-03 repo
+**Status: done.** From the 2026-07-03 repo
 review + SOTA survey. These are quality/convergence improvements; each lands behind a config
 flag so ABL-002's stage axes stay comparable.
 
@@ -51,7 +51,7 @@ fixed-N capacity allocation self-correcting.
       the normalized renderer, reusing `_carry_adam_state`; N constant across the fit; test.
 - [x] Each new mode registered as a stage-search axis value (ABL-002) with a one-line
       description in benchmarks/README.md.
-- [ ] Stretch items each behind flags with one benchmark slice per item; results in notes.
+- [x] Stretch items each behind flags with one benchmark slice per item; results in notes.
 
 ## Notes
 - 2026-07-03 partial implementation: residual-add spacing controls
@@ -78,6 +78,18 @@ fixed-N capacity allocation self-correcting.
   ranked_wave 21.3140 / 19.5506; residual_add_nms 21.3045 / 19.5909. These modes are useful
   controls, but this short slice still does not justify enabling in-loop restructuring by
   default.
+- 2026-07-03 stretch completion: AbsGS-style `split_mode='absgrad_wave'` accumulates
+  `|dL/dmu|` and logs `absgrad_score_mean`/`absgrad_score_max`; `optimizer='adan'` is
+  available with optimizer-state carry across restructures; `aa_dilation` is exposed as a
+  stage-search axis.
+- Benchmark slice:
+  `ara/evidence/fit004-stretch-items-2026-07-03/` on four 160px COCO crops, budget 256,
+  seed 0, 60 iters, one +32 AbsGrad wave at iter 30. Mean single-stage results:
+  no-refine/Adam/aa0.0 21.6899 PSNR / 20.1120 AUC; aa0.3 21.5799 / 20.0361;
+  AbsGrad wave 21.3616 / 19.6409 with one split event per image and mean
+  `absgrad_score_mean=0.004269`, `absgrad_score_max=0.0083545`; Adan 21.0764 / 19.8202.
+  All three stretch controls are implemented and benchmarked, but none should become the
+  default from this short slice.
 
 ## Interfaces touched
 `src/structsplat/fit.py`, `src/structsplat/config.py`, `benchmarks/stage_search.py`,

@@ -61,6 +61,7 @@ def cmd_fit(args):
                      loss_warmup_pixel_loss=args.loss_warmup_pixel_loss,
                      compute_lpips=args.lpips,
                      renderer=args.renderer,
+                     aa_dilation=args.aa_dilation,
                      lr_schedule=args.lr_schedule,
                      lr_decay_every=args.lr_decay_every, lr_decay_gamma=args.lr_decay_gamma,
                      prune_every=args.prune_every, prune_min_activity=args.prune_min_activity,
@@ -71,6 +72,7 @@ def cmd_fit(args):
                      split_oversample=args.split_oversample,
                      split_min_spacing=args.split_min_spacing,
                      split_color_init=args.split_color_init,
+                     absgrad_decay=args.absgrad_decay,
                      relocate_every=args.relocate_every,
                      relocate_count=args.relocate_count,
                      relocate_init_opacity=args.relocate_init_opacity,
@@ -125,6 +127,7 @@ def cmd_stage_search(args):
         color_modes=args.color_modes,
         scale_modes=args.scale_modes, scale_cap_modes=args.scale_cap_modes,
         opacity_modes=args.opacity_modes, renderers=args.renderers,
+        aa_dilations=args.aa_dilations,
         pixel_losses=args.pixel_losses, optimizers=args.optimizers,
         lr_schedules=args.lr_schedules, refine_modes=args.refine_modes,
         pyramid_modes=args.pyramid_modes, render_chunk=args.chunk,
@@ -182,7 +185,8 @@ def main():
     f.add_argument("--renderer",
                    choices=["normalized", "additive", "cuda", "cuda_additive", "gsplat"],
                    default="normalized")
-    f.add_argument("--optimizer", choices=["adam", "adamw"], default="adam")
+    f.add_argument("--aa-dilation", type=float, default=0.0)
+    f.add_argument("--optimizer", choices=["adam", "adamw", "adan"], default="adam")
     f.add_argument("--pixel-loss", choices=["l1", "l2", "charbonnier"], default="l1")
     f.add_argument("--loss-warmup-iters", type=int, default=0)
     f.add_argument("--loss-warmup-pixel-loss", choices=["l1", "l2", "charbonnier"], default="l2")
@@ -202,7 +206,7 @@ def main():
     f.add_argument("--split-count", type=int, default=0)
     f.add_argument("--split-mode",
                    choices=["duplicate", "fp_duplicate", "support_duplicate", "residual_add",
-                            "residual_tensor_add", "ranked_wave"],
+                            "residual_tensor_add", "ranked_wave", "absgrad_wave"],
                    default="duplicate")
     f.add_argument("--split-scale", type=float, default=0.7)
     f.add_argument("--split-oversample", type=float, default=1.0,
@@ -211,6 +215,7 @@ def main():
                    help="residual-add spacing radius as a multiple of the densify base scale")
     f.add_argument("--split-color-init", choices=["target", "residual"], default="target",
                    help="color initialization for normalized residual-add children")
+    f.add_argument("--absgrad-decay", type=float, default=1.0)
     f.add_argument("--relocate-every", type=int, default=None)
     f.add_argument("--relocate-count", type=int, default=0)
     f.add_argument("--relocate-init-opacity", type=float, default=0.05)
@@ -262,6 +267,7 @@ def main():
     s.add_argument("--scale-cap-modes", nargs="+", default=None)
     s.add_argument("--opacity-modes", nargs="+", default=None)
     s.add_argument("--renderers", nargs="+", default=None)
+    s.add_argument("--aa-dilations", type=float, nargs="+", default=None)
     s.add_argument("--pixel-losses", nargs="+", default=None)
     s.add_argument("--optimizers", nargs="+", default=None)
     s.add_argument("--lr-schedules", nargs="+", default=None)

@@ -56,6 +56,31 @@ def test_carry_adam_state_preserves_moments_across_prune_and_split():
     assert st["exp_avg"].shape[0] == 8
 
 
+def test_carry_adan_state_preserves_three_moments_across_split():
+    img = np.random.default_rng(1).random((16, 16, 3)).astype(np.float32)
+    field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=8, seed=0))
+    field.trainable()
+    cfg = FitConfig(optimizer="adan")
+    opt = _make_optimizer(field, cfg)
+    target = torch.as_tensor(img)
+    from structsplat.render import render
+    im = render(field.means, field.conics(), field.colors, field.radii(3.0), 16, 16)
+    (im - target).abs().mean().backward()
+    opt.step()
+    old = opt.state[field.means]
+
+    grown = field.subset(slice(0, 8)).append(field.subset(slice(0, 2)))
+    grown.trainable()
+    opt2 = _carry_adam_state(opt, grown, cfg, keep=None, n_new=2)
+    st = opt2.state[grown.means]
+
+    for key in ("exp_avg", "exp_avg_diff", "exp_avg_sq", "prev_grad"):
+        assert key in st
+        assert st[key].shape[0] == 10
+        assert torch.allclose(st[key][:8], old[key])
+        assert torch.all(st[key][8:] == 0)
+
+
 def test_fit_with_decay_prune_split_still_improves():
     img = np.zeros((24, 24, 3), np.float32)
     img[:, 12:] = 1.0
@@ -317,6 +342,42 @@ def test_ranked_wave_grows_exactly_and_logs_components():
     assert all(e["mode"] == "ranked_wave" for e in events)
     for key in ("score_mean", "residual_support_mean", "activity_mean", "footprint_mean"):
         assert all(key in e and np.isfinite(e[key]) for e in events)
+
+
+def test_absgrad_wave_grows_exactly_and_logs_scores():
+    img = np.zeros((20, 20, 3), np.float32)
+    img[:, 10:] = 1.0
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=12, seed=0))
+    out = fit(
+        field,
+        target,
+        FitConfig(
+            iters=5,
+            log_every=1,
+            split_every=2,
+            split_count=3,
+            split_mode="absgrad_wave",
+            max_gaussians=18,
+        ),
+        verbose=False,
+    )
+
+    assert out["n_gaussians"] == 18
+    events = out["history"]["split_events"]
+    assert [e["added"] for e in events] == [3, 3]
+    assert all(e["mode"] == "absgrad_wave" for e in events)
+    assert all(e["absgrad_score_mean"] >= 0 and e["absgrad_score_max"] >= 0 for e in events)
+
+
+def test_adan_fit_runs_and_reports_finite_metrics():
+    img = np.zeros((16, 16, 3), np.float32)
+    img[:, 8:] = 1.0
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=12, seed=0))
+    out = fit(field, target, FitConfig(iters=4, log_every=1, optimizer="adan"), verbose=False)
+    assert np.isfinite(out["psnr"])
+    assert np.isfinite(out["loss"] if "loss" in out else out["history"]["loss"][-1])
 
 
 def test_relocation_keeps_count_and_moves_low_activity_rows():

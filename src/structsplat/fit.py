@@ -30,6 +30,58 @@ _ADDITIVE_RENDERERS = ("additive", "cuda_additive", "gsplat", "cuda_gsplat")
 _MIN_DENSIFY_SCALE = 0.35
 
 
+class _Adan(torch.optim.Optimizer):
+    """Small local Adan implementation with per-parameter tensor state."""
+
+    def __init__(self, params, betas=(0.98, 0.92, 0.99), eps: float = 1e-8):
+        defaults = {"betas": betas, "eps": eps}
+        super().__init__(params, defaults)
+
+    @torch.no_grad()
+    def step(self, closure=None):
+        loss = None
+        if closure is not None:
+            with torch.enable_grad():
+                loss = closure()
+        for group in self.param_groups:
+            beta1, beta2, beta3 = group["betas"]
+            eps = group["eps"]
+            lr = group["lr"]
+            for p in group["params"]:
+                if p.grad is None:
+                    continue
+                grad = p.grad.detach()
+                if grad.is_sparse:
+                    raise RuntimeError("Adan does not support sparse gradients")
+                state = self.state[p]
+                if len(state) == 0:
+                    state["step"] = 0
+                    state["exp_avg"] = torch.zeros_like(p)
+                    state["exp_avg_diff"] = torch.zeros_like(p)
+                    state["exp_avg_sq"] = torch.zeros_like(p)
+                    state["prev_grad"] = grad.clone()
+                    grad_diff = torch.zeros_like(grad)
+                else:
+                    grad_diff = grad - state["prev_grad"]
+                state["step"] += 1
+
+                exp_avg = state["exp_avg"]
+                exp_avg_diff = state["exp_avg_diff"]
+                exp_avg_sq = state["exp_avg_sq"]
+                exp_avg.mul_(beta1).add_(grad, alpha=1.0 - beta1)
+                exp_avg_diff.mul_(beta2).add_(grad_diff, alpha=1.0 - beta2)
+                update_grad = grad + beta2 * grad_diff
+                exp_avg_sq.mul_(beta3).addcmul_(update_grad, update_grad, value=1.0 - beta3)
+
+                step = int(state["step"])
+                m_hat = exp_avg / (1.0 - beta1 ** step)
+                v_hat = exp_avg_diff / (1.0 - beta2 ** step)
+                n_hat = exp_avg_sq / (1.0 - beta3 ** step)
+                p.addcdiv_(m_hat + beta2 * v_hat, n_hat.sqrt().add_(eps), value=-lr)
+                state["prev_grad"].copy_(grad)
+        return loss
+
+
 def _make_optimizer(field: GaussianField, cfg: FitConfig):
     groups = field.parameter_groups(cfg.lr_means, cfg.lr_scales, cfg.lr_rot, cfg.lr_color,
                                     cfg.lr_opacity)
@@ -37,7 +89,9 @@ def _make_optimizer(field: GaussianField, cfg: FitConfig):
         return torch.optim.Adam(groups)
     if cfg.optimizer == "adamw":
         return torch.optim.AdamW(groups)
-    raise ValueError(f"unknown optimizer {cfg.optimizer!r}; expected adam or adamw")
+    if cfg.optimizer == "adan":
+        return _Adan(groups)
+    raise ValueError(f"unknown optimizer {cfg.optimizer!r}; expected adam, adamw, or adan")
 
 
 def _lr_factor(cfg: FitConfig, it: int, sched_offset: int = 0,
@@ -72,13 +126,13 @@ def _lr_factor(cfg: FitConfig, it: int, sched_offset: int = 0,
 def _carry_adam_state(opt_old, field: GaussianField, cfg: FitConfig,
                       keep: torch.Tensor | None, n_new: int,
                       reset_idx: torch.Tensor | None = None):
-    """Fresh optimizer for a restructured field, carrying Adam moments for survivors.
+    """Fresh optimizer for a restructured field, carrying per-Gaussian optimizer buffers.
 
     Without this, every prune/split resets exp_avg/exp_avg_sq for ALL Gaussians and the
     loss spikes while Adam re-estimates curvature. Surviving rows keep their moments; new
     rows start at zero and share the tensor's inherited `step` (Adam keeps one step per
     parameter tensor), so their first updates behave like a normal warm Adam step. Handles
-    any number of parameter groups (4, or 5 with opacity) and both Adam/AdamW.
+    any number of parameter groups (4, or 5 with opacity), Adam/AdamW, and Adan.
     """
     opt_new = _make_optimizer(field, cfg)
     for g_old, g_new in zip(opt_old.param_groups, opt_new.param_groups):
@@ -86,23 +140,24 @@ def _carry_adam_state(opt_old, field: GaussianField, cfg: FitConfig,
         st = opt_old.state.get(p_old)
         if not st:
             continue
-        exp_avg, exp_sq = st["exp_avg"], st["exp_avg_sq"]
-        if keep is not None:
-            exp_avg, exp_sq = exp_avg[keep], exp_sq[keep]
-        if n_new > 0:
-            pad = exp_avg.new_zeros((n_new,) + exp_avg.shape[1:])
-            exp_avg = torch.cat([exp_avg, pad], dim=0)
-            exp_sq = torch.cat([exp_sq, pad.clone()], dim=0)
-        if reset_idx is not None and reset_idx.numel() > 0:
-            ridx = reset_idx.to(device=exp_avg.device, dtype=torch.long)
-            exp_avg[ridx] = 0
-            exp_sq[ridx] = 0
-        step = st["step"]
-        opt_new.state[p_new] = {
-            "step": step.clone() if torch.is_tensor(step) else step,
-            "exp_avg": exp_avg.contiguous(),
-            "exp_avg_sq": exp_sq.contiguous(),
-        }
+        carried = {}
+        for key, value in st.items():
+            if torch.is_tensor(value):
+                out = value.detach().clone()
+                if out.shape == p_old.shape:
+                    if keep is not None:
+                        out = out[keep]
+                    if n_new > 0:
+                        pad = out.new_zeros((n_new,) + out.shape[1:])
+                        out = torch.cat([out, pad], dim=0)
+                    if reset_idx is not None and reset_idx.numel() > 0:
+                        ridx = reset_idx.to(device=out.device, dtype=torch.long)
+                        out[ridx] = 0
+                    out = out.contiguous()
+                carried[key] = out
+            else:
+                carried[key] = value
+        opt_new.state[p_new] = carried
     return opt_new
 
 
@@ -421,6 +476,33 @@ def _ranked_wave_from_residual(field: GaussianField, target: torch.Tensor,
 
 
 @torch.no_grad()
+def _absgrad_wave_from_scores(field: GaussianField, grad_scores: torch.Tensor,
+                              cfg: FitConfig, H: int, W: int
+                              ) -> tuple[GaussianField, int, dict[str, float], torch.Tensor]:
+    if cfg.split_count <= 0:
+        return field, 0, {}, grad_scores
+    if cfg.max_gaussians is not None and field.n >= cfg.max_gaussians:
+        return field, 0, {}, grad_scores
+    room = field.n if cfg.max_gaussians is None else max(0, cfg.max_gaussians - field.n)
+    k = min(cfg.split_count, field.n, room)
+    if k <= 0:
+        return field, 0, {}, grad_scores
+    scores = grad_scores.detach()
+    idx = torch.topk(scores, k=k).indices
+    grown, added = _fp_duplicate_indices(field, idx, cfg, H, W)
+    stats = {
+        "absgrad_score_mean": float(scores[idx].mean().detach().cpu()),
+        "absgrad_score_max": float(scores[idx].max().detach().cpu()),
+    }
+    # Do not immediately re-split the same parent only because its pre-split score was high.
+    carried = scores.clone()
+    carried[idx] = 0
+    if added > 0:
+        carried = torch.cat([carried, carried.new_zeros(added)], dim=0)
+    return grown, added, stats, carried
+
+
+@torch.no_grad()
 def _relocate_from_residual(field: GaussianField, target: torch.Tensor,
                             render_img: torch.Tensor,
                             cfg: FitConfig
@@ -593,6 +675,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         "iter": [], "psnr": [], "loss": [], "n_gaussians": [], "elapsed": [],
         "split_events": [], "relocate_events": [],
     }
+    absgrad_scores = torch.zeros(field.n, device=target.device, dtype=target.dtype)
     targets = _target_list(cfg)
     iters_to_targets = {str(t): None for t in targets}
     target_thresholds = None
@@ -629,6 +712,11 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             loss = (1 - cfg.ssim_weight) * pix + cfg.ssim_weight * (1 - s)
         opt.zero_grad(set_to_none=True)
         loss.backward()
+        if cfg.split_mode == "absgrad_wave" and field.means.grad is not None:
+            with torch.no_grad():
+                absgrad_scores.mul_(cfg.absgrad_decay).add_(
+                    field.means.grad.detach().abs().sum(dim=1)
+                )
         opt.step()
         log_now = it % cfg.log_every == 0 or it == cfg.iters - 1
         with torch.no_grad():
@@ -662,6 +750,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             field, keep = _maybe_prune(field, cfg, H, W)
             if verbose and keep is not None:
                 print(f"  prune {int((~keep).sum())} -> {field.n} gaussians")
+            if keep is not None and cfg.split_mode == "absgrad_wave":
+                absgrad_scores = absgrad_scores[keep]
         if (not last_it and cfg.relocate_every is not None and cfg.relocate_every > 0
                 and (it + 1) % cfg.relocate_every == 0):
             field, relocated, reset_idx, relocate_stats = _relocate_from_residual(
@@ -672,9 +762,12 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 hist["relocate_events"].append(event)
                 if verbose:
                     print(f"  relocate {relocated} gaussians")
+                if cfg.split_mode == "absgrad_wave" and reset_idx is not None:
+                    absgrad_scores[reset_idx] = 0
         if (not last_it and cfg.split_every is not None and cfg.split_every > 0
                 and (it + 1) % cfg.split_every == 0):
             split_event = None
+            absgrad_scores_carried = False
             if cfg.split_mode in ("duplicate", "fp_duplicate", "support_duplicate"):
                 field, added = _split_from_residual(field, target, img, cfg)
             elif cfg.split_mode == "ranked_wave":
@@ -685,6 +778,17 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                     "added": added,
                     **ranked_stats,
                 }
+            elif cfg.split_mode == "absgrad_wave":
+                field, added, absgrad_stats, absgrad_scores = _absgrad_wave_from_scores(
+                    field, absgrad_scores, cfg, H, W
+                )
+                absgrad_scores_carried = True
+                split_event = {
+                    "iter": it,
+                    "mode": cfg.split_mode,
+                    "added": added,
+                    **absgrad_stats,
+                }
             elif cfg.split_mode in ("residual_add", "residual_tensor_add"):
                 field, added = _add_from_residual(
                     field, target, img, cfg, tensor_aligned=cfg.split_mode == "residual_tensor_add"
@@ -693,13 +797,17 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 raise ValueError(
                     f"unknown split_mode {cfg.split_mode!r}; expected duplicate, "
                     "fp_duplicate, support_duplicate, residual_add, residual_tensor_add, "
-                    "or ranked_wave")
+                    "ranked_wave, or absgrad_wave")
             if verbose and added > 0:
                 print(f"  split +{added} -> {field.n} gaussians")
             if added > 0:
                 hist["split_events"].append(
                     split_event or {"iter": it, "mode": cfg.split_mode, "added": added}
                 )
+                if cfg.split_mode == "absgrad_wave" and not absgrad_scores_carried:
+                    absgrad_scores = torch.cat(
+                        [absgrad_scores, absgrad_scores.new_zeros(added)], dim=0
+                    )
         if keep is not None or added > 0 or relocated > 0:
             field.trainable()
             opt = _carry_adam_state(opt, field, cfg, keep, added, reset_idx=reset_idx)

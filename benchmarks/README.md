@@ -24,7 +24,8 @@ Caveat: factorial marginals are observational when axes co-vary; use `--mode inf
 one-factor deltas around a baseline.
 FIT-004 residual densification variants are exposed as refine arms such as `residual_add_nms`,
 `residual_tensor_add_nms`, `fp_duplicate`, `ranked_wave`, `relocate`, and
-`residual_add_nms_residual_color`.
+`absgrad_wave`; stretch controls also include `optimizer=adan` and the `aa` stage from
+`--aa-dilations`.
 
 ```
 python -m benchmarks.stage_search path/to/images --mode influence --budgets 2048 --iters 500

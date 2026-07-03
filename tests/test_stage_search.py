@@ -87,7 +87,7 @@ def test_refine_arms_do_not_exceed_cell_budget(tmp_path):
         optimizers=["adam"], lr_schedules=["none"],
         refine_modes=[
             "none", "residual_add", "residual_add_nms_residual_color", "duplicate",
-            "fp_duplicate", "ranked_wave", "relocate",
+            "fp_duplicate", "ranked_wave", "absgrad_wave", "relocate",
         ],
         pyramid_modes=["single"],
         split_every=2, split_count=8, render_chunk=8,
@@ -119,10 +119,29 @@ def test_refine_kwargs_threads_fit004_modes():
 
     assert _refine_kwargs("fp_duplicate", 5, 7, None, 0.0)["split_mode"] == "fp_duplicate"
     assert _refine_kwargs("ranked_wave", 5, 7, None, 0.0)["split_mode"] == "ranked_wave"
+    assert _refine_kwargs("absgrad_wave", 5, 7, None, 0.0)["split_mode"] == "absgrad_wave"
     assert _refine_kwargs("relocate", 5, 7, None, 0.0) == {
         "relocate_every": 5,
         "relocate_count": 7,
     }
+
+
+def test_aa_dilation_is_stage_axis(tmp_path):
+    img_path = tmp_path / "toy.png"
+    _write_toy(img_path)
+    rows = run_stage_search(
+        [str(img_path)], budgets=[16], seeds=[0], iters=2, max_side=None,
+        strategies=["aniso_flanking"], tensor_operators=["central"],
+        density_modes=["structure"], sampling_modes=["density_random"],
+        color_modes=["bilinear"], scale_modes=["spacing"], scale_cap_modes=["none"],
+        opacity_modes=["none"], renderers=["normalized"], aa_dilations=[0.0, 0.3],
+        pixel_losses=["l1"], optimizers=["adam"], lr_schedules=["none"],
+        refine_modes=["none"], pyramid_modes=["single"], render_chunk=8,
+        outdir=str(tmp_path / "aa"), device="cpu",
+    )
+    assert len(rows) == 2
+    assert {r["aa"] for r in rows} == {0.0, 0.3}
+    assert all("aa=" in r["config_label"] for r in rows)
 
 
 def test_config_json_is_written(tmp_path):
@@ -195,6 +214,7 @@ def test_stage_influence_writes_paired_deltas(tmp_path):
         density_modes=["structure"], sampling_modes=["wse", "density_random"],
         orientation_modes=["tensor"], color_modes=["bilinear"], scale_modes=["spacing"],
         scale_cap_modes=["feature12"], opacity_modes=["none"], renderers=["normalized"],
+        aa_dilations=[0.0],
         pixel_losses=["l1"],
         optimizers=["adam"], lr_schedules=["none"], refine_modes=["none"],
         pyramid_modes=["single"], target_psnr=5.0,

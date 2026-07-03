@@ -33,7 +33,7 @@ from structsplat.config import FitConfig, InitConfig, PyramidConfig, StructureTe
 # stage axes, in label order; values = the swappable options each stage exposes
 STAGE_KEYS = [
     "strategy", "tensor", "tensor_color", "density", "sampling", "orientation", "color",
-    "scale", "scale_cap", "opacity", "renderer", "loss", "optimizer", "lr_schedule",
+    "scale", "scale_cap", "opacity", "renderer", "aa", "loss", "optimizer", "lr_schedule",
     "refine", "pyramid",
 ]
 
@@ -51,6 +51,7 @@ FACTORIAL_DEFAULTS: dict[str, tuple[str, ...]] = {
     "scale_cap_modes": ("none",),
     "opacity_modes": ("none",),
     "renderers": ("normalized",),
+    "aa_dilations": (0.0,),
     "pixel_losses": ("l1", "charbonnier"),
     "optimizers": ("adam",),
     "lr_schedules": ("none", "cosine"),
@@ -76,12 +77,13 @@ INFLUENCE_DEFAULTS: dict[str, tuple[str, ...]] = {
     "scale_cap_modes": ("none", "feature12", "hard8"),
     "opacity_modes": ("none", "constant"),
     "renderers": ("normalized", "additive", "cuda", "cuda_additive"),
+    "aa_dilations": (0.0, 0.3),
     "pixel_losses": ("l1", "l2", "charbonnier"),
-    "optimizers": ("adam", "adamw"),
+    "optimizers": ("adam", "adamw", "adan"),
     "lr_schedules": ("none", "cosine", "step"),
     "refine_modes": (
         "none", "prune", "duplicate", "fp_duplicate", "support_duplicate", "residual_add",
-        "residual_tensor_add", "ranked_wave", "relocate",
+        "residual_tensor_add", "ranked_wave", "absgrad_wave", "relocate",
         "residual_add_nms", "residual_tensor_add_nms",
         "residual_add_residual_color", "residual_tensor_add_residual_color",
         "residual_add_nms_residual_color", "residual_tensor_add_nms_residual_color",
@@ -100,7 +102,7 @@ _AXIS_TO_KEY = {
     "density_modes": "density", "sampling_modes": "sampling",
     "orientation_modes": "orientation", "color_modes": "color", "scale_modes": "scale",
     "scale_cap_modes": "scale_cap", "opacity_modes": "opacity", "renderers": "renderer",
-    "pixel_losses": "loss",
+    "aa_dilations": "aa", "pixel_losses": "loss",
     "optimizers": "optimizer", "lr_schedules": "lr_schedule", "refine_modes": "refine",
     "pyramid_modes": "pyramid",
 }
@@ -186,6 +188,7 @@ def _refine_kwargs(mode: str, split_every: int | None, split_count: int,
         "residual_add": {"split_mode": "residual_add"},
         "residual_tensor_add": {"split_mode": "residual_tensor_add"},
         "ranked_wave": {"split_mode": "ranked_wave"},
+        "absgrad_wave": {"split_mode": "absgrad_wave"},
         "residual_add_nms": {
             "split_mode": "residual_add",
             "split_min_spacing": 1.0,
@@ -254,7 +257,7 @@ def _refine_kwargs(mode: str, split_every: int | None, split_count: int,
 def _refine_adds_capacity(mode: str) -> bool:
     return mode in {
         "duplicate", "fp_duplicate", "support_duplicate", "residual_add",
-        "residual_tensor_add", "ranked_wave", "residual_add_nms",
+        "residual_tensor_add", "ranked_wave", "absgrad_wave", "residual_add_nms",
         "residual_tensor_add_nms", "residual_add_residual_color",
         "residual_tensor_add_residual_color", "residual_add_nms_residual_color",
         "residual_tensor_add_nms_residual_color", "prune_residual_add",
@@ -353,6 +356,7 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         lr_decay_every=lr_decay_every if cfg["lr_schedule"] == "step" else None,
         lr_decay_gamma=lr_decay_gamma,
         renderer=cfg["renderer"],
+        aa_dilation=float(cfg["aa"]),
         max_gaussians=max_gaussians,
         target_psnr=target_psnr,
         target_psnrs=list(target_psnrs),
@@ -383,9 +387,10 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
     fit_seconds = float(out.get("fit_seconds", 0.0))
     split_events = history.get("split_events", [])
     ranked_events = [e for e in split_events if e.get("mode") == "ranked_wave"]
+    absgrad_events = [e for e in split_events if e.get("mode") == "absgrad_wave"]
 
-    def event_mean(key: str) -> float | None:
-        vals = [float(e[key]) for e in ranked_events if key in e]
+    def event_mean(events: list[dict], key: str) -> float | None:
+        vals = [float(e[key]) for e in events if key in e]
         return None if not vals else round(float(np.mean(vals)), 6)
 
     if cfg["pyramid"] == "pyramid":
@@ -406,10 +411,12 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         "fit_seconds": fit_seconds,
         "total_seconds": elapsed,
         "split_event_count": len(split_events),
-        "ranked_wave_score_mean": event_mean("score_mean"),
-        "ranked_wave_residual_support_mean": event_mean("residual_support_mean"),
-        "ranked_wave_activity_mean": event_mean("activity_mean"),
-        "ranked_wave_footprint_mean": event_mean("footprint_mean"),
+        "ranked_wave_score_mean": event_mean(ranked_events, "score_mean"),
+        "ranked_wave_residual_support_mean": event_mean(ranked_events, "residual_support_mean"),
+        "ranked_wave_activity_mean": event_mean(ranked_events, "activity_mean"),
+        "ranked_wave_footprint_mean": event_mean(ranked_events, "footprint_mean"),
+        "absgrad_score_mean": event_mean(absgrad_events, "absgrad_score_mean"),
+        "absgrad_score_max": event_mean(absgrad_events, "absgrad_score_max"),
         "relocate_event_count": len(history.get("relocate_events", [])),
         "history": history,
         "prefix_metrics": out.get("prefix_metrics"),
@@ -434,6 +441,7 @@ def run_stage_search(
     scale_cap_modes=None,
     opacity_modes=None,
     renderers=None,
+    aa_dilations=None,
     pixel_losses=None,
     optimizers=None,
     lr_schedules=None,
@@ -488,6 +496,7 @@ def run_stage_search(
         "color_modes": color_modes, "scale_modes": scale_modes,
         "scale_cap_modes": scale_cap_modes,
         "opacity_modes": opacity_modes, "renderers": renderers,
+        "aa_dilations": aa_dilations,
         "pixel_losses": pixel_losses, "optimizers": optimizers,
         "lr_schedules": lr_schedules, "refine_modes": refine_modes,
         "pyramid_modes": pyramid_modes,
@@ -803,6 +812,7 @@ def main():
                    help="none, hard8/hard12, feature8/feature12, or feature_cap<N>")
     p.add_argument("--opacity-modes", nargs="+", default=None)
     p.add_argument("--renderers", nargs="+", default=None)
+    p.add_argument("--aa-dilations", type=float, nargs="+", default=None)
     p.add_argument("--pixel-losses", nargs="+", default=None)
     p.add_argument("--optimizers", nargs="+", default=None)
     p.add_argument("--lr-schedules", nargs="+", default=None)
@@ -840,7 +850,8 @@ def main():
         sampling_modes=a.sampling_modes, orientation_modes=a.orientation_modes,
         color_modes=a.color_modes, scale_modes=a.scale_modes,
         scale_cap_modes=a.scale_cap_modes, opacity_modes=a.opacity_modes,
-        renderers=a.renderers, pixel_losses=a.pixel_losses, optimizers=a.optimizers,
+        renderers=a.renderers, aa_dilations=a.aa_dilations,
+        pixel_losses=a.pixel_losses, optimizers=a.optimizers,
         lr_schedules=a.lr_schedules, refine_modes=a.refine_modes,
         pyramid_modes=a.pyramid_modes, render_chunk=a.chunk,
         ssim_weight=a.ssim_weight, ssim_backend=a.ssim_backend,

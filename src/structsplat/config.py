@@ -60,7 +60,7 @@ class FitConfig:
     lr_rot: float = 1e-2
     lr_color: float = 3e-2
     lr_opacity: float = 1e-2
-    optimizer: str = "adam"            # adam or adamw
+    optimizer: str = "adam"            # adam, adamw, or adan
     pixel_loss: str = "l1"             # l1, l2, or charbonnier; SSIM term is mixed separately
     charbonnier_eps: float = 1e-3
     loss_warmup_iters: int = 0
@@ -86,11 +86,12 @@ class FitConfig:
     prune_keep_min: int = 16
     split_every: int | None = None
     split_count: int = 0
-    split_mode: str = "duplicate"      # duplicate, fp_duplicate, support_duplicate, residual_add, residual_tensor_add, ranked_wave
+    split_mode: str = "duplicate"      # duplicate, fp_duplicate, support_duplicate, residual_add, residual_tensor_add, ranked_wave, absgrad_wave
     split_scale: float = 0.7
     split_oversample: float = 1.0       # residual_add candidate multiplier before spacing NMS
     split_min_spacing: float = 0.0      # residual_add NMS radius = this * base densify scale
     split_color_init: str = "target"    # target or residual; additive renderers force residual
+    absgrad_decay: float = 1.0          # AbsGS-style |dL/dmu| accumulation decay
     relocate_every: int | None = None
     relocate_count: int = 0
     relocate_init_opacity: float = 0.05  # low-alpha function-preserving warm start
@@ -118,6 +119,8 @@ class FitConfig:
         if self.split_color_init not in ("target", "residual"):
             raise ValueError(
                 f"split_color_init must be target or residual, got {self.split_color_init!r}")
+        if not 0.0 <= self.absgrad_decay <= 1.0:
+            raise ValueError(f"absgrad_decay must be in [0, 1], got {self.absgrad_decay}")
         if self.relocate_count < 0:
             raise ValueError(f"relocate_count must be >= 0, got {self.relocate_count}")
         if not 0.0 < self.relocate_init_opacity < 1.0:
