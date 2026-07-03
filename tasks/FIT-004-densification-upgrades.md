@@ -1,7 +1,8 @@
 # FIT-004: Densification & convergence upgrades (function-preserving growth, relocation, NMS)
 
-**Status: todo.** From the 2026-07-03 repo review + SOTA survey. These are quality/convergence
-improvements; each lands behind a config flag so ABL-002's stage axes stay comparable.
+**Status: partial.** From the 2026-07-03 repo review + SOTA survey. These are
+quality/convergence improvements; each lands behind a config flag so ABL-002's stage axes stay
+comparable.
 
 ## Context
 The trace's own conclusion (O09) is that in-loop density control, not first placement, is the
@@ -38,19 +39,33 @@ Densification that neither clusters nor spikes the loss, plus a relocation mode 
 fixed-N capacity allocation self-correcting.
 
 ## Acceptance criteria
-- [ ] `_add_from_residual` oversamples k then applies greedy min-spacing suppression (spacing
+- [x] `_add_from_residual` oversamples k then applies greedy min-spacing suppression (spacing
       tied to base_scale); test: adds in one wave are pairwise separated.
 - [ ] Function-preserving `_split_from_residual` variant (weight-corrected, ±σ_major child
       placement) behind `split_mode='fp_duplicate'`; test: PSNR at the split iteration drops
       < 0.05 dB (vs the current visible dip).
-- [ ] `color_init='residual'` option for normalized-renderer adds; benchmark slice recorded.
+- [x] `color_init='residual'` option for normalized-renderer adds; benchmark slice recorded.
 - [ ] `split_mode='ranked_wave'`: composite score, exactly-K growth, score components logged
       for the stage-influence harness.
 - [ ] `relocate_every`/`relocate_count` mode implemented with function-preserving rescale under
       the normalized renderer, reusing `_carry_adam_state`; N constant across the fit; test.
-- [ ] Each new mode registered as a stage-search axis value (ABL-002) with a one-line
+- [x] Each new mode registered as a stage-search axis value (ABL-002) with a one-line
       description in benchmarks/README.md.
 - [ ] Stretch items each behind flags with one benchmark slice per item; results in notes.
+
+## Notes
+- 2026-07-03 partial implementation: residual-add spacing controls
+  `split_min_spacing`/`split_oversample`, normalized residual color init via
+  `split_color_init='residual'`, CLI flags, and stage-search refine arms
+  `residual_add_nms`, `residual_tensor_add_nms`, `residual_add_residual_color`,
+  `residual_tensor_add_residual_color`, and combined NMS+residual-color variants.
+- Benchmark slice:
+  `ara/evidence/fit004-residual-add-controls-2026-07-03/` on four 160px COCO crops,
+  budget 256, seed 0, 60 iters, one +32 wave at iter 30. Mean single-stage results:
+  no-refine 21.6899 PSNR / 20.112 AUC; residual_add 21.2078 / 19.4778;
+  residual_add_nms 21.3046 / 19.5909; residual_tensor_add 21.3282 / 19.5325;
+  residual_tensor_add_nms 21.3822 / 19.6472. Residual color init alone was worse in this
+  short slice; keep it as an experimental axis, not a default.
 
 ## Interfaces touched
 `src/structsplat/fit.py`, `src/structsplat/config.py`, `benchmarks/stage_search.py`,

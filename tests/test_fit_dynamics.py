@@ -1,4 +1,6 @@
 # ruff: noqa: E402
+import math
+
 import numpy as np
 import pytest
 
@@ -198,6 +200,70 @@ def test_split_uses_residual_colors_under_additive_renderer():
     # normalized children ~= full target red (0.8); additive children ~= residual (0.8-0.5=0.3)
     assert torch.allclose(norm_children[:, 0], torch.full((k,), 0.8), atol=1e-5)
     assert torch.allclose(add_children[:, 0], torch.full((k,), 0.3), atol=1e-5)
+
+
+def test_residual_add_min_spacing_suppresses_same_error_cluster():
+    H, W = 32, 32
+    target = torch.zeros(H, W, 3)
+    render_img = torch.zeros(H, W, 3)
+    target[8:11, 8:11] = 1.0
+    target[8, 24] = 0.95
+    target[24, 8] = 0.9
+    target[24, 24] = 0.85
+    field = _init.build_field(
+        target.numpy(), InitConfig(strategy="random", num_gaussians=8, seed=0))
+    cfg = FitConfig(
+        split_count=4,
+        split_mode="residual_add",
+        split_min_spacing=0.6,
+        split_oversample=32.0,
+        max_gaussians=64,
+    )
+
+    torch.manual_seed(0)
+    grown, k = _add_from_residual(field, target, render_img, cfg, tensor_aligned=False)
+    assert k == 4
+    children = grown.means[-k:].detach()
+    pixels = children.round().to(torch.long)
+    in_cluster = (
+        (pixels[:, 0] >= 8) & (pixels[:, 0] <= 10)
+        & (pixels[:, 1] >= 8) & (pixels[:, 1] <= 10)
+    )
+    base_scale = math.sqrt((H * W) / (field.n + k)) * cfg.split_scale
+
+    assert int(in_cluster.sum()) == 1
+    assert float(torch.pdist(children).min()) >= cfg.split_min_spacing * base_scale - 1.0
+
+
+def test_residual_add_color_init_is_configurable_and_additive_safe():
+    H, W = 12, 12
+    target = torch.zeros(H, W, 3)
+    target[6, 6, 0] = 0.8
+    render_img = torch.zeros(H, W, 3)
+    render_img[6, 6, 0] = 0.5
+    field = _init.build_field(
+        target.numpy(), InitConfig(strategy="random", num_gaussians=4, seed=0))
+    base = dict(split_count=1, split_mode="residual_add", max_gaussians=16)
+
+    target_field, k = _add_from_residual(
+        field, target, render_img, FitConfig(renderer="normalized", **base),
+        tensor_aligned=False,
+    )
+    residual_field, _ = _add_from_residual(
+        field, target, render_img,
+        FitConfig(renderer="normalized", split_color_init="residual", **base),
+        tensor_aligned=False,
+    )
+    additive_field, _ = _add_from_residual(
+        field, target, render_img,
+        FitConfig(renderer="additive", split_color_init="target", **base),
+        tensor_aligned=False,
+    )
+
+    assert k == 1
+    assert torch.allclose(target_field.colors[-1, 0], torch.tensor(0.8), atol=1e-5)
+    assert torch.allclose(residual_field.colors[-1, 0], torch.tensor(1.1), atol=1e-5)
+    assert torch.allclose(additive_field.colors[-1, 0], torch.tensor(0.3), atol=1e-5)
 
 
 def test_zero_opacity_gaussian_is_pruned():

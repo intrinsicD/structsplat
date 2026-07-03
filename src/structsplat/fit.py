@@ -144,6 +144,21 @@ def _nearest_image_colors(target: torch.Tensor, means: torch.Tensor) -> torch.Te
 
 
 @torch.no_grad()
+def _residual_add_colors(target: torch.Tensor, render_img: torch.Tensor, y: torch.Tensor,
+                         x: torch.Tensor, cfg: FitConfig) -> torch.Tensor:
+    if cfg.renderer in _ADDITIVE_RENDERERS:
+        # Additive renderers stack raw contributions, so children should carry only the missing
+        # residual. This preserves the FIT-002 additive semantics regardless of split_color_init.
+        return (target - render_img)[y, x]
+    if cfg.split_color_init == "residual":
+        # Normalized rendering averages colors by weight. A corrective child must sit on the
+        # other side of the current render, not at the current target color, to pull the weighted
+        # average toward the target in sparse high-error regions.
+        return target[y, x] + (target - render_img)[y, x]
+    return target[y, x]
+
+
+@torch.no_grad()
 def _nearest_scale_caps(field: GaussianField, means: torch.Tensor) -> torch.Tensor | None:
     if field.scale_max is None:
         return None
@@ -188,6 +203,55 @@ def _support_residual_scores(field: GaussianField, residual: torch.Tensor,
 
 def _luma(img: torch.Tensor) -> torch.Tensor:
     return 0.2126 * img[..., 0] + 0.7152 * img[..., 1] + 0.0722 * img[..., 2]
+
+
+@torch.no_grad()
+def _spaced_topk_pixels(scores: torch.Tensor, W: int, k: int, min_spacing: float,
+                        oversample: float) -> torch.Tensor:
+    if k <= 0:
+        return scores.new_empty((0,), dtype=torch.long)
+    if min_spacing <= 0.0:
+        return torch.topk(scores, k=k).indices
+
+    total = int(scores.numel())
+    selected: list[int] = []
+    blocked: set[int] = set()
+    candidate_count = min(total, max(k, int(math.ceil(k * oversample))))
+    min_d2 = float(min_spacing * min_spacing)
+    while True:
+        cand = torch.topk(scores, k=candidate_count).indices.detach().cpu().tolist()
+        for idx in cand:
+            if idx in blocked:
+                continue
+            y = idx // W
+            x = idx - y * W
+            ok = True
+            for prev in selected:
+                py = prev // W
+                px = prev - py * W
+                dx = x - px
+                dy = y - py
+                if dx * dx + dy * dy < min_d2:
+                    ok = False
+                    break
+            blocked.add(idx)
+            if ok:
+                selected.append(idx)
+                if len(selected) == k:
+                    return torch.as_tensor(selected, device=scores.device, dtype=torch.long)
+        if len(selected) >= k or candidate_count >= total:
+            break
+        candidate_count = min(total, max(candidate_count + 1, candidate_count * 2))
+
+    # If the requested radius cannot provide K separated pixels, fill the remaining capacity with
+    # the best unused pixels. This preserves exact growth while spacing whenever possible.
+    if len(selected) < k:
+        for idx in torch.topk(scores, k=total).indices.detach().cpu().tolist():
+            if idx not in selected:
+                selected.append(idx)
+                if len(selected) == k:
+                    break
+    return torch.as_tensor(selected[:k], device=scores.device, dtype=torch.long)
 
 
 @torch.no_grad()
@@ -295,7 +359,9 @@ def _add_from_residual(field: GaussianField, target: torch.Tensor, render_img: t
     if k <= 0:
         return field, 0
 
-    idx = torch.topk(residual, k=k).indices
+    base_scale = math.sqrt((H * W) / max(field.n + k, 1)) * cfg.split_scale
+    min_spacing = cfg.split_min_spacing * max(base_scale, _MIN_DENSIFY_SCALE)
+    idx = _spaced_topk_pixels(residual, W, k, min_spacing, cfg.split_oversample)
     y = torch.div(idx, W, rounding_mode="floor")
     x = idx - y * W
     offsets = torch.stack([
@@ -305,7 +371,6 @@ def _add_from_residual(field: GaussianField, target: torch.Tensor, render_img: t
     means = torch.stack([x.to(target.dtype), y.to(target.dtype)], dim=1) + offsets
     means[:, 0].clamp_(0, W - 1)
     means[:, 1].clamp_(0, H - 1)
-    base_scale = math.sqrt((H * W) / max(field.n + k, 1)) * cfg.split_scale
     if tensor_aligned:
         gx, gy = _image_gradients(target)
         grad = torch.sqrt(gx[y, x] ** 2 + gy[y, x] ** 2)
@@ -324,12 +389,7 @@ def _add_from_residual(field: GaussianField, target: torch.Tensor, render_img: t
         rotations = torch.zeros(k, device=target.device, dtype=target.dtype)
     scale_max = _nearest_scale_caps(field, means)
     log_scales = _clamp_new_log_scales(log_scales, scale_max)
-    if cfg.renderer in _ADDITIVE_RENDERERS:
-        # additive stacks on the existing accumulation: injecting full target colors
-        # overshoots; the residual color is what the new Gaussian should contribute
-        colors = (target - render_img)[y, x]
-    else:
-        colors = target[y, x]
+    colors = _residual_add_colors(target, render_img, y, x, cfg)
     return field.append(GaussianField(means, log_scales, rotations, colors,
                                       scale_max=scale_max)), k
 

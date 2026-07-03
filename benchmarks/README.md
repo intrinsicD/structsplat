@@ -22,6 +22,8 @@ scalar a co-scientist loop maximizes over init/sampling variants.
 sampling, orientation, color, scale-cap, renderer, loss, optimizer, refinement, and pyramid stages.
 Caveat: factorial marginals are observational when axes co-vary; use `--mode influence` for paired
 one-factor deltas around a baseline.
+FIT-004 residual densification variants are exposed as refine arms such as `residual_add_nms`,
+`residual_tensor_add_nms`, and `residual_add_nms_residual_color`.
 
 ```
 python -m benchmarks.stage_search path/to/images --mode influence --budgets 2048 --iters 500

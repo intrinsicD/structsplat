@@ -6,7 +6,7 @@ torch = pytest.importorskip("torch")
 
 from PIL import Image
 
-from benchmarks.stage_search import run_stage_search, _canonicalize
+from benchmarks.stage_search import run_stage_search, _canonicalize, _refine_kwargs
 
 
 def _write_toy(path):
@@ -85,14 +85,32 @@ def test_refine_arms_do_not_exceed_cell_budget(tmp_path):
         color_modes=["bilinear"], scale_modes=["spacing"], scale_cap_modes=["none"],
         opacity_modes=["none"], renderers=["normalized"], pixel_losses=["l1"],
         optimizers=["adam"], lr_schedules=["none"],
-        refine_modes=["none", "residual_add", "duplicate"], pyramid_modes=["single"],
+        refine_modes=["none", "residual_add", "residual_add_nms_residual_color", "duplicate"],
+        pyramid_modes=["single"],
         split_every=2, split_count=8, render_chunk=8,
         outdir=str(tmp_path / "budget"), device="cpu",
     )
     assert rows and all(r["n_gaussians"] <= r["budget"] for r in rows)
     # adding arms start below budget and climb back to it (equal final capacity)
-    adds = [r for r in rows if r["refine"] in ("residual_add", "duplicate")]
+    adds = [r for r in rows if r["refine"] != "none"]
     assert adds and all(r["init_budget"] < r["budget"] for r in adds)
+
+
+def test_refine_kwargs_threads_fit004_modes():
+    nms = _refine_kwargs("residual_tensor_add_nms", 5, 7, None, 0.0)
+    assert nms == {
+        "split_every": 5,
+        "split_count": 7,
+        "split_mode": "residual_tensor_add",
+        "split_min_spacing": 1.0,
+        "split_oversample": 8.0,
+    }
+
+    combined = _refine_kwargs("residual_add_nms_residual_color", 5, 7, None, 0.0)
+    assert combined["split_mode"] == "residual_add"
+    assert combined["split_min_spacing"] == 1.0
+    assert combined["split_oversample"] == 8.0
+    assert combined["split_color_init"] == "residual"
 
 
 def test_config_json_is_written(tmp_path):

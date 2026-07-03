@@ -81,7 +81,10 @@ INFLUENCE_DEFAULTS: dict[str, tuple[str, ...]] = {
     "lr_schedules": ("none", "cosine", "step"),
     "refine_modes": (
         "none", "prune", "duplicate", "support_duplicate", "residual_add",
-        "residual_tensor_add", "prune_residual_add", "prune_residual_tensor_add"
+        "residual_tensor_add", "residual_add_nms", "residual_tensor_add_nms",
+        "residual_add_residual_color", "residual_tensor_add_residual_color",
+        "residual_add_nms_residual_color", "residual_tensor_add_nms_residual_color",
+        "prune_residual_add", "prune_residual_tensor_add",
     ),
     "pyramid_modes": ("single", "pyramid"),
 }
@@ -175,6 +178,42 @@ def _influence_configs(axes: dict[str, tuple]):
 
 def _refine_kwargs(mode: str, split_every: int | None, split_count: int,
                    prune_every: int | None, prune_min_activity: float) -> dict[str, Any]:
+    split_variants: dict[str, dict[str, Any]] = {
+        "duplicate": {"split_mode": "duplicate"},
+        "support_duplicate": {"split_mode": "support_duplicate"},
+        "residual_add": {"split_mode": "residual_add"},
+        "residual_tensor_add": {"split_mode": "residual_tensor_add"},
+        "residual_add_nms": {
+            "split_mode": "residual_add",
+            "split_min_spacing": 1.0,
+            "split_oversample": 8.0,
+        },
+        "residual_tensor_add_nms": {
+            "split_mode": "residual_tensor_add",
+            "split_min_spacing": 1.0,
+            "split_oversample": 8.0,
+        },
+        "residual_add_residual_color": {
+            "split_mode": "residual_add",
+            "split_color_init": "residual",
+        },
+        "residual_tensor_add_residual_color": {
+            "split_mode": "residual_tensor_add",
+            "split_color_init": "residual",
+        },
+        "residual_add_nms_residual_color": {
+            "split_mode": "residual_add",
+            "split_min_spacing": 1.0,
+            "split_oversample": 8.0,
+            "split_color_init": "residual",
+        },
+        "residual_tensor_add_nms_residual_color": {
+            "split_mode": "residual_tensor_add",
+            "split_min_spacing": 1.0,
+            "split_oversample": 8.0,
+            "split_color_init": "residual",
+        },
+    }
     if mode == "none":
         return {}
     if mode == "prune":
@@ -182,11 +221,11 @@ def _refine_kwargs(mode: str, split_every: int | None, split_count: int,
             "prune_every": prune_every,
             "prune_min_activity": prune_min_activity,
         }
-    if mode in ("duplicate", "support_duplicate", "residual_add", "residual_tensor_add"):
+    if mode in split_variants:
         return {
             "split_every": split_every,
             "split_count": split_count,
-            "split_mode": mode,
+            **split_variants[mode],
         }
     if mode in ("prune_residual_add", "prune_residual_tensor_add"):
         return {
@@ -197,9 +236,10 @@ def _refine_kwargs(mode: str, split_every: int | None, split_count: int,
             "split_mode": "residual_tensor_add"
             if mode == "prune_residual_tensor_add" else "residual_add",
         }
+    expected = ", ".join(["none", "prune", *split_variants,
+                          "prune_residual_add", "prune_residual_tensor_add"])
     raise ValueError(
-        f"unknown refine mode {mode!r}; expected none, prune, duplicate, support_duplicate, "
-        "residual_add, residual_tensor_add, prune_residual_add, or prune_residual_tensor_add"
+        f"unknown refine mode {mode!r}; expected one of: {expected}"
     )
 
 

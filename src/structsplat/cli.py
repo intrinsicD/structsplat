@@ -67,7 +67,11 @@ def cmd_fit(args):
                      prune_keep_min=args.prune_keep_min,
                      split_every=args.split_every, split_count=args.split_count,
                      split_mode=args.split_mode,
-                     split_scale=args.split_scale, max_gaussians=args.max_gaussians)
+                     split_scale=args.split_scale,
+                     split_oversample=args.split_oversample,
+                     split_min_spacing=args.split_min_spacing,
+                     split_color_init=args.split_color_init,
+                     max_gaussians=args.max_gaussians)
 
     if args.pyramid:
         # honor --iters when --iters-per-level is not given, so the pyramid spends the
@@ -198,6 +202,12 @@ def main():
                             "residual_tensor_add"],
                    default="duplicate")
     f.add_argument("--split-scale", type=float, default=0.7)
+    f.add_argument("--split-oversample", type=float, default=1.0,
+                   help="candidate multiplier for residual-add spacing suppression")
+    f.add_argument("--split-min-spacing", type=float, default=0.0,
+                   help="residual-add spacing radius as a multiple of the densify base scale")
+    f.add_argument("--split-color-init", choices=["target", "residual"], default="target",
+                   help="color initialization for normalized residual-add children")
     f.add_argument("--max-gaussians", type=int, default=None)
     f.add_argument("--seed", type=int, default=0)
     f.add_argument("--outdir", default="runs")

@@ -88,6 +88,9 @@ class FitConfig:
     split_count: int = 0
     split_mode: str = "duplicate"      # duplicate, support_duplicate, residual_add, residual_tensor_add
     split_scale: float = 0.7
+    split_oversample: float = 1.0       # residual_add candidate multiplier before spacing NMS
+    split_min_spacing: float = 0.0      # residual_add NMS radius = this * base densify scale
+    split_color_init: str = "target"    # target or residual; additive renderers force residual
     # residual_tensor_add anisotropy, mirroring InitConfig semantics so the densifier and the
     # init agree on what anisotropy means: ratio = 1 + (max_axis_ratio-1)*coherence**power.
     densify_max_axis_ratio: float = 6.0
@@ -105,6 +108,13 @@ class FitConfig:
         if self.ssim_backend not in ("builtin", "fused", "auto"):
             raise ValueError(
                 f"ssim_backend must be builtin, fused, or auto, got {self.ssim_backend!r}")
+        if self.split_oversample < 1.0:
+            raise ValueError(f"split_oversample must be >= 1, got {self.split_oversample}")
+        if self.split_min_spacing < 0.0:
+            raise ValueError(f"split_min_spacing must be >= 0, got {self.split_min_spacing}")
+        if self.split_color_init not in ("target", "residual"):
+            raise ValueError(
+                f"split_color_init must be target or residual, got {self.split_color_init!r}")
 
 
 @dataclass
