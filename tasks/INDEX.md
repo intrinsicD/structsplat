@@ -23,7 +23,6 @@ FIT, HIER, BENCH, ABL, FF, COMP, PORT, MERGE, DOCS. Work items are picked up via
 | FIT-003 | Fit-loop speed (device-side targets, SSIM hygiene, fused SSIM) | todo | FIT-001, BENCH-001 |
 | FIT-004 | Densification & convergence upgrades (fp-growth, relocation, NMS) | todo | FIT-002, BENCH-002 |
 | BENCH-003 | Benchmark script consolidation + documentation | todo | BENCH-002 |
-| ABL-003 | Bisect the undiagnosed −0.794 dB flagship regression | todo | — |
 | ABL-004 | Killer controls + full ABL-001 run + committed evidence | todo | BENCH-002, ABL-003, FIT-004 |
 | COMP-003 | Compression-ratio ladder (scale ranges → planes → LSQ → VQ → entropy) | todo | COMP-002, BENCH-002 |
 
@@ -43,6 +42,7 @@ FIT, HIER, BENCH, ABL, FF, COMP, PORT, MERGE, DOCS. Work items are picked up via
 | HIER-002 | Pyramid bookkeeping (iteration accounting, budgets, schedules) | `done/HIER-002-pyramid-bookkeeping.md` |
 | BENCH-001 | Metric protocol (PSNR/MS-SSIM/LPIPS + iters-to-target) | `done/BENCH-001-metrics.md` |
 | BENCH-002 | Benchmark harness experimental-validity fixes (equal budgets, resumable sweeps, seed-aware comparisons) | `done/BENCH-002-harness-validity.md` |
+| ABL-003 | Bisect the undiagnosed −0.794 dB flagship regression | `done/ABL-003-regression-bisect.md` |
 | COMP-002 | Codec / metrics / CLI correctness and protocol fixes | `done/COMP-002-codec-correctness.md` |
 | DOCS-001 | Docs-sync backfill (stale status, missing ADRs, ara scaffold) | `done/DOCS-001-docs-sync-backfill.md` |
 
@@ -51,8 +51,8 @@ performance and scale follow-ups stay active under PORT/FIT/INIT/BENCH/ABL tasks
 
 ## Suggested order (from the 2026-07-03 repo review)
 
-CORE-004/FIT-002/HIER-002/COMP-002/INIT-005/BENCH-002 fix confirmed bugs and are independent of
-each other. **ABL-003 gates the science** — run it before any new sweep or tuning. Then ABL-004
-(the actual experiment, with evidence committed), and only after that the
-improvement tracks: FIT-003/INIT-006 (speed), FIT-004/CORE-005 (quality/convergence),
-COMP-003 (rate), BENCH-003 (hygiene, anytime).
+CORE-004/FIT-002/HIER-002/COMP-002/INIT-005/BENCH-002/ABL-003 fix confirmed bugs and
+science-gating ambiguities. Next unblock ABL-004 by implementing FIT-004's relocation/control
+pieces, then run ABL-004 (the actual experiment, with evidence committed). After that, continue
+the improvement tracks: FIT-003/INIT-006 (speed), CORE-005 (quality/convergence), COMP-003
+(rate), BENCH-003 (hygiene, anytime).

@@ -1,0 +1,5 @@
+commit,label,mean_psnr,note,order,runs,short,std_psnr
+f49aa18014753125bdfce0b2b26179cecf83b602,merge_base,24.8202,PR #2 merge base,0,4,f49aa18,3.1519
+71fad3e64b74888dc783fa20f4b330482dfd4913,stage_influence,24.8202,stage-influence ablation mode and stage variants,1,4,71fad3e,3.1519
+ef730a96dfb6a6f0daca93b70346b66bd8321647,correctness_fixes,24.051,renderer/fit/init correctness and validity fixes,2,4,ef730a9,2.9524
+a455e9846d7fb339f7fe39a202d15fb0c3435a1d,two_sided_fix,24.051,two_sided flank color side-selection fix,3,4,a455e98,2.9524

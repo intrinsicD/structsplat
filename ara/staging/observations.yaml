@@ -153,3 +153,14 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O15
+    timestamp: "2026-07-03T12:19+0200"
+    provenance: ai-suggested
+    content: "The historical N03->N04 StructSplat PSNR drop is explained by the ef730a9 correctness/semantics change, especially blue-noise spacing scale changing from exclusion radius to cell-side spacing; it is not caused by the later two_sided color fix."
+    context: "ABL-003 detached-worktree bisect on the four COCO train2014 images at max-side 160, budget 512, seed 0, and 80 iterations."
+    potential_type: constraint
+    bound_to: [N18]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

@@ -1,0 +1,39 @@
+{
+  "command": "/home/alex/Documents/Deeplearning3/external/structsplat/benchmarks/regression_bisect.py --download --device cpu",
+  "repo": "/home/alex/Documents/Deeplearning3/external/structsplat",
+  "dataset_dir": "/home/alex/Documents/Deeplearning3/external/structsplat/results/abl003_coco_train2014",
+  "image_names": [
+    "COCO_train2014_000000000009.jpg",
+    "COCO_train2014_000000000025.jpg",
+    "COCO_train2014_000000000030.jpg",
+    "COCO_train2014_000000000034.jpg"
+  ],
+  "commits": [
+    [
+      "merge_base",
+      "f49aa18014753125bdfce0b2b26179cecf83b602",
+      "PR #2 merge base"
+    ],
+    [
+      "stage_influence",
+      "71fad3e64b74888dc783fa20f4b330482dfd4913",
+      "stage-influence ablation mode and stage variants"
+    ],
+    [
+      "correctness_fixes",
+      "ef730a96dfb6a6f0daca93b70346b66bd8321647",
+      "renderer/fit/init correctness and validity fixes"
+    ],
+    [
+      "two_sided_fix",
+      "a455e9846d7fb339f7fe39a202d15fb0c3435a1d",
+      "two_sided flank color side-selection fix"
+    ]
+  ],
+  "budget": 512,
+  "iters": 80,
+  "max_side": 160,
+  "seed": 0,
+  "device": "cpu",
+  "runner": "benchmarks.regression_bisect"
+}

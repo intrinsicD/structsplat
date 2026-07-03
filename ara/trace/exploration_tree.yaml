@@ -30,7 +30,9 @@ tree:
       in this reference run: 24.833 dB vs GaussianImage 21.990, GaussianImage++
       20.191, Image-GS 20.996, and Instant-GI quadtree 18.350. Native repo
       CUDA/checkpoint runs remained blocked, so the result isolates
-      initialization/growth policy under one renderer and fitter.
+      initialization/growth policy under one renderer and fitter. Later bisect N18
+      found this pre-`ef730a9` number is not directly comparable with post-`ef730a9`
+      baselines because that commit intentionally changed blue-noise spacing-scale semantics.
     evidence:
       - "coco-fit-compare-2026-07-02"
     status: resolved
@@ -46,7 +48,9 @@ tree:
       24.039 dB, GaussianImage 21.991, GaussianImage++ 20.191, Image-GS 20.542,
       and Instant-GI quadtree 18.362. Relative to the prior run, StructSplat changed
       by -0.794 dB and Image-GS by -0.455 dB, while random baselines were effectively
-      unchanged.
+      unchanged. Later bisect N18 localized the StructSplat shift to `ef730a9`, not
+      the subsequent `two_sided` color fix, and treats this as an intentional semantic
+      re-baseline rather than an unresolved regression.
     evidence:
       - "coco-fit-compare-rerun-2026-07-02"
     status: resolved
@@ -317,4 +321,26 @@ tree:
       - "benchmarks/cross_repo_matrix_compare.py"
       - "cross-repo-matrix-current-2026-07-03"
     also_depends_on: [N01, N03, N15, N16]
+    status: resolved
+  - id: N18
+    type: experiment
+    title: "ABL-003 regression bisect"
+    provenance: ai-executed
+    timestamp: "2026-07-03T12:19+0200"
+    result: >
+      Added `benchmarks/regression_bisect.py`, downloaded the four COCO train2014
+      images by public HTTP URL into ignored `results/`, and reran the historical
+      StructSplat `aniso_flanking` arm at the PR #2 merge base plus commits
+      `71fad3e`, `ef730a9`, and `a455e98` in detached worktrees. The four-image
+      CPU rerun matches the recorded shift closely: mean PSNR was 24.8202 dB at
+      `f49aa18`, 24.8202 at `71fad3e`, 24.0510 at `ef730a9` (-0.7692), and
+      24.0510 at `a455e98` (+0.0000). Verdict: the observed N03->N04 drop is
+      localized to `ef730a9` and is an intentional semantic re-baseline, primarily
+      from the blue-noise spacing-scale correction from exclusion radius to cell-side
+      spacing (`sqrt(pi)` larger), with renderer support clipping and other correctness
+      fixes in the same commit. The `a455e98` two-sided color fix is not the cause for
+      the historical default `color_mode=bilinear` StructSplat arm.
+    evidence:
+      - "abl003-regression-bisect-2026-07-03"
+    also_depends_on: [N03, N04, N05]
     status: resolved

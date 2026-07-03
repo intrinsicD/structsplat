@@ -1,6 +1,6 @@
 # ABL-003: Bisect the undiagnosed −0.794 dB flagship regression
 
-**Status: todo.** From the 2026-07-03 repo review. **Investigation task — gates trust in all
+**Status: done.** From the 2026-07-03 repo review. **Investigation task — gates trust in all
 post-merge tuning conclusions.**
 
 ## Context
@@ -17,17 +17,39 @@ conclusions float on an unexplained baseline shift.
 Name the commit and mechanism behind the −0.794 dB shift; decide whether it was a real quality
 regression (fix it) or an intentional semantic change (document it and re-baseline the trace).
 
+## Result
+Implemented `benchmarks/regression_bisect.py` and ran:
+
+```bash
+python -m benchmarks.regression_bisect --download --device cpu
+```
+
+Evidence is committed under `ara/evidence/abl003-regression-bisect-2026-07-03/`.
+
+| Commit | Mean PSNR | Delta vs previous | Verdict |
+|---|---:|---:|---|
+| `f49aa18` | 24.8202 | - | PR #2 merge base |
+| `71fad3e` | 24.8202 | 0.0000 | stage-search code did not move this baseline |
+| `ef730a9` | 24.0510 | -0.7692 | offending semantic/correctness change |
+| `a455e98` | 24.0510 | 0.0000 | not the cause for default `color_mode=bilinear` |
+
+Verdict: the N03->N04 StructSplat drop is an intentional semantic re-baseline, not an unfixed
+quality regression. The shift localizes to `ef730a9`, whose diff changes blue-noise placement
+spacing from exclusion radius to cell-side spacing (`sqrt(pi)` larger) and also includes clipped
+renderer support, final-iteration restructure hygiene, and opacity padding fixes. N03/N04 evidence
+and trace text are annotated accordingly.
+
 ## Acceptance criteria
-- [ ] Re-run the four-image benchmark at each of PR #2's commits (a455e98, ef730a9, 71fad3e)
+- [x] Re-run the four-image benchmark at each of PR #2's commits (a455e98, ef730a9, 71fad3e)
       plus the merge base; per-commit PSNR table recorded.
-- [ ] The offending change identified at the diff level and its mechanism explained (candidate
+- [x] The offending change identified at the diff level and its mechanism explained (candidate
       suspects worth checking first: the ef730a9 "correctness and experimental-validity fixes
       across renderer, fit, pyramid, codec" — a correctness fix can legitimately lower
       measured PSNR; and the a455e98 two_sided change).
-- [ ] Verdict recorded as a new trace node: either "regression, fixed in <commit>" (with the
+- [x] Verdict recorded as a new trace node: either "regression, fixed in <commit>" (with the
       recovered number) or "intentional semantic change, N03 and N04 are not comparators"
       (with N03/before-update evidence entries annotated accordingly).
-- [ ] The four-image benchmark command + environment logged into `ara/evidence/` so the
+- [x] The four-image benchmark command + environment logged into `ara/evidence/` so the
       bisect itself is reproducible.
 
 ## Interfaces touched

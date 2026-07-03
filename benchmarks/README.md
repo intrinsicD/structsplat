@@ -28,3 +28,7 @@ semantics per row.
 are intentionally narrower than `stage_search.py`; use them when reproducing the specific evidence
 entry that names them. Each accepts `--seeds` and reports aggregate mean/std over image x seed
 rows; `--seed` remains as a single-seed compatibility alias.
+
+`regression_bisect.py` is the ABL-003 forensic runner. It downloads the pinned four-image COCO
+subset, evaluates historical commits in detached worktrees, and writes compact evidence under
+`ara/evidence/`.
