@@ -1,6 +1,6 @@
 # INIT-006: Init-time performance (quadtree, spacing, run-lengths, pair discovery)
 
-**Status: todo.** From the 2026-07-03 repo review. All items are asymptotic/memory fixes with
+**Status: partial.** From the 2026-07-03 repo review. All items are asymptotic/memory fixes with
 no behavior change — outputs must stay bit-identical (or identical up to documented tie-breaks).
 
 ## Context
@@ -30,7 +30,7 @@ Feature-aware init stays interactive at the default 20k budget on 1–4 MP image
 - [ ] `_quadtree_leaves` uses a max-heap keyed by (mass, area), priorities computed once per
       cell at push time → O(n log n); leaf sets identical to the current implementation on the
       test images (or differences limited to documented tie-breaking).
-- [ ] `_nn_spacing` uses the GEMM form (|a|²+|b|²−2ab) or the sampling grid hash; peak
+- [x] `_nn_spacing` uses the GEMM form (|a|²+|b|²−2ab) or the sampling grid hash; peak
       allocation < 200 MB at N=20k; results equal within fp tolerance.
 - [ ] `_feature_run_lengths` vectorized ((N, S) coordinate grid + argmax over the first
       failing step); equal results; ≥10× faster at N=20k.
@@ -42,6 +42,18 @@ Feature-aware init stays interactive at the default 20k budget on 1–4 MP image
 - [ ] The percentile ref is computed once in `st.compute`, stored on `StructureTensor`, and
       consumed by density/init (falling back to local computation when absent).
 - [ ] A timing table (before/after per function at N∈{5k, 20k}) recorded in this file's notes.
+
+## Notes
+- 2026-07-03 partial implementation: `_nn_spacing` now uses a chunked GEMM distance matrix and
+  caps the effective chunk with `_NN_SPACING_MAX_MATRIX_ELEMS = 16_000_000` (128 MB at
+  float64). Focused test coverage compares the result to the old broadcast formula across
+  multiple chunks.
+- Timing/memory check on random 4096x3072-domain points, default requested chunk 2048:
+
+  | Function | N | Old seconds | New seconds | Max abs diff | Old matrix | New matrix |
+  |---|---:|---:|---:|---:|---:|---:|
+  | `_nn_spacing` | 5,000 | 0.3390 | 0.0736 | 7.85e-10 | 163.8 MB | 81.9 MB |
+  | `_nn_spacing` | 20,000 | skipped | 1.0657 | n/a | 655.4 MB formula | 128.0 MB |
 
 ## Interfaces touched
 `src/structsplat/init.py`, `src/structsplat/sampling.py`, `src/structsplat/structure_tensor.py`,

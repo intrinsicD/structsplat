@@ -78,6 +78,7 @@ def _radius_map(density: np.ndarray, n: int, r_min=0.5, r_max=20.0) -> np.ndarra
 # "spacing" would hand the feature-aware strategies a systematically sqrt(pi)~1.77x smaller
 # initial scale at identical local density: a confound in the strategy ablation, not a choice.
 _SPACING_PER_RADIUS = float(np.sqrt(np.pi))
+_NN_SPACING_MAX_MATRIX_ELEMS = 16_000_000  # 128 MB at float64
 
 
 def _sat(a: np.ndarray) -> np.ndarray:
@@ -460,16 +461,30 @@ def _jittered_grid_positions(H: int, W: int, n: int, rng: np.random.Generator) -
 
 def _nn_spacing(pts: np.ndarray, r_min: float = 0.5, r_max: float = 40.0,
                 chunk: int = 2048) -> np.ndarray:
-    """Per-point distance to the nearest other point (chunked brute force)."""
+    """Per-point distance to the nearest other point (chunked GEMM distance matrix)."""
     n = len(pts)
     if n < 2:
         return np.full(n, r_max)
+    if chunk <= 0:
+        raise ValueError(f"chunk must be > 0, got {chunk}")
+    pts = np.asarray(pts, dtype=np.float64)
+    norms = np.einsum("ij,ij->i", pts, pts)
+    # Bound the only O(chunk*N) allocation. The old broadcast path allocated
+    # (chunk, N, 2); this keeps the distance matrix itself under the fixed budget.
+    eff_chunk = min(chunk, max(1, _NN_SPACING_MAX_MATRIX_ELEMS // n))
     out = np.empty(n)
-    for s in range(0, n, chunk):
-        d2 = ((pts[s:s + chunk, None, :] - pts[None, :, :]) ** 2).sum(-1)
-        for k in range(d2.shape[0]):
-            d2[k, s + k] = np.inf
-        out[s:s + chunk] = np.sqrt(d2.min(axis=1))
+    for s in range(0, n, eff_chunk):
+        e = min(s + eff_chunk, n)
+        block = pts[s:e]
+        d2 = block @ pts.T
+        d2 *= -2.0
+        d2 += norms[s:e, None]
+        d2 += norms[None, :]
+        np.maximum(d2, 0.0, out=d2)
+        rows = np.arange(e - s)
+        d2[rows, s + rows] = np.inf
+        nearest2 = d2.min(axis=1)
+        out[s:e] = np.sqrt(nearest2)
     return np.clip(out, r_min, r_max)
 
 

@@ -19,7 +19,7 @@ FIT, HIER, BENCH, ABL, FF, COMP, PORT, MERGE, DOCS. Work items are picked up via
 | PORT-001 | CUDA tile rasterizer → IntrinsicEngine RHI pass | partial | CORE-001 |
 | MERGE-001 | Integrate Claude core optimizations and Codex stage search into main | partial | CORE, INIT, FIT, HIER, BENCH, ABL, COMP |
 | CORE-005 | Reference renderer memory bound + C0-continuous support cutoff | todo | CORE-003, CORE-004 |
-| INIT-006 | Init-time performance (quadtree, spacing, run-lengths, pair discovery) | todo | INIT-003, INIT-005 |
+| INIT-006 | Init-time performance (quadtree, spacing, run-lengths, pair discovery) | partial | INIT-003, INIT-005 |
 | FIT-004 | Densification & convergence upgrades (fp-growth, relocation, NMS) | partial | FIT-002, BENCH-002 |
 | ABL-004 | Killer controls + full ABL-001 run + committed evidence | todo | BENCH-002, ABL-003, FIT-004 |
 | COMP-003 | Compression-ratio ladder (scale ranges → planes → LSQ → VQ → entropy) | todo | COMP-002, BENCH-002 |

@@ -63,6 +63,23 @@ def test_scale_mode_knn_tracks_local_spacing():
     assert (s > 0).all() and float(s.max()) < 64.0
 
 
+def test_nn_spacing_matches_broadcast_reference_across_chunks():
+    rng = np.random.default_rng(0)
+    pts = rng.random((37, 2)) * np.array([64.0, 48.0])
+    d2 = ((pts[:, None, :] - pts[None, :, :]) ** 2).sum(-1)
+    np.fill_diagonal(d2, np.inf)
+    expected = np.clip(np.sqrt(d2.min(axis=1)), 0.75, 12.0)
+
+    got = I._nn_spacing(pts, r_min=0.75, r_max=12.0, chunk=5)
+
+    assert np.allclose(got, expected, rtol=1e-12, atol=1e-12)
+
+
+def test_nn_spacing_rejects_nonpositive_chunk():
+    with pytest.raises(ValueError, match="chunk must be > 0"):
+        I._nn_spacing(np.zeros((2, 2)), chunk=0)
+
+
 def test_candidate_oversample_below_one_is_rejected():
     with pytest.raises(ValueError, match="candidate_oversample must be >= 1"):
         InitConfig(candidate_oversample=0.5)
