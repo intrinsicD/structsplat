@@ -18,7 +18,23 @@ specifically versus any reasonably even, density-adaptive point set. They share 
 """
 from __future__ import annotations
 import heapq
+import warnings
 import numpy as np
+
+
+def _warn_if_not_reducing(n: int, M: int) -> None:
+    """Warn when a sampler cannot enforce its exact-N contract because n > M.
+
+    All samplers short-circuit to `arange(M)` when `n >= M`, returning fewer than the requested
+    `n` points. A misconfigured `candidate_oversample` (or tiny image) hits this silently; the
+    warning surfaces it instead of a mysterious under-count downstream (INIT-005).
+    """
+    if n > M:
+        warnings.warn(
+            f"requested n={n} exceeds candidate count M={M}; returning all {M} candidates, "
+            "so the exact-N contract is not met (increase candidate_oversample or the budget).",
+            stacklevel=3,
+        )
 
 
 def anisotropy_metric(angle: np.ndarray, ratio: np.ndarray) -> np.ndarray:
@@ -147,6 +163,7 @@ def eliminate(points: np.ndarray, n: int, r_i: np.ndarray,
     """
     M = points.shape[0]
     if n >= M:
+        _warn_if_not_reducing(n, M)
         return np.arange(M)
     points = np.asarray(points, dtype=np.float64)
     r_i = np.asarray(r_i, dtype=np.float64)
@@ -210,6 +227,7 @@ def dart_throwing(points: np.ndarray, n: int, r_i: np.ndarray,
     """
     M = points.shape[0]
     if n >= M:
+        _warn_if_not_reducing(n, M)
         return np.arange(M)
     rng = rng or np.random.default_rng(0)
     points = np.asarray(points, dtype=np.float64)
@@ -259,19 +277,23 @@ def dart_throwing(points: np.ndarray, n: int, r_i: np.ndarray,
 
     if len(accepted) < n:  # disks too greedy: fill farthest-first from the rejects
         rest = np.nonzero(~taken)[0]
+
+        def norm_d2_to(j: int) -> np.ndarray:
+            # metric (Mahalanobis) squared distance from every reject to point j, radius-normalized
+            # — same distance semantics the acceptance test uses, so the fill does not silently mix
+            # Euclidean and metric distances inside one ablation arm (INIT-005).
+            d2 = _pair_d2(points, j, metric)[rest]
+            return d2 / np.maximum(r_i[rest] + r_i[j], 1e-12) ** 2
+
         dmin = np.full(rest.shape[0], np.inf)
         for j in accepted:
-            dv = points[rest] - points[j]
-            d = (dv[:, 0] ** 2 + dv[:, 1] ** 2) / np.maximum(r_i[rest] + r_i[j], 1e-12) ** 2
-            np.minimum(dmin, d, out=dmin)
+            np.minimum(dmin, norm_d2_to(j), out=dmin)
         while len(accepted) < n:
             b = int(np.argmax(dmin))
             j = int(rest[b])
             accepted.append(j)
             dmin[b] = -np.inf
-            dv = points[rest] - points[j]
-            d = (dv[:, 0] ** 2 + dv[:, 1] ** 2) / np.maximum(r_i[rest] + r_i[j], 1e-12) ** 2
-            np.minimum(dmin, d, out=dmin)
+            np.minimum(dmin, norm_d2_to(j), out=dmin)
     return np.asarray(sorted(accepted), dtype=np.int64)
 
 
@@ -287,6 +309,7 @@ def farthest_point(points: np.ndarray, n: int, r_i: np.ndarray | None = None,
     """
     M = points.shape[0]
     if n >= M:
+        _warn_if_not_reducing(n, M)
         return np.arange(M)
     rng = rng or np.random.default_rng(0)
     points = np.asarray(points, dtype=np.float64)
@@ -319,6 +342,7 @@ def cvt(points: np.ndarray, n: int, iters: int = 8,
     M = points.shape[0]
     points = np.asarray(points, dtype=np.float64)
     if n >= M:
+        _warn_if_not_reducing(n, M)
         return points.copy()
     rng = rng or np.random.default_rng(0)
     centers = points[rng.choice(M, size=n, replace=False)].copy()

@@ -16,7 +16,8 @@ def load_image(path: str) -> np.ndarray:
 
 def save_image(path: str, arr: np.ndarray):
     from PIL import Image
-    a = np.clip(arr, 0, 1) * 255.0
+    # round, don't truncate: astype(uint8) floors, biasing every saved pixel down by up to 1/255
+    a = np.rint(np.clip(arr, 0, 1) * 255.0)
     Image.fromarray(a.astype(np.uint8)).save(path)
 
 
@@ -84,9 +85,12 @@ def cmd_fit(args):
     save_image(os.path.join(args.outdir, f"{base}_{args.strategy}.png"),
                out["render"].detach().cpu().numpy())
     out["field"].save(os.path.join(args.outdir, f"{base}_{args.strategy}.npz"))
-    print(f"\n{base}: {out['n_gaussians']} gaussians | PSNR {out['psnr']:.2f} | "
-          f"SSIM {out['ssim']:.4f} | MS-SSIM {out['ms_ssim']:.4f} | "
-          f"iters_to_target {out['iters_to_target']}")
+    line = (f"\n{base}: {out['n_gaussians']} gaussians | PSNR {out['psnr']:.2f} | "
+            f"SSIM {out['ssim']:.4f} | MS-SSIM {out['ms_ssim']:.4f}")
+    if out.get("lpips") is not None:  # --lpips loaded AlexNet but the value was never surfaced
+        line += f" | LPIPS {out['lpips']:.4f}"
+    line += f" | iters_to_target {out['iters_to_target']}"
+    print(line)
 
 
 def cmd_ablation(args):

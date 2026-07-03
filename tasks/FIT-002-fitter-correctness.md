@@ -1,6 +1,6 @@
 # FIT-002: Fitter correctness fixes (split colors, opacity pruning, history pairing)
 
-**Status: todo.** Confirmed defects from the 2026-07-03 repo review.
+**Status: done.** Confirmed defects from the 2026-07-03 repo review.
 
 ## Context
 1. **`_split_from_residual` injects full target colors under additive renderers.** The
@@ -24,17 +24,17 @@ Densification behaves consistently across renderer modes and parameterizations; 
 rows describe one consistent state.
 
 ## Acceptance criteria
-- [ ] `_split_from_residual` uses residual colors `(target - render_img)` at child positions
+- [x] `_split_from_residual` uses residual colors `(target - render_img)` at child positions
       when `cfg.renderer` is an additive mode; test: additive fit with duplicate splits does
       not regress PSNR at the split iteration.
-- [ ] Pruning multiplies activity by `opacity_values()` when opacities are present (or adds a
+- [x] Pruning multiplies activity by `opacity_values()` when opacities are present (or adds a
       min-opacity criterion); threshold-unit change documented in `FitConfig`; test: a
       zero-opacity Gaussian is pruned.
-- [ ] History rows log `n_gaussians` captured at the same point as the PSNR (pre-restructure),
+- [x] History rows log `n_gaussians` captured at the same point as the PSNR (pre-restructure),
       or both post-; one convention, documented.
-- [ ] `residual_tensor_add` anisotropy threaded from config (a FitConfig field defaulting to
+- [x] `residual_tensor_add` anisotropy threaded from config (a FitConfig field defaulting to
       InitConfig semantics); the 0.35 floor hoisted to one shared module constant.
-- [ ] `pytest -q` green; one benchmark slice with splits enabled confirms no regression.
+- [x] `pytest -q` green; one benchmark slice with splits enabled confirms no regression.
 
 ## Interfaces touched
 `src/structsplat/fit.py`, `src/structsplat/render.py`, `src/structsplat/config.py`,

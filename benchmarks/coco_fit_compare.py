@@ -13,8 +13,6 @@ import math
 import os
 from dataclasses import asdict
 from pathlib import Path
-from statistics import mean
-from typing import Callable
 
 import numpy as np
 import torch
@@ -92,8 +90,18 @@ def _residual_cfg(base: FitConfig, budget: int, start_n: int, add_times: int = 4
     )
 
 
+def _instant_gi_quard_path() -> Path:
+    # no hardcoded personal paths (BENCH-002): point STRUCTSPLAT_INSTANT_GI at quard_image.py.
+    env = os.environ.get("STRUCTSPLAT_INSTANT_GI")
+    if not env:
+        raise RuntimeError(
+            "Instant-GI methods require STRUCTSPLAT_INSTANT_GI=/path/to/quard_image.py; "
+            "unset -> this method is skipped.")
+    return Path(env)
+
+
 def _build_quadtree_field(img: np.ndarray, image_path: Path, budget: int, seed: int, device: str) -> GaussianField:
-    qpath = Path("/home/alex/Documents/Instant-GI/quard_image.py")
+    qpath = _instant_gi_quard_path()
     spec = importlib.util.spec_from_file_location("instant_gi_quard_image", qpath)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"could not load {qpath}")
@@ -269,11 +277,19 @@ def _write_summary(rows: list[dict], selected: list[dict], outdir: Path, budget:
         "| Method | Mean PSNR | Mean MS-SSIM | Mean seconds |",
         "|---|---:|---:|---:|",
     ]
+    from benchmarks._util import mean_or_none
+
+    def _f(vals, key, spec):
+        m = mean_or_none(r[key] for r in vals)
+        return "-" if m is None else format(m, spec)
+
     for method in METHODS:
         vals = [r for r in rows if r["method"] == method]
+        # a method with zero ok rows (e.g. Instant-GI unavailable) must not raise StatisticsError
+        # and void the whole run (BENCH-002)
         lines.append(
-            f"| {METHOD_LABELS[method]} | {mean(r['psnr'] for r in vals):.3f} | "
-            f"{mean(r['ms_ssim'] for r in vals):.5f} | {mean(r['fit_seconds'] for r in vals):.2f} |"
+            f"| {METHOD_LABELS[method]} | {_f(vals, 'psnr', '.3f')} | "
+            f"{_f(vals, 'ms_ssim', '.5f')} | {_f(vals, 'fit_seconds', '.2f')} |"
         )
     lines += ["", "## Per-Image PSNR", "", "| Image | " + " | ".join(METHOD_LABELS[m] for m in METHODS) + " |"]
     lines.append("|---|" + "---:|" * len(METHODS))
@@ -308,6 +324,11 @@ def run(
 ) -> list[dict]:
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     outdir.mkdir(parents=True, exist_ok=True)
+    from benchmarks._util import run_config, write_config
+    write_config(str(outdir), run_config({
+        "dataset_dir": str(dataset_dir), "image_names": image_names, "budget": budget,
+        "iters": iters, "max_side": max_side, "seed": seed,
+    }, device=device))
     selected_dir = outdir / "selected"
     recon_dir = outdir / "reconstructions"
     selected_dir.mkdir(exist_ok=True)
@@ -403,7 +424,8 @@ def main() -> None:
     import argparse
 
     p = argparse.ArgumentParser(description="Matched COCO fit comparison for 2D Gaussian approaches")
-    p.add_argument("--dataset-dir", type=Path, default=Path("/home/alex/Documents/datasets/train2014"))
+    p.add_argument("--dataset-dir", type=Path, default=None,
+                   help="COCO train2014 directory (required; no personal-path default, BENCH-002)")
     p.add_argument("--outdir", type=Path, default=Path("results/coco_fit_compare"))
     p.add_argument("--images", nargs="+", default=DEFAULT_IMAGES)
     p.add_argument("--budget", type=int, default=768)
@@ -412,6 +434,8 @@ def main() -> None:
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--device", default=None)
     args = p.parse_args()
+    if args.dataset_dir is None:
+        raise SystemExit("--dataset-dir is required (path to the COCO train2014 images)")
     run(args.dataset_dir, args.outdir, args.images, args.budget, args.iters, args.max_side, args.seed, args.device)
 
 

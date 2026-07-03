@@ -44,7 +44,9 @@ FACTORIAL_DEFAULTS: dict[str, tuple[str, ...]] = {
     "orientation_modes": ("tensor",),
     "color_modes": ("bilinear", "local_mean", "two_sided"),
     "scale_modes": ("spacing",),
-    "scale_cap_modes": ("feature12",),
+    # baseline matches the shipped default (config.py scale_cap_mode='none', ADR-0009); it had
+    # silently diverged to feature12 with no held-out justification (BENCH-002)
+    "scale_cap_modes": ("none",),
     "opacity_modes": ("none",),
     "renderers": ("normalized",),
     "pixel_losses": ("l1", "charbonnier"),
@@ -54,7 +56,8 @@ FACTORIAL_DEFAULTS: dict[str, tuple[str, ...]] = {
     "pyramid_modes": ("single",),
 }
 
-# influence mode: first value per axis = the baseline (ADR-0009 defaults), rest = the variants
+# influence mode: FIRST value per axis = the baseline (the shipped ADR-0009 defaults), rest = the
+# variants. Every first value must equal config.py's default for that stage (BENCH-002).
 INFLUENCE_DEFAULTS: dict[str, tuple[str, ...]] = {
     "strategies": (
         "aniso_flanking", "quadtree_wse", "quadtree_hybrid", "quadtree_aggregate",
@@ -68,7 +71,7 @@ INFLUENCE_DEFAULTS: dict[str, tuple[str, ...]] = {
     "orientation_modes": ("tensor", "random", "zero"),
     "color_modes": ("bilinear", "local_mean", "two_sided"),
     "scale_modes": ("spacing", "uniform", "knn"),
-    "scale_cap_modes": ("feature12", "none", "hard8"),
+    "scale_cap_modes": ("none", "feature12", "hard8"),
     "opacity_modes": ("none", "constant"),
     "renderers": ("normalized", "additive", "cuda", "cuda_additive"),
     "pixel_losses": ("l1", "l2", "charbonnier"),
@@ -80,6 +83,11 @@ INFLUENCE_DEFAULTS: dict[str, tuple[str, ...]] = {
     ),
     "pyramid_modes": ("single", "pyramid"),
 }
+
+# strategies whose placement actually routes through _blue_noise_positions and therefore reads
+# the top-level sampling_mode (init.py else-branch). Quadtree strategies have their own placement
+# and ignore sampling_mode, so a jittered_grid pin must NOT touch them (BENCH-002).
+_BLUE_NOISE_STRATEGIES = ("iso_blue_noise", "aniso_onedge", "aniso_flanking")
 
 _AXIS_TO_KEY = {
     "strategies": "strategy", "tensor_operators": "tensor", "tensor_colors": "tensor_color",
@@ -149,7 +157,10 @@ def _canonicalize(cfg: dict[str, Any], canonical: dict[str, str]) -> dict[str, A
         if c["orientation"] in ("tensor", "zero"):
             c["orientation"] = "tensor" if canonical["orientation"] in ("tensor", "zero") \
                 else "zero"
-    if strat not in ("random", "grid") and c["sampling"] == "jittered_grid":
+    # jittered_grid placement ignores the density map — but only for strategies that actually
+    # place via _blue_noise_positions. Quadtree strategies DO read density (their leaves are
+    # density-prioritized), so pinning density there wrongly deduped genuinely distinct cells.
+    if strat in _BLUE_NOISE_STRATEGIES and c["sampling"] == "jittered_grid":
         c["density"] = canonical["density"]
     if strat != "aniso_flanking" and c["color"] == "two_sided":
         c["color"] = "bilinear"
@@ -437,6 +448,16 @@ def run_stage_search(
     files = _iter_images(images)
     if not files:
         raise SystemExit("no images found")
+
+    from benchmarks._util import run_config, write_config
+    write_config(str(out_path), run_config({
+        "images": files, "mode": mode, "budgets": list(budgets), "seeds": list(seeds),
+        "iters": iters, "max_side": max_side, "axes": {k: list(v) for k, v in axes.items()},
+        "render_chunk": render_chunk, "ssim_weight": ssim_weight, "split_every": split_every,
+        "split_count": split_count, "prune_every": prune_every,
+        "prune_min_activity": prune_min_activity, "max_gaussians": max_gaussians,
+        "target_psnr": target_psnr, "dedupe": dedupe,
+    }, device=device))
     if pyramid_iters_per_level is None:
         pyramid_iters_per_level = max(1, iters // max(1, pyramid_levels))
     if split_every is None:
@@ -480,6 +501,9 @@ def run_stage_search(
         base = _canonicalize({_AXIS_TO_KEY[a]: vals[0] for a, vals in axes.items()}, canonical)
         baseline_label = _config_label(base)
 
+    jsonl_path = out_path / "stage_search.jsonl"
+    jsonl_path.unlink(missing_ok=True)   # fresh incremental log for this run
+
     rows = []
     for image_path in files:
         img = _load_image(image_path, max_side)
@@ -493,35 +517,49 @@ def run_stage_search(
                         f"config={config_idx + 1}/{len(configs)} {cfg['label']}",
                         flush=True,
                     )
-                    metrics = _run_one(
-                        img, target, cfg, budget=budget, seed=seed, iters=iters,
-                        render_chunk=render_chunk, ssim_weight=ssim_weight,
-                        flank_offset=flank_offset, max_axis_ratio=max_axis_ratio,
-                        coherence_power=coherence_power, init_scale_mult=init_scale_mult,
-                        density_base=density_base, density_power=density_power,
-                        flat_frac=flat_frac, corner_frac=corner_frac,
-                        grad_sigma=grad_sigma, tensor_sigma=tensor_sigma,
-                        color_radius=color_radius, init_opacity=init_opacity,
-                        lr_decay_every=lr_decay_every,
-                        lr_decay_gamma=lr_decay_gamma, split_every=split_every,
-                        split_count=split_count, prune_every=prune_every,
-                        prune_min_activity=prune_min_activity, max_gaussians=max_gaussians,
-                        pyramid_levels=pyramid_levels, pyramid_fractions=pyramid_fractions,
-                        pyramid_iters_per_level=pyramid_iters_per_level,
-                        compute_lpips=compute_lpips, target_psnr=target_psnr,
-                        target_psnrs=target_psnrs, log_every=log_every, verbose=verbose,
-                    )
-                    row = {
-                        "image": image_name,
-                        "budget": budget,
-                        "seed": seed,
+                    # equal-budget arms (BENCH-002): cap at the cell budget, and let adding-refine
+                    # arms START below budget so their planned additions land AT budget — otherwise
+                    # they ran with up to +split_count more capacity than the baselines they rank
+                    # against, confounding "refine wins" with extra capacity.
+                    cap = budget if max_gaussians is None else max_gaussians
+                    adds = cfg["refine"] not in ("none", "prune")
+                    init_budget = max(1, budget - split_count) if adds else budget
+                    base_row = {
+                        "image": image_name, "budget": budget, "seed": seed,
+                        "init_budget": init_budget, "max_gaussians": cap,
                         **{k: cfg[k] for k in cfg if k != "label"},
                         "config_label": cfg["label"],
                         "is_baseline": cfg["label"] == baseline_label,
-                        **metrics,
                     }
+                    try:
+                        metrics = _run_one(
+                            img, target, cfg, budget=init_budget, seed=seed, iters=iters,
+                            render_chunk=render_chunk, ssim_weight=ssim_weight,
+                            flank_offset=flank_offset, max_axis_ratio=max_axis_ratio,
+                            coherence_power=coherence_power, init_scale_mult=init_scale_mult,
+                            density_base=density_base, density_power=density_power,
+                            flat_frac=flat_frac, corner_frac=corner_frac,
+                            grad_sigma=grad_sigma, tensor_sigma=tensor_sigma,
+                            color_radius=color_radius, init_opacity=init_opacity,
+                            lr_decay_every=lr_decay_every,
+                            lr_decay_gamma=lr_decay_gamma, split_every=split_every,
+                            split_count=split_count, prune_every=prune_every,
+                            prune_min_activity=prune_min_activity, max_gaussians=cap,
+                            pyramid_levels=pyramid_levels, pyramid_fractions=pyramid_fractions,
+                            pyramid_iters_per_level=pyramid_iters_per_level,
+                            compute_lpips=compute_lpips, target_psnr=target_psnr,
+                            target_psnrs=target_psnrs, log_every=log_every, verbose=verbose,
+                        )
+                        row = {**base_row, "status": "ok", **metrics}
+                    except Exception as exc:  # one broken arm must not void the whole sweep
+                        row = {**base_row, "status": "error", "error": repr(exc)}
+                        print(f"  ERROR in cell: {exc!r}", flush=True)
                     rows.append(row)
-                    print({k: row[k] for k in row if k not in {"history", "prefix_metrics"}}, flush=True)
+                    with jsonl_path.open("a", encoding="utf-8") as jf:  # crash-recoverable
+                        jf.write(json.dumps({k: v for k, v in row.items()
+                                             if k not in {"history", "prefix_metrics"}}) + "\n")
+                    print({k: row[k] for k in row
+                           if k not in {"history", "prefix_metrics"}}, flush=True)
 
     _write(rows, out_path, mode=mode, baseline_label=baseline_label)
     return rows
@@ -536,6 +574,9 @@ def _fmt(v, spec=".4f"):
 
 
 def summarize(rows, top_k: int = 20) -> str:
+    rows = [r for r in rows if r.get("status") != "error"]  # broken cells never enter the ranking
+    if not rows:
+        return "# StructSplat Stage Search\n\n(no successful cells)\n"
     groups: dict[tuple, list[dict[str, Any]]] = {}
     for row in rows:
         groups.setdefault(_config_key(row), []).append(row)
@@ -576,6 +617,7 @@ def stage_effects(rows) -> str:
     stages that were swept); for influence-mode runs prefer `summarize_influence`, which
     reports paired deltas against the baseline instead.
     """
+    rows = [r for r in rows if r.get("status") != "error"]
     lines = [
         "## Per-stage marginal means",
         "",
@@ -609,6 +651,7 @@ def summarize_influence(rows, baseline_label: str) -> str:
     the metric differences are aggregated. Positive ΔPSNR/ΔAUC = variant better; negative
     Δiters-to-target / Δseconds = variant faster.
     """
+    rows = [r for r in rows if r.get("status") != "error"]
     base = {(r["image"], r["budget"], r["seed"]): r for r in rows if r["config_label"] == baseline_label}
     if not base:
         return "# Stage influence\n\n(no baseline rows found)\n"
@@ -637,14 +680,15 @@ def summarize_influence(rows, baseline_label: str) -> str:
         rb = sum(1 for p in pairs if p["b"].get("iters_to_target") is not None)
         return f"{rv}/{rb}/{len(pairs)}"
 
-    b0 = base[next(iter(base))]
+    base_auc = [r["auc_psnr"] for r in base.values() if r.get("auc_psnr") is not None]
     lines = [
         "# Stage influence (paired deltas vs baseline)",
         "",
         f"Baseline: `{baseline_label}`",
         f"Baseline means: PSNR {mean(r['psnr'] for r in base.values()):.3f}, "
         f"MS-SSIM {mean(r['ms_ssim'] for r in base.values()):.5f}, "
-        f"AUC {_fmt(b0.get('auc_psnr'), '.3f')}, "
+        # mean AUC over all baseline cells, not one arbitrary cell (BENCH-002)
+        f"AUC {_fmt(mean(base_auc) if base_auc else None, '.3f')}, "
         f"fit {mean(r['fit_seconds'] for r in base.values()):.2f}s over {len(base)} cells.",
         "",
         "Positive ΔPSNR/ΔMS-SSIM/ΔAUC = variant better than baseline; negative Δiters/Δs = faster.",

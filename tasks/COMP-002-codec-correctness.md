@@ -1,6 +1,6 @@
 # COMP-002: Codec / metrics / CLI correctness and protocol fixes
 
-**Status: todo.** Confirmed defects from the 2026-07-03 repo review (all hand-verified against
+**Status: done.** Confirmed defects from the 2026-07-03 repo review (all hand-verified against
 the code).
 
 ## Context
@@ -37,21 +37,21 @@ The codec round-trips the field *and* its rendering semantics; metrics obey thei
 contracts; RD numbers are unbiased and reproducible from their own artifacts.
 
 ## Acceptance criteria
-- [ ] `qat_finetune`/`rd_point` render via `render_field(..., mode=fcfg.renderer, ...)`;
+- [x] `qat_finetune`/`rd_point` render via `render_field(..., mode=fcfg.renderer, ...)`;
       QAT passes `lr_opacity` and reuses `fit._pixel_loss` (hoisted to a shared location);
       test: additive-fit field round-trips through QAT+RD with additive rendering.
-- [ ] Means either clamped to the extent at the end of `fit()` or quantized over a padded
+- [x] Means either clamped to the extent at the end of `fit()` or quantized over a padded
       extent stored in the header; round-trip test with off-image means bounds the error by
       the lattice step.
-- [ ] `ms_ssim` accepts BCHW (call `ssim(p, t)` directly) and drops scales when
+- [x] `ms_ssim` accepts BCHW (call `ssim(p, t)` directly) and drops scales when
       `min(H,W) < win` at that scale (renormalizing weights) or raises; tests for both.
-- [ ] Renders clamped to [0,1] before PSNR/MS-SSIM in `rd_point` (and fit's final eval, or the
+- [x] Renders clamped to [0,1] before PSNR/MS-SSIM in `rd_point` (and fit's final eval, or the
       unclamped convention is documented in metrics.py's protocol notes — one convention,
       stated).
-- [ ] `save_image` rounds (`np.rint`); `--lpips` prints/saves the value; tests.
-- [ ] `rate_distortion.py` writes a full config record per run and adds an equal-budget
+- [x] `save_image` rounds (`np.rint`); `--lpips` prints/saves the value; tests.
+- [x] `rate_distortion.py` writes a full config record per run and adds an equal-budget
       no-STE fine-tune row per bit mix (isolating lattice-settling from extra compute).
-- [ ] Header carries renderer mode, aa_dilation, sigma_cutoff (+ scale_max or a documented
+- [x] Header carries renderer mode, aa_dilation, sigma_cutoff (+ scale_max or a documented
       statement that decoded fields lose it); decode-and-render works with no out-of-band
       FitConfig; round-trip test.
 

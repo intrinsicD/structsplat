@@ -23,6 +23,12 @@ from .render import (
 )
 from . import metrics as M
 
+# Renderer modes that accumulate additively (ADR-0006): a new/split Gaussian stacks on the
+# existing accumulation, so it must carry the residual color, not the full target color.
+_ADDITIVE_RENDERERS = ("additive", "cuda_additive", "gsplat", "cuda_gsplat")
+# Shared lower bound on densified Gaussian scales (px); was duplicated as bare 0.35 literals.
+_MIN_DENSIFY_SCALE = 0.35
+
 
 def _make_optimizer(field: GaussianField, cfg: FitConfig):
     groups = field.parameter_groups(cfg.lr_means, cfg.lr_scales, cfg.lr_rot, cfg.lr_color,
@@ -34,13 +40,20 @@ def _make_optimizer(field: GaussianField, cfg: FitConfig):
     raise ValueError(f"unknown optimizer {cfg.optimizer!r}; expected adam or adamw")
 
 
-def _lr_factor(cfg: FitConfig, it: int) -> float:
+def _lr_factor(cfg: FitConfig, it: int, sched_offset: int = 0,
+               sched_total: int | None = None) -> float:
     """LR multiplier as a pure function of the global iteration.
 
     Because it depends only on `it` (not optimizer internal state), the schedule survives the
     optimizer rebuild after a prune/split — a freshly constructed StepLR/CosineLR would silently
     reset. `lr_schedule` selects the shape; `lr_schedule="none"` with `lr_decay_every` set falls
     back to step decay for backward compatibility.
+
+    `sched_offset`/`sched_total` let a caller place this fit inside a larger run so the cosine
+    phase spans the whole run rather than restarting each call: the pyramid passes the level's
+    global start and the pyramid-wide iteration count so `lr_schedule='cosine'` measures the same
+    schedule in pyramid and single-stage cells (HIER-002). Defaults reproduce the single-stage
+    behavior (offset 0, total = cfg.iters).
     """
     schedule = cfg.lr_schedule
     if schedule == "none" and cfg.lr_decay_every is not None and cfg.lr_decay_every > 0:
@@ -49,9 +62,10 @@ def _lr_factor(cfg: FitConfig, it: int) -> float:
         return 1.0
     if schedule == "step":
         step = cfg.lr_decay_every if cfg.lr_decay_every and cfg.lr_decay_every > 0 else 500
-        return cfg.lr_decay_gamma ** (it // step)
+        return cfg.lr_decay_gamma ** ((sched_offset + it) // step)
     if schedule == "cosine":
-        return 0.5 * (1.0 + math.cos(math.pi * it / max(1, cfg.iters)))
+        total = sched_total if sched_total is not None else cfg.iters
+        return 0.5 * (1.0 + math.cos(math.pi * (sched_offset + it) / max(1, total)))
     raise ValueError(f"unknown lr_schedule {cfg.lr_schedule!r}; expected none, step, or cosine")
 
 
@@ -200,6 +214,11 @@ def _maybe_prune(field: GaussianField, cfg: FitConfig, H: int,
     activity = gaussian_activity(field.means, field.conics(cfg.aa_dilation),
                                  field.radii(cfg.sigma_cutoff, cfg.aa_dilation),
                                  H, W, cfg.render_chunk)
+    # gaussian_activity is opacity-free; without this a Gaussian the optimizer has driven fully
+    # transparent keeps its geometric weight-sum and is never pruned at fixed N (FIT-002).
+    opac = field.opacity_values()
+    if opac is not None:
+        activity = activity * opac
     keep = activity > cfg.prune_min_activity
     if int(keep.sum()) < cfg.prune_keep_min:
         topk = torch.topk(activity, k=min(cfg.prune_keep_min, field.n)).indices
@@ -243,7 +262,12 @@ def _split_from_residual(field: GaussianField, target: torch.Tensor, render_img:
     means[:, 1].clamp_(0, H - 1)
     log_scales = field.log_scales.detach()[idx].clone() + math.log(cfg.split_scale)
     rotations = theta.clone()
-    colors = _nearest_image_colors(target, means)
+    if cfg.renderer in _ADDITIVE_RENDERERS:
+        # additive stacks on the existing accumulation: full target colors double-count
+        # brightness at the child positions; the residual is what the child should add.
+        colors = _nearest_image_colors((target - render_img).detach(), means)
+    else:
+        colors = _nearest_image_colors(target, means)
     opacities = None if field.opacities is None else field.opacities.detach()[idx].clone()
     scale_max = None if field.scale_max is None else field.scale_max.detach()[idx].clone()
     log_scales = _clamp_new_log_scales(log_scales, scale_max)
@@ -287,18 +311,20 @@ def _add_from_residual(field: GaussianField, target: torch.Tensor, render_img: t
         grad = torch.sqrt(gx[y, x] ** 2 + gy[y, x] ** 2)
         ref = torch.quantile(torch.sqrt(gx ** 2 + gy ** 2).reshape(-1), 0.95)
         coherence = torch.clamp(grad / torch.clamp(ref, min=1e-6), 0.0, 1.0)
-        ratio = 1.0 + 3.0 * coherence
-        s_along = max(base_scale, 0.35) * torch.sqrt(ratio)
-        s_across = max(base_scale, 0.35) / torch.sqrt(ratio)
-        log_scales = torch.log(torch.stack([s_along, s_across], dim=1).clamp(min=0.35))
+        # mirror InitConfig anisotropy: ratio = 1 + (max_axis_ratio-1)*coherence**power
+        ratio = 1.0 + (cfg.densify_max_axis_ratio - 1.0) * coherence ** cfg.densify_coherence_power
+        base = max(base_scale, _MIN_DENSIFY_SCALE)
+        s_along = base * torch.sqrt(ratio)
+        s_across = base / torch.sqrt(ratio)
+        log_scales = torch.log(torch.stack([s_along, s_across], dim=1).clamp(min=_MIN_DENSIFY_SCALE))
         rotations = torch.atan2(gy[y, x], gx[y, x]) + math.pi * 0.5
     else:
-        log_scales = torch.full((k, 2), math.log(max(base_scale, 0.35)),
+        log_scales = torch.full((k, 2), math.log(max(base_scale, _MIN_DENSIFY_SCALE)),
                                 device=target.device, dtype=target.dtype)
         rotations = torch.zeros(k, device=target.device, dtype=target.dtype)
     scale_max = _nearest_scale_caps(field, means)
     log_scales = _clamp_new_log_scales(log_scales, scale_max)
-    if cfg.renderer in ("additive", "cuda_additive", "gsplat", "cuda_gsplat"):
+    if cfg.renderer in _ADDITIVE_RENDERERS:
         # additive stacks on the existing accumulation: injecting full target colors
         # overshoots; the residual color is what the new Gaussian should contribute
         colors = (target - render_img)[y, x]
@@ -308,7 +334,8 @@ def _add_from_residual(field: GaussianField, target: torch.Tensor, render_img: t
                                       scale_max=scale_max)), k
 
 
-def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: bool = True) -> dict:
+def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: bool = True,
+        sched_offset: int = 0, sched_total: int | None = None) -> dict:
     H, W = target.shape[0], target.shape[1]
     field.trainable()
     opt = _make_optimizer(field, cfg)
@@ -325,10 +352,13 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
 
     for it in range(cfg.iters):
         last_iter = it
-        factor = _lr_factor(cfg, it)
+        factor = _lr_factor(cfg, it, sched_offset, sched_total)
         for g, base in zip(opt.param_groups, base_lrs):
             g["lr"] = base * factor
         img = _render(field, cfg, H, W)
+        # count that produced this render/PSNR, before any prune/split restructures the field;
+        # logging the post-restructure field.n would pair a pre-step PSNR with a post-step N.
+        n_at_render = field.n
         pix = _pixel_loss(img, target, _loss_kind(cfg, it), cfg.charbonnier_eps)
         s = M.ssim(img, target)
         loss = (1 - cfg.ssim_weight) * pix + cfg.ssim_weight * (1 - s)
@@ -381,7 +411,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             hist["iter"].append(it)
             hist["psnr"].append(p_now)
             hist["loss"].append(loss.item())
-            hist["n_gaussians"].append(field.n)
+            hist["n_gaussians"].append(n_at_render)
             hist["elapsed"].append(time.time() - start_time)
             if verbose:
                 print(f"  iter {it:5d}  psnr {p_now:6.2f}  loss {loss.item():.5f}")

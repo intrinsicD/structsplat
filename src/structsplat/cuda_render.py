@@ -11,6 +11,7 @@ from pathlib import Path
 
 import torch
 from torch.autograd import Function
+from torch.autograd.function import once_differentiable
 
 _EXT = None
 
@@ -65,20 +66,25 @@ class _ExactRenderCuda(Function):
         return out
 
     @staticmethod
+    @once_differentiable
     def backward(ctx, grad_out):
         means, conics, colors, radii, opacities, den, out = ctx.saved_tensors
+        # forward signature: means, conics, colors, radii, opacities, height, width, normalize, eps
+        need_means, need_conics, need_colors, _, need_opac = ctx.needs_input_grad[:5]
+        if not (need_means or need_conics or need_colors or need_opac):
+            return (None,) * 9
         ext = _load_extension()
         grad_means, grad_conics, grad_colors, grad_opacities = ext.backward(
             grad_out.contiguous(),
             means, conics, colors, radii, opacities, den.contiguous(), out.contiguous(),
             ctx.normalize, ctx.eps,
         )
-        if opacities.numel() == 0:
+        if opacities.numel() == 0 or not need_opac:
             grad_opacities = None
         return (
-            grad_means,
-            grad_conics,
-            grad_colors,
+            grad_means if need_means else None,
+            grad_conics if need_conics else None,
+            grad_colors if need_colors else None,
             None,
             grad_opacities,
             None,

@@ -1,0 +1,80 @@
+"""Shared benchmark plumbing (BENCH-002): reproducible config records and empty-safe stats.
+
+Every harness must persist enough to reproduce its numbers from its own outdir (invariant 5):
+the resolved arguments, the device, and the package/toolchain versions. It must also survive a
+single broken arm (e.g. renderer=cuda on a CPU box) — summary writers use ``mean_or_none`` so a
+method with zero ok rows yields ``None`` rather than raising ``StatisticsError``.
+"""
+from __future__ import annotations
+
+import json
+import os
+from statistics import mean, pstdev
+
+
+def package_versions() -> dict:
+    """Versions that move the numbers: torch (+CUDA), numpy, and structsplat itself."""
+    out = {}
+    try:
+        import torch
+        out["torch"] = torch.__version__
+        out["torch_cuda"] = getattr(torch.version, "cuda", None)
+        out["cuda_available"] = bool(torch.cuda.is_available())
+    except Exception:
+        out["torch"] = None
+    try:
+        import numpy as np
+        out["numpy"] = np.__version__
+    except Exception:
+        out["numpy"] = None
+    try:
+        import importlib.metadata as _m
+        out["structsplat"] = _m.version("structsplat")
+    except Exception:
+        out["structsplat"] = None
+    return out
+
+
+def run_config(resolved: dict, device: str | None = None, extra: dict | None = None) -> dict:
+    """Assemble a self-contained run record: resolved args + device + versions.
+
+    GPU renders are nondeterministic (atomicAdd / CUDA index_add), so the exact device and
+    renderer travel with the results and reproducibility is bit-exact only on CPU (documented in
+    the benchmark skill / README).
+    """
+    cfg = {"resolved": _jsonable(resolved), "device": device, "versions": package_versions()}
+    if extra:
+        cfg.update(_jsonable(extra))
+    return cfg
+
+
+def write_config(outdir: str, config: dict, name: str = "config.json") -> None:
+    os.makedirs(outdir, exist_ok=True)
+    with open(os.path.join(outdir, name), "w") as f:
+        json.dump(config, f, indent=2, default=str)
+
+
+def mean_or_none(vals):
+    """Mean of a possibly-empty iterable; None instead of raising on empty (BENCH-002)."""
+    vals = [v for v in vals if v is not None]
+    return mean(vals) if vals else None
+
+
+def mean_std_or_none(vals):
+    vals = [v for v in vals if v is not None]
+    if not vals:
+        return None, None
+    return mean(vals), (pstdev(vals) if len(vals) > 1 else 0.0)
+
+
+def _jsonable(obj):
+    """Best-effort convert argparse Namespaces / Paths / dataclasses to plain JSON types."""
+    if obj is None or isinstance(obj, (bool, int, float, str)):
+        return obj
+    if isinstance(obj, dict):
+        return {str(k): _jsonable(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_jsonable(v) for v in obj]
+    if hasattr(obj, "__dict__"):
+        return {str(k): _jsonable(v) for k, v in vars(obj).items()}
+    return str(obj)

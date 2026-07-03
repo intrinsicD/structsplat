@@ -6,7 +6,7 @@ torch = pytest.importorskip("torch")
 from structsplat import codec
 from structsplat.config import FitConfig, InitConfig
 from structsplat import init as _init
-from structsplat.render import render
+from structsplat.render import render, render_field
 
 
 def _toy(H=48, W=48):
@@ -101,3 +101,66 @@ def test_qat_improves_coarse_quantization():
     ccfg = codec.qat_finetune(field, target, fcfg, coarse, iters=60)
     after = codec.rd_point(field, target, fcfg, ccfg)["psnr"]
     assert after > before
+
+
+def test_off_image_means_bounded_by_lattice_step():
+    # fit() never clamps means: a Gaussian can sit off-image. Quantizing over the padded extent
+    # stored in the header bounds the round-trip error by one lattice step (COMP-002).
+    img = _toy()
+    field = _fitted_field(img, n=64)
+    with torch.no_grad():
+        field.means[0] = torch.tensor([-8.0, 53.0])   # off the left / bottom edges
+        field.means[1] = torch.tensor([60.0, -5.0])
+    ccfg = codec.CodecConfig(morton_reorder=False)
+    blob = codec.encode(field, *img.shape[:2], ccfg)
+    dec = codec.decode(blob)
+    h = codec.blob_header(blob)
+    span_x = h["means_hi"][0] - h["means_lo"][0]
+    span_y = h["means_hi"][1] - h["means_lo"][1]
+    step = max(span_x, span_y) / (2 ** ccfg.bits_means - 1)
+    err = (dec.means - field.means).abs().max().item()
+    assert err <= step + 1e-4
+    assert h["means_lo"][0] <= -8.0 and h["means_hi"][0] >= 60.0
+
+
+def test_blob_is_self_describing_render():
+    # decode_and_render must reproduce the fitted renderer's output with no out-of-band FitConfig
+    img = _toy()
+    field = _fitted_field(img)
+    fcfg = FitConfig(renderer="additive", aa_dilation=0.3, sigma_cutoff=2.5)
+    blob = codec.encode(field, *img.shape[:2], codec.CodecConfig(), fcfg)
+    h = codec.blob_header(blob)
+    assert h["renderer"] == "additive" and h["aa_dilation"] == 0.3 and h["sigma_cutoff"] == 2.5
+    auto = codec.decode_and_render(blob)                       # semantics from the header
+    dec = codec.decode(blob)
+    manual = render_field(dec.means, dec.conics(0.3), dec.colors,
+                          dec.radii(2.5, 0.3), *img.shape[:2], mode="additive")
+    assert torch.allclose(auto, manual, atol=1e-5)
+
+
+def test_additive_field_roundtrips_through_qat_and_rd():
+    # an additive-fit field must fine-tune and RD-score through additive compositing (COMP-002)
+    img = _toy()
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="aniso_flanking", num_gaussians=96,
+                                              opacity_mode="constant", init_opacity=0.7, seed=0))
+    fcfg = FitConfig(renderer="additive")
+    coarse = codec.CodecConfig(bits_means=12, bits_scales=6, bits_rot=6, bits_colors=6)
+    before = codec.rd_point(field, target, fcfg, coarse)["psnr"]
+    ccfg = codec.qat_finetune(field, target, fcfg, coarse, iters=40)
+    after = codec.rd_point(field, target, fcfg, ccfg)
+    assert np.isfinite(after["psnr"]) and after["psnr"] > before - 1.0
+
+
+def test_rd_point_clamps_render_before_metrics():
+    # a field that overshoots [0,1] must be scored on the clamped render (display-referred)
+    img = _toy()
+    target = torch.as_tensor(img)
+    field = _fitted_field(img)
+    with torch.no_grad():
+        field.colors += 3.0        # drive the render well above 1.0
+    r = codec.rd_point(field, target, FitConfig(), codec.CodecConfig())
+    img_clamped = codec.decode_and_render(codec.encode(field, *img.shape[:2],
+                                          codec.CodecConfig(), FitConfig())).clamp(0, 1)
+    from structsplat import metrics as M
+    assert abs(r["psnr"] - M.psnr(img_clamped, target)) < 1e-3

@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 from structsplat import sampling as sa
 
 
@@ -13,6 +14,72 @@ def test_wse_exact_count_and_spacing():
     d = np.sqrt(((kept[:, None] - kept[None]) ** 2).sum(-1))
     np.fill_diagonal(d, np.inf)
     assert d.min() > 0.0  # blue-noise: no coincident points
+
+
+def test_wse_isotropic_spacing_beats_random_subset():
+    # non-vacuous spacing bound (INIT-005): the old assertion `d.min() > 0` passed for ANY
+    # non-coincident set; a real blue-noise sampler must separate points far better than a
+    # random subset of the same size.
+    rng = np.random.default_rng(7)
+    M, n = 4000, 500
+    pts = rng.random((M, 2)) * 100.0
+    r_i = np.full(M, np.sqrt(1.0 / (np.pi * n / (100 * 100))))
+    kept = pts[sa.eliminate(pts, n, r_i, metric=None)]
+    d = np.sqrt(((kept[:, None] - kept[None]) ** 2).sum(-1))
+    np.fill_diagonal(d, np.inf)
+    rand = pts[rng.choice(M, n, replace=False)]
+    dr = np.sqrt(((rand[:, None] - rand[None]) ** 2).sum(-1))
+    np.fill_diagonal(dr, np.inf)
+    assert d.min() > 3.0 * dr.min()   # WSE min-spacing an order above the random subset
+
+
+def _nn_axis_ratio(kept):
+    d = np.sqrt(((kept[:, None] - kept[None]) ** 2).sum(-1))
+    np.fill_diagonal(d, np.inf)
+    disp = kept - kept[d.argmin(1)]
+    return np.abs(disp[:, 0]).mean() / np.abs(disp[:, 1]).mean()
+
+
+def test_wse_anisotropic_metric_shapes_nn_displacements():
+    # the central contribution: the per-point metric must steer nearest-neighbor spacing.
+    # An across=x metric, an across=y metric, and isotropic must give distinct, direction-
+    # consistent NN-displacement anisotropy (INIT-005 — previously untested).
+    rng = np.random.default_rng(0)
+    M, n = 4000, 500
+    pts = rng.random((M, 2)) * 100.0
+    r_i = np.full(M, np.sqrt(1.0 / (np.pi * n / (100 * 100))))
+    iso = _nn_axis_ratio(pts[sa.eliminate(pts, n, r_i, metric=None)])
+    mx = _nn_axis_ratio(pts[sa.eliminate(pts, n, r_i,
+                          metric=sa.anisotropy_metric(np.zeros(M), np.full(M, 4.0)))])
+    my = _nn_axis_ratio(pts[sa.eliminate(pts, n, r_i,
+                          metric=sa.anisotropy_metric(np.full(M, np.pi / 2), np.full(M, 4.0)))])
+    assert 0.85 < iso < 1.18            # isotropic: no preferred axis
+    assert mx > 1.3                     # across=x metric elongates NN displacement in x
+    assert my < 0.77                    # rotating the metric 90 deg swaps the axis
+    assert mx > my
+
+
+def test_sampler_warns_when_n_exceeds_candidates():
+    pts = np.random.default_rng(0).random((10, 2))
+    r_i = np.ones(10)
+    with pytest.warns(UserWarning, match="exact-N contract"):
+        keep = sa.eliminate(pts, 20, r_i, metric=None)
+    assert len(keep) == 10
+    with pytest.warns(UserWarning, match="exact-N contract"):
+        sa.dart_throwing(pts, 20, r_i, rng=np.random.default_rng(0))
+
+
+def test_dart_throwing_fill_uses_metric():
+    # radii large enough that the accept phase stalls and the shortfall fill dominates; the fill
+    # must honor the metric (INIT-005), so a strong anisotropic metric changes which points fill.
+    rng = np.random.default_rng(0)
+    pts = rng.random((400, 2)) * 10.0
+    r_i = np.full(400, 50.0)                       # disks too greedy -> mostly fill
+    metric = sa.anisotropy_metric(np.zeros(400), np.full(400, 8.0))
+    a = sa.dart_throwing(pts, 120, r_i, metric=None, rng=np.random.default_rng(0))
+    b = sa.dart_throwing(pts, 120, r_i, metric=metric, rng=np.random.default_rng(0))
+    assert len(a) == len(b) == 120
+    assert not np.array_equal(a, b)                # the metric influences the filled selection
 
 
 def test_wse_density_adaptivity():

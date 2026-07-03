@@ -16,6 +16,40 @@ from .config import StructureTensorConfig
 
 _LUMA = np.array([0.2126, 0.7152, 0.0722], dtype=np.float32)  # Rec.709
 
+# Reference-energy floor: on a near-blank image with only sensor noise, percentile(energy, 99)
+# is itself noise-scaled, so every fraction-of-p99 threshold collapses (labels saturate to
+# non-flat, density binarizes). Flooring the reference at a multiple of the *median* energy keeps
+# the reference meaningful when there is no real structure; on a structured image the median is
+# dominated by the flat background (~0) so the floor never binds (INIT-005).
+_ENERGY_REF_FLOOR_MULT = 8.0
+# A pixel within this multiple of the median energy is treated as flat regardless of the
+# percentile reference — the degenerate-image guard for classification.
+_FLAT_NOISE_MULT = 1.5
+
+
+def energy_reference(energy: np.ndarray) -> float:
+    """Robust reference energy for fraction-of-reference thresholds (INIT-005).
+
+    max(percentile99, floor_mult * median) + eps. Median is taken over *all* pixels, so a clean
+    structured image (majority-zero energy) has median 0 and the floor is inert; a near-blank
+    noisy image has median ~= noise and the floor lifts the reference above the noise band.
+    """
+    e = np.maximum(np.asarray(energy, dtype=np.float64), 0.0)
+    med = float(np.median(e)) if e.size else 0.0
+    return float(max(np.percentile(e, 99.0), _ENERGY_REF_FLOOR_MULT * med)) + 1e-12
+
+
+def flat_threshold(energy: np.ndarray, flat_frac: float, ref: float | None = None) -> float:
+    """Absolute energy below which a pixel is flat: max(flat_frac*ref, noise_mult*median).
+
+    The noise-floor term prevents label saturation on degenerate images; on structured images
+    the median term is ~0 so the classic flat_frac*ref term governs.
+    """
+    e = np.maximum(np.asarray(energy, dtype=np.float64), 0.0)
+    ref = energy_reference(e) if ref is None else ref
+    med = float(np.median(e)) if e.size else 0.0
+    return float(max(flat_frac * ref, _FLAT_NOISE_MULT * med))
+
 
 def to_luma(img: np.ndarray) -> np.ndarray:
     img = np.asarray(img, dtype=np.float32)
@@ -136,9 +170,9 @@ def compute(img: np.ndarray, cfg: StructureTensorConfig | None = None) -> Struct
     energy = lam1 + lam2
     coherence = ((lam1 - lam2) / (energy + 1e-12)) ** 2
 
-    ref = np.percentile(energy, 99.0) + 1e-12
+    ref = energy_reference(energy)
     label = np.zeros(g.shape, dtype=np.uint8)
-    is_flat = energy < cfg.flat_frac * ref
+    is_flat = energy < flat_threshold(energy, cfg.flat_frac, ref)
     is_corner = (lam2 > cfg.corner_frac * ref) & (~is_flat)
     label[~is_flat] = 1          # edge (default for structured, non-flat pixels)
     label[is_corner] = 2         # corner overrides

@@ -6,7 +6,7 @@ torch = pytest.importorskip("torch")
 
 from PIL import Image
 
-from benchmarks.stage_search import run_stage_search
+from benchmarks.stage_search import run_stage_search, _canonicalize
 
 
 def _write_toy(path):
@@ -71,6 +71,85 @@ def test_stage_search_dedupes_equivalent_configs(tmp_path):
     )
     assert len(rows) == 3
     assert sum(r["strategy"] == "random" for r in rows) == 1
+
+
+def test_refine_arms_do_not_exceed_cell_budget(tmp_path):
+    # BENCH-002 #1: an adding-refine arm must end at (not above) the cell budget, so it is
+    # compared at equal capacity with the baseline it is ranked against.
+    img_path = tmp_path / "toy.png"
+    _write_toy(img_path)
+    rows = run_stage_search(
+        [str(img_path)], budgets=[32], seeds=[0], iters=4, max_side=None,
+        strategies=["aniso_flanking"], tensor_operators=["central"],
+        density_modes=["structure"], sampling_modes=["density_random"],
+        color_modes=["bilinear"], scale_modes=["spacing"], scale_cap_modes=["none"],
+        opacity_modes=["none"], renderers=["normalized"], pixel_losses=["l1"],
+        optimizers=["adam"], lr_schedules=["none"],
+        refine_modes=["none", "residual_add", "duplicate"], pyramid_modes=["single"],
+        split_every=2, split_count=8, render_chunk=8,
+        outdir=str(tmp_path / "budget"), device="cpu",
+    )
+    assert rows and all(r["n_gaussians"] <= r["budget"] for r in rows)
+    # adding arms start below budget and climb back to it (equal final capacity)
+    adds = [r for r in rows if r["refine"] in ("residual_add", "duplicate")]
+    assert adds and all(r["init_budget"] < r["budget"] for r in adds)
+
+
+def test_config_json_is_written(tmp_path):
+    img_path = tmp_path / "toy.png"
+    outdir = tmp_path / "cfg"
+    _write_toy(img_path)
+    run_stage_search(
+        [str(img_path)], budgets=[16], seeds=[0], iters=2, max_side=None,
+        strategies=["aniso_flanking"], tensor_operators=["central"],
+        density_modes=["structure"], sampling_modes=["density_random"],
+        color_modes=["bilinear"], scale_modes=["spacing"], scale_cap_modes=["none"],
+        opacity_modes=["none"], renderers=["normalized"], pixel_losses=["l1"],
+        optimizers=["adam"], lr_schedules=["none"], refine_modes=["none"],
+        pyramid_modes=["single"], render_chunk=8, outdir=str(outdir), device="cpu",
+    )
+    import json
+    cfg = json.loads((outdir / "config.json").read_text())
+    assert cfg["device"] == "cpu" and cfg["versions"]["structsplat"] is not None
+
+
+def test_broken_cell_does_not_void_the_sweep(tmp_path):
+    # BENCH-002 #4: one failing arm (renderer=cuda on a CPU box) must leave an error row and let
+    # the rest of the sweep complete and write its outputs.
+    img_path = tmp_path / "toy.png"
+    outdir = tmp_path / "iso"
+    _write_toy(img_path)
+    rows = run_stage_search(
+        [str(img_path)], budgets=[16], seeds=[0], iters=2, max_side=None,
+        strategies=["aniso_flanking"], tensor_operators=["central"],
+        density_modes=["structure"], sampling_modes=["density_random"],
+        color_modes=["bilinear"], scale_modes=["spacing"], scale_cap_modes=["none"],
+        opacity_modes=["none"], renderers=["cuda", "normalized"], pixel_losses=["l1"],
+        optimizers=["adam"], lr_schedules=["none"], refine_modes=["none"],
+        pyramid_modes=["single"], render_chunk=8, outdir=str(outdir), device="cpu",
+    )
+    statuses = {r["renderer"]: r["status"] for r in rows}
+    assert statuses["cuda"] == "error" and statuses["normalized"] == "ok"
+    assert (outdir / "summary.md").exists()
+    assert (outdir / "stage_search.jsonl").exists()
+
+
+def test_canonicalize_keeps_distinct_quadtree_density_cells():
+    # BENCH-002 #6: the jittered_grid density pin must NOT apply to quadtree strategies (they
+    # read density), so two quadtree cells that differ only in density stay distinct.
+    canon = {k: "central" for k in ("tensor", "tensor_color")}
+    canon.update({"density": "structure", "sampling": "wse", "orientation": "tensor"})
+    base = {"strategy": "quadtree_hybrid", "tensor": "central", "tensor_color": "luma",
+            "density": "hybrid", "sampling": "jittered_grid", "orientation": "tensor",
+            "color": "bilinear", "scale": "spacing", "scale_cap": "none", "opacity": "none",
+            "renderer": "normalized", "loss": "l1", "optimizer": "adam", "lr_schedule": "none",
+            "refine": "none", "pyramid": "single"}
+    a = _canonicalize({**base, "density": "structure"}, canon)
+    b = _canonicalize({**base, "density": "hybrid"}, canon)
+    assert a["density"] != b["density"]           # not collapsed
+    # but a blue-noise strategy with jittered_grid DOES pin density (placement ignores it)
+    bn = _canonicalize({**base, "strategy": "aniso_flanking", "density": "hybrid"}, canon)
+    assert bn["density"] == "structure"
 
 
 def test_stage_influence_writes_paired_deltas(tmp_path):

@@ -1,11 +1,34 @@
 import numpy as np
 from structsplat import structure_tensor as st
+from structsplat.config import InitConfig
+from structsplat import density as de
 
 
 def _vertical_edge(H=64, W=64):
     img = np.zeros((H, W, 3), np.float32)
     img[:, W // 2:, :] = 1.0
     return img
+
+
+def test_near_blank_noisy_image_labels_not_saturated():
+    # sparse-content guard (INIT-005): on a near-blank image with only sensor noise, the old
+    # percentile(energy, 99) reference was itself noise-scaled, so labels saturated to non-flat
+    # and the density binarized. The floored reference must keep such an image mostly flat.
+    rng = np.random.default_rng(0)
+    img = np.clip(0.5 + 0.01 * rng.standard_normal((64, 64, 3)), 0, 1).astype(np.float32)
+    t = st.compute(img)
+    assert (t.label == 0).mean() > 0.7         # not saturated to edge/corner
+    assert (t.label == 2).mean() < 0.05        # essentially no spurious corners
+    # density must not binarize: density_power still moves the pmf and mass is not all at the max
+    d1 = de.density_from_tensor_and_image(img, t, InitConfig(density_power=1.0))
+    d3 = de.density_from_tensor_and_image(img, t, InitConfig(density_power=3.0))
+    assert np.abs(d1 - d3).max() > 1e-6
+    assert (d1 >= d1.max() * 0.999).mean() < 0.05
+
+
+def test_structured_image_flat_fraction_preserved():
+    # the floored reference must be inert on a clean structured image (median energy ~ 0)
+    assert (st.compute(_vertical_edge()).label == 0).mean() > 0.75
 
 
 def test_edge_orientation_and_labels():

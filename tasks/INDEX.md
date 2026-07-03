@@ -23,19 +23,19 @@ skill.
 | COMP-001 | Quantization + entropy/VQ codec (rate-distortion) | partial | FIT-001 |
 | PORT-001 | CUDA tile rasterizer → IntrinsicEngine RHI pass | todo | CORE-001 |
 | MERGE-001 | Integrate Claude core optimizations and Codex stage search into main | todo | CORE, INIT, FIT, HIER, BENCH, ABL, COMP |
-| CORE-004 | Renderer + GaussianField correctness fixes (CUDA N=0, int-cast UB, aliasing, dilation) | todo | CORE-001/002 |
+| CORE-004 | Renderer + GaussianField correctness fixes (CUDA N=0, int-cast UB, aliasing, dilation) | done | CORE-001/002 |
 | CORE-005 | Reference renderer memory bound + C0-continuous support cutoff | todo | CORE-003, CORE-004 |
-| INIT-005 | Init-math robustness, flanking unification, WSE test coverage | todo | INIT-003 |
+| INIT-005 | Init-math robustness, flanking unification, WSE test coverage | done | INIT-003 |
 | INIT-006 | Init-time performance (quadtree, spacing, run-lengths, pair discovery) | todo | INIT-003, INIT-005 |
-| FIT-002 | Fitter correctness (split colors, opacity pruning, history pairing) | todo | FIT-001, CORE-004 |
+| FIT-002 | Fitter correctness (split colors, opacity pruning, history pairing) | done | FIT-001, CORE-004 |
 | FIT-003 | Fit-loop speed (device-side targets, SSIM hygiene, fused SSIM) | todo | FIT-001, BENCH-001 |
 | FIT-004 | Densification & convergence upgrades (fp-growth, relocation, NMS) | todo | FIT-002, BENCH-002 |
-| HIER-002 | Pyramid bookkeeping (iteration accounting, budgets, schedules) | todo | HIER-001, FIT-001 |
-| BENCH-002 | Benchmark harness experimental-validity fixes (**gates all sweeps**) | todo | — |
+| HIER-002 | Pyramid bookkeeping (iteration accounting, budgets, schedules) | done | HIER-001, FIT-001 |
+| BENCH-002 | Benchmark harness experimental-validity fixes (**gates all sweeps**) | partial | — |
 | BENCH-003 | Benchmark script consolidation + documentation | todo | BENCH-002 |
 | ABL-003 | Bisect the undiagnosed −0.794 dB flagship regression | todo | — |
 | ABL-004 | Killer controls + full ABL-001 run + committed evidence | todo | BENCH-002, ABL-003, FIT-004 |
-| COMP-002 | Codec / metrics / CLI correctness and protocol fixes | todo | COMP-001, FIT-001 |
+| COMP-002 | Codec / metrics / CLI correctness and protocol fixes | done | COMP-001, FIT-001 |
 | COMP-003 | Compression-ratio ladder (scale ranges → planes → LSQ → VQ → entropy) | todo | COMP-002, BENCH-002 |
 | DOCS-001 | Docs-sync backfill (stale status, missing ADRs, ara scaffold) | todo | — |
 

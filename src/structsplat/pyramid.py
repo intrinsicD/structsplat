@@ -8,6 +8,7 @@ this is densification rather than residual summation.
 Requires torch.
 """
 from __future__ import annotations
+import math
 import numpy as np
 import torch
 
@@ -23,6 +24,29 @@ from . import metrics as M
 
 def _concat(a: GaussianField, b: GaussianField) -> GaussianField:
     return a.append(b)
+
+
+def _allocate_budget(total: int, fracs: list[float]) -> list[int]:
+    """Split `total` Gaussians across levels so the level budgets sum exactly to `total`.
+
+    Largest-remainder (Hamilton) allocation: floor each level's share, then hand the leftover
+    units to the levels with the largest fractional parts. Per-level rounding (`round(total*f)`)
+    made pyramid runs place a slightly different budget than the nominal N they were compared at
+    (HIER-002); this guarantees `sum(budgets) == total`.
+    """
+    total = int(total)
+    L = len(fracs)
+    s = float(sum(fracs))
+    if total <= 0 or s <= 0:
+        return [0] * L
+    quotas = [total * f / s for f in fracs]
+    base = [int(math.floor(q)) for q in quotas]
+    rem = total - sum(base)
+    # break ties by the (larger) fraction so the ordering is deterministic
+    order = sorted(range(L), key=lambda i: (quotas[i] - base[i], fracs[i]), reverse=True)
+    for i in order[:rem]:
+        base[i] += 1
+    return base
 
 
 def _level_value(values, lvl: int, default):
@@ -89,11 +113,21 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
     combined = {"iter": [], "psnr": [], "loss": [], "n_gaussians": [], "elapsed": []}
     combined_itt: dict[str, int | None] = {}
     fit_seconds_total = 0.0
-    iter_offset = 0
+    iter_offset = 0            # actual iterations run so far (history axis)
     elapsed_offset = 0.0
+    iterations_run_total = 0
+    stopped_early_any = False
+    # nominal planned span, so a cosine LR schedule covers the whole pyramid rather than
+    # restarting each level (HIER-002); early stops do not change the schedule shape.
+    sched_total = pcfg.levels * pcfg.iters_per_level
+    budgets = _allocate_budget(total, fracs)   # sums exactly to `total`
     level_cfg = FitConfig(**{**fcfg.__dict__, "iters": pcfg.iters_per_level})
     for lvl, frac in enumerate(fracs):
-        n_lvl = max(1, int(round(total * frac)))
+        n_lvl = budgets[lvl]
+        if lvl == 0 and n_lvl <= 0:
+            raise ValueError(
+                f"level 0 received a 0-Gaussian budget for num_gaussians={total} across "
+                f"{pcfg.levels} levels; increase num_gaussians or the coarse fraction")
         icfg_lvl = InitConfig(**{**icfg.__dict__, "num_gaussians": n_lvl, "seed": icfg.seed + lvl})
         scfg_lvl = _level_tensor_cfg(scfg, pcfg, lvl)
         if lvl == 0:
@@ -115,7 +149,8 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
         counts.append(field.n)
         if verbose:
             print(f"[pyramid] level {lvl}: +{new.n} -> {field.n} gaussians")
-        out = fit(field, target, level_cfg, verbose=verbose)
+        out = fit(field, target, level_cfg, verbose=verbose,
+                  sched_offset=lvl * pcfg.iters_per_level, sched_total=sched_total)
         field = out["field"]
         counts[-1] = field.n
         h = out["history"]
@@ -128,7 +163,12 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
             if combined_itt[key] is None and v is not None:
                 combined_itt[key] = iter_offset + v
         fit_seconds_total += float(out.get("fit_seconds", 0.0))
-        iter_offset += level_cfg.iters
+        level_iters = int(out.get("iterations_run", level_cfg.iters))
+        iterations_run_total += level_iters
+        stopped_early_any = stopped_early_any or bool(out.get("stopped_early", False))
+        # advance by iterations actually run, not the full level budget: an early-stopped level
+        # would otherwise insert phantom iterations into the combined axis / iters-to-target.
+        iter_offset += level_iters
         if combined["elapsed"]:
             elapsed_offset = combined["elapsed"][-1]
         level_summaries.append({
@@ -144,8 +184,13 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
     out["iters_to_target"] = (combined_itt.get(str(float(fcfg.target_psnr)))
                               if fcfg.target_psnr is not None else None)
     out["fit_seconds"] = fit_seconds_total
+    # aggregate across levels: the final level's fit output only knew about its own re-fit, so
+    # pyramid rows under-reported iterations by ~levels x (HIER-002).
+    out["iterations_run"] = iterations_run_total
+    out["stopped_early"] = stopped_early_any
     out["level_summaries"] = level_summaries
     out["level_counts"] = counts
+    out["level_budgets"] = budgets   # placed per level; sums to num_gaussians
     if pcfg.evaluate_prefixes:
         restructures = (((level_cfg.prune_every or 0) > 0 and level_cfg.prune_min_activity > 0)
                         or ((level_cfg.split_every or 0) > 0 and level_cfg.split_count > 0))

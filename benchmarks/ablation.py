@@ -70,6 +70,18 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
     if not files:
         raise SystemExit("no images found")
 
+    # reproducible from its own artifacts (invariant 5 / BENCH-002)
+    from benchmarks._util import run_config, write_config
+    write_config(outdir, run_config({
+        "images": files, "budgets": list(budgets), "strategies": list(strategies),
+        "seeds": list(seeds), "iters": iters, "target_psnr": target_psnr,
+        "target_psnrs": target_psnrs, "flank_offsets": list(flank_offsets),
+        "flat_fracs": list(flat_fracs), "corner_fracs": list(corner_fracs),
+        "max_axis_ratios": list(max_axis_ratios), "coherence_powers": list(coherence_powers),
+        "render_chunk": render_chunk, "pixel_loss": pixel_loss, "ssim_weight": ssim_weight,
+        "compute_lpips": compute_lpips,
+    }, device=device))
+
     rows = []
     for path in files:
         img = load_image(path)
@@ -219,10 +231,11 @@ def _write_plots(rows, outdir):
         ys = []
         xs = []
         for b in budgets:
-            vals = [r["psnr"] for r in rows if r["strategy"] == strategy and r["budget"] == b]
-            if vals:
+            # best-config-per-strategy, not the pooled mean over hyperparameter variants (BENCH-002)
+            best = _best_config_mean(rows, strategy, b)
+            if best != float("-inf"):
                 xs.append(b)
-                ys.append(mean(vals))
+                ys.append(best)
         if xs:
             plt.plot(xs, ys, marker="o", label=strategy)
     plt.xlabel("Gaussians")
@@ -253,13 +266,37 @@ def _write_plots(rows, outdir):
     plt.close()
 
 
-def fitness(rows, strategy: str, budget: int) -> float:
-    """Scalar a co-scientist maximizes: mean PSNR for a strategy at a target budget.
+def _config_key(r):
+    """Full config identity of a row (strategy + every swept hyperparameter)."""
+    return (r["strategy"], r["flank_offset_frac"], r["flat_frac"], r["corner_frac"],
+            r["max_axis_ratio"], r["coherence_power"])
 
-    Swap for area-under PSNR-vs-iters, or a rate-distortion point, as the discovery target evolves.
+
+def _best_config_mean(rows, strategy: str, budget: int) -> float:
+    """Best (not pooled) mean PSNR for a strategy at a budget: max over its config variants.
+
+    Pooling all flank/ratio/threshold variants of a strategy into one mean biases the headline
+    comparison whenever those sweeps are active (a strategy with a wide, mostly-bad sweep looks
+    worse than its actual best config). We aggregate per full config key across images+seeds,
+    then take the best config for the strategy (BENCH-002).
     """
-    vals = [r["psnr"] for r in rows if r["strategy"] == strategy and r["budget"] == budget]
-    return mean(vals) if vals else float("-inf")
+    per_config = {}
+    for r in rows:
+        if r["strategy"] == strategy and r["budget"] == budget:
+            per_config.setdefault(_config_key(r), []).append(r["psnr"])
+    if not per_config:
+        return float("-inf")
+    return max(mean(v) for v in per_config.values())
+
+
+def fitness(rows, strategy: str, budget: int) -> float:
+    """Scalar a co-scientist maximizes: best-config mean PSNR for a strategy at a target budget.
+
+    Uses the best config per strategy (not the pooled mean over hyperparameter variants) so the
+    signal is not diluted by an active flank/ratio/threshold sweep. Swap for area-under
+    PSNR-vs-iters, or a rate-distortion point, as the discovery target evolves.
+    """
+    return _best_config_mean(rows, strategy, budget)
 
 
 if __name__ == "__main__":

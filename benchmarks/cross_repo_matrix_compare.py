@@ -11,10 +11,11 @@ import csv
 import importlib.util
 import json
 import math
+import os
 import time
 from dataclasses import asdict, replace
 from pathlib import Path
-from statistics import mean, pstdev
+from statistics import mean
 from typing import Any
 
 import numpy as np
@@ -111,7 +112,11 @@ def _build_instant_gi_field(
     device: str,
 ) -> tuple[GaussianField, float]:
     start = time.time()
-    qpath = Path("/home/alex/Documents/Instant-GI/quard_image.py")
+    env = os.environ.get("STRUCTSPLAT_INSTANT_GI")
+    if not env:  # no hardcoded personal paths (BENCH-002); unset -> method skipped
+        raise RuntimeError(
+            "Instant-GI methods require STRUCTSPLAT_INSTANT_GI=/path/to/quard_image.py")
+    qpath = Path(env)
     spec = importlib.util.spec_from_file_location("instant_gi_quard_image", qpath)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"could not load {qpath}")
@@ -343,6 +348,10 @@ def _fit_one(
     render = out["render"].detach().clamp(0, 1)
     extras = _extra_metrics(render, target, want_lpips)
     scales = _scale_stats(out["field"])
+    # ONE metric convention per row (BENCH-002): every final-quality column is display-referred,
+    # i.e. computed on the SAME clamped render as mae/edge_mae. Previously psnr/ssim/ms_ssim came
+    # from fit()'s eval on the *unclamped* render, mixing conventions within a single row.
+    # (auc_psnr stays a training-trajectory metric over the unclamped fit history, by design.)
     row = {
         "method": method,
         "method_label": METHOD_LABELS[method],
@@ -354,9 +363,9 @@ def _fit_one(
         "total_seconds": float(init_seconds + out["fit_seconds"]),
         "iterations_run": int(out.get("iterations_run", base_fit.iters)),
         "stopped_early": bool(out.get("stopped_early", False)),
-        "psnr": float(out["psnr"]),
-        "ssim": float(out["ssim"]),
-        "ms_ssim": float(out["ms_ssim"]),
+        "psnr": M.psnr(render, target),
+        "ssim": float(M.ssim(render, target)),
+        "ms_ssim": M.ms_ssim(render, target),
         "auc_psnr": _psnr_auc(out.get("history", {})),
         "iters_to_targets": out.get("iters_to_targets", {}),
         "history": out.get("history", {}),
@@ -470,14 +479,16 @@ def _write_summary(rows: list[dict[str, Any]], selected: list[dict[str, Any]], o
     ]
     for method in METHODS:
         vals = [r for r in ok if r["method"] == method]
+        # this loop covers ALL methods, so a method with zero ok rows would raise StatisticsError
+        # and void the whole summary; _mean_or_none keeps it to a "-" cell (BENCH-002)
+        def _m(key, digits):
+            return _fmt(_mean_or_none([r[key] for r in vals]), digits)
         lines.append(
             f"| {METHOD_LABELS[method]} | {len(vals)} | "
-            f"{mean(r['psnr'] for r in vals):.4f} | {mean(r['ssim'] for r in vals):.5f} | "
-            f"{mean(r['ms_ssim'] for r in vals):.5f} | "
-            f"{_fmt(_mean_or_none([r['lpips'] for r in vals]), 4)} | "
-            f"{_fmt(_mean_or_none([r['auc_psnr'] for r in vals]), 3)} | "
-            f"{mean(r['mae'] for r in vals):.5f} | {mean(r['edge_mae'] for r in vals):.5f} | "
-            f"{mean(r['fit_seconds'] for r in vals):.3f} | {mean(r['total_seconds'] for r in vals):.3f} |"
+            f"{_m('psnr', 4)} | {_m('ssim', 5)} | {_m('ms_ssim', 5)} | "
+            f"{_m('lpips', 4)} | {_m('auc_psnr', 3)} | "
+            f"{_m('mae', 5)} | {_m('edge_mae', 5)} | "
+            f"{_m('fit_seconds', 3)} | {_m('total_seconds', 3)} |"
         )
 
     lines += [
@@ -578,6 +589,12 @@ def run(
 ) -> list[dict[str, Any]]:
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     outdir.mkdir(parents=True, exist_ok=True)
+    from benchmarks._util import run_config, write_config
+    write_config(str(outdir), run_config({
+        "dataset_dir": str(dataset_dir), "image_names": image_names, "max_sides": max_sides,
+        "iters_list": iters_list, "base_budget": base_budget, "base_side": base_side,
+        "seed": seed, "renderer": renderer, "lpips": lpips,
+    }, device=device))
     selected_dir = outdir / "selected"
     recon_dir = outdir / "reconstructions"
     selected_dir.mkdir(exist_ok=True)
@@ -683,7 +700,8 @@ def run(
 
 def main() -> None:
     p = argparse.ArgumentParser(description="Cross-repo matched matrix comparison")
-    p.add_argument("--dataset-dir", type=Path, default=Path("/home/alex/Documents/datasets/train2014"))
+    p.add_argument("--dataset-dir", type=Path, default=None,
+                   help="COCO train2014 directory (required; no personal-path default, BENCH-002)")
     p.add_argument("--outdir", type=Path, default=Path("results/cross_repo_matrix_current"))
     p.add_argument("--images", nargs="+", default=DEFAULT_IMAGES)
     p.add_argument("--max-sides", nargs="+", type=int, default=[160, 240, 320])
@@ -695,6 +713,8 @@ def main() -> None:
     p.add_argument("--lpips", action="store_true")
     p.add_argument("--device", default=None)
     args = p.parse_args()
+    if args.dataset_dir is None:
+        raise SystemExit("--dataset-dir is required (path to the COCO train2014 images)")
     run(
         args.dataset_dir,
         args.outdir,

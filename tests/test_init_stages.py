@@ -63,6 +63,27 @@ def test_scale_mode_knn_tracks_local_spacing():
     assert (s > 0).all() and float(s.max()) < 64.0
 
 
+def test_candidate_oversample_below_one_is_rejected():
+    with pytest.raises(ValueError, match="candidate_oversample must be >= 1"):
+        InitConfig(candidate_oversample=0.5)
+    InitConfig(candidate_oversample=1.0)  # valid
+
+
+def test_flank_offset_clears_blur_width():
+    # the offset floor is applied after the fraction, so flanked edge centers clear the blur
+    # width (INIT-005) instead of degenerating toward on-edge placement.
+    img = np.full((64, 64, 3), 0.1, np.float32)
+    img[:, 32:] = 0.9
+    onedge = I.build_field(img, InitConfig(strategy="aniso_onedge", num_gaussians=400, seed=0))
+    flanked = I.build_field(img, InitConfig(strategy="aniso_flanking", num_gaussians=400, seed=0))
+    # near the ridge, flanked centers sit measurably farther from x=31.5 than on-edge centers
+    on_x = onedge.means[:, 0].numpy()
+    fl_x = flanked.means[:, 0].numpy()
+    on_near = np.abs(on_x - 31.5) < 6
+    fl_near = np.abs(fl_x - 31.5) < 6
+    assert np.abs(fl_x[fl_near] - 31.5).mean() > np.abs(on_x[on_near] - 31.5).mean()
+
+
 def test_two_sided_colors_stay_on_the_center_side():
     # step edge: a two_sided color must come from the side of the edge its center is on
     # (the parity sign used for flanking is arbitrary for off-ridge starts)

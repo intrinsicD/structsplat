@@ -42,6 +42,13 @@ class InitConfig:
     init_opacity: float = 0.9
     seed: int = 0
 
+    def __post_init__(self):
+        # WSE draws candidate_oversample * N candidates then reduces to N; < 1 cannot supply N
+        # candidates and silently breaks the exact-N contract (INIT-005).
+        if self.candidate_oversample < 1.0:
+            raise ValueError(
+                f"candidate_oversample must be >= 1, got {self.candidate_oversample}")
+
 
 @dataclass
 class FitConfig:
@@ -71,23 +78,40 @@ class FitConfig:
     lr_decay_every: int | None = None
     lr_decay_gamma: float = 0.5
     prune_every: int | None = None
-    prune_min_activity: float = 0.0     # unnormalized weight sum; <=0 disables pruning
+    # unnormalized weight sum; <=0 disables pruning. When opacities are present the criterion is
+    # opacity-weighted (activity * sigmoid(opacity)), so the threshold is in the same weight-sum
+    # units scaled by opacity — a fully transparent Gaussian scores 0 and is pruned (FIT-002).
+    prune_min_activity: float = 0.0
     prune_keep_min: int = 16
     split_every: int | None = None
     split_count: int = 0
     split_mode: str = "duplicate"      # duplicate, support_duplicate, residual_add, residual_tensor_add
     split_scale: float = 0.7
+    # residual_tensor_add anisotropy, mirroring InitConfig semantics so the densifier and the
+    # init agree on what anisotropy means: ratio = 1 + (max_axis_ratio-1)*coherence**power.
+    densify_max_axis_ratio: float = 6.0
+    densify_coherence_power: float = 1.0
     max_gaussians: int | None = None
     early_stop_patience: int | None = None  # logged evals without improvement; None disables
     early_stop_min_delta: float = 0.0       # PSNR improvement required to reset patience
     early_stop_min_iters: int = 0           # do not early-stop before this iteration
 
+    def __post_init__(self):
+        # aa_dilation adds Sigma + d*I; a negative value yields negative inverse variances and
+        # NaN renders (CORE-004). Reject it at construction rather than mid-fit.
+        if self.aa_dilation < 0.0:
+            raise ValueError(f"aa_dilation must be >= 0, got {self.aa_dilation}")
+
 
 @dataclass
 class PyramidConfig:
     levels: int = 4
-    # fraction of the total budget placed at each level (coarse -> fine). Must sum ~1.
+    # fraction of the total budget placed at each level (coarse -> fine). Need not sum to 1;
+    # normalized internally and placed by largest-remainder so level budgets sum exactly to
+    # num_gaussians (HIER-002).
     level_fractions: list[float] = field(default_factory=lambda: [0.1, 0.2, 0.3, 0.4])
+    # A cosine lr_schedule spans the whole pyramid run (one decay across all levels), not a
+    # per-level warm restart, so it is comparable to a single-stage cosine (HIER-002 / ADR-0010).
     iters_per_level: int = 500
     residual_grad_sigma: float = 0.8   # structure tensor of the residual is sharper
     level_grad_sigmas: list[float] | None = None
