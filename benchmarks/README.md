@@ -7,6 +7,10 @@ self-describing. See the `benchmark` skill for the full protocol.
 JSON/CSV row writing, seed/config helpers, and shared COCO comparison analogue builders. It is not
 a CLI; scripts import it to avoid drifting helper behavior.
 
+The canonical four-image COCO fixture used by the matched comparison and regression-bisect
+harnesses lives in `tests/test_images/`. Keep those four files there so benchmark reruns do not
+depend on ignored `results/` artifacts.
+
 `ablation.py` runs the core experiment (`ABL-001`): `{init strategy} x {budget}` on fixed images,
 scored on PSNR / MS-SSIM / LPIPS + iterations-to-target. Caveat: this is the broad init sweep, so
 keep image/budget/seed axes explicit in the output config.
@@ -37,7 +41,7 @@ over image x resolution x iteration x seed slices. Caveat: the rows are executab
 analogues under StructSplat's fitter/renderer, not native external CUDA/codec/checkpoint runs.
 
 ```
-python -m benchmarks.cross_repo_matrix_compare --dataset-dir path/to/train2014 --max-sides 160 240 --iters 80 200 --seeds 0 1
+python -m benchmarks.cross_repo_matrix_compare --max-sides 160 240 --iters 80 200 --seeds 0 1
 ```
 
 `coco_fit_compare.py` is the legacy four-image matched comparison harness (`BENCH-003` back-compat
@@ -45,7 +49,7 @@ only). Caveat: it is superseded by `cross_repo_matrix_compare.py`; keep it for r
 ARA evidence that names `results/coco_fit_compare`.
 
 ```
-python -m benchmarks.coco_fit_compare --dataset-dir path/to/train2014 --budget 512 --iters 80 --seeds 0 1
+python -m benchmarks.coco_fit_compare --budget 512 --iters 80 --seeds 0 1
 ```
 
 `optimization_followup.py` runs bounded follow-up checks after stage-search evidence (`ABL-002`
@@ -72,11 +76,12 @@ codec/render semantics per row. Caveat: QAT rows spend extra optimization; compa
 python -m benchmarks.rate_distortion path/to/images --budgets 2000 5000 --iters 1500 --qat-iters 150
 ```
 
-`regression_bisect.py` is the ABL-003 forensic runner. It downloads the pinned four-image COCO
-subset, evaluates historical commits in detached worktrees, and writes compact evidence under
-`ara/evidence/`. Caveat: the child runner is intentionally self-contained so old detached
-worktrees do not need today's benchmark helpers.
+`regression_bisect.py` is the ABL-003 forensic runner. It reads the pinned four-image COCO subset
+from `tests/test_images/`, evaluates historical commits in detached worktrees, and writes compact
+evidence under `ara/evidence/`. Caveat: the child runner is intentionally self-contained so old
+detached worktrees do not need today's benchmark helpers. `--download` only refreshes missing
+fixture images in `tests/test_images/`.
 
 ```
-python -m benchmarks.regression_bisect --download --device cpu
+python -m benchmarks.regression_bisect --device cpu
 ```

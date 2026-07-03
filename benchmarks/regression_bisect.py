@@ -1,8 +1,8 @@
 """ABL-003 four-image regression bisect runner.
 
 Runs the StructSplat arm of the historical matched COCO comparison at PR #2 commits in detached
-worktrees. The script keeps downloaded images and temporary worktrees under ignored paths, then
-writes compact evidence tables under ``ara/evidence``.
+worktrees. The canonical four-image fixture lives under ``tests/test_images``; temporary
+worktrees stay under ignored paths and compact evidence tables are written under ``ara/evidence``.
 """
 from __future__ import annotations
 
@@ -25,6 +25,8 @@ DEFAULT_IMAGES = [
     "COCO_train2014_000000000030.jpg",
     "COCO_train2014_000000000034.jpg",
 ]
+
+DEFAULT_DATASET_DIR = Path("tests/test_images")
 
 COMMITS = [
     ("merge_base", "f49aa18", "PR #2 merge base"),
@@ -129,7 +131,7 @@ if __name__ == "__main__":
 def main() -> None:
     p = argparse.ArgumentParser(description="Run ABL-003 four-image regression bisect")
     p.add_argument("--repo", type=Path, default=Path("."))
-    p.add_argument("--dataset-dir", type=Path, default=Path("results/abl003_coco_train2014"))
+    p.add_argument("--dataset-dir", type=Path, default=DEFAULT_DATASET_DIR)
     p.add_argument("--outdir", type=Path,
                    default=Path("ara/evidence/abl003-regression-bisect-2026-07-03"))
     p.add_argument("--worktree-dir", type=Path, default=Path("results/abl003_worktrees"))

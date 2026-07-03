@@ -37,6 +37,8 @@ DEFAULT_IMAGES = [
     "COCO_train2014_000000000034.jpg",
 ]
 
+DEFAULT_DATASET_DIR = Path("tests/test_images")
+
 DIFFICULT_IMAGES = {
     "COCO_train2014_000000000025",
     "COCO_train2014_000000000034",
@@ -626,8 +628,8 @@ def run(
 
 def main() -> None:
     p = argparse.ArgumentParser(description="Cross-repo matched matrix comparison")
-    p.add_argument("--dataset-dir", type=Path, default=None,
-                   help="COCO train2014 directory (required; no personal-path default, BENCH-002)")
+    p.add_argument("--dataset-dir", type=Path, default=DEFAULT_DATASET_DIR,
+                   help="directory containing the four benchmark images")
     p.add_argument("--outdir", type=Path, default=Path("results/cross_repo_matrix_current"))
     p.add_argument("--images", nargs="+", default=DEFAULT_IMAGES)
     p.add_argument("--max-sides", nargs="+", type=int, default=[160, 240, 320])
@@ -641,8 +643,6 @@ def main() -> None:
     p.add_argument("--lpips", action="store_true")
     p.add_argument("--device", default=None)
     args = p.parse_args()
-    if args.dataset_dir is None:
-        raise SystemExit("--dataset-dir is required (path to the COCO train2014 images)")
     seeds = resolve_seeds(args.seed, args.seeds)
     run(
         args.dataset_dir,

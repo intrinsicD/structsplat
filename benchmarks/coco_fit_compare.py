@@ -31,6 +31,8 @@ DEFAULT_IMAGES = [
     "COCO_train2014_000000000034.jpg",
 ]
 
+DEFAULT_DATASET_DIR = Path("tests/test_images")
+
 
 METHODS = [
     "structsplat",
@@ -325,8 +327,8 @@ def main() -> None:
     import argparse
 
     p = argparse.ArgumentParser(description="Matched COCO fit comparison for 2D Gaussian approaches")
-    p.add_argument("--dataset-dir", type=Path, default=None,
-                   help="COCO train2014 directory (required; no personal-path default, BENCH-002)")
+    p.add_argument("--dataset-dir", type=Path, default=DEFAULT_DATASET_DIR,
+                   help="directory containing the four benchmark images")
     p.add_argument("--outdir", type=Path, default=Path("results/coco_fit_compare"))
     p.add_argument("--images", nargs="+", default=DEFAULT_IMAGES)
     p.add_argument("--budget", type=int, default=768)
@@ -337,8 +339,6 @@ def main() -> None:
     add_seed_args(p)
     p.add_argument("--device", default=None)
     args = p.parse_args()
-    if args.dataset_dir is None:
-        raise SystemExit("--dataset-dir is required (path to the COCO train2014 images)")
     run(
         args.dataset_dir, args.outdir, args.images, args.budget, args.iters, args.max_side,
         args.seed, args.device, resolve_seeds(args.seed, args.seeds),
