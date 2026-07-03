@@ -237,9 +237,7 @@ tree:
       pixel difference was 0.62755 with max 5.20287, and mean PSNR dropped to
       20.8340 for CUDA versus 23.1776 additive and 24.0452 normalized.
     evidence:
-      - "results/cuda_renderer_speed_test/summary.md"
-      - "results/cuda_renderer_speed_test/fitbench.csv"
-      - "results/cuda_renderer_speed_test/microbench.csv"
+      - "cuda-renderer-speed-2026-07-02"
     also_depends_on: [N13]
     status: resolved
   - id: N15
@@ -263,10 +261,7 @@ tree:
       with the system libstdc++ preload passed 81 tests in 5.74 s; normal pytest
       without preload passed 79 and skipped the 2 CUDA-extension tests.
     evidence:
-      - "src/structsplat/cuda_render.py"
-      - "src/structsplat/cuda/render_ext.cpp"
-      - "src/structsplat/cuda/render_ext.cu"
-      - "results/cuda_exact_renderer_compare/summary.md"
+      - "cuda-exact-renderer-2026-07-02"
       - "pytest-2026-07-02-81-cuda"
     also_depends_on: [N13, N14]
     status: resolved
@@ -292,10 +287,7 @@ tree:
       from 2.534 s to 0.369 s, while `cuda` rows averaged 21.5830 dB PSNR
       versus 17.3759 dB for `cuda_additive`.
     evidence:
-      - "results/stage_search_coco4_exact_cuda/summary.md"
-      - "results/stage_search_coco4_exact_cuda/compare_to_previous.md"
-      - "results/stage_search_coco4_exact_cuda/stage_search.csv"
-      - "results/stage_search_coco4_exact_cuda/stage_search.json"
+      - "stage-search-exact-cuda-2026-07-02"
     also_depends_on: [N05, N10, N13, N15]
     status: resolved
   - id: N17
@@ -323,9 +315,6 @@ tree:
       because of tensor/WSE initialization and residual growth overhead.
     evidence:
       - "benchmarks/cross_repo_matrix_compare.py"
-      - "results/cross_repo_matrix_current_4img/summary.md"
-      - "results/cross_repo_matrix_current_4img/analysis.md"
-      - "results/cross_repo_matrix_current_4img/metrics.csv"
-      - "results/cross_repo_matrix_current_4img/grids/"
+      - "cross-repo-matrix-current-2026-07-03"
     also_depends_on: [N01, N03, N15, N16]
     status: resolved

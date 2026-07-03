@@ -8,10 +8,12 @@ This note compares the local `structsplat` approach against local copies of:
 - `/home/alex/Documents/Instant-GI`
 
 The comparison is based on the local README files and implementation paths inspected on
-2026-07-02. Only `structsplat` was test-run in this pass (`33 passed in 108.55s`). The other
-repos were not benchmarked end-to-end because they require CUDA extension builds, datasets, and
-in some cases pretrained checkpoints. Treat runtime and quality claims for those repos as their
-repo/paper-code intent, not locally reproduced measurements.
+2026-07-02. The initial pass only test-ran `structsplat` (`33 passed in 108.55s` at commit state
+`pytest-2026-07-02`). Later ARA entries add current exact-CUDA and cross-repo matrix evidence; keep
+the dates/commit states separate when citing numbers. The other repos were not benchmarked through
+their native end-to-end pipelines because they require CUDA extension builds, datasets, and in some
+cases pretrained checkpoints. Treat runtime and quality claims for those repos as their
+repo/paper-code intent unless a specific ARA evidence ID says otherwise.
 
 ## High-Level Positioning
 
@@ -37,9 +39,9 @@ research harness around initialization:
 - It has focused ablation and stage-search harnesses for deciding whether the extra structure
   actually helps.
 
-This makes StructSplat strong as a hypothesis-testing framework. It is weaker than the comparison
-repos as a production codec today because the renderer is a PyTorch reference implementation and
-the CUDA/Vulkan path is still planned.
+This makes StructSplat strong as a hypothesis-testing framework. It now has an exact CUDA extension
+for its own normalized/additive equations, but the tiled production CUDA/Vulkan path and native
+end-to-end codec comparisons are still open.
 
 ## Fair Repo-by-Repo Comparison
 

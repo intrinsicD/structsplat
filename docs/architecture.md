@@ -27,9 +27,11 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
   luma or Di Zenzo rgb color space), `density` (structure/gradient/variance/hybrid/uniform modes +
   the inverse-CDF warp for low-discrepancy samplers), `sampling` (WSE blue noise, Poisson-disk
   dart throwing, farthest-point, CVT/Lloyd, Halton), `config`.
-- **torch, autograd:** `gaussians` (RS + optional opacity), `render` (normalized default +
-  additive, ADR-0006, sharing one accumulator), `metrics`, `init` (bridge), `fit` (selectable
-  loss/optimizer/LR-schedule/split-mode), `pyramid`, `codec` (post-fit quantization, ADR-0007).
+- **torch, autograd:** `gaussians` (RS + optional opacity + optional per-Gaussian scale caps,
+  ADR-0012), `render` (normalized default + additive, ADR-0006, exact CUDA variants, ADR-0011,
+  and gsplat comparator, sharing one accumulator where semantics match), `metrics`, `init`
+  (bridge), `fit` (selectable loss/optimizer/LR-schedule/split-mode), `pyramid`, `codec`
+  (post-fit quantization, ADR-0007).
 - **entry:** `cli` (`structsplat fit` / `ablation` / `stage-search`).
 
 ## Stage-search (ABL-002, protocol in ADR-0010)
@@ -57,6 +59,12 @@ init-strategy × budget sweep.
   axis (~3x forward speedup on a flanking init). Still fully differentiable; radii stay detached.
 - `render`/`conics` take an optional EWA-style `aa_dilation` (Sigma + d·I) low-pass for sub-pixel
   Gaussians — off by default; exact under RS since it only shifts the per-axis variances.
+- `renderer=cuda` and `renderer=cuda_additive` call StructSplat's owned exact CUDA extension for
+  the same clipped-support equations. `renderer=gsplat` is kept as a separate alpha/sum comparator
+  because it is not numerically equivalent to the normalized reference.
+- `scale_cap_mode=feature` gives each Gaussian a local support ceiling from the structure tensor's
+  feature run length. The fitter clamps optimized scales to the field-owned cap, preventing long
+  edge spikes without changing the renderer equation.
 
 ## Extension seams
 - Init strategies: `init.STRATEGIES` (the ablation variables).

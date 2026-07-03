@@ -123,7 +123,16 @@ Extend quadtree initialization with a Delaunay/ellipse or local second-moment pa
 
 Do not optimize the Python tile prototype further. Build a minimal CUDA/Triton/C++ extension or adapt `gsplat` for the current normalized/additive renderer. The goal is exact or near-exact parity on the 8-image benchmark, then measure fit-loop time.
 
-Status after implementation: StructSplat now has an owned CUDA extension for the exact clipped-support normalized and additive equations. `renderer=cuda` matches normalized reference output with mean absolute difference `4e-8` and max difference `5.4e-7` on the 512-Gaussian COCO parity smoke; `renderer=cuda_additive` matches additive with mean absolute difference `1.2e-7` and max difference `2.9e-6`. On the four-image COCO 80-iteration fit loop, exact CUDA reduced mean normalized wall time from `1.181s` to `0.181s` (`6.51x`) while preserving PSNR/MS-SSIM. The local conda `libstdc++` still requires `LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6` for CUDA extension loading.
+### 2026-07-02 Follow-up: Exact CUDA Renderer
+
+StructSplat now has an owned CUDA extension for the exact clipped-support normalized and additive
+equations. `renderer=cuda` matches normalized reference output with mean absolute difference
+`4e-8` and max difference `5.4e-7` on the 512-Gaussian COCO parity smoke; `renderer=cuda_additive`
+matches additive with mean absolute difference `1.2e-7` and max difference `2.9e-6`. On the
+four-image COCO 80-iteration fit loop, exact CUDA reduced mean normalized wall time from `1.181s`
+to `0.181s` (`6.51x`) while preserving PSNR/MS-SSIM. The local conda `libstdc++` still requires
+`LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6` for CUDA extension loading. See ARA evidence
+`cuda-exact-renderer-2026-07-02` / trace node `N15`.
 
 6. Metric-aligned search
 

@@ -16,8 +16,9 @@ The pieces exist separately in prior work (anisotropic blue noise; structured 2D
 error-driven densification) but not combined into a progressive 2D-Gaussian image codec. `structsplat`
 is a **placeholder name** — rename freely (see the `docs-sync` skill).
 
-> This is a PyTorch **research reference**. The sampler and rasterizer are the pieces later ported to
-> CUDA/Vulkan and into IntrinsicEngine as an RHI pass (`tasks/PORT-001`).
+> This is a PyTorch **research reference** with an opt-in exact CUDA extension for the same
+> normalized/additive equations. The remaining production port is a tiled CUDA/Vulkan/RHI path
+> (`tasks/PORT-001`, ADR-0011).
 
 ## Install
 ```bash
@@ -37,7 +38,7 @@ structsplat fit photo.png --pyramid --num-gaussians 20000
 # the core experiment: init strategy x budget sweep (writes results/summary.md)
 structsplat ablation ./images --budgets 2000 5000 10000 20000 --iters 1500 --target-psnr 35
 
-# full stage-combination screening: tensor/density/sampling/color/loss/refinement/pyramid
+# full stage-combination screening: tensor/density/sampling/color/scale-cap/renderer/loss/refinement/pyramid
 structsplat stage-search ./images --budgets 1024 2048 --iters 300 --outdir results/stage_search
 
 # per-stage influence: one-factor-at-a-time deltas vs the baseline (writes influence.md with
@@ -46,8 +47,12 @@ structsplat stage-search ./images --mode influence --budgets 2048 --seeds 0 1 2 
     --iters 500 --target-psnr 30 --outdir results/stage_influence
 ```
 Strategies: `random`, `grid`, `iso_blue_noise`, `aniso_onedge`, `aniso_flanking`.
+Additional quadtree strategies: `quadtree_aggregate`, `quadtree_hybrid`, `quadtree_wse`.
 Samplers: `wse` (blue noise), `dart_throwing` (Poisson disk), `halton`, `cvt`, `farthest_point`,
 `density_random`, `jittered_grid`.
+Renderers: `normalized`, `additive`, `cuda`, `cuda_additive`, `gsplat`. `cuda`/`cuda_additive`
+are exact StructSplat semantics; `gsplat` is a GaussianImage++-style alpha/sum comparator.
+Scale caps: `none`, `hard`, `feature` (ADR-0012).
 
 ## Agentic workflow (Claude Code)
 This repo is built to be implemented *with* Claude Code, mirroring the IntrinsicEngine setup.
@@ -68,7 +73,8 @@ src/structsplat/   structure_tensor, density, sampling (NumPy) · gaussians, ren
                    init, fit, pyramid, codec, cli (torch)
 tests/             pytest (NumPy tests run anywhere; torch tests skip without torch)
 benchmarks/        ablation.py (ABL-001), stage_search.py (ABL-002), rate_distortion.py
-                   (COMP-001), fitness hooks
+                   (COMP-001), coco_fit_compare.py, cross_repo_matrix_compare.py,
+                   optimization_followup.py, quadtree_init_compare.py, fitness hooks
 docs/              adr/ · architecture.md · theory.md
 tasks/             INDEX.md + task files
 ```

@@ -1,6 +1,6 @@
 # DOCS-001: Docs-sync backfill (post-merge staleness, missing ADRs, ara scaffold)
 
-**Status: todo.** From the 2026-07-03 repo review. The last feature commit (3f9646c, +4,942
+**Status: done.** From the 2026-07-03 repo review. The last feature commit (3f9646c, +4,942
 lines) bypassed the repo's own docs-sync rule: zero ADRs, zero task files, no INDEX updates.
 This task pays that debt in one pass.
 
@@ -28,30 +28,30 @@ This task pays that debt in one pass.
 Docs, tasks, ADRs, and the research trace describe the repository that actually exists.
 
 ## Acceptance criteria
-- [ ] MERGE-001 status reconciled (INDEX + task file agree; note records that the PR merged
+- [x] MERGE-001 status reconciled (INDEX + task file agree; note records that the PR merged
       before the confirmation gate, with the remaining gate re-stated).
-- [ ] PORT-001 updated to 'partial': records the existing exact (non-tiled) extension as an
+- [x] PORT-001 updated to 'partial': records the existing exact (non-tiled) extension as an
       interim milestone with its parity tests, and re-scopes remaining work — tiled/culled
       gather kernel, shared-memory reduction of backward partials, block sizing by tile area,
       exact ellipse–tile intersection (Speedy-Splat-style; AABBs are worst-case for this
       repo's signature anisotropic Gaussians), optional top-k normalized mode (Image-GS),
       deterministic-accumulation option, throughput targets, RHI port.
-- [ ] FIT-001's opacity checkbox closed with a pointer to the implementing commit/ADR-0009.
-- [ ] README / docs/architecture.md / benchmarks/README.md / ABL-002 refreshed: 8 strategies,
+- [x] FIT-001's opacity checkbox closed with a pointer to the implementing commit/ADR-0009.
+- [x] README / docs/architecture.md / benchmarks/README.md / ABL-002 refreshed: 8 strategies,
       7 sampling modes, 5 renderer modes, scale-cap axis, refinement modes, new benchmark
       scripts (one line each; BENCH-003 owns the deeper benchmark README).
-- [ ] ADR-0011 (owned exact CUDA renderer; gsplat comparator semantics) and ADR-0012
+- [x] ADR-0011 (owned exact CUDA renderer; gsplat comparator semantics) and ADR-0012
       (per-Gaussian scale caps) written; docs/architecture.md references them.
-- [ ] ara/: problem.md and claims.md written (the prose exists in README/theory.md; staged
+- [x] ara/: problem.md and claims.md written (the prose exists in README/theory.md; staged
       claims promoted or explicitly parked with caveats); PAPER.md layer index matches the
       directories that exist; evidence index gains entries for N13–N17 (commands,
       environment, key numbers) with one citation convention; blockers doc post-analysis
       updates moved to a dated addendum/trace link; pytest evidence entries annotated with
       the commit hash they ran against.
-- [ ] `grep -ri "todo" tasks/INDEX.md` matches only genuinely-open work.
+- [x] `grep -ri "todo" tasks/INDEX.md` matches only genuinely-open work.
 
 ## Interfaces touched
-`tasks/INDEX.md`, `tasks/MERGE-001*.md`, `tasks/PORT-001*.md`, `tasks/FIT-001*.md`,
+`tasks/INDEX.md`, `tasks/MERGE-001*.md`, `tasks/PORT-001*.md`, `tasks/done/FIT-001*.md`,
 `README.md`, `docs/architecture.md`, `docs/adr/0011-*.md` (new), `docs/adr/0012-*.md` (new),
 `docs/blockers_and_external_techniques.md`, `docs/comparison.md`, `benchmarks/README.md`,
 `ara/**`. Docs only — no code.

@@ -17,4 +17,6 @@
       all optimizer state and spiked the loss.
 - [x] Position LR retuned: the default `lr_means=2e-3` left Gaussians nearly frozen in pixel units
       (Adam step ≈ lr px/iter). See ADR-0008 and `benchmarks/` sweep.
-- [ ] Optional opacity parameterization.
+- [x] Optional opacity parameterization. Implemented via `opacity_mode='constant'`,
+      `GaussianField.opacity_values()`, renderer opacity threading, and `lr_opacity`; ADR-0009
+      keeps it opt-in rather than the production default.

@@ -13,10 +13,13 @@ measure the influence of each stage in isolation (quality, convergence rate, spe
 - Sampling: WSE, Poisson-disk dart throwing, Halton (density-warped), CVT/Lloyd,
   farthest-point, density-random, jittered-grid.
 - Initialization: flanking/on-edge/isotropic strategies, axis ratio, coherence,
-  orientation mode (tensor/random/zero), scale mode (spacing/uniform/knn), color mode.
-- Renderer: normalized, additive reference mode.
+  orientation mode (tensor/random/zero), scale mode (spacing/uniform/knn), scale-cap mode
+  (none/hard/feature), and color mode.
+- Renderer: normalized, additive, exact CUDA normalized, exact CUDA additive, and gsplat
+  comparator modes.
 - Fitting: L1/L2/Charbonnier, Adam/AdamW, none/step/cosine LR schedule.
-- Refinement: none, pruning, duplicate split, residual-add densification.
+- Refinement: none, pruning, duplicate/support-duplicate split, residual-add, and
+  residual-tensor-add densification.
 - Pyramid: single-stage or residual pyramid with prefix metrics.
 
 ## Acceptance criteria

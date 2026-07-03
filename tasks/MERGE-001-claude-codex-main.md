@@ -1,9 +1,10 @@
 # MERGE-001: Integrate Claude core optimizations and Codex stage search into main
 
-**Status: partial.** Integration branch `merge/claude-codex-structsplat` created; both branches
+**Status: partial.** Integration branch `merge/claude-codex-structsplat` was merged by PR #1
+(`f49aa18`) before the large COCO/CUDA confirmation gate completed. Both source branches were
 combined by a real git merge (both parents preserved) with the 8 shared core files resolved as a
-semantic merge (ADR-0009). Code-level acceptance criteria pass; the large COCO/CUDA confirmation is
-pending a GPU + dataset (see below). Merge to `main` by PR only after that run.
+semantic merge (ADR-0009). Code-level acceptance criteria pass; the remaining open item is the
+larger confirmation run below.
 
 ## Source branches
 - Claude optimized core: `origin/claude/approach-review-optimize-gkhhds` (`f465f57`).
@@ -50,7 +51,7 @@ The current screening evidence is:
 - [x] Re-run the screening with the combined branch and include both Claude defaults and Codex stage variants — run at reduced scale (4 local images, budget 512, 40 iters, max-side 160, **CPU**) since this environment has no GPU or COCO dataset; `structsplat stage-search` produced ranked JSON/CSV/summary and Claude's `aniso_flanking`/`aniso_onedge` init remained the top configs.
 - [~] Combined best config matches or exceeds Claude `flanking_split32` within tolerance (PSNR ≤0.10 dB, MS-SSIM ≤0.001, ≤25% slower): **cannot verify the exact numbers** without the original screening's image set/GPU; the merge preserves Claude's renderer/sampler/fitter code paths verbatim, so behavior is expected to match. Confirm in the COCO/CUDA run.
 - [~] Combined fast config matches or exceeds Claude `onedge` within tolerance — same caveat.
-- [ ] Re-run a larger confirmation: at least 20 COCO images, 512 and 1024 Gaussians, 3 seeds for finalist configs. **Blocked**: needs a GPU + the COCO val2017 dataset (neither present here). This is the remaining gate before merging to `main`.
+- [ ] Re-run a larger confirmation: at least 20 COCO images, 512 and 1024 Gaussians, 3 seeds for finalist configs. **Blocked**: needs a GPU + the COCO val2017 dataset. This is the remaining gate before closing MERGE-001; `main` already contains the integration via PR #1.
 - [x] Update `README.md`, `docs/architecture.md`, and relevant ADR/task files to state the chosen default and why (ADR-0009; INDEX/task statuses; README/architecture).
 - [x] Do not merge raw datasets, checkpoints, worktree folders, cache folders, or large run directories (screening outputs were written under the scratch dir, not the repo).
 
@@ -74,7 +75,7 @@ PYTHONPATH=src:. python -m structsplat.cli stage-search \
 ## Non-goals
 - Do not merge the parent OmniLatent training changes as part of this StructSplat task.
 - Do not pick a final publication-quality default from the 4-image screening alone.
-- Do not push directly to `main`; merge by PR after the acceptance criteria pass.
+- Historical process note: do not push directly to `main`; future follow-up fixes should still merge by PR.
 
 ## Depends on
 CORE-001/002, INIT-003/004, FIT-001, HIER-001, BENCH-001, ABL-002, COMP-001.
