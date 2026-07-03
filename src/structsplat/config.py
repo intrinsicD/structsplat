@@ -86,11 +86,14 @@ class FitConfig:
     prune_keep_min: int = 16
     split_every: int | None = None
     split_count: int = 0
-    split_mode: str = "duplicate"      # duplicate, support_duplicate, residual_add, residual_tensor_add
+    split_mode: str = "duplicate"      # duplicate, fp_duplicate, support_duplicate, residual_add, residual_tensor_add, ranked_wave
     split_scale: float = 0.7
     split_oversample: float = 1.0       # residual_add candidate multiplier before spacing NMS
     split_min_spacing: float = 0.0      # residual_add NMS radius = this * base densify scale
     split_color_init: str = "target"    # target or residual; additive renderers force residual
+    relocate_every: int | None = None
+    relocate_count: int = 0
+    relocate_init_opacity: float = 0.05  # low-alpha function-preserving warm start
     # residual_tensor_add anisotropy, mirroring InitConfig semantics so the densifier and the
     # init agree on what anisotropy means: ratio = 1 + (max_axis_ratio-1)*coherence**power.
     densify_max_axis_ratio: float = 6.0
@@ -115,6 +118,11 @@ class FitConfig:
         if self.split_color_init not in ("target", "residual"):
             raise ValueError(
                 f"split_color_init must be target or residual, got {self.split_color_init!r}")
+        if self.relocate_count < 0:
+            raise ValueError(f"relocate_count must be >= 0, got {self.relocate_count}")
+        if not 0.0 < self.relocate_init_opacity < 1.0:
+            raise ValueError(
+                f"relocate_init_opacity must be in (0, 1), got {self.relocate_init_opacity}")
 
 
 @dataclass

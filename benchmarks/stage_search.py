@@ -80,8 +80,9 @@ INFLUENCE_DEFAULTS: dict[str, tuple[str, ...]] = {
     "optimizers": ("adam", "adamw"),
     "lr_schedules": ("none", "cosine", "step"),
     "refine_modes": (
-        "none", "prune", "duplicate", "support_duplicate", "residual_add",
-        "residual_tensor_add", "residual_add_nms", "residual_tensor_add_nms",
+        "none", "prune", "duplicate", "fp_duplicate", "support_duplicate", "residual_add",
+        "residual_tensor_add", "ranked_wave", "relocate",
+        "residual_add_nms", "residual_tensor_add_nms",
         "residual_add_residual_color", "residual_tensor_add_residual_color",
         "residual_add_nms_residual_color", "residual_tensor_add_nms_residual_color",
         "prune_residual_add", "prune_residual_tensor_add",
@@ -180,9 +181,11 @@ def _refine_kwargs(mode: str, split_every: int | None, split_count: int,
                    prune_every: int | None, prune_min_activity: float) -> dict[str, Any]:
     split_variants: dict[str, dict[str, Any]] = {
         "duplicate": {"split_mode": "duplicate"},
+        "fp_duplicate": {"split_mode": "fp_duplicate"},
         "support_duplicate": {"split_mode": "support_duplicate"},
         "residual_add": {"split_mode": "residual_add"},
         "residual_tensor_add": {"split_mode": "residual_tensor_add"},
+        "ranked_wave": {"split_mode": "ranked_wave"},
         "residual_add_nms": {
             "split_mode": "residual_add",
             "split_min_spacing": 1.0,
@@ -221,6 +224,11 @@ def _refine_kwargs(mode: str, split_every: int | None, split_count: int,
             "prune_every": prune_every,
             "prune_min_activity": prune_min_activity,
         }
+    if mode == "relocate":
+        return {
+            "relocate_every": split_every,
+            "relocate_count": split_count,
+        }
     if mode in split_variants:
         return {
             "split_every": split_every,
@@ -236,11 +244,22 @@ def _refine_kwargs(mode: str, split_every: int | None, split_count: int,
             "split_mode": "residual_tensor_add"
             if mode == "prune_residual_tensor_add" else "residual_add",
         }
-    expected = ", ".join(["none", "prune", *split_variants,
+    expected = ", ".join(["none", "prune", "relocate", *split_variants,
                           "prune_residual_add", "prune_residual_tensor_add"])
     raise ValueError(
         f"unknown refine mode {mode!r}; expected one of: {expected}"
     )
+
+
+def _refine_adds_capacity(mode: str) -> bool:
+    return mode in {
+        "duplicate", "fp_duplicate", "support_duplicate", "residual_add",
+        "residual_tensor_add", "ranked_wave", "residual_add_nms",
+        "residual_tensor_add_nms", "residual_add_residual_color",
+        "residual_tensor_add_residual_color", "residual_add_nms_residual_color",
+        "residual_tensor_add_nms_residual_color", "prune_residual_add",
+        "prune_residual_tensor_add",
+    }
 
 
 def _scale_cap_kwargs(mode: str) -> dict[str, Any]:
@@ -362,6 +381,13 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
     history = out.get("history", {})
     iters_to_target = out.get("iters_to_target")
     fit_seconds = float(out.get("fit_seconds", 0.0))
+    split_events = history.get("split_events", [])
+    ranked_events = [e for e in split_events if e.get("mode") == "ranked_wave"]
+
+    def event_mean(key: str) -> float | None:
+        vals = [float(e[key]) for e in ranked_events if key in e]
+        return None if not vals else round(float(np.mean(vals)), 6)
+
     if cfg["pyramid"] == "pyramid":
         # fit_pyramid aggregates per-level fit time; the rest of the wall clock is the
         # interleaved init/density/tensor work, i.e. this mode's init cost
@@ -379,6 +405,12 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         "init_seconds": init_seconds,
         "fit_seconds": fit_seconds,
         "total_seconds": elapsed,
+        "split_event_count": len(split_events),
+        "ranked_wave_score_mean": event_mean("score_mean"),
+        "ranked_wave_residual_support_mean": event_mean("residual_support_mean"),
+        "ranked_wave_activity_mean": event_mean("activity_mean"),
+        "ranked_wave_footprint_mean": event_mean("footprint_mean"),
+        "relocate_event_count": len(history.get("relocate_events", [])),
         "history": history,
         "prefix_metrics": out.get("prefix_metrics"),
     }
@@ -542,7 +574,7 @@ def run_stage_search(
                     # they ran with up to +split_count more capacity than the baselines they rank
                     # against, confounding "refine wins" with extra capacity.
                     cap = budget if max_gaussians is None else max_gaussians
-                    adds = cfg["refine"] not in ("none", "prune")
+                    adds = _refine_adds_capacity(cfg["refine"])
                     init_budget = max(1, budget - split_count) if adds else budget
                     base_row = {
                         "image": image_name, "budget": budget, "seed": seed,

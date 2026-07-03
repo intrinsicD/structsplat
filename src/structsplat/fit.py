@@ -70,7 +70,8 @@ def _lr_factor(cfg: FitConfig, it: int, sched_offset: int = 0,
 
 
 def _carry_adam_state(opt_old, field: GaussianField, cfg: FitConfig,
-                      keep: torch.Tensor | None, n_new: int):
+                      keep: torch.Tensor | None, n_new: int,
+                      reset_idx: torch.Tensor | None = None):
     """Fresh optimizer for a restructured field, carrying Adam moments for survivors.
 
     Without this, every prune/split resets exp_avg/exp_avg_sq for ALL Gaussians and the
@@ -92,6 +93,10 @@ def _carry_adam_state(opt_old, field: GaussianField, cfg: FitConfig,
             pad = exp_avg.new_zeros((n_new,) + exp_avg.shape[1:])
             exp_avg = torch.cat([exp_avg, pad], dim=0)
             exp_sq = torch.cat([exp_sq, pad.clone()], dim=0)
+        if reset_idx is not None and reset_idx.numel() > 0:
+            ridx = reset_idx.to(device=exp_avg.device, dtype=torch.long)
+            exp_avg[ridx] = 0
+            exp_sq[ridx] = 0
         step = st["step"]
         opt_new.state[p_new] = {
             "step": step.clone() if torch.is_tensor(step) else step,
@@ -293,6 +298,187 @@ def _maybe_prune(field: GaussianField, cfg: FitConfig, H: int,
     return field.subset(keep), keep
 
 
+def _logit(p: torch.Tensor) -> torch.Tensor:
+    p = torch.clamp(p, 1e-4, 1.0 - 1e-4)
+    return torch.log(p / (1.0 - p))
+
+
+@torch.no_grad()
+def _major_axis(scales: torch.Tensor, theta: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    c, s = torch.cos(theta), torch.sin(theta)
+    x_axis = torch.stack([c, s], dim=1)
+    y_axis = torch.stack([-s, c], dim=1)
+    use_x = scales[:, 0] >= scales[:, 1]
+    direction = torch.where(use_x[:, None], x_axis, y_axis)
+    major = torch.where(use_x, scales[:, 0], scales[:, 1])
+    return direction, major
+
+
+@torch.no_grad()
+def _fp_duplicate_indices(field: GaussianField, idx: torch.Tensor, cfg: FitConfig,
+                          H: int, W: int) -> tuple[GaussianField, int]:
+    k = int(idx.numel())
+    if k <= 0:
+        return field, 0
+
+    means = field.means.detach().clone()
+    log_scales = field.log_scales.detach().clone()
+    rotations = field.rotations.detach().clone()
+    colors = field.colors.detach().clone()
+    scales = torch.exp(log_scales[idx])
+    theta = rotations[idx]
+    direction, major = _major_axis(scales, theta)
+    offset = direction * major[:, None]
+
+    child_means = means[idx].clone() + offset
+    means[idx] = means[idx] - offset
+    means[idx, 0].clamp_(0, W - 1)
+    means[idx, 1].clamp_(0, H - 1)
+    child_means[:, 0].clamp_(0, W - 1)
+    child_means[:, 1].clamp_(0, H - 1)
+
+    child_log_scales = log_scales[idx].clone() + math.log(cfg.split_scale)
+    log_scales[idx] = _clamp_new_log_scales(log_scales[idx] + math.log(cfg.split_scale),
+                                            None if field.scale_max is None
+                                            else field.scale_max.detach()[idx])
+    child_log_scales = _clamp_new_log_scales(
+        child_log_scales,
+        None if field.scale_max is None else field.scale_max.detach()[idx].clone(),
+    )
+    child_rotations = theta.clone()
+    child_colors = colors[idx].clone()
+
+    if field.opacities is None:
+        opacities = torch.full((field.n,), 10.0, device=means.device, dtype=means.dtype)
+        parent_opacity = torch.ones(k, device=means.device, dtype=means.dtype)
+    else:
+        opacities = field.opacities.detach().clone()
+        parent_opacity = torch.sigmoid(opacities[idx])
+    split_opacity = parent_opacity * 0.5
+    opacities[idx] = _logit(split_opacity)
+    child_opacities = _logit(split_opacity)
+
+    scale_max = None if field.scale_max is None else field.scale_max.detach().clone()
+    child_scale_max = None if field.scale_max is None else field.scale_max.detach()[idx].clone()
+    child = GaussianField(child_means, child_log_scales, child_rotations, child_colors,
+                          child_opacities, child_scale_max)
+    return GaussianField(means, log_scales, rotations, colors, opacities, scale_max).append(child), k
+
+
+@torch.no_grad()
+def _ranked_wave_scores(field: GaussianField, residual: torch.Tensor,
+                        cfg: FitConfig) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
+    H, W = residual.shape
+    support = _support_residual_scores(field, residual, cfg)
+    activity = gaussian_activity(
+        field.means, field.conics(cfg.aa_dilation),
+        field.radii(cfg.sigma_cutoff, cfg.aa_dilation), H, W, cfg.render_chunk,
+    )
+    opac = field.opacity_values()
+    if opac is not None:
+        activity = activity * opac
+    footprint = torch.exp(field.log_scales.detach()).prod(dim=1)
+
+    def norm(x: torch.Tensor) -> torch.Tensor:
+        return x / torch.clamp(torch.quantile(x.detach(), 0.9), min=1e-8)
+
+    support_n = norm(support)
+    activity_n = norm(activity)
+    footprint_n = norm(footprint)
+    score = support_n * torch.sqrt(torch.clamp(activity_n, min=0.0)) \
+        * torch.sqrt(torch.clamp(footprint_n, min=0.0))
+    return score, {
+        "residual_support": support,
+        "activity": activity,
+        "footprint": footprint,
+    }
+
+
+@torch.no_grad()
+def _ranked_wave_from_residual(field: GaussianField, target: torch.Tensor,
+                               render_img: torch.Tensor,
+                               cfg: FitConfig) -> tuple[GaussianField, int, dict[str, float]]:
+    if cfg.split_count <= 0:
+        return field, 0, {}
+    if cfg.max_gaussians is not None and field.n >= cfg.max_gaussians:
+        return field, 0, {}
+    H, W = target.shape[:2]
+    residual = (render_img - target).abs().mean(dim=2)
+    room = field.n if cfg.max_gaussians is None else max(0, cfg.max_gaussians - field.n)
+    k = min(cfg.split_count, field.n, room)
+    if k <= 0:
+        return field, 0, {}
+    score, components = _ranked_wave_scores(field, residual, cfg)
+    idx = torch.topk(score, k=k).indices
+    grown, added = _fp_duplicate_indices(field, idx, cfg, H, W)
+    stats = {
+        "score_mean": float(score[idx].mean().detach().cpu()),
+        "residual_support_mean": float(components["residual_support"][idx].mean().detach().cpu()),
+        "activity_mean": float(components["activity"][idx].mean().detach().cpu()),
+        "footprint_mean": float(components["footprint"][idx].mean().detach().cpu()),
+    }
+    return grown, added, stats
+
+
+@torch.no_grad()
+def _relocate_from_residual(field: GaussianField, target: torch.Tensor,
+                            render_img: torch.Tensor,
+                            cfg: FitConfig
+                            ) -> tuple[GaussianField, int, torch.Tensor | None, dict[str, float]]:
+    if cfg.relocate_count <= 0 or field.n <= 0:
+        return field, 0, None, {}
+    H, W = target.shape[:2]
+    k = min(cfg.relocate_count, field.n)
+    activity = gaussian_activity(
+        field.means, field.conics(cfg.aa_dilation),
+        field.radii(cfg.sigma_cutoff, cfg.aa_dilation), H, W, cfg.render_chunk,
+    )
+    opac = field.opacity_values()
+    if opac is not None:
+        activity = activity * opac
+    low_idx = torch.topk(-activity, k=k).indices
+
+    residual = (render_img - target).abs().mean(dim=2).reshape(-1)
+    base_scale = math.sqrt((H * W) / max(field.n, 1)) * cfg.split_scale
+    min_spacing = cfg.split_min_spacing * max(base_scale, _MIN_DENSIFY_SCALE)
+    pix = _spaced_topk_pixels(residual, W, k, min_spacing, cfg.split_oversample)
+    y = torch.div(pix, W, rounding_mode="floor")
+    x = pix - y * W
+    means = field.means.detach().clone()
+    log_scales = field.log_scales.detach().clone()
+    rotations = field.rotations.detach().clone()
+    colors = field.colors.detach().clone()
+    new_means = torch.stack([x.to(target.dtype), y.to(target.dtype)], dim=1)
+    means[low_idx] = new_means
+    base = max(base_scale, _MIN_DENSIFY_SCALE)
+    log_scales[low_idx] = math.log(base)
+    rotations[low_idx] = 0.0
+    if cfg.renderer in _ADDITIVE_RENDERERS:
+        colors[low_idx] = (target - render_img)[y, x]
+    else:
+        # Low-opacity children colored like the current normalized render add almost no visible
+        # jump, then the optimizer can move them toward the target residual.
+        colors[low_idx] = render_img[y, x]
+
+    if field.opacities is None:
+        opacities = torch.full((field.n,), 10.0, device=means.device, dtype=means.dtype)
+    else:
+        opacities = field.opacities.detach().clone()
+    opacities[low_idx] = _logit(torch.full((k,), cfg.relocate_init_opacity,
+                                           device=means.device, dtype=means.dtype))
+    scale_max = None if field.scale_max is None else field.scale_max.detach().clone()
+    if scale_max is not None:
+        nearest = _nearest_scale_caps(field, new_means)
+        if nearest is not None:
+            scale_max[low_idx] = nearest
+        log_scales[low_idx] = _clamp_new_log_scales(log_scales[low_idx], scale_max[low_idx])
+    stats = {
+        "activity_mean": float(activity[low_idx].mean().detach().cpu()),
+        "residual_mean": float(residual[pix].mean().detach().cpu()),
+    }
+    return GaussianField(means, log_scales, rotations, colors, opacities, scale_max), k, low_idx, stats
+
+
 @torch.no_grad()
 def _split_from_residual(field: GaussianField, target: torch.Tensor, render_img: torch.Tensor,
                          cfg: FitConfig) -> tuple[GaussianField, int]:
@@ -315,6 +501,8 @@ def _split_from_residual(field: GaussianField, target: torch.Tensor, render_img:
         return field, 0
 
     idx = torch.topk(scores, k=k).indices
+    if cfg.split_mode == "fp_duplicate":
+        return _fp_duplicate_indices(field, idx, cfg, H, W)
     means = field.means.detach()[idx].clone()
     scales = field.scales().detach()[idx]
     theta = field.rotations.detach()[idx]
@@ -401,7 +589,10 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
     opt = _make_optimizer(field, cfg)
     base_lrs = [g["lr"] for g in opt.param_groups]
     lo, hi = math.log(0.35), math.log(max(H, W))
-    hist = {"iter": [], "psnr": [], "loss": [], "n_gaussians": [], "elapsed": []}
+    hist = {
+        "iter": [], "psnr": [], "loss": [], "n_gaussians": [], "elapsed": [],
+        "split_events": [], "relocate_events": [],
+    }
     targets = _target_list(cfg)
     iters_to_targets = {str(t): None for t in targets}
     target_thresholds = None
@@ -461,6 +652,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
 
         keep = None
         added = 0
+        relocated = 0
+        reset_idx = None
         # never restructure on the final iteration: the returned field/metrics would include
         # Gaussians that no optimizer step ever touched
         last_it = it == cfg.iters - 1
@@ -469,10 +662,29 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             field, keep = _maybe_prune(field, cfg, H, W)
             if verbose and keep is not None:
                 print(f"  prune {int((~keep).sum())} -> {field.n} gaussians")
+        if (not last_it and cfg.relocate_every is not None and cfg.relocate_every > 0
+                and (it + 1) % cfg.relocate_every == 0):
+            field, relocated, reset_idx, relocate_stats = _relocate_from_residual(
+                field, target, img, cfg
+            )
+            if relocated > 0:
+                event = {"iter": it, "mode": "relocate", "count": relocated, **relocate_stats}
+                hist["relocate_events"].append(event)
+                if verbose:
+                    print(f"  relocate {relocated} gaussians")
         if (not last_it and cfg.split_every is not None and cfg.split_every > 0
                 and (it + 1) % cfg.split_every == 0):
-            if cfg.split_mode in ("duplicate", "support_duplicate"):
+            split_event = None
+            if cfg.split_mode in ("duplicate", "fp_duplicate", "support_duplicate"):
                 field, added = _split_from_residual(field, target, img, cfg)
+            elif cfg.split_mode == "ranked_wave":
+                field, added, ranked_stats = _ranked_wave_from_residual(field, target, img, cfg)
+                split_event = {
+                    "iter": it,
+                    "mode": cfg.split_mode,
+                    "added": added,
+                    **ranked_stats,
+                }
             elif cfg.split_mode in ("residual_add", "residual_tensor_add"):
                 field, added = _add_from_residual(
                     field, target, img, cfg, tensor_aligned=cfg.split_mode == "residual_tensor_add"
@@ -480,12 +692,17 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             else:
                 raise ValueError(
                     f"unknown split_mode {cfg.split_mode!r}; expected duplicate, "
-                    "support_duplicate, residual_add, or residual_tensor_add")
+                    "fp_duplicate, support_duplicate, residual_add, residual_tensor_add, "
+                    "or ranked_wave")
             if verbose and added > 0:
                 print(f"  split +{added} -> {field.n} gaussians")
-        if keep is not None or added > 0:
+            if added > 0:
+                hist["split_events"].append(
+                    split_event or {"iter": it, "mode": cfg.split_mode, "added": added}
+                )
+        if keep is not None or added > 0 or relocated > 0:
             field.trainable()
-            opt = _carry_adam_state(opt, field, cfg, keep, added)
+            opt = _carry_adam_state(opt, field, cfg, keep, added, reset_idx=reset_idx)
             base_lrs = [g["lr"] for g in opt.param_groups]
 
         if log_now:

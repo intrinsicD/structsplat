@@ -85,15 +85,20 @@ def test_refine_arms_do_not_exceed_cell_budget(tmp_path):
         color_modes=["bilinear"], scale_modes=["spacing"], scale_cap_modes=["none"],
         opacity_modes=["none"], renderers=["normalized"], pixel_losses=["l1"],
         optimizers=["adam"], lr_schedules=["none"],
-        refine_modes=["none", "residual_add", "residual_add_nms_residual_color", "duplicate"],
+        refine_modes=[
+            "none", "residual_add", "residual_add_nms_residual_color", "duplicate",
+            "fp_duplicate", "ranked_wave", "relocate",
+        ],
         pyramid_modes=["single"],
         split_every=2, split_count=8, render_chunk=8,
         outdir=str(tmp_path / "budget"), device="cpu",
     )
     assert rows and all(r["n_gaussians"] <= r["budget"] for r in rows)
     # adding arms start below budget and climb back to it (equal final capacity)
-    adds = [r for r in rows if r["refine"] != "none"]
+    adds = [r for r in rows if r["refine"] not in ("none", "relocate")]
     assert adds and all(r["init_budget"] < r["budget"] for r in adds)
+    relocate = [r for r in rows if r["refine"] == "relocate"]
+    assert relocate and all(r["init_budget"] == r["budget"] for r in relocate)
 
 
 def test_refine_kwargs_threads_fit004_modes():
@@ -111,6 +116,13 @@ def test_refine_kwargs_threads_fit004_modes():
     assert combined["split_min_spacing"] == 1.0
     assert combined["split_oversample"] == 8.0
     assert combined["split_color_init"] == "residual"
+
+    assert _refine_kwargs("fp_duplicate", 5, 7, None, 0.0)["split_mode"] == "fp_duplicate"
+    assert _refine_kwargs("ranked_wave", 5, 7, None, 0.0)["split_mode"] == "ranked_wave"
+    assert _refine_kwargs("relocate", 5, 7, None, 0.0) == {
+        "relocate_every": 5,
+        "relocate_count": 7,
+    }
 
 
 def test_config_json_is_written(tmp_path):

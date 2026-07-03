@@ -14,6 +14,7 @@ from structsplat.fit import (
     _lr_factor,
     _make_optimizer,
     _maybe_prune,
+    _relocate_from_residual,
     _split_from_residual,
     fit,
 )
@@ -264,6 +265,105 @@ def test_residual_add_color_init_is_configurable_and_additive_safe():
     assert torch.allclose(target_field.colors[-1, 0], torch.tensor(0.8), atol=1e-5)
     assert torch.allclose(residual_field.colors[-1, 0], torch.tensor(1.1), atol=1e-5)
     assert torch.allclose(additive_field.colors[-1, 0], torch.tensor(0.3), atol=1e-5)
+
+
+def test_fp_duplicate_has_small_immediate_psnr_dip():
+    from structsplat.render import render_field
+
+    img = np.zeros((32, 32, 3), np.float32)
+    img[:, :16] = [0.2, 0.4, 0.8]
+    img[:, 16:] = [0.9, 0.6, 0.1]
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="aniso_flanking", num_gaussians=48,
+                                              seed=0))
+    cfg = FitConfig(renderer="normalized", split_count=8, split_mode="fp_duplicate",
+                    max_gaussians=80, render_chunk=32)
+    before = render_field(field.means, field.conics(), field.colors, field.radii(3.0),
+                          32, 32, chunk=32, mode="normalized", opacities=field.opacity_values())
+    before_psnr = M.psnr(before, target)
+
+    grown, k = _split_from_residual(field, target, before, cfg)
+    after = render_field(grown.means, grown.conics(), grown.colors, grown.radii(3.0),
+                         32, 32, chunk=32, mode="normalized", opacities=grown.opacity_values())
+    after_psnr = M.psnr(after, target)
+
+    assert k == 8
+    assert after_psnr >= before_psnr - 0.05
+    assert grown.opacities is not None
+
+
+def test_ranked_wave_grows_exactly_and_logs_components():
+    img = np.zeros((20, 20, 3), np.float32)
+    img[:, 10:] = 1.0
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=12, seed=0))
+    out = fit(
+        field,
+        target,
+        FitConfig(
+            iters=5,
+            log_every=1,
+            split_every=2,
+            split_count=3,
+            split_mode="ranked_wave",
+            max_gaussians=18,
+        ),
+        verbose=False,
+    )
+
+    assert out["n_gaussians"] == 18
+    events = out["history"]["split_events"]
+    assert [e["added"] for e in events] == [3, 3]
+    assert all(e["mode"] == "ranked_wave" for e in events)
+    for key in ("score_mean", "residual_support_mean", "activity_mean", "footprint_mean"):
+        assert all(key in e and np.isfinite(e[key]) for e in events)
+
+
+def test_relocation_keeps_count_and_moves_low_activity_rows():
+    H, W = 20, 20
+    target = torch.zeros(H, W, 3)
+    target[15, 15] = 1.0
+    render_img = torch.zeros(H, W, 3)
+    means = np.array([[2.0, 2.0], [6.0, 2.0], [10.0, 2.0], [14.0, 2.0]], dtype=np.float32)
+    scales = np.full((4, 2), 1.0, dtype=np.float32)
+    colors = np.full((4, 3), 0.5, dtype=np.float32)
+    opacities = np.array([8.0, 8.0, -12.0, -12.0], dtype=np.float32)
+    field = GaussianField.from_numpy(means, scales, np.zeros(4), colors, opacities=opacities)
+
+    moved, k, reset_idx, stats = _relocate_from_residual(
+        field,
+        target,
+        render_img,
+        FitConfig(relocate_count=2, split_min_spacing=0.0),
+    )
+
+    assert k == 2
+    assert moved.n == field.n
+    assert reset_idx is not None and set(reset_idx.tolist()) == {2, 3}
+    assert torch.allclose(moved.means[reset_idx],
+                          torch.tensor([[15.0, 15.0], [0.0, 0.0]]),
+                          atol=1e-5)
+    assert moved.opacities is not None
+    assert torch.allclose(torch.sigmoid(moved.opacities[reset_idx]),
+                          torch.full((2,), 0.05), atol=1e-5)
+    assert stats["residual_mean"] > 0
+
+
+def test_fit_relocation_keeps_n_constant():
+    img = np.zeros((16, 16, 3), np.float32)
+    img[:, 8:] = 1.0
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=10, seed=0))
+    out = fit(
+        field,
+        target,
+        FitConfig(iters=5, log_every=1, relocate_every=2, relocate_count=3),
+        verbose=False,
+    )
+
+    assert out["n_gaussians"] == 10
+    assert out["history"]["relocate_events"]
+    assert all(n == 10 for n in out["history"]["n_gaussians"])
 
 
 def test_zero_opacity_gaussian_is_pruned():

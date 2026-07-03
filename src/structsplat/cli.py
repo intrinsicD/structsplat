@@ -71,6 +71,9 @@ def cmd_fit(args):
                      split_oversample=args.split_oversample,
                      split_min_spacing=args.split_min_spacing,
                      split_color_init=args.split_color_init,
+                     relocate_every=args.relocate_every,
+                     relocate_count=args.relocate_count,
+                     relocate_init_opacity=args.relocate_init_opacity,
                      max_gaussians=args.max_gaussians)
 
     if args.pyramid:
@@ -198,8 +201,8 @@ def main():
     f.add_argument("--split-every", type=int, default=None)
     f.add_argument("--split-count", type=int, default=0)
     f.add_argument("--split-mode",
-                   choices=["duplicate", "support_duplicate", "residual_add",
-                            "residual_tensor_add"],
+                   choices=["duplicate", "fp_duplicate", "support_duplicate", "residual_add",
+                            "residual_tensor_add", "ranked_wave"],
                    default="duplicate")
     f.add_argument("--split-scale", type=float, default=0.7)
     f.add_argument("--split-oversample", type=float, default=1.0,
@@ -208,6 +211,9 @@ def main():
                    help="residual-add spacing radius as a multiple of the densify base scale")
     f.add_argument("--split-color-init", choices=["target", "residual"], default="target",
                    help="color initialization for normalized residual-add children")
+    f.add_argument("--relocate-every", type=int, default=None)
+    f.add_argument("--relocate-count", type=int, default=0)
+    f.add_argument("--relocate-init-opacity", type=float, default=0.05)
     f.add_argument("--max-gaussians", type=int, default=None)
     f.add_argument("--seed", type=int, default=0)
     f.add_argument("--outdir", default="runs")

@@ -1,8 +1,8 @@
 # FIT-004: Densification & convergence upgrades (function-preserving growth, relocation, NMS)
 
-**Status: partial.** From the 2026-07-03 repo review + SOTA survey. These are
-quality/convergence improvements; each lands behind a config flag so ABL-002's stage axes stay
-comparable.
+**Status: partial; core modes implemented, stretch items open.** From the 2026-07-03 repo
+review + SOTA survey. These are quality/convergence improvements; each lands behind a config
+flag so ABL-002's stage axes stay comparable.
 
 ## Context
 The trace's own conclusion (O09) is that in-loop density control, not first placement, is the
@@ -41,13 +41,13 @@ fixed-N capacity allocation self-correcting.
 ## Acceptance criteria
 - [x] `_add_from_residual` oversamples k then applies greedy min-spacing suppression (spacing
       tied to base_scale); test: adds in one wave are pairwise separated.
-- [ ] Function-preserving `_split_from_residual` variant (weight-corrected, ±σ_major child
+- [x] Function-preserving `_split_from_residual` variant (weight-corrected, ±σ_major child
       placement) behind `split_mode='fp_duplicate'`; test: PSNR at the split iteration drops
       < 0.05 dB (vs the current visible dip).
 - [x] `color_init='residual'` option for normalized-renderer adds; benchmark slice recorded.
-- [ ] `split_mode='ranked_wave'`: composite score, exactly-K growth, score components logged
+- [x] `split_mode='ranked_wave'`: composite score, exactly-K growth, score components logged
       for the stage-influence harness.
-- [ ] `relocate_every`/`relocate_count` mode implemented with function-preserving rescale under
+- [x] `relocate_every`/`relocate_count` mode implemented with function-preserving rescale under
       the normalized renderer, reusing `_carry_adam_state`; N constant across the fit; test.
 - [x] Each new mode registered as a stage-search axis value (ABL-002) with a one-line
       description in benchmarks/README.md.
@@ -66,6 +66,18 @@ fixed-N capacity allocation self-correcting.
   residual_add_nms 21.3046 / 19.5909; residual_tensor_add 21.3282 / 19.5325;
   residual_tensor_add_nms 21.3822 / 19.6472. Residual color init alone was worse in this
   short slice; keep it as an experimental axis, not a default.
+- 2026-07-03 core completion: `fp_duplicate` half-opacity parent/child splitting, `ranked_wave`
+  composite parent scoring, and constant-N relocation are implemented with tests. Ranked-wave
+  rows expose `ranked_wave_score_mean`, `ranked_wave_residual_support_mean`,
+  `ranked_wave_activity_mean`, and `ranked_wave_footprint_mean` in stage-search outputs.
+- Benchmark slice:
+  `ara/evidence/fit004-fp-ranked-relocate-2026-07-03/` on four 160px COCO crops, budget 256,
+  seed 0, 60 iters, one +32 split/relocation wave at iter 30. Mean single-stage results:
+  no-refine 21.6899 PSNR / 20.1120 AUC; fp_duplicate 21.4186 / 19.6873;
+  residual_tensor_add_nms 21.3822 / 19.6472; relocate 21.3245 / 19.7765;
+  ranked_wave 21.3140 / 19.5506; residual_add_nms 21.3045 / 19.5909. These modes are useful
+  controls, but this short slice still does not justify enabling in-loop restructuring by
+  default.
 
 ## Interfaces touched
 `src/structsplat/fit.py`, `src/structsplat/config.py`, `benchmarks/stage_search.py`,
