@@ -1,0 +1,39 @@
+# ABL-003: Bisect the undiagnosed −0.794 dB flagship regression
+
+**Status: todo.** From the 2026-07-03 repo review. **Investigation task — gates trust in all
+post-merge tuning conclusions.**
+
+## Context
+The research trace records (ara/trace/exploration_tree.yaml, N03 → N04) that the flagship
+`aniso_flanking` config dropped from **24.833 dB to 24.039 dB (−0.794)** on the same
+four-image COCO benchmark (max-side 160, 512 Gaussians, 80 iters, seed 0) immediately after
+"the update" (the PR #2 merge window), while random-init baselines moved < 0.01 dB and
+Image-GS's analogue moved −0.455 dB (suggesting a shared-code change, e.g. renderer/fitter,
+not an init-only change). The regression was recorded but never diagnosed. Every subsequent
+"improvement" (N06: 24.29) is still below the pre-update number, so all post-merge tuning
+conclusions float on an unexplained baseline shift.
+
+## Goal
+Name the commit and mechanism behind the −0.794 dB shift; decide whether it was a real quality
+regression (fix it) or an intentional semantic change (document it and re-baseline the trace).
+
+## Acceptance criteria
+- [ ] Re-run the four-image benchmark at each of PR #2's commits (a455e98, ef730a9, 71fad3e)
+      plus the merge base; per-commit PSNR table recorded.
+- [ ] The offending change identified at the diff level and its mechanism explained (candidate
+      suspects worth checking first: the ef730a9 "correctness and experimental-validity fixes
+      across renderer, fit, pyramid, codec" — a correctness fix can legitimately lower
+      measured PSNR; and the a455e98 two_sided change).
+- [ ] Verdict recorded as a new trace node: either "regression, fixed in <commit>" (with the
+      recovered number) or "intentional semantic change, N03 and N04 are not comparators"
+      (with N03/before-update evidence entries annotated accordingly).
+- [ ] The four-image benchmark command + environment logged into `ara/evidence/` so the
+      bisect itself is reproducible.
+
+## Interfaces touched
+`ara/trace/exploration_tree.yaml`, `ara/staging/observations.yaml`, `ara/evidence/`;
+potentially a fix commit in `src/` depending on the verdict.
+
+## Depends on
+— (needs only git history + the existing coco_fit_compare/cross_repo harness; portable-path
+fix from BENCH-002 helps but a local dataset path override suffices).
