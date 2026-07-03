@@ -25,7 +25,10 @@ class GaussianField:
     def from_numpy(cls, means, scales, angles, colors, opacities=None, scale_max=None,
                    device="cpu", dtype=torch.float32):
         def t(a):
-            return torch.as_tensor(np.asarray(a), device=device, dtype=dtype)
+            # Always copy: torch.as_tensor is zero-copy for float32 CPU ndarrays, so without
+            # the clone an optimizer step would mutate the caller's init arrays in place
+            # (verified via np.shares_memory). The field owns its parameters (CORE-004).
+            return torch.as_tensor(np.asarray(a), device=device, dtype=dtype).clone()
 
         scales = np.clip(np.asarray(scales), 1e-3, None)
         opacity_t = None if opacities is None else t(opacities).reshape(-1)
@@ -125,6 +128,11 @@ class GaussianField:
         `dilation` adds an isotropic EWA-style low-pass to the covariance (Sigma + d*I);
         exact under RS since Sigma + d*I = R diag(sx^2+d, sy^2+d) R^T.
         """
+        if dilation < 0.0:
+            # A negative dilation can drive sx^2+d <= 0, giving negative inverse variances,
+            # exp overflow, and inf/inf = NaN through the normalized division. Fail loudly
+            # here rather than silently emitting NaN images mid-fit (CORE-004).
+            raise ValueError(f"dilation must be >= 0, got {dilation}")
         s = self.scales()
         inv_sx2 = 1.0 / (s[:, 0] ** 2 + dilation)
         inv_sy2 = 1.0 / (s[:, 1] ** 2 + dilation)
@@ -140,6 +148,8 @@ class GaussianField:
         # Sigma_xx = c^2 sx^2 + s^2 sy^2, Sigma_yy = s^2 sx^2 + c^2 sy^2; an elongated
         # Gaussian gets a tight rectangle instead of a square sized by its major axis.
         # Detached on purpose: radii only set the tile/bbox extent, never the loss gradient.
+        if dilation < 0.0:
+            raise ValueError(f"dilation must be >= 0, got {dilation}")
         with torch.no_grad():
             s2 = self.scales() ** 2 + dilation
             c = torch.cos(self.rotations)

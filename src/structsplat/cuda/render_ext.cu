@@ -17,10 +17,27 @@ __device__ __forceinline__ void support_bounds(
     int& y0,
     int& tx,
     int& ty) {
-  int ix = static_cast<int>(nearbyintf(means[i * 2 + 0]));
-  int iy = static_cast<int>(nearbyintf(means[i * 2 + 1]));
+  float mx = means[i * 2 + 0];
+  float my = means[i * 2 + 1];
+  // A NaN/Inf mean (e.g. a diverged fit) casts to INT_MAX and then ix+rx signed-overflows and
+  // wraps negative, defeating both clamps and producing a bogus positive tile size that reads
+  // out of bounds. Drop such Gaussians (empty tile), matching the reference's zero contribution.
+  if (!isfinite(mx) || !isfinite(my)) {
+    x0 = 0;
+    y0 = 0;
+    tx = 0;
+    ty = 0;
+    return;
+  }
   int rx = static_cast<int>(radii[i * 2 + 0]);
   int ry = static_cast<int>(radii[i * 2 + 1]);
+  // Clamp the rounded center into a range where ix +/- r cannot overflow int before the cast.
+  float fx = nearbyintf(mx);
+  float fy = nearbyintf(my);
+  fx = fminf(fmaxf(fx, static_cast<float>(-(rx + 1))), static_cast<float>(width + rx));
+  fy = fminf(fmaxf(fy, static_cast<float>(-(ry + 1))), static_cast<float>(height + ry));
+  int ix = static_cast<int>(fx);
+  int iy = static_cast<int>(fy);
   x0 = max(ix - rx, 0);
   int x1 = min(ix + rx, width - 1);
   y0 = max(iy - ry, 0);
@@ -228,26 +245,31 @@ std::vector<torch::Tensor> structsplat_render_forward_cuda(
   int h = static_cast<int>(height);
   int w = static_cast<int>(width);
   int pixels = h * w;
-  auto out_flat = torch::empty({pixels, 3}, means.options());
+  auto out_flat = torch::zeros({pixels, 3}, means.options());
   auto num = torch::zeros({pixels, 3}, means.options());
   auto den = torch::zeros({pixels}, means.options());
-  if (n > 0 && pixels > 0) {
+  if (pixels > 0) {
     cudaStream_t stream = at::cuda::getCurrentCUDAStream();
     constexpr int threads = 256;
-    accumulate_kernel<<<n, threads, 0, stream>>>(
-        means.data_ptr<float>(),
-        conics.data_ptr<float>(),
-        colors.data_ptr<float>(),
-        radii.data_ptr<int64_t>(),
-        opacities.numel() ? opacities.data_ptr<float>() : nullptr,
-        n,
-        h,
-        w,
-        opacities.numel() > 0,
-        normalize,
-        num.data_ptr<float>(),
-        den.data_ptr<float>());
-    C10_CUDA_KERNEL_LAUNCH_CHECK();
+    if (n > 0) {
+      accumulate_kernel<<<n, threads, 0, stream>>>(
+          means.data_ptr<float>(),
+          conics.data_ptr<float>(),
+          colors.data_ptr<float>(),
+          radii.data_ptr<int64_t>(),
+          opacities.numel() ? opacities.data_ptr<float>() : nullptr,
+          n,
+          h,
+          w,
+          opacities.numel() > 0,
+          normalize,
+          num.data_ptr<float>(),
+          den.data_ptr<float>());
+      C10_CUDA_KERNEL_LAUNCH_CHECK();
+    }
+    // Run finalize even when n == 0 so the output is defined zeros, matching the reference
+    // renderer (num/den are all-zero, so normalized -> 0 and additive -> 0). Previously the
+    // caller received uninitialized allocator memory for an empty field (CORE-004).
     int blocks = (pixels + threads - 1) / threads;
     finalize_kernel<<<blocks, threads, 0, stream>>>(
         num.data_ptr<float>(),

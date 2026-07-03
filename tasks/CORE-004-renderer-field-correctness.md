@@ -1,7 +1,9 @@
 # CORE-004: Renderer + GaussianField correctness fixes
 
-**Status: todo.** Confirmed defects from the 2026-07-03 repo review (each traced to the failing
-line; the first four were adversarially verified by execution).
+**Status: done.** Confirmed defects from the 2026-07-03 repo review (each traced to the failing
+line; the first four were adversarially verified by execution). CUDA-path fixes (N=0, support
+bounds, once_differentiable) are covered by parity tests that require a GPU to execute; the
+CPU-testable fixes (value-semantic `from_numpy`, dilation validation) are exercised directly.
 
 ## Context
 Four correctness bugs in the render/field layer, plus test-coverage gaps that let CUDA
@@ -33,18 +35,18 @@ The CUDA path degrades exactly as gracefully as the reference; field constructio
 semantics; invalid configs fail loudly at construction, not as NaNs mid-fit.
 
 ## Acceptance criteria
-- [ ] N=0 CUDA render returns zeros (run `finalize_kernel` unconditionally when `pixels > 0`,
+- [x] N=0 CUDA render returns zeros (run `finalize_kernel` unconditionally when `pixels > 0`,
       or early-return a zeros tensor); parity test `cuda(N=0) == reference(N=0)`.
-- [ ] `support_bounds` guards non-finite/out-of-range means (clamp the float into
+- [x] `support_bounds` guards non-finite/out-of-range means (clamp the float into
       `[-(rx+1), width+rx]` before the cast or compute in int64; early-out on `!isfinite`);
       test: a field containing a NaN/1e12 mean renders without illegal access and matches the
       reference's zero-contribution behavior.
-- [ ] `from_numpy` always copies (`torch.as_tensor(...).clone()` or `torch.tensor`); regression
+- [x] `from_numpy` always copies (`torch.as_tensor(...).clone()` or `torch.tensor`); regression
       test asserts `not np.shares_memory(...)` for float32 inputs including opacities/scale_max.
-- [ ] `dilation >= 0` validated (raise `ValueError`) in `conics()`/`radii()` or
+- [x] `dilation >= 0` validated (raise `ValueError`) in `conics()`/`radii()` or
       `FitConfig.__post_init__`; test asserts the raise.
-- [ ] `@torch.autograd.function.once_differentiable` on the CUDA backward.
-- [ ] CUDA parity tests parametrized over {normalized, additive} × {opacities on/off} ×
+- [x] `@torch.autograd.function.once_differentiable` on the CUDA backward.
+- [x] CUDA parity tests parametrized over {normalized, additive} × {opacities on/off} ×
       {dilation 0, 0.3}, including `opacities.grad` parity (currently only the
       normalized/no-opacity forward+backward pair is covered, `tests/test_render.py:63-114`).
 

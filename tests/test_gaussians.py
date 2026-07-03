@@ -47,6 +47,45 @@ def test_append_preserves_none_opacity_appearance():
     assert torch.allclose(ba.opacity_values()[3:], torch.ones(2), atol=1e-4)
 
 
+def test_from_numpy_copies_and_does_not_alias_caller():
+    # torch.as_tensor is zero-copy for float32 CPU ndarrays; from_numpy must clone so an
+    # optimizer step never mutates the caller's init arrays in place (CORE-004).
+    means = np.zeros((4, 2), dtype=np.float32)
+    scales = np.full((4, 2), 2.0, dtype=np.float32)
+    angles = np.zeros(4, dtype=np.float32)
+    colors = np.zeros((4, 3), dtype=np.float32)
+    opacities = np.ones(4, dtype=np.float32)
+    scale_max = np.full((4, 2), 5.0, dtype=np.float32)
+    g = GaussianField.from_numpy(means, scales, angles, colors,
+                                 opacities=opacities, scale_max=scale_max)
+    assert not np.shares_memory(g.means.numpy(), means)
+    assert not np.shares_memory(g.rotations.numpy(), angles)
+    assert not np.shares_memory(g.colors.numpy(), colors)
+    assert not np.shares_memory(g.opacities.numpy(), opacities)
+    assert not np.shares_memory(g.scale_max.numpy(), scale_max)
+    # mutating the field must leave the caller arrays untouched
+    with torch.no_grad():
+        g.means.add_(1.0)
+        g.colors.add_(1.0)
+    assert np.allclose(means, 0.0) and np.allclose(colors, 0.0)
+
+
+def test_fitconfig_rejects_negative_dilation():
+    from structsplat.config import FitConfig
+    with pytest.raises(ValueError, match="aa_dilation must be >= 0"):
+        FitConfig(aa_dilation=-0.1)
+    FitConfig(aa_dilation=0.0)  # valid
+
+
+def test_negative_dilation_raises():
+    g = GaussianField.from_numpy(np.zeros((3, 2)), np.full((3, 2), 2.0),
+                                 np.zeros(3), np.zeros((3, 3)))
+    with pytest.raises(ValueError, match="dilation must be >= 0"):
+        g.conics(dilation=-0.5)
+    with pytest.raises(ValueError, match="dilation must be >= 0"):
+        g.radii(3.0, dilation=-0.5)
+
+
 def test_opacity_save_load(tmp_path):
     g = GaussianField.from_numpy(np.zeros((3, 2)), np.full((3, 2), 2.0),
                                  np.zeros(3), np.zeros((3, 3)), opacities=np.ones(3))

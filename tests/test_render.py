@@ -114,6 +114,82 @@ def test_cuda_exact_backward_matches_reference_when_available():
         assert torch.allclose(got, exp, atol=2e-4, rtol=2e-4)
 
 
+@pytest.mark.parametrize("normalize", [True, False])
+@pytest.mark.parametrize("use_opacities", [False, True])
+@pytest.mark.parametrize("dilation", [0.0, 0.3])
+def test_cuda_exact_parity_matrix_when_available(normalize, use_opacities, dilation):
+    if not torch.cuda.is_available():
+        pytest.skip("CUDA not available")
+    rng = np.random.default_rng(7)
+    N, H, W = 20, 16, 18
+    means = np.stack([rng.uniform(-2, W + 2, N), rng.uniform(-2, H + 2, N)], 1)
+    scales = np.exp(rng.uniform(np.log(0.7), np.log(3.5), (N, 2)))
+    angles = rng.uniform(0, np.pi, N)
+    colors = rng.random((N, 3))
+    opac = rng.uniform(0.1, 1.0, N) if use_opacities else None
+    target = torch.rand(H, W, 3, device="cuda")
+    ref_mode = "normalized" if normalize else "additive"
+    cuda_mode = "cuda" if normalize else "cuda_additive"
+
+    def run(mode):
+        f = GaussianField.from_numpy(means, scales, angles, colors, opacities=opac,
+                                     device="cuda").trainable()
+        o = None if opac is None else f.opacity_values()
+        img = render_field(f.means, f.conics(dilation), f.colors,
+                           f.radii(3.0, dilation), H, W, mode=mode, opacities=o)
+        loss = (img - target).square().mean()
+        loss.backward()
+        torch.cuda.synchronize()
+        grads = [f.means.grad, f.log_scales.grad, f.colors.grad]
+        if opac is not None:
+            grads.append(f.opacities.grad)
+        return img.detach(), [g.detach() for g in grads]
+
+    try:
+        ref_img, ref_g = run(ref_mode)
+        cu_img, cu_g = run(cuda_mode)
+    except RuntimeError as exc:
+        pytest.skip(str(exc))
+    assert torch.allclose(cu_img, ref_img, atol=2e-4, rtol=2e-4)
+    for got, exp in zip(cu_g, ref_g, strict=True):
+        assert torch.allclose(got, exp, atol=3e-4, rtol=3e-4)
+
+
+def test_cuda_empty_field_matches_reference_zeros_when_available():
+    if not torch.cuda.is_available():
+        pytest.skip("CUDA not available")
+    H, W = 8, 9
+    empty = torch.zeros(0, 2, device="cuda")
+    conics = torch.zeros(0, 3, device="cuda")
+    colors = torch.zeros(0, 3, device="cuda")
+    radii = torch.zeros(0, 2, dtype=torch.long, device="cuda")
+    try:
+        ref = render_field(empty, conics, colors, radii, H, W, mode="normalized")
+        cu = render_field(empty, conics, colors, radii, H, W, mode="cuda")
+    except RuntimeError as exc:
+        pytest.skip(str(exc))
+    assert torch.count_nonzero(cu) == 0
+    assert torch.allclose(cu, ref)
+
+
+def test_cuda_nonfinite_mean_no_illegal_access_when_available():
+    if not torch.cuda.is_available():
+        pytest.skip("CUDA not available")
+    # A diverged fit can emit NaN / huge means; the CUDA path must drop them (zero support)
+    # instead of overflowing the tile bounds, matching the reference's off-image behavior.
+    H, W = 12, 12
+    means = np.array([[5.0, 5.0], [np.nan, 3.0], [1e12, 1e12]])
+    scales = np.full((3, 2), 1.5)
+    colors = np.ones((3, 3))
+    g = GaussianField.from_numpy(means, scales, np.zeros(3), colors, device="cuda")
+    try:
+        cu = render_field(g.means, g.conics(), g.colors, g.radii(3.0), H, W, mode="cuda")
+        torch.cuda.synchronize()
+    except RuntimeError as exc:
+        pytest.skip(str(exc))
+    assert torch.isfinite(cu).all()
+
+
 def _naive_render(g, H, W, opacities=None):
     """Dense O(N*H*W) reference: every Gaussian on every pixel, no support window."""
     ys, xs = torch.meshgrid(torch.arange(H, dtype=torch.float32),

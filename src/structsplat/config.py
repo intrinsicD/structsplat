@@ -82,6 +82,12 @@ class FitConfig:
     early_stop_min_delta: float = 0.0       # PSNR improvement required to reset patience
     early_stop_min_iters: int = 0           # do not early-stop before this iteration
 
+    def __post_init__(self):
+        # aa_dilation adds Sigma + d*I; a negative value yields negative inverse variances and
+        # NaN renders (CORE-004). Reject it at construction rather than mid-fit.
+        if self.aa_dilation < 0.0:
+            raise ValueError(f"aa_dilation must be >= 0, got {self.aa_dilation}")
+
 
 @dataclass
 class PyramidConfig:
