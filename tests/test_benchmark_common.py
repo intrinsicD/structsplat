@@ -105,6 +105,40 @@ def test_cross_repo_summary_keeps_zero_ok_method_cells_and_errors(tmp_path):
     assert "missing checkpoint" in text
 
 
+def test_cross_repo_grid_writes_with_missing_method_rows(tmp_path):
+    target = tmp_path / "target.png"
+    recon = tmp_path / "recon.png"
+    _write_toy(target, size=16)
+    _write_toy(recon, size=16)
+    selected = [{
+        "image": "toy",
+        "difficulty": "regular",
+        "source_path": str(target),
+        "selected_16": str(target),
+    }]
+    rows = [
+        {
+            **_cross_row("structsplat_current", "StructSplat current", status="ok"),
+            "max_side": 16,
+            "iters": 2,
+            "seed": 0,
+            "reconstruction_path": str(recon),
+            "n_gaussians": 8,
+        },
+        {
+            **_cross_row("instant_gi_quadtree", "Instant-GI qt", status="error"),
+            "max_side": 16,
+            "iters": 2,
+            "seed": 0,
+            "error": "RuntimeError: missing external dependency",
+        },
+    ]
+
+    cross._make_grid(rows, selected, tmp_path, 16, 2, 0, include_seed_in_name=False)
+
+    assert (tmp_path / "grids" / "comparison_16px_2it.png").exists()
+
+
 def test_stage_search_writer_preserves_summarize_bytes(tmp_path):
     row = {
         **{k: "baseline" for k in stage_search.STAGE_KEYS},

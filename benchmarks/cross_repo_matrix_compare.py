@@ -258,17 +258,39 @@ def _tile_with_label(img: Image.Image, title: str, subtitle: str, w: int, h: int
     return canvas
 
 
+def _blank_tile(w: int, h: int) -> Image.Image:
+    img = Image.new("RGB", (w, h), (242, 242, 242))
+    draw = ImageDraw.Draw(img)
+    draw.rectangle((0, 0, w - 1, h - 1), outline=(190, 190, 190))
+    try:
+        font = ImageFont.truetype("DejaVuSans.ttf", 12)
+    except Exception:
+        font = ImageFont.load_default()
+    text = "not available"
+    box = draw.textbbox((0, 0), text, font=font)
+    draw.text(((w - (box[2] - box[0])) / 2, (h - (box[3] - box[1])) / 2),
+              text, fill=(90, 90, 90), font=font)
+    return img
+
+
+def _grid_metric(row: dict[str, Any], key: str, digits: int) -> str:
+    value = row.get(key)
+    if value in (None, "", "None"):
+        return "-"
+    return f"{float(value):.{digits}f}"
+
+
 def _make_grid(rows: list[dict[str, Any]], selected: list[dict[str, Any]], outdir: Path,
                max_side: int, iters: int, seed: int, *, include_seed_in_name: bool) -> None:
-    subset = [
+    subset_all = [
         r for r in rows
-        if r["max_side"] == max_side and r["iters"] == iters and r["seed"] == seed
-        and r["status"] == "ok"
+        if int(r["max_side"]) == max_side and int(r["iters"]) == iters and int(r["seed"]) == seed
     ]
-    if len(subset) != len(selected) * len(METHODS):
+    subset_ok = [r for r in subset_all if r["status"] == "ok"]
+    if not subset_ok:
         return
-    by_key = {(r["image"], r["method"]): r for r in subset}
-    thumb_w, thumb_h, gap = 180, 132, 8
+    by_key = {(r["image"], r["method"]): r for r in subset_all}
+    thumb_w, thumb_h, gap = 220, 132, 8
     cols = 1 + len(METHODS)
     cell_h = thumb_h + 48
     grid = Image.new(
@@ -283,9 +305,18 @@ def _make_grid(rows: list[dict[str, Any]], selected: list[dict[str, Any]], outdi
         diff = "difficult" if item["difficulty"] == "difficult" else "regular"
         grid.paste(_tile_with_label(original, name, f"target | {diff}", thumb_w, thumb_h), (0, y))
         for midx, method in enumerate(METHODS, 1):
-            row = by_key[(item["image"], method)]
-            rec = Image.open(row["reconstruction_path"]).convert("RGB")
-            sub = f"{row['psnr']:.2f} dB | {row['ms_ssim']:.4f} | {row['n_gaussians']} G"
+            row = by_key.get((item["image"], method))
+            if row is None or row.get("status") != "ok":
+                rec = _blank_tile(thumb_w, thumb_h)
+                sub = "error | see summary" if row is not None else "missing"
+            else:
+                rec = Image.open(row["reconstruction_path"]).convert("RGB")
+                lpips = _grid_metric(row, "lpips", 3)
+                sub = (
+                    f"P {_grid_metric(row, 'psnr', 2)} | "
+                    f"MS {_grid_metric(row, 'ms_ssim', 4)} | "
+                    f"LP {lpips} | {int(row['n_gaussians'])}G"
+                )
             grid.paste(
                 _tile_with_label(rec, METHOD_LABELS[method], sub, thumb_w, thumb_h),
                 (midx * (thumb_w + gap), y),
