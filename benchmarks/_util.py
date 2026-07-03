@@ -8,6 +8,7 @@ method with zero ok rows yields ``None`` rather than raising ``StatisticsError``
 from __future__ import annotations
 
 import json
+import math
 import os
 from statistics import mean, pstdev
 
@@ -31,7 +32,11 @@ def package_versions() -> dict:
         import importlib.metadata as _m
         out["structsplat"] = _m.version("structsplat")
     except Exception:
-        out["structsplat"] = None
+        try:
+            import structsplat
+            out["structsplat"] = getattr(structsplat, "__version__", None)
+        except Exception:
+            out["structsplat"] = None
     return out
 
 
@@ -56,15 +61,39 @@ def write_config(outdir: str, config: dict, name: str = "config.json") -> None:
 
 def mean_or_none(vals):
     """Mean of a possibly-empty iterable; None instead of raising on empty (BENCH-002)."""
-    vals = [v for v in vals if v is not None]
+    vals = _clean_numbers(vals)
     return mean(vals) if vals else None
 
 
 def mean_std_or_none(vals):
-    vals = [v for v in vals if v is not None]
+    vals = _clean_numbers(vals)
     if not vals:
         return None, None
     return mean(vals), (pstdev(vals) if len(vals) > 1 else 0.0)
+
+
+def add_seed_args(parser) -> None:
+    """Add the benchmark seed axis while preserving the legacy single-seed flag."""
+    parser.add_argument("--seed", type=int, default=None,
+                        help="legacy single-seed alias; ignored when --seeds is supplied")
+    parser.add_argument("--seeds", type=int, nargs="+", default=None,
+                        help="random seeds to sweep; reports aggregate image x seed statistics")
+
+
+def resolve_seeds(seed: int | None = None, seeds: list[int] | tuple[int, ...] | None = None) -> list[int]:
+    """Resolve --seed/--seeds into a non-empty list; --seeds wins when both are supplied."""
+    resolved = list(seeds) if seeds is not None else ([seed] if seed is not None else [0])
+    if not resolved:
+        raise ValueError("at least one seed is required")
+    return [int(s) for s in resolved]
+
+
+def fmt_mean_std(vals, digits: int = 4) -> tuple[str, str]:
+    """Return formatted mean and population std cells for markdown/CSV summaries."""
+    m, s = mean_std_or_none(vals)
+    if m is None:
+        return "-", "-"
+    return f"{m:.{digits}f}", f"{s:.{digits}f}"
 
 
 def _jsonable(obj):
@@ -78,3 +107,15 @@ def _jsonable(obj):
     if hasattr(obj, "__dict__"):
         return {str(k): _jsonable(v) for k, v in vars(obj).items()}
     return str(obj)
+
+
+def _clean_numbers(vals):
+    out = []
+    for v in vals:
+        if v is None:
+            continue
+        fv = float(v)
+        if math.isnan(fv):
+            continue
+        out.append(fv)
+    return out

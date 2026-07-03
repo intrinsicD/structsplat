@@ -26,4 +26,5 @@ semantics per row.
 `coco_fit_compare.py`, `cross_repo_matrix_compare.py`, `optimization_followup.py`, and
 `quadtree_init_compare.py` are focused comparison/follow-up harnesses used by the ARA trace. They
 are intentionally narrower than `stage_search.py`; use them when reproducing the specific evidence
-entry that names them.
+entry that names them. Each accepts `--seeds` and reports aggregate mean/std over image x seed
+rows; `--seed` remains as a single-seed compatibility alias.

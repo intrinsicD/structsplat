@@ -292,18 +292,19 @@ def _run_matrix(images: list[Path], candidates: Iterable[Candidate], section: st
     rows = []
     candidates = list(candidates)
     for image in images:
-        for c in candidates:
-            print(f"[{section}] {image.stem} {c.label}", flush=True)
-            row, _, _, _ = run_candidate(
-                image, c, budget=args.budget, seed=args.seed, iters=args.iters,
-                max_side=args.max_side, render_chunk=args.render_chunk,
-                split_count=args.split_count, max_gaussians=args.max_gaussians,
-                device=args.device,
-            )
-            rows.append({"section": section, **row})
-            print(f"  psnr={row['psnr']:.3f} n={row['n_gaussians']} "
-                  f"fit={row['fit_seconds']:.2f}s total={row['total_seconds']:.2f}s "
-                  f"iters={row['iterations_run']}", flush=True)
+        for seed in args.seeds:
+            for c in candidates:
+                print(f"[{section}] {image.stem} seed={seed} {c.label}", flush=True)
+                row, _, _, _ = run_candidate(
+                    image, c, budget=args.budget, seed=seed, iters=args.iters,
+                    max_side=args.max_side, render_chunk=args.render_chunk,
+                    split_count=args.split_count, max_gaussians=args.max_gaussians,
+                    device=args.device,
+                )
+                rows.append({"section": section, **row})
+                print(f"  psnr={row['psnr']:.3f} n={row['n_gaussians']} "
+                      f"fit={row['fit_seconds']:.2f}s total={row['total_seconds']:.2f}s "
+                      f"iters={row['iterations_run']}", flush=True)
     return rows
 
 
@@ -377,44 +378,46 @@ def _time_call(fn, repeats: int = 8) -> tuple[float, torch.Tensor]:
 def run_spatial_benchmark(images: list[Path], args) -> list[dict]:
     rows = []
     for image in images[:args.spatial_images]:
-        print(f"[spatial] {image.stem} fitting {TOP1.label}", flush=True)
-        fit_row, field, fcfg, target = run_candidate(
-            image, TOP1, budget=args.budget, seed=args.seed, iters=args.iters,
-            max_side=args.max_side, render_chunk=args.render_chunk,
-            split_count=args.split_count, max_gaussians=args.max_gaussians,
-            device=args.device, return_field=True,
-        )
-        assert field is not None and fcfg is not None and target is not None
-        H, W = target.shape[:2]
-        # symmetric timing (BENCH-002): both closures under the SAME grad mode. render_tiled_forward
-        # is @torch.no_grad, so timing the reference WITH autograd graph construction inflated the
-        # reported speedup; a forward-speed benchmark measures both forwards under no_grad.
-        with torch.no_grad():
-            ref_s, ref_img = _time_call(
-                lambda: render_field(field.means, field.conics(fcfg.aa_dilation), field.colors,
-                                     field.radii(fcfg.sigma_cutoff, fcfg.aa_dilation), H, W,
-                                     fcfg.render_chunk, fcfg.renderer, field.opacity_values()),
-                repeats=args.render_repeats,
+        for seed in args.seeds:
+            print(f"[spatial] {image.stem} seed={seed} fitting {TOP1.label}", flush=True)
+            fit_row, field, fcfg, target = run_candidate(
+                image, TOP1, budget=args.budget, seed=seed, iters=args.iters,
+                max_side=args.max_side, render_chunk=args.render_chunk,
+                split_count=args.split_count, max_gaussians=args.max_gaussians,
+                device=args.device, return_field=True,
             )
-            tile_s, tile_img = _time_call(
-                lambda: render_tiled_forward(field, fcfg, H, W, args.tile_size),
-                repeats=args.render_repeats,
-            )
-        max_abs = float((ref_img - tile_img).abs().max().detach().cpu())
-        rows.append({
-            "section": "spatial_render",
-            "image": image.stem,
-            "width": W,
-            "height": H,
-            "n_gaussians": fit_row["n_gaussians"],
-            "reference_forward_seconds": round(ref_s, 6),
-            "tile_forward_seconds": round(tile_s, 6),
-            "tile_size": args.tile_size,
-            "speedup_vs_reference": round(ref_s / tile_s, 4) if tile_s > 0 else None,
-            "max_abs_diff": round(max_abs, 8),
-        })
-        print(f"  ref={ref_s:.5f}s tile={tile_s:.5f}s speedup={ref_s / tile_s:.3f} "
-              f"diff={max_abs:.2e}", flush=True)
+            assert field is not None and fcfg is not None and target is not None
+            H, W = target.shape[:2]
+            # symmetric timing (BENCH-002): both closures under the SAME grad mode. render_tiled_forward
+            # is @torch.no_grad, so timing the reference WITH autograd graph construction inflated the
+            # reported speedup; a forward-speed benchmark measures both forwards under no_grad.
+            with torch.no_grad():
+                ref_s, ref_img = _time_call(
+                    lambda: render_field(field.means, field.conics(fcfg.aa_dilation), field.colors,
+                                         field.radii(fcfg.sigma_cutoff, fcfg.aa_dilation), H, W,
+                                         fcfg.render_chunk, fcfg.renderer, field.opacity_values()),
+                    repeats=args.render_repeats,
+                )
+                tile_s, tile_img = _time_call(
+                    lambda: render_tiled_forward(field, fcfg, H, W, args.tile_size),
+                    repeats=args.render_repeats,
+                )
+            max_abs = float((ref_img - tile_img).abs().max().detach().cpu())
+            rows.append({
+                "section": "spatial_render",
+                "image": image.stem,
+                "seed": seed,
+                "width": W,
+                "height": H,
+                "n_gaussians": fit_row["n_gaussians"],
+                "reference_forward_seconds": round(ref_s, 6),
+                "tile_forward_seconds": round(tile_s, 6),
+                "tile_size": args.tile_size,
+                "speedup_vs_reference": round(ref_s / tile_s, 4) if tile_s > 0 else None,
+                "max_abs_diff": round(max_abs, 8),
+            })
+            print(f"  ref={ref_s:.5f}s tile={tile_s:.5f}s speedup={ref_s / tile_s:.3f} "
+                  f"diff={max_abs:.2e}", flush=True)
     return rows
 
 
@@ -464,9 +467,11 @@ def write_summary(outdir: Path, sections: dict[str, list[dict]], images: list[Pa
         f"- Held-out images: {len(images)}",
         f"- Budget: {args.budget}",
         f"- Iterations: {args.iters}",
+        f"- Seeds: {', '.join(str(s) for s in args.seeds)}",
         f"- Max side: {args.max_side}",
         f"- Render chunk: {args.render_chunk}",
         f"- Device: {args.device}",
+        "- Aggregate rows report mean and population std over image x seed runs.",
         "",
         "## Images",
         "",
@@ -484,12 +489,12 @@ def write_summary(outdir: Path, sections: dict[str, list[dict]], images: list[Pa
             "",
             "## Spatial Render Prototype",
             "",
-            "| Image | N | Ref forward s | Tile forward s | Speedup | Max abs diff |",
-            "|---|---:|---:|---:|---:|---:|",
+            "| Image | Seed | N | Ref forward s | Tile forward s | Speedup | Max abs diff |",
+            "|---|---:|---:|---:|---:|---:|---:|",
         ]
         for r in spatial:
             lines.append(
-                f"| `{r['image']}` | {r['n_gaussians']} | "
+                f"| `{r['image']}` | {r['seed']} | {r['n_gaussians']} | "
                 f"{r['reference_forward_seconds']:.6f} | {r['tile_forward_seconds']:.6f} | "
                 f"{r['speedup_vs_reference']:.4f} | {r['max_abs_diff']:.2e} |"
             )
@@ -505,7 +510,9 @@ def main() -> None:
     p.add_argument("--budget", type=int, default=512)
     p.add_argument("--iters", type=int, default=80)
     p.add_argument("--max-side", type=int, default=160)
-    p.add_argument("--seed", type=int, default=0)
+    from benchmarks._util import add_seed_args, resolve_seeds
+
+    add_seed_args(p)
     p.add_argument("--render-chunk", type=int, default=512)
     p.add_argument("--split-count", type=int, default=128)
     p.add_argument("--max-gaussians", type=int, default=None)
@@ -517,6 +524,8 @@ def main() -> None:
 
     if args.dataset_dir is None:
         raise SystemExit("--dataset-dir is required (path to the COCO train2014 images)")
+    args.seeds = resolve_seeds(args.seed, args.seeds)
+    args.seed = args.seeds[0]
     args.device = args.device or ("cuda" if torch.cuda.is_available() else "cpu")
     args.outdir.mkdir(parents=True, exist_ok=True)
     from benchmarks._util import run_config, write_config

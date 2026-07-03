@@ -121,11 +121,12 @@ def _scale_stats(field) -> dict:
     }
 
 
-def run_candidate(image_path: Path, c: Candidate, args) -> dict:
+def run_candidate(image_path: Path, c: Candidate, args, seed: int | None = None) -> dict:
+    seed = int(args.seed if seed is None else seed)
     img = _load_image(image_path, args.max_side)
     target = torch.as_tensor(img, dtype=torch.float32, device=args.device)
     icfg, fcfg, scfg = _make_configs(
-        c, args.budget, args.seed, args.iters, args.render_chunk,
+        c, args.budget, seed, args.iters, args.render_chunk,
         args.split_count, args.max_gaussians,
     )
     start = time.time()
@@ -159,7 +160,7 @@ def run_candidate(image_path: Path, c: Candidate, args) -> dict:
         "source_path": str(image_path),
         "candidate": c.label,
         "budget": args.budget,
-        "seed": args.seed,
+        "seed": seed,
         "strategy": c.strategy,
         "density": c.density,
         "sampling": c.sampling,
@@ -235,8 +236,10 @@ def write_summary(outdir: Path, rows: list[dict], images: list[Path], args) -> N
         f"- Images: {len(images)} held-out COCO train2014 files",
         f"- Budget: {args.budget}",
         f"- Iterations: {args.iters}",
+        f"- Seeds: {', '.join(str(s) for s in args.seeds)}",
         f"- Max side: {args.max_side}",
         f"- Device: {args.device}",
+        "- Aggregate rows report mean and population std over image x seed runs.",
         "",
         "## Images",
         "",
@@ -244,7 +247,7 @@ def write_summary(outdir: Path, rows: list[dict], images: list[Path], args) -> N
         "",
         "## Aggregate",
         "",
-        "| candidate | Runs | Init PSNR | Final PSNR | Std | MS-SSIM | AUC | Final max scale | Final p95 scale | Init s | Fit s | Total s |",
+        "| candidate | Runs | Init PSNR | Final PSNR | PSNR Std | MS-SSIM | AUC | Final max scale | Final p95 scale | Init s | Fit s | Total s |",
         "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for r in agg:
@@ -259,13 +262,14 @@ def write_summary(outdir: Path, rows: list[dict], images: list[Path], args) -> N
         "",
         "## Per Image",
         "",
-        "| image | candidate | Init PSNR | Final PSNR | MS-SSIM | Total s |",
-        "|---|---|---:|---:|---:|---:|",
+        "| image | seed | candidate | Init PSNR | Final PSNR | MS-SSIM | Total s |",
+        "|---|---:|---|---:|---:|---:|---:|",
     ]
     for row in rows:
         lines.append(
-            f"| `{row['image']}` | `{row['candidate']}` | {row['init_psnr']:.4f} | "
-            f"{row['psnr']:.4f} | {row['ms_ssim']:.5f} | {row['total_seconds']:.3f} |"
+            f"| `{row['image']}` | {row['seed']} | `{row['candidate']}` | "
+            f"{row['init_psnr']:.4f} | {row['psnr']:.4f} | {row['ms_ssim']:.5f} | "
+            f"{row['total_seconds']:.3f} |"
         )
     (outdir / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -279,7 +283,9 @@ def main() -> None:
     p.add_argument("--budget", type=int, default=512)
     p.add_argument("--iters", type=int, default=80)
     p.add_argument("--max-side", type=int, default=160)
-    p.add_argument("--seed", type=int, default=0)
+    from benchmarks._util import add_seed_args, resolve_seeds
+
+    add_seed_args(p)
     p.add_argument("--render-chunk", type=int, default=512)
     p.add_argument("--split-count", type=int, default=128)
     p.add_argument("--max-gaussians", type=int, default=None)
@@ -288,6 +294,8 @@ def main() -> None:
 
     if args.dataset_dir is None:
         raise SystemExit("--dataset-dir is required (path to the COCO train2014 images)")
+    args.seeds = resolve_seeds(args.seed, args.seeds)
+    args.seed = args.seeds[0]
     args.device = args.device or ("cuda" if torch.cuda.is_available() else "cpu")
     args.outdir.mkdir(parents=True, exist_ok=True)
     from benchmarks._util import run_config, write_config
@@ -295,15 +303,16 @@ def main() -> None:
     images = _select_images(args.dataset_dir, args.image_count)
     rows = []
     for image in images:
-        for c in _candidates():
-            print(f"[quadtree] {image.stem} {c.label}", flush=True)
-            row = run_candidate(image, c, args)
-            rows.append(row)
-            print(
-                f"  init={row['init_psnr']:.3f} final={row['psnr']:.3f} "
-                f"total={row['total_seconds']:.2f}s",
-                flush=True,
-            )
+        for seed in args.seeds:
+            for c in _candidates():
+                print(f"[quadtree] {image.stem} seed={seed} {c.label}", flush=True)
+                row = run_candidate(image, c, args, seed)
+                rows.append(row)
+                print(
+                    f"  init={row['init_psnr']:.3f} final={row['psnr']:.3f} "
+                    f"total={row['total_seconds']:.2f}s",
+                    flush=True,
+                )
     _write_rows(args.outdir / "quadtree_init_compare", rows)
     write_summary(args.outdir, rows, images, args)
     print(f"\nwrote quadtree comparison to {args.outdir}")

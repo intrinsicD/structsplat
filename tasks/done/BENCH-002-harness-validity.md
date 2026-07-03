@@ -1,6 +1,6 @@
 # BENCH-002: Benchmark harness experimental-validity fixes
 
-**Status: partial.** From the 2026-07-03 repo review. **This task gates every future sweep** —
+**Status: done.** From the 2026-07-03 repo review. **This task gates every future sweep** —
 conclusions drawn before these fixes are confounded. The budget-fairness item is the single
 highest-severity finding in the repo.
 
@@ -9,11 +9,12 @@ budget, `n_gaussians` per row), per-cell error isolation + resumable JSONL, `con
 (resolved args + device + versions) from every harness, best-config `fitness()`, the corrected
 `_canonicalize`, the reconciled `scale_cap=none` baseline, symmetric render timing, one clamped
 (display-referred) metric convention per cross-repo row, the GPU-nondeterminism caveat, and the
-removal of all `/home/...` defaults (Instant-GI via `STRUCTSPLAT_INSTANT_GI`). **Remaining:** a
+removal of all `/home/...` defaults (Instant-GI via `STRUCTSPLAT_INSTANT_GI`). The final
 multi-seed axis (`--seeds`, mean ± std) for the four cross-repo *comparison* scripts
 (`coco_fit_compare`, `cross_repo_matrix_compare`, `quadtree_init_compare`,
-`optimization_followup`) — those are single-seed and require COCO data + CUDA to exercise, so they
-are left as follow-up; the primary sweep harnesses (`ablation`, `stage_search`) already sweep seeds.
+`optimization_followup`) is now implemented with backwards-compatible `--seed` aliases and focused
+summary/aggregate tests. The primary sweep harnesses (`ablation`, `stage_search`) already sweep
+seeds.
 
 ## Context
 1. **Budget unfairness in refine arms (high).** `stage_search.py` and
@@ -76,7 +77,7 @@ own artifacts, statistically honest.
       best-config-per-strategy.
 - [x] `_canonicalize` pins restricted to strategies that actually route through
       `_blue_noise_positions`; unit test enumerating quadtree × sampling combinations.
-- [ ] Comparison scripts accept `--seeds` and report mean ± std across images × seeds. (follow-up)
+- [x] Comparison scripts accept `--seeds` and report mean ± std across images × seeds.
 - [x] Timing comparisons run both closures under the same grad mode with symmetric setup.
 - [x] Dataset/Instant-GI paths are CLI arguments with clear skip behavior; no `/home/alex`
       defaults anywhere (`grep -r /home/alex benchmarks/` is empty).
@@ -88,6 +89,8 @@ own artifacts, statistically honest.
 `benchmarks/ablation.py`, `benchmarks/stage_search.py`, `benchmarks/optimization_followup.py`,
 `benchmarks/coco_fit_compare.py`, `benchmarks/cross_repo_matrix_compare.py`,
 `benchmarks/rate_distortion.py`, `tests/test_ablation.py`, `tests/test_stage_search.py`.
+Final seed-axis follow-up also touched `benchmarks/_util.py`, the four comparison scripts, and
+`tests/test_benchmark_seed_axis.py`.
 
 ## Depends on
 — (gates ABL-004; do first).

@@ -228,7 +228,8 @@ def _tile_with_label(img: Image.Image, title: str, subtitle: str, w: int, h: int
     return canvas
 
 
-def _make_grid(rows: list[dict], selected: list[dict], outdir: Path) -> None:
+def _make_grid(rows: list[dict], selected: list[dict], outdir: Path, seed: int,
+               *, include_seed_in_name: bool) -> None:
     methods = METHODS
     thumb_w = 180
     thumb_h = 135
@@ -237,7 +238,7 @@ def _make_grid(rows: list[dict], selected: list[dict], outdir: Path) -> None:
     cell_h = thumb_h + 42
     grid = Image.new("RGB", (cols * thumb_w + (cols - 1) * gap, len(selected) * cell_h + (len(selected) - 1) * gap), "white")
 
-    by_image_method = {(r["image"], r["method"]): r for r in rows}
+    by_image_method = {(r["image"], r["method"]): r for r in rows if r["seed"] == seed}
     for ridx, item in enumerate(selected):
         y = ridx * (cell_h + gap)
         original = Image.open(item["selected_path"]).convert("RGB")
@@ -250,10 +251,12 @@ def _make_grid(rows: list[dict], selected: list[dict], outdir: Path) -> None:
             title = METHOD_LABELS[method]
             subtitle = f"{row['psnr']:.2f} dB | {row['n_gaussians']} G"
             grid.paste(_tile_with_label(rec, title, subtitle, thumb_w, thumb_h), (midx * (thumb_w + gap), y))
-    grid.save(outdir / "comparison_grid.png")
+    name = f"comparison_grid_seed{seed}.png" if include_seed_in_name else "comparison_grid.png"
+    grid.save(outdir / name)
 
 
-def _write_summary(rows: list[dict], selected: list[dict], outdir: Path, budget: int, iters: int, max_side: int) -> None:
+def _write_summary(rows: list[dict], selected: list[dict], outdir: Path, budget: int,
+                   iters: int, max_side: int, seeds: list[int]) -> None:
     lines = [
         "# COCO Fit Comparison",
         "",
@@ -263,7 +266,9 @@ def _write_summary(rows: list[dict], selected: list[dict], outdir: Path, budget:
         f"- Max side: {max_side}px",
         f"- Budget: {budget} Gaussians cap",
         f"- Iterations: {iters}",
+        f"- Seeds: {', '.join(str(s) for s in seeds)}",
         f"- Device: {'cuda' if torch.cuda.is_available() else 'cpu'}",
+        "- Aggregate rows report mean and population std over image x seed runs.",
         "",
         "## Method Mapping",
         "",
@@ -274,30 +279,33 @@ def _write_summary(rows: list[dict], selected: list[dict], outdir: Path, budget:
         "",
         "## Mean Metrics",
         "",
-        "| Method | Mean PSNR | Mean MS-SSIM | Mean seconds |",
-        "|---|---:|---:|---:|",
+        "| Method | Runs | Mean PSNR | PSNR Std | Mean MS-SSIM | MS-SSIM Std | Mean seconds | Seconds Std |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
-    from benchmarks._util import mean_or_none
+    from benchmarks._util import fmt_mean_std
 
-    def _f(vals, key, spec):
-        m = mean_or_none(r[key] for r in vals)
-        return "-" if m is None else format(m, spec)
+    def _ms(vals, key, digits):
+        return fmt_mean_std((r[key] for r in vals), digits)
 
     for method in METHODS:
         vals = [r for r in rows if r["method"] == method]
         # a method with zero ok rows (e.g. Instant-GI unavailable) must not raise StatisticsError
         # and void the whole run (BENCH-002)
+        psnr_m, psnr_s = _ms(vals, "psnr", 3)
+        ms_m, ms_s = _ms(vals, "ms_ssim", 5)
+        sec_m, sec_s = _ms(vals, "fit_seconds", 2)
         lines.append(
-            f"| {METHOD_LABELS[method]} | {_f(vals, 'psnr', '.3f')} | "
-            f"{_f(vals, 'ms_ssim', '.5f')} | {_f(vals, 'fit_seconds', '.2f')} |"
+            f"| {METHOD_LABELS[method]} | {len(vals)} | {psnr_m} | {psnr_s} | "
+            f"{ms_m} | {ms_s} | {sec_m} | {sec_s} |"
         )
     lines += ["", "## Per-Image PSNR", "", "| Image | " + " | ".join(METHOD_LABELS[m] for m in METHODS) + " |"]
     lines.append("|---|" + "---:|" * len(METHODS))
     for item in selected:
         cells = []
         for method in METHODS:
-            row = next(r for r in rows if r["image"] == item["image"] and r["method"] == method)
-            cells.append(f"{row['psnr']:.2f}")
+            vals = [r for r in rows if r["image"] == item["image"] and r["method"] == method]
+            mean_cell, std_cell = fmt_mean_std((r["psnr"] for r in vals), 2)
+            cells.append("-" if mean_cell == "-" else f"{mean_cell} ({std_cell})")
         lines.append(f"| {item['image']} | " + " | ".join(cells) + " |")
     lines += [
         "",
@@ -319,15 +327,19 @@ def run(
     budget: int,
     iters: int,
     max_side: int,
-    seed: int,
+    seed: int | None = None,
     device: str | None = None,
+    seeds: list[int] | tuple[int, ...] | None = None,
 ) -> list[dict]:
+    from benchmarks._util import resolve_seeds
+
+    seeds = resolve_seeds(seed, seeds)
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     outdir.mkdir(parents=True, exist_ok=True)
     from benchmarks._util import run_config, write_config
     write_config(str(outdir), run_config({
         "dataset_dir": str(dataset_dir), "image_names": image_names, "budget": budget,
-        "iters": iters, "max_side": max_side, "seed": seed,
+        "iters": iters, "max_side": max_side, "seeds": seeds,
     }, device=device))
     selected_dir = outdir / "selected"
     recon_dir = outdir / "reconstructions"
@@ -353,58 +365,66 @@ def run(
         _save_image(img, resized_path)
         selected.append({"image": stem, "source_path": str(src), "selected_path": str(resized_path)})
         target = _target_tensor(img, device)
-        for method in METHODS:
-            print(f"[{stem}] {METHOD_LABELS[method]} budget={budget} iters={iters}", flush=True)
-            try:
-                rec = _fit_method(method, img, resized_path, target, budget, seed, base_fit, scfg, device)
-                recon_path = recon_dir / f"{stem}_{method}.png"
-                _save_image(rec.pop("render"), recon_path)
-                hist = rec.pop("history")
-                row = {
-                    "image": stem,
-                    "source_path": str(src),
-                    "width": img.shape[1],
-                    "height": img.shape[0],
-                    "budget": budget,
-                    "iters": iters,
-                    "seed": seed,
-                    **rec,
-                    "reconstruction_path": str(recon_path),
-                    "history": hist,
-                    "status": "ok",
-                    "error": "",
-                }
-            except Exception as exc:
-                row = {
-                    "image": stem,
-                    "source_path": str(src),
-                    "width": img.shape[1],
-                    "height": img.shape[0],
-                    "budget": budget,
-                    "iters": iters,
-                    "seed": seed,
-                    "method": method,
-                    "method_label": METHOD_LABELS[method],
-                    "method_note": METHOD_NOTES[method],
-                    "start_gaussians": 0,
-                    "n_gaussians": 0,
-                    "psnr": float("nan"),
-                    "ssim": float("nan"),
-                    "ms_ssim": float("nan"),
-                    "fit_seconds": 0.0,
-                    "reconstruction_path": "",
-                    "history": {},
-                    "status": "error",
-                    "error": f"{type(exc).__name__}: {exc}",
-                }
-                print(f"  ERROR {row['error']}", flush=True)
-            rows.append(row)
-            if row["status"] == "ok":
+        for seed_value in seeds:
+            for method in METHODS:
                 print(
-                    f"  psnr={row['psnr']:.3f} ms_ssim={row['ms_ssim']:.5f} "
-                    f"n={row['n_gaussians']} sec={row['fit_seconds']:.2f}",
+                    f"[{stem}] seed={seed_value} {METHOD_LABELS[method]} "
+                    f"budget={budget} iters={iters}",
                     flush=True,
                 )
+                try:
+                    rec = _fit_method(
+                        method, img, resized_path, target, budget, seed_value, base_fit, scfg,
+                        device,
+                    )
+                    recon_path = recon_dir / f"{stem}_seed{seed_value}_{method}.png"
+                    _save_image(rec.pop("render"), recon_path)
+                    hist = rec.pop("history")
+                    row = {
+                        "image": stem,
+                        "source_path": str(src),
+                        "width": img.shape[1],
+                        "height": img.shape[0],
+                        "budget": budget,
+                        "iters": iters,
+                        "seed": seed_value,
+                        **rec,
+                        "reconstruction_path": str(recon_path),
+                        "history": hist,
+                        "status": "ok",
+                        "error": "",
+                    }
+                except Exception as exc:
+                    row = {
+                        "image": stem,
+                        "source_path": str(src),
+                        "width": img.shape[1],
+                        "height": img.shape[0],
+                        "budget": budget,
+                        "iters": iters,
+                        "seed": seed_value,
+                        "method": method,
+                        "method_label": METHOD_LABELS[method],
+                        "method_note": METHOD_NOTES[method],
+                        "start_gaussians": 0,
+                        "n_gaussians": 0,
+                        "psnr": float("nan"),
+                        "ssim": float("nan"),
+                        "ms_ssim": float("nan"),
+                        "fit_seconds": 0.0,
+                        "reconstruction_path": "",
+                        "history": {},
+                        "status": "error",
+                        "error": f"{type(exc).__name__}: {exc}",
+                    }
+                    print(f"  ERROR {row['error']}", flush=True)
+                rows.append(row)
+                if row["status"] == "ok":
+                    print(
+                        f"  psnr={row['psnr']:.3f} ms_ssim={row['ms_ssim']:.5f} "
+                        f"n={row['n_gaussians']} sec={row['fit_seconds']:.2f}",
+                        flush=True,
+                    )
 
     json_rows = [{k: v for k, v in r.items() if k != "history"} for r in rows]
     (outdir / "metrics.json").write_text(json.dumps(json_rows, indent=2), encoding="utf-8")
@@ -414,9 +434,11 @@ def run(
         writer.writeheader()
         writer.writerows(json_rows)
     ok_rows = [r for r in rows if r["status"] == "ok"]
-    if len(ok_rows) == len(rows):
-        _make_grid(ok_rows, selected, outdir)
-    _write_summary(ok_rows, selected, outdir, budget, iters, max_side)
+    for seed_value in seeds:
+        seed_rows = [r for r in ok_rows if r["seed"] == seed_value]
+        if len(seed_rows) == len(selected) * len(METHODS):
+            _make_grid(ok_rows, selected, outdir, seed_value, include_seed_in_name=len(seeds) > 1)
+    _write_summary(ok_rows, selected, outdir, budget, iters, max_side, seeds)
     return rows
 
 
@@ -431,12 +453,17 @@ def main() -> None:
     p.add_argument("--budget", type=int, default=768)
     p.add_argument("--iters", type=int, default=120)
     p.add_argument("--max-side", type=int, default=192)
-    p.add_argument("--seed", type=int, default=0)
+    from benchmarks._util import add_seed_args, resolve_seeds
+
+    add_seed_args(p)
     p.add_argument("--device", default=None)
     args = p.parse_args()
     if args.dataset_dir is None:
         raise SystemExit("--dataset-dir is required (path to the COCO train2014 images)")
-    run(args.dataset_dir, args.outdir, args.images, args.budget, args.iters, args.max_side, args.seed, args.device)
+    run(
+        args.dataset_dir, args.outdir, args.images, args.budget, args.iters, args.max_side,
+        args.seed, args.device, resolve_seeds(args.seed, args.seeds),
+    )
 
 
 if __name__ == "__main__":
