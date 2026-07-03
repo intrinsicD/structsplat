@@ -98,7 +98,7 @@ def _neighbor_pairs(points: np.ndarray, r_i: np.ndarray, metric: np.ndarray | No
     cid = gxy[:, 1] * ncx + gxy[:, 0]
     order = np.argsort(cid, kind="stable")
     cid_sorted = cid[order]
-    starts = np.searchsorted(cid_sorted, np.arange(ncx * ncy, dtype=np.int64))
+    occupied, starts = np.unique(cid_sorted, return_index=True)
     counts = np.diff(np.append(starts, M))
     k = int(np.ceil(reach_max / cell))
 
@@ -119,11 +119,18 @@ def _neighbor_pairs(points: np.ndarray, r_i: np.ndarray, metric: np.ndarray | No
                 continue
             src = src0[ok]
             pc = gy[ok] * ncx + gx[ok]
-            cnt = counts[pc]
-            nz = cnt > 0
-            if not nz.any():
+            pos = np.searchsorted(occupied, pc)
+            in_range = pos < len(occupied)
+            if not in_range.any():
                 continue
-            src, ptr, cnt = src[nz], starts[pc[nz]], cnt[nz]
+            pc_in = pc[in_range]
+            pos_in = pos[in_range]
+            matched = occupied[pos_in] == pc_in
+            if not matched.any():
+                continue
+            src = src[in_range][matched]
+            ptr = starts[pos_in[matched]]
+            cnt = counts[pos_in[matched]]
             recv = np.repeat(src, cnt)
             ends = np.cumsum(cnt)
             within = np.arange(int(ends[-1])) - np.repeat(ends - cnt, cnt)

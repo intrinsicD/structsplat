@@ -40,6 +40,76 @@ def _nn_axis_ratio(kept):
     return np.abs(disp[:, 0]).mean() / np.abs(disp[:, 1]).mean()
 
 
+def _brute_neighbor_pairs(points, r_i, metric, alpha):
+    recv_all, ctrb_all, w_all = [], [], []
+    for recv in range(len(points)):
+        for ctrb in range(len(points)):
+            if recv == ctrb:
+                continue
+            dv = points[recv] - points[ctrb]
+            if metric is None:
+                d2 = dv[0] ** 2 + dv[1] ** 2
+            else:
+                Mm = 0.5 * (metric[recv] + metric[ctrb])
+                d2 = (Mm[0, 0] * dv[0] ** 2 + 2.0 * Mm[0, 1] * dv[0] * dv[1]
+                      + Mm[1, 1] * dv[1] ** 2)
+            two_r = 2.0 * r_i[recv]
+            if d2 < two_r * two_r:
+                d = np.sqrt(max(d2, 0.0))
+                recv_all.append(recv)
+                ctrb_all.append(ctrb)
+                w_all.append((1.0 - d / two_r) ** alpha)
+    return (
+        np.asarray(recv_all, dtype=np.int64),
+        np.asarray(ctrb_all, dtype=np.int64),
+        np.asarray(w_all, dtype=np.float64),
+    )
+
+
+def _sort_pairs(recv, ctrb, w):
+    order = np.lexsort((ctrb, recv))
+    return recv[order], ctrb[order], w[order]
+
+
+def test_neighbor_pairs_match_bruteforce_on_sparse_occupied_cells():
+    points = np.array([
+        [0.0, 0.0],
+        [6.0, 0.0],
+        [0.0, 7.0],
+        [1_000_000.0, 1_000_000.0],
+        [1_000_006.0, 1_000_000.0],
+        [2_000_000.0, 4.0],
+    ])
+    r_i = np.array([5.0, 5.5, 4.0, 5.0, 5.5, 3.0])
+    actual = _sort_pairs(*sa._neighbor_pairs(points, r_i, metric=None, alpha=3.0))
+    expected = _sort_pairs(*_brute_neighbor_pairs(points, r_i, metric=None, alpha=3.0))
+
+    assert np.array_equal(actual[0], expected[0])
+    assert np.array_equal(actual[1], expected[1])
+    assert np.allclose(actual[2], expected[2])
+
+
+def test_neighbor_pairs_match_bruteforce_with_metric():
+    points = np.array([
+        [0.0, 0.0],
+        [3.0, 0.2],
+        [0.3, 4.0],
+        [7.0, 7.0],
+        [10.0, 7.5],
+    ])
+    r_i = np.array([2.6, 2.8, 2.5, 3.0, 2.7])
+    metric = sa.anisotropy_metric(
+        np.array([0.0, 0.2, 1.1, 0.5, 1.4]),
+        np.array([3.0, 2.0, 4.0, 1.5, 2.5]),
+    )
+    actual = _sort_pairs(*sa._neighbor_pairs(points, r_i, metric=metric, alpha=4.0))
+    expected = _sort_pairs(*_brute_neighbor_pairs(points, r_i, metric=metric, alpha=4.0))
+
+    assert np.array_equal(actual[0], expected[0])
+    assert np.array_equal(actual[1], expected[1])
+    assert np.allclose(actual[2], expected[2])
+
+
 def test_wse_anisotropic_metric_shapes_nn_displacements():
     # the central contribution: the per-point metric must steer nearest-neighbor spacing.
     # An across=x metric, an across=y metric, and isotropic must give distinct, direction-

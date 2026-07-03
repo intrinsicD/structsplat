@@ -34,7 +34,7 @@ Feature-aware init stays interactive at the default 20k budget on 1–4 MP image
       allocation < 200 MB at N=20k; results equal within fp tolerance.
 - [ ] `_feature_run_lengths` vectorized ((N, S) coordinate grid + argmax over the first
       failing step); equal results; ≥10× faster at N=20k.
-- [ ] `_neighbor_pairs` indexes only occupied cells (np.unique + searchsorted mapping); memory
+- [x] `_neighbor_pairs` indexes only occupied cells (np.unique + searchsorted mapping); memory
       O(points); identical pair sets.
 - [ ] `dart_throwing` uses a per-cell/local max accepted radius for its reach bound; identical
       accepted sets given the same rng.
@@ -48,6 +48,11 @@ Feature-aware init stays interactive at the default 20k budget on 1–4 MP image
   caps the effective chunk with `_NN_SPACING_MAX_MATRIX_ELEMS = 16_000_000` (128 MB at
   float64). Focused test coverage compares the result to the old broadcast formula across
   multiple chunks.
+- 2026-07-03 partial implementation: `_neighbor_pairs` now stores only occupied cell starts and
+  counts via `np.unique(cid_sorted, return_index=True)`, then maps queried neighbor cells through
+  `np.searchsorted`. Pair-set parity is tested against a brute-force reference for Euclidean and
+  anisotropic metrics, including a sparse coordinate range that would be pathological for dense
+  per-cell tables.
 - Timing/memory check on random 4096x3072-domain points, default requested chunk 2048:
 
   | Function | N | Old seconds | New seconds | Max abs diff | Old matrix | New matrix |
