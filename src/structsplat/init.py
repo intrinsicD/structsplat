@@ -217,20 +217,45 @@ def _tensor_attrs_at_points(tensor: st.StructureTensor, pts: np.ndarray,
 
 def _flank_edge_points(pts: np.ndarray, spacing: np.ndarray, ratios: np.ndarray,
                        tensor: st.StructureTensor, scfg: StructureTensorConfig | None,
-                       icfg: InitConfig) -> np.ndarray:
+                       icfg: InitConfig, two_sided: bool = False
+                       ) -> tuple[np.ndarray, np.ndarray | None]:
+    """Push edge Gaussians off the ridge onto one flank; optionally sample a two-sided color.
+
+    The single flanking implementation used by both `aniso_flanking` and the quadtree strategies
+    (INIT-005). Returns `(flanked_pts, color_pts)`; `color_pts` is None unless `two_sided`.
+    """
     label = _nearest(tensor.label, pts)
     across = _nearest(tensor.across_edge_angle, pts)
     normal = np.stack([np.cos(across), np.sin(across)], 1)
     s_across = spacing / np.sqrt(np.maximum(ratios, 1.0))
     edge_w = 2.0 * (scfg or StructureTensorConfig()).grad_sigma
     sign = np.where((np.arange(len(pts)) % 2) == 0, 1.0, -1.0)
-    offset = (sign * np.maximum(s_across, edge_w) * icfg.flank_offset_frac)[:, None] * normal
+    # Floor the offset distance at the blur width AFTER scaling by the fraction, so the flank
+    # actually clears the blurred transition zone. Flooring before the fraction (the old
+    # max(s_across, edge_w)*frac) only guaranteed edge_w*frac ~ 1px at defaults, not the blur
+    # width the comment claimed, so flanking degenerated toward on-edge placement (INIT-005).
+    offset_dist = np.maximum(s_across * icfg.flank_offset_frac, edge_w)
+    offset = (sign * offset_dist)[:, None] * normal
     is_edge = (label == 1)[:, None]
     out = pts + offset * is_edge
     H, W = tensor.energy.shape
     out[:, 0] = np.clip(out[:, 0], 0, W - 1)
     out[:, 1] = np.clip(out[:, 1], 0, H - 1)
-    return out
+    if not two_sided:
+        return out, None
+    # Sample the flat color on the DOWN-energy side of the edge as seen from the flanked center.
+    # The parity sign only says which flank the center was pushed toward; for off-ridge starts it
+    # can point back across the edge, so pick the side by comparing energy. Cap the probe by the
+    # flank distance (the local across-edge feature half-width proxy) so it does not overshoot a
+    # thin structure and sample the far side (INIT-005).
+    eps = np.minimum(np.maximum(s_across * icfg.color_radius, edge_w), offset_dist)
+    e_pos = _nearest(tensor.energy, out + eps[:, None] * normal)
+    e_neg = _nearest(tensor.energy, out - eps[:, None] * normal)
+    away = np.where(e_pos <= e_neg, 1.0, -1.0)
+    color_pts = out + (away * eps)[:, None] * normal * is_edge
+    color_pts[:, 0] = np.clip(color_pts[:, 0], 0, W - 1)
+    color_pts[:, 1] = np.clip(color_pts[:, 1], 0, H - 1)
+    return out, color_pts
 
 
 def _feature_run_lengths(tensor: st.StructureTensor, pts: np.ndarray, angles: np.ndarray,
@@ -239,8 +264,8 @@ def _feature_run_lengths(tensor: st.StructureTensor, pts: np.ndarray, angles: np
     H, W = tensor.energy.shape
     scfg = scfg or StructureTensorConfig()
     energy = np.maximum(tensor.energy, 0.0)
-    ref = np.percentile(energy, 99.0) + 1e-12
-    floor = scfg.flat_frac * ref
+    ref = st.energy_reference(energy)                       # floored: no collapse on noise
+    floor = st.flat_threshold(energy, scfg.flat_frac, ref)
     local_energy = _nearest(energy, pts)
     max_steps = int(np.ceil(max(H, W)))
     if icfg.scale_cap_max is not None:
@@ -389,7 +414,7 @@ def _quadtree_hybrid_init(
             img, high_density, tensor, wse_cfg, anisotropic=True, rng=rng
         )
         wse_angles, wse_ratios = _tensor_attrs_at_points(tensor, wse_pts, icfg, anisotropic=True)
-        wse_pts = _flank_edge_points(wse_pts, wse_spacing, wse_ratios, tensor, scfg, icfg)
+        wse_pts, _ = _flank_edge_points(wse_pts, wse_spacing, wse_ratios, tensor, scfg, icfg)
     else:
         wse_pts = np.empty((0, 2), dtype=np.float64)
         wse_spacing = np.empty(0, dtype=np.float64)
@@ -544,7 +569,7 @@ def build_field(img: np.ndarray, icfg: InitConfig,
                 raise ValueError(
                     "quadtree_wse uses sampled colors; use color_mode bilinear or local_mean"
                 )
-            pts = _flank_edge_points(pts, spacing, ratios, tensor, scfg, icfg)
+            pts, _ = _flank_edge_points(pts, spacing, ratios, tensor, scfg, icfg)
         elif strat == "quadtree_hybrid":
             pts, spacing, angles, ratios, colors = _quadtree_hybrid_init(
                 img, density, tensor, scfg, icfg, rng
@@ -560,33 +585,10 @@ def build_field(img: np.ndarray, icfg: InitConfig,
             coh = np.clip(_nearest(tensor.coherence, pts), 0.0, 1.0) ** icfg.coherence_power
             ratios = 1.0 + (icfg.max_axis_ratio - 1.0) * coh if anisotropic else np.ones(len(pts))
         if strat == "aniso_flanking":
-            label = _nearest(tensor.label, pts)
-            across = _nearest(tensor.across_edge_angle, pts)
-            normal = np.stack([np.cos(across), np.sin(across)], 1)
-            s_across = spacing / np.sqrt(np.maximum(ratios, 1.0))
-            # Floor the flank distance at the edge blur width: at realistic budgets the
-            # across-edge spacing is sub-pixel, so a spacing-only offset never clears the
-            # blurred transition zone and flanking degenerates to on-edge placement.
-            edge_w = 2.0 * (scfg or StructureTensorConfig()).grad_sigma
-            sign = np.where((np.arange(len(pts)) % 2) == 0, 1.0, -1.0)
-            offset = (sign * np.maximum(s_across, edge_w) * icfg.flank_offset_frac)[:, None] * normal
-            is_edge = (label == 1)[:, None]
-            pts = pts + offset * is_edge                     # only edges get flanked
-            pts[:, 0] = np.clip(pts[:, 0], 0, W - 1)
-            pts[:, 1] = np.clip(pts[:, 1], 0, H - 1)
-            if icfg.color_mode == "two_sided":
-                # Sample the flat color on the DOWN-energy side of the edge as seen from the
-                # flanked center. The parity sign only says which flank the center was pushed
-                # toward; for off-ridge starts it can point back across the edge (measured:
-                # ~10% wrong-side colors on a step edge). The step floors at the blur width
-                # so it clears the transition zone instead of resampling mid-tones.
-                eps = np.maximum(s_across * icfg.color_radius, edge_w)
-                e_pos = _nearest(tensor.energy, pts + eps[:, None] * normal)
-                e_neg = _nearest(tensor.energy, pts - eps[:, None] * normal)
-                away = np.where(e_pos <= e_neg, 1.0, -1.0)
-                color_pts = pts + (away * eps)[:, None] * normal * is_edge
-                color_pts[:, 0] = np.clip(color_pts[:, 0], 0, W - 1)
-                color_pts[:, 1] = np.clip(color_pts[:, 1], 0, H - 1)
+            # one flanking implementation, shared with the quadtree strategies (INIT-005)
+            pts, color_pts = _flank_edge_points(
+                pts, spacing, ratios, tensor, scfg, icfg,
+                two_sided=icfg.color_mode == "two_sided")
 
     n_out = len(pts)
     m = icfg.init_scale_mult

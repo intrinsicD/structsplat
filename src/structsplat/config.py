@@ -42,6 +42,13 @@ class InitConfig:
     init_opacity: float = 0.9
     seed: int = 0
 
+    def __post_init__(self):
+        # WSE draws candidate_oversample * N candidates then reduces to N; < 1 cannot supply N
+        # candidates and silently breaks the exact-N contract (INIT-005).
+        if self.candidate_oversample < 1.0:
+            raise ValueError(
+                f"candidate_oversample must be >= 1, got {self.candidate_oversample}")
+
 
 @dataclass
 class FitConfig:

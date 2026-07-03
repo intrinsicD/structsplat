@@ -15,7 +15,7 @@ from .config import InitConfig, StructureTensorConfig
 
 def density_from_energy(energy: np.ndarray, base: float, power: float) -> np.ndarray:
     e = np.maximum(energy.astype(np.float64), 0.0)
-    ref = np.percentile(e, 99.0) + 1e-12
+    ref = st.energy_reference(e)  # floored reference: no collapse on near-blank noisy images
     d = np.clip(e / ref, 0.0, 1.0) ** power
     d = base + (1.0 - base) * d
     s = d.sum()
@@ -41,8 +41,15 @@ def feature_for_mode(img: np.ndarray, tensor: st.StructureTensor,
     if mode == "variance":
         return local_variance(img, scfg.tensor_sigma)
     if mode == "hybrid":
-        a = density_from_energy(tensor.energy, 0.0, 1.0)
-        b = density_from_energy(local_variance(img, scfg.tensor_sigma), 0.0, 1.0)
+        # Return a RAW combined feature so the single base/power/normalize in
+        # density_from_energy applies exactly once. Previously this mixed two already-normalized
+        # pmfs and re-passed the mixture through density_from_energy, double-normalizing so
+        # density_power/density_base meant something different for this mode (INIT-005). Each
+        # feature is scaled to a comparable [0,1] range by its own reference before averaging.
+        e = np.maximum(tensor.energy.astype(np.float64), 0.0)
+        v = local_variance(img, scfg.tensor_sigma).astype(np.float64)
+        a = np.clip(e / st.energy_reference(e), 0.0, 1.0)
+        b = np.clip(v / st.energy_reference(v), 0.0, 1.0)
         return (0.5 * a + 0.5 * b).astype(np.float32)
     if mode == "uniform":
         return np.ones(tensor.energy.shape, dtype=np.float32)
@@ -121,8 +128,17 @@ def sample_candidates(density: np.ndarray, n: int, rng: np.random.Generator) -> 
     flat = flat / flat.sum()
     idx = rng.choice(flat.size, size=n, replace=True, p=flat)
     ys, xs = np.divmod(idx, W)
-    # integer coords are pixel centers (renderer convention): jitter within the footprint
+    # integer coords are pixel centers (renderer convention): jitter within the footprint.
+    # Fold (reflect) out-of-range half-pixel jitter back into [0, W-1] instead of clipping it:
+    # clipping piled probability atoms at x=0 / x=W-1 (and coincident candidates there); folding
+    # keeps the sub-pixel density continuous at the border (INIT-005).
     jitter = rng.random((n, 2)) - 0.5
-    xs = np.clip(xs + jitter[:, 0], 0.0, W - 1.0)
-    ys = np.clip(ys + jitter[:, 1], 0.0, H - 1.0)
+    xs = _reflect(xs + jitter[:, 0], W - 1.0)
+    ys = _reflect(ys + jitter[:, 1], H - 1.0)
     return np.stack([xs, ys], axis=1).astype(np.float64)
+
+
+def _reflect(v: np.ndarray, hi: float) -> np.ndarray:
+    """Reflect values into [0, hi] at both boundaries (no probability atoms at the edges)."""
+    v = np.abs(v)               # reflect at 0
+    return hi - np.abs(hi - v)  # reflect at hi

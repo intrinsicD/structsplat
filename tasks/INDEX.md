@@ -25,7 +25,7 @@ skill.
 | MERGE-001 | Integrate Claude core optimizations and Codex stage search into main | todo | CORE, INIT, FIT, HIER, BENCH, ABL, COMP |
 | CORE-004 | Renderer + GaussianField correctness fixes (CUDA N=0, int-cast UB, aliasing, dilation) | done | CORE-001/002 |
 | CORE-005 | Reference renderer memory bound + C0-continuous support cutoff | todo | CORE-003, CORE-004 |
-| INIT-005 | Init-math robustness, flanking unification, WSE test coverage | todo | INIT-003 |
+| INIT-005 | Init-math robustness, flanking unification, WSE test coverage | done | INIT-003 |
 | INIT-006 | Init-time performance (quadtree, spacing, run-lengths, pair discovery) | todo | INIT-003, INIT-005 |
 | FIT-002 | Fitter correctness (split colors, opacity pruning, history pairing) | done | FIT-001, CORE-004 |
 | FIT-003 | Fit-loop speed (device-side targets, SSIM hygiene, fused SSIM) | todo | FIT-001, BENCH-001 |

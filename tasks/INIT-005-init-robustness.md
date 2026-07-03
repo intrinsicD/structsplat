@@ -1,6 +1,6 @@
 # INIT-005: Init-math robustness, flanking unification, and WSE test coverage
 
-**Status: todo.** From the 2026-07-03 repo review. The dart-throwing metric leak was
+**Status: done.** From the 2026-07-03 repo review. The dart-throwing metric leak was
 adversarially verified by execution.
 
 ## Context
@@ -37,22 +37,22 @@ Init math that degrades gracefully on degenerate images, one flanking implementa
 tests that would actually catch a regression in the anisotropic sampler.
 
 ## Acceptance criteria
-- [ ] Percentile references computed over structured pixels only (energy above an absolute
+- [x] Percentile references computed over structured pixels only (energy above an absolute
       noise floor) or floored (`ref = max(percentile, k*median_energy)`); test on a synthetic
       near-blank noisy image asserting labels are not saturated and density is not binary.
-- [ ] `hybrid` mixes raw normalized features once through a single base/power/normalize step;
+- [x] `hybrid` mixes raw normalized features once through a single base/power/normalize step;
       test asserting `density_power` changes the hybrid pmf.
-- [ ] Border jitter folded asymmetrically (no probability atoms at x=0/W-1); test.
-- [ ] Samplers warn or raise on `n > M`; `InitConfig` validates `candidate_oversample >= 1`.
-- [ ] `dart_throwing` fill uses `_pair_d2` with the metric (or flags fill activation in the
+- [x] Border jitter folded asymmetrically (no probability atoms at x=0/W-1); test.
+- [x] Samplers warn or raise on `n > M`; `InitConfig` validates `candidate_oversample >= 1`.
+- [x] `dart_throwing` fill uses `_pair_d2` with the metric (or flags fill activation in the
       return for ablation filtering); test.
-- [ ] `_flank_edge_points` returns `(pts, color_pts)` with a `two_sided` option; the inline
+- [x] `_flank_edge_points` returns `(pts, color_pts)` with a `two_sided` option; the inline
       `aniso_flanking` branch calls it; the duplicate block is deleted; existing flanking
       tests pass unchanged.
-- [ ] Flank offset floor applied after the fraction (`max(s_across*frac, edge_w)`) or the
+- [x] Flank offset floor applied after the fraction (`max(s_across*frac, edge_w)`) or the
       comment/ADR corrected to state the frac-scaled floor is intentional; two_sided `eps`
       capped by local across-edge feature width.
-- [ ] New tests: non-vacuous isotropic WSE spacing bound (min distance above random-subset
+- [x] New tests: non-vacuous isotropic WSE spacing bound (min distance above random-subset
       expectation, like the dart-throwing test) and an anisotropic WSE test asserting
       along/across-edge NN-displacement statistics reflect the metric.
 
