@@ -6,13 +6,12 @@ only the metrics dict, never a method's internals, so it stays task-agnostic (mi
 IntrinsicEngine core/harness split). Torch is imported lazily.
 """
 from __future__ import annotations
-import csv
-import json
 import os
 import glob
 import time
 from statistics import mean, pstdev
 
+from benchmarks.common import run_config, write_config, write_csv, write_json
 from structsplat.config import InitConfig, FitConfig, StructureTensorConfig
 from structsplat.init import STRATEGIES
 
@@ -71,7 +70,6 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
         raise SystemExit("no images found")
 
     # reproducible from its own artifacts (invariant 5 / BENCH-002)
-    from benchmarks._util import run_config, write_config
     write_config(outdir, run_config({
         "images": files, "budgets": list(budgets), "strategies": list(strategies),
         "seeds": list(seeds), "iters": iters, "target_psnr": target_psnr,
@@ -151,16 +149,15 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
 
 
 def _write(rows, outdir, write_plots=True):
-    with open(os.path.join(outdir, "ablation.json"), "w") as f:
-        json.dump(rows, f, indent=2)
+    write_json(os.path.join(outdir, "ablation.json"), rows)
     if rows:
-        with open(os.path.join(outdir, "ablation.csv"), "w", newline="") as f:
-            # nested dicts stay in the JSON; str()-ified dict cells make the CSV unusable
-            fields = [k for k in rows[0] if k not in {"history", "iters_to_targets"}]
-            w = csv.DictWriter(f, fieldnames=fields)
-            w.writeheader()
-            for row in rows:
-                w.writerow({k: row.get(k) for k in fields})
+        # nested dicts stay in the JSON; str()-ified dict cells make the CSV unusable
+        fields = [k for k in rows[0] if k not in {"history", "iters_to_targets"}]
+        write_csv(
+            os.path.join(outdir, "ablation.csv"),
+            [{k: row.get(k) for k in fields} for row in rows],
+            fieldnames=fields,
+        )
     with open(os.path.join(outdir, "summary.md"), "w") as f:
         f.write(summarize(rows))
     if write_plots:

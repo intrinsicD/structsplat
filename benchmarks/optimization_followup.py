@@ -10,18 +10,16 @@ This script runs exact candidate configurations rather than a factorial product:
 from __future__ import annotations
 
 import argparse
-import csv
-import json
 import time
 from dataclasses import dataclass, replace
 from pathlib import Path
 from statistics import mean, pstdev
 from typing import Iterable
 
-import numpy as np
 import torch
-from PIL import Image
 
+from benchmarks.common import add_seed_args, load_image as _load_image, psnr_auc
+from benchmarks.common import resolve_seeds, run_config, write_config, write_rows as _write_rows
 from structsplat.config import FitConfig, InitConfig, PyramidConfig, StructureTensorConfig
 from structsplat.fit import fit
 from structsplat.gaussians import GaussianField
@@ -111,15 +109,6 @@ TOP3 = Candidate(
 def _sync() -> None:
     if torch.cuda.is_available():
         torch.cuda.synchronize()
-
-
-def _load_image(path: Path, max_side: int) -> np.ndarray:
-    img = Image.open(path).convert("RGB")
-    if max(img.size) > max_side:
-        scale = max_side / max(img.size)
-        img = img.resize((round(img.size[0] * scale), round(img.size[1] * scale)),
-                         Image.Resampling.LANCZOS)
-    return np.asarray(img, dtype=np.float32) / 255.0
 
 
 def _select_images(dataset_dir: Path, count: int) -> list[Path]:
@@ -256,7 +245,7 @@ def run_candidate(
         "psnr": round(float(out["psnr"]), 4),
         "ssim": round(float(out["ssim"]), 5),
         "ms_ssim": round(float(out["ms_ssim"]), 5),
-        "auc_psnr": _psnr_auc(hist),
+        "auc_psnr": psnr_auc(hist, round_digits=4),
         "iters_to_target": out.get("iters_to_target"),
         "n_gaussians": int(out["n_gaussians"]),
         "init_seconds": round(float(init_seconds), 4),
@@ -267,25 +256,6 @@ def run_candidate(
     }
     return row, (field if return_field else None), (fcfg if return_field else None), (
         target if return_field else None)
-
-
-def _psnr_auc(history: dict) -> float | None:
-    its, ps = history.get("iter", []), history.get("psnr", [])
-    if len(its) < 2:
-        return round(float(ps[0]), 4) if ps else None
-    trapezoid = getattr(np, "trapezoid", None) or np.trapz
-    return round(float(trapezoid(ps, its) / max(its[-1] - its[0], 1)), 4)
-
-
-def _write_rows(path: Path, rows: list[dict]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.with_suffix(".json").write_text(json.dumps(rows, indent=2), encoding="utf-8")
-    if not rows:
-        return
-    with path.with_suffix(".csv").open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-        writer.writeheader()
-        writer.writerows(rows)
 
 
 def _run_matrix(images: list[Path], candidates: Iterable[Candidate], section: str, args) -> list[dict]:
@@ -510,8 +480,6 @@ def main() -> None:
     p.add_argument("--budget", type=int, default=512)
     p.add_argument("--iters", type=int, default=80)
     p.add_argument("--max-side", type=int, default=160)
-    from benchmarks._util import add_seed_args, resolve_seeds
-
     add_seed_args(p)
     p.add_argument("--render-chunk", type=int, default=512)
     p.add_argument("--split-count", type=int, default=128)
@@ -528,7 +496,6 @@ def main() -> None:
     args.seed = args.seeds[0]
     args.device = args.device or ("cuda" if torch.cuda.is_available() else "cpu")
     args.outdir.mkdir(parents=True, exist_ok=True)
-    from benchmarks._util import run_config, write_config
     write_config(str(args.outdir), run_config(vars(args), device=args.device))
     images = _select_images(args.dataset_dir, args.image_count)
 

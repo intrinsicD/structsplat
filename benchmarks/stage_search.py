@@ -14,7 +14,6 @@ Two modes (ABL-002 / ADR-0010):
 from __future__ import annotations
 
 import argparse
-import csv
 import glob
 import itertools
 import json
@@ -26,6 +25,9 @@ from typing import Any
 
 import numpy as np
 
+from benchmarks.common import load_image as _load_image
+from benchmarks.common import psnr_auc as _psnr_auc
+from benchmarks.common import run_config, write_config, write_csv, write_json
 from structsplat.config import FitConfig, InitConfig, PyramidConfig, StructureTensorConfig
 
 # stage axes, in label order; values = the swappable options each stage exposes
@@ -109,17 +111,6 @@ def _iter_images(images):
         else:
             files.append(item)
     return sorted(files)
-
-
-def _load_image(path: str, max_side: int | None = None) -> np.ndarray:
-    from PIL import Image
-
-    img = Image.open(path).convert("RGB")
-    if max_side is not None and max(img.size) > max_side:
-        scale = max_side / max(img.size)
-        img = img.resize((round(img.size[0] * scale), round(img.size[1] * scale)),
-                         Image.Resampling.LANCZOS)
-    return np.asarray(img, dtype=np.float32) / 255.0
 
 
 def _one(x):
@@ -237,19 +228,6 @@ def _scale_cap_kwargs(mode: str) -> dict[str, Any]:
     raise ValueError(
         f"unknown scale_cap mode {mode!r}; expected none, hard8, hard12, feature8, or feature12"
     )
-
-
-def _psnr_auc(history: dict) -> float | None:
-    """Mean PSNR over the training trajectory (trapezoid over the logged history).
-
-    A single number that rewards both converging fast and converging high; complements
-    iters-to-target, which saturates once every config reaches the target.
-    """
-    its, ps = history.get("iter", []), history.get("psnr", [])
-    if len(its) < 2:
-        return float(ps[0]) if ps else None
-    trapezoid = getattr(np, "trapezoid", None) or np.trapz  # numpy<2 fallback
-    return float(trapezoid(ps, its) / max(its[-1] - its[0], 1))
 
 
 def _seconds_to_target(history: dict, iters_to_target) -> float | None:
@@ -451,7 +429,6 @@ def run_stage_search(
     if not files:
         raise SystemExit("no images found")
 
-    from benchmarks._util import run_config, write_config
     write_config(str(out_path), run_config({
         "images": files, "mode": mode, "budgets": list(budgets), "seeds": list(seeds),
         "iters": iters, "max_side": max_side, "axes": {k: list(v) for k, v in axes.items()},
@@ -714,14 +691,14 @@ def summarize_influence(rows, baseline_label: str) -> str:
 
 
 def _write(rows, outdir: Path, mode: str = "factorial", baseline_label: str | None = None):
-    (outdir / "stage_search.json").write_text(json.dumps(rows, indent=2), encoding="utf-8")
+    write_json(outdir / "stage_search.json", rows)
     if rows:
-        with (outdir / "stage_search.csv").open("w", newline="", encoding="utf-8") as f:
-            fields = [k for k in rows[0].keys() if k not in {"history", "prefix_metrics"}]
-            w = csv.DictWriter(f, fieldnames=fields)
-            w.writeheader()
-            for row in rows:
-                w.writerow({k: row.get(k) for k in fields})
+        fields = [k for k in rows[0].keys() if k not in {"history", "prefix_metrics"}]
+        write_csv(
+            outdir / "stage_search.csv",
+            [{k: row.get(k) for k in fields} for row in rows],
+            fieldnames=fields,
+        )
     (outdir / "summary.md").write_text(summarize(rows), encoding="utf-8")
     wrote = "stage_search.json / stage_search.csv / summary.md"
     if mode == "influence" and baseline_label is not None:

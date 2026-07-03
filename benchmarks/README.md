@@ -3,8 +3,13 @@
 All benchmark scripts write machine-readable rows plus enough resolved configuration to make a run
 self-describing. See the `benchmark` skill for the full protocol.
 
+`common.py` is shared benchmark plumbing (`BENCH-003`): image load/save, trajectory PSNR AUC,
+JSON/CSV row writing, seed/config helpers, and shared COCO comparison analogue builders. It is not
+a CLI; scripts import it to avoid drifting helper behavior.
+
 `ablation.py` runs the core experiment (`ABL-001`): `{init strategy} x {budget}` on fixed images,
-scored on PSNR / MS-SSIM / LPIPS + iterations-to-target.
+scored on PSNR / MS-SSIM / LPIPS + iterations-to-target. Caveat: this is the broad init sweep, so
+keep image/budget/seed axes explicit in the output config.
 
 ```
 python -m benchmarks.ablation path/to/images --budgets 2000 5000 10000 20000 --iters 1500 --target-psnr 35
@@ -15,20 +20,59 @@ scalar a co-scientist loop maximizes over init/sampling variants.
 
 `stage_search.py` runs `ABL-002`: factorial or influence-mode sweeps across tensor, density,
 sampling, orientation, color, scale-cap, renderer, loss, optimizer, refinement, and pyramid stages.
+Caveat: factorial marginals are observational when axes co-vary; use `--mode influence` for paired
+one-factor deltas around a baseline.
 
 ```
 python -m benchmarks.stage_search path/to/images --mode influence --budgets 2048 --iters 500
 ```
 
-`rate_distortion.py` evaluates the codec/QAT path (`COMP-001/003`) and records full codec/render
-semantics per row.
+`cross_repo_matrix_compare.py` is the current matched comparison harness (`ABL-004` controls and
+cross-repo evidence): it runs StructSplat-current plus GaussianImage/Image-GS/Instant-GI analogues
+over image x resolution x iteration x seed slices. Caveat: the rows are executable policy
+analogues under StructSplat's fitter/renderer, not native external CUDA/codec/checkpoint runs.
 
-`coco_fit_compare.py`, `cross_repo_matrix_compare.py`, `optimization_followup.py`, and
-`quadtree_init_compare.py` are focused comparison/follow-up harnesses used by the ARA trace. They
-are intentionally narrower than `stage_search.py`; use them when reproducing the specific evidence
-entry that names them. Each accepts `--seeds` and reports aggregate mean/std over image x seed
-rows; `--seed` remains as a single-seed compatibility alias.
+```
+python -m benchmarks.cross_repo_matrix_compare --dataset-dir path/to/train2014 --max-sides 160 240 --iters 80 200 --seeds 0 1
+```
+
+`coco_fit_compare.py` is the legacy four-image matched comparison harness (`BENCH-003` back-compat
+only). Caveat: it is superseded by `cross_repo_matrix_compare.py`; keep it for reproducing older
+ARA evidence that names `results/coco_fit_compare`.
+
+```
+python -m benchmarks.coco_fit_compare --dataset-dir path/to/train2014 --budget 512 --iters 80 --seeds 0 1
+```
+
+`optimization_followup.py` runs bounded follow-up checks after stage-search evidence (`ABL-002`
+follow-up): held-out validation, oversampling, early-stop, pyramid/refine, and spatial-render
+prototypes. Caveat: it is not a full factorial search; candidates are hand-picked exact configs.
+
+```
+python -m benchmarks.optimization_followup --dataset-dir path/to/train2014 --image-count 8 --budget 512 --iters 80
+```
+
+`quadtree_init_compare.py` compares quadtree aggregate/hybrid/WSE init variants and scale caps
+(`INIT-003/INIT-006` follow-up evidence). Caveat: it reuses optimization-followup candidate
+construction, so it is a focused init comparison, not a complete stage search.
+
+```
+python -m benchmarks.quadtree_init_compare --dataset-dir path/to/train2014 --image-count 8 --budget 512 --iters 80
+```
+
+`rate_distortion.py` evaluates the codec/QAT path (`COMP-001/COMP-003`) and records full
+codec/render semantics per row. Caveat: QAT rows spend extra optimization; compare them with the
+`refine_noste` equal-compute control.
+
+```
+python -m benchmarks.rate_distortion path/to/images --budgets 2000 5000 --iters 1500 --qat-iters 150
+```
 
 `regression_bisect.py` is the ABL-003 forensic runner. It downloads the pinned four-image COCO
 subset, evaluates historical commits in detached worktrees, and writes compact evidence under
-`ara/evidence/`.
+`ara/evidence/`. Caveat: the child runner is intentionally self-contained so old detached
+worktrees do not need today's benchmark helpers.
+
+```
+python -m benchmarks.regression_bisect --download --device cpu
+```

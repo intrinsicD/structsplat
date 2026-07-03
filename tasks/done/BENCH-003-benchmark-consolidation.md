@@ -1,6 +1,6 @@
 # BENCH-003: Benchmark script consolidation + documentation
 
-**Status: todo.** From the 2026-07-03 repo review.
+**Status: done.** Completed 2026-07-03. From the 2026-07-03 repo review.
 
 ## Context
 Seven benchmark scripts have accreted with heavily duplicated, already-drifting helpers:
@@ -16,16 +16,23 @@ One shared helper module, no drifting duplicates, every script documented with p
 caveats, smoke-tested.
 
 ## Acceptance criteria
-- [ ] `benchmarks/common.py` extracted: image loading, `_psnr_auc` (one rounding), bilinear,
+- [x] `benchmarks/common.py` extracted: image loading, `_psnr_auc` (one rounding), bilinear,
       row/summary writing, method-analogue builders, Instant-GI loader; all scripts import it.
-- [ ] `coco_fit_compare.py` deleted or marked superseded in its docstring + README, with the
+- [x] `coco_fit_compare.py` deleted or marked superseded in its docstring + README, with the
       unique bits (held-out image protocol) folded into `cross_repo_matrix_compare.py`.
-- [ ] `benchmarks/README.md`: one paragraph per remaining script (purpose, task ID, caveats,
+- [x] `benchmarks/README.md`: one paragraph per remaining script (purpose, task ID, caveats,
       example invocation), per the docs-sync skill.
-- [ ] Smoke tests for `rate_distortion.run_rd` and each comparison summary writer using toy
+- [x] Smoke tests for `rate_distortion.run_rd` and each comparison summary writer using toy
       images and stubbed method rows (must cover the zero-ok-rows path fixed in BENCH-002).
-- [ ] `pytest -q` green; a short stage-search screening run produces byte-identical summary
+- [x] `pytest -q` green; a short stage-search screening run produces byte-identical summary
       output before/after the refactor (helper extraction must not change numbers).
+
+## Completion notes
+
+Evidence lives in `ara/evidence/bench003-common-refactor-2026-07-03/`.
+
+The short stage-search screening summary was byte-identical before/after the helper extraction:
+`48b65d95e01ec254b7aad7bb5b18d945019381449cdf368e5fffbf84608aff6f`.
 
 ## Interfaces touched
 `benchmarks/*` (all), `tests/test_ablation.py`, `tests/test_stage_search.py`, new

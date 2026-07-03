@@ -5,9 +5,9 @@ fine-tune a copy of the fitted field through the straight-through-quantized rend
 encoding. Emits JSON + CSV + markdown alongside the ablation outputs. Torch imported lazily.
 """
 from __future__ import annotations
-import csv
-import json
 import os
+
+from benchmarks.common import run_config as _run_config, write_csv, write_json
 
 DEFAULT_BIT_MIXES = ((16, 8, 8, 8), (12, 8, 6, 8), (12, 6, 6, 6), (10, 5, 5, 5))
 
@@ -31,7 +31,6 @@ def run_rd(images, budgets=(2000, 5000), strategy="aniso_flanking", seeds=(0,),
         raise SystemExit("no images found")
 
     # self-contained run record (invariant 5): every knob that moves the numbers + versions
-    from benchmarks._util import run_config as _run_config
     run_config = _run_config({
         "strategy": strategy, "iters": iters, "qat_iters": qat_iters,
         "zlib_level": codec.CodecConfig().zlib_level, "seeds": list(seeds),
@@ -94,16 +93,11 @@ def _row(r):
 
 
 def _write(rows, outdir, run_config=None):
-    with open(os.path.join(outdir, "rate_distortion.json"), "w") as f:
-        json.dump({"config": run_config, "rows": rows}, f, indent=2)
+    write_json(os.path.join(outdir, "rate_distortion.json"), {"config": run_config, "rows": rows})
     if run_config is not None:
-        with open(os.path.join(outdir, "rate_distortion_config.json"), "w") as f:
-            json.dump(run_config, f, indent=2)
+        write_json(os.path.join(outdir, "rate_distortion_config.json"), run_config)
     if rows:
-        with open(os.path.join(outdir, "rate_distortion.csv"), "w", newline="") as f:
-            w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-            w.writeheader()
-            w.writerows(rows)
+        write_csv(os.path.join(outdir, "rate_distortion.csv"), rows)
     lines = ["# Rate-distortion (bpp vs quality)\n"]
     if run_config is not None:
         lines.append("Config: " + ", ".join(f"{k}={v}" for k, v in run_config.items()) + "\n")

@@ -5,7 +5,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from benchmarks._util import add_seed_args, resolve_seeds
+from benchmarks.common import add_seed_args, resolve_seeds
 from benchmarks import coco_fit_compare as coco
 from benchmarks import cross_repo_matrix_compare as cross
 from benchmarks import optimization_followup as opt

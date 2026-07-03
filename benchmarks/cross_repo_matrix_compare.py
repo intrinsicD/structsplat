@@ -7,13 +7,9 @@ growth policy; it is not a native codec benchmark for the external repositories.
 from __future__ import annotations
 
 import argparse
-import csv
-import importlib.util
-import json
 import math
-import os
 import time
-from dataclasses import asdict, replace
+from dataclasses import asdict
 from pathlib import Path
 from statistics import mean, pstdev
 from typing import Any
@@ -22,10 +18,15 @@ import numpy as np
 import torch
 from PIL import Image, ImageDraw, ImageFont
 
+from benchmarks.common import build_comparison_analogue
+from benchmarks.common import load_image as _load_image
+from benchmarks.common import psnr_auc as _psnr_auc
+from benchmarks.common import residual_fit_cfg as _residual_fit_cfg
+from benchmarks.common import resolve_seeds, run_config, save_image as _save_image, write_config
+from benchmarks.common import write_csv, write_json
 from structsplat import metrics as M
 from structsplat.config import FitConfig, InitConfig, StructureTensorConfig
 from structsplat.fit import fit
-from structsplat.gaussians import GaussianField
 from structsplat.init import build_field
 
 
@@ -69,97 +70,8 @@ METHOD_NOTES = {
 }
 
 
-def _load_image(path: Path, max_side: int) -> np.ndarray:
-    img = Image.open(path).convert("RGB")
-    scale = max_side / max(img.size)
-    if scale < 1.0:
-        img = img.resize(
-            (round(img.size[0] * scale), round(img.size[1] * scale)),
-            Image.Resampling.LANCZOS,
-        )
-    return np.asarray(img, dtype=np.float32) / 255.0
-
-
-def _save_image(arr: np.ndarray, path: Path) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    img = np.clip(arr * 255.0 + 0.5, 0, 255).astype(np.uint8)
-    Image.fromarray(img).save(path)
-
-
-def _bilinear(img: np.ndarray, pts: np.ndarray) -> np.ndarray:
-    h, w = img.shape[:2]
-    x = np.clip(pts[:, 0], 0, w - 1.001)
-    y = np.clip(pts[:, 1], 0, h - 1.001)
-    x0 = np.floor(x).astype(int)
-    y0 = np.floor(y).astype(int)
-    x1 = np.clip(x0 + 1, 0, w - 1)
-    y1 = np.clip(y0 + 1, 0, h - 1)
-    fx = (x - x0)[:, None]
-    fy = (y - y0)[:, None]
-    return (
-        img[y0, x0] * (1 - fx) * (1 - fy)
-        + img[y0, x1] * fx * (1 - fy)
-        + img[y1, x0] * (1 - fx) * fy
-        + img[y1, x1] * fx * fy
-    ).astype(np.float32)
-
-
-def _build_instant_gi_field(
-    img: np.ndarray,
-    image_path: Path,
-    final_budget: int,
-    seed: int,
-    device: str,
-) -> tuple[GaussianField, float]:
-    start = time.time()
-    env = os.environ.get("STRUCTSPLAT_INSTANT_GI")
-    if not env:  # no hardcoded personal paths (BENCH-002); unset -> method skipped
-        raise RuntimeError(
-            "Instant-GI methods require STRUCTSPLAT_INSTANT_GI=/path/to/quard_image.py")
-    qpath = Path(env)
-    spec = importlib.util.spec_from_file_location("instant_gi_quard_image", qpath)
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"could not load {qpath}")
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    points, _elapsed = mod.QuardImage(image_path).split()
-    if points.shape[0] > final_budget:
-        rng = np.random.default_rng(seed)
-        keep = np.sort(rng.choice(points.shape[0], size=final_budget, replace=False))
-        points = points[keep]
-
-    h, w = img.shape[:2]
-    means = np.empty((points.shape[0], 2), dtype=np.float32)
-    means[:, 0] = (points[:, 0] + 1.0) * 0.5 * (w - 1)
-    means[:, 1] = (points[:, 1] + 1.0) * 0.5 * (h - 1)
-    scales = np.maximum(points[:, 2:4].astype(np.float32), 0.5)
-    rotations = (points[:, 4].astype(np.float32) * (2.0 * np.pi)) % np.pi
-    colors = _bilinear(img, means)
-    field = GaussianField.from_numpy(means, scales, rotations, colors, None, device=device)
-    return field, time.time() - start
-
-
 def _growth_count(final_budget: int, fraction: float = 0.20) -> int:
     return max(16, int(round(final_budget * fraction / 16.0)) * 16)
-
-
-def _residual_fit_cfg(
-    base: FitConfig,
-    final_budget: int,
-    start_budget: int,
-    split_mode: str,
-    add_times: int = 2,
-) -> FitConfig:
-    add_total = max(0, final_budget - start_budget)
-    split_count = max(1, math.ceil(add_total / max(1, add_times))) if add_total else 0
-    split_every = max(1, base.iters // (add_times + 1)) if add_total else None
-    return replace(
-        base,
-        split_every=split_every,
-        split_count=split_count,
-        split_mode=split_mode,
-        max_gaussians=final_budget,
-    )
 
 
 def _base_fit(iters: int, renderer: str, lpips: bool) -> FitConfig:
@@ -211,63 +123,17 @@ def _build_method(
             device=device,
         )
         init_seconds = time.time() - init_start
-        fcfg = _residual_fit_cfg(base_fit, final_budget, start_budget, "residual_tensor_add")
+        fcfg = _residual_fit_cfg(
+            base_fit, final_budget, start_budget, "residual_tensor_add", add_times=2
+        )
         return field, fcfg, init_seconds, start_budget
 
-    if method == "gaussianimage":
-        field = build_field(
-            img,
-            InitConfig(strategy="random", num_gaussians=final_budget, seed=seed),
-            scfg_default,
-            device=device,
+    if method != "structsplat_current":
+        return build_comparison_analogue(
+            method, img, image_path, final_budget, seed, device, base_fit, scfg_default
         )
-        return field, base_fit, time.time() - init_start, final_budget
-
-    if method == "gaussianimage_plus":
-        start_budget = max(16, final_budget // 2)
-        field = build_field(
-            img,
-            InitConfig(strategy="random", num_gaussians=start_budget, seed=seed),
-            scfg_default,
-            device=device,
-        )
-        fcfg = _residual_fit_cfg(base_fit, final_budget, start_budget, "residual_add", add_times=4)
-        return field, fcfg, time.time() - init_start, start_budget
-
-    if method == "image_gs":
-        start_budget = max(16, final_budget // 2)
-        field = build_field(
-            img,
-            InitConfig(
-                strategy="iso_blue_noise",
-                num_gaussians=start_budget,
-                density_mode="gradient",
-                sampling_mode="density_random",
-                scale_mode="spacing",
-                seed=seed,
-            ),
-            scfg_default,
-            device=device,
-        )
-        fcfg = _residual_fit_cfg(base_fit, final_budget, start_budget, "residual_add", add_times=4)
-        return field, fcfg, time.time() - init_start, start_budget
-
-    if method == "instant_gi_quadtree":
-        field, init_seconds = _build_instant_gi_field(img, image_path, final_budget, seed, device)
-        return field, base_fit, init_seconds, field.n
 
     raise ValueError(f"unknown method {method!r}")
-
-
-def _psnr_auc(history: dict[str, Any]) -> float | None:
-    its = history.get("iter", [])
-    ps = history.get("psnr", [])
-    if not ps:
-        return None
-    if len(ps) == 1:
-        return float(ps[0])
-    trapezoid = getattr(np, "trapezoid", None) or np.trapz
-    return float(trapezoid(ps, its) / max(its[-1] - its[0], 1))
 
 
 def _extra_metrics(render: torch.Tensor, target: torch.Tensor, want_lpips: bool) -> dict[str, float | None]:
@@ -609,12 +475,9 @@ def run(
     device: str | None,
     seeds: list[int] | tuple[int, ...] | None = None,
 ) -> list[dict[str, Any]]:
-    from benchmarks._util import resolve_seeds
-
     seeds = resolve_seeds(seed, seeds)
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     outdir.mkdir(parents=True, exist_ok=True)
-    from benchmarks._util import run_config, write_config
     write_config(str(outdir), run_config({
         "dataset_dir": str(dataset_dir), "image_names": image_names, "max_sides": max_sides,
         "iters_list": iters_list, "base_budget": base_budget, "base_side": base_side,
@@ -716,14 +579,16 @@ def run(
                 )
 
     json_rows = [_row_without_heavy(r) for r in rows]
-    (outdir / "metrics.json").write_text(json.dumps(json_rows, indent=2), encoding="utf-8")
+    write_json(outdir / "metrics.json", json_rows)
     if json_rows:
         fieldnames = sorted({k for r in json_rows for k in r.keys() if k != "fit_config"})
-        with (outdir / "metrics.csv").open("w", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
-            writer.writeheader()
-            writer.writerows(json_rows)
-    (outdir / "selected.json").write_text(json.dumps(selected, indent=2), encoding="utf-8")
+        write_csv(
+            outdir / "metrics.csv",
+            json_rows,
+            fieldnames=fieldnames,
+            extrasaction="ignore",
+        )
+    write_json(outdir / "selected.json", selected)
     _write_summary(rows, selected, outdir)
     return rows
 
@@ -738,7 +603,7 @@ def main() -> None:
     p.add_argument("--iters", nargs="+", type=int, default=[80, 200])
     p.add_argument("--base-budget", type=int, default=640)
     p.add_argument("--base-side", type=int, default=160)
-    from benchmarks._util import add_seed_args, resolve_seeds
+    from benchmarks.common import add_seed_args
 
     add_seed_args(p)
     p.add_argument("--renderer", default="cuda")

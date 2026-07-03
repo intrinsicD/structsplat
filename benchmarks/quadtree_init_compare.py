@@ -2,8 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import csv
-import json
 import time
 from dataclasses import replace
 from pathlib import Path
@@ -12,13 +10,13 @@ from statistics import mean, pstdev
 import numpy as np
 import torch
 
+from benchmarks.common import add_seed_args, load_image as _load_image, resolve_seeds
+from benchmarks.common import psnr_auc, run_config, write_config, write_rows as _write_rows
 from benchmarks.optimization_followup import (
     BASELINE,
     TOP1,
     Candidate,
-    _load_image,
     _make_configs,
-    _psnr_auc,
     _select_images,
 )
 from structsplat import metrics as M
@@ -179,7 +177,7 @@ def run_candidate(image_path: Path, c: Candidate, args, seed: int | None = None)
         "psnr": round(float(out["psnr"]), 4),
         "ssim": round(float(out["ssim"]), 5),
         "ms_ssim": round(float(out["ms_ssim"]), 5),
-        "auc_psnr": _psnr_auc(hist),
+        "auc_psnr": psnr_auc(hist, round_digits=4),
         "n_gaussians": int(out["n_gaussians"]),
         "init_max_scale": init_scales["max_scale"],
         "init_p95_scale": init_scales["p95_scale"],
@@ -190,17 +188,6 @@ def run_candidate(image_path: Path, c: Candidate, args, seed: int | None = None)
         "total_seconds": round(float(total_seconds), 4),
         "iterations_run": iterations_run,
     }
-
-
-def _write_rows(path: Path, rows: list[dict]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.with_suffix(".json").write_text(json.dumps(rows, indent=2), encoding="utf-8")
-    if not rows:
-        return
-    with path.with_suffix(".csv").open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-        writer.writeheader()
-        writer.writerows(rows)
 
 
 def _aggregate(rows: list[dict]) -> list[dict]:
@@ -283,8 +270,6 @@ def main() -> None:
     p.add_argument("--budget", type=int, default=512)
     p.add_argument("--iters", type=int, default=80)
     p.add_argument("--max-side", type=int, default=160)
-    from benchmarks._util import add_seed_args, resolve_seeds
-
     add_seed_args(p)
     p.add_argument("--render-chunk", type=int, default=512)
     p.add_argument("--split-count", type=int, default=128)
@@ -298,7 +283,6 @@ def main() -> None:
     args.seed = args.seeds[0]
     args.device = args.device or ("cuda" if torch.cuda.is_available() else "cpu")
     args.outdir.mkdir(parents=True, exist_ok=True)
-    from benchmarks._util import run_config, write_config
     write_config(str(args.outdir), run_config(vars(args), device=args.device))
     images = _select_images(args.dataset_dir, args.image_count)
     rows = []

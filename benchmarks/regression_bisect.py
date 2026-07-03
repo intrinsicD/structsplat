@@ -7,7 +7,6 @@ writes compact evidence tables under ``ara/evidence``.
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 import os
 import shutil
@@ -16,6 +15,8 @@ import sys
 from pathlib import Path
 from statistics import mean, pstdev
 from urllib.request import urlretrieve
+
+from benchmarks.common import write_csv
 
 
 DEFAULT_IMAGES = [
@@ -238,13 +239,7 @@ def _git(repo: Path, *args: str) -> str:
 
 
 def _write_csv(path: Path, rows: list[dict]) -> None:
-    if not rows:
-        return
-    fields = sorted({k for row in rows for k in row.keys()})
-    with path.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=fields, lineterminator="\n")
-        writer.writeheader()
-        writer.writerows(rows)
+    write_csv(path, rows, sort_fieldnames=True)
 
 
 def _write_summary(path: Path, commits: list[dict], rows: list[dict]) -> None:
