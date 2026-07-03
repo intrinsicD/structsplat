@@ -5,7 +5,16 @@ import pytest
 torch = pytest.importorskip("torch")
 from structsplat.config import FitConfig, InitConfig
 from structsplat import init as _init
-from structsplat.fit import _carry_adam_state, _lr_factor, _make_optimizer, fit
+from structsplat.gaussians import GaussianField
+from structsplat.fit import (
+    _add_from_residual,
+    _carry_adam_state,
+    _lr_factor,
+    _make_optimizer,
+    _maybe_prune,
+    _split_from_residual,
+    fit,
+)
 
 
 def test_lr_factor_is_global_step_decay():
@@ -123,7 +132,77 @@ def test_fit_respects_field_scale_caps():
     assert float(torch.exp(out["field"].log_scales).max().detach()) <= 1.25 + 1e-6
 
 
-def test_tensor_residual_add_preserves_scale_caps():
+def test_split_uses_residual_colors_under_additive_renderer():
+    # additive splits must carry the residual (target - render), not the full target color,
+    # or the child double-counts brightness (FIT-002 #1).
+    H, W = 12, 12
+    target = torch.zeros(H, W, 3)
+    target[:, :, 0] = 0.8
+    render_img = torch.full((H, W, 3), 0.5)  # already contributes 0.5 red everywhere
+    field = _init.build_field(
+        target.numpy(), InitConfig(strategy="random", num_gaussians=6, seed=0))
+    base = dict(split_count=3, split_mode="duplicate", max_gaussians=64)
+    add_field, k = _split_from_residual(
+        field, target, render_img, FitConfig(renderer="additive", **base))
+    norm_field, _ = _split_from_residual(
+        field, target, render_img, FitConfig(renderer="normalized", **base))
+    assert k == 3
+    add_children = add_field.colors[-k:]
+    norm_children = norm_field.colors[-k:]
+    # normalized children ~= full target red (0.8); additive children ~= residual (0.8-0.5=0.3)
+    assert torch.allclose(norm_children[:, 0], torch.full((k,), 0.8), atol=1e-5)
+    assert torch.allclose(add_children[:, 0], torch.full((k,), 0.3), atol=1e-5)
+
+
+def test_zero_opacity_gaussian_is_pruned():
+    # a fully-transparent Gaussian contributes nothing but survived opacity-free pruning (#2).
+    means = np.array([[8.0, 8.0], [4.0, 4.0], [12.0, 12.0], [2.0, 14.0]], dtype=np.float32)
+    scales = np.full((4, 2), 2.0, dtype=np.float32)
+    # logits: three saturated-opaque, one saturated-transparent (index 1)
+    opac_logits = np.array([10.0, -20.0, 10.0, 10.0], dtype=np.float32)
+    field = GaussianField.from_numpy(means, scales, np.zeros(4), np.ones((4, 3)),
+                                     opacities=opac_logits)
+    cfg = FitConfig(prune_min_activity=1e-3, prune_keep_min=1)
+    pruned, keep = _maybe_prune(field, cfg, 16, 16)
+    assert keep is not None
+    assert not bool(keep[1])          # transparent Gaussian removed
+    assert bool(keep[0]) and bool(keep[2]) and bool(keep[3])
+
+
+def test_history_n_gaussians_pairs_with_prestep_psnr():
+    # on a split iteration the logged n_gaussians must be the pre-split count that produced the
+    # logged (pre-step) PSNR, not the post-split count (#3).
+    img = np.zeros((16, 16, 3), np.float32)
+    img[:, 8:] = 1.0
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=8, seed=0))
+    out = fit(field, target, FitConfig(iters=10, log_every=1, split_every=5, split_count=4,
+                                       split_mode="residual_add", max_gaussians=64),
+              verbose=False)
+    ng = out["history"]["n_gaussians"]
+    assert ng[4] == 8    # split fires at it=4; the row for it=4 is pre-split
+    assert ng[5] == 12   # subsequent rows see the grown field
+
+
+def test_densify_anisotropy_threaded_from_config():
+    # a larger densify_max_axis_ratio must make residual_tensor_add children more anisotropic (#4).
+    H, W = 24, 24
+    target = torch.zeros(H, W, 3)
+    target[:, 12:] = 1.0                    # a strong vertical edge -> high coherence
+    render_img = target.clone()
+    render_img[:, 11:13] = 0.0              # residual concentrated on the edge columns
+    field = _init.build_field(
+        target.numpy(), InitConfig(strategy="random", num_gaussians=6, seed=0))
+    common = dict(split_count=4, split_mode="residual_tensor_add", max_gaussians=64)
+
+    def child_ratio(max_ratio):
+        f, k = _add_from_residual(field, target, render_img,
+                                  FitConfig(densify_max_axis_ratio=max_ratio, **common),
+                                  tensor_aligned=True)
+        scales = torch.exp(f.log_scales[-k:])
+        return (scales.max(dim=1).values / scales.min(dim=1).values).max().item()
+
+    assert child_ratio(8.0) > child_ratio(2.0) + 0.5
     img = np.zeros((16, 16, 3), np.float32)
     img[:, 8:] = 1.0
     target = torch.as_tensor(img)

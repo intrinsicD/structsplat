@@ -71,12 +71,19 @@ class FitConfig:
     lr_decay_every: int | None = None
     lr_decay_gamma: float = 0.5
     prune_every: int | None = None
-    prune_min_activity: float = 0.0     # unnormalized weight sum; <=0 disables pruning
+    # unnormalized weight sum; <=0 disables pruning. When opacities are present the criterion is
+    # opacity-weighted (activity * sigmoid(opacity)), so the threshold is in the same weight-sum
+    # units scaled by opacity — a fully transparent Gaussian scores 0 and is pruned (FIT-002).
+    prune_min_activity: float = 0.0
     prune_keep_min: int = 16
     split_every: int | None = None
     split_count: int = 0
     split_mode: str = "duplicate"      # duplicate, support_duplicate, residual_add, residual_tensor_add
     split_scale: float = 0.7
+    # residual_tensor_add anisotropy, mirroring InitConfig semantics so the densifier and the
+    # init agree on what anisotropy means: ratio = 1 + (max_axis_ratio-1)*coherence**power.
+    densify_max_axis_ratio: float = 6.0
+    densify_coherence_power: float = 1.0
     max_gaussians: int | None = None
     early_stop_patience: int | None = None  # logged evals without improvement; None disables
     early_stop_min_delta: float = 0.0       # PSNR improvement required to reset patience

@@ -27,7 +27,7 @@ skill.
 | CORE-005 | Reference renderer memory bound + C0-continuous support cutoff | todo | CORE-003, CORE-004 |
 | INIT-005 | Init-math robustness, flanking unification, WSE test coverage | todo | INIT-003 |
 | INIT-006 | Init-time performance (quadtree, spacing, run-lengths, pair discovery) | todo | INIT-003, INIT-005 |
-| FIT-002 | Fitter correctness (split colors, opacity pruning, history pairing) | todo | FIT-001, CORE-004 |
+| FIT-002 | Fitter correctness (split colors, opacity pruning, history pairing) | done | FIT-001, CORE-004 |
 | FIT-003 | Fit-loop speed (device-side targets, SSIM hygiene, fused SSIM) | todo | FIT-001, BENCH-001 |
 | FIT-004 | Densification & convergence upgrades (fp-growth, relocation, NMS) | todo | FIT-002, BENCH-002 |
 | HIER-002 | Pyramid bookkeeping (iteration accounting, budgets, schedules) | todo | HIER-001, FIT-001 |
