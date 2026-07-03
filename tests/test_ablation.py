@@ -6,7 +6,7 @@ torch = pytest.importorskip("torch")
 
 from PIL import Image
 
-from benchmarks.ablation import run_ablation
+from benchmarks.ablation import run_ablation, fitness, _config_key
 
 
 def _write_toy(path):
@@ -46,3 +46,21 @@ def test_ablation_sweeps_flanking_and_writes_outputs(tmp_path):
     assert (outdir / "ablation.json").exists()
     assert (outdir / "ablation.csv").exists()
     assert (outdir / "summary.md").exists()
+    # BENCH-002: run reproducible from its own artifacts (resolved config + versions logged)
+    import json
+    cfg = json.loads((outdir / "config.json").read_text())
+    assert cfg["device"] == "cpu" and cfg["versions"]["torch"] is not None
+    assert cfg["resolved"]["flank_offsets"] == [0.0, 0.5]
+
+
+def test_fitness_uses_best_config_not_pooled_mean():
+    # two configs of one strategy at one budget: a good one and a bad one. fitness must return
+    # the best config's mean, not the pooled mean that a wide hyperparameter sweep would dilute.
+    rows = [
+        {"strategy": "aniso_flanking", "budget": 16, "flank_offset_frac": 0.0, "flat_frac": 0.02,
+         "corner_frac": 0.15, "max_axis_ratio": 4.0, "coherence_power": 1.0, "psnr": 30.0},
+        {"strategy": "aniso_flanking", "budget": 16, "flank_offset_frac": 0.5, "flat_frac": 0.02,
+         "corner_frac": 0.15, "max_axis_ratio": 4.0, "coherence_power": 1.0, "psnr": 10.0},
+    ]
+    assert len({_config_key(r) for r in rows}) == 2
+    assert fitness(rows, "aniso_flanking", 16) == 30.0   # best config, not the pooled mean (20)

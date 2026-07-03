@@ -1,8 +1,19 @@
 # BENCH-002: Benchmark harness experimental-validity fixes
 
-**Status: todo.** From the 2026-07-03 repo review. **This task gates every future sweep** —
+**Status: partial.** From the 2026-07-03 repo review. **This task gates every future sweep** —
 conclusions drawn before these fixes are confounded. The budget-fairness item is the single
 highest-severity finding in the repo.
+
+The science-gating fixes are done and tested: equal budgets (refine arms capped at the cell
+budget, `n_gaussians` per row), per-cell error isolation + resumable JSONL, `config.json`
+(resolved args + device + versions) from every harness, best-config `fitness()`, the corrected
+`_canonicalize`, the reconciled `scale_cap=none` baseline, symmetric render timing, one clamped
+(display-referred) metric convention per cross-repo row, the GPU-nondeterminism caveat, and the
+removal of all `/home/...` defaults (Instant-GI via `STRUCTSPLAT_INSTANT_GI`). **Remaining:** a
+multi-seed axis (`--seeds`, mean ± std) for the four cross-repo *comparison* scripts
+(`coco_fit_compare`, `cross_repo_matrix_compare`, `quadtree_init_compare`,
+`optimization_followup`) — those are single-seed and require COCO data + CUDA to exercise, so they
+are left as follow-up; the primary sweep harnesses (`ablation`, `stage_search`) already sweep seeds.
 
 ## Context
 1. **Budget unfairness in refine arms (high).** `stage_search.py` and
@@ -49,28 +60,28 @@ A sweep result is trustworthy by construction: equal budgets, resumable, reprodu
 own artifacts, statistically honest.
 
 ## Acceptance criteria
-- [ ] Refine arms capped at the cell budget by default (`max_gaussians=budget` unless
+- [x] Refine arms capped at the cell budget by default (`max_gaussians=budget` unless
       overridden, or refine configs start at budget − planned additions); an `n_gaussians`
       column added to result rows; test asserting no arm exceeds its budget.
-- [ ] Stage-search baseline scale_cap reconciled with shipped defaults: either ADR-0009 is
+- [x] Stage-search baseline scale_cap reconciled with shipped defaults: either ADR-0009 is
       amended to promote feature12 (citing a held-out run) or the baseline reverts to 'none';
       the `stage_search.py:57` comment matches reality.
-- [ ] Every harness writes `config.json` (resolved args + dataclass dicts + device + torch/
+- [x] Every harness writes `config.json` (resolved args + dataclass dicts + device + torch/
       package versions) into its outdir; rows carry strategy/iters where missing
       (`rate_distortion.py`).
-- [ ] Per-cell try/except with status/error rows; incremental JSONL appends (or periodic
+- [x] Per-cell try/except with status/error rows; incremental JSONL appends (or periodic
       rewrite) so partial sweeps are recoverable; summary writers guard empty methods
       (`_mean_or_none` pattern) — a sweep with one broken arm completes and says so.
-- [ ] `fitness()` aggregates per full config key (or max-over-configs, documented); plot uses
+- [x] `fitness()` aggregates per full config key (or max-over-configs, documented); plot uses
       best-config-per-strategy.
-- [ ] `_canonicalize` pins restricted to strategies that actually route through
+- [x] `_canonicalize` pins restricted to strategies that actually route through
       `_blue_noise_positions`; unit test enumerating quadtree × sampling combinations.
-- [ ] Comparison scripts accept `--seeds` and report mean ± std across images × seeds.
-- [ ] Timing comparisons run both closures under the same grad mode with symmetric setup.
-- [ ] Dataset/Instant-GI paths are CLI arguments with clear skip behavior; no `/home/alex`
+- [ ] Comparison scripts accept `--seeds` and report mean ± std across images × seeds. (follow-up)
+- [x] Timing comparisons run both closures under the same grad mode with symmetric setup.
+- [x] Dataset/Instant-GI paths are CLI arguments with clear skip behavior; no `/home/alex`
       defaults anywhere (`grep -r /home/alex benchmarks/` is empty).
-- [ ] One metric convention per row (clamped vs unclamped) across all columns, documented.
-- [ ] GPU nondeterminism caveat documented (README + benchmark skill), renderer/device/version
+- [x] One metric convention per row (clamped vs unclamped) across all columns, documented.
+- [x] GPU nondeterminism caveat documented (README + benchmark skill), renderer/device/version
       logged in all results.
 
 ## Interfaces touched

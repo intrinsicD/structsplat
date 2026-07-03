@@ -272,7 +272,8 @@ def write_summary(outdir: Path, rows: list[dict], images: list[Path], args) -> N
 
 def main() -> None:
     p = argparse.ArgumentParser(description="Compare quadtree aggregate initialization")
-    p.add_argument("--dataset-dir", type=Path, default=Path("/home/alex/Documents/datasets/train2014"))
+    p.add_argument("--dataset-dir", type=Path, default=None,
+                   help="COCO train2014 directory (required; no personal-path default, BENCH-002)")
     p.add_argument("--outdir", type=Path, default=Path("results/quadtree_init_compare"))
     p.add_argument("--image-count", type=int, default=8)
     p.add_argument("--budget", type=int, default=512)
@@ -285,8 +286,12 @@ def main() -> None:
     p.add_argument("--device", default=None)
     args = p.parse_args()
 
+    if args.dataset_dir is None:
+        raise SystemExit("--dataset-dir is required (path to the COCO train2014 images)")
     args.device = args.device or ("cuda" if torch.cuda.is_available() else "cpu")
     args.outdir.mkdir(parents=True, exist_ok=True)
+    from benchmarks._util import run_config, write_config
+    write_config(str(args.outdir), run_config(vars(args), device=args.device))
     images = _select_images(args.dataset_dir, args.image_count)
     rows = []
     for image in images:

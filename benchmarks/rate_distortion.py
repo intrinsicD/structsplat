@@ -30,13 +30,14 @@ def run_rd(images, budgets=(2000, 5000), strategy="aniso_flanking", seeds=(0,),
     if not files:
         raise SystemExit("no images found")
 
-    # self-contained run record (invariant 5): every knob that moves the numbers, logged once
-    run_config = {
+    # self-contained run record (invariant 5): every knob that moves the numbers + versions
+    from benchmarks._util import run_config as _run_config
+    run_config = _run_config({
         "strategy": strategy, "iters": iters, "qat_iters": qat_iters,
         "zlib_level": codec.CodecConfig().zlib_level, "seeds": list(seeds),
         "lr_means": lr_means, "lr_decay_every": lr_decay_every, "render_chunk": render_chunk,
-        "bit_mixes": ["/".join(map(str, m)) for m in bit_mixes], "device": device,
-    }
+        "bit_mixes": ["/".join(map(str, m)) for m in bit_mixes],
+    }, device=device)
     rows = []
     for path in files:
         img = load_image(path)

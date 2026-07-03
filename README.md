@@ -87,6 +87,12 @@ anisotropy metric, and the conic inverse-covariance + render compositing formula
 The PyTorch modules compile and are covered by tests that run once `torch` is installed
 (`pytest -q`); run the smoke test locally to confirm the fit loop end-to-end on your hardware.
 
+**Reproducibility caveat.** Every benchmark writes a `config.json` (resolved args + device +
+torch/numpy/structsplat versions) so a run is reproducible from its own artifacts. Results are
+bit-exact from a seed only on **CPU**: the CUDA renderer accumulates with atomics
+(`atomicAdd` / `index_add`), so GPU renders vary run to run — the logged renderer/device/versions
+bound that variation. See the `benchmark` skill for the full experimental-validity rules.
+
 ## Selected references
 GaussianImage (ECCV 2024) · Image-GS (SIGGRAPH 2025) · AIR, Fast-2DGS (2025) · GaussianVision
 (structured init) · Li & Wei, *Anisotropic Blue Noise Sampling* (SIGGRAPH Asia 2010) · Yuksel,

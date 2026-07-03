@@ -12,7 +12,6 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import math
 import time
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -159,9 +158,16 @@ def _make_configs(c: Candidate, budget: int, seed: int, iters: int, render_chunk
                   split_count: int, max_gaussians: int | None) -> tuple[InitConfig, FitConfig,
                                                                         StructureTensorConfig]:
     scfg = StructureTensorConfig(gradient_operator=c.tensor, color_space=c.tensor_color)
+    # equal-budget arms (BENCH-002): a refine arm caps at the cell budget and starts below it so
+    # its planned additions land AT budget, instead of running with up to +split_count more
+    # capacity than the baselines it is ranked against.
+    adds = c.refine != "none"
+    if adds and max_gaussians is None:
+        max_gaussians = budget
+    init_budget = max(1, budget - split_count) if adds else budget
     icfg = InitConfig(
         strategy=c.strategy,
-        num_gaussians=budget,
+        num_gaussians=init_budget,
         candidate_oversample=c.candidate_oversample,
         density_mode=c.density,
         sampling_mode=c.sampling,
@@ -380,16 +386,20 @@ def run_spatial_benchmark(images: list[Path], args) -> list[dict]:
         )
         assert field is not None and fcfg is not None and target is not None
         H, W = target.shape[:2]
-        ref_s, ref_img = _time_call(
-            lambda: render_field(field.means, field.conics(fcfg.aa_dilation), field.colors,
-                                 field.radii(fcfg.sigma_cutoff, fcfg.aa_dilation), H, W,
-                                 fcfg.render_chunk, fcfg.renderer, field.opacity_values()),
-            repeats=args.render_repeats,
-        )
-        tile_s, tile_img = _time_call(
-            lambda: render_tiled_forward(field, fcfg, H, W, args.tile_size),
-            repeats=args.render_repeats,
-        )
+        # symmetric timing (BENCH-002): both closures under the SAME grad mode. render_tiled_forward
+        # is @torch.no_grad, so timing the reference WITH autograd graph construction inflated the
+        # reported speedup; a forward-speed benchmark measures both forwards under no_grad.
+        with torch.no_grad():
+            ref_s, ref_img = _time_call(
+                lambda: render_field(field.means, field.conics(fcfg.aa_dilation), field.colors,
+                                     field.radii(fcfg.sigma_cutoff, fcfg.aa_dilation), H, W,
+                                     fcfg.render_chunk, fcfg.renderer, field.opacity_values()),
+                repeats=args.render_repeats,
+            )
+            tile_s, tile_img = _time_call(
+                lambda: render_tiled_forward(field, fcfg, H, W, args.tile_size),
+                repeats=args.render_repeats,
+            )
         max_abs = float((ref_img - tile_img).abs().max().detach().cpu())
         rows.append({
             "section": "spatial_render",
@@ -488,7 +498,8 @@ def write_summary(outdir: Path, sections: dict[str, list[dict]], images: list[Pa
 
 def main() -> None:
     p = argparse.ArgumentParser(description="Run bounded optimization follow-up experiments")
-    p.add_argument("--dataset-dir", type=Path, default=Path("/home/alex/Documents/datasets/train2014"))
+    p.add_argument("--dataset-dir", type=Path, default=None,
+                   help="COCO train2014 directory (required; no personal-path default, BENCH-002)")
     p.add_argument("--outdir", type=Path, default=Path("results/optimization_followup"))
     p.add_argument("--image-count", type=int, default=8)
     p.add_argument("--budget", type=int, default=512)
@@ -504,8 +515,12 @@ def main() -> None:
     p.add_argument("--device", default=None)
     args = p.parse_args()
 
+    if args.dataset_dir is None:
+        raise SystemExit("--dataset-dir is required (path to the COCO train2014 images)")
     args.device = args.device or ("cuda" if torch.cuda.is_available() else "cpu")
     args.outdir.mkdir(parents=True, exist_ok=True)
+    from benchmarks._util import run_config, write_config
+    write_config(str(args.outdir), run_config(vars(args), device=args.device))
     images = _select_images(args.dataset_dir, args.image_count)
 
     sections: dict[str, list[dict]] = {}
