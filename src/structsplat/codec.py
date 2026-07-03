@@ -27,7 +27,8 @@ import torch
 
 from .config import FitConfig
 from .gaussians import GaussianField
-from .render import render
+from .render import render_field
+from .fit import _pixel_loss
 from . import metrics as M  # noqa: N812
 
 _MAGIC = b"SSPL1"
@@ -96,13 +97,29 @@ def color_ranges(field: GaussianField) -> tuple[list[float], list[float]]:
     return c.min(axis=0).tolist(), c.max(axis=0).tolist()
 
 
-def encode(field: GaussianField, H: int, W: int, cfg: CodecConfig | None = None) -> bytes:
+def _means_extent(means: np.ndarray, H: int, W: int) -> tuple[list[float], list[float]]:
+    """Quantization domain for means: the image box unioned with the fitted means' actual range.
+
+    fit() never clamps means, so a Gaussian can sit off-image; quantizing over just [0, W-1]
+    snapped it to the border with error unbounded by the lattice step. Covering the real extent
+    (padded to the image box) bounds the round-trip error by one lattice step (COMP-002).
+    """
+    lo = [float(min(0.0, np.floor(means[:, 0].min()))), float(min(0.0, np.floor(means[:, 1].min())))]
+    hi = [float(max(W - 1.0, np.ceil(means[:, 0].max()))),
+          float(max(H - 1.0, np.ceil(means[:, 1].max())))]
+    return lo, hi
+
+
+def encode(field: GaussianField, H: int, W: int, cfg: CodecConfig | None = None,
+           fcfg: FitConfig | None = None) -> bytes:
     cfg = cfg or CodecConfig()
+    fcfg = fcfg or FitConfig()
     means, log_scales, theta, colors, opacity_p = _params(field)
     n = means.shape[0]
     scale_hi = float(np.log(max(H, W)))
     clo = np.asarray(cfg.color_lo if cfg.color_lo is not None else colors.min(axis=0))
     chi = np.asarray(cfg.color_hi if cfg.color_hi is not None else colors.max(axis=0))
+    means_lo, means_hi = _means_extent(means, H, W)
 
     if cfg.morton_reorder:
         order = _morton_order(means[:, 0], means[:, 1], H, W)
@@ -110,7 +127,7 @@ def encode(field: GaussianField, H: int, W: int, cfg: CodecConfig | None = None)
         if opacity_p is not None:
             opacity_p = opacity_p[order]
 
-    q_means = _quant(means, [0.0, 0.0], [W - 1.0, H - 1.0], cfg.bits_means)
+    q_means = _quant(means, means_lo, means_hi, cfg.bits_means)
     if cfg.morton_reorder:  # delta along the Morton curve; zlib eats small deltas
         q_means = np.diff(q_means, axis=0, prepend=np.zeros((1, 2), np.uint32)).astype(np.uint32)
         q_means &= (1 << cfg.bits_means) - 1  # wraparound-safe modular deltas
@@ -131,8 +148,16 @@ def encode(field: GaussianField, H: int, W: int, cfg: CodecConfig | None = None)
         "bits": [cfg.bits_means, cfg.bits_scales, cfg.bits_rot, cfg.bits_colors],
         "morton": bool(cfg.morton_reorder),
         "color_lo": clo.tolist(), "color_hi": chi.tolist(),
+        "means_lo": means_lo, "means_hi": means_hi,
         "has_opacity": opacity_p is not None,
         "bits_opacity": cfg.bits_opacity,
+        # render semantics so the blob is self-describing (COMP-002): decode_and_render needs no
+        # out-of-band FitConfig. scale_max is intentionally NOT stored — it is a fit-time
+        # optimization cap, irrelevant to the frozen decoded field.
+        "renderer": fcfg.renderer,
+        "aa_dilation": float(fcfg.aa_dilation),
+        "sigma_cutoff": float(fcfg.sigma_cutoff),
+        "render_chunk": int(fcfg.render_chunk),
     }).encode()
     blob = _MAGIC + struct.pack("<I", len(header)) + header
     for s in streams:
@@ -167,7 +192,10 @@ def decode(blob: bytes, device: str = "cpu") -> GaussianField:
     q_rot = _unpack(raws[2], b_rot, n)
     q_colors = _unpack(raws[3], b_colors, 3 * n).reshape(3, n).T
 
-    means = _dequant(q_means, [0.0, 0.0], [W - 1.0, H - 1.0], b_means)
+    # older blobs (pre-COMP-002) quantized means over the image box
+    means_lo = h.get("means_lo", [0.0, 0.0])
+    means_hi = h.get("means_hi", [W - 1.0, H - 1.0])
+    means = _dequant(q_means, means_lo, means_hi, b_means)
     log_scales = _dequant(q_scales, _SCALE_LO, float(np.log(max(H, W))), b_scales)
     theta = _dequant(q_rot, 0.0, np.pi, b_rot)
     colors = _dequant(q_colors, np.asarray(h["color_lo"]), np.asarray(h["color_hi"]), b_colors)
@@ -182,6 +210,30 @@ def decode(blob: bytes, device: str = "cpu") -> GaussianField:
 
     return GaussianField(t(means), t(log_scales), t(theta), t(colors),
                          None if opacities is None else t(opacities))
+
+
+def blob_header(blob: bytes) -> dict:
+    """Parse just the JSON header of a codec blob (n, H, W, bits, render semantics, ...)."""
+    assert blob[:5] == _MAGIC, "not a structsplat codec blob"
+    (hlen,) = struct.unpack_from("<I", blob, 5)
+    return json.loads(blob[9:9 + hlen])
+
+
+def decode_and_render(blob: bytes, device: str = "cpu") -> torch.Tensor:
+    """Decode a blob and render it using the render semantics stored in its header.
+
+    Self-contained: needs no out-of-band FitConfig (COMP-002). Returns an (H, W, 3) tensor.
+    """
+    h = blob_header(blob)
+    field = decode(blob, device=device)
+    H, W = h["H"], h["W"]
+    aa = float(h.get("aa_dilation", 0.0))
+    sigma = float(h.get("sigma_cutoff", 3.0))
+    mode = h.get("renderer", "normalized")
+    chunk = int(h.get("render_chunk", 512))
+    return render_field(field.means, field.conics(aa), field.colors,
+                        field.radii(sigma, aa), H, W, chunk, mode, field.opacity_values(),
+                        scales=field.scales(), rotations=field.rotations)
 
 
 def _ste(x: torch.Tensor, lo, hi, bits: int) -> torch.Tensor:
@@ -227,13 +279,16 @@ def qat_finetune(field: GaussianField, target: torch.Tensor, fcfg: FitConfig,
         ccfg = CodecConfig(**{**ccfg.__dict__, "color_lo": lo, "color_hi": hi})
     field.trainable()
     opt = torch.optim.Adam(field.parameter_groups(fcfg.lr_means, fcfg.lr_scales,
-                                                  fcfg.lr_rot, fcfg.lr_color))
+                                                  fcfg.lr_rot, fcfg.lr_color, fcfg.lr_opacity))
     for it in range(iters):
         qf = quantized_view(field, H, W, ccfg)
-        img = render(qf.means, qf.conics(fcfg.aa_dilation), qf.colors,
-                     qf.radii(fcfg.sigma_cutoff, fcfg.aa_dilation), H, W, fcfg.render_chunk,
-                     opacities=qf.opacity_values())
-        pix = (img - target).abs().mean()
+        # render through the field's actual compositing model, not a hardcoded normalized one:
+        # an additive/CUDA/gsplat-fit field must fine-tune under its own renderer (COMP-002)
+        img = render_field(qf.means, qf.conics(fcfg.aa_dilation), qf.colors,
+                           qf.radii(fcfg.sigma_cutoff, fcfg.aa_dilation), H, W, fcfg.render_chunk,
+                           fcfg.renderer, qf.opacity_values(),
+                           scales=qf.scales(), rotations=qf.rotations)
+        pix = _pixel_loss(img, target, fcfg.pixel_loss, fcfg.charbonnier_eps)
         loss = (1 - fcfg.ssim_weight) * pix + fcfg.ssim_weight * (1 - M.ssim(img, target))
         opt.zero_grad(set_to_none=True)
         loss.backward()
@@ -251,11 +306,11 @@ def rd_point(field: GaussianField, target: torch.Tensor, fcfg: FitConfig,
     """Encode -> decode -> measure. bpp is the actual bitstream size over H*W."""
     H, W = target.shape[0], target.shape[1]
     ccfg = ccfg or CodecConfig()
-    blob = encode(field, H, W, ccfg)
-    dec = decode(blob, device=str(target.device))
-    img = render(dec.means, dec.conics(fcfg.aa_dilation), dec.colors,
-                 dec.radii(fcfg.sigma_cutoff, fcfg.aa_dilation), H, W, fcfg.render_chunk,
-                 opacities=dec.opacity_values())
+    blob = encode(field, H, W, ccfg, fcfg)                 # blob carries render semantics
+    img = decode_and_render(blob, device=str(target.device))
+    # display-referred RD: clamp to [0,1] before metrics so bpp-vs-quality is comparable to
+    # display baselines (JPEG / GaussianImage) that cannot represent out-of-range values (COMP-002)
+    img = img.clamp(0.0, 1.0)
     bits = [ccfg.bits_means, ccfg.bits_scales, ccfg.bits_rot, ccfg.bits_colors]
     raw_bits = field.n * (2 * bits[0] + 2 * bits[1] + bits[2] + 3 * bits[3])
     if field.opacities is not None:

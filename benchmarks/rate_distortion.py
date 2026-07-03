@@ -17,6 +17,7 @@ def run_rd(images, budgets=(2000, 5000), strategy="aniso_flanking", seeds=(0,),
            render_chunk=512, lr_means=None, lr_decay_every=None,
            outdir="results_rd", device=None):
     import torch
+    from dataclasses import replace
     from structsplat.cli import load_image
     from structsplat import init as _init, codec
     from structsplat.config import InitConfig, FitConfig
@@ -29,6 +30,13 @@ def run_rd(images, budgets=(2000, 5000), strategy="aniso_flanking", seeds=(0,),
     if not files:
         raise SystemExit("no images found")
 
+    # self-contained run record (invariant 5): every knob that moves the numbers, logged once
+    run_config = {
+        "strategy": strategy, "iters": iters, "qat_iters": qat_iters,
+        "zlib_level": codec.CodecConfig().zlib_level, "seeds": list(seeds),
+        "lr_means": lr_means, "lr_decay_every": lr_decay_every, "render_chunk": render_chunk,
+        "bit_mixes": ["/".join(map(str, m)) for m in bit_mixes], "device": device,
+    }
     rows = []
     for path in files:
         img = load_image(path)
@@ -47,22 +55,35 @@ def run_rd(images, budgets=(2000, 5000), strategy="aniso_flanking", seeds=(0,),
                 out = fit(field, target, fcfg, verbose=False)
                 field = out["field"]
                 base = {"image": name, "budget": budget, "seed": seed,
-                        "fit_psnr": round(out["psnr"], 4)}
+                        "strategy": strategy, "iters": iters, "qat_iters": qat_iters,
+                        "zlib_level": ccfg_zlib(), "fit_psnr": round(out["psnr"], 4)}
                 for mix in bit_mixes:
                     ccfg = codec.CodecConfig(bits_means=mix[0], bits_scales=mix[1],
                                              bits_rot=mix[2], bits_colors=mix[3])
                     r = codec.rd_point(field, target, fcfg, ccfg)
-                    rows.append({**base, "qat": False, **_row(r)})
+                    rows.append({**base, "mode": "none", "qat": False, **_row(r)})
                     print(rows[-1])
                     if qat_iters > 0:
                         copy = field.detached()
                         ccfg_q = codec.qat_finetune(copy, target, fcfg, ccfg, iters=qat_iters)
                         rq = codec.rd_point(copy, target, fcfg, ccfg_q)
-                        rows.append({**base, "qat": True, **_row(rq)})
+                        rows.append({**base, "mode": "qat", "qat": True, **_row(rq)})
+                        print(rows[-1])
+                        # equal-budget control: the SAME qat_iters of plain (no-STE) training, so
+                        # the QAT gain is isolated from the extra compute it also spends (COMP-002)
+                        ctrl = field.detached()
+                        fit(ctrl, target, replace(fcfg, iters=qat_iters), verbose=False)
+                        rc = codec.rd_point(ctrl, target, fcfg, ccfg)
+                        rows.append({**base, "mode": "refine_noste", "qat": False, **_row(rc)})
                         print(rows[-1])
 
-    _write(rows, outdir)
+    _write(rows, outdir, run_config)
     return rows
+
+
+def ccfg_zlib() -> int:
+    from structsplat import codec
+    return codec.CodecConfig().zlib_level
 
 
 def _row(r):
@@ -71,19 +92,24 @@ def _row(r):
             "psnr": round(r["psnr"], 4), "ms_ssim": round(r["ms_ssim"], 5)}
 
 
-def _write(rows, outdir):
+def _write(rows, outdir, run_config=None):
     with open(os.path.join(outdir, "rate_distortion.json"), "w") as f:
-        json.dump(rows, f, indent=2)
+        json.dump({"config": run_config, "rows": rows}, f, indent=2)
+    if run_config is not None:
+        with open(os.path.join(outdir, "rate_distortion_config.json"), "w") as f:
+            json.dump(run_config, f, indent=2)
     if rows:
         with open(os.path.join(outdir, "rate_distortion.csv"), "w", newline="") as f:
             w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
             w.writeheader()
             w.writerows(rows)
-    lines = ["# Rate-distortion (bpp vs quality)\n",
-             "| image | budget | bits (mu/s/rot/c) | qat | bpp | PSNR | MS-SSIM |",
-             "|---|---:|---|---|---:|---:|---:|"]
+    lines = ["# Rate-distortion (bpp vs quality)\n"]
+    if run_config is not None:
+        lines.append("Config: " + ", ".join(f"{k}={v}" for k, v in run_config.items()) + "\n")
+    lines += ["| image | budget | bits (mu/s/rot/c) | mode | bpp | PSNR | MS-SSIM |",
+              "|---|---:|---|---|---:|---:|---:|"]
     for r in rows:
-        lines.append(f"| {r['image']} | {r['budget']} | {r['bits']} | {'y' if r['qat'] else 'n'} "
+        lines.append(f"| {r['image']} | {r['budget']} | {r['bits']} | {r.get('mode', '')} "
                      f"| {r['bpp']:.3f} | {r['psnr']:.2f} | {r['ms_ssim']:.4f} |")
     with open(os.path.join(outdir, "rate_distortion.md"), "w") as f:
         f.write("\n".join(lines) + "\n")

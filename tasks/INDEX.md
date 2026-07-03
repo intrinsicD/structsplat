@@ -35,7 +35,7 @@ skill.
 | BENCH-003 | Benchmark script consolidation + documentation | todo | BENCH-002 |
 | ABL-003 | Bisect the undiagnosed −0.794 dB flagship regression | todo | — |
 | ABL-004 | Killer controls + full ABL-001 run + committed evidence | todo | BENCH-002, ABL-003, FIT-004 |
-| COMP-002 | Codec / metrics / CLI correctness and protocol fixes | todo | COMP-001, FIT-001 |
+| COMP-002 | Codec / metrics / CLI correctness and protocol fixes | done | COMP-001, FIT-001 |
 | COMP-003 | Compression-ratio ladder (scale ranges → planes → LSQ → VQ → entropy) | todo | COMP-002, BENCH-002 |
 | DOCS-001 | Docs-sync backfill (stale status, missing ADRs, ara scaffold) | todo | — |
 

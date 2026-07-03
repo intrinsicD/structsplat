@@ -39,6 +39,25 @@ normalized reference renderer — no separate decode path to maintain.
 - The pyramid's LOD-prefix property is not yet exploited (progressive decoding would need
   per-level streams); noted in COMP-001 as follow-up.
 
+## Amendment (COMP-002): self-describing header + fitted-domain means
+
+The bitstream is still `SSPL1`, but the JSON header gained fields (backward-compatible: `decode`
+supplies pre-COMP-002 defaults when they are absent):
+- **means domain**: `means_lo`/`means_hi` — the image box unioned with the fitted means' actual
+  range. `fit()` never clamps means, so an off-image Gaussian used to snap to the border with
+  error unbounded by the lattice step; quantizing over the stored extent bounds it by one step.
+- **render semantics**: `renderer`, `aa_dilation`, `sigma_cutoff`, `render_chunk`. The blob is now
+  self-describing — `decode_and_render(blob)` reproduces the fitted renderer's output with no
+  out-of-band `FitConfig`. `qat_finetune`/`rd_point` render through `fcfg.renderer` (not a
+  hardcoded normalized path), so additive/CUDA/gsplat-fit fields settle and are scored under their
+  own compositing model. `scale_max` is intentionally **not** stored: it is a fit-time
+  optimization cap, irrelevant to the frozen decoded field.
+
+RD metrics are display-referred (render clamped to `[0,1]` before PSNR/MS-SSIM); the equal-budget
+no-STE control row in `rate_distortion.py` isolates QAT's lattice-settling from the extra compute
+it spends. See ADR-0006 for the additive renderer these paths now honor.
+
 ## Links
 Depends on ADR-0002 (RS params), ADR-0003 (order-independent normalized renderer). Implements the
-first acceptance criterion of COMP-001.
+first acceptance criterion of COMP-001; COMP-002 fixes render-semantics coverage and the means
+domain.

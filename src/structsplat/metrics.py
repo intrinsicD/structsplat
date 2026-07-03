@@ -8,8 +8,15 @@ every cell of a comparison, but do not quote these numbers against papers withou
   * ssim() uses zero-padded convolutions and averages over all pixels, which biases border
     windows relative to the valid-window formulation (Wang et al. use valid windows).
   * ms_ssim() applies the full SSIM (including luminance) at every scale instead of
-    contrast*structure at the fine scales; negatives are clamped before the power. For
-    paper-comparable numbers install pytorch-msssim (the `[metrics]` extra) and report that.
+    contrast*structure at the fine scales; negatives are clamped before the power. It drops any
+    scale whose smaller side is below the SSIM window (those scales are dominated by zero
+    padding) and renormalizes the remaining weights. For paper-comparable numbers install
+    pytorch-msssim (the `[metrics]` extra) and report that.
+  * Clamping convention (COMP-002): metrics here operate on whatever tensor they are given.
+    Fit-time / training metrics are computed on the *raw* (possibly out-of-[0,1]) render so the
+    reported number tracks the loss the optimizer sees. Display-referred rate-distortion metrics
+    (codec.rd_point) clamp the render to [0,1] first, so bpp-vs-quality numbers are comparable to
+    display-referred baselines (JPEG / GaussianImage) that cannot represent out-of-range values.
 """
 from __future__ import annotations
 import torch
@@ -50,15 +57,27 @@ def ssim(pred, target, win: int = 11, sigma: float = 1.5) -> torch.Tensor:
     return s.mean()
 
 
-def ms_ssim(pred, target, weights=(0.0448, 0.2856, 0.3001, 0.2363, 0.1333)) -> float:
+def ms_ssim(pred, target, weights=(0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
+            win: int = 11) -> float:
+    # Accept HWC or BCHW; ssim() consumes BCHW directly (the old squeeze(0).permute crashed on
+    # a true (B,3,H,W) batch and was a no-op round-trip for B=1). COMP-002.
     p, t = _to_bchw(pred), _to_bchw(target)
-    vals = []
-    for i, _ in enumerate(weights):
-        vals.append(ssim(p.squeeze(0).permute(1, 2, 0), t.squeeze(0).permute(1, 2, 0)))
+    vals, used_w = [], []
+    for i, w in enumerate(weights):
+        if min(p.shape[-2], p.shape[-1]) < win:
+            break  # a scale smaller than the SSIM window is dominated by zero padding: drop it
+        vals.append(ssim(p, t, win=win))
+        used_w.append(w)
         if i < len(weights) - 1:
             p = F.avg_pool2d(p, 2)
             t = F.avg_pool2d(t, 2)
-    ms = torch.stack([v.clamp_min(1e-6) ** w for v, w in zip(vals, weights)]).prod()
+    if not vals:
+        raise ValueError(
+            f"ms_ssim: image {tuple(p.shape[-2:])} smaller than the SSIM window {win}; "
+            "use ssim() with a smaller window for images below one window.")
+    tot = sum(used_w)
+    used_w = [w / tot for w in used_w]  # renormalize over the scales actually used
+    ms = torch.stack([v.clamp_min(1e-6) ** w for v, w in zip(vals, used_w)]).prod()
     return float(ms)
 
 
