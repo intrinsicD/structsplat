@@ -442,3 +442,49 @@ tree:
       - "src/structsplat/config.py"
       - "tests/test_render.py"
     status: resolved
+  - id: N23
+    type: decision
+    title: "Adopt exact-CUDA staged ABL-004 protocol"
+    provenance: user
+    timestamp: "2026-07-04T11:10+0200"
+    choice: >
+      Add renderer selection to the ABL-001/ABL-004 ablation harness, switch
+      the ABL-004 full wrapper to exact CUDA by default, run calibration cells,
+      and record a staged decision-grade protocol instead of launching the
+      original multi-month reference-renderer grid.
+    alternatives:
+      - "Run the original PyTorch-reference full protocol despite the multi-month local estimate."
+      - "Abandon ABL-004 full evidence as infeasible."
+      - "Only run small smoke tests without a predeclared staged protocol."
+    evidence:
+      - "tasks/ABL-004-controls-and-full-run.md"
+      - "ara/evidence/abl004-first-shard-2026-07-04"
+    also_depends_on: [N19, N20]
+    status: resolved
+  - id: N24
+    type: experiment
+    title: "ABL-004 exact-CUDA runtime calibration"
+    provenance: ai-executed
+    timestamp: "2026-07-04T11:10+0200"
+    result: >
+      Added `--renderer` to `benchmarks.ablation`, included renderer in
+      ablation cell identity and summaries, and changed
+      `scripts/run_abl004_full_ablation.sh` to default to `RENDERER=cuda`.
+      With `LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6`, ran five
+      full-iteration calibration cells on `kodim01`, max-side 768, budget
+      2000, seed 0, 1500 iterations, exact CUDA: random, aniso_flanking,
+      floyd_steinberg, density_random, and random_relocate. Mean fit time was
+      21.606 s and mean init+fit time was 21.801 s; individual fit times were
+      20.589-22.309 s. The full 3,696-cell matrix now estimates to about
+      0.93 GPU-days at flat 2k cost or 4.31 GPU-days with linear budget scaling.
+      The run also showed aniso_flanking and density_random tied on PSNR at
+      2k/kodim01 seed0 while floyd_steinberg led MS-SSIM among the five
+      calibration arms; this is calibration evidence only, not the ABL-004
+      conclusion.
+    evidence:
+      - "ara/evidence/abl004-cuda-calibration-2026-07-04"
+      - "benchmarks/ablation.py"
+      - "scripts/run_abl004_full_ablation.sh"
+      - "tasks/ABL-004-controls-and-full-run.md"
+    also_depends_on: [N19, N23]
+    status: resolved

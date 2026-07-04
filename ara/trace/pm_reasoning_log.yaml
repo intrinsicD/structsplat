@@ -97,3 +97,8 @@ entries:
       - "Routed INIT-006 completion as N21 because the turn produced multiple committed performance implementations plus benchmark evidence and retired the task artifact."
       - "Routed the CORE-005 element-budget helper as N22 because it is a committed implementation slice with passing validation, but not enough to retire CORE-005."
       - "Did not stage new interpretive claims: the performance numbers are direct experiment facts recorded in the retired task and trace nodes."
+  - turn: "2026-07-04_001#3"
+    notes:
+      - "Routed the user's approval of the proposed ABL-004 plan as N23 decision because it selected exact-CUDA renderer support, wrapper defaulting, calibration, and a staged decision protocol over the original exhaustive reference-renderer plan."
+      - "Routed the five-cell exact-CUDA calibration as N24 experiment because it produced new measured runtime and quality evidence plus curated artifacts."
+      - "Did not crystallize a new superiority claim from the calibration because it was designed for runtime planning and sanity checking, not as a statistically powered ABL-004 result."

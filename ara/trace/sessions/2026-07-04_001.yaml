@@ -2,9 +2,9 @@ session:
   id: "2026-07-04_001"
   date: "2026-07-04"
   started: "2026-07-04T00:00+0200"
-  last_turn: "2026-07-04T10:53+0200"
-  turn_count: 2
-  summary: "Advanced ABL-004 evidence, completed and retired INIT-006 init-time performance, and started CORE-005 with the shared render element-budget helper."
+  last_turn: "2026-07-04T11:10+0200"
+  turn_count: 3
+  summary: "Advanced ABL-004 evidence, completed and retired INIT-006, started CORE-005, and recalibrated ABL-004 around exact CUDA plus a staged decision protocol."
 
 events_logged:
   - turn: 1
@@ -31,6 +31,18 @@ events_logged:
     routing: direct
     provenance: ai-executed
     summary: "Started CORE-005 by hoisting `_element_budget(chunk)` into render.py and replacing duplicate render/fit budget formulas."
+  - turn: 3
+    type: decision
+    id: "N23"
+    routing: direct
+    provenance: user
+    summary: "User approved switching ABL-004 to exact CUDA calibration plus a staged decision-grade protocol instead of the original multi-month reference-renderer grid."
+  - turn: 3
+    type: experiment
+    id: "N24"
+    routing: direct
+    provenance: ai-executed
+    summary: "Added ablation `--renderer`, defaulted ABL-004 wrapper to exact CUDA, and ran five full-iteration kodim01/2k calibration cells; mean fit 21.606s."
 
 ai_actions:
   - turn: 1
@@ -97,6 +109,25 @@ ai_actions:
     action: "Ran verification after each slice, including full `PYTHONPATH=src:. pytest -q` and `ruff check src tests benchmarks scripts/prepare_abl004_images.py`; final full suite passed 162 tests with 12 skipped."
     provenance: ai-executed
     files_changed: []
+  - turn: 3
+    action: "Implemented renderer selection in the ABL-001/ABL-004 ablation harness, made renderer part of resume identity and summaries, and defaulted the full ABL-004 wrapper to exact CUDA."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/ablation.py"
+      - "tests/test_ablation.py"
+      - "scripts/run_abl004_full_ablation.sh"
+      - "benchmarks/README.md"
+  - turn: 3
+    action: "Ran exact-CUDA calibration with system libstdc++ preload and curated the small evidence bundle."
+    provenance: ai-executed
+    files_changed:
+      - "ara/evidence/abl004-cuda-calibration-2026-07-04/"
+      - "ara/evidence/README.md"
+      - "tasks/ABL-004-controls-and-full-run.md"
+  - turn: 3
+    action: "Ran validation: `tests/test_ablation.py`, full `PYTHONPATH=src:. pytest -q`, Python ruff check, and `bash -n scripts/run_abl004_full_ablation.sh`."
+    provenance: ai-executed
+    files_changed: []
 
 claims_touched:
   - id: C04
@@ -108,13 +139,16 @@ key_context:
     excerpt: "User asked to continue tasks in correct order, planning each, implementing, testing, fixing, committing, and iterating."
   - turn: 2
     excerpt: "User again asked to continue tasks in correct order, implement, test, commit, retire done tasks to tasks/done, and iterate."
+  - turn: 3
+    excerpt: "User approved the proposal to add renderer support, switch ABL-004 to exact CUDA, run calibration cells, and adopt a staged protocol."
 
 open_threads:
-  - "Full ABL-001/ABL-004 sweep remains open; the first full-protocol cell took 780.3784 s on the local RTX 3050."
+  - "Full ABL-001/ABL-004 sweep remains open; exact-CUDA calibration reduces the estimate to about 4.31 GPU-days under linear budget scaling, but it still needs scheduled/job-queue execution."
   - "README hypothesis section and ABL-001 status should only be finalized after the full sweep or an explicit failed-with-findings decision."
   - "Native external-repository runs remain pending where dependencies/checkpoints are available, especially Instant-GI via STRUCTSPLAT_INSTANT_GI."
   - "CORE-005 remains partial: gradient checkpointing, support fade across reference/CUDA paths, and fade benchmark/ADR decision are still open."
+  - "Next ABL-004 practical step is the staged screen: all 11 arms on a balanced 8-image subset, budgets {2k,5k}, seed 0, exact CUDA, max-side 768, 1500 iters."
 
 ai_suggestions_pending:
-  - "Run future ABL-004 shards on faster hardware or a job queue; use MAX_NEW_CELLS to advance the resumable matrix safely."
+  - "Run future ABL-004 shards with `LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6` in this workspace so the exact CUDA extension loads."
   - "Continue CORE-005 with the opt-in checkpointing slice before support-fade math, because the shared element-budget helper is now in place."
