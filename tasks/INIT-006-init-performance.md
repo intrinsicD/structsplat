@@ -38,7 +38,7 @@ Feature-aware init stays interactive at the default 20k budget on 1–4 MP image
       O(points); identical pair sets.
 - [x] `dart_throwing` uses a per-cell/local max accepted radius for its reach bound; identical
       accepted sets given the same rng.
-- [ ] `_pair_d2` hoists flat metric components (m00/m01/m11) once per call site.
+- [x] `_pair_d2` hoists flat metric components (m00/m01/m11) once per call site.
 - [ ] The percentile ref is computed once in `st.compute`, stored on `StructureTensor`, and
       consumed by density/init (falling back to local computation when absent).
 - [ ] A timing table (before/after per function at N∈{5k, 20k}) recorded in this file's notes.
@@ -68,6 +68,10 @@ Feature-aware init stays interactive at the default 20k budget on 1–4 MP image
   disk. When the old global window is larger than the occupied-cell set, it scans occupied cells
   directly instead of empty offsets. Focused coverage compares exact Euclidean and anisotropic
   accepted sets against the previous global-window reference for the same rng.
+- 2026-07-04 partial implementation: `_pair_d2` now accepts pre-sliced metric components, and the
+  repeated `dart_throwing` fill and `farthest_point` call sites hoist them once. The distance
+  algebra avoids materializing the old `(M,2,2)` averaged metric while preserving exact selected
+  sets in the metric farthest-point benchmark.
 - Timing/memory check on random 4096x3072-domain points, default requested chunk 2048:
 
   | Function | N | Old seconds | New seconds | Max abs diff | Old matrix | New matrix |
@@ -95,6 +99,12 @@ Feature-aware init stays interactive at the default 20k budget on 1–4 MP image
   | Function | Old seconds | New seconds | Parity |
   |---|---:|---:|---:|
   | `dart_throwing` | 3.1288 | 0.8414 | exact |
+
+- Timing/memory check on anisotropic `farthest_point`, M=20,000 candidates, target=1,000:
+
+  | Function | Old seconds | New seconds | Parity | Old metric temp | New metric temp |
+  |---|---:|---:|---:|---:|---:|
+  | `_pair_d2` via `farthest_point` | 0.3212 | 0.2218 | exact | 0.6 MB/call | 0 MB/call |
 
 ## Interfaces touched
 `src/structsplat/init.py`, `src/structsplat/sampling.py`, `src/structsplat/structure_tensor.py`,

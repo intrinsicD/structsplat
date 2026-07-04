@@ -132,6 +132,23 @@ def test_neighbor_pairs_match_bruteforce_with_metric():
     assert np.allclose(actual[2], expected[2])
 
 
+def test_pair_d2_metric_components_match_averaged_metric_reference():
+    rng = np.random.default_rng(19)
+    points = rng.random((17, 2)) * 20.0
+    metric = sa.anisotropy_metric(
+        rng.uniform(-np.pi, np.pi, len(points)),
+        rng.uniform(1.0, 8.0, len(points)),
+    )
+    components = sa._metric_components(metric)
+    for j in (0, 5, 16):
+        dv = points - points[j]
+        mm = 0.5 * (metric + metric[j])
+        expected = (mm[:, 0, 0] * dv[:, 0] ** 2
+                    + 2.0 * mm[:, 0, 1] * dv[:, 0] * dv[:, 1]
+                    + mm[:, 1, 1] * dv[:, 1] ** 2)
+        assert np.allclose(sa._pair_d2(points, j, metric, components), expected)
+
+
 def test_wse_anisotropic_metric_shapes_nn_displacements():
     # the central contribution: the per-point metric must steer nearest-neighbor spacing.
     # An across=x metric, an across=y metric, and isotropic must give distinct, direction-

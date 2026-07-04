@@ -279,14 +279,26 @@ def floyd_steinberg(density: np.ndarray, n: int) -> np.ndarray:
     return np.stack([xs, ys], axis=1).astype(np.float64)
 
 
-def _pair_d2(points: np.ndarray, j: int, metric: np.ndarray | None) -> np.ndarray:
+def _metric_components(metric: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    return metric[:, 0, 0], metric[:, 0, 1], metric[:, 1, 1]
+
+
+def _pair_d2(
+    points: np.ndarray,
+    j: int,
+    metric: np.ndarray | None,
+    metric_components: tuple[np.ndarray, np.ndarray, np.ndarray] | None = None,
+) -> np.ndarray:
     """Squared distance from every point to point j (Euclidean or averaged-metric Mahalanobis)."""
     dv = points - points[j]
     if metric is None:
         return dv[:, 0] ** 2 + dv[:, 1] ** 2
-    Mm = 0.5 * (metric + metric[j])
-    return (Mm[:, 0, 0] * dv[:, 0] ** 2 + 2.0 * Mm[:, 0, 1] * dv[:, 0] * dv[:, 1]
-            + Mm[:, 1, 1] * dv[:, 1] ** 2)
+    m00, m01, m11 = metric_components or _metric_components(metric)
+    dx = dv[:, 0]
+    dy = dv[:, 1]
+    return (0.5 * (m00 + m00[j]) * dx ** 2
+            + (m01 + m01[j]) * dx * dy
+            + 0.5 * (m11 + m11[j]) * dy ** 2)
 
 
 def dart_throwing(points: np.ndarray, n: int, r_i: np.ndarray,
@@ -307,6 +319,7 @@ def dart_throwing(points: np.ndarray, n: int, r_i: np.ndarray,
     rng = rng or np.random.default_rng(0)
     points = np.asarray(points, dtype=np.float64)
     r_i = np.asarray(r_i, dtype=np.float64)
+    metric_components = _metric_components(metric) if metric is not None else None
 
     # Euclidean inflation bound, same reasoning as _neighbor_pairs: d_E <= d_M / sqrt(lam_min).
     infl = 1.0
@@ -381,7 +394,7 @@ def dart_throwing(points: np.ndarray, n: int, r_i: np.ndarray,
             # metric (Mahalanobis) squared distance from every reject to point j, radius-normalized
             # — same distance semantics the acceptance test uses, so the fill does not silently mix
             # Euclidean and metric distances inside one ablation arm (INIT-005).
-            d2 = _pair_d2(points, j, metric)[rest]
+            d2 = _pair_d2(points, j, metric, metric_components)[rest]
             return d2 / np.maximum(r_i[rest] + r_i[j], 1e-12) ** 2
 
         dmin = np.full(rest.shape[0], np.inf)
@@ -412,9 +425,10 @@ def farthest_point(points: np.ndarray, n: int, r_i: np.ndarray | None = None,
         return np.arange(M)
     rng = rng or np.random.default_rng(0)
     points = np.asarray(points, dtype=np.float64)
+    metric_components = _metric_components(metric) if metric is not None else None
 
     def dist2_to(j: int) -> np.ndarray:
-        d2 = _pair_d2(points, j, metric)
+        d2 = _pair_d2(points, j, metric, metric_components)
         if r_i is not None:
             d2 = d2 / np.maximum(r_i + r_i[j], 1e-12) ** 2
         return d2
