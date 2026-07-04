@@ -58,6 +58,10 @@ conditions and honest controls?
 - 2026-07-04: Added `structsplat_shipped_defaults` to `benchmarks.cross_repo_matrix_compare`.
   A tiny CPU smoke ran the row through the matrix loop. The held-out cross-repo rerun itself is
   still pending.
+- 2026-07-04: Ran a small held-out Kodak cross-repo matrix (`kodim01`-`kodim04`, max-side 160,
+  80 iters, seed 0) with `structsplat_current` and `structsplat_shipped_defaults`; evidence:
+  `ara/evidence/abl004-kodak4-cross-repo-2026-07-04/`. README/ARA claim rewording is still
+  pending, so the cross-repo acceptance item remains open.
 
 ## Interfaces touched
 `src/structsplat/sampling.py`, `src/structsplat/init.py` (sampler registration),
