@@ -48,8 +48,9 @@ structsplat stage-search ./images --mode influence --budgets 2048 --seeds 0 1 2 
 ```
 Strategies: `random`, `grid`, `iso_blue_noise`, `aniso_onedge`, `aniso_flanking`.
 Additional quadtree strategies: `quadtree_aggregate`, `quadtree_hybrid`, `quadtree_wse`.
-Samplers: `wse` (blue noise), `dart_throwing` (Poisson disk), `halton`, `cvt`, `farthest_point`,
-`density_random`, `jittered_grid`.
+Samplers: `wse` (blue noise), `floyd_steinberg` (density-map error diffusion),
+`dart_throwing` (Poisson disk), `halton`, `cvt`, `farthest_point`, `density_random`,
+`jittered_grid`.
 Renderers: `normalized`, `additive`, `cuda`, `cuda_additive`, `gsplat`. `cuda`/`cuda_additive`
 are exact StructSplat semantics; `gsplat` is a GaussianImage++-style alpha/sum comparator.
 Scale caps: `none`, `hard`, `feature` (ADR-0012).
@@ -85,6 +86,13 @@ speed** and **low-budget quality**. Hypothesis (ABL-001): `aniso_flanking ≥ an
 iso_blue_noise > grid > random` at low budgets, with the gap shrinking as the budget grows. If
 flanking never wins, the honest move is to prefer the simpler strategy — the benchmark is designed
 to tell you either way.
+
+Status: ABL-004 is in progress, not settled. The missing Floyd-Steinberg and relocation controls
+are now expressible, and the full ablation is resumable, but the first full-resolution shard took
+about 13 minutes for one cell on the local RTX 3050. A small held-out Kodak cross-repo matrix
+currently supports only a narrower statement: the best-searched StructSplat policy and shipped
+defaults beat local repo-inspired GaussianImage/Image-GS analogue rows at one low-resolution
+operating point, not native external pipelines.
 
 ## Verification status
 Init-time math is validated numerically in this environment: structure-tensor orientation/labels,

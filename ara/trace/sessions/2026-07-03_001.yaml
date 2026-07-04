@@ -12,13 +12,13 @@ events_logged:
     id: "N17"
     routing: direct
     provenance: ai-executed
-    summary: "Ran 120-row exact-CUDA cross-repo matrix; StructSplat won PSNR overall, GaussianImage led MS-SSIM, Instant-GI quadtree led LPIPS."
+    summary: "Ran 120-row exact-CUDA matched policy matrix; the best-searched StructSplat row won PSNR overall, while GaussianImage led MS-SSIM and Instant-GI quadtree led LPIPS among local repo-inspired analogue rows."
   - turn: 1
     type: observation
     id: "O14"
     routing: staged
     provenance: ai-suggested
-    summary: "Staged metric-split claim: StructSplat is PSNR-dominant but not MS-SSIM/LPIPS dominant."
+    summary: "Staged metric-split claim: the best-searched StructSplat policy row is PSNR-strong in the matched analogue harness, but this is not native cross-repo dominance and not MS-SSIM/LPIPS dominance."
 
 ai_actions:
   - turn: 1

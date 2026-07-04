@@ -296,7 +296,7 @@ tree:
     status: resolved
   - id: N17
     type: experiment
-    title: "Current cross-repo multi-resolution matrix"
+    title: "Current matched policy multi-resolution matrix"
     provenance: ai-executed
     timestamp: "2026-07-03T00:24"
     result: >
@@ -307,16 +307,19 @@ tree:
       difficult; max-side 160/240/320; iteration counts 80/200; area-scaled
       Gaussian caps 640/1440/2560; exact CUDA renderer; LPIPS; PSNR, SSIM,
       MS-SSIM, PSNR-AUC, MAE, edge-MAE, scale stats, and runtime. All 120 rows
-      completed with no errors and six visual grids were written. Overall,
-      StructSplat current reached 26.0318 dB mean PSNR versus the best external
-      analogue GaussianImage at 24.5942 dB (+1.4376), but trailed GaussianImage
-      on mean MS-SSIM by 0.00155 and trailed Instant-GI quadtree on LPIPS by
-      0.0475. StructSplat won PSNR in all 6 aggregate resolution/iteration
-      settings and 23/24 per-image cells; GaussianImage won 4/6 aggregate
-      MS-SSIM settings and Instant-GI quadtree won 5/6 aggregate LPIPS settings.
+      completed with no errors and six visual grids were written. Overall, the
+      best-searched StructSplat current row reached 26.0318 dB mean PSNR
+      versus the best local repo-inspired analogue, GaussianImage, at 24.5942
+      dB (+1.4376), but trailed GaussianImage on mean MS-SSIM by 0.00155 and
+      trailed Instant-GI quadtree on LPIPS by 0.0475. That row won PSNR in
+      all 6 aggregate resolution/iteration settings and 23/24 per-image cells;
+      GaussianImage won 4/6 aggregate MS-SSIM settings and Instant-GI quadtree
+      won 5/6 aggregate LPIPS settings.
       Fit time is now comparable across methods (StructSplat 0.441 s mean vs
       GaussianImage 0.425 s), while StructSplat total time remains higher
       because of tensor/WSE initialization and residual growth overhead.
+      This node is evidence for the matched analogue harness, not a native
+      external-repository benchmark or a shipped-default claim.
     evidence:
       - "benchmarks/cross_repo_matrix_compare.py"
       - "cross-repo-matrix-current-2026-07-03"

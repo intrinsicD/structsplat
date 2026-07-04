@@ -37,7 +37,7 @@ conditions and honest controls?
       strategies + {floyd_steinberg, density_random, relocation-enabled random} controls, on
       Kodak-24 + a pinned COCO/DIV2K subset at realistic resolution; PSNR/MS-SSIM(/LPIPS),
       iters-to-target, init/fit seconds.
-- [ ] Cross-repo matrix re-run on images disjoint from the four used for config selection,
+- [x] Cross-repo matrix re-run on images disjoint from the four used for config selection,
       with a `structsplat_shipped_defaults` row alongside `structsplat_current`; O14/N17
       reworded to "best-searched config vs repo-inspired policy analogues".
 - [ ] Summary artifacts (summary.md, metrics.csv, config.json) committed under
@@ -60,8 +60,8 @@ conditions and honest controls?
   still pending.
 - 2026-07-04: Ran a small held-out Kodak cross-repo matrix (`kodim01`-`kodim04`, max-side 160,
   80 iters, seed 0) with `structsplat_current` and `structsplat_shipped_defaults`; evidence:
-  `ara/evidence/abl004-kodak4-cross-repo-2026-07-04/`. README/ARA claim rewording is still
-  pending, so the cross-repo acceptance item remains open.
+  `ara/evidence/abl004-kodak4-cross-repo-2026-07-04/`. README/ARA claim rewording now frames
+  the result as best-searched StructSplat policy vs local repo-inspired analogue rows.
 
 ## Interfaces touched
 `src/structsplat/sampling.py`, `src/structsplat/init.py` (sampler registration),
