@@ -26,7 +26,9 @@ from . import metrics as M
 
 # Renderer modes that accumulate additively (ADR-0006): a new/split Gaussian stacks on the
 # existing accumulation, so it must carry the residual color, not the full target color.
-_ADDITIVE_RENDERERS = ("additive", "cuda_additive", "gsplat", "cuda_gsplat")
+_ADDITIVE_RENDERERS = (
+    "additive", "cuda_additive", "cuda_tiled_additive", "gsplat", "cuda_gsplat",
+)
 # Shared lower bound on densified Gaussian scales (px); was duplicated as bare 0.35 literals.
 _MIN_DENSIFY_SCALE = 0.35
 

@@ -76,7 +76,10 @@ INFLUENCE_DEFAULTS: dict[str, tuple[str, ...]] = {
     "scale_modes": ("spacing", "uniform", "knn"),
     "scale_cap_modes": ("none", "feature12", "hard8"),
     "opacity_modes": ("none", "constant"),
-    "renderers": ("normalized", "additive", "cuda", "cuda_additive"),
+    "renderers": (
+        "normalized", "additive", "cuda", "cuda_additive",
+        "cuda_tiled", "cuda_tiled_additive",
+    ),
     "aa_dilations": (0.0, 0.3),
     "pixel_losses": ("l1", "l2", "charbonnier"),
     "optimizers": ("adam", "adamw", "adan"),

@@ -183,7 +183,10 @@ def main():
     f.add_argument("--opacity-mode", choices=["none", "constant"], default="none")
     f.add_argument("--init-opacity", type=float, default=0.9)
     f.add_argument("--renderer",
-                   choices=["normalized", "additive", "cuda", "cuda_additive", "gsplat"],
+                   choices=[
+                       "normalized", "additive", "cuda", "cuda_additive",
+                       "cuda_tiled", "cuda_tiled_additive", "gsplat",
+                   ],
                    default="normalized")
     f.add_argument("--aa-dilation", type=float, default=0.0)
     f.add_argument("--optimizer", choices=["adam", "adamw", "adan"], default="adam")

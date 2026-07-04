@@ -464,7 +464,8 @@ if __name__ == "__main__":
     p.add_argument("--render-chunk", type=int, default=512)
     p.add_argument("--renderer", default="normalized",
                    choices=["normalized", "additive", "cuda", "cuda_normalized",
-                            "cuda_additive", "gsplat", "cuda_gsplat"])
+                            "cuda_additive", "cuda_tiled", "cuda_tiled_normalized",
+                            "cuda_tiled_additive", "gsplat", "cuda_gsplat"])
     p.add_argument("--pixel-loss", choices=["l1", "l2"], default="l1")
     p.add_argument("--ssim-weight", type=float, default=0.3)
     p.add_argument("--relocate-every", type=int, default=None)

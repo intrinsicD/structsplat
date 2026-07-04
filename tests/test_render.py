@@ -3,6 +3,7 @@ import numpy as np
 import pytest
 
 torch = pytest.importorskip("torch")
+from structsplat.cuda_render import _build_tile_index
 from structsplat.gaussians import GaussianField
 from structsplat.render import _element_budget, gaussian_activity, render, render_field
 
@@ -56,6 +57,8 @@ def test_cuda_renderer_is_explicit_about_requirements():
     g = GaussianField.from_numpy(means, scales, np.zeros(1), colors)
     with pytest.raises(RuntimeError, match="requires CUDA tensors"):
         render_field(g.means, g.conics(), g.colors, g.radii(3.0), 10, 10, mode="cuda")
+    with pytest.raises(RuntimeError, match="requires CUDA tensors"):
+        render_field(g.means, g.conics(), g.colors, g.radii(3.0), 10, 10, mode="cuda_tiled")
     with pytest.raises(ValueError, match="requires scales and rotations"):
         render_field(g.means, g.conics(), g.colors, g.radii(3.0), 10, 10, mode="gsplat")
     if not torch.cuda.is_available():
@@ -64,6 +67,14 @@ def test_cuda_renderer_is_explicit_about_requirements():
                 g.means, g.conics(), g.colors, g.radii(3.0), 10, 10,
                 mode="cuda_additive",
             )
+
+
+def test_cuda_tile_index_culls_to_overlapping_tiles():
+    means = torch.tensor([[2.0, 2.0], [20.0, 20.0]])
+    radii = torch.tensor([[1, 1], [1, 1]], dtype=torch.long)
+    gids, offsets = _build_tile_index(means, radii, H=8, W=8, tile_size=4)
+    assert offsets.tolist() == [0, 1, 1, 1, 1]
+    assert gids.tolist() == [0]
 
 
 def test_cuda_exact_matches_reference_when_available():
@@ -92,6 +103,35 @@ def test_cuda_exact_matches_reference_when_available():
     assert torch.allclose(add_cu, add_ref, atol=2e-5, rtol=2e-5)
 
 
+def test_cuda_tiled_exact_matches_reference_when_available():
+    if not torch.cuda.is_available():
+        pytest.skip("CUDA not available")
+    rng = np.random.default_rng(11)
+    N, H, W = 32, 21, 23
+    means = np.stack([rng.uniform(-3, W + 3, N), rng.uniform(-3, H + 3, N)], 1)
+    scales = np.exp(rng.uniform(np.log(0.7), np.log(4.0), (N, 2)))
+    angles = rng.uniform(0, np.pi, N)
+    colors = rng.random((N, 3))
+    opac = rng.uniform(0.2, 1.0, N)
+    g = GaussianField.from_numpy(means, scales, angles, colors, opacities=opac,
+                                  device="cuda").trainable()
+    opacity = g.opacity_values()
+    try:
+        ref = render_field(g.means, g.conics(), g.colors, g.radii(3.0), H, W,
+                           mode="normalized", opacities=opacity)
+        tiled = render_field(g.means, g.conics(), g.colors, g.radii(3.0), H, W,
+                             mode="cuda_tiled", opacities=opacity)
+        add_ref = render_field(g.means, g.conics(), g.colors, g.radii(3.0), H, W,
+                               mode="additive", opacities=opacity)
+        add_tiled = render_field(g.means, g.conics(), g.colors, g.radii(3.0), H, W,
+                                 mode="cuda_tiled_additive", opacities=opacity)
+        torch.cuda.synchronize()
+    except RuntimeError as exc:
+        pytest.skip(str(exc))
+    assert torch.allclose(tiled, ref, atol=2e-5, rtol=2e-5)
+    assert torch.allclose(add_tiled, add_ref, atol=2e-5, rtol=2e-5)
+
+
 def test_cuda_exact_backward_matches_reference_when_available():
     if not torch.cuda.is_available():
         pytest.skip("CUDA not available")
@@ -118,6 +158,34 @@ def test_cuda_exact_backward_matches_reference_when_available():
         pytest.skip(str(exc))
     for got, exp in zip(cu, ref, strict=True):
         assert torch.allclose(got, exp, atol=2e-4, rtol=2e-4)
+
+
+def test_cuda_tiled_backward_matches_reference_when_available():
+    if not torch.cuda.is_available():
+        pytest.skip("CUDA not available")
+    rng = np.random.default_rng(12)
+    N, H, W = 18, 17, 19
+    means = np.stack([rng.uniform(0, W - 1, N), rng.uniform(0, H - 1, N)], 1)
+    scales = np.exp(rng.uniform(np.log(0.8), np.log(3.0), (N, 2)))
+    angles = rng.uniform(0, np.pi, N)
+    colors = rng.random((N, 3))
+    target = torch.rand(H, W, 3, device="cuda")
+
+    def run(mode):
+        f = GaussianField.from_numpy(means, scales, angles, colors, device="cuda").trainable()
+        img = render_field(f.means, f.conics(), f.colors, f.radii(3.0), H, W, mode=mode)
+        loss = (img - target).square().mean()
+        loss.backward()
+        torch.cuda.synchronize()
+        return img.detach(), f.means.grad.detach(), f.log_scales.grad.detach(), f.colors.grad.detach()
+
+    try:
+        ref = run("normalized")
+        tiled = run("cuda_tiled")
+    except RuntimeError as exc:
+        pytest.skip(str(exc))
+    for got, exp in zip(tiled, ref, strict=True):
+        assert torch.allclose(got, exp, atol=3e-4, rtol=3e-4)
 
 
 @pytest.mark.parametrize("normalize", [True, False])

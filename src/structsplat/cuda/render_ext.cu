@@ -120,6 +120,80 @@ __global__ void finalize_kernel(
   }
 }
 
+__global__ void tiled_forward_kernel(
+    const float* __restrict__ means,
+    const float* __restrict__ conics,
+    const float* __restrict__ colors,
+    const int64_t* __restrict__ radii,
+    const float* __restrict__ opacities,
+    const int64_t* __restrict__ tile_gids,
+    const int64_t* __restrict__ tile_offsets,
+    int height,
+    int width,
+    int tiles_x,
+    int tile_size,
+    bool has_opacity,
+    bool normalize,
+    float eps,
+    float* __restrict__ out,
+    float* __restrict__ den) {
+  int tile = blockIdx.x;
+  int local = threadIdx.x;
+  int tile_pixels = tile_size * tile_size;
+  if (local >= tile_pixels) {
+    return;
+  }
+  int tile_x = tile % tiles_x;
+  int tile_y = tile / tiles_x;
+  int px = tile_x * tile_size + (local % tile_size);
+  int py = tile_y * tile_size + (local / tile_size);
+  if (px >= width || py >= height) {
+    return;
+  }
+
+  float nr = 0.0f;
+  float ng = 0.0f;
+  float nb = 0.0f;
+  float d = 0.0f;
+  int64_t start = tile_offsets[tile];
+  int64_t end = tile_offsets[tile + 1];
+  for (int64_t p = start; p < end; ++p) {
+    int i = static_cast<int>(tile_gids[p]);
+    int x0, y0, tx, ty;
+    support_bounds(means, radii, i, height, width, x0, y0, tx, ty);
+    if (px < x0 || px >= x0 + tx || py < y0 || py >= y0 + ty) {
+      continue;
+    }
+    float mx = means[i * 2 + 0];
+    float my = means[i * 2 + 1];
+    float dx = static_cast<float>(px) - mx;
+    float dy = static_cast<float>(py) - my;
+    float a = conics[i * 3 + 0];
+    float b = conics[i * 3 + 1];
+    float c = conics[i * 3 + 2];
+    float q = a * dx * dx + 2.0f * b * dx * dy + c * dy * dy;
+    float op = has_opacity ? opacities[i] : 1.0f;
+    float weight = expf(-0.5f * q) * op;
+    nr += weight * colors[i * 3 + 0];
+    ng += weight * colors[i * 3 + 1];
+    nb += weight * colors[i * 3 + 2];
+    d += weight;
+  }
+
+  int flat = py * width + px;
+  den[flat] = d;
+  if (normalize) {
+    float denom = d + eps;
+    out[flat * 3 + 0] = nr / denom;
+    out[flat * 3 + 1] = ng / denom;
+    out[flat * 3 + 2] = nb / denom;
+  } else {
+    out[flat * 3 + 0] = nr;
+    out[flat * 3 + 1] = ng;
+    out[flat * 3 + 2] = nb;
+  }
+}
+
 __global__ void backward_kernel(
     const float* __restrict__ grad_out,
     const float* __restrict__ means,
@@ -229,6 +303,105 @@ __global__ void backward_kernel(
   }
 }
 
+__global__ void tiled_backward_kernel(
+    const float* __restrict__ grad_out,
+    const float* __restrict__ means,
+    const float* __restrict__ conics,
+    const float* __restrict__ colors,
+    const int64_t* __restrict__ radii,
+    const float* __restrict__ opacities,
+    const float* __restrict__ den,
+    const float* __restrict__ out,
+    const int64_t* __restrict__ tile_gids,
+    const int64_t* __restrict__ tile_offsets,
+    int height,
+    int width,
+    int tiles_x,
+    int tile_size,
+    bool has_opacity,
+    bool normalize,
+    float eps,
+    float* __restrict__ grad_means,
+    float* __restrict__ grad_conics,
+    float* __restrict__ grad_colors,
+    float* __restrict__ grad_opacities) {
+  int tile = blockIdx.x;
+  int local = threadIdx.x;
+  int tile_pixels = tile_size * tile_size;
+  if (local >= tile_pixels) {
+    return;
+  }
+  int tile_x = tile % tiles_x;
+  int tile_y = tile / tiles_x;
+  int px = tile_x * tile_size + (local % tile_size);
+  int py = tile_y * tile_size + (local / tile_size);
+  if (px >= width || py >= height) {
+    return;
+  }
+  int flat = py * width + px;
+  float gr = grad_out[flat * 3 + 0];
+  float gg = grad_out[flat * 3 + 1];
+  float gbch = grad_out[flat * 3 + 2];
+
+  int64_t start = tile_offsets[tile];
+  int64_t end = tile_offsets[tile + 1];
+  for (int64_t p = start; p < end; ++p) {
+    int i = static_cast<int>(tile_gids[p]);
+    int x0, y0, tx, ty;
+    support_bounds(means, radii, i, height, width, x0, y0, tx, ty);
+    if (px < x0 || px >= x0 + tx || py < y0 || py >= y0 + ty) {
+      continue;
+    }
+
+    float mx = means[i * 2 + 0];
+    float my = means[i * 2 + 1];
+    float dx = static_cast<float>(px) - mx;
+    float dy = static_cast<float>(py) - my;
+    float a = conics[i * 3 + 0];
+    float b = conics[i * 3 + 1];
+    float c = conics[i * 3 + 2];
+    float op = has_opacity ? opacities[i] : 1.0f;
+    float cr = colors[i * 3 + 0];
+    float cg = colors[i * 3 + 1];
+    float cb = colors[i * 3 + 2];
+    float q = a * dx * dx + 2.0f * b * dx * dy + c * dy * dy;
+    float base = expf(-0.5f * q);
+    float weight = base * op;
+
+    float dw;
+    if (normalize) {
+      float denom = den[flat] + eps;
+      float dnum_r = gr / denom;
+      float dnum_g = gg / denom;
+      float dnum_b = gbch / denom;
+      float dden = -(
+          gr * out[flat * 3 + 0] +
+          gg * out[flat * 3 + 1] +
+          gbch * out[flat * 3 + 2]) / denom;
+      atomicAdd(&grad_colors[i * 3 + 0], dnum_r * weight);
+      atomicAdd(&grad_colors[i * 3 + 1], dnum_g * weight);
+      atomicAdd(&grad_colors[i * 3 + 2], dnum_b * weight);
+      dw = dnum_r * cr + dnum_g * cg + dnum_b * cb + dden;
+    } else {
+      atomicAdd(&grad_colors[i * 3 + 0], gr * weight);
+      atomicAdd(&grad_colors[i * 3 + 1], gg * weight);
+      atomicAdd(&grad_colors[i * 3 + 2], gbch * weight);
+      dw = gr * cr + gg * cg + gbch * cb;
+    }
+
+    float dbase = dw * op;
+    if (has_opacity) {
+      atomicAdd(&grad_opacities[i], dw * base);
+    }
+    float dq = -0.5f * base * dbase;
+    atomicAdd(&grad_means[i * 2 + 0], dq * (-2.0f * a * dx - 2.0f * b * dy));
+    atomicAdd(&grad_means[i * 2 + 1], dq * (-2.0f * b * dx - 2.0f * c * dy));
+    atomicAdd(&grad_conics[i * 3 + 0], dq * dx * dx);
+    atomicAdd(&grad_conics[i * 3 + 1], dq * 2.0f * dx * dy);
+    atomicAdd(&grad_conics[i * 3 + 2], dq * dy * dy);
+  }
+}
+
 }  // namespace
 
 std::vector<torch::Tensor> structsplat_render_forward_cuda(
@@ -283,6 +456,55 @@ std::vector<torch::Tensor> structsplat_render_forward_cuda(
   return {out_flat.view({height, width, 3}), den.view({height, width})};
 }
 
+std::vector<torch::Tensor> structsplat_render_forward_tiled_cuda(
+    torch::Tensor means,
+    torch::Tensor conics,
+    torch::Tensor colors,
+    torch::Tensor radii,
+    torch::Tensor opacities,
+    torch::Tensor tile_gids,
+    torch::Tensor tile_offsets,
+    int64_t height,
+    int64_t width,
+    bool normalize,
+    double eps,
+    int64_t tile_size) {
+  int h = static_cast<int>(height);
+  int w = static_cast<int>(width);
+  int ts = static_cast<int>(tile_size);
+  int pixels = h * w;
+  int tiles_x = (w + ts - 1) / ts;
+  int tiles_y = (h + ts - 1) / ts;
+  int num_tiles = tiles_x * tiles_y;
+  TORCH_CHECK(tile_offsets.size(0) == num_tiles + 1,
+              "tile_offsets length must equal num_tiles + 1");
+  auto out_flat = torch::zeros({pixels, 3}, means.options());
+  auto den = torch::zeros({pixels}, means.options());
+  if (pixels > 0 && num_tiles > 0) {
+    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+    int threads = ts * ts;
+    tiled_forward_kernel<<<num_tiles, threads, 0, stream>>>(
+        means.data_ptr<float>(),
+        conics.data_ptr<float>(),
+        colors.data_ptr<float>(),
+        radii.data_ptr<int64_t>(),
+        opacities.numel() ? opacities.data_ptr<float>() : nullptr,
+        tile_gids.data_ptr<int64_t>(),
+        tile_offsets.data_ptr<int64_t>(),
+        h,
+        w,
+        tiles_x,
+        ts,
+        opacities.numel() > 0,
+        normalize,
+        static_cast<float>(eps),
+        out_flat.data_ptr<float>(),
+        den.data_ptr<float>());
+    C10_CUDA_KERNEL_LAUNCH_CHECK();
+  }
+  return {out_flat.view({height, width, 3}), den.view({height, width})};
+}
+
 std::vector<torch::Tensor> structsplat_render_backward_cuda(
     torch::Tensor grad_out,
     torch::Tensor means,
@@ -330,3 +552,61 @@ std::vector<torch::Tensor> structsplat_render_backward_cuda(
   return {grad_means, grad_conics, grad_colors, grad_opacities};
 }
 
+std::vector<torch::Tensor> structsplat_render_backward_tiled_cuda(
+    torch::Tensor grad_out,
+    torch::Tensor means,
+    torch::Tensor conics,
+    torch::Tensor colors,
+    torch::Tensor radii,
+    torch::Tensor opacities,
+    torch::Tensor den,
+    torch::Tensor out,
+    torch::Tensor tile_gids,
+    torch::Tensor tile_offsets,
+    bool normalize,
+    double eps,
+    int64_t tile_size) {
+  int n = static_cast<int>(means.size(0));
+  int h = static_cast<int>(out.size(0));
+  int w = static_cast<int>(out.size(1));
+  int ts = static_cast<int>(tile_size);
+  int tiles_x = (w + ts - 1) / ts;
+  int tiles_y = (h + ts - 1) / ts;
+  int num_tiles = tiles_x * tiles_y;
+  TORCH_CHECK(tile_offsets.size(0) == num_tiles + 1,
+              "tile_offsets length must equal num_tiles + 1");
+  auto grad_means = torch::zeros_like(means);
+  auto grad_conics = torch::zeros_like(conics);
+  auto grad_colors = torch::zeros_like(colors);
+  auto grad_opacities = opacities.numel()
+      ? torch::zeros_like(opacities)
+      : torch::empty({0}, means.options());
+  if (n > 0 && h > 0 && w > 0 && num_tiles > 0) {
+    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+    int threads = ts * ts;
+    tiled_backward_kernel<<<num_tiles, threads, 0, stream>>>(
+        grad_out.data_ptr<float>(),
+        means.data_ptr<float>(),
+        conics.data_ptr<float>(),
+        colors.data_ptr<float>(),
+        radii.data_ptr<int64_t>(),
+        opacities.numel() ? opacities.data_ptr<float>() : nullptr,
+        den.data_ptr<float>(),
+        out.data_ptr<float>(),
+        tile_gids.data_ptr<int64_t>(),
+        tile_offsets.data_ptr<int64_t>(),
+        h,
+        w,
+        tiles_x,
+        ts,
+        opacities.numel() > 0,
+        normalize,
+        static_cast<float>(eps),
+        grad_means.data_ptr<float>(),
+        grad_conics.data_ptr<float>(),
+        grad_colors.data_ptr<float>(),
+        grad_opacities.numel() ? grad_opacities.data_ptr<float>() : nullptr);
+    C10_CUDA_KERNEL_LAUNCH_CHECK();
+  }
+  return {grad_means, grad_conics, grad_colors, grad_opacities};
+}

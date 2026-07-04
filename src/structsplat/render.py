@@ -3,6 +3,7 @@
 Normalized: I_hat(p) = sum_i c_i o_i G_i(p) / (sum_i o_i G_i(p) + eps)
 Additive  : I_hat(p) = sum_i c_i o_i G_i(p)              (opt-in, ADR-0006)
 CUDA      : exact normalized/additive CUDA extension      (opt-in)
+cuda_tiled: exact tiled/culling CUDA extension             (opt-in)
 gsplat    : optional GaussianImage++ alpha/sum renderer   (experimental)
 with G_i(p) = exp(-1/2 (p-mu_i)^T Sigma_i^-1 (p-mu_i)) and optional per-Gaussian opacity o_i.
 
@@ -181,13 +182,21 @@ def render_field(means, conics, colors, radii, H: int, W: int,
         from .cuda_render import render_cuda_exact
         return render_cuda_exact(means, conics, colors, radii, H, W, opacities=opacities,
                                  normalize=False, eps=_EPS)
+    if mode in ("cuda_tiled", "cuda_tiled_normalized"):
+        from .cuda_render import render_cuda_exact
+        return render_cuda_exact(means, conics, colors, radii, H, W, opacities=opacities,
+                                 normalize=True, eps=_EPS, tiled=True)
+    if mode == "cuda_tiled_additive":
+        from .cuda_render import render_cuda_exact
+        return render_cuda_exact(means, conics, colors, radii, H, W, opacities=opacities,
+                                 normalize=False, eps=_EPS, tiled=True)
     if mode in ("gsplat", "cuda_gsplat"):
         if scales is None or rotations is None:
             raise ValueError("renderer='gsplat' requires scales and rotations")
         return render_cuda_sum(means, scales, rotations, colors, H, W, opacities=opacities)
     raise ValueError(
         f"unknown renderer {mode!r}; expected normalized, additive, cuda, "
-        "cuda_additive, or gsplat"
+        "cuda_additive, cuda_tiled, cuda_tiled_additive, or gsplat"
     )
 
 
