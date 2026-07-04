@@ -39,7 +39,7 @@ Feature-aware init stays interactive at the default 20k budget on 1–4 MP image
 - [x] `dart_throwing` uses a per-cell/local max accepted radius for its reach bound; identical
       accepted sets given the same rng.
 - [x] `_pair_d2` hoists flat metric components (m00/m01/m11) once per call site.
-- [ ] The percentile ref is computed once in `st.compute`, stored on `StructureTensor`, and
+- [x] The percentile ref is computed once in `st.compute`, stored on `StructureTensor`, and
       consumed by density/init (falling back to local computation when absent).
 - [ ] A timing table (before/after per function at N∈{5k, 20k}) recorded in this file's notes.
 
@@ -72,6 +72,11 @@ Feature-aware init stays interactive at the default 20k budget on 1–4 MP image
   repeated `dart_throwing` fill and `farthest_point` call sites hoist them once. The distance
   algebra avoids materializing the old `(M,2,2)` averaged metric while preserving exact selected
   sets in the metric farthest-point benchmark.
+- 2026-07-04 partial implementation: `st.compute` now stores `energy_ref` on `StructureTensor`.
+  Structure-mode density, hybrid's structure component, residual structure density, and
+  `_feature_run_lengths` consume the cached ref, with fallback recomputation when older/manual
+  tensors do not carry the field. Focused tests monkeypatch `energy_reference` to prove the cached
+  density/init paths do not recompute it.
 - Timing/memory check on random 4096x3072-domain points, default requested chunk 2048:
 
   | Function | N | Old seconds | New seconds | Max abs diff | Old matrix | New matrix |
@@ -105,6 +110,13 @@ Feature-aware init stays interactive at the default 20k budget on 1–4 MP image
   | Function | Old seconds | New seconds | Parity | Old metric temp | New metric temp |
   |---|---:|---:|---:|---:|---:|
   | `_pair_d2` via `farthest_point` | 0.3212 | 0.2218 | exact | 0.6 MB/call | 0 MB/call |
+
+- Timing check on 1024x1024 synthetic tensor energy, cached vs fallback reference:
+
+  | Function | Uncached seconds | Cached seconds | Parity |
+  |---|---:|---:|---:|
+  | structure `density_from_tensor` | 0.0277 | 0.0117 | exact |
+  | `_feature_run_lengths` | 0.0359 | 0.0171 | exact |
 
 ## Interfaces touched
 `src/structsplat/init.py`, `src/structsplat/sampling.py`, `src/structsplat/structure_tensor.py`,

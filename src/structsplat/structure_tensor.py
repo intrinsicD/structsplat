@@ -126,6 +126,7 @@ class StructureTensor:
     coherence: np.ndarray       # ((lam1-lam2)/(lam1+lam2))^2 in [0,1]
     energy: np.ndarray          # lam1 + lam2
     label: np.ndarray           # 0=flat, 1=edge, 2=corner (uint8)
+    energy_ref: float | None = None  # cached energy_reference(energy)
 
     @property
     def along_edge_angle(self) -> np.ndarray:
@@ -181,5 +182,5 @@ def compute(img: np.ndarray, cfg: StructureTensorConfig | None = None) -> Struct
     return StructureTensor(
         lam1=lam1.astype(np.float32), lam2=lam2.astype(np.float32),
         across_edge_angle=angle.astype(np.float32), coherence=coherence.astype(np.float32),
-        energy=energy.astype(np.float32), label=label,
+        energy=energy.astype(np.float32), label=label, energy_ref=ref,
     )

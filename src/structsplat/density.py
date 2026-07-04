@@ -13,9 +13,14 @@ from . import structure_tensor as st
 from .config import InitConfig, StructureTensorConfig
 
 
-def density_from_energy(energy: np.ndarray, base: float, power: float) -> np.ndarray:
+def density_from_energy(
+    energy: np.ndarray,
+    base: float,
+    power: float,
+    ref: float | None = None,
+) -> np.ndarray:
     e = np.maximum(energy.astype(np.float64), 0.0)
-    ref = st.energy_reference(e)  # floored reference: no collapse on near-blank noisy images
+    ref = st.energy_reference(e) if ref is None else float(ref)
     d = np.clip(e / ref, 0.0, 1.0) ** power
     d = base + (1.0 - base) * d
     s = d.sum()
@@ -48,7 +53,9 @@ def feature_for_mode(img: np.ndarray, tensor: st.StructureTensor,
         # feature is scaled to a comparable [0,1] range by its own reference before averaging.
         e = np.maximum(tensor.energy.astype(np.float64), 0.0)
         v = local_variance(img, scfg.tensor_sigma).astype(np.float64)
-        a = np.clip(e / st.energy_reference(e), 0.0, 1.0)
+        eref = getattr(tensor, "energy_ref", None)
+        eref = st.energy_reference(e) if eref is None else float(eref)
+        a = np.clip(e / eref, 0.0, 1.0)
         b = np.clip(v / st.energy_reference(v), 0.0, 1.0)
         return (0.5 * a + 0.5 * b).astype(np.float32)
     if mode == "uniform":
@@ -62,7 +69,8 @@ def density_from_tensor_and_image(img: np.ndarray, tensor: st.StructureTensor,
                                   icfg: InitConfig,
                                   scfg: StructureTensorConfig | None = None) -> np.ndarray:
     feature = feature_for_mode(img, tensor, icfg.density_mode, scfg)
-    return density_from_energy(feature, icfg.density_base, icfg.density_power)
+    ref = getattr(tensor, "energy_ref", None) if icfg.density_mode == "structure" else None
+    return density_from_energy(feature, icfg.density_base, icfg.density_power, ref)
 
 
 def density_from_image(img: np.ndarray, icfg: InitConfig,
@@ -85,7 +93,8 @@ def density_from_residual(residual: np.ndarray, base: float, power: float,
     resid = np.abs(residual)
     tensor = st.compute(resid, scfg)
     feature = feature_for_mode(resid, tensor, mode, scfg)
-    return density_from_energy(feature, base, power)
+    ref = getattr(tensor, "energy_ref", None) if mode == "structure" else None
+    return density_from_energy(feature, base, power, ref)
 
 
 def warp_unit_points(u: np.ndarray, density: np.ndarray, chunk: int = 8192) -> np.ndarray:

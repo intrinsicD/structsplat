@@ -122,7 +122,7 @@ def test_feature_run_lengths_matches_reference():
     zeros = np.zeros((H, W), dtype=np.float32)
     tensor = ST.StructureTensor(
         lam1=zeros, lam2=zeros, across_edge_angle=zeros, coherence=zeros,
-        energy=energy, label=label,
+        energy=energy, label=label, energy_ref=ST.energy_reference(energy),
     )
     pts = np.array([
         [1.2, 1.1],
@@ -142,6 +142,30 @@ def test_feature_run_lengths_matches_reference():
 
     got = I._feature_run_lengths(tensor, pts, angles, None, cfg)
     expected = _feature_run_lengths_reference(tensor, pts, angles, None, cfg)
+
+    assert np.array_equal(got, expected)
+
+
+def test_feature_run_lengths_uses_cached_energy_reference(monkeypatch):
+    H, W = 9, 11
+    energy = np.zeros((H, W), dtype=np.float32)
+    energy[2:7, 5] = 1.0
+    label = np.where(energy > 0, 1, 0).astype(np.uint8)
+    zeros = np.zeros((H, W), dtype=np.float32)
+    tensor = ST.StructureTensor(
+        lam1=zeros, lam2=zeros, across_edge_angle=zeros, coherence=zeros,
+        energy=energy, label=label, energy_ref=ST.energy_reference(energy),
+    )
+    pts = np.array([[5.0, 4.0]], dtype=np.float64)
+    angles = np.array([np.pi / 2.0])
+    cfg = InitConfig(scale_cap_mode="feature", scale_cap_max=4.0)
+    expected = I._feature_run_lengths(tensor, pts, angles, None, cfg)
+
+    def fail_energy_reference(_energy):
+        raise AssertionError("energy_reference should not be recomputed")
+
+    monkeypatch.setattr(ST, "energy_reference", fail_energy_reference)
+    got = I._feature_run_lengths(tensor, pts, angles, None, cfg)
 
     assert np.array_equal(got, expected)
 

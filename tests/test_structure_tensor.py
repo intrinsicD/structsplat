@@ -26,6 +26,39 @@ def test_near_blank_noisy_image_labels_not_saturated():
     assert (d1 >= d1.max() * 0.999).mean() < 0.05
 
 
+def test_compute_stores_energy_reference():
+    t = st.compute(_vertical_edge())
+    assert t.energy_ref is not None
+    assert np.isclose(t.energy_ref, st.energy_reference(t.energy))
+
+
+def test_structure_density_uses_cached_energy_reference(monkeypatch):
+    img = _vertical_edge()
+    t = st.compute(img)
+    expected = de.density_from_energy(t.energy, 0.05, 1.7, t.energy_ref)
+
+    def fail_energy_reference(_energy):
+        raise AssertionError("energy_reference should not be recomputed")
+
+    monkeypatch.setattr(st, "energy_reference", fail_energy_reference)
+    got = de.density_from_tensor_and_image(img, t, InitConfig(density_power=1.7))
+
+    assert np.allclose(got, expected)
+
+
+def test_structure_density_falls_back_without_cached_energy_reference():
+    img = _vertical_edge()
+    t = st.compute(img)
+    uncached = st.StructureTensor(
+        t.lam1, t.lam2, t.across_edge_angle, t.coherence, t.energy, t.label,
+    )
+
+    cached = de.density_from_tensor_and_image(img, t, InitConfig())
+    fallback = de.density_from_tensor_and_image(img, uncached, InitConfig())
+
+    assert np.allclose(fallback, cached)
+
+
 def test_structured_image_flat_fraction_preserved():
     # the floored reference must be inert on a clean structured image (median energy ~ 0)
     assert (st.compute(_vertical_edge()).label == 0).mean() > 0.75

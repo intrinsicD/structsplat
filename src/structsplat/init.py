@@ -293,7 +293,8 @@ def _feature_run_lengths(tensor: st.StructureTensor, pts: np.ndarray, angles: np
     H, W = tensor.energy.shape
     scfg = scfg or StructureTensorConfig()
     energy = np.maximum(tensor.energy, 0.0)
-    ref = st.energy_reference(energy)                       # floored: no collapse on noise
+    ref = getattr(tensor, "energy_ref", None)
+    ref = st.energy_reference(energy) if ref is None else float(ref)
     floor = st.flat_threshold(energy, scfg.flat_frac, ref)
     local_energy = _nearest(energy, pts)
     max_steps = int(np.ceil(max(H, W)))
