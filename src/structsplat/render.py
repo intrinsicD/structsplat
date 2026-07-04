@@ -18,6 +18,7 @@ the piece that ports into IntrinsicEngine as an RHI pass.
 Requires torch. The CUDA path additionally requires a local CUDA toolchain for the extension.
 """
 from __future__ import annotations
+import math
 import torch
 
 _EPS = 1e-8
@@ -78,7 +79,15 @@ def _tile_coords(x0, y0, Tx, n, s, e, dev):
     return gid, px, py
 
 
-def _accumulate(means, conics, colors, radii, H, W, chunk, opacities, normalize: bool):
+def _support_weight(q: torch.Tensor, sigma_cutoff: float, support_fade: bool) -> torch.Tensor:
+    w = torch.exp(-0.5 * q)
+    if support_fade:
+        w = torch.clamp(w - math.exp(-0.5 * float(sigma_cutoff) ** 2), min=0.0)
+    return w
+
+
+def _accumulate(means, conics, colors, radii, H, W, chunk, opacities, normalize: bool,
+                support_fade: bool = False, sigma_cutoff: float = 3.0):
     dev, dt = means.device, means.dtype
     num = torch.zeros(H * W, 3, device=dev, dtype=dt)
     den = torch.zeros(H * W, 1, device=dev, dtype=dt) if normalize else None
@@ -91,7 +100,7 @@ def _accumulate(means, conics, colors, radii, H, W, chunk, opacities, normalize:
         dy = py.to(dt) - means[gid, 1]
         a, b, c = conics[gid, 0], conics[gid, 1], conics[gid, 2]
         q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
-        w = torch.exp(-0.5 * q)
+        w = _support_weight(q, sigma_cutoff, support_fade)
         if opacities is not None:
             w = w * opacities[gid]
         flat = py * W + px
@@ -104,14 +113,22 @@ def _accumulate(means, conics, colors, radii, H, W, chunk, opacities, normalize:
     return num.view(H, W, 3)
 
 
-def render(means, conics, colors, radii, H: int, W: int, chunk: int = 4096, opacities=None):
+def render(means, conics, colors, radii, H: int, W: int, chunk: int = 4096, opacities=None,
+           support_fade: bool = False, sigma_cutoff: float = 3.0):
     """Normalized weighted-sum rasterizer (ADR-0003 default)."""
-    return _accumulate(means, conics, colors, radii, H, W, chunk, opacities, normalize=True)
+    return _accumulate(
+        means, conics, colors, radii, H, W, chunk, opacities, normalize=True,
+        support_fade=support_fade, sigma_cutoff=sigma_cutoff,
+    )
 
 
-def render_additive(means, conics, colors, radii, H: int, W: int, chunk: int = 4096, opacities=None):
+def render_additive(means, conics, colors, radii, H: int, W: int, chunk: int = 4096,
+                    opacities=None, support_fade: bool = False, sigma_cutoff: float = 3.0):
     """Additive / unnormalized accumulation (ADR-0006, opt-in)."""
-    return _accumulate(means, conics, colors, radii, H, W, chunk, opacities, normalize=False)
+    return _accumulate(
+        means, conics, colors, radii, H, W, chunk, opacities, normalize=False,
+        support_fade=support_fade, sigma_cutoff=sigma_cutoff,
+    )
 
 
 def _gsplat_import_error(exc: BaseException) -> RuntimeError:
@@ -169,27 +186,38 @@ def render_cuda_sum(means, scales, rotations, colors, H: int, W: int,
 
 def render_field(means, conics, colors, radii, H: int, W: int,
                  chunk: int = 4096, mode: str = "normalized", opacities=None,
-                 scales=None, rotations=None):
+                 scales=None, rotations=None, support_fade: bool = False,
+                 sigma_cutoff: float = 3.0):
     if mode == "normalized":
-        return render(means, conics, colors, radii, H, W, chunk, opacities)
+        return render(
+            means, conics, colors, radii, H, W, chunk, opacities,
+            support_fade=support_fade, sigma_cutoff=sigma_cutoff,
+        )
     if mode == "additive":
-        return render_additive(means, conics, colors, radii, H, W, chunk, opacities)
+        return render_additive(
+            means, conics, colors, radii, H, W, chunk, opacities,
+            support_fade=support_fade, sigma_cutoff=sigma_cutoff,
+        )
     if mode in ("cuda", "cuda_normalized"):
         from .cuda_render import render_cuda_exact
         return render_cuda_exact(means, conics, colors, radii, H, W, opacities=opacities,
-                                 normalize=True, eps=_EPS)
+                                 normalize=True, eps=_EPS, support_fade=support_fade,
+                                 sigma_cutoff=sigma_cutoff)
     if mode == "cuda_additive":
         from .cuda_render import render_cuda_exact
         return render_cuda_exact(means, conics, colors, radii, H, W, opacities=opacities,
-                                 normalize=False, eps=_EPS)
+                                 normalize=False, eps=_EPS, support_fade=support_fade,
+                                 sigma_cutoff=sigma_cutoff)
     if mode in ("cuda_tiled", "cuda_tiled_normalized"):
         from .cuda_render import render_cuda_exact
         return render_cuda_exact(means, conics, colors, radii, H, W, opacities=opacities,
-                                 normalize=True, eps=_EPS, tiled=True)
+                                 normalize=True, eps=_EPS, tiled=True,
+                                 support_fade=support_fade, sigma_cutoff=sigma_cutoff)
     if mode == "cuda_tiled_additive":
         from .cuda_render import render_cuda_exact
         return render_cuda_exact(means, conics, colors, radii, H, W, opacities=opacities,
-                                 normalize=False, eps=_EPS, tiled=True)
+                                 normalize=False, eps=_EPS, tiled=True,
+                                 support_fade=support_fade, sigma_cutoff=sigma_cutoff)
     if mode in ("gsplat", "cuda_gsplat"):
         if scales is None or rotations is None:
             raise ValueError("renderer='gsplat' requires scales and rotations")
@@ -201,7 +229,8 @@ def render_field(means, conics, colors, radii, H: int, W: int,
 
 
 @torch.no_grad()
-def gaussian_activity(means, conics, radii, H: int, W: int, chunk: int = 4096):
+def gaussian_activity(means, conics, radii, H: int, W: int, chunk: int = 4096,
+                      support_fade: bool = False, sigma_cutoff: float = 3.0):
     """Return each Gaussian's summed unnormalized weight over the image.
 
     This is a diagnostic/pruning helper for the reference fitter. It intentionally mirrors the
@@ -220,5 +249,5 @@ def gaussian_activity(means, conics, radii, H: int, W: int, chunk: int = 4096):
         dy = py.to(dt) - means[gid, 1]
         a, b, c = conics[gid, 0], conics[gid, 1], conics[gid, 2]
         q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
-        activity.index_add_(0, gid, torch.exp(-0.5 * q))
+        activity.index_add_(0, gid, _support_weight(q, sigma_cutoff, support_fade))
     return activity

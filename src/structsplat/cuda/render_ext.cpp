@@ -11,7 +11,9 @@ std::vector<torch::Tensor> structsplat_render_forward_cuda(
     int64_t height,
     int64_t width,
     bool normalize,
-    double eps);
+    double eps,
+    bool support_fade,
+    double sigma_cutoff);
 
 std::vector<torch::Tensor> structsplat_render_forward_tiled_cuda(
     torch::Tensor means,
@@ -25,7 +27,9 @@ std::vector<torch::Tensor> structsplat_render_forward_tiled_cuda(
     int64_t width,
     bool normalize,
     double eps,
-    int64_t tile_size);
+    int64_t tile_size,
+    bool support_fade,
+    double sigma_cutoff);
 
 std::vector<torch::Tensor> structsplat_render_backward_cuda(
     torch::Tensor grad_out,
@@ -37,7 +41,9 @@ std::vector<torch::Tensor> structsplat_render_backward_cuda(
     torch::Tensor den,
     torch::Tensor out,
     bool normalize,
-    double eps);
+    double eps,
+    bool support_fade,
+    double sigma_cutoff);
 
 std::vector<torch::Tensor> structsplat_render_backward_tiled_cuda(
     torch::Tensor grad_out,
@@ -52,7 +58,9 @@ std::vector<torch::Tensor> structsplat_render_backward_tiled_cuda(
     torch::Tensor tile_offsets,
     bool normalize,
     double eps,
-    int64_t tile_size);
+    int64_t tile_size,
+    bool support_fade,
+    double sigma_cutoff);
 
 #define CHECK_CUDA(x) TORCH_CHECK(x.is_cuda(), #x " must be a CUDA tensor")
 #define CHECK_CONTIGUOUS(x) TORCH_CHECK(x.is_contiguous(), #x " must be contiguous")
@@ -113,11 +121,14 @@ std::vector<torch::Tensor> forward(
     int64_t height,
     int64_t width,
     bool normalize,
-    double eps) {
+    double eps,
+    bool support_fade,
+    double sigma_cutoff) {
   check_inputs(means, conics, colors, radii, opacities);
   TORCH_CHECK(height > 0 && width > 0, "height and width must be positive");
   return structsplat_render_forward_cuda(
-      means, conics, colors, radii, opacities, height, width, normalize, eps);
+      means, conics, colors, radii, opacities, height, width, normalize, eps,
+      support_fade, sigma_cutoff);
 }
 
 std::vector<torch::Tensor> forward_tiled(
@@ -132,7 +143,9 @@ std::vector<torch::Tensor> forward_tiled(
     int64_t width,
     bool normalize,
     double eps,
-    int64_t tile_size) {
+    int64_t tile_size,
+    bool support_fade,
+    double sigma_cutoff) {
   check_inputs(means, conics, colors, radii, opacities);
   check_tile_index(tile_gids, tile_offsets);
   TORCH_CHECK(height > 0 && width > 0, "height and width must be positive");
@@ -140,7 +153,7 @@ std::vector<torch::Tensor> forward_tiled(
               "tile_size must be positive with tile_size^2 <= 1024");
   return structsplat_render_forward_tiled_cuda(
       means, conics, colors, radii, opacities, tile_gids, tile_offsets,
-      height, width, normalize, eps, tile_size);
+      height, width, normalize, eps, tile_size, support_fade, sigma_cutoff);
 }
 
 std::vector<torch::Tensor> backward(
@@ -153,7 +166,9 @@ std::vector<torch::Tensor> backward(
     torch::Tensor den,
     torch::Tensor out,
     bool normalize,
-    double eps) {
+    double eps,
+    bool support_fade,
+    double sigma_cutoff) {
   check_inputs(means, conics, colors, radii, opacities);
   CHECK_CUDA(grad_out);
   CHECK_CUDA(den);
@@ -165,7 +180,8 @@ std::vector<torch::Tensor> backward(
   CHECK_FLOAT(den);
   CHECK_FLOAT(out);
   return structsplat_render_backward_cuda(
-      grad_out, means, conics, colors, radii, opacities, den, out, normalize, eps);
+      grad_out, means, conics, colors, radii, opacities, den, out, normalize, eps,
+      support_fade, sigma_cutoff);
 }
 
 std::vector<torch::Tensor> backward_tiled(
@@ -181,7 +197,9 @@ std::vector<torch::Tensor> backward_tiled(
     torch::Tensor tile_offsets,
     bool normalize,
     double eps,
-    int64_t tile_size) {
+    int64_t tile_size,
+    bool support_fade,
+    double sigma_cutoff) {
   check_inputs(means, conics, colors, radii, opacities);
   check_tile_index(tile_gids, tile_offsets);
   CHECK_CUDA(grad_out);
@@ -197,7 +215,7 @@ std::vector<torch::Tensor> backward_tiled(
               "tile_size must be positive with tile_size^2 <= 1024");
   return structsplat_render_backward_tiled_cuda(
       grad_out, means, conics, colors, radii, opacities, den, out,
-      tile_gids, tile_offsets, normalize, eps, tile_size);
+      tile_gids, tile_offsets, normalize, eps, tile_size, support_fade, sigma_cutoff);
 }
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {

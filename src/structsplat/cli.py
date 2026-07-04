@@ -61,6 +61,7 @@ def cmd_fit(args):
                      loss_warmup_pixel_loss=args.loss_warmup_pixel_loss,
                      compute_lpips=args.lpips,
                      renderer=args.renderer,
+                     support_fade=args.support_fade,
                      aa_dilation=args.aa_dilation,
                      lr_schedule=args.lr_schedule,
                      lr_decay_every=args.lr_decay_every, lr_decay_gamma=args.lr_decay_gamma,
@@ -189,6 +190,8 @@ def main():
                    ],
                    default="normalized")
     f.add_argument("--aa-dilation", type=float, default=0.0)
+    f.add_argument("--support-fade", action="store_true",
+                   help="subtract the Gaussian tail at sigma_cutoff for C0 compact support")
     f.add_argument("--optimizer", choices=["adam", "adamw", "adan"], default="adam")
     f.add_argument("--pixel-loss", choices=["l1", "l2", "charbonnier"], default="l1")
     f.add_argument("--loss-warmup-iters", type=int, default=0)

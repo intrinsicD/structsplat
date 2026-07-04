@@ -157,6 +157,7 @@ def encode(field: GaussianField, H: int, W: int, cfg: CodecConfig | None = None,
         "renderer": fcfg.renderer,
         "aa_dilation": float(fcfg.aa_dilation),
         "sigma_cutoff": float(fcfg.sigma_cutoff),
+        "support_fade": bool(fcfg.support_fade),
         "render_chunk": int(fcfg.render_chunk),
     }).encode()
     blob = _MAGIC + struct.pack("<I", len(header)) + header
@@ -229,11 +230,13 @@ def decode_and_render(blob: bytes, device: str = "cpu") -> torch.Tensor:
     H, W = h["H"], h["W"]
     aa = float(h.get("aa_dilation", 0.0))
     sigma = float(h.get("sigma_cutoff", 3.0))
+    support_fade = bool(h.get("support_fade", False))
     mode = h.get("renderer", "normalized")
     chunk = int(h.get("render_chunk", 512))
     return render_field(field.means, field.conics(aa), field.colors,
                         field.radii(sigma, aa), H, W, chunk, mode, field.opacity_values(),
-                        scales=field.scales(), rotations=field.rotations)
+                        scales=field.scales(), rotations=field.rotations,
+                        support_fade=support_fade, sigma_cutoff=sigma)
 
 
 def _ste(x: torch.Tensor, lo, hi, bits: int) -> torch.Tensor:
@@ -287,7 +290,8 @@ def qat_finetune(field: GaussianField, target: torch.Tensor, fcfg: FitConfig,
         img = render_field(qf.means, qf.conics(fcfg.aa_dilation), qf.colors,
                            qf.radii(fcfg.sigma_cutoff, fcfg.aa_dilation), H, W, fcfg.render_chunk,
                            fcfg.renderer, qf.opacity_values(),
-                           scales=qf.scales(), rotations=qf.rotations)
+                           scales=qf.scales(), rotations=qf.rotations,
+                           support_fade=fcfg.support_fade, sigma_cutoff=fcfg.sigma_cutoff)
         pix = _pixel_loss(img, target, fcfg.pixel_loss, fcfg.charbonnier_eps)
         loss = (1 - fcfg.ssim_weight) * pix + fcfg.ssim_weight * (1 - M.ssim(img, target))
         opt.zero_grad(set_to_none=True)

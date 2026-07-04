@@ -1,6 +1,6 @@
 # CORE-005: Reference renderer memory bound + C0-continuous support cutoff
 
-**Status: todo.** From the 2026-07-03 repo review.
+**Status: partial.** From the 2026-07-03 repo review.
 
 ## Context
 1. **Chunking does not bound real peak memory.** Each flat-tile slice's autograd graph retains
@@ -21,7 +21,7 @@ CUDA renderers; one budget helper with documented semantics.
 ## Acceptance criteria
 - [ ] Opt-in gradient checkpointing per slice (`torch.utils.checkpoint`) making backward peak
       memory O(budget); measured before/after peak on a large-N fit recorded in the task notes.
-- [ ] Support fade `w = max(exp(-q/2) - exp(-sigma_cutoff^2/2), 0)` implemented in
+- [x] Support fade `w = max(exp(-q/2) - exp(-sigma_cutoff^2/2), 0)` implemented in
       `_accumulate`, `gaussian_activity`, `_support_residual_scores`, and the CUDA kernels,
       behind a config flag; parity test reference-vs-CUDA with the fade on.
 - [ ] One benchmark slice (fixed seed/budget) comparing fade on/off for PSNR and
@@ -36,11 +36,20 @@ CUDA renderers; one budget helper with documented semantics.
   `_support_residual_scores` all use it. The helper preserves the previous
   `max(chunk, 64) * 4096` behavior; `FitConfig.render_chunk` now documents the effective element
   budget, and focused coverage pins the 64-unit floor plus 4096-element unit.
+- 2026-07-05 partial implementation: Added opt-in `FitConfig.support_fade` / CLI
+  `--support-fade`. Reference normalized/additive renderers, `gaussian_activity`, fit's
+  `_support_residual_scores`, exact CUDA scatter kernels, and `cuda_tiled` kernels all use the
+  same compact-support weight. Codec blobs now store `support_fade` so `decode_and_render` remains
+  self-describing. Validation: reference fade tests passed; CUDA fade parity passed under
+  `LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6` with 22 renderer tests; a tiny
+  `FitConfig(renderer="cuda", support_fade=True)` smoke completed on CUDA.
 
 ## Interfaces touched
-`src/structsplat/render.py`, `src/structsplat/cuda/render_ext.cu`, `src/structsplat/fit.py`,
-`src/structsplat/config.py`. The fade changes renderer math → needs an ADR amendment to
-ADR-0003 if it becomes the default.
+`src/structsplat/render.py`, `src/structsplat/cuda_render.py`,
+`src/structsplat/cuda/render_ext.cpp`, `src/structsplat/cuda/render_ext.cu`,
+`src/structsplat/fit.py`, `src/structsplat/config.py`, `src/structsplat/codec.py`,
+`src/structsplat/pyramid.py`, `src/structsplat/cli.py`. The fade changes renderer math only when
+opted in; if it becomes the default, add an ADR amendment to ADR-0003.
 
 ## Depends on
 CORE-003, CORE-004.

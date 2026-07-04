@@ -64,6 +64,8 @@ class _ExactRenderCuda(Function):
         eps,
         tiled,
         tile_size,
+        support_fade,
+        sigma_cutoff,
     ):
         ext = _load_extension()
         means = means.contiguous()
@@ -77,6 +79,7 @@ class _ExactRenderCuda(Function):
             out, den = ext.forward_tiled(
                 means, conics, colors, radii, opacities, tile_gids, tile_offsets,
                 int(height), int(width), bool(normalize), float(eps), int(tile_size),
+                bool(support_fade), float(sigma_cutoff),
             )
         else:
             tile_gids = means.new_empty(0, dtype=torch.long)
@@ -84,6 +87,7 @@ class _ExactRenderCuda(Function):
             out, den = ext.forward(
                 means, conics, colors, radii, opacities,
                 int(height), int(width), bool(normalize), float(eps),
+                bool(support_fade), float(sigma_cutoff),
             )
         ctx.save_for_backward(
             means, conics, colors, radii, opacities, den, out, tile_gids, tile_offsets
@@ -92,6 +96,8 @@ class _ExactRenderCuda(Function):
         ctx.eps = float(eps)
         ctx.tiled = bool(tiled)
         ctx.tile_size = int(tile_size)
+        ctx.support_fade = bool(support_fade)
+        ctx.sigma_cutoff = float(sigma_cutoff)
         return out
 
     @staticmethod
@@ -101,22 +107,24 @@ class _ExactRenderCuda(Function):
             ctx.saved_tensors
         )
         # forward signature:
-        # means, conics, colors, radii, opacities, height, width, normalize, eps, tiled, tile_size
+        # means, conics, colors, radii, opacities, height, width, normalize, eps, tiled, tile_size,
+        # support_fade, sigma_cutoff
         need_means, need_conics, need_colors, _, need_opac = ctx.needs_input_grad[:5]
         if not (need_means or need_conics or need_colors or need_opac):
-            return (None,) * 11
+            return (None,) * 13
         ext = _load_extension()
         if ctx.tiled:
             grad_means, grad_conics, grad_colors, grad_opacities = ext.backward_tiled(
                 grad_out.contiguous(),
                 means, conics, colors, radii, opacities, den.contiguous(), out.contiguous(),
                 tile_gids, tile_offsets, ctx.normalize, ctx.eps, ctx.tile_size,
+                ctx.support_fade, ctx.sigma_cutoff,
             )
         else:
             grad_means, grad_conics, grad_colors, grad_opacities = ext.backward(
                 grad_out.contiguous(),
                 means, conics, colors, radii, opacities, den.contiguous(), out.contiguous(),
-                ctx.normalize, ctx.eps,
+                ctx.normalize, ctx.eps, ctx.support_fade, ctx.sigma_cutoff,
             )
         if opacities.numel() == 0 or not need_opac:
             grad_opacities = None
@@ -126,6 +134,8 @@ class _ExactRenderCuda(Function):
             grad_colors if need_colors else None,
             None,
             grad_opacities,
+            None,
+            None,
             None,
             None,
             None,
@@ -189,7 +199,8 @@ def _build_tile_index(means: torch.Tensor, radii: torch.Tensor, H: int, W: int,
 
 def render_cuda_exact(means, conics, colors, radii, H: int, W: int,
                       opacities=None, normalize: bool = True, eps: float = 1e-8,
-                      tiled: bool = False, tile_size: int = 16):
+                      tiled: bool = False, tile_size: int = 16,
+                      support_fade: bool = False, sigma_cutoff: float = 3.0):
     """Render with StructSplat's exact normalized/additive math on CUDA.
 
     Args mirror ``render_field``. Only float32 CUDA tensors are supported; CPU or non-float32
@@ -202,5 +213,6 @@ def render_cuda_exact(means, conics, colors, radii, H: int, W: int,
     if opacities is None:
         opacities = means.new_empty(0)
     return _ExactRenderCuda.apply(
-        means, conics, colors, radii, opacities, H, W, normalize, eps, tiled, tile_size
+        means, conics, colors, radii, opacities, H, W, normalize, eps, tiled, tile_size,
+        support_fade, sigma_cutoff
     )

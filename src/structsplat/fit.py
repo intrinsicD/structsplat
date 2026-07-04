@@ -185,7 +185,8 @@ def _render(field: GaussianField, cfg: FitConfig, H: int, W: int) -> torch.Tenso
     return render_field(field.means, field.conics(cfg.aa_dilation), field.colors,
                         field.radii(cfg.sigma_cutoff, cfg.aa_dilation),
                         H, W, cfg.render_chunk, cfg.renderer, field.opacity_values(),
-                        scales=field.scales(), rotations=field.rotations)
+                        scales=field.scales(), rotations=field.rotations,
+                        support_fade=cfg.support_fade, sigma_cutoff=cfg.sigma_cutoff)
 
 
 def _target_list(cfg: FitConfig) -> list[float]:
@@ -259,6 +260,8 @@ def _support_residual_scores(field: GaussianField, residual: torch.Tensor,
         a, b, c = conics[gid, 0], conics[gid, 1], conics[gid, 2]
         q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
         w = torch.exp(-0.5 * q)
+        if cfg.support_fade:
+            w = torch.clamp(w - math.exp(-0.5 * cfg.sigma_cutoff ** 2), min=0.0)
         score.index_add_(0, gid, w * residual[py, px].to(dt))
         weight.index_add_(0, gid, w)
     return score / (weight + 1e-8)
@@ -340,7 +343,7 @@ def _maybe_prune(field: GaussianField, cfg: FitConfig, H: int,
         return field, None
     activity = gaussian_activity(field.means, field.conics(cfg.aa_dilation),
                                  field.radii(cfg.sigma_cutoff, cfg.aa_dilation),
-                                 H, W, cfg.render_chunk)
+                                 H, W, cfg.render_chunk, cfg.support_fade, cfg.sigma_cutoff)
     # gaussian_activity is opacity-free; without this a Gaussian the optimizer has driven fully
     # transparent keeps its geometric weight-sum and is never pruned at fixed N (FIT-002).
     opac = field.opacity_values()
@@ -431,6 +434,7 @@ def _ranked_wave_scores(field: GaussianField, residual: torch.Tensor,
     activity = gaussian_activity(
         field.means, field.conics(cfg.aa_dilation),
         field.radii(cfg.sigma_cutoff, cfg.aa_dilation), H, W, cfg.render_chunk,
+        cfg.support_fade, cfg.sigma_cutoff,
     )
     opac = field.opacity_values()
     if opac is not None:
@@ -517,6 +521,7 @@ def _relocate_from_residual(field: GaussianField, target: torch.Tensor,
     activity = gaussian_activity(
         field.means, field.conics(cfg.aa_dilation),
         field.radii(cfg.sigma_cutoff, cfg.aa_dilation), H, W, cfg.render_chunk,
+        cfg.support_fade, cfg.sigma_cutoff,
     )
     opac = field.opacity_values()
     if opac is not None:

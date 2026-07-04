@@ -46,6 +46,20 @@ __device__ __forceinline__ void support_bounds(
   ty = max(y1 - y0 + 1, 0);
 }
 
+__device__ __forceinline__ float visible_weight(float raw, bool support_fade, float tail) {
+  if (!support_fade) {
+    return raw;
+  }
+  return fmaxf(raw - tail, 0.0f);
+}
+
+__device__ __forceinline__ float dvisible_dq(float raw, bool support_fade, float tail) {
+  if (support_fade && raw <= tail) {
+    return 0.0f;
+  }
+  return -0.5f * raw;
+}
+
 __global__ void accumulate_kernel(
     const float* __restrict__ means,
     const float* __restrict__ conics,
@@ -57,6 +71,8 @@ __global__ void accumulate_kernel(
     int width,
     bool has_opacity,
     bool normalize,
+    bool support_fade,
+    float tail,
     float* __restrict__ num,
     float* __restrict__ den) {
   int i = blockIdx.x;
@@ -86,7 +102,7 @@ __global__ void accumulate_kernel(
     float dx = static_cast<float>(px) - mx;
     float dy = static_cast<float>(py) - my;
     float q = a * dx * dx + 2.0f * b * dx * dy + c * dy * dy;
-    float w = expf(-0.5f * q) * op;
+    float w = visible_weight(expf(-0.5f * q), support_fade, tail) * op;
     int flat = py * width + px;
     atomicAdd(&num[flat * 3 + 0], w * cr);
     atomicAdd(&num[flat * 3 + 1], w * cg);
@@ -135,6 +151,8 @@ __global__ void tiled_forward_kernel(
     bool has_opacity,
     bool normalize,
     float eps,
+    bool support_fade,
+    float tail,
     float* __restrict__ out,
     float* __restrict__ den) {
   int tile = blockIdx.x;
@@ -173,7 +191,7 @@ __global__ void tiled_forward_kernel(
     float c = conics[i * 3 + 2];
     float q = a * dx * dx + 2.0f * b * dx * dy + c * dy * dy;
     float op = has_opacity ? opacities[i] : 1.0f;
-    float weight = expf(-0.5f * q) * op;
+    float weight = visible_weight(expf(-0.5f * q), support_fade, tail) * op;
     nr += weight * colors[i * 3 + 0];
     ng += weight * colors[i * 3 + 1];
     nb += weight * colors[i * 3 + 2];
@@ -209,6 +227,8 @@ __global__ void backward_kernel(
     bool has_opacity,
     bool normalize,
     float eps,
+    bool support_fade,
+    float tail,
     float* __restrict__ grad_means,
     float* __restrict__ grad_conics,
     float* __restrict__ grad_colors,
@@ -251,7 +271,8 @@ __global__ void backward_kernel(
     float dx = static_cast<float>(px) - mx;
     float dy = static_cast<float>(py) - my;
     float q = a * dx * dx + 2.0f * b * dx * dy + c * dy * dy;
-    float base = expf(-0.5f * q);
+    float raw = expf(-0.5f * q);
+    float base = visible_weight(raw, support_fade, tail);
     float w = base * op;
 
     float gr = grad_out[flat * 3 + 0];
@@ -282,7 +303,7 @@ __global__ void backward_kernel(
     if (has_opacity) {
       gop += dw * base;
     }
-    float dq = -0.5f * base * dbase;
+    float dq = dvisible_dq(raw, support_fade, tail) * dbase;
     gm0 += dq * (-2.0f * a * dx - 2.0f * b * dy);
     gm1 += dq * (-2.0f * b * dx - 2.0f * c * dy);
     ga += dq * dx * dx;
@@ -321,6 +342,8 @@ __global__ void tiled_backward_kernel(
     bool has_opacity,
     bool normalize,
     float eps,
+    bool support_fade,
+    float tail,
     float* __restrict__ grad_means,
     float* __restrict__ grad_conics,
     float* __restrict__ grad_colors,
@@ -365,7 +388,8 @@ __global__ void tiled_backward_kernel(
     float cg = colors[i * 3 + 1];
     float cb = colors[i * 3 + 2];
     float q = a * dx * dx + 2.0f * b * dx * dy + c * dy * dy;
-    float base = expf(-0.5f * q);
+    float raw = expf(-0.5f * q);
+    float base = visible_weight(raw, support_fade, tail);
     float weight = base * op;
 
     float dw;
@@ -393,7 +417,7 @@ __global__ void tiled_backward_kernel(
     if (has_opacity) {
       atomicAdd(&grad_opacities[i], dw * base);
     }
-    float dq = -0.5f * base * dbase;
+    float dq = dvisible_dq(raw, support_fade, tail) * dbase;
     atomicAdd(&grad_means[i * 2 + 0], dq * (-2.0f * a * dx - 2.0f * b * dy));
     atomicAdd(&grad_means[i * 2 + 1], dq * (-2.0f * b * dx - 2.0f * c * dy));
     atomicAdd(&grad_conics[i * 3 + 0], dq * dx * dx);
@@ -413,7 +437,9 @@ std::vector<torch::Tensor> structsplat_render_forward_cuda(
     int64_t height,
     int64_t width,
     bool normalize,
-    double eps) {
+    double eps,
+    bool support_fade,
+    double sigma_cutoff) {
   int n = static_cast<int>(means.size(0));
   int h = static_cast<int>(height);
   int w = static_cast<int>(width);
@@ -424,6 +450,7 @@ std::vector<torch::Tensor> structsplat_render_forward_cuda(
   if (pixels > 0) {
     cudaStream_t stream = at::cuda::getCurrentCUDAStream();
     constexpr int threads = 256;
+    float tail = expf(-0.5f * static_cast<float>(sigma_cutoff * sigma_cutoff));
     if (n > 0) {
       accumulate_kernel<<<n, threads, 0, stream>>>(
           means.data_ptr<float>(),
@@ -436,6 +463,8 @@ std::vector<torch::Tensor> structsplat_render_forward_cuda(
           w,
           opacities.numel() > 0,
           normalize,
+          support_fade,
+          tail,
           num.data_ptr<float>(),
           den.data_ptr<float>());
       C10_CUDA_KERNEL_LAUNCH_CHECK();
@@ -468,7 +497,9 @@ std::vector<torch::Tensor> structsplat_render_forward_tiled_cuda(
     int64_t width,
     bool normalize,
     double eps,
-    int64_t tile_size) {
+    int64_t tile_size,
+    bool support_fade,
+    double sigma_cutoff) {
   int h = static_cast<int>(height);
   int w = static_cast<int>(width);
   int ts = static_cast<int>(tile_size);
@@ -483,6 +514,7 @@ std::vector<torch::Tensor> structsplat_render_forward_tiled_cuda(
   if (pixels > 0 && num_tiles > 0) {
     cudaStream_t stream = at::cuda::getCurrentCUDAStream();
     int threads = ts * ts;
+    float tail = expf(-0.5f * static_cast<float>(sigma_cutoff * sigma_cutoff));
     tiled_forward_kernel<<<num_tiles, threads, 0, stream>>>(
         means.data_ptr<float>(),
         conics.data_ptr<float>(),
@@ -498,6 +530,8 @@ std::vector<torch::Tensor> structsplat_render_forward_tiled_cuda(
         opacities.numel() > 0,
         normalize,
         static_cast<float>(eps),
+        support_fade,
+        tail,
         out_flat.data_ptr<float>(),
         den.data_ptr<float>());
     C10_CUDA_KERNEL_LAUNCH_CHECK();
@@ -515,7 +549,9 @@ std::vector<torch::Tensor> structsplat_render_backward_cuda(
     torch::Tensor den,
     torch::Tensor out,
     bool normalize,
-    double eps) {
+    double eps,
+    bool support_fade,
+    double sigma_cutoff) {
   int n = static_cast<int>(means.size(0));
   int h = static_cast<int>(out.size(0));
   int w = static_cast<int>(out.size(1));
@@ -528,6 +564,7 @@ std::vector<torch::Tensor> structsplat_render_backward_cuda(
   if (n > 0 && h > 0 && w > 0) {
     cudaStream_t stream = at::cuda::getCurrentCUDAStream();
     constexpr int threads = 256;
+    float tail = expf(-0.5f * static_cast<float>(sigma_cutoff * sigma_cutoff));
     backward_kernel<<<n, threads, 0, stream>>>(
         grad_out.data_ptr<float>(),
         means.data_ptr<float>(),
@@ -543,6 +580,8 @@ std::vector<torch::Tensor> structsplat_render_backward_cuda(
         opacities.numel() > 0,
         normalize,
         static_cast<float>(eps),
+        support_fade,
+        tail,
         grad_means.data_ptr<float>(),
         grad_conics.data_ptr<float>(),
         grad_colors.data_ptr<float>(),
@@ -565,7 +604,9 @@ std::vector<torch::Tensor> structsplat_render_backward_tiled_cuda(
     torch::Tensor tile_offsets,
     bool normalize,
     double eps,
-    int64_t tile_size) {
+    int64_t tile_size,
+    bool support_fade,
+    double sigma_cutoff) {
   int n = static_cast<int>(means.size(0));
   int h = static_cast<int>(out.size(0));
   int w = static_cast<int>(out.size(1));
@@ -584,6 +625,7 @@ std::vector<torch::Tensor> structsplat_render_backward_tiled_cuda(
   if (n > 0 && h > 0 && w > 0 && num_tiles > 0) {
     cudaStream_t stream = at::cuda::getCurrentCUDAStream();
     int threads = ts * ts;
+    float tail = expf(-0.5f * static_cast<float>(sigma_cutoff * sigma_cutoff));
     tiled_backward_kernel<<<num_tiles, threads, 0, stream>>>(
         grad_out.data_ptr<float>(),
         means.data_ptr<float>(),
@@ -602,6 +644,8 @@ std::vector<torch::Tensor> structsplat_render_backward_tiled_cuda(
         opacities.numel() > 0,
         normalize,
         static_cast<float>(eps),
+        support_fade,
+        tail,
         grad_means.data_ptr<float>(),
         grad_conics.data_ptr<float>(),
         grad_colors.data_ptr<float>(),

@@ -73,6 +73,7 @@ class FitConfig:
     target_psnrs: list[float] = field(default_factory=list)
     log_every: int = 100
     sigma_cutoff: float = 3.0          # render support radius in std devs
+    support_fade: bool = False         # C0 compact support: subtract Gaussian tail at cutoff
     aa_dilation: float = 0.0           # EWA-style low-pass: render with Sigma + d*I (px^2)
     render_chunk: int = 512            # reference renderer: max(render_chunk,64)*4096 elements
     renderer: str = "normalized"       # normalized/additive/cuda/cuda_tiled/gsplat variants

@@ -50,6 +50,34 @@ def test_additive_renderer_runs_and_differs():
     assert add[3, 3, 0] > norm[3, 3, 0]
 
 
+def test_support_fade_zeroes_tail_at_cutoff():
+    means = np.array([[5.0, 5.0]])
+    scales = np.full((1, 2), 1.0)
+    colors = np.array([[1.0, 0.0, 0.0]])
+    g = GaussianField.from_numpy(means, scales, np.zeros(1), colors)
+    hard = render_field(g.means, g.conics(), g.colors, g.radii(3.0), 11, 11, mode="additive")
+    faded = render_field(
+        g.means, g.conics(), g.colors, g.radii(3.0), 11, 11, mode="additive",
+        support_fade=True, sigma_cutoff=3.0,
+    )
+    assert hard[5, 8, 0] > 0
+    assert faded[5, 8, 0] == 0
+    assert 0 < faded[5, 7, 0] < hard[5, 7, 0]
+
+
+def test_support_fade_reduces_activity():
+    means = np.array([[5.0, 5.0]])
+    scales = np.full((1, 2), 1.0)
+    colors = np.ones((1, 3))
+    g = GaussianField.from_numpy(means, scales, np.zeros(1), colors)
+    hard = gaussian_activity(g.means, g.conics(), g.radii(3.0), 11, 11)
+    faded = gaussian_activity(
+        g.means, g.conics(), g.radii(3.0), 11, 11,
+        support_fade=True, sigma_cutoff=3.0,
+    )
+    assert 0 < faded[0] < hard[0]
+
+
 def test_cuda_renderer_is_explicit_about_requirements():
     means = np.array([[3.0, 3.0]])
     scales = np.full((1, 2), 1.5)
@@ -118,13 +146,17 @@ def test_cuda_tiled_exact_matches_reference_when_available():
     opacity = g.opacity_values()
     try:
         ref = render_field(g.means, g.conics(), g.colors, g.radii(3.0), H, W,
-                           mode="normalized", opacities=opacity)
+                           mode="normalized", opacities=opacity,
+                           support_fade=True, sigma_cutoff=3.0)
         tiled = render_field(g.means, g.conics(), g.colors, g.radii(3.0), H, W,
-                             mode="cuda_tiled", opacities=opacity)
+                             mode="cuda_tiled", opacities=opacity,
+                             support_fade=True, sigma_cutoff=3.0)
         add_ref = render_field(g.means, g.conics(), g.colors, g.radii(3.0), H, W,
-                               mode="additive", opacities=opacity)
+                               mode="additive", opacities=opacity,
+                               support_fade=True, sigma_cutoff=3.0)
         add_tiled = render_field(g.means, g.conics(), g.colors, g.radii(3.0), H, W,
-                                 mode="cuda_tiled_additive", opacities=opacity)
+                                 mode="cuda_tiled_additive", opacities=opacity,
+                                 support_fade=True, sigma_cutoff=3.0)
         torch.cuda.synchronize()
     except RuntimeError as exc:
         pytest.skip(str(exc))
@@ -145,7 +177,10 @@ def test_cuda_exact_backward_matches_reference_when_available():
 
     def run(mode):
         f = GaussianField.from_numpy(means, scales, angles, colors, device="cuda").trainable()
-        img = render_field(f.means, f.conics(), f.colors, f.radii(3.0), H, W, mode=mode)
+        img = render_field(
+            f.means, f.conics(), f.colors, f.radii(3.0), H, W, mode=mode,
+            support_fade=True, sigma_cutoff=3.0,
+        )
         loss = (img - target).square().mean()
         loss.backward()
         torch.cuda.synchronize()
@@ -173,7 +208,10 @@ def test_cuda_tiled_backward_matches_reference_when_available():
 
     def run(mode):
         f = GaussianField.from_numpy(means, scales, angles, colors, device="cuda").trainable()
-        img = render_field(f.means, f.conics(), f.colors, f.radii(3.0), H, W, mode=mode)
+        img = render_field(
+            f.means, f.conics(), f.colors, f.radii(3.0), H, W, mode=mode,
+            support_fade=True, sigma_cutoff=3.0,
+        )
         loss = (img - target).square().mean()
         loss.backward()
         torch.cuda.synchronize()
@@ -191,7 +229,8 @@ def test_cuda_tiled_backward_matches_reference_when_available():
 @pytest.mark.parametrize("normalize", [True, False])
 @pytest.mark.parametrize("use_opacities", [False, True])
 @pytest.mark.parametrize("dilation", [0.0, 0.3])
-def test_cuda_exact_parity_matrix_when_available(normalize, use_opacities, dilation):
+@pytest.mark.parametrize("support_fade", [False, True])
+def test_cuda_exact_parity_matrix_when_available(normalize, use_opacities, dilation, support_fade):
     if not torch.cuda.is_available():
         pytest.skip("CUDA not available")
     rng = np.random.default_rng(7)
@@ -210,7 +249,8 @@ def test_cuda_exact_parity_matrix_when_available(normalize, use_opacities, dilat
                                      device="cuda").trainable()
         o = None if opac is None else f.opacity_values()
         img = render_field(f.means, f.conics(dilation), f.colors,
-                           f.radii(3.0, dilation), H, W, mode=mode, opacities=o)
+                           f.radii(3.0, dilation), H, W, mode=mode, opacities=o,
+                           support_fade=support_fade, sigma_cutoff=3.0)
         loss = (img - target).square().mean()
         loss.backward()
         torch.cuda.synchronize()

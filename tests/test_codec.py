@@ -127,14 +127,17 @@ def test_blob_is_self_describing_render():
     # decode_and_render must reproduce the fitted renderer's output with no out-of-band FitConfig
     img = _toy()
     field = _fitted_field(img)
-    fcfg = FitConfig(renderer="additive", aa_dilation=0.3, sigma_cutoff=2.5)
+    fcfg = FitConfig(renderer="additive", aa_dilation=0.3, sigma_cutoff=2.5,
+                     support_fade=True)
     blob = codec.encode(field, *img.shape[:2], codec.CodecConfig(), fcfg)
     h = codec.blob_header(blob)
     assert h["renderer"] == "additive" and h["aa_dilation"] == 0.3 and h["sigma_cutoff"] == 2.5
+    assert h["support_fade"] is True
     auto = codec.decode_and_render(blob)                       # semantics from the header
     dec = codec.decode(blob)
     manual = render_field(dec.means, dec.conics(0.3), dec.colors,
-                          dec.radii(2.5, 0.3), *img.shape[:2], mode="additive")
+                          dec.radii(2.5, 0.3), *img.shape[:2], mode="additive",
+                          support_fade=True, sigma_cutoff=2.5)
     assert torch.allclose(auto, manual, atol=1e-5)
 
 
