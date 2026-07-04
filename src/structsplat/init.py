@@ -16,6 +16,7 @@ the residual (HIER-001). Colors are always sampled from the *target* image (see 
 Requires torch (only to assemble the GaussianField); the heavy math stays NumPy.
 """
 from __future__ import annotations
+import heapq
 from dataclasses import replace
 import numpy as np
 
@@ -115,19 +116,45 @@ def _quadtree_leaves(density: np.ndarray, n: int) -> list[tuple[int, int, int, i
         return float(_rect_sum(mass_sat, x0, y0, x1, y1)), area
 
     leaves: list[tuple[int, int, int, int]] = [(0, 0, W, H)]
-    while len(leaves) < n:
-        remaining = n - len(leaves)
-        choices = []
-        for i, cell in enumerate(leaves):
-            children = _split_cell(cell)
-            if children and len(children) - 1 <= remaining:
-                choices.append((priority(cell), i, children))
-        if not choices:
-            break
-        _, idx, children = max(choices, key=lambda x: x[0])
-        leaves.pop(idx)
-        leaves.extend(children)
+    active = [True]
+    heap: list[tuple[float, int, int, list[tuple[int, int, int, int]]]] = []
 
+    def push_entry(idx: int, cell: tuple[int, int, int, int]) -> None:
+        children = _split_cell(cell)
+        if not children:
+            return
+        mass, area = priority(cell)
+        heapq.heappush(heap, (-mass, -area, idx, children))
+
+    push_entry(0, leaves[0])
+    leaf_count = 1
+    while leaf_count < n and heap:
+        remaining = n - leaf_count
+        deferred = []
+        chosen: tuple[int, list[tuple[int, int, int, int]]] | None = None
+        while heap:
+            entry = heapq.heappop(heap)
+            _, _, idx, children = entry
+            if not active[idx]:
+                continue
+            if len(children) - 1 <= remaining:
+                chosen = idx, children
+                break
+            deferred.append(entry)
+        for entry in deferred:
+            heapq.heappush(heap, entry)
+        if chosen is None:
+            break
+        idx, children = chosen
+        active[idx] = False
+        leaf_count += len(children) - 1
+        for child in children:
+            child_idx = len(leaves)
+            leaves.append(child)
+            active.append(True)
+            push_entry(child_idx, child)
+
+    leaves = [cell for cell, is_active in zip(leaves, active) if is_active]
     if len(leaves) < n:
         child_pool = []
         for cell in leaves:

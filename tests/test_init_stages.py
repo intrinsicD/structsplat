@@ -23,6 +23,54 @@ def _assert_field_ok(f, n):
     assert (f.means[:, 1] >= -0.5).all() and (f.means[:, 1] <= 47.5).all()
 
 
+def _quadtree_leaves_reference(density, n):
+    H, W = density.shape
+    mass_sat = I._sat(density)
+
+    def priority(cell):
+        x0, y0, x1, y1 = cell
+        area = (x1 - x0) * (y1 - y0)
+        return float(I._rect_sum(mass_sat, x0, y0, x1, y1)), area
+
+    leaves = [(0, 0, W, H)]
+    while len(leaves) < n:
+        remaining = n - len(leaves)
+        choices = []
+        for i, cell in enumerate(leaves):
+            children = I._split_cell(cell)
+            if children and len(children) - 1 <= remaining:
+                choices.append((priority(cell), i, children))
+        if not choices:
+            break
+        _, idx, children = max(choices, key=lambda x: x[0])
+        leaves.pop(idx)
+        leaves.extend(children)
+
+    if len(leaves) < n:
+        child_pool = []
+        for cell in leaves:
+            child_pool.extend(I._split_cell(cell))
+        child_pool.sort(key=priority, reverse=True)
+        leaves.extend(child_pool[:n - len(leaves)])
+
+    if len(leaves) > n:
+        leaves = sorted(leaves, key=priority, reverse=True)[:n]
+    return leaves
+
+
+def test_quadtree_heap_matches_reference_leaves():
+    rng = np.random.default_rng(12)
+    gradient = np.arange(63, dtype=np.float64).reshape(7, 9)
+    densities = [
+        np.ones((7, 9), dtype=np.float64),
+        rng.random((7, 9)),
+        (gradient % 5) / 5.0,
+    ]
+    for density in densities:
+        for n in (0, 1, 2, 3, 4, 5, 8, 13, 20, 37, 64, 80):
+            assert I._quadtree_leaves(density, n) == _quadtree_leaves_reference(density, n)
+
+
 @pytest.mark.parametrize("mode", I.SAMPLING_MODES)
 def test_every_sampling_mode_builds_exact_n(mode):
     img = _toy()

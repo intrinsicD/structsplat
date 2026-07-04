@@ -27,7 +27,7 @@ no behavior change — outputs must stay bit-identical (or identical up to docum
 Feature-aware init stays interactive at the default 20k budget on 1–4 MP images.
 
 ## Acceptance criteria
-- [ ] `_quadtree_leaves` uses a max-heap keyed by (mass, area), priorities computed once per
+- [x] `_quadtree_leaves` uses a max-heap keyed by (mass, area), priorities computed once per
       cell at push time → O(n log n); leaf sets identical to the current implementation on the
       test images (or differences limited to documented tie-breaking).
 - [x] `_nn_spacing` uses the GEMM form (|a|²+|b|²−2ab) or the sampling grid hash; peak
@@ -53,12 +53,24 @@ Feature-aware init stays interactive at the default 20k budget on 1–4 MP image
   `np.searchsorted`. Pair-set parity is tested against a brute-force reference for Euclidean and
   anisotropic metrics, including a sparse coordinate range that would be pathological for dense
   per-cell tables.
+- 2026-07-04 partial implementation: `_quadtree_leaves` now keeps active leaves in a max-heap
+  keyed by `(mass, area, insertion_order)`. The insertion-order tie-break preserves the old
+  first-max leaf order, including flat-density ties, while deferring over-budget 4-way splits so
+  lower-priority 2-way splits can still fill the exact requested budget. Focused coverage compares
+  exact leaf lists against the previous O(n^2) reference on random, plateaued, and tied densities.
 - Timing/memory check on random 4096x3072-domain points, default requested chunk 2048:
 
   | Function | N | Old seconds | New seconds | Max abs diff | Old matrix | New matrix |
   |---|---:|---:|---:|---:|---:|---:|
   | `_nn_spacing` | 5,000 | 0.3390 | 0.0736 | 7.85e-10 | 163.8 MB | 81.9 MB |
   | `_nn_spacing` | 20,000 | skipped | 1.0657 | n/a | 655.4 MB formula | 128.0 MB |
+
+- Timing check on a random/plateaued 256x256 density map:
+
+  | Function | N | Old seconds | New seconds | Parity | Leaf count |
+  |---|---:|---:|---:|---:|---:|
+  | `_quadtree_leaves` | 5,000 | 12.3464 | 0.0444 | exact | 5,000 |
+  | `_quadtree_leaves` | 20,000 | skipped | 0.1988 | n/a | 20,000 |
 
 ## Interfaces touched
 `src/structsplat/init.py`, `src/structsplat/sampling.py`, `src/structsplat/structure_tensor.py`,
