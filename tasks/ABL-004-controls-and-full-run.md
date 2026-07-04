@@ -1,6 +1,6 @@
 # ABL-004: Killer controls + the full ABL-001 run + committed evidence
 
-**Status: todo.** From the 2026-07-03 repo review. This is the repo's actual experiment — the
+**Status: partial.** From the 2026-07-03 repo review. This is the repo's actual experiment — the
 initialization thesis has never been tested by its own protocol. All recorded evidence sits at
 one operating point (4 COCO images, 512 Gaussians, 80 iters, max-side 160).
 
@@ -31,7 +31,7 @@ anisotropic blue-noise flanking improve low-budget quality or convergence speed 
 conditions and honest controls?
 
 ## Acceptance criteria
-- [ ] `floyd_steinberg` sampler in `src/structsplat/sampling.py` (NumPy-only, torch-free),
+- [x] `floyd_steinberg` sampler in `src/structsplat/sampling.py` (NumPy-only, torch-free),
       registered in the sampler axis + ablation; unit test (exact mass ≈ N, spacing sanity).
 - [ ] ABL-001 executed per its protocol: ≥3 seeds × budgets {2k, 5k, 10k, 20k} × all
       strategies + {floyd_steinberg, density_random, relocation-enabled random} controls, on

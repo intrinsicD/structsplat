@@ -211,6 +211,74 @@ def eliminate(points: np.ndarray, n: int, r_i: np.ndarray,
     return np.nonzero(alive)[0]
 
 
+def floyd_steinberg(density: np.ndarray, n: int) -> np.ndarray:
+    """Density-map Floyd-Steinberg dithering -> exactly `n` pixel-center positions.
+
+    The normalized density is interpreted as expected sample mass per pixel (`n * density`).
+    Error diffusion turns that scalar field into a one-bit placement mask while a quota guard
+    preserves the exact-N contract for all `n <= H*W`. This is the Instant-GI-style O(HW)
+    placement control for ABL-004; it is deliberately NumPy-only and independent of torch.
+    """
+    H, W = density.shape
+    n = int(n)
+    if n <= 0:
+        return np.empty((0, 2), dtype=np.float64)
+    M = H * W
+    if n >= M:
+        _warn_if_not_reducing(n, M)
+        yy, xx = np.mgrid[0:H, 0:W]
+        return np.stack([xx.ravel(), yy.ravel()], axis=1).astype(np.float64)
+
+    d = np.nan_to_num(np.maximum(density.astype(np.float64), 0.0), copy=False)
+    total = float(d.sum())
+    if total <= 0.0:
+        d = np.full((H, W), 1.0 / M, dtype=np.float64)
+    else:
+        d = d / total
+    work = d * n
+    keep = np.zeros((H, W), dtype=bool)
+
+    remaining = n
+    visited = 0
+    for y in range(H):
+        left_to_right = (y % 2) == 0
+        xs = range(W) if left_to_right else range(W - 1, -1, -1)
+        for x in xs:
+            slots_left = M - visited
+            if remaining <= 0:
+                q = 0
+            elif remaining >= slots_left:
+                q = 1
+            else:
+                q = 1 if work[y, x] >= 0.5 else 0
+            keep[y, x] = bool(q)
+            remaining -= q
+            err = work[y, x] - q
+
+            if left_to_right:
+                if x + 1 < W:
+                    work[y, x + 1] += err * 7.0 / 16.0
+                if y + 1 < H:
+                    if x > 0:
+                        work[y + 1, x - 1] += err * 3.0 / 16.0
+                    work[y + 1, x] += err * 5.0 / 16.0
+                    if x + 1 < W:
+                        work[y + 1, x + 1] += err * 1.0 / 16.0
+            else:
+                if x > 0:
+                    work[y, x - 1] += err * 7.0 / 16.0
+                if y + 1 < H:
+                    if x + 1 < W:
+                        work[y + 1, x + 1] += err * 3.0 / 16.0
+                    work[y + 1, x] += err * 5.0 / 16.0
+                    if x > 0:
+                        work[y + 1, x - 1] += err * 1.0 / 16.0
+            visited += 1
+
+    ys, xs = np.nonzero(keep)
+    return np.stack([xs, ys], axis=1).astype(np.float64)
+
+
 def _pair_d2(points: np.ndarray, j: int, metric: np.ndarray | None) -> np.ndarray:
     """Squared distance from every point to point j (Euclidean or averaged-metric Mahalanobis)."""
     dv = points - points[j]

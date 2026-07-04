@@ -13,7 +13,8 @@ depend on ignored `results/` artifacts.
 
 `ablation.py` runs the core experiment (`ABL-001`): `{init strategy} x {budget}` on fixed images,
 scored on PSNR / MS-SSIM / LPIPS + iterations-to-target. Caveat: this is the broad init sweep, so
-keep image/budget/seed axes explicit in the output config.
+keep image/budget/seed axes explicit in the output config. ABL-004 control labels are available
+alongside the core strategies: `floyd_steinberg`, `density_random`, and `random_relocate`.
 
 ```
 python -m benchmarks.ablation path/to/images --budgets 2000 5000 10000 20000 --iters 1500 --target-psnr 35
@@ -26,6 +27,7 @@ scalar a co-scientist loop maximizes over init/sampling variants.
 sampling, orientation, color, scale-cap, renderer, loss, optimizer, refinement, and pyramid stages.
 Caveat: factorial marginals are observational when axes co-vary; use `--mode influence` for paired
 one-factor deltas around a baseline.
+The sampling axis includes `floyd_steinberg` for the ABL-004 placement-control run.
 FIT-004 residual densification variants are exposed as refine arms such as `residual_add_nms`,
 `residual_tensor_add_nms`, `fp_duplicate`, `ranked_wave`, `relocate`, and
 `absgrad_wave`; stretch controls also include `optimizer=adan` and the `aa` stage from

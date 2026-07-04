@@ -53,6 +53,39 @@ def test_ablation_sweeps_flanking_and_writes_outputs(tmp_path):
     assert cfg["resolved"]["flank_offsets"] == [0.0, 0.5]
 
 
+def test_ablation_control_arms_thread_sampler_and_relocation(tmp_path):
+    img_path = tmp_path / "toy.png"
+    outdir = tmp_path / "controls"
+    _write_toy(img_path)
+
+    rows = run_ablation(
+        [str(img_path)],
+        budgets=[16],
+        strategies=["floyd_steinberg", "density_random", "random_relocate"],
+        seeds=[0],
+        iters=2,
+        target_psnr=None,
+        target_psnrs=[],
+        flank_offsets=[0.5],
+        render_chunk=8,
+        relocate_every=1,
+        relocate_count=4,
+        outdir=str(outdir),
+        device="cpu",
+        write_plots=False,
+    )
+
+    by_strategy = {r["strategy"]: r for r in rows}
+    assert by_strategy["floyd_steinberg"]["init_strategy"] == "aniso_flanking"
+    assert by_strategy["floyd_steinberg"]["sampling_mode"] == "floyd_steinberg"
+    assert by_strategy["density_random"]["init_strategy"] == "iso_blue_noise"
+    assert by_strategy["density_random"]["sampling_mode"] == "density_random"
+    assert by_strategy["random_relocate"]["init_strategy"] == "random"
+    assert by_strategy["random_relocate"]["fit_control"] == "relocate"
+    assert by_strategy["random_relocate"]["relocate_every"] == 1
+    assert by_strategy["random_relocate"]["relocate_count"] == 4
+
+
 def test_fitness_uses_best_config_not_pooled_mean():
     # two configs of one strategy at one budget: a good one and a bad one. fitness must return
     # the best config's mean, not the pooled mean that a wide hyperparameter sweep would dilute.

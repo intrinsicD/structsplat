@@ -15,7 +15,29 @@ from benchmarks.common import run_config, write_config, write_csv, write_json
 from structsplat.config import InitConfig, FitConfig, StructureTensorConfig
 from structsplat.init import STRATEGIES
 
-DEFAULT_STRATEGIES = list(STRATEGIES)
+CONTROL_ARMS = {
+    # Same thesis configuration as aniso_flanking, but replace WSE with the O(HW)
+    # Floyd-Steinberg placement primitive used as ABL-004's killer control.
+    "floyd_steinberg": {
+        "init_strategy": "aniso_flanking",
+        "sampling_mode": "floyd_steinberg",
+        "fit_control": "none",
+    },
+    # Image-GS-style gradient/density-weighted random placement control.
+    "density_random": {
+        "init_strategy": "iso_blue_noise",
+        "sampling_mode": "density_random",
+        "fit_control": "none",
+    },
+    # 3DGS/MCMC-style control: random init plus count-preserving relocation during fitting.
+    "random_relocate": {
+        "init_strategy": "random",
+        "sampling_mode": "wse",
+        "fit_control": "relocate",
+    },
+}
+
+DEFAULT_STRATEGIES = list(STRATEGIES) + list(CONTROL_ARMS)
 
 
 def _iter_images(images):
@@ -42,18 +64,48 @@ def _strategy_sweep_values(strategy, flank_offsets, flat_fracs, corner_fracs,
     return ((0.0,), (flat_fracs[0],), (corner_fracs[0],), (max_axis_ratios[0],), (coherence_powers[0],))
 
 
+def _resolve_arm(label: str, budget: int, iters: int,
+                 relocate_every: int | None, relocate_count: int | None) -> dict:
+    if label in CONTROL_ARMS:
+        arm = dict(CONTROL_ARMS[label])
+    elif label in STRATEGIES:
+        arm = {
+            "init_strategy": label,
+            "sampling_mode": "wse",
+            "fit_control": "none",
+        }
+    else:
+        valid = ", ".join([*STRATEGIES, *CONTROL_ARMS])
+        raise ValueError(f"unknown ablation arm {label!r}; expected one of: {valid}")
+
+    arm["fit_kwargs"] = {}
+    if arm["fit_control"] == "relocate":
+        every = relocate_every if relocate_every is not None else max(1, iters // 2)
+        count = relocate_count if relocate_count is not None else 64
+        arm["fit_kwargs"] = {
+            "relocate_every": int(every),
+            "relocate_count": min(int(count), int(budget)),
+        }
+    return arm
+
+
 def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, seeds=(0, 1, 2),
                  iters=1500, target_psnr=35.0, target_psnrs=None,
                  flank_offsets=(0.5,), flat_fracs=(0.02,), corner_fracs=(0.15,),
                  max_axis_ratios=(6.0,), coherence_powers=(1.0,),
                  render_chunk=512, pixel_loss="l1", ssim_weight=0.3, compute_lpips=False,
+                 relocate_every=None, relocate_count=64,
                  outdir="results", device=None, write_plots=True):
     import torch
     from structsplat.cli import load_image
     from structsplat import init as _init
     from structsplat.fit import fit
 
-    strategies = strategies or DEFAULT_STRATEGIES
+    strategies = list(strategies or DEFAULT_STRATEGIES)
+    unknown = sorted(set(strategies) - set(DEFAULT_STRATEGIES))
+    if unknown:
+        valid = ", ".join(DEFAULT_STRATEGIES)
+        raise ValueError(f"unknown ablation arm(s) {unknown}; expected one of: {valid}")
     flank_offsets = _one(flank_offsets)
     flat_fracs = _one(flat_fracs)
     corner_fracs = _one(corner_fracs)
@@ -77,7 +129,8 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
         "flat_fracs": list(flat_fracs), "corner_fracs": list(corner_fracs),
         "max_axis_ratios": list(max_axis_ratios), "coherence_powers": list(coherence_powers),
         "render_chunk": render_chunk, "pixel_loss": pixel_loss, "ssim_weight": ssim_weight,
-        "compute_lpips": compute_lpips,
+        "compute_lpips": compute_lpips, "control_arms": CONTROL_ARMS,
+        "relocate_every": relocate_every, "relocate_count": relocate_count,
     }, device=device))
 
     rows = []
@@ -87,7 +140,9 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
         name = os.path.splitext(os.path.basename(path))[0]
         for budget in budgets:
             for strat in strategies:
-                vals = _strategy_sweep_values(strat, flank_offsets, flat_fracs, corner_fracs,
+                arm = _resolve_arm(strat, budget, iters, relocate_every, relocate_count)
+                init_strategy = arm["init_strategy"]
+                vals = _strategy_sweep_values(init_strategy, flank_offsets, flat_fracs, corner_fracs,
                                                max_axis_ratios, coherence_powers)
                 for flank in vals[0]:
                     for flat in vals[1]:
@@ -96,9 +151,10 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
                                 for coh_power in vals[4]:
                                     for seed in seeds:
                                         icfg = InitConfig(
-                                            strategy=strat,
+                                            strategy=init_strategy,
                                             num_gaussians=budget,
                                             seed=seed,
+                                            sampling_mode=arm["sampling_mode"],
                                             flank_offset_frac=float(flank),
                                             max_axis_ratio=float(axis_ratio),
                                             coherence_power=float(coh_power),
@@ -115,6 +171,7 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
                                             pixel_loss=pixel_loss,
                                             ssim_weight=ssim_weight,
                                             compute_lpips=compute_lpips,
+                                            **arm["fit_kwargs"],
                                         )
                                         t0 = time.time()
                                         field = _init.build_field(img, icfg, scfg, device=device)
@@ -123,6 +180,11 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
                                         rec = {
                                             "image": name,
                                             "strategy": strat,
+                                            "init_strategy": init_strategy,
+                                            "sampling_mode": arm["sampling_mode"],
+                                            "fit_control": arm["fit_control"],
+                                            "relocate_every": arm["fit_kwargs"].get("relocate_every"),
+                                            "relocate_count": arm["fit_kwargs"].get("relocate_count"),
                                             "budget": budget,
                                             "seed": seed,
                                             "flank_offset_frac": float(flank),
@@ -266,7 +328,8 @@ def _write_plots(rows, outdir):
 def _config_key(r):
     """Full config identity of a row (strategy + every swept hyperparameter)."""
     return (r["strategy"], r["flank_offset_frac"], r["flat_frac"], r["corner_frac"],
-            r["max_axis_ratio"], r["coherence_power"])
+            r["max_axis_ratio"], r["coherence_power"], r.get("sampling_mode", "wse"),
+            r.get("fit_control", "none"))
 
 
 def _best_config_mean(rows, strategy: str, budget: int) -> float:
@@ -314,6 +377,8 @@ if __name__ == "__main__":
     p.add_argument("--render-chunk", type=int, default=512)
     p.add_argument("--pixel-loss", choices=["l1", "l2"], default="l1")
     p.add_argument("--ssim-weight", type=float, default=0.3)
+    p.add_argument("--relocate-every", type=int, default=None)
+    p.add_argument("--relocate-count", type=int, default=64)
     p.add_argument("--lpips", action="store_true", help="compute LPIPS for each run")
     p.add_argument("--no-plots", action="store_true")
     p.add_argument("--outdir", default="results")
@@ -325,4 +390,5 @@ if __name__ == "__main__":
                  corner_fracs=a.corner_fracs, max_axis_ratios=a.max_axis_ratios,
                  coherence_powers=a.coherence_powers, render_chunk=a.render_chunk,
                  pixel_loss=a.pixel_loss, ssim_weight=a.ssim_weight, compute_lpips=a.lpips,
+                 relocate_every=a.relocate_every, relocate_count=a.relocate_count,
                  outdir=a.outdir, device=a.device, write_plots=not a.no_plots)

@@ -14,7 +14,7 @@ import os
 import time
 from dataclasses import replace
 from pathlib import Path
-from typing import Any, Iterable
+from typing import TYPE_CHECKING, Any, Iterable
 
 import numpy as np
 from PIL import Image
@@ -28,6 +28,39 @@ from benchmarks._util import (
     run_config,
     write_config,
 )
+
+if TYPE_CHECKING:
+    import torch
+
+    from structsplat.config import FitConfig, StructureTensorConfig
+    from structsplat.gaussians import GaussianField
+
+__all__ = [
+    "add_seed_args",
+    "fmt_mean_std",
+    "mean_or_none",
+    "mean_std_or_none",
+    "resolve_seeds",
+    "run_config",
+    "write_config",
+    "ANALOGUE_METHODS",
+    "ANALOGUE_LABELS",
+    "ANALOGUE_NOTES",
+    "load_image",
+    "save_image",
+    "target_tensor",
+    "bilinear_sample",
+    "psnr_auc",
+    "json_safe_rows",
+    "write_json",
+    "write_csv",
+    "write_rows",
+    "residual_fit_cfg",
+    "instant_gi_quard_path",
+    "load_instant_gi_module",
+    "build_instant_gi_field",
+    "build_comparison_analogue",
+]
 
 
 ANALOGUE_METHODS = (

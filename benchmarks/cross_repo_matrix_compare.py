@@ -12,7 +12,7 @@ import time
 from dataclasses import asdict
 from pathlib import Path
 from statistics import mean, pstdev
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import torch
@@ -28,6 +28,9 @@ from structsplat import metrics as M
 from structsplat.config import FitConfig, InitConfig, StructureTensorConfig
 from structsplat.fit import fit
 from structsplat.init import build_field
+
+if TYPE_CHECKING:
+    from structsplat.gaussians import GaussianField
 
 
 DEFAULT_IMAGES = [

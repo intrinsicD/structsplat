@@ -16,6 +16,28 @@ def test_wse_exact_count_and_spacing():
     assert d.min() > 0.0  # blue-noise: no coincident points
 
 
+def test_floyd_steinberg_exact_count_density_and_spacing():
+    density = np.ones((32, 32), dtype=np.float64)
+    density[:, :8] = 8.0
+    n = 128
+
+    pts = sa.floyd_steinberg(density, n)
+
+    assert pts.shape == (n, 2)
+    assert len({tuple(p) for p in pts}) == n
+    assert np.mean(pts[:, 0] < 8) > 0.5
+    d = np.sqrt(((pts[:, None] - pts[None]) ** 2).sum(-1))
+    np.fill_diagonal(d, np.inf)
+    assert d.min() >= 1.0
+
+
+def test_floyd_steinberg_warns_when_budget_exceeds_pixels():
+    density = np.ones((2, 3), dtype=np.float64)
+    with pytest.warns(UserWarning, match="exact-N contract"):
+        pts = sa.floyd_steinberg(density, 9)
+    assert pts.shape == (6, 2)
+
+
 def test_wse_isotropic_spacing_beats_random_subset():
     # non-vacuous spacing bound (INIT-005): the old assertion `d.min() > 0` passed for ANY
     # non-coincident set; a real blue-noise sampler must separate points far better than a

@@ -488,8 +488,8 @@ def _nn_spacing(pts: np.ndarray, r_min: float = 0.5, r_max: float = 40.0,
     return np.clip(out, r_min, r_max)
 
 
-SAMPLING_MODES = ("wse", "density_random", "jittered_grid", "dart_throwing", "halton",
-                  "farthest_point", "cvt")
+SAMPLING_MODES = ("wse", "density_random", "floyd_steinberg", "jittered_grid",
+                  "dart_throwing", "halton", "farthest_point", "cvt")
 
 
 def _blue_noise_positions(img, density, tensor, icfg, anisotropic, rng):
@@ -499,6 +499,9 @@ def _blue_noise_positions(img, density, tensor, icfg, anisotropic, rng):
     mode = icfg.sampling_mode
     if mode == "density_random":
         pts = de.sample_candidates(density, n, rng)
+        return pts, _nearest(rmap, pts) * _SPACING_PER_RADIUS
+    if mode == "floyd_steinberg":
+        pts = sa.floyd_steinberg(density, n)
         return pts, _nearest(rmap, pts) * _SPACING_PER_RADIUS
     if mode == "jittered_grid":
         return _jittered_grid_positions(H, W, n, rng)

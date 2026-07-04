@@ -22,7 +22,8 @@ class InitConfig:
     density_base: float = 0.05         # floor so flat regions still get some coverage
     density_power: float = 1.0         # density ~ energy**power
     density_mode: str = "structure"    # structure, gradient, variance, hybrid, or uniform
-    # wse, density_random, jittered_grid, dart_throwing, halton, farthest_point, or cvt
+    # wse, density_random, floyd_steinberg, jittered_grid, dart_throwing, halton,
+    # farthest_point, or cvt
     sampling_mode: str = "wse"
     # anisotropy: axis ratio cap for edge Gaussians (major/minor); 1.0 => isotropic
     max_axis_ratio: float = 6.0
