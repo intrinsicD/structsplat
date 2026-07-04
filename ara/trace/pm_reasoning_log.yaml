@@ -107,3 +107,8 @@ entries:
       - "Routed the requested 20k two-arm exact-CUDA run as N25 experiment because it produced new high-budget metrics and timing evidence."
       - "Did not crystallize a claim about `floyd_steinberg` beating `aniso_flanking` because the evidence is one image, one seed, and one budget; recorded it as a warning signal for the staged protocol instead."
       - "No staged observation was added because the existing ABL-004 task already carries the necessary follow-up: keep Floyd-Steinberg as a required killer control in confirmation."
+  - turn: "2026-07-04_001#5"
+    notes:
+      - "Staged the requested verdict as O16 potential claim because it interprets N25 rather than adding a new benchmark fact."
+      - "Did not crystallize O16 because neither the user nor the planned paired multi-image confirmation has closed the ABL-004 question."
+      - "Framed the verdict as burden-of-proof shift rather than refutation to avoid overclaiming from a single image, seed, and budget."
