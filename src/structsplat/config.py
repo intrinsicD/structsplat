@@ -74,7 +74,7 @@ class FitConfig:
     log_every: int = 100
     sigma_cutoff: float = 3.0          # render support radius in std devs
     aa_dilation: float = 0.0           # EWA-style low-pass: render with Sigma + d*I (px^2)
-    render_chunk: int = 512            # reference renderer: lower chunk cuts peak memory
+    render_chunk: int = 512            # reference renderer: max(render_chunk,64)*4096 elements
     renderer: str = "normalized"       # normalized, additive, cuda, cuda_additive, or gsplat
     lr_schedule: str = "none"          # none, step, or cosine
     lr_decay_every: int | None = None

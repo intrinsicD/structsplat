@@ -20,6 +20,15 @@ from __future__ import annotations
 import torch
 
 _EPS = 1e-8
+_ELEMENTS_PER_RENDER_CHUNK = 4096
+
+
+def _element_budget(chunk: int) -> int:
+    """Flat tile-element budget for reference-renderer slices.
+
+    `chunk` is expressed in 4096-element units, with a 64-unit floor for small test configs.
+    """
+    return max(int(chunk), 64) * _ELEMENTS_PER_RENDER_CHUNK
 
 
 def _flat_tile_slices(n, budget: int):
@@ -74,7 +83,7 @@ def _accumulate(means, conics, colors, radii, H, W, chunk, opacities, normalize:
     den = torch.zeros(H * W, 1, device=dev, dtype=dt) if normalize else None
 
     x0, y0, Tx, n = _tile_bounds(means, radii, H, W)
-    budget = max(chunk, 64) * 4096
+    budget = _element_budget(chunk)
     for s, e in _flat_tile_slices(n, budget):
         gid, px, py = _tile_coords(x0, y0, Tx, n, s, e, dev)
         dx = px.to(dt) - means[gid, 0]
@@ -195,7 +204,7 @@ def gaussian_activity(means, conics, radii, H: int, W: int, chunk: int = 4096):
     N = means.shape[0]
     activity = torch.zeros(N, device=dev, dtype=dt)
     x0, y0, Tx, n = _tile_bounds(means, radii, H, W)
-    budget = max(chunk, 64) * 4096
+    budget = _element_budget(chunk)
     for s, e in _flat_tile_slices(n, budget):
         gid, px, py = _tile_coords(x0, y0, Tx, n, s, e, dev)
         dx = px.to(dt) - means[gid, 0]

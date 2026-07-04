@@ -26,8 +26,16 @@ CUDA renderers; one budget helper with documented semantics.
       behind a config flag; parity test reference-vs-CUDA with the fade on.
 - [ ] One benchmark slice (fixed seed/budget) comparing fade on/off for PSNR and
       iters-to-target, logged; if the fade wins, flip the default via an ADR note.
-- [ ] `_element_budget(chunk)` helper hoisted into `render.py`, imported by `fit.py`;
+- [x] `_element_budget(chunk)` helper hoisted into `render.py`, imported by `fit.py`;
       `FitConfig.render_chunk` docstring states the unit (elements = chunk * 4096).
+
+## Notes
+
+- 2026-07-04 partial implementation: `_element_budget(chunk)` now lives in
+  `src/structsplat/render.py`, and `_accumulate`, `gaussian_activity`, and fit's
+  `_support_residual_scores` all use it. The helper preserves the previous
+  `max(chunk, 64) * 4096` behavior; `FitConfig.render_chunk` now documents the effective element
+  budget, and focused coverage pins the 64-unit floor plus 4096-element unit.
 
 ## Interfaces touched
 `src/structsplat/render.py`, `src/structsplat/cuda/render_ext.cu`, `src/structsplat/fit.py`,

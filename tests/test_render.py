@@ -4,7 +4,13 @@ import pytest
 
 torch = pytest.importorskip("torch")
 from structsplat.gaussians import GaussianField
-from structsplat.render import gaussian_activity, render, render_field
+from structsplat.render import _element_budget, gaussian_activity, render, render_field
+
+
+def test_element_budget_preserves_chunk_floor_and_unit():
+    assert _element_budget(1) == 64 * 4096
+    assert _element_budget(64) == 64 * 4096
+    assert _element_budget(512) == 512 * 4096
 
 
 def test_two_gaussian_blend_and_grad():

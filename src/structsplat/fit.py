@@ -15,6 +15,7 @@ import torch.nn.functional as F
 from .config import FitConfig
 from .gaussians import GaussianField
 from .render import (
+    _element_budget,
     _flat_tile_slices,
     _tile_bounds,
     _tile_coords,
@@ -248,7 +249,7 @@ def _support_residual_scores(field: GaussianField, residual: torch.Tensor,
     score = torch.zeros(field.n, device=dev, dtype=dt)
     weight = torch.zeros(field.n, device=dev, dtype=dt)
     x0, y0, Tx, n = _tile_bounds(means, radii, H, W)
-    budget = max(cfg.render_chunk, 64) * 4096
+    budget = _element_budget(cfg.render_chunk)
     for s, e in _flat_tile_slices(n, budget):
         gid, px, py = _tile_coords(x0, y0, Tx, n, s, e, dev)
         dx = px.to(dt) - means[gid, 0]
