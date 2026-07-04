@@ -43,6 +43,9 @@ class CodecConfig:
     bits_colors: int = 8      # per channel
     bits_opacity: int = 8     # only used when the field carries opacities
     morton_reorder: bool = True
+    color_delta: bool = True  # delta-code colors along the encoded order (Morton by default)
+    means_byte_planar: bool = True  # split uint16/uint32 mean streams into byte planes
+    rot_circular: bool = True  # 2^bits bins over [0, pi), with wraparound to bin 0
     zlib_level: int = 9
     # per-channel color ranges; computed from data when None, fixed during QAT
     color_lo: list[float] | None = None
@@ -74,14 +77,47 @@ def _dequant(q: np.ndarray, lo, hi, bits: int) -> np.ndarray:
     return (lo + (q.astype(np.float64) / levels) * (np.asarray(hi) - lo)).astype(np.float32)
 
 
+def _quant_circular(x: np.ndarray, period: float, bits: int) -> np.ndarray:
+    levels = 1 << bits
+    t = np.mod(x, period) / period
+    return np.mod(np.round(t * levels).astype(np.int64), levels).astype(np.uint32)
+
+
+def _dequant_circular(q: np.ndarray, period: float, bits: int) -> np.ndarray:
+    levels = 1 << bits
+    return ((q.astype(np.float64) / levels) * period).astype(np.float32)
+
+
+def _pack_dtype(bits: int) -> np.dtype:
+    return np.dtype(np.uint8 if bits <= 8 else (np.uint16 if bits <= 16 else np.uint32))
+
+
 def _pack(q: np.ndarray, bits: int) -> bytes:
-    dtype = np.uint8 if bits <= 8 else (np.uint16 if bits <= 16 else np.uint32)
-    return q.astype(dtype).tobytes()
+    return q.astype(_pack_dtype(bits)).tobytes()
 
 
 def _unpack(raw: bytes, bits: int, count: int) -> np.ndarray:
-    dtype = np.uint8 if bits <= 8 else (np.uint16 if bits <= 16 else np.uint32)
+    dtype = _pack_dtype(bits)
     return np.frombuffer(raw, dtype=dtype, count=count).astype(np.uint32)
+
+
+def _pack_byte_planar(q: np.ndarray, bits: int) -> bytes:
+    dtype = _pack_dtype(bits)
+    raw = q.astype(dtype).tobytes()
+    itemsize = dtype.itemsize
+    if itemsize == 1:
+        return raw
+    return np.frombuffer(raw, dtype=np.uint8).reshape(-1, itemsize).T.ravel().tobytes()
+
+
+def _unpack_byte_planar(raw: bytes, bits: int, count: int) -> np.ndarray:
+    dtype = _pack_dtype(bits)
+    itemsize = dtype.itemsize
+    if itemsize == 1:
+        return _unpack(raw, bits, count)
+    planes = np.frombuffer(raw, dtype=np.uint8, count=count * itemsize).reshape(itemsize, count)
+    interleaved = np.ascontiguousarray(planes.T)
+    return np.frombuffer(interleaved.tobytes(), dtype=dtype, count=count).astype(np.uint32)
 
 
 def _params(field: GaussianField):
@@ -155,11 +191,22 @@ def encode(field: GaussianField, H: int, W: int, cfg: CodecConfig | None = None,
         q_means = np.diff(q_means, axis=0, prepend=np.zeros((1, 2), np.uint32)).astype(np.uint32)
         q_means &= (1 << cfg.bits_means) - 1  # wraparound-safe modular deltas
     q_scales = _quant(log_scales, slo, shi, cfg.bits_scales)
-    q_rot = _quant(theta, 0.0, np.pi, cfg.bits_rot)
+    q_rot = (
+        _quant_circular(theta, np.pi, cfg.bits_rot)
+        if cfg.rot_circular else _quant(theta, 0.0, np.pi, cfg.bits_rot)
+    )
     q_colors = _quant(colors, clo, chi, cfg.bits_colors)
+    color_delta = bool(cfg.color_delta and cfg.morton_reorder)
+    if color_delta:
+        q_colors = np.diff(q_colors, axis=0, prepend=np.zeros((1, 3), np.uint32)).astype(np.uint32)
+        q_colors &= (1 << cfg.bits_colors) - 1
 
+    q_means_flat = q_means.T.ravel()
     streams = [
-        _pack(q_means.T.ravel(), cfg.bits_means),   # planar: x deltas then y deltas
+        (
+            _pack_byte_planar(q_means_flat, cfg.bits_means)
+            if cfg.means_byte_planar else _pack(q_means_flat, cfg.bits_means)
+        ),  # planar: x deltas then y deltas
         _pack(q_scales.T.ravel(), cfg.bits_scales),
         _pack(q_rot, cfg.bits_rot),
         _pack(q_colors.T.ravel(), cfg.bits_colors),
@@ -170,6 +217,9 @@ def encode(field: GaussianField, H: int, W: int, cfg: CodecConfig | None = None,
         "n": int(n), "H": int(H), "W": int(W),
         "bits": [cfg.bits_means, cfg.bits_scales, cfg.bits_rot, cfg.bits_colors],
         "morton": bool(cfg.morton_reorder),
+        "color_delta": color_delta,
+        "means_byte_planar": bool(cfg.means_byte_planar),
+        "rot_circular": bool(cfg.rot_circular),
         "color_lo": clo.tolist(), "color_hi": chi.tolist(),
         "scale_lo": slo.tolist(), "scale_hi": shi.tolist(),
         "means_lo": means_lo, "means_hi": means_hi,
@@ -209,13 +259,19 @@ def decode(blob: bytes, device: str = "cpu") -> GaussianField:
         raws.append(zlib.decompress(blob[off:off + zlen]))
         off += zlen
 
-    q_means = _unpack(raws[0], b_means, 2 * n).reshape(2, n).T
+    if h.get("means_byte_planar", False):
+        q_means = _unpack_byte_planar(raws[0], b_means, 2 * n).reshape(2, n).T
+    else:
+        q_means = _unpack(raws[0], b_means, 2 * n).reshape(2, n).T
     if h["morton"]:
         q_means = np.cumsum(q_means, axis=0, dtype=np.uint64).astype(np.uint32)
         q_means &= (1 << b_means) - 1
     q_scales = _unpack(raws[1], b_scales, 2 * n).reshape(2, n).T
     q_rot = _unpack(raws[2], b_rot, n)
     q_colors = _unpack(raws[3], b_colors, 3 * n).reshape(3, n).T
+    if h.get("color_delta", False):
+        q_colors = np.cumsum(q_colors, axis=0, dtype=np.uint64).astype(np.uint32)
+        q_colors &= (1 << b_colors) - 1
 
     # older blobs (pre-COMP-002) quantized means over the image box
     means_lo = h.get("means_lo", [0.0, 0.0])
@@ -225,7 +281,10 @@ def decode(blob: bytes, device: str = "cpu") -> GaussianField:
     scale_lo = h.get("scale_lo", [_SCALE_LO, _SCALE_LO])
     scale_hi = h.get("scale_hi", [float(np.log(max(H, W))), float(np.log(max(H, W)))])
     log_scales = _dequant(q_scales, scale_lo, scale_hi, b_scales)
-    theta = _dequant(q_rot, 0.0, np.pi, b_rot)
+    theta = (
+        _dequant_circular(q_rot, np.pi, b_rot)
+        if h.get("rot_circular", False) else _dequant(q_rot, 0.0, np.pi, b_rot)
+    )
     colors = _dequant(q_colors, np.asarray(h["color_lo"]), np.asarray(h["color_hi"]), b_colors)
     opacities = None
     if has_opacity:
@@ -276,6 +335,14 @@ def _ste(x: torch.Tensor, lo, hi, bits: int) -> torch.Tensor:
     return x + (q - x).detach()
 
 
+def _ste_circular(x: torch.Tensor, period: float, bits: int) -> torch.Tensor:
+    levels = 1 << bits
+    period_t = torch.as_tensor(period, device=x.device, dtype=x.dtype)
+    wrapped = torch.remainder(x, period_t)
+    q = torch.remainder(torch.round(wrapped / period_t * levels), levels) / levels * period_t
+    return wrapped + (q - wrapped).detach()
+
+
 def quantized_view(field: GaussianField, H: int, W: int, cfg: CodecConfig) -> GaussianField:
     """A GaussianField whose parameters are fake-quantized with straight-through gradients."""
     clo, chi = color_ranges(field) if cfg.color_lo is None or cfg.color_hi is None else (
@@ -291,7 +358,11 @@ def quantized_view(field: GaussianField, H: int, W: int, cfg: CodecConfig) -> Ga
     means = torch.stack([_ste(field.means[:, 0], 0.0, W - 1.0, cfg.bits_means),
                          _ste(field.means[:, 1], 0.0, H - 1.0, cfg.bits_means)], dim=1)
     log_scales = _ste(field.log_scales, slo, shi, cfg.bits_scales)
-    theta = _ste(torch.remainder(field.rotations, torch.pi), 0.0, float(np.pi), cfg.bits_rot)
+    theta = (
+        _ste_circular(field.rotations, float(np.pi), cfg.bits_rot)
+        if cfg.rot_circular
+        else _ste(torch.remainder(field.rotations, torch.pi), 0.0, float(np.pi), cfg.bits_rot)
+    )
     colors = _ste(field.colors, clo, chi, cfg.bits_colors)
     opacities = None
     if field.opacities is not None:

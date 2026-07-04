@@ -15,11 +15,11 @@ ladder.
       header (mirroring `color_ranges()`) instead of the static clamp range
       `[log 0.35, log max(H,W)]` — review measured >1 of 8 bits wasted at the static range.
       Freeze ranges during QAT exactly as color ranges are. (`src/structsplat/codec.py:117`)
-- [ ] **2. Cheap stream wins (both measured on real fields in the review):** delta-code the
+- [x] **2. Cheap stream wins (both measured on real fields in the review):** delta-code the
       color stream along the Morton curve (~7%); byte-planar-split the 16-bit means-delta
       stream (~8.5% on that stream); header flag per stream so the decoder stays
       self-describing. (`src/structsplat/codec.py:121-126`)
-- [ ] **3. Circular rotation quantization.** 2^bits bins over [0, π) — the current linear
+- [x] **3. Circular rotation quantization.** 2^bits bins over [0, π) — the current linear
       [0, π] top bin aliases bin 0 (wasted code point; up to a half-step avoidable error near
       the wrap). Update `_quant`/`_dequant` call sites + `quantized_view`'s theta branch.
       (`src/structsplat/codec.py:118`)

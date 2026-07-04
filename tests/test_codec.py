@@ -68,6 +68,42 @@ def test_rotation_period_invariance():
     assert float(dec.rotations.max()) <= np.pi + 1e-5
 
 
+def test_circular_rotation_quantization_wraps_top_bin_to_zero():
+    img = _toy()
+    field = _fitted_field(img, n=16)
+    with torch.no_grad():
+        field.rotations.fill_(np.pi - 1e-4)
+    ccfg = codec.CodecConfig(bits_rot=4, morton_reorder=False)
+
+    dec = codec.decode(codec.encode(field, *img.shape[:2], ccfg))
+
+    assert float(dec.rotations.max()) < np.pi / (1 << ccfg.bits_rot)
+
+
+def test_codec_stream_transform_flags_are_self_describing():
+    img = _toy()
+    field = _fitted_field(img, n=48)
+    default_blob = codec.encode(field, *img.shape[:2], codec.CodecConfig())
+    default_header = codec.blob_header(default_blob)
+    assert default_header["color_delta"] is True
+    assert default_header["means_byte_planar"] is True
+    assert default_header["rot_circular"] is True
+
+    plain_cfg = codec.CodecConfig(
+        color_delta=False,
+        means_byte_planar=False,
+        rot_circular=False,
+        morton_reorder=False,
+    )
+    plain_blob = codec.encode(field, *img.shape[:2], plain_cfg)
+    plain_header = codec.blob_header(plain_blob)
+    assert plain_header["color_delta"] is False
+    assert plain_header["means_byte_planar"] is False
+    assert plain_header["rot_circular"] is False
+    assert torch.isfinite(codec.decode(default_blob).means).all()
+    assert torch.isfinite(codec.decode(plain_blob).colors).all()
+
+
 def test_opacity_roundtrip_and_render_parity():
     img = _toy()
     target = torch.as_tensor(img)
