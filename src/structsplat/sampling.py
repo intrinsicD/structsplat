@@ -318,6 +318,8 @@ def dart_throwing(points: np.ndarray, n: int, r_i: np.ndarray,
 
     order = rng.permutation(M)
     grid: dict[tuple[int, int], list[int]] = {}
+    occupied_cells: list[tuple[int, int]] = []
+    cell_r_max: dict[tuple[int, int], float] = {}
     accepted: list[int] = []
     taken = np.zeros(M, dtype=bool)
     r_acc_max = 0.0
@@ -328,9 +330,24 @@ def dart_throwing(points: np.ndarray, n: int, r_i: np.ndarray,
         k = int(np.floor(reach / cell)) + 1
         gx, gy = int(gxy[i, 0]), int(gxy[i, 1])
         neigh = []
-        for dy in range(-k, k + 1):
-            for dx in range(-k, k + 1):
-                neigh += grid.get((gx + dx, gy + dy), [])
+        if (2 * k + 1) ** 2 > 4 * len(occupied_cells):
+            candidate_cells = occupied_cells
+        else:
+            candidate_cells = (
+                (gx + dx, gy + dy)
+                for dy in range(-k, k + 1)
+                for dx in range(-k, k + 1)
+            )
+        for key in candidate_cells:
+            bucket = grid.get(key)
+            if not bucket:
+                continue
+            dx = key[0] - gx
+            dy = key[1] - gy
+            ring = cell * np.hypot(max(abs(dx) - 1, 0), max(abs(dy) - 1, 0))
+            if ring > beta * (float(r_i[i]) + cell_r_max[key]) * infl:
+                continue
+            neigh += bucket
         if neigh:
             nb = np.asarray(neigh, dtype=np.int64)
             dv = points[nb] - points[i]
@@ -345,7 +362,14 @@ def dart_throwing(points: np.ndarray, n: int, r_i: np.ndarray,
                 continue
         accepted.append(int(i))
         taken[i] = True
-        grid.setdefault((gx, gy), []).append(int(i))
+        key = (gx, gy)
+        bucket = grid.setdefault(key, [])
+        if not bucket:
+            occupied_cells.append(key)
+            cell_r_max[key] = float(r_i[i])
+        else:
+            cell_r_max[key] = max(cell_r_max[key], float(r_i[i]))
+        bucket.append(int(i))
         r_acc_max = max(r_acc_max, float(r_i[i]))
         if len(accepted) == n:
             break

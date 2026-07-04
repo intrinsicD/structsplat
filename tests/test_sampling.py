@@ -174,6 +174,90 @@ def test_dart_throwing_fill_uses_metric():
     assert not np.array_equal(a, b)                # the metric influences the filled selection
 
 
+def _dart_throwing_reference(points, n, r_i, metric=None, rng=None, beta=0.75):
+    M = points.shape[0]
+    if n >= M:
+        return np.arange(M)
+    rng = rng or np.random.default_rng(0)
+    points = np.asarray(points, dtype=np.float64)
+    r_i = np.asarray(r_i, dtype=np.float64)
+
+    infl = 1.0
+    if metric is not None:
+        infl = 1.0 / np.sqrt(max(float(sa._metric_min_eigenvalue(metric).min()), 1e-12))
+    cell = max(float(np.median(2.0 * beta * r_i)), 1e-6)
+    mn = points.min(axis=0)
+    gxy = np.floor((points - mn) / cell).astype(np.int64)
+
+    order = rng.permutation(M)
+    grid = {}
+    accepted = []
+    taken = np.zeros(M, dtype=bool)
+    r_acc_max = 0.0
+    for i in order:
+        reach = beta * (r_i[i] + r_acc_max) * infl
+        k = int(np.floor(reach / cell)) + 1
+        gx, gy = int(gxy[i, 0]), int(gxy[i, 1])
+        neigh = []
+        for dy in range(-k, k + 1):
+            for dx in range(-k, k + 1):
+                neigh += grid.get((gx + dx, gy + dy), [])
+        if neigh:
+            nb = np.asarray(neigh, dtype=np.int64)
+            dv = points[nb] - points[i]
+            if metric is None:
+                d2 = dv[:, 0] ** 2 + dv[:, 1] ** 2
+            else:
+                Mm = 0.5 * (metric[nb] + metric[i])
+                d2 = (Mm[:, 0, 0] * dv[:, 0] ** 2 + 2.0 * Mm[:, 0, 1] * dv[:, 0] * dv[:, 1]
+                      + Mm[:, 1, 1] * dv[:, 1] ** 2)
+            lim = beta * (r_i[nb] + r_i[i])
+            if bool((d2 < lim * lim).any()):
+                continue
+        accepted.append(int(i))
+        taken[i] = True
+        grid.setdefault((gx, gy), []).append(int(i))
+        r_acc_max = max(r_acc_max, float(r_i[i]))
+        if len(accepted) == n:
+            break
+
+    if len(accepted) < n:
+        rest = np.nonzero(~taken)[0]
+
+        def norm_d2_to(j):
+            d2 = sa._pair_d2(points, j, metric)[rest]
+            return d2 / np.maximum(r_i[rest] + r_i[j], 1e-12) ** 2
+
+        dmin = np.full(rest.shape[0], np.inf)
+        for j in accepted:
+            np.minimum(dmin, norm_d2_to(j), out=dmin)
+        while len(accepted) < n:
+            b = int(np.argmax(dmin))
+            j = int(rest[b])
+            accepted.append(j)
+            dmin[b] = -np.inf
+            np.minimum(dmin, norm_d2_to(j), out=dmin)
+    return np.asarray(sorted(accepted), dtype=np.int64)
+
+
+def test_dart_throwing_local_reach_matches_reference():
+    rng = np.random.default_rng(11)
+    pts = rng.random((700, 2)) * np.array([220.0, 80.0])
+    r_i = np.full(len(pts), 1.4)
+    r_i[rng.choice(len(pts), size=8, replace=False)] = 24.0
+    metric = sa.anisotropy_metric(
+        rng.uniform(-np.pi, np.pi, len(pts)),
+        rng.uniform(1.0, 7.0, len(pts)),
+    )
+
+    for maybe_metric in (None, metric):
+        got = sa.dart_throwing(pts, 160, r_i, metric=maybe_metric, rng=np.random.default_rng(5))
+        expected = _dart_throwing_reference(
+            pts, 160, r_i, metric=maybe_metric, rng=np.random.default_rng(5)
+        )
+        assert np.array_equal(got, expected)
+
+
 def test_wse_density_adaptivity():
     # Adaptivity comes from the PER-POINT radius: small r_i (dense target) on the left,
     # large r_i (sparse target) on the right -> WSE keeps the left denser. (A uniform r_i

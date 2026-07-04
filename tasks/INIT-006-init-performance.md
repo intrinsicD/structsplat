@@ -36,7 +36,7 @@ Feature-aware init stays interactive at the default 20k budget on 1–4 MP image
       failing step); equal results; ≥10× faster at N=20k.
 - [x] `_neighbor_pairs` indexes only occupied cells (np.unique + searchsorted mapping); memory
       O(points); identical pair sets.
-- [ ] `dart_throwing` uses a per-cell/local max accepted radius for its reach bound; identical
+- [x] `dart_throwing` uses a per-cell/local max accepted radius for its reach bound; identical
       accepted sets given the same rng.
 - [ ] `_pair_d2` hoists flat metric components (m00/m01/m11) once per call site.
 - [ ] The percentile ref is computed once in `st.compute`, stored on `StructureTensor`, and
@@ -63,6 +63,11 @@ Feature-aware init stays interactive at the default 20k budget on 1–4 MP image
   The predicate order preserves the old stop conditions: image bounds, corner labels, and
   per-point energy thresholds. Focused coverage compares exact outputs, including infinite
   lengths for flat starts, against the previous scalar reference.
+- 2026-07-04 partial implementation: `dart_throwing` now tracks the maximum accepted radius per
+  occupied grid cell and skips cells whose lower-bound cell distance cannot violate the candidate
+  disk. When the old global window is larger than the occupied-cell set, it scans occupied cells
+  directly instead of empty offsets. Focused coverage compares exact Euclidean and anisotropic
+  accepted sets against the previous global-window reference for the same rng.
 - Timing/memory check on random 4096x3072-domain points, default requested chunk 2048:
 
   | Function | N | Old seconds | New seconds | Max abs diff | Old matrix | New matrix |
@@ -83,6 +88,13 @@ Feature-aware init stays interactive at the default 20k budget on 1–4 MP image
   |---|---:|---:|---:|---:|---:|
   | `_feature_run_lengths` | 5,000 | 1.5954 | 0.0173 | exact | 0 |
   | `_feature_run_lengths` | 20,000 | 6.5390 | 0.0706 | exact | 0 |
+
+- Timing check on variable-radius anisotropic candidates with the first accepted radius forced
+  large, M=6,000 candidates, target=1,000:
+
+  | Function | Old seconds | New seconds | Parity |
+  |---|---:|---:|---:|
+  | `dart_throwing` | 3.1288 | 0.8414 | exact |
 
 ## Interfaces touched
 `src/structsplat/init.py`, `src/structsplat/sampling.py`, `src/structsplat/structure_tensor.py`,
