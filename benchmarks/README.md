@@ -46,6 +46,8 @@ python -m benchmarks.stage_search path/to/images --mode influence --budgets 2048
 cross-repo evidence): it runs StructSplat-current plus GaussianImage/Image-GS/Instant-GI analogues
 over image x resolution x iteration x seed slices. Caveat: the rows are executable policy
 analogues under StructSplat's fitter/renderer, not native external CUDA/codec/checkpoint runs.
+It also includes `structsplat_shipped_defaults` so searched StructSplat settings are not reported
+as if they were the public defaults.
 
 ```
 python -m benchmarks.cross_repo_matrix_compare --max-sides 160 240 --iters 80 200 --seeds 0 1

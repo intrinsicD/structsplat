@@ -139,6 +139,31 @@ def test_cross_repo_grid_writes_with_missing_method_rows(tmp_path):
     assert (tmp_path / "grids" / "comparison_16px_2it.png").exists()
 
 
+def test_cross_repo_shipped_defaults_builds_without_searched_growth(tmp_path):
+    image = tmp_path / "toy.png"
+    _write_toy(image, size=16)
+    img = common.load_image(image)
+    base_fit = cross._base_fit(iters=1, renderer="normalized", lpips=False)
+
+    field, fcfg, _init_seconds, start_budget = cross._build_method(
+        "structsplat_shipped_defaults",
+        img,
+        image,
+        final_budget=16,
+        seed=0,
+        device="cpu",
+        base_fit=base_fit,
+    )
+
+    assert field.n == 16
+    assert start_budget == 16
+    assert fcfg.iters == 1
+    assert fcfg.renderer == "normalized"
+    assert fcfg.pixel_loss == "l1"
+    assert fcfg.split_every is None
+    assert fcfg.max_gaussians is None
+
+
 def test_stage_search_writer_preserves_summarize_bytes(tmp_path):
     row = {
         **{k: "baseline" for k in stage_search.STAGE_KEYS},

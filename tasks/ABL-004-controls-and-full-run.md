@@ -55,6 +55,9 @@ conditions and honest controls?
   (`kodim01`, random, 2000 Gaussians, seed 0, 1500 iters, max-side 768) in 780.38 s fit time
   on the local RTX 3050; evidence: `ara/evidence/abl004-first-shard-2026-07-04/`. This is
   runtime calibration only, not the completed ABL-001 sweep.
+- 2026-07-04: Added `structsplat_shipped_defaults` to `benchmarks.cross_repo_matrix_compare`.
+  A tiny CPU smoke ran the row through the matrix loop. The held-out cross-repo rerun itself is
+  still pending.
 
 ## Interfaces touched
 `src/structsplat/sampling.py`, `src/structsplat/init.py` (sampler registration),

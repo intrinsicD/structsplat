@@ -9,7 +9,7 @@ from __future__ import annotations
 import argparse
 import math
 import time
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from pathlib import Path
 from statistics import mean, pstdev
 from typing import TYPE_CHECKING, Any
@@ -49,6 +49,7 @@ DIFFICULT_IMAGES = {
 
 METHODS = [
     "structsplat_current",
+    "structsplat_shipped_defaults",
     "gaussianimage",
     "gaussianimage_plus",
     "image_gs",
@@ -57,6 +58,7 @@ METHODS = [
 
 METHOD_LABELS = {
     "structsplat_current": "StructSplat current",
+    "structsplat_shipped_defaults": "StructSplat shipped defaults",
     "gaussianimage": "GaussianImage",
     "gaussianimage_plus": "GaussianImage++",
     "image_gs": "Image-GS",
@@ -65,8 +67,12 @@ METHOD_LABELS = {
 
 METHOD_NOTES = {
     "structsplat_current": (
-        "latest exact-CUDA StructSplat policy: aniso_flanking, scharr/rgb tensor, "
+        "best-searched StructSplat policy in this harness: aniso_flanking, scharr/rgb tensor, "
         "WSE, two-sided colors, feature12 cap, residual_tensor_add"
+    ),
+    "structsplat_shipped_defaults": (
+        "public InitConfig/FitConfig defaults with only benchmark-control fields overridden "
+        "(iterations, renderer, logging, target tracking)"
     ),
     "gaussianimage": "fixed random GaussianImage-style baseline",
     "gaussianimage_plus": "random half-budget init plus high-residual additions",
@@ -91,6 +97,19 @@ def _base_fit(iters: int, renderer: str, lpips: bool) -> FitConfig:
         target_psnrs=[22.0, 24.0, 26.0, 28.0, 30.0],
         compute_lpips=False,  # handled safely outside fit timing
         max_gaussians=None,
+    )
+
+
+def _shipped_defaults_fit(base_fit: FitConfig) -> FitConfig:
+    return replace(
+        FitConfig(),
+        iters=base_fit.iters,
+        render_chunk=base_fit.render_chunk,
+        log_every=base_fit.log_every,
+        renderer=base_fit.renderer,
+        target_psnr=base_fit.target_psnr,
+        target_psnrs=list(base_fit.target_psnrs),
+        compute_lpips=False,
     )
 
 
@@ -132,6 +151,15 @@ def _build_method(
             base_fit, final_budget, start_budget, "residual_tensor_add", add_times=2
         )
         return field, fcfg, init_seconds, start_budget
+
+    if method == "structsplat_shipped_defaults":
+        field = build_field(
+            img,
+            InitConfig(num_gaussians=final_budget, seed=seed),
+            scfg_default,
+            device=device,
+        )
+        return field, _shipped_defaults_fit(base_fit), time.time() - init_start, final_budget
 
     if method != "structsplat_current":
         return build_comparison_analogue(
