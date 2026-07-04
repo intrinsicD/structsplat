@@ -16,6 +16,8 @@ scored on PSNR / MS-SSIM / LPIPS + iterations-to-target. Caveat: this is the bro
 keep image/budget/seed axes explicit in the output config. ABL-004 control labels are available
 alongside the core strategies: `floyd_steinberg`, `density_random`, and `random_relocate`.
 Long runs write `ablation.jsonl` incrementally; use `--resume` to skip cells already present there.
+For the ABL-004 protocol, `scripts/run_abl004_full_ablation.sh` prepares Kodak-24 under
+`results/datasets/abl004`, appends the pinned COCO fixtures, and launches the resumable full sweep.
 
 ```
 python -m benchmarks.ablation path/to/images --budgets 2000 5000 10000 20000 --iters 1500 --target-psnr 35 --max-side 768 --resume
