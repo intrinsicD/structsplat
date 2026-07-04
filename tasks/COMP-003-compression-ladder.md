@@ -1,6 +1,6 @@
 # COMP-003: Compression-ratio ladder (toward GaussianImage++-class rate-distortion)
 
-**Status: todo.** From the 2026-07-03 repo review + SOTA survey. Ordered rungs — each is
+**Status: partial.** From the 2026-07-03 repo review + SOTA survey. Ordered rungs — each is
 independently valuable, measured on `benchmarks/rate_distortion.py`, and stacks with the ones
 before it. Stop climbing when the RD curve is where you need it.
 

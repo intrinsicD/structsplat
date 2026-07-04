@@ -1,6 +1,7 @@
 # INIT-003: Anisotropic blue-noise sampling (WSE + metric)
 
-**Status: partial.** Reference works (`sampling.py`, ADR-0005); tuning + rigor open.
+**Status: done.** Reference works (`sampling.py`, ADR-0005); calibration tooling now covers
+spectral, pair-correlation, edge-anisotropy, and coherence-to-axis-ratio sweeps.
 
 ## Goal
 Exact-N, density-adaptive, anisotropic blue noise via Weighted Sample Elimination with a
