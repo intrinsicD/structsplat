@@ -1,7 +1,7 @@
 # INIT-006: Init-time performance (quadtree, spacing, run-lengths, pair discovery)
 
-**Status: partial.** From the 2026-07-03 repo review. All items are asymptotic/memory fixes with
-no behavior change — outputs must stay bit-identical (or identical up to documented tie-breaks).
+**Status: done.** Completed 2026-07-04. All items are asymptotic/memory fixes with no behavior
+change — outputs stay bit-identical or identical up to documented tie-breaks.
 
 ## Context
 1. **`_quadtree_leaves` is O(n²)** with per-split Python recomputation of every leaf's
@@ -41,7 +41,7 @@ Feature-aware init stays interactive at the default 20k budget on 1–4 MP image
 - [x] `_pair_d2` hoists flat metric components (m00/m01/m11) once per call site.
 - [x] The percentile ref is computed once in `st.compute`, stored on `StructureTensor`, and
       consumed by density/init (falling back to local computation when absent).
-- [ ] A timing table (before/after per function at N∈{5k, 20k}) recorded in this file's notes.
+- [x] A timing table (before/after per function at N∈{5k, 20k}) recorded in this file's notes.
 
 ## Notes
 - 2026-07-03 partial implementation: `_nn_spacing` now uses a chunked GEMM distance matrix and
@@ -84,6 +84,13 @@ Feature-aware init stays interactive at the default 20k budget on 1–4 MP image
   | `_nn_spacing` | 5,000 | 0.3390 | 0.0736 | 7.85e-10 | 163.8 MB | 81.9 MB |
   | `_nn_spacing` | 20,000 | skipped | 1.0657 | n/a | 655.4 MB formula | 128.0 MB |
 
+- Timing/memory check on sparse 4096x4096-domain points:
+
+  | Function | N | Old seconds | New seconds | Parity | Old dense cells | Occupied cells | Old starts |
+  |---|---:|---:|---:|---:|---:|---:|---:|
+  | `_neighbor_pairs` | 5,000 | 0.0291 | 0.0048 | exact | 1,863,225 | 4,996 | 14.9 MB |
+  | `_neighbor_pairs` | 20,000 | 0.0329 | 0.0214 | exact | 1,865,956 | 19,895 | 14.9 MB |
+
 - Timing check on a random/plateaued 256x256 density map:
 
   | Function | N | Old seconds | New seconds | Parity | Leaf count |
@@ -105,6 +112,14 @@ Feature-aware init stays interactive at the default 20k budget on 1–4 MP image
   |---|---:|---:|---:|
   | `dart_throwing` | 3.1288 | 0.8414 | exact |
 
+- Timing check on exact candidate-count rows for `dart_throwing`, first accepted radius forced
+  large:
+
+  | Function | N candidates | Target | Old seconds | New seconds | Parity |
+  |---|---:|---:|---:|---:|---:|
+  | `dart_throwing` | 5,000 | 800 | 2.5798 | 0.5550 | exact |
+  | `dart_throwing` | 20,000 | 3,200 | skipped | 8.7787 | n/a |
+
 - Timing/memory check on anisotropic `farthest_point`, M=20,000 candidates, target=1,000:
 
   | Function | Old seconds | New seconds | Parity | Old metric temp | New metric temp |
@@ -117,6 +132,26 @@ Feature-aware init stays interactive at the default 20k budget on 1–4 MP image
   |---|---:|---:|---:|
   | structure `density_from_tensor` | 0.0277 | 0.0117 | exact |
   | `_feature_run_lengths` | 0.0359 | 0.0171 | exact |
+
+- Consolidated acceptance timing table. N is points/candidates unless a row states otherwise;
+  old 20k paths marked `skipped` were the known quadratic or high-memory baseline paths avoided
+  by this task.
+
+  | Function | N | Old seconds | New seconds | Parity / memory note |
+  |---|---:|---:|---:|---|
+  | `_quadtree_leaves` | 5,000 | 12.3464 | 0.0444 | exact |
+  | `_quadtree_leaves` | 20,000 | skipped | 0.1988 | old path extrapolates to minutes |
+  | `_nn_spacing` | 5,000 | 0.3390 | 0.0736 | max diff 7.85e-10; matrix 163.8→81.9 MB |
+  | `_nn_spacing` | 20,000 | skipped | 1.0657 | old matrix formula 655.4 MB; new cap 128.0 MB |
+  | `_feature_run_lengths` | 5,000 | 1.5954 | 0.0173 | exact |
+  | `_feature_run_lengths` | 20,000 | 6.5390 | 0.0706 | exact |
+  | `_neighbor_pairs` | 5,000 | 0.0291 | 0.0048 | exact; dense starts 14.9 MB → occupied cells |
+  | `_neighbor_pairs` | 20,000 | 0.0329 | 0.0214 | exact; dense starts 14.9 MB → occupied cells |
+  | `dart_throwing` | 5,000 | 2.5798 | 0.5550 | exact; target 800 |
+  | `dart_throwing` | 20,000 | skipped | 8.7787 | target 3,200 |
+  | `_pair_d2` via `farthest_point` | 5,000 | 0.1037 | 0.0996 | exact |
+  | `_pair_d2` via `farthest_point` | 20,000 | 0.3212 | 0.2218 | exact; removes 0.6 MB temp/call |
+  | `energy_ref` cache, 1024x1024 px | n/a | 0.0277 | 0.0117 | exact density output |
 
 ## Interfaces touched
 `src/structsplat/init.py`, `src/structsplat/sampling.py`, `src/structsplat/structure_tensor.py`,
