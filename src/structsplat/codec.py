@@ -6,10 +6,10 @@ tricks):
     Morton (Z-order) curve; positions are then delta-coded, which zlib compresses well.
   * Rotation is canonicalized to [0, pi): a 2D Gaussian is invariant under theta -> theta + pi.
 
-Attribute layout per Gaussian (defaults): means 2x16 bit fixed-point over the image extent,
-log-scales 2x8 bit over the fitter's clamp range [log 0.35, log max(H, W)], rotation 8 bit,
-colors 3x8 bit over per-channel [min, max] stored in the header (colors are unbounded — opacity
-is folded in, so the range is data-dependent). Streams are zlib-compressed separately.
+Attribute layout per Gaussian (defaults): means 2x16 bit fixed-point over the fitted extent,
+log-scales 2x8 bit over per-field [min, max] stored in the header, rotation 8 bit, colors 3x8 bit
+over per-channel [min, max] stored in the header (colors are unbounded — opacity is folded in, so
+the range is data-dependent). Streams are zlib-compressed separately.
 
 `qat_finetune` runs a short straight-through-estimator fine-tune so the parameters settle onto
 the quantization lattice before encoding (recovers most of the coarse-bit PSNR loss).
@@ -47,6 +47,9 @@ class CodecConfig:
     # per-channel color ranges; computed from data when None, fixed during QAT
     color_lo: list[float] | None = None
     color_hi: list[float] | None = None
+    # per-axis log-scale ranges; computed from data when None, fixed during QAT
+    scale_lo: list[float] | None = None
+    scale_hi: list[float] | None = None
 
 
 def _morton_order(x: np.ndarray, y: np.ndarray, H: int, W: int) -> np.ndarray:
@@ -97,6 +100,24 @@ def color_ranges(field: GaussianField) -> tuple[list[float], list[float]]:
     return c.min(axis=0).tolist(), c.max(axis=0).tolist()
 
 
+def scale_ranges(field: GaussianField) -> tuple[list[float], list[float]]:
+    s = field.log_scales.detach().cpu().numpy()
+    return s.min(axis=0).tolist(), s.max(axis=0).tolist()
+
+
+def _range_pair(
+    lo: list[float] | None,
+    hi: list[float] | None,
+    fallback: tuple[list[float], list[float]],
+    name: str,
+) -> tuple[np.ndarray, np.ndarray]:
+    if (lo is None) != (hi is None):
+        raise ValueError(f"{name}_lo and {name}_hi must be provided together")
+    if lo is None or hi is None:
+        lo, hi = fallback
+    return np.asarray(lo, dtype=np.float64), np.asarray(hi, dtype=np.float64)
+
+
 def _means_extent(means: np.ndarray, H: int, W: int) -> tuple[list[float], list[float]]:
     """Quantization domain for means: the image box unioned with the fitted means' actual range.
 
@@ -116,9 +137,11 @@ def encode(field: GaussianField, H: int, W: int, cfg: CodecConfig | None = None,
     fcfg = fcfg or FitConfig()
     means, log_scales, theta, colors, opacity_p = _params(field)
     n = means.shape[0]
-    scale_hi = float(np.log(max(H, W)))
-    clo = np.asarray(cfg.color_lo if cfg.color_lo is not None else colors.min(axis=0))
-    chi = np.asarray(cfg.color_hi if cfg.color_hi is not None else colors.max(axis=0))
+    clo, chi = _range_pair(cfg.color_lo, cfg.color_hi, (colors.min(axis=0), colors.max(axis=0)),
+                           "color")
+    slo, shi = _range_pair(
+        cfg.scale_lo, cfg.scale_hi, (log_scales.min(axis=0), log_scales.max(axis=0)), "scale"
+    )
     means_lo, means_hi = _means_extent(means, H, W)
 
     if cfg.morton_reorder:
@@ -131,7 +154,7 @@ def encode(field: GaussianField, H: int, W: int, cfg: CodecConfig | None = None,
     if cfg.morton_reorder:  # delta along the Morton curve; zlib eats small deltas
         q_means = np.diff(q_means, axis=0, prepend=np.zeros((1, 2), np.uint32)).astype(np.uint32)
         q_means &= (1 << cfg.bits_means) - 1  # wraparound-safe modular deltas
-    q_scales = _quant(log_scales, _SCALE_LO, scale_hi, cfg.bits_scales)
+    q_scales = _quant(log_scales, slo, shi, cfg.bits_scales)
     q_rot = _quant(theta, 0.0, np.pi, cfg.bits_rot)
     q_colors = _quant(colors, clo, chi, cfg.bits_colors)
 
@@ -148,6 +171,7 @@ def encode(field: GaussianField, H: int, W: int, cfg: CodecConfig | None = None,
         "bits": [cfg.bits_means, cfg.bits_scales, cfg.bits_rot, cfg.bits_colors],
         "morton": bool(cfg.morton_reorder),
         "color_lo": clo.tolist(), "color_hi": chi.tolist(),
+        "scale_lo": slo.tolist(), "scale_hi": shi.tolist(),
         "means_lo": means_lo, "means_hi": means_hi,
         "has_opacity": opacity_p is not None,
         "bits_opacity": cfg.bits_opacity,
@@ -197,7 +221,10 @@ def decode(blob: bytes, device: str = "cpu") -> GaussianField:
     means_lo = h.get("means_lo", [0.0, 0.0])
     means_hi = h.get("means_hi", [W - 1.0, H - 1.0])
     means = _dequant(q_means, means_lo, means_hi, b_means)
-    log_scales = _dequant(q_scales, _SCALE_LO, float(np.log(max(H, W))), b_scales)
+    # older blobs (pre-COMP-003) quantized log-scales over the static fitter clamp range
+    scale_lo = h.get("scale_lo", [_SCALE_LO, _SCALE_LO])
+    scale_hi = h.get("scale_hi", [float(np.log(max(H, W))), float(np.log(max(H, W)))])
+    log_scales = _dequant(q_scales, scale_lo, scale_hi, b_scales)
     theta = _dequant(q_rot, 0.0, np.pi, b_rot)
     colors = _dequant(q_colors, np.asarray(h["color_lo"]), np.asarray(h["color_hi"]), b_colors)
     opacities = None
@@ -251,12 +278,19 @@ def _ste(x: torch.Tensor, lo, hi, bits: int) -> torch.Tensor:
 
 def quantized_view(field: GaussianField, H: int, W: int, cfg: CodecConfig) -> GaussianField:
     """A GaussianField whose parameters are fake-quantized with straight-through gradients."""
-    scale_hi = float(np.log(max(H, W)))
-    clo = torch.as_tensor(cfg.color_lo, dtype=field.colors.dtype, device=field.colors.device)
-    chi = torch.as_tensor(cfg.color_hi, dtype=field.colors.dtype, device=field.colors.device)
+    clo, chi = color_ranges(field) if cfg.color_lo is None or cfg.color_hi is None else (
+        cfg.color_lo, cfg.color_hi
+    )
+    slo, shi = scale_ranges(field) if cfg.scale_lo is None or cfg.scale_hi is None else (
+        cfg.scale_lo, cfg.scale_hi
+    )
+    slo = torch.as_tensor(slo, dtype=field.log_scales.dtype, device=field.log_scales.device)
+    shi = torch.as_tensor(shi, dtype=field.log_scales.dtype, device=field.log_scales.device)
+    clo = torch.as_tensor(clo, dtype=field.colors.dtype, device=field.colors.device)
+    chi = torch.as_tensor(chi, dtype=field.colors.dtype, device=field.colors.device)
     means = torch.stack([_ste(field.means[:, 0], 0.0, W - 1.0, cfg.bits_means),
                          _ste(field.means[:, 1], 0.0, H - 1.0, cfg.bits_means)], dim=1)
-    log_scales = _ste(field.log_scales, _SCALE_LO, scale_hi, cfg.bits_scales)
+    log_scales = _ste(field.log_scales, slo, shi, cfg.bits_scales)
     theta = _ste(torch.remainder(field.rotations, torch.pi), 0.0, float(np.pi), cfg.bits_rot)
     colors = _ste(field.colors, clo, chi, cfg.bits_colors)
     opacities = None
@@ -277,9 +311,19 @@ def qat_finetune(field: GaussianField, target: torch.Tensor, fcfg: FitConfig,
     the returned CodecConfig carries them and MUST be the one passed to encode().
     """
     H, W = target.shape[0], target.shape[1]
+    updates = {}
     if ccfg.color_lo is None or ccfg.color_hi is None:
         lo, hi = color_ranges(field)
-        ccfg = CodecConfig(**{**ccfg.__dict__, "color_lo": lo, "color_hi": hi})
+        updates.update({"color_lo": lo, "color_hi": hi})
+    if ccfg.scale_lo is None or ccfg.scale_hi is None:
+        lo, hi = scale_ranges(field)
+        updates.update({"scale_lo": lo, "scale_hi": hi})
+    if updates:
+        ccfg = CodecConfig(**{**ccfg.__dict__, **updates})
+    scale_lo = torch.as_tensor(ccfg.scale_lo, dtype=field.log_scales.dtype,
+                               device=field.log_scales.device)
+    scale_hi = torch.as_tensor(ccfg.scale_hi, dtype=field.log_scales.dtype,
+                               device=field.log_scales.device)
     field.trainable()
     opt = torch.optim.Adam(field.parameter_groups(fcfg.lr_means, fcfg.lr_scales,
                                                   fcfg.lr_rot, fcfg.lr_color, fcfg.lr_opacity))
@@ -298,7 +342,8 @@ def qat_finetune(field: GaussianField, target: torch.Tensor, fcfg: FitConfig,
         loss.backward()
         opt.step()
         with torch.no_grad():
-            field.log_scales.clamp_(_SCALE_LO, float(np.log(max(H, W))))
+            field.log_scales.copy_(torch.maximum(torch.minimum(field.log_scales, scale_hi),
+                                                 scale_lo))
         if verbose and it % 50 == 0:
             print(f"  qat iter {it:4d} loss {loss.item():.5f}")
     return ccfg

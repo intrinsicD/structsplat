@@ -123,6 +123,39 @@ def test_off_image_means_bounded_by_lattice_step():
     assert h["means_lo"][0] <= -8.0 and h["means_hi"][0] >= 60.0
 
 
+def test_per_field_scale_ranges_are_stored_and_used():
+    img = _toy()
+    field = _fitted_field(img, n=32)
+    with torch.no_grad():
+        field.log_scales[:, 0] = torch.linspace(-0.2, 0.3, field.n)
+        field.log_scales[:, 1] = torch.linspace(0.4, 0.9, field.n)
+    ccfg = codec.CodecConfig(bits_scales=5, morton_reorder=False)
+
+    blob = codec.encode(field, *img.shape[:2], ccfg)
+    header = codec.blob_header(blob)
+    dec = codec.decode(blob)
+
+    assert header["scale_lo"] == pytest.approx(field.log_scales.min(dim=0).values.tolist())
+    assert header["scale_hi"] == pytest.approx(field.log_scales.max(dim=0).values.tolist())
+    span = max(header["scale_hi"][0] - header["scale_lo"][0],
+               header["scale_hi"][1] - header["scale_lo"][1])
+    err = (dec.log_scales - field.log_scales).abs().max().item()
+    assert err <= span / (2 ** ccfg.bits_scales - 1) + 1e-4
+
+
+def test_qat_freezes_scale_ranges_like_color_ranges():
+    img = _toy()
+    target = torch.as_tensor(img)
+    field = _fitted_field(img, n=32)
+    ccfg = codec.CodecConfig(bits_scales=5, bits_colors=5)
+
+    frozen = codec.qat_finetune(field, target, FitConfig(), ccfg, iters=0)
+
+    assert frozen.color_lo is not None and frozen.color_hi is not None
+    assert frozen.scale_lo == pytest.approx(field.log_scales.min(dim=0).values.tolist())
+    assert frozen.scale_hi == pytest.approx(field.log_scales.max(dim=0).values.tolist())
+
+
 def test_blob_is_self_describing_render():
     # decode_and_render must reproduce the fitted renderer's output with no out-of-band FitConfig
     img = _toy()

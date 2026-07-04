@@ -11,7 +11,7 @@ v1 but leaves measured, cheap rate on the table, and published 2D-Gaussian codec
 ladder.
 
 ## Rungs (acceptance criteria)
-- [ ] **1. Per-image scale ranges.** Quantize log-scales over the fitted min/max stored in the
+- [x] **1. Per-image scale ranges.** Quantize log-scales over the fitted min/max stored in the
       header (mirroring `color_ranges()`) instead of the static clamp range
       `[log 0.35, log max(H,W)]` — review measured >1 of 8 bits wasted at the static range.
       Freeze ranges during QAT exactly as color ranges are. (`src/structsplat/codec.py:117`)
