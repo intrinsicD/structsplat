@@ -1,0 +1,2 @@
+image,source_path,height,width,max_side,strategy,init_strategy,sampling_mode,fit_control,budget,seed,iters,target_psnr,psnr,ssim,ms_ssim,iters_to_target,n_gaussians,init_seconds,fit_seconds
+kodim01,results/datasets/abl004/kodak24/kodim01.png,512,768,768,random,random,wse,none,2000,0,1500,35.0,22.2870,0.64317,0.85389,,2000,0.009088754653930664,780.3784227371216

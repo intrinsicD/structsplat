@@ -47,6 +47,15 @@ conditions and honest controls?
       `ara/logic/claims.md` populated with the promoted/parked claims.
 - [ ] ABL-001's status updated accordingly (done or failed-with-findings).
 
+## Progress notes
+
+- 2026-07-04: Added the missing Floyd-Steinberg control arm and made `benchmarks.ablation`
+  resumable/shardable. Prepared Kodak-24 plus the pinned COCO fixtures under ignored
+  `results/datasets/abl004/`. First bounded full-protocol shard completed one cell
+  (`kodim01`, random, 2000 Gaussians, seed 0, 1500 iters, max-side 768) in 780.38 s fit time
+  on the local RTX 3050; evidence: `ara/evidence/abl004-first-shard-2026-07-04/`. This is
+  runtime calibration only, not the completed ABL-001 sweep.
+
 ## Interfaces touched
 `src/structsplat/sampling.py`, `src/structsplat/init.py` (sampler registration),
 `benchmarks/ablation.py`, `benchmarks/cross_repo_matrix_compare.py`, `ara/evidence/`,
