@@ -94,6 +94,12 @@ conditions and honest controls?
   `ara/evidence/abl004-visual-examples-2026-07-04/`; live outputs:
   `results/abl004_visual_examples_5img/`. This is inspection support for the staged-screen
   interpretation, not a replacement for confirmation.
+- 2026-07-05: Added `benchmarks.abl004_confirmation`, a decision-grade confirmation wrapper
+  around the existing resumable ablation harness. It writes the 1,512-cell expected manifest
+  for the current confirmation protocol, runs bounded shards, and analyzes rows into
+  missing-cell, leaderboard, paired-delta/bootstrap-CI, per-image/seed baseline-loss, pairwise,
+  and rank-stability artifacts. A tiny CPU run verified the `run -> analyze` path; the default
+  `plan` resolves to 28 images x 3 seeds x 3 budgets x 6 variants = 1,512 cells.
 
 ## Decision-grade staged protocol
 
@@ -116,7 +122,7 @@ scheduled multi-day job, use this predeclared staged protocol so stopping is evi
 
 ## Interfaces touched
 `src/structsplat/sampling.py`, `src/structsplat/init.py` (sampler registration),
-`benchmarks/ablation.py`, `benchmarks/cross_repo_matrix_compare.py`, `benchmarks/abl004_visual_examples.py`, `scripts/run_abl004_full_ablation.sh`,
+`benchmarks/ablation.py`, `benchmarks/abl004_confirmation.py`, `benchmarks/cross_repo_matrix_compare.py`, `benchmarks/abl004_visual_examples.py`, `scripts/run_abl004_full_ablation.sh`,
 `ara/evidence/`,
 `ara/logic/claims.md`, `README.md`, `tasks/ABL-001-init-sweep.md`, `tests/test_sampling.py`.
 

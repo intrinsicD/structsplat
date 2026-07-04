@@ -29,6 +29,21 @@ python -m benchmarks.ablation path/to/images --budgets 2000 5000 10000 20000 --i
 Outputs `ablation.json`, `ablation.csv`, `summary.md`. `fitness(rows, strategy, budget)` exposes the
 scalar a co-scientist loop maximizes over init/sampling variants.
 
+`abl004_confirmation.py` is the decision-grade wrapper for the post-screen confirmation set. It
+materializes the expected-cell manifest, runs bounded/resumable shards through `ablation.py`, and
+analyzes existing rows into missing-cell reports, leaderboards, pairwise/bootstrap paired deltas,
+per-image/seed baseline-loss rows, and rank-stability tables. The default protocol is Kodak-24 plus
+the four pinned COCO fixtures, seeds 0/1/2, budgets 2k/5k/10k, and the six current
+finalist/control variants.
+
+```
+python -m benchmarks.abl004_confirmation plan --outdir results/abl004_confirmation
+LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 \
+  python -m benchmarks.abl004_confirmation run --outdir results/abl004_confirmation \
+  --resume --max-new-cells 50
+python -m benchmarks.abl004_confirmation analyze --outdir results/abl004_confirmation
+```
+
 `stage_search.py` runs `ABL-002`: factorial or influence-mode sweeps across tensor, density,
 sampling, orientation, color, scale-cap, renderer, loss, optimizer, refinement, and pyramid stages.
 Caveat: factorial marginals are observational when axes co-vary; use `--mode influence` for paired
