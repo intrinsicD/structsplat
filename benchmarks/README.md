@@ -93,6 +93,14 @@ construction, so it is a focused init comparison, not a complete stage search.
 python -m benchmarks.quadtree_init_compare --dataset-dir path/to/train2014 --image-count 8 --budget 512 --iters 80
 ```
 
+`init_spectral_analysis.py` is the placement-only INIT-003 calibration harness. It builds initial
+fields without fitting, writes radial FFT spectra, pair-correlation/nearest-neighbor spacing,
+edge-local anisotropy signatures, and realized coherence -> axis-ratio sweep metrics.
+
+```
+python -m benchmarks.init_spectral_analysis path/to/images --num-gaussians 2048 --max-axis-ratios 2 4 6 8 --coherence-powers 0.5 1 2
+```
+
 `rate_distortion.py` evaluates the codec/QAT path (`COMP-001/COMP-003`) and records full
 codec/render semantics per row. Caveat: QAT rows spend extra optimization; compare them with the
 `refine_noste` equal-compute control.
