@@ -1,0 +1,125 @@
+session:
+  id: "2026-07-05_001"
+  date: "2026-07-05"
+  started: "2026-07-05T01:03+0200"
+  last_turn: "2026-07-05T01:03+0200"
+  turn_count: 1
+  summary: "Implemented and committed the ABL-004 confirmation runner, tiled exact CUDA renderer, CORE-005 support fade, INIT-003 spectral analyzer, COMP-003 codec rungs 1-3, task retirement/status updates, and a clean broad validation pass."
+
+events_logged:
+  - turn: 1
+    type: experiment
+    id: "N28"
+    routing: direct
+    provenance: ai-executed
+    summary: "Added the ABL-004 confirmation manifest/run/analyze wrapper; default plan is 1512 cells across 28 images, 3 seeds, 3 budgets, and 6 variants."
+  - turn: 1
+    type: experiment
+    id: "N29"
+    routing: direct
+    provenance: ai-executed
+    summary: "Added opt-in tiled exact CUDA renderer modes with tile-to-Gaussian indexing and CUDA parity validation."
+  - turn: 1
+    type: experiment
+    id: "N30"
+    routing: direct
+    provenance: ai-executed
+    summary: "Added opt-in CORE-005 support fade across reference/CUDA renderers, fit scoring, codec, pyramid, CLI, and tests."
+  - turn: 1
+    type: experiment
+    id: "N31"
+    routing: direct
+    provenance: ai-executed
+    summary: "Added INIT-003 spectral/anisotropy calibration harness and retired INIT-003 to tasks/done."
+  - turn: 1
+    type: experiment
+    id: "N32"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented COMP-003 rungs 1-3: per-field scale ranges, color deltas, means byte planes, and circular rotation bins."
+  - turn: 1
+    type: experiment
+    id: "N33"
+    routing: direct
+    provenance: ai-executed
+    summary: "Broad validation passed: 198 pytest tests and full ruff sweep."
+
+ai_actions:
+  - turn: 1
+    action: "Implemented and committed the ABL-004 confirmation runner."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/abl004_confirmation.py"
+      - "tests/test_abl004_confirmation.py"
+      - "benchmarks/README.md"
+      - "tasks/ABL-004-controls-and-full-run.md"
+  - turn: 1
+    action: "Implemented and committed opt-in tiled exact CUDA renderer modes."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/cuda_render.py"
+      - "src/structsplat/cuda/render_ext.cpp"
+      - "src/structsplat/cuda/render_ext.cu"
+      - "src/structsplat/render.py"
+      - "src/structsplat/fit.py"
+      - "src/structsplat/config.py"
+      - "src/structsplat/cli.py"
+      - "benchmarks/ablation.py"
+      - "benchmarks/stage_search.py"
+      - "tests/test_render.py"
+      - "tasks/PORT-001-cuda-rasterizer.md"
+  - turn: 1
+    action: "Implemented and committed opt-in CORE-005 support fade."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/render.py"
+      - "src/structsplat/cuda_render.py"
+      - "src/structsplat/cuda/render_ext.cpp"
+      - "src/structsplat/cuda/render_ext.cu"
+      - "src/structsplat/fit.py"
+      - "src/structsplat/config.py"
+      - "src/structsplat/codec.py"
+      - "src/structsplat/pyramid.py"
+      - "src/structsplat/cli.py"
+      - "tests/test_render.py"
+      - "tests/test_codec.py"
+      - "tests/test_fit_dynamics.py"
+      - "tests/test_pyramid.py"
+      - "tasks/CORE-005-renderer-memory-continuity.md"
+  - turn: 1
+    action: "Implemented and committed INIT-003 spectral analysis tooling plus task retirement."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/init_spectral_analysis.py"
+      - "tests/test_init_spectral_analysis.py"
+      - "benchmarks/README.md"
+      - "tasks/done/INIT-003-anisotropic-pds.md"
+      - "tasks/INDEX.md"
+  - turn: 1
+    action: "Implemented and committed COMP-003 codec ladder rungs 1-3."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/codec.py"
+      - "tests/test_codec.py"
+      - "tasks/COMP-003-compression-ladder.md"
+  - turn: 1
+    action: "Ran focused tests, CLI smokes, full pytest, full ruff sweep, and committed each completed slice."
+    provenance: ai-executed
+    files_changed: []
+
+claims_touched: []
+
+key_context:
+  - turn: 1
+    excerpt: "User asked to work on the points in correct order, plan each, implement, test and fix problems, commit changes, iterate until done, then start a thorough test."
+
+open_threads:
+  - "ABL-004 confirmation execution remains open: run the 1512-cell default confirmation set when compute is available."
+  - "CORE-005 remains partial: gradient checkpointing and fade on/off benchmark/ADR decision are still open."
+  - "PORT-001 remains partial: shared-memory/block reductions, tighter ellipse-tile bounds, deterministic option, throughput target, and RHI pass remain open."
+  - "COMP-003 remains partial after rungs 1-3; sorted attribute planes, LSQ ranges, VQ, entropy coding, and joint RD training remain open."
+  - "COMP-003 still needs committed RD evidence under `ara/evidence/` for the implemented rungs, beyond the tiny smoke run."
+
+ai_suggestions_pending:
+  - "Use the ABL-004 confirmation runner with bounded `--max-new-cells` shards for scheduled confirmation."
+  - "Keep the new codec stream flags enabled by default unless RD evidence shows a regression on real fitted fields."

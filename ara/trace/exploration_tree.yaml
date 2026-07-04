@@ -559,3 +559,120 @@ tree:
       - "benchmarks/abl004_visual_examples.py"
     also_depends_on: [N26]
     status: resolved
+  - id: N28
+    type: experiment
+    title: "ABL-004 confirmation runner"
+    provenance: ai-executed
+    timestamp: "2026-07-05T01:03+0200"
+    result: >
+      Implemented `benchmarks/abl004_confirmation.py`, a decision-grade wrapper
+      around the existing resumable ablation harness. It materializes the
+      expected confirmation manifest, runs bounded shards through
+      `benchmarks.ablation`, and analyzes existing rows into missing-cell
+      reports, leaderboards, paired/bootstrap deltas, pairwise deltas,
+      per-unit baseline-loss rows, rank-stability tables, and a markdown
+      summary. The default protocol resolves to 28 images x 3 seeds x 3
+      budgets x 6 variants = 1512 cells. Validation: focused confirmation and
+      ablation tests passed, ruff passed, and CLI plan/analyze dry paths worked.
+    evidence:
+      - "benchmarks/abl004_confirmation.py"
+      - "tests/test_abl004_confirmation.py"
+      - "tasks/ABL-004-controls-and-full-run.md"
+    also_depends_on: [N23, N26, N27]
+    status: resolved
+  - id: N29
+    type: experiment
+    title: "Tiled exact CUDA renderer"
+    provenance: ai-executed
+    timestamp: "2026-07-05T01:03+0200"
+    result: >
+      Added opt-in `cuda_tiled` and `cuda_tiled_additive` renderer modes. The
+      Python wrapper builds a detached tile-to-Gaussian index from clipped
+      support rectangles, and CUDA forward/backward kernels render one block per
+      image tile while looping only over overlapping Gaussians. Validation:
+      CPU-focused render/stage/ablation tests passed; CUDA parity tests for
+      exact/tiled/empty/nonfinite cases passed under the system libstdc++
+      preload; a tiny CUDA tiled fit smoke completed.
+    evidence:
+      - "src/structsplat/cuda_render.py"
+      - "src/structsplat/cuda/render_ext.cu"
+      - "src/structsplat/render.py"
+      - "tests/test_render.py"
+      - "tasks/PORT-001-cuda-rasterizer.md"
+    also_depends_on: [N15, N24]
+    status: resolved
+  - id: N30
+    type: experiment
+    title: "CORE-005 support fade renderer"
+    provenance: ai-executed
+    timestamp: "2026-07-05T01:03+0200"
+    result: >
+      Added opt-in compact-support fade via `FitConfig.support_fade` and CLI
+      `--support-fade`, using `max(exp(-q/2) - exp(-sigma_cutoff^2/2), 0)`.
+      The reference normalized/additive renderers, activity/residual scoring,
+      CUDA scatter kernels, tiled CUDA kernels, pyramid/codec paths, and tests
+      now carry the flag. Validation covered Python reference fade behavior,
+      reference-vs-CUDA fade parity, focused render/codec/fit/pyramid tests, and
+      a tiny exact-CUDA support-fade fit smoke.
+    evidence:
+      - "src/structsplat/render.py"
+      - "src/structsplat/cuda/render_ext.cu"
+      - "src/structsplat/fit.py"
+      - "src/structsplat/codec.py"
+      - "tasks/CORE-005-renderer-memory-continuity.md"
+    also_depends_on: [N22, N29]
+    status: resolved
+  - id: N31
+    type: experiment
+    title: "INIT-003 spectral analysis benchmark"
+    provenance: ai-executed
+    timestamp: "2026-07-05T01:03+0200"
+    result: >
+      Added `benchmarks/init_spectral_analysis.py` for placement-only INIT-003
+      calibration. The harness builds initial fields without fitting and writes
+      radial FFT spectra, pair-correlation summaries, nearest-neighbor spacing,
+      edge-local directional spacing, realized edge scale ratios, and RMSE
+      against the coherence-to-axis-ratio mapping across `max_axis_ratio` and
+      `coherence_power` sweeps. Focused tests, ruff, and a small CLI smoke on
+      pinned test images passed. INIT-003 was retired to `tasks/done`.
+    evidence:
+      - "benchmarks/init_spectral_analysis.py"
+      - "tests/test_init_spectral_analysis.py"
+      - "tasks/done/INIT-003-anisotropic-pds.md"
+    also_depends_on: [N21]
+    status: resolved
+  - id: N32
+    type: experiment
+    title: "COMP-003 codec ladder rungs 1-3"
+    provenance: ai-executed
+    timestamp: "2026-07-05T01:03+0200"
+    result: >
+      Implemented the first three COMP-003 codec ladder rungs. Log-scales now
+      quantize over per-field min/max ranges stored in the blob header and
+      frozen during QAT. The codec delta-codes colors along Morton order,
+      byte-planar-splits the means stream, and records per-stream flags so decode
+      remains self-describing. Rotation quantization now uses 2^bits circular
+      bins over [0, pi), with matching fake-quantization in `quantized_view`.
+      Codec tests and ruff passed, and a tiny `benchmarks.rate_distortion` CLI
+      smoke completed.
+    evidence:
+      - "src/structsplat/codec.py"
+      - "tests/test_codec.py"
+      - "tasks/COMP-003-compression-ladder.md"
+    status: resolved
+  - id: N33
+    type: experiment
+    title: "Post-slice broad validation"
+    provenance: ai-executed
+    timestamp: "2026-07-05T01:03+0200"
+    result: >
+      Ran the requested broad verification after the ordered implementation
+      slices. `LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6
+      PYTHONPATH=src:. pytest -q` passed 198 tests in 7.91 seconds. `python -m
+      ruff check src benchmarks tests scripts` passed with no findings. The
+      worktree was clean except for the pre-existing untracked `.idea/`.
+    evidence:
+      - "pytest-2026-07-05-198"
+      - "ruff-2026-07-05"
+    also_depends_on: [N28, N29, N30, N31, N32]
+    status: resolved
