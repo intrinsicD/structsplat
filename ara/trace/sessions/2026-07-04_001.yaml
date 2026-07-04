@@ -2,9 +2,9 @@ session:
   id: "2026-07-04_001"
   date: "2026-07-04"
   started: "2026-07-04T00:00+0200"
-  last_turn: "2026-07-04T13:52+0200"
-  turn_count: 5
-  summary: "Advanced ABL-004 evidence, completed and retired INIT-006, started CORE-005, recalibrated ABL-004 around exact CUDA, ran a 20k two-arm high-budget check, and staged the verdict that anisotropic flanking now carries the burden of proof."
+  last_turn: "2026-07-04T15:12+0200"
+  turn_count: 6
+  summary: "Advanced ABL-004 evidence, completed and retired INIT-006, started CORE-005, recalibrated ABL-004 around exact CUDA, ran a 20k two-arm high-budget check, and completed the 8-image staged screen."
 
 events_logged:
   - turn: 1
@@ -55,6 +55,18 @@ events_logged:
     routing: staged
     provenance: ai-suggested
     summary: "Verdict: the high-budget check weakens anisotropic flanking versus Floyd-Steinberg but is not enough to fail the ABL-004 thesis."
+  - turn: 6
+    type: experiment
+    id: "N26"
+    routing: direct
+    provenance: ai-executed
+    summary: "Completed the 176-cell ABL-004 8-image exact-CUDA screen within the 6-hour cap; aniso_onedge led at 2k and quadtree_wse/quadtree_hybrid led at 5k."
+  - turn: 6
+    type: observation
+    id: "O17"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Interpretation: the screen weakens the aniso_flanking-specific claim but keeps the broader tensor/quadtree initialization direction alive."
 
 ai_actions:
   - turn: 1
@@ -152,6 +164,18 @@ ai_actions:
       - "ara/evidence/abl004-high-budget-cuda-2026-07-04/"
       - "ara/evidence/README.md"
       - "tasks/ABL-004-controls-and-full-run.md"
+  - turn: 6
+    action: "Ran the user-requested larger ABL-004 sample with a 6-hour timeout: 8 Kodak images, budgets {2000,5000}, seed 0, all 11 arms, 1500 iterations, exact CUDA; completed 176/176 cells in about 74.82 minutes."
+    provenance: ai-executed
+    files_changed:
+      - "results/abl004_stage_screen_8img_cuda/"
+  - turn: 6
+    action: "Generated post-run plots and derived analysis tables, curated the evidence bundle, and updated the ABL-004 task/evidence index."
+    provenance: ai-executed
+    files_changed:
+      - "ara/evidence/abl004-stage-screen-8img-cuda-2026-07-04/"
+      - "ara/evidence/README.md"
+      - "tasks/ABL-004-controls-and-full-run.md"
 
 claims_touched:
   - id: C04
@@ -169,13 +193,15 @@ key_context:
     excerpt: "User asked to run the high-budget smoke now so the results could be seen and analyzed."
   - turn: 5
     excerpt: "User asked for the verdict after seeing the high-budget two-arm result."
+  - turn: 6
+    excerpt: "User said they would be away for a couple of hours and asked to run a larger sample, max 6 hours."
 
 open_threads:
   - "Full ABL-001/ABL-004 sweep remains open; exact-CUDA calibration reduces the estimate to about 4.31 GPU-days under linear budget scaling, but it still needs scheduled/job-queue execution."
   - "README hypothesis section and ABL-001 status should only be finalized after the full sweep or an explicit failed-with-findings decision."
   - "Native external-repository runs remain pending where dependencies/checkpoints are available, especially Instant-GI via STRUCTSPLAT_INSTANT_GI."
   - "CORE-005 remains partial: gradient checkpointing, support fade across reference/CUDA paths, and fade benchmark/ADR decision are still open."
-  - "Next ABL-004 practical step is the staged screen: all 11 arms on a balanced 8-image subset, budgets {2k,5k}, seed 0, exact CUDA, max-side 768, 1500 iters; after O16, anisotropic flanking should be treated as carrying the burden of proof against Floyd-Steinberg."
+  - "Next ABL-004 practical step is confirmation on all 28 images and seeds {0,1,2} for `aniso_onedge`, `aniso_flanking`, `quadtree_wse`, `quadtree_hybrid`, `iso_blue_noise`, and `floyd_steinberg`; the 8-image screen makes `aniso_flanking` a close comparator rather than the default favorite."
 
 ai_suggestions_pending:
   - "Run future ABL-004 shards with `LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6` in this workspace so the exact CUDA extension loads."

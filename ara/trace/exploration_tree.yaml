@@ -510,3 +510,26 @@ tree:
       - "tasks/ABL-004-controls-and-full-run.md"
     also_depends_on: [N23, N24]
     status: resolved
+  - id: N26
+    type: experiment
+    title: "ABL-004 staged 8-image exact-CUDA screen"
+    provenance: ai-executed
+    timestamp: "2026-07-04T15:12+0200"
+    result: >
+      Ran the predeclared ABL-004 staged screen within the user's 6-hour cap:
+      8 spread Kodak images (`kodim01,04,07,10,13,16,19,22`), budgets 2000
+      and 5000, seed 0, all 11 ablation arms, 1500 iterations, exact CUDA
+      renderer, max-side 768. The run completed 176/176 cells in about
+      4489.46 s wall-clock. At 2000 Gaussians, `aniso_onedge` led mean PSNR
+      with 26.9861 dB, beating `aniso_flanking` by +0.2425 dB paired mean and
+      winning 7/8 images. At 5000 Gaussians, `quadtree_wse` and
+      `quadtree_hybrid` led mean PSNR with 30.2148 and 30.2097 dB, beating
+      `aniso_flanking` by +0.1678 and +0.1627 dB paired mean and winning 7/8
+      images. Floyd-Steinberg did not generalize from the one-image 20k
+      warning: it ranked 11/11 at 2000 and 8/11 at 5000 by mean PSNR.
+    evidence:
+      - "results/abl004_stage_screen_8img_cuda"
+      - "ara/evidence/abl004-stage-screen-8img-cuda-2026-07-04"
+      - "tasks/ABL-004-controls-and-full-run.md"
+    also_depends_on: [N23, N24, N25]
+    status: resolved

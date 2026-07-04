@@ -78,6 +78,16 @@ conditions and honest controls?
   was faster overall (31.91 s vs 43.92 s init+fit). This is single-image/single-seed evidence
   only, but it reinforces that Floyd-Steinberg must remain a required killer control through
   the staged confirmation.
+- 2026-07-04: Completed the staged 8-image exact-CUDA screen within the user's 6-hour cap
+  (`kodim01,04,07,10,13,16,19,22`, budgets {2000,5000}, seed 0, 11 arms, 1500 iters,
+  176/176 cells). Evidence: `ara/evidence/abl004-stage-screen-8img-cuda-2026-07-04/`.
+  Runtime was 74.82 min wall-clock. The original `aniso_flanking` thesis arm was close but
+  not best: `aniso_onedge` won mean PSNR at 2000 (26.9861 vs 26.7436 for flanking; 7/8 paired
+  wins), while `quadtree_wse`/`quadtree_hybrid` led at 5000 (30.2148/30.2097 vs 30.0470 for
+  flanking). Floyd-Steinberg did not generalize from the one-image 20k warning, ranking 11/11
+  at 2000 and 8/11 at 5000 by mean PSNR, with clear failures on `kodim07`. Confirmation should
+  test `aniso_onedge`, `aniso_flanking`, `quadtree_wse`, `quadtree_hybrid`, `iso_blue_noise`,
+  and Floyd-Steinberg.
 
 ## Decision-grade staged protocol
 
@@ -87,8 +97,10 @@ scheduled multi-day job, use this predeclared staged protocol so stopping is evi
 1. **Screen.** Run all 11 arms on a balanced 8-image subset, budgets {2k, 5k}, seed 0,
    exact CUDA, max-side 768, 1500 iters. Eliminate arms that lose clearly on paired PSNR and
    convergence metrics to both the thesis arm and at least one killer control.
-2. **Confirm.** Run the top 3-4 arms plus required controls on all 28 images, seeds {0,1,2},
-   budgets {2k, 5k, 10k}. Report paired image/seed/budget deltas with confidence intervals.
+2. **Confirm.** Run the top screen arms plus required controls on all 28 images, seeds {0,1,2},
+   budgets {2k, 5k, 10k}. Current confirmation set after the 8-image screen:
+   `aniso_onedge`, `aniso_flanking`, `quadtree_wse`, `quadtree_hybrid`, `iso_blue_noise`, and
+   `floyd_steinberg`. Report paired image/seed/budget deltas with confidence intervals.
 3. **High-budget check.** Run only finalists at 20k on all 28 images and seeds {0,1,2}, because
    the ABL-001 hypothesis already expects gaps to shrink at high budget.
 4. **Promotion rule.** README/ARA claims can be updated only from paired results. If

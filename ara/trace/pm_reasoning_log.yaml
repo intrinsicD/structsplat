@@ -112,3 +112,8 @@ entries:
       - "Staged the requested verdict as O16 potential claim because it interprets N25 rather than adding a new benchmark fact."
       - "Did not crystallize O16 because neither the user nor the planned paired multi-image confirmation has closed the ABL-004 question."
       - "Framed the verdict as burden-of-proof shift rather than refutation to avoid overclaiming from a single image, seed, and budget."
+  - turn: "2026-07-04_001#6"
+    notes:
+      - "Routed the 176-cell 8-image exact-CUDA screen as N26 experiment because it produced new benchmark metrics, plots, and derived evidence under the user's six-hour cap."
+      - "Staged O17 as a claim because the screen changes the interpretation of ABL-004 arms but is still seed-0 screening evidence rather than full paired confirmation."
+      - "Did not crystallize O16 or O17: the high-budget Floyd warning and the low-budget screen are complementary but not a closed final ABL-004 answer."

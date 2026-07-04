@@ -15,8 +15,8 @@ sessions:
     open_threads: 5
   - id: "2026-07-04_001"
     date: "2026-07-04"
-    summary: "Advanced ABL-004 evidence, completed and retired INIT-006 init-time performance, started CORE-005 render memory work, adopted an exact-CUDA staged ABL-004 protocol, ran a 20k two-arm high-budget check, and staged the verdict that anisotropic flanking now carries the burden of proof."
-    turn_count: 5
-    events_count: 8
+    summary: "Advanced ABL-004 evidence, completed and retired INIT-006 init-time performance, started CORE-005 render memory work, adopted an exact-CUDA staged ABL-004 protocol, ran a 20k two-arm high-budget check, and completed the 8-image staged screen."
+    turn_count: 6
+    events_count: 10
     claims_touched: [C04]
     open_threads: 5

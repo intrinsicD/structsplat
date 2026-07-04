@@ -175,3 +175,14 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O17
+    timestamp: "2026-07-04T15:12+0200"
+    provenance: ai-suggested
+    content: "The 8-image ABL-004 screen weakens the specific `aniso_flanking` thesis arm but not the broader structure-tensor initialization direction: `aniso_onedge` is the strongest 2000-Gaussian arm, while `quadtree_wse` and `quadtree_hybrid` are strongest at 5000; Floyd-Steinberg remains a required killer control but is not a likely finalist in the low-budget confirmation set."
+    context: "Completed the user-requested larger sample within a 6-hour cap: 176 exact-CUDA cells on eight Kodak images, budgets 2000 and 5000, seed 0."
+    potential_type: claim
+    bound_to: [N26]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
