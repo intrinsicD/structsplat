@@ -13,3 +13,10 @@ sessions:
     events_count: 2
     claims_touched: []
     open_threads: 5
+  - id: "2026-07-04_001"
+    date: "2026-07-04"
+    summary: "Advanced ABL-004 controls, resumable full-run prep, first-shard compute calibration, held-out Kodak cross-repo evidence, and claim wording."
+    turn_count: 1
+    events_count: 2
+    claims_touched: [C04]
+    open_threads: 3

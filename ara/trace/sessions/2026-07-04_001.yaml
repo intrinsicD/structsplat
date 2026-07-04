@@ -1,0 +1,74 @@
+session:
+  id: "2026-07-04_001"
+  date: "2026-07-04"
+  started: "2026-07-04T00:00+0200"
+  last_turn: "2026-07-04T00:00+0200"
+  turn_count: 1
+  summary: "Advanced ABL-004: added missing controls and resumable shards, recorded first-shard compute calibration, ran held-out Kodak cross-repo matrix with shipped defaults, and clarified cross-repo claims."
+
+events_logged:
+  - turn: 1
+    type: experiment
+    id: "N19"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented ABL-004 controls/resumable full-run path and completed first full-protocol shard: kodim01 random 2000G seed0, 1500 iters, max-side 768, PSNR 22.2870, fit 780.3784s."
+  - turn: 1
+    type: experiment
+    id: "N20"
+    routing: direct
+    provenance: ai-executed
+    summary: "Ran held-out Kodak4 matched policy matrix with `structsplat_shipped_defaults`; current/shipped StructSplat rows led local GaussianImage/Image-GS analogue rows at max-side 160 / 80 iters."
+
+ai_actions:
+  - turn: 1
+    action: "Implemented Floyd-Steinberg sampler, ablation controls, resumable/shardable ablation output, ABL-004 data prep/full-run wrappers, and cross-repo shipped-default row."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/sampling.py"
+      - "src/structsplat/init.py"
+      - "src/structsplat/config.py"
+      - "benchmarks/ablation.py"
+      - "benchmarks/cross_repo_matrix_compare.py"
+      - "scripts/prepare_abl004_images.py"
+      - "scripts/run_abl004_full_ablation.sh"
+      - "tests/test_sampling.py"
+      - "tests/test_ablation.py"
+      - "tests/test_benchmark_common.py"
+      - "tests/test_abl004_image_prep.py"
+  - turn: 1
+    action: "Ran verification: focused suites, full pytest, ruff, shell syntax checks, CUDA control calibration, first ABL-004 shard, and held-out Kodak cross-repo matrix."
+    provenance: ai-executed
+    files_changed:
+      - "results/abl004_control_calibration/"
+      - "results/abl004_high_budget_smoke/"
+      - "results/abl004_ablation_full/"
+      - "results/cross_repo_matrix_kodak4_shipped/"
+  - turn: 1
+    action: "Curated ABL-004 evidence and revised README/ARA wording to avoid native cross-repo dominance claims."
+    provenance: ai-executed
+    files_changed:
+      - "ara/evidence/abl004-first-shard-2026-07-04/"
+      - "ara/evidence/abl004-kodak4-cross-repo-2026-07-04/"
+      - "README.md"
+      - "ara/logic/claims.md"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/2026-07-03_001.yaml"
+      - "tasks/ABL-004-controls-and-full-run.md"
+
+claims_touched:
+  - id: C04
+    action: revised
+    turn: 1
+
+key_context:
+  - turn: 1
+    excerpt: "User asked to continue tasks in correct order, planning each, implementing, testing, fixing, committing, and iterating."
+
+open_threads:
+  - "Full ABL-001/ABL-004 sweep remains open; the first full-protocol cell took 780.3784 s on the local RTX 3050."
+  - "README hypothesis section and ABL-001 status should only be finalized after the full sweep or an explicit failed-with-findings decision."
+  - "Native external-repository runs remain pending where dependencies/checkpoints are available, especially Instant-GI via STRUCTSPLAT_INSTANT_GI."
+
+ai_suggestions_pending:
+  - "Run future ABL-004 shards on faster hardware or a job queue; use MAX_NEW_CELLS to advance the resumable matrix safely."

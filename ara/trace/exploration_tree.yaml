@@ -347,3 +347,49 @@ tree:
       - "abl003-regression-bisect-2026-07-03"
     also_depends_on: [N03, N04, N05]
     status: resolved
+  - id: N19
+    type: experiment
+    title: "ABL-004 controls and first full-protocol shard"
+    provenance: ai-executed
+    timestamp: "2026-07-04T00:00+0200"
+    result: >
+      Implemented the missing ABL-004 control plumbing: NumPy-only
+      `floyd_steinberg` density-map sampler, ablation control labels
+      (`floyd_steinberg`, `density_random`, `random_relocate`), max-side
+      resizing, incremental `ablation.jsonl`, resume, bounded `max_new_cells`
+      shards, and Kodak-24 data-prep/full-run wrappers. Full pytest reached
+      152 passed / 12 skipped after the sharding work. Prepared Kodak-24 plus
+      the four pinned COCO fixtures under ignored `results/datasets/abl004`.
+      The first true full-protocol shard completed one row:
+      `kodim01`, random, 2000 Gaussians, seed 0, max-side 768, 1500 iterations,
+      PSNR 22.2870, MS-SSIM 0.85389, fit time 780.3784 s on the local RTX
+      3050. This validates the resumable path and establishes that the complete
+      ABL-001 matrix is not practical as an interactive local run on this GPU.
+    evidence:
+      - "abl004-first-shard-2026-07-04"
+      - "scripts/run_abl004_full_ablation.sh"
+      - "benchmarks/ablation.py"
+    also_depends_on: [N15, N17, N18]
+    status: resolved
+  - id: N20
+    type: experiment
+    title: "Held-out Kodak cross-repo matrix with shipped defaults"
+    provenance: ai-executed
+    timestamp: "2026-07-04T00:00+0200"
+    result: >
+      Added `structsplat_shipped_defaults` to
+      `benchmarks/cross_repo_matrix_compare.py` and reran a held-out Kodak
+      matrix disjoint from the earlier four COCO tuning images: kodim01-kodim04,
+      max-side 160, 80 iterations, seed 0, budget cap 640, exact CUDA renderer
+      with system `libstdc++` preloaded. Successful mean PSNR/MS-SSIM rows:
+      StructSplat current 31.6934/0.97767; StructSplat shipped defaults
+      31.6323/0.98046; GaussianImage analogue 28.8334/0.97133; Image-GS
+      analogue 27.0637/0.94621; GaussianImage++ analogue 26.6340/0.94307.
+      Instant-GI rows were expected errors because `STRUCTSPLAT_INSTANT_GI`
+      is not configured. README/ARA wording was revised to frame these as
+      matched policy analogues, not native external-repository dominance.
+    evidence:
+      - "abl004-kodak4-cross-repo-2026-07-04"
+      - "benchmarks/cross_repo_matrix_compare.py"
+    also_depends_on: [N17, N19]
+    status: resolved

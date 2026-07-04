@@ -87,3 +87,8 @@ entries:
     notes:
       - "Recorded the git commit as an AI action in the session trace, not a new exploration node, because it packaged existing work rather than producing new research evidence."
       - "Amended the ARA bookkeeping into the same commit to keep the worktree clean after the user's commit request."
+  - turn: "2026-07-04_001#1"
+    notes:
+      - "Routed the first full-protocol ABL-004 shard as N19 because it produced measured runtime/quality evidence and changed the feasibility of local full-sweep execution."
+      - "Routed the held-out Kodak cross-repo matrix as N20 because it produced new disjoint-image evidence with the shipped-default row required by ABL-004."
+      - "Updated C04 directly because the turn committed downstream evidence and wording that depends on the revised matched-analogue interpretation; did not crystallize remaining staged observations without user affirmation."
