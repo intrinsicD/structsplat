@@ -1,0 +1,41 @@
+{
+  "resolved": {
+    "dataset_dir": "results/datasets/abl004/kodak24",
+    "image_names": [
+      "kodim01.png",
+      "kodim07.png",
+      "kodim10.png",
+      "kodim13.png",
+      "kodim22.png"
+    ],
+    "max_sides": [
+      160,
+      240,
+      320
+    ],
+    "iters_list": [
+      80,
+      200
+    ],
+    "base_budget": 640,
+    "base_side": 160,
+    "seed": 0,
+    "variants": [
+      "aniso_onedge",
+      "aniso_flanking",
+      "quadtree_wse",
+      "quadtree_hybrid",
+      "iso_blue_noise",
+      "floyd_steinberg"
+    ],
+    "renderer": "cuda"
+  },
+  "device": "cuda",
+  "versions": {
+    "torch": "2.9.0+cu128",
+    "torch_cuda": "12.8",
+    "cuda_available": true,
+    "numpy": "2.1.3",
+    "structsplat": "0.1.0"
+  }
+}

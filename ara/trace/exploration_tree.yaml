@@ -533,3 +533,29 @@ tree:
       - "tasks/ABL-004-controls-and-full-run.md"
     also_depends_on: [N23, N24, N25]
     status: resolved
+  - id: N27
+    type: experiment
+    title: "ABL-004 visual examples across small levels"
+    provenance: ai-executed
+    timestamp: "2026-07-04T22:59+0200"
+    result: >
+      Generated five all-level visual comparison sheets for user inspection:
+      `kodim01`, `kodim07`, `kodim10`, `kodim13`, and `kodim22`. Each sheet
+      covers the six prior visual levels (160/240/320 px crossed with 80/200
+      iterations) and the current finalist/control variants:
+      `aniso_onedge`, `aniso_flanking`, `quadtree_wse`, `quadtree_hybrid`,
+      `iso_blue_noise`, and `floyd_steinberg`. Budgets were area-scaled from
+      640 Gaussians at 160 px to 1440 and 2560 at 240 and 320 px. The exact
+      CUDA run completed 180/180 fitted cells with zero errors, wrote 180
+      reconstructions under `results/abl004_visual_examples_5img/`, and
+      curated the five grid PNGs plus metrics/config/summary into ARA evidence.
+      Mean PSNR over these five visual examples was led by `aniso_flanking` at
+      160px/80it and by `aniso_onedge` on the other five level slices; this
+      supports visual auditability of N26 but does not replace paired
+      confirmation.
+    evidence:
+      - "results/abl004_visual_examples_5img"
+      - "ara/evidence/abl004-visual-examples-2026-07-04"
+      - "benchmarks/abl004_visual_examples.py"
+    also_depends_on: [N26]
+    status: resolved

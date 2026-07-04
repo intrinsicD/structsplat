@@ -2,9 +2,9 @@ session:
   id: "2026-07-04_001"
   date: "2026-07-04"
   started: "2026-07-04T00:00+0200"
-  last_turn: "2026-07-04T15:12+0200"
-  turn_count: 6
-  summary: "Advanced ABL-004 evidence, completed and retired INIT-006, started CORE-005, recalibrated ABL-004 around exact CUDA, ran a 20k two-arm high-budget check, and completed the 8-image staged screen."
+  last_turn: "2026-07-04T22:59+0200"
+  turn_count: 7
+  summary: "Advanced ABL-004 evidence, completed and retired INIT-006, started CORE-005, recalibrated ABL-004 around exact CUDA, ran a 20k two-arm high-budget check, completed the 8-image staged screen, and generated five all-level visual comparison sheets."
 
 events_logged:
   - turn: 1
@@ -67,6 +67,12 @@ events_logged:
     routing: staged
     provenance: ai-suggested
     summary: "Interpretation: the screen weakens the aniso_flanking-specific claim but keeps the broader tensor/quadtree initialization direction alive."
+  - turn: 7
+    type: experiment
+    id: "N27"
+    routing: direct
+    provenance: ai-executed
+    summary: "Generated five all-level ABL-004 visual comparison sheets across 160/240/320 px x 80/200 iters and six finalist/control variants; 180/180 cells completed with zero errors."
 
 ai_actions:
   - turn: 1
@@ -176,6 +182,19 @@ ai_actions:
       - "ara/evidence/abl004-stage-screen-8img-cuda-2026-07-04/"
       - "ara/evidence/README.md"
       - "tasks/ABL-004-controls-and-full-run.md"
+  - turn: 7
+    action: "Added `benchmarks.abl004_visual_examples`, ran the exact-CUDA visual generator, and wrote the live visual outputs."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/abl004_visual_examples.py"
+      - "results/abl004_visual_examples_5img/"
+  - turn: 7
+    action: "Curated the five visual sheets and metrics into ARA evidence, then updated the ABL-004 task and evidence index."
+    provenance: ai-executed
+    files_changed:
+      - "ara/evidence/abl004-visual-examples-2026-07-04/"
+      - "ara/evidence/README.md"
+      - "tasks/ABL-004-controls-and-full-run.md"
 
 claims_touched:
   - id: C04
@@ -195,6 +214,8 @@ key_context:
     excerpt: "User asked for the verdict after seeing the high-budget two-arm result."
   - turn: 6
     excerpt: "User said they would be away for a couple of hours and asked to run a larger sample, max 6 hours."
+  - turn: 7
+    excerpt: "User asked for five visual examples where the individual ABL-004 variants can be compared at all mentioned iteration/resolution levels."
 
 open_threads:
   - "Full ABL-001/ABL-004 sweep remains open; exact-CUDA calibration reduces the estimate to about 4.31 GPU-days under linear budget scaling, but it still needs scheduled/job-queue execution."
@@ -202,6 +223,7 @@ open_threads:
   - "Native external-repository runs remain pending where dependencies/checkpoints are available, especially Instant-GI via STRUCTSPLAT_INSTANT_GI."
   - "CORE-005 remains partial: gradient checkpointing, support fade across reference/CUDA paths, and fade benchmark/ADR decision are still open."
   - "Next ABL-004 practical step is confirmation on all 28 images and seeds {0,1,2} for `aniso_onedge`, `aniso_flanking`, `quadtree_wse`, `quadtree_hybrid`, `iso_blue_noise`, and `floyd_steinberg`; the 8-image screen makes `aniso_flanking` a close comparator rather than the default favorite."
+  - "Five all-level ABL-004 visual sheets are now available for inspection under `results/abl004_visual_examples_5img/grids/` and curated under `ara/evidence/abl004-visual-examples-2026-07-04/grids/`."
 
 ai_suggestions_pending:
   - "Run future ABL-004 shards with `LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6` in this workspace so the exact CUDA extension loads."
