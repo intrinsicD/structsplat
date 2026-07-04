@@ -2,9 +2,9 @@ session:
   id: "2026-07-04_001"
   date: "2026-07-04"
   started: "2026-07-04T00:00+0200"
-  last_turn: "2026-07-04T11:10+0200"
-  turn_count: 3
-  summary: "Advanced ABL-004 evidence, completed and retired INIT-006, started CORE-005, and recalibrated ABL-004 around exact CUDA plus a staged decision protocol."
+  last_turn: "2026-07-04T12:06+0200"
+  turn_count: 4
+  summary: "Advanced ABL-004 evidence, completed and retired INIT-006, started CORE-005, recalibrated ABL-004 around exact CUDA, and ran a 20k two-arm high-budget check."
 
 events_logged:
   - turn: 1
@@ -43,6 +43,12 @@ events_logged:
     routing: direct
     provenance: ai-executed
     summary: "Added ablation `--renderer`, defaulted ABL-004 wrapper to exact CUDA, and ran five full-iteration kodim01/2k calibration cells; mean fit 21.606s."
+  - turn: 4
+    type: experiment
+    id: "N25"
+    routing: direct
+    provenance: ai-executed
+    summary: "Ran kodim01 20k exact-CUDA 1500-iteration aniso_flanking vs floyd_steinberg check; Floyd led by 0.0293 dB PSNR and 0.00068 MS-SSIM."
 
 ai_actions:
   - turn: 1
@@ -128,6 +134,18 @@ ai_actions:
     action: "Ran validation: `tests/test_ablation.py`, full `PYTHONPATH=src:. pytest -q`, Python ruff check, and `bash -n scripts/run_abl004_full_ablation.sh`."
     provenance: ai-executed
     files_changed: []
+  - turn: 4
+    action: "Ran the high-budget exact-CUDA two-arm ABL-004 check requested from the old smoke summary and generated scalar plots from the completed rows."
+    provenance: ai-executed
+    files_changed:
+      - "results/abl004_high_budget_cuda_1500/"
+  - turn: 4
+    action: "Curated the high-budget result into ARA evidence and updated the ABL-004 task note with the Floyd-Steinberg warning signal."
+    provenance: ai-executed
+    files_changed:
+      - "ara/evidence/abl004-high-budget-cuda-2026-07-04/"
+      - "ara/evidence/README.md"
+      - "tasks/ABL-004-controls-and-full-run.md"
 
 claims_touched:
   - id: C04
@@ -141,13 +159,15 @@ key_context:
     excerpt: "User again asked to continue tasks in correct order, implement, test, commit, retire done tasks to tasks/done, and iterate."
   - turn: 3
     excerpt: "User approved the proposal to add renderer support, switch ABL-004 to exact CUDA, run calibration cells, and adopt a staged protocol."
+  - turn: 4
+    excerpt: "User asked to run the high-budget smoke now so the results could be seen and analyzed."
 
 open_threads:
   - "Full ABL-001/ABL-004 sweep remains open; exact-CUDA calibration reduces the estimate to about 4.31 GPU-days under linear budget scaling, but it still needs scheduled/job-queue execution."
   - "README hypothesis section and ABL-001 status should only be finalized after the full sweep or an explicit failed-with-findings decision."
   - "Native external-repository runs remain pending where dependencies/checkpoints are available, especially Instant-GI via STRUCTSPLAT_INSTANT_GI."
   - "CORE-005 remains partial: gradient checkpointing, support fade across reference/CUDA paths, and fade benchmark/ADR decision are still open."
-  - "Next ABL-004 practical step is the staged screen: all 11 arms on a balanced 8-image subset, budgets {2k,5k}, seed 0, exact CUDA, max-side 768, 1500 iters."
+  - "Next ABL-004 practical step is the staged screen: all 11 arms on a balanced 8-image subset, budgets {2k,5k}, seed 0, exact CUDA, max-side 768, 1500 iters; the 20k kodim01 check makes Floyd-Steinberg a required comparator."
 
 ai_suggestions_pending:
   - "Run future ABL-004 shards with `LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6` in this workspace so the exact CUDA extension loads."

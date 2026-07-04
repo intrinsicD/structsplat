@@ -102,3 +102,8 @@ entries:
       - "Routed the user's approval of the proposed ABL-004 plan as N23 decision because it selected exact-CUDA renderer support, wrapper defaulting, calibration, and a staged decision protocol over the original exhaustive reference-renderer plan."
       - "Routed the five-cell exact-CUDA calibration as N24 experiment because it produced new measured runtime and quality evidence plus curated artifacts."
       - "Did not crystallize a new superiority claim from the calibration because it was designed for runtime planning and sanity checking, not as a statistically powered ABL-004 result."
+  - turn: "2026-07-04_001#4"
+    notes:
+      - "Routed the requested 20k two-arm exact-CUDA run as N25 experiment because it produced new high-budget metrics and timing evidence."
+      - "Did not crystallize a claim about `floyd_steinberg` beating `aniso_flanking` because the evidence is one image, one seed, and one budget; recorded it as a warning signal for the staged protocol instead."
+      - "No staged observation was added because the existing ABL-004 task already carries the necessary follow-up: keep Floyd-Steinberg as a required killer control in confirmation."

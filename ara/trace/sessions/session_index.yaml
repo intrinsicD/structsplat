@@ -15,8 +15,8 @@ sessions:
     open_threads: 5
   - id: "2026-07-04_001"
     date: "2026-07-04"
-    summary: "Advanced ABL-004 evidence, completed and retired INIT-006 init-time performance, started CORE-005 render memory work, and adopted an exact-CUDA staged ABL-004 protocol calibrated on five 2k cells."
-    turn_count: 3
-    events_count: 6
+    summary: "Advanced ABL-004 evidence, completed and retired INIT-006 init-time performance, started CORE-005 render memory work, adopted an exact-CUDA staged ABL-004 protocol, and ran a 20k two-arm high-budget check."
+    turn_count: 4
+    events_count: 7
     claims_touched: [C04]
     open_threads: 5

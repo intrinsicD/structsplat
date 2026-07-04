@@ -71,6 +71,13 @@ conditions and honest controls?
   `ara/evidence/abl004-cuda-calibration-2026-07-04/`. The full 3,696-cell matrix now estimates
   to ~0.93 GPU-days at flat 2k cost, or ~4.31 GPU-days under linear budget scaling across
   {2k, 5k, 10k, 20k}. This is feasible as a scheduled/job-queue run but still not interactive.
+- 2026-07-04: Reran the two-arm high-budget smoke as a real exact-CUDA 1500-iteration check
+  (`kodim01`, budget 20000, seed 0). Evidence:
+  `ara/evidence/abl004-high-budget-cuda-2026-07-04/`. Floyd-Steinberg slightly beat
+  anisotropic flanking on this cell (30.7803 vs 30.7510 PSNR; 0.98379 vs 0.98311 MS-SSIM) and
+  was faster overall (31.91 s vs 43.92 s init+fit). This is single-image/single-seed evidence
+  only, but it reinforces that Floyd-Steinberg must remain a required killer control through
+  the staged confirmation.
 
 ## Decision-grade staged protocol
 

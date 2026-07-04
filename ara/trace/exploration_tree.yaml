@@ -488,3 +488,25 @@ tree:
       - "tasks/ABL-004-controls-and-full-run.md"
     also_depends_on: [N19, N23]
     status: resolved
+  - id: N25
+    type: experiment
+    title: "ABL-004 20k exact-CUDA two-arm check"
+    provenance: ai-executed
+    timestamp: "2026-07-04T12:06+0200"
+    result: >
+      Reran the prior two-iteration high-budget smoke as a real 1500-iteration
+      exact-CUDA check on `kodim01`, max-side 768, budget 20000, seed 0, with
+      `aniso_flanking` and `floyd_steinberg`. Floyd-Steinberg slightly led on
+      every recorded quality metric: 30.7803 vs 30.7510 PSNR, 0.91051 vs
+      0.90900 SSIM, and 0.98379 vs 0.98311 MS-SSIM. It was also faster overall:
+      31.9113 s vs 43.9215 s init+fit, mainly because anisotropic flanking init
+      took 8.7713 s. Neither arm reached the 35 dB target. This single
+      image/seed check is not decision-grade ABL-004 evidence by itself, but it
+      reinforces keeping Floyd-Steinberg as a required killer control through
+      staged confirmation.
+    evidence:
+      - "results/abl004_high_budget_cuda_1500"
+      - "ara/evidence/abl004-high-budget-cuda-2026-07-04"
+      - "tasks/ABL-004-controls-and-full-run.md"
+    also_depends_on: [N23, N24]
+    status: resolved
