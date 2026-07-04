@@ -32,7 +32,7 @@ Feature-aware init stays interactive at the default 20k budget on 1–4 MP image
       test images (or differences limited to documented tie-breaking).
 - [x] `_nn_spacing` uses the GEMM form (|a|²+|b|²−2ab) or the sampling grid hash; peak
       allocation < 200 MB at N=20k; results equal within fp tolerance.
-- [ ] `_feature_run_lengths` vectorized ((N, S) coordinate grid + argmax over the first
+- [x] `_feature_run_lengths` vectorized ((N, S) coordinate grid + argmax over the first
       failing step); equal results; ≥10× faster at N=20k.
 - [x] `_neighbor_pairs` indexes only occupied cells (np.unique + searchsorted mapping); memory
       O(points); identical pair sets.
@@ -58,6 +58,11 @@ Feature-aware init stays interactive at the default 20k budget on 1–4 MP image
   first-max leaf order, including flat-density ties, while deferring over-budget 4-way splits so
   lower-priority 2-way splits can still fill the exact requested budget. Focused coverage compares
   exact leaf lists against the previous O(n^2) reference on random, plateaued, and tied densities.
+- 2026-07-04 partial implementation: `_feature_run_lengths` now evaluates each sign as a chunked
+  `(point, step)` grid and uses the first failing step to recover the old scalar walk length.
+  The predicate order preserves the old stop conditions: image bounds, corner labels, and
+  per-point energy thresholds. Focused coverage compares exact outputs, including infinite
+  lengths for flat starts, against the previous scalar reference.
 - Timing/memory check on random 4096x3072-domain points, default requested chunk 2048:
 
   | Function | N | Old seconds | New seconds | Max abs diff | Old matrix | New matrix |
@@ -71,6 +76,13 @@ Feature-aware init stays interactive at the default 20k budget on 1–4 MP image
   |---|---:|---:|---:|---:|---:|
   | `_quadtree_leaves` | 5,000 | 12.3464 | 0.0444 | exact | 5,000 |
   | `_quadtree_leaves` | 20,000 | skipped | 0.1988 | n/a | 20,000 |
+
+- Timing check on synthetic 256x256 feature bands, max walk 72 steps:
+
+  | Function | N | Old seconds | New seconds | Parity | Max abs diff |
+  |---|---:|---:|---:|---:|---:|
+  | `_feature_run_lengths` | 5,000 | 1.5954 | 0.0173 | exact | 0 |
+  | `_feature_run_lengths` | 20,000 | 6.5390 | 0.0706 | exact | 0 |
 
 ## Interfaces touched
 `src/structsplat/init.py`, `src/structsplat/sampling.py`, `src/structsplat/structure_tensor.py`,

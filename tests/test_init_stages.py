@@ -5,6 +5,7 @@ import pytest
 torch = pytest.importorskip("torch")
 
 from structsplat import init as I
+from structsplat import structure_tensor as ST
 from structsplat.config import InitConfig
 
 
@@ -69,6 +70,80 @@ def test_quadtree_heap_matches_reference_leaves():
     for density in densities:
         for n in (0, 1, 2, 3, 4, 5, 8, 13, 20, 37, 64, 80):
             assert I._quadtree_leaves(density, n) == _quadtree_leaves_reference(density, n)
+
+
+def _feature_run_lengths_reference(tensor, pts, angles, scfg, icfg):
+    H, W = tensor.energy.shape
+    scfg = scfg or I.StructureTensorConfig()
+    energy = np.maximum(tensor.energy, 0.0)
+    ref = ST.energy_reference(energy)
+    floor = ST.flat_threshold(energy, scfg.flat_frac, ref)
+    local_energy = I._nearest(energy, pts)
+    max_steps = int(np.ceil(max(H, W)))
+    if icfg.scale_cap_max is not None:
+        max_steps = max(1, min(max_steps, int(np.ceil(icfg.scale_cap_max
+                                                      * icfg.scale_feature_sigma))))
+    lengths = np.full(len(pts), np.inf, dtype=np.float64)
+    for i, (p, angle, e0) in enumerate(zip(pts, angles, local_energy)):
+        if e0 < floor:
+            continue
+        threshold = max(floor, float(e0) * icfg.scale_feature_energy_frac)
+        direction = np.array([np.cos(angle), np.sin(angle)], dtype=np.float64)
+
+        def walk(sign):
+            last = 0
+            for step in range(1, max_steps + 1):
+                q = p + sign * step * direction
+                x = int(round(q[0]))
+                y = int(round(q[1]))
+                if x < 0 or x >= W or y < 0 or y >= H:
+                    break
+                if tensor.label[y, x] == 2:
+                    break
+                if energy[y, x] < threshold:
+                    break
+                last = step
+            return last
+
+        lengths[i] = walk(1.0) + walk(-1.0) + 1.0
+    return lengths
+
+
+def test_feature_run_lengths_matches_reference():
+    rng = np.random.default_rng(4)
+    H, W = 15, 17
+    energy = rng.random((H, W), dtype=np.float32) * 0.4 + 0.2
+    energy[:, :2] = 0.0
+    energy[6:9, 8:11] = 1.5
+    label = np.ones((H, W), dtype=np.uint8)
+    label[energy < 0.05] = 0
+    label[3, 4] = 2
+    label[11, 12] = 2
+    zeros = np.zeros((H, W), dtype=np.float32)
+    tensor = ST.StructureTensor(
+        lam1=zeros, lam2=zeros, across_edge_angle=zeros, coherence=zeros,
+        energy=energy, label=label,
+    )
+    pts = np.array([
+        [1.2, 1.1],
+        [8.0, 7.0],
+        [15.4, 13.7],
+        [4.1, 3.0],
+        [12.0, 11.2],
+        [0.1, 8.0],
+    ], dtype=np.float64)
+    angles = np.array([0.0, np.pi / 4.0, -np.pi / 3.0, np.pi / 2.0, 0.2, -0.7])
+    cfg = InitConfig(
+        scale_cap_mode="feature",
+        scale_cap_max=4.0,
+        scale_feature_sigma=2.5,
+        scale_feature_energy_frac=0.5,
+    )
+
+    got = I._feature_run_lengths(tensor, pts, angles, None, cfg)
+    expected = _feature_run_lengths_reference(tensor, pts, angles, None, cfg)
+
+    assert np.array_equal(got, expected)
 
 
 @pytest.mark.parametrize("mode", I.SAMPLING_MODES)

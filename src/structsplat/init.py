@@ -80,6 +80,7 @@ def _radius_map(density: np.ndarray, n: int, r_min=0.5, r_max=20.0) -> np.ndarra
 # initial scale at identical local density: a confound in the strategy ablation, not a choice.
 _SPACING_PER_RADIUS = float(np.sqrt(np.pi))
 _NN_SPACING_MAX_MATRIX_ELEMS = 16_000_000  # 128 MB at float64
+_FEATURE_RUN_LENGTH_MAX_GRID_ELEMS = 2_000_000
 
 
 def _sat(a: np.ndarray) -> np.ndarray:
@@ -300,28 +301,37 @@ def _feature_run_lengths(tensor: st.StructureTensor, pts: np.ndarray, angles: np
         max_steps = max(1, min(max_steps, int(np.ceil(icfg.scale_cap_max
                                                       * icfg.scale_feature_sigma))))
     lengths = np.full(len(pts), np.inf, dtype=np.float64)
-    for i, (p, angle, e0) in enumerate(zip(pts, angles, local_energy)):
-        if e0 < floor:
-            continue
-        threshold = max(floor, float(e0) * icfg.scale_feature_energy_frac)
-        direction = np.array([np.cos(angle), np.sin(angle)], dtype=np.float64)
+    active_idx = np.flatnonzero(~(local_energy < floor))
+    if len(active_idx) == 0:
+        return lengths
 
-        def walk(sign: float) -> int:
-            last = 0
-            for step in range(1, max_steps + 1):
-                q = p + sign * step * direction
-                x = int(round(q[0]))
-                y = int(round(q[1]))
-                if x < 0 or x >= W or y < 0 or y >= H:
-                    break
-                if tensor.label[y, x] == 2:
-                    break
-                if energy[y, x] < threshold:
-                    break
-                last = step
-            return last
+    active_pts = np.asarray(pts[active_idx], dtype=np.float64)
+    active_angles = np.asarray(angles[active_idx], dtype=np.float64)
+    thresholds = np.fmax(floor, local_energy[active_idx] * icfg.scale_feature_energy_frac)
+    directions = np.stack([np.cos(active_angles), np.sin(active_angles)], axis=1)
+    steps = np.arange(1, max_steps + 1, dtype=np.float64)
+    chunk = max(1, min(len(active_idx), _FEATURE_RUN_LENGTH_MAX_GRID_ELEMS // max_steps))
 
-        lengths[i] = walk(1.0) + walk(-1.0) + 1.0
+    def walk_counts(sign: float) -> np.ndarray:
+        counts = np.empty(len(active_idx), dtype=np.int64)
+        for start in range(0, len(active_idx), chunk):
+            end = min(start + chunk, len(active_idx))
+            p = active_pts[start:end]
+            direction = directions[start:end]
+            xi = np.rint(p[:, 0, None] + sign * direction[:, 0, None] * steps).astype(np.int64)
+            yi = np.rint(p[:, 1, None] + sign * direction[:, 1, None] * steps).astype(np.int64)
+            valid = (xi >= 0) & (xi < W) & (yi >= 0) & (yi < H)
+            xq = np.clip(xi, 0, W - 1)
+            yq = np.clip(yi, 0, H - 1)
+            valid &= tensor.label[yq, xq] != 2
+            valid &= ~(energy[yq, xq] < thresholds[start:end, None])
+            invalid = ~valid
+            has_invalid = invalid.any(axis=1)
+            first_invalid = invalid.argmax(axis=1)
+            counts[start:end] = np.where(has_invalid, first_invalid, max_steps)
+        return counts
+
+    lengths[active_idx] = walk_counts(1.0) + walk_counts(-1.0) + 1.0
     return lengths
 
 
