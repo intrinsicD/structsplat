@@ -393,3 +393,52 @@ tree:
       - "benchmarks/cross_repo_matrix_compare.py"
     also_depends_on: [N17, N19]
     status: resolved
+  - id: N21
+    type: experiment
+    title: "INIT-006 init-time performance completion"
+    provenance: ai-executed
+    timestamp: "2026-07-04T10:53+0200"
+    result: >
+      Completed and retired INIT-006. Implemented heap-based quadtree leaf
+      splitting, vectorized feature run lengths, local-radius dart-throwing
+      neighbor pruning, metric-component hoisting for `_pair_d2`, and cached
+      `StructureTensor.energy_ref` consumption in density/init. Earlier
+      INIT-006 partials had already completed chunked `_nn_spacing` and
+      occupied-cell `_neighbor_pairs`. Full validation after the performance
+      slices reached 161 passed / 12 skipped; after retirement and the next
+      helper slice, full validation reached 162 passed / 12 skipped. The
+      retired task records before/after timings: `_quadtree_leaves` 5000
+      leaves 12.3464s -> 0.0444s, `_feature_run_lengths` 20000 points 6.5390s
+      -> 0.0706s, `_neighbor_pairs` 20000 points 0.0329s -> 0.0214s with dense
+      starts replaced by occupied cells, `dart_throwing` 5000 candidates
+      2.5798s -> 0.5550s, and `_pair_d2` via farthest-point 20000 candidates
+      0.3212s -> 0.2218s while removing the 0.6 MB averaged-metric temporary
+      per call.
+    evidence:
+      - "tasks/done/INIT-006-init-performance.md"
+      - "src/structsplat/init.py"
+      - "src/structsplat/sampling.py"
+      - "src/structsplat/structure_tensor.py"
+      - "src/structsplat/density.py"
+    status: resolved
+  - id: N22
+    type: experiment
+    title: "CORE-005 render element-budget helper"
+    provenance: ai-executed
+    timestamp: "2026-07-04T10:53+0200"
+    result: >
+      Started CORE-005 with the low-risk shared budget-helper slice.
+      Hoisted `_element_budget(chunk)` into `render.py`, preserving the prior
+      `max(chunk, 64) * 4096` behavior, and replaced the duplicate budget
+      calculations in `_accumulate`, `gaussian_activity`, and fit's
+      `_support_residual_scores`. `FitConfig.render_chunk` now documents the
+      effective element budget. Focused tests pinned the 64-unit floor and
+      4096-element unit; full validation reached 162 passed / 12 skipped with
+      ruff clean.
+    evidence:
+      - "tasks/CORE-005-renderer-memory-continuity.md"
+      - "src/structsplat/render.py"
+      - "src/structsplat/fit.py"
+      - "src/structsplat/config.py"
+      - "tests/test_render.py"
+    status: resolved

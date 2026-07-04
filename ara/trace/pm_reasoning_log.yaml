@@ -92,3 +92,8 @@ entries:
       - "Routed the first full-protocol ABL-004 shard as N19 because it produced measured runtime/quality evidence and changed the feasibility of local full-sweep execution."
       - "Routed the held-out Kodak cross-repo matrix as N20 because it produced new disjoint-image evidence with the shipped-default row required by ABL-004."
       - "Updated C04 directly because the turn committed downstream evidence and wording that depends on the revised matched-analogue interpretation; did not crystallize remaining staged observations without user affirmation."
+  - turn: "2026-07-04_001#2"
+    notes:
+      - "Routed INIT-006 completion as N21 because the turn produced multiple committed performance implementations plus benchmark evidence and retired the task artifact."
+      - "Routed the CORE-005 element-budget helper as N22 because it is a committed implementation slice with passing validation, but not enough to retire CORE-005."
+      - "Did not stage new interpretive claims: the performance numbers are direct experiment facts recorded in the retired task and trace nodes."

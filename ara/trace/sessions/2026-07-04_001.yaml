@@ -2,9 +2,9 @@ session:
   id: "2026-07-04_001"
   date: "2026-07-04"
   started: "2026-07-04T00:00+0200"
-  last_turn: "2026-07-04T00:00+0200"
-  turn_count: 1
-  summary: "Advanced ABL-004: added missing controls and resumable shards, recorded first-shard compute calibration, ran held-out Kodak cross-repo matrix with shipped defaults, and clarified cross-repo claims."
+  last_turn: "2026-07-04T10:53+0200"
+  turn_count: 2
+  summary: "Advanced ABL-004 evidence, completed and retired INIT-006 init-time performance, and started CORE-005 with the shared render element-budget helper."
 
 events_logged:
   - turn: 1
@@ -19,6 +19,18 @@ events_logged:
     routing: direct
     provenance: ai-executed
     summary: "Ran held-out Kodak4 matched policy matrix with `structsplat_shipped_defaults`; current/shipped StructSplat rows led local GaussianImage/Image-GS analogue rows at max-side 160 / 80 iters."
+  - turn: 2
+    type: experiment
+    id: "N21"
+    routing: direct
+    provenance: ai-executed
+    summary: "Completed and retired INIT-006: quadtree heap, vectorized run lengths, dart local reach, `_pair_d2` component hoisting, cached tensor energy refs, and consolidated timings."
+  - turn: 2
+    type: experiment
+    id: "N22"
+    routing: direct
+    provenance: ai-executed
+    summary: "Started CORE-005 by hoisting `_element_budget(chunk)` into render.py and replacing duplicate render/fit budget formulas."
 
 ai_actions:
   - turn: 1
@@ -55,6 +67,36 @@ ai_actions:
       - "ara/trace/exploration_tree.yaml"
       - "ara/trace/sessions/2026-07-03_001.yaml"
       - "tasks/ABL-004-controls-and-full-run.md"
+  - turn: 2
+    action: "Implemented INIT-006 performance slices and focused parity/timing coverage."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/init.py"
+      - "src/structsplat/sampling.py"
+      - "src/structsplat/structure_tensor.py"
+      - "src/structsplat/density.py"
+      - "tests/test_init_stages.py"
+      - "tests/test_sampling.py"
+      - "tests/test_structure_tensor.py"
+  - turn: 2
+    action: "Recorded INIT-006 timing evidence, marked all criteria complete, moved the task to tasks/done, and updated the task index."
+    provenance: ai-executed
+    files_changed:
+      - "tasks/done/INIT-006-init-performance.md"
+      - "tasks/INDEX.md"
+  - turn: 2
+    action: "Implemented the CORE-005 `_element_budget` helper slice and marked that acceptance item complete."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/render.py"
+      - "src/structsplat/fit.py"
+      - "src/structsplat/config.py"
+      - "tests/test_render.py"
+      - "tasks/CORE-005-renderer-memory-continuity.md"
+  - turn: 2
+    action: "Ran verification after each slice, including full `PYTHONPATH=src:. pytest -q` and `ruff check src tests benchmarks scripts/prepare_abl004_images.py`; final full suite passed 162 tests with 12 skipped."
+    provenance: ai-executed
+    files_changed: []
 
 claims_touched:
   - id: C04
@@ -64,11 +106,15 @@ claims_touched:
 key_context:
   - turn: 1
     excerpt: "User asked to continue tasks in correct order, planning each, implementing, testing, fixing, committing, and iterating."
+  - turn: 2
+    excerpt: "User again asked to continue tasks in correct order, implement, test, commit, retire done tasks to tasks/done, and iterate."
 
 open_threads:
   - "Full ABL-001/ABL-004 sweep remains open; the first full-protocol cell took 780.3784 s on the local RTX 3050."
   - "README hypothesis section and ABL-001 status should only be finalized after the full sweep or an explicit failed-with-findings decision."
   - "Native external-repository runs remain pending where dependencies/checkpoints are available, especially Instant-GI via STRUCTSPLAT_INSTANT_GI."
+  - "CORE-005 remains partial: gradient checkpointing, support fade across reference/CUDA paths, and fade benchmark/ADR decision are still open."
 
 ai_suggestions_pending:
   - "Run future ABL-004 shards on faster hardware or a job queue; use MAX_NEW_CELLS to advance the resumable matrix safely."
+  - "Continue CORE-005 with the opt-in checkpointing slice before support-fade math, because the shared element-budget helper is now in place."

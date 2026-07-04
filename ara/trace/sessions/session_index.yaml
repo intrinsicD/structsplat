@@ -15,8 +15,8 @@ sessions:
     open_threads: 5
   - id: "2026-07-04_001"
     date: "2026-07-04"
-    summary: "Advanced ABL-004 controls, resumable full-run prep, first-shard compute calibration, held-out Kodak cross-repo evidence, and claim wording."
-    turn_count: 1
-    events_count: 2
+    summary: "Advanced ABL-004 evidence, completed and retired INIT-006 init-time performance, and started CORE-005 render memory work."
+    turn_count: 2
+    events_count: 4
     claims_touched: [C04]
-    open_threads: 3
+    open_threads: 4
