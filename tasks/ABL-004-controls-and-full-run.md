@@ -62,10 +62,37 @@ conditions and honest controls?
   80 iters, seed 0) with `structsplat_current` and `structsplat_shipped_defaults`; evidence:
   `ara/evidence/abl004-kodak4-cross-repo-2026-07-04/`. README/ARA claim rewording now frames
   the result as best-searched StructSplat policy vs local repo-inspired analogue rows.
+- 2026-07-04: Added `--renderer` to `benchmarks.ablation` and changed the full ABL-004 wrapper
+  to default to `RENDERER=cuda` (overrideable). Exact CUDA requires
+  `LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6` in this workspace because conda's
+  `libstdc++` lacks `CXXABI_1.3.15`. Five full-iteration calibration cells on `kodim01`,
+  max-side 768, budget 2000, seed 0, 1500 iters, exact CUDA, finished with mean fit time
+  21.606 s and mean init+fit time 21.801 s; evidence:
+  `ara/evidence/abl004-cuda-calibration-2026-07-04/`. The full 3,696-cell matrix now estimates
+  to ~0.93 GPU-days at flat 2k cost, or ~4.31 GPU-days under linear budget scaling across
+  {2k, 5k, 10k, 20k}. This is feasible as a scheduled/job-queue run but still not interactive.
+
+## Decision-grade staged protocol
+
+The full ABL-001/ABL-004 matrix remains the gold-standard protocol. If it is not run as a
+scheduled multi-day job, use this predeclared staged protocol so stopping is evidence-based:
+
+1. **Screen.** Run all 11 arms on a balanced 8-image subset, budgets {2k, 5k}, seed 0,
+   exact CUDA, max-side 768, 1500 iters. Eliminate arms that lose clearly on paired PSNR and
+   convergence metrics to both the thesis arm and at least one killer control.
+2. **Confirm.** Run the top 3-4 arms plus required controls on all 28 images, seeds {0,1,2},
+   budgets {2k, 5k, 10k}. Report paired image/seed/budget deltas with confidence intervals.
+3. **High-budget check.** Run only finalists at 20k on all 28 images and seeds {0,1,2}, because
+   the ABL-001 hypothesis already expects gaps to shrink at high budget.
+4. **Promotion rule.** README/ARA claims can be updated only from paired results. If
+   `aniso_flanking` does not beat `floyd_steinberg`, `density_random`, and `random_relocate`
+   under the confirm/high-budget stages, record the thesis as weakened or failed-with-findings
+   instead of continuing the exhaustive grid.
 
 ## Interfaces touched
 `src/structsplat/sampling.py`, `src/structsplat/init.py` (sampler registration),
-`benchmarks/ablation.py`, `benchmarks/cross_repo_matrix_compare.py`, `ara/evidence/`,
+`benchmarks/ablation.py`, `benchmarks/cross_repo_matrix_compare.py`, `scripts/run_abl004_full_ablation.sh`,
+`ara/evidence/`,
 `ara/logic/claims.md`, `README.md`, `tasks/ABL-001-init-sweep.md`, `tests/test_sampling.py`.
 
 ## Depends on

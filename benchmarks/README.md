@@ -19,10 +19,11 @@ Long runs write `ablation.jsonl` incrementally; use `--resume` to skip cells alr
 For the ABL-004 protocol, `scripts/run_abl004_full_ablation.sh` prepares Kodak-24 under
 `results/datasets/abl004`, appends the pinned COCO fixtures, and launches the resumable full sweep.
 Set `MAX_NEW_CELLS=N` on either wrapper to execute a bounded shard and stop cleanly after `N`
-new cells.
+new cells. The ABL-004 wrapper defaults to `RENDERER=cuda` for the owned exact CUDA renderer; set
+`RENDERER=normalized` to reproduce the slower PyTorch reference timing.
 
 ```
-python -m benchmarks.ablation path/to/images --budgets 2000 5000 10000 20000 --iters 1500 --target-psnr 35 --max-side 768 --resume
+python -m benchmarks.ablation path/to/images --budgets 2000 5000 10000 20000 --iters 1500 --target-psnr 35 --max-side 768 --renderer cuda --resume
 ```
 
 Outputs `ablation.json`, `ablation.csv`, `summary.md`. `fitness(rows, strategy, budget)` exposes the

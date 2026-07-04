@@ -51,6 +51,8 @@ def test_ablation_sweeps_flanking_and_writes_outputs(tmp_path):
     cfg = json.loads((outdir / "config.json").read_text())
     assert cfg["device"] == "cpu" and cfg["versions"]["torch"] is not None
     assert cfg["resolved"]["flank_offsets"] == [0.0, 0.5]
+    assert cfg["resolved"]["renderer"] == "normalized"
+    assert {r["renderer"] for r in rows} == {"normalized"}
 
 
 def test_ablation_control_arms_thread_sampler_and_relocation(tmp_path):
@@ -107,14 +109,18 @@ def test_ablation_max_side_and_resume_jsonl(tmp_path):
     )
     rows = run_ablation(**kwargs)
     resumed = run_ablation(**kwargs, resume=True)
+    additive = run_ablation(**kwargs, resume=True, renderer="additive")
 
     assert len(rows) == len(resumed) == 1
+    assert len(additive) == 2
     assert rows[0]["height"] == rows[0]["width"] == 12
     assert rows[0]["max_side"] == 12
-    assert sum(1 for _ in (outdir / "ablation.jsonl").open()) == 1
+    assert sum(1 for _ in (outdir / "ablation.jsonl").open()) == 2
+    assert {r["renderer"] for r in additive} == {"normalized", "additive"}
     import json
     cfg = json.loads((outdir / "config.json").read_text())
     assert cfg["resolved"]["max_side"] == 12
+    assert cfg["resolved"]["renderer"] == "additive"
 
 
 def test_ablation_max_new_cells_advances_resumed_chunks(tmp_path):

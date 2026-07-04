@@ -6,6 +6,7 @@ DATA_ROOT="${DATA_ROOT:-results/datasets/abl004}"
 OUTDIR="${OUTDIR:-results/abl004_ablation_full}"
 MAX_SIDE="${MAX_SIDE:-768}"
 DEVICE="${DEVICE:-cuda}"
+RENDERER="${RENDERER:-cuda}"
 EXTRA_ARGS=()
 if [[ -n "${MAX_NEW_CELLS:-}" ]]; then
   EXTRA_ARGS+=(--max-new-cells "$MAX_NEW_CELLS")
@@ -20,6 +21,7 @@ python -m benchmarks.ablation "${IMAGES[@]}" \
   --iters 1500 \
   --target-psnr 35 \
   --max-side "$MAX_SIDE" \
+  --renderer "$RENDERER" \
   --resume \
   --device "$DEVICE" \
   "${EXTRA_ARGS[@]}" \

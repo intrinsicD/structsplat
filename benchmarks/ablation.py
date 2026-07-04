@@ -45,7 +45,7 @@ _CELL_KEY_FIELDS = (
     "flat_frac", "corner_frac", "max_axis_ratio", "coherence_power", "init_strategy",
     "sampling_mode", "fit_control", "relocate_every", "relocate_count", "iters",
     "target_psnr", "target_psnrs", "render_chunk", "pixel_loss", "ssim_weight",
-    "compute_lpips",
+    "renderer", "compute_lpips",
 )
 
 
@@ -121,7 +121,8 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
                  iters=1500, target_psnr=35.0, target_psnrs=None,
                  flank_offsets=(0.5,), flat_fracs=(0.02,), corner_fracs=(0.15,),
                  max_axis_ratios=(6.0,), coherence_powers=(1.0,),
-                 render_chunk=512, pixel_loss="l1", ssim_weight=0.3, compute_lpips=False,
+                 render_chunk=512, renderer="normalized",
+                 pixel_loss="l1", ssim_weight=0.3, compute_lpips=False,
                  relocate_every=None, relocate_count=64,
                  max_side: int | None = None, resume: bool = False,
                  max_new_cells: int | None = None,
@@ -162,8 +163,8 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
         "target_psnrs": target_psnrs, "flank_offsets": list(flank_offsets),
         "flat_fracs": list(flat_fracs), "corner_fracs": list(corner_fracs),
         "max_axis_ratios": list(max_axis_ratios), "coherence_powers": list(coherence_powers),
-        "render_chunk": render_chunk, "pixel_loss": pixel_loss, "ssim_weight": ssim_weight,
-        "compute_lpips": compute_lpips, "control_arms": CONTROL_ARMS,
+        "render_chunk": render_chunk, "renderer": renderer, "pixel_loss": pixel_loss,
+        "ssim_weight": ssim_weight, "compute_lpips": compute_lpips, "control_arms": CONTROL_ARMS,
         "relocate_every": relocate_every, "relocate_count": relocate_count,
         "max_side": max_side, "resume": resume, "max_new_cells": max_new_cells,
     }, device=device))
@@ -206,6 +207,7 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
                                             "target_psnr": target_psnr,
                                             "target_psnrs": target_psnrs,
                                             "render_chunk": render_chunk,
+                                            "renderer": renderer,
                                             "pixel_loss": pixel_loss,
                                             "ssim_weight": ssim_weight,
                                             "compute_lpips": compute_lpips,
@@ -231,6 +233,7 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
                                             target_psnr=target_psnr,
                                             target_psnrs=target_psnrs,
                                             render_chunk=render_chunk,
+                                            renderer=renderer,
                                             pixel_loss=pixel_loss,
                                             ssim_weight=ssim_weight,
                                             compute_lpips=compute_lpips,
@@ -256,6 +259,7 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
                                             "target_psnr": target_psnr,
                                             "target_psnrs": target_psnrs,
                                             "render_chunk": render_chunk,
+                                            "renderer": renderer,
                                             "pixel_loss": pixel_loss,
                                             "ssim_weight": ssim_weight,
                                             "compute_lpips": compute_lpips,
@@ -313,22 +317,23 @@ def summarize(rows) -> str:
     budgets = sorted({r["budget"] for r in rows})
     keys = sorted({
         (r["strategy"], r["flank_offset_frac"], r["flat_frac"], r["corner_frac"],
-         r["max_axis_ratio"], r["coherence_power"])
+         r["max_axis_ratio"], r["coherence_power"], r.get("renderer", "normalized"))
         for r in rows
     })
     lines = ["# Ablation summary (mean PSNR ± std, dB)\n",
              "| config \\ budget | " + " | ".join(str(b) for b in budgets) + " |",
              "|" + "---|" * (len(budgets) + 1)]
     for key in keys:
-        s, flank, flat, corner, axis_ratio, coh_power = key
+        s, flank, flat, corner, axis_ratio, coh_power, renderer = key
         label = (f"{s} flank={flank:g} flat={flat:g} corner={corner:g} "
-                 f"ratio={axis_ratio:g} cpow={coh_power:g}")
+                 f"ratio={axis_ratio:g} cpow={coh_power:g} renderer={renderer}")
         cells = []
         for b in budgets:
             vals = [
                 r["psnr"] for r in rows
                 if (r["strategy"], r["flank_offset_frac"], r["flat_frac"], r["corner_frac"],
-                    r["max_axis_ratio"], r["coherence_power"]) == key and r["budget"] == b
+                    r["max_axis_ratio"], r["coherence_power"],
+                    r.get("renderer", "normalized")) == key and r["budget"] == b
             ]
             if vals:
                 cells.append(f"{mean(vals):.2f} ± {pstdev(vals):.2f}")
@@ -340,14 +345,15 @@ def summarize(rows) -> str:
               "| config | budget | target | reached | mean iters |",
               "|---|---:|---:|---:|---:|"]
     for key in keys:
-        s, flank, flat, corner, axis_ratio, coh_power = key
+        s, flank, flat, corner, axis_ratio, coh_power, renderer = key
         label = (f"{s} flank={flank:g} flat={flat:g} corner={corner:g} "
-                 f"ratio={axis_ratio:g} cpow={coh_power:g}")
+                 f"ratio={axis_ratio:g} cpow={coh_power:g} renderer={renderer}")
         for b in budgets:
             subset = [
                 r for r in rows
                 if (r["strategy"], r["flank_offset_frac"], r["flat_frac"], r["corner_frac"],
-                    r["max_axis_ratio"], r["coherence_power"]) == key and r["budget"] == b
+                    r["max_axis_ratio"], r["coherence_power"],
+                    r.get("renderer", "normalized")) == key and r["budget"] == b
             ]
             targets = sorted({float(t) for r in subset for t in r.get("iters_to_targets", {})})
             for t in targets:
@@ -410,7 +416,7 @@ def _config_key(r):
     """Full config identity of a row (strategy + every swept hyperparameter)."""
     return (r["strategy"], r["flank_offset_frac"], r["flat_frac"], r["corner_frac"],
             r["max_axis_ratio"], r["coherence_power"], r.get("sampling_mode", "wse"),
-            r.get("fit_control", "none"))
+            r.get("fit_control", "none"), r.get("renderer", "normalized"))
 
 
 def _best_config_mean(rows, strategy: str, budget: int) -> float:
@@ -456,6 +462,9 @@ if __name__ == "__main__":
     p.add_argument("--max-axis-ratios", type=float, nargs="+", default=[6.0])
     p.add_argument("--coherence-powers", type=float, nargs="+", default=[1.0])
     p.add_argument("--render-chunk", type=int, default=512)
+    p.add_argument("--renderer", default="normalized",
+                   choices=["normalized", "additive", "cuda", "cuda_normalized",
+                            "cuda_additive", "gsplat", "cuda_gsplat"])
     p.add_argument("--pixel-loss", choices=["l1", "l2"], default="l1")
     p.add_argument("--ssim-weight", type=float, default=0.3)
     p.add_argument("--relocate-every", type=int, default=None)
@@ -474,7 +483,8 @@ if __name__ == "__main__":
                  flank_offsets=a.flank_offsets, flat_fracs=a.flat_fracs,
                  corner_fracs=a.corner_fracs, max_axis_ratios=a.max_axis_ratios,
                  coherence_powers=a.coherence_powers, render_chunk=a.render_chunk,
-                 pixel_loss=a.pixel_loss, ssim_weight=a.ssim_weight, compute_lpips=a.lpips,
+                 renderer=a.renderer, pixel_loss=a.pixel_loss, ssim_weight=a.ssim_weight,
+                 compute_lpips=a.lpips,
                  relocate_every=a.relocate_every, relocate_count=a.relocate_count,
                  max_side=a.max_side, resume=a.resume, max_new_cells=a.max_new_cells,
                  outdir=a.outdir, device=a.device, write_plots=not a.no_plots)
