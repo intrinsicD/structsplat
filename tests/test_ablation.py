@@ -86,6 +86,37 @@ def test_ablation_control_arms_thread_sampler_and_relocation(tmp_path):
     assert by_strategy["random_relocate"]["relocate_count"] == 4
 
 
+def test_ablation_max_side_and_resume_jsonl(tmp_path):
+    img_path = tmp_path / "toy.png"
+    outdir = tmp_path / "resume"
+    _write_toy(img_path)
+
+    kwargs = dict(
+        images=[str(img_path)],
+        budgets=[16],
+        strategies=["density_random"],
+        seeds=[0],
+        iters=2,
+        target_psnr=None,
+        target_psnrs=[],
+        render_chunk=8,
+        max_side=12,
+        outdir=str(outdir),
+        device="cpu",
+        write_plots=False,
+    )
+    rows = run_ablation(**kwargs)
+    resumed = run_ablation(**kwargs, resume=True)
+
+    assert len(rows) == len(resumed) == 1
+    assert rows[0]["height"] == rows[0]["width"] == 12
+    assert rows[0]["max_side"] == 12
+    assert sum(1 for _ in (outdir / "ablation.jsonl").open()) == 1
+    import json
+    cfg = json.loads((outdir / "config.json").read_text())
+    assert cfg["resolved"]["max_side"] == 12
+
+
 def test_fitness_uses_best_config_not_pooled_mean():
     # two configs of one strategy at one budget: a good one and a bad one. fitness must return
     # the best config's mean, not the pooled mean that a wide hyperparameter sweep would dilute.

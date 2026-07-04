@@ -15,9 +15,10 @@ depend on ignored `results/` artifacts.
 scored on PSNR / MS-SSIM / LPIPS + iterations-to-target. Caveat: this is the broad init sweep, so
 keep image/budget/seed axes explicit in the output config. ABL-004 control labels are available
 alongside the core strategies: `floyd_steinberg`, `density_random`, and `random_relocate`.
+Long runs write `ablation.jsonl` incrementally; use `--resume` to skip cells already present there.
 
 ```
-python -m benchmarks.ablation path/to/images --budgets 2000 5000 10000 20000 --iters 1500 --target-psnr 35
+python -m benchmarks.ablation path/to/images --budgets 2000 5000 10000 20000 --iters 1500 --target-psnr 35 --max-side 768 --resume
 ```
 
 Outputs `ablation.json`, `ablation.csv`, `summary.md`. `fitness(rows, strategy, budget)` exposes the

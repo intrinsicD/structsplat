@@ -8,9 +8,11 @@ IntrinsicEngine core/harness split). Torch is imported lazily.
 from __future__ import annotations
 import os
 import glob
+import json
 import time
 from statistics import mean, pstdev
 
+from benchmarks.common import load_image as _load_image
 from benchmarks.common import run_config, write_config, write_csv, write_json
 from structsplat.config import InitConfig, FitConfig, StructureTensorConfig
 from structsplat.init import STRATEGIES
@@ -38,6 +40,13 @@ CONTROL_ARMS = {
 }
 
 DEFAULT_STRATEGIES = list(STRATEGIES) + list(CONTROL_ARMS)
+_CELL_KEY_FIELDS = (
+    "source_path", "max_side", "strategy", "budget", "seed", "flank_offset_frac",
+    "flat_frac", "corner_frac", "max_axis_ratio", "coherence_power", "init_strategy",
+    "sampling_mode", "fit_control", "relocate_every", "relocate_count", "iters",
+    "target_psnr", "target_psnrs", "render_chunk", "pixel_loss", "ssim_weight",
+    "compute_lpips",
+)
 
 
 def _iter_images(images):
@@ -89,15 +98,34 @@ def _resolve_arm(label: str, budget: int, iters: int,
     return arm
 
 
+def _cell_key(row: dict) -> tuple:
+    return tuple(
+        tuple(v) if isinstance(v, list) else v
+        for v in (row.get(k) for k in _CELL_KEY_FIELDS)
+    )
+
+
+def _load_jsonl(path: str) -> list[dict]:
+    if not os.path.exists(path):
+        return []
+    rows = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                rows.append(json.loads(line))
+    return rows
+
+
 def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, seeds=(0, 1, 2),
                  iters=1500, target_psnr=35.0, target_psnrs=None,
                  flank_offsets=(0.5,), flat_fracs=(0.02,), corner_fracs=(0.15,),
                  max_axis_ratios=(6.0,), coherence_powers=(1.0,),
                  render_chunk=512, pixel_loss="l1", ssim_weight=0.3, compute_lpips=False,
                  relocate_every=None, relocate_count=64,
+                 max_side: int | None = None, resume: bool = False,
                  outdir="results", device=None, write_plots=True):
     import torch
-    from structsplat.cli import load_image
     from structsplat import init as _init
     from structsplat.fit import fit
 
@@ -117,6 +145,11 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
 
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     os.makedirs(outdir, exist_ok=True)
+    jsonl_path = os.path.join(outdir, "ablation.jsonl")
+    rows = _load_jsonl(jsonl_path) if resume else []
+    if not resume and os.path.exists(jsonl_path):
+        os.remove(jsonl_path)
+    done = {_cell_key(r) for r in rows}
     files = _iter_images(images)
     if not files:
         raise SystemExit("no images found")
@@ -131,13 +164,14 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
         "render_chunk": render_chunk, "pixel_loss": pixel_loss, "ssim_weight": ssim_weight,
         "compute_lpips": compute_lpips, "control_arms": CONTROL_ARMS,
         "relocate_every": relocate_every, "relocate_count": relocate_count,
+        "max_side": max_side, "resume": resume,
     }, device=device))
 
-    rows = []
     for path in files:
-        img = load_image(path)
+        img = _load_image(path, max_side=max_side)
         target = torch.as_tensor(img, device=device)
         name = os.path.splitext(os.path.basename(path))[0]
+        H, W = img.shape[:2]
         for budget in budgets:
             for strat in strategies:
                 arm = _resolve_arm(strat, budget, iters, relocate_every, relocate_count)
@@ -150,6 +184,33 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
                             for axis_ratio in vals[3]:
                                 for coh_power in vals[4]:
                                     for seed in seeds:
+                                        key_row = {
+                                            "source_path": path,
+                                            "max_side": max_side,
+                                            "strategy": strat,
+                                            "init_strategy": init_strategy,
+                                            "sampling_mode": arm["sampling_mode"],
+                                            "fit_control": arm["fit_control"],
+                                            "relocate_every": arm["fit_kwargs"].get("relocate_every"),
+                                            "relocate_count": arm["fit_kwargs"].get("relocate_count"),
+                                            "budget": budget,
+                                            "seed": seed,
+                                            "flank_offset_frac": float(flank),
+                                            "flat_frac": float(flat),
+                                            "corner_frac": float(corner),
+                                            "max_axis_ratio": float(axis_ratio),
+                                            "coherence_power": float(coh_power),
+                                            "iters": iters,
+                                            "target_psnr": target_psnr,
+                                            "target_psnrs": target_psnrs,
+                                            "render_chunk": render_chunk,
+                                            "pixel_loss": pixel_loss,
+                                            "ssim_weight": ssim_weight,
+                                            "compute_lpips": compute_lpips,
+                                        }
+                                        if _cell_key(key_row) in done:
+                                            print(f"skip existing {key_row}", flush=True)
+                                            continue
                                         icfg = InitConfig(
                                             strategy=init_strategy,
                                             num_gaussians=budget,
@@ -179,12 +240,23 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
                                         out = fit(field, target, fcfg, verbose=False)
                                         rec = {
                                             "image": name,
+                                            "source_path": path,
+                                            "height": H,
+                                            "width": W,
+                                            "max_side": max_side,
                                             "strategy": strat,
                                             "init_strategy": init_strategy,
                                             "sampling_mode": arm["sampling_mode"],
                                             "fit_control": arm["fit_control"],
                                             "relocate_every": arm["fit_kwargs"].get("relocate_every"),
                                             "relocate_count": arm["fit_kwargs"].get("relocate_count"),
+                                            "iters": iters,
+                                            "target_psnr": target_psnr,
+                                            "target_psnrs": target_psnrs,
+                                            "render_chunk": render_chunk,
+                                            "pixel_loss": pixel_loss,
+                                            "ssim_weight": ssim_weight,
+                                            "compute_lpips": compute_lpips,
                                             "budget": budget,
                                             "seed": seed,
                                             "flank_offset_frac": float(flank),
@@ -204,6 +276,9 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
                                             "history": out.get("history", {}),
                                         }
                                         rows.append(rec)
+                                        done.add(_cell_key(rec))
+                                        with open(jsonl_path, "a", encoding="utf-8") as jf:
+                                            jf.write(json.dumps(rec, default=str) + "\n")
                                         print({k: rec[k] for k in rec if k != "history"})
 
     _write(rows, outdir, write_plots=write_plots)
@@ -379,6 +454,8 @@ if __name__ == "__main__":
     p.add_argument("--ssim-weight", type=float, default=0.3)
     p.add_argument("--relocate-every", type=int, default=None)
     p.add_argument("--relocate-count", type=int, default=64)
+    p.add_argument("--max-side", type=int, default=None)
+    p.add_argument("--resume", action="store_true")
     p.add_argument("--lpips", action="store_true", help="compute LPIPS for each run")
     p.add_argument("--no-plots", action="store_true")
     p.add_argument("--outdir", default="results")
@@ -391,4 +468,5 @@ if __name__ == "__main__":
                  coherence_powers=a.coherence_powers, render_chunk=a.render_chunk,
                  pixel_loss=a.pixel_loss, ssim_weight=a.ssim_weight, compute_lpips=a.lpips,
                  relocate_every=a.relocate_every, relocate_count=a.relocate_count,
+                 max_side=a.max_side, resume=a.resume,
                  outdir=a.outdir, device=a.device, write_plots=not a.no_plots)
