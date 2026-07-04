@@ -18,6 +18,8 @@ alongside the core strategies: `floyd_steinberg`, `density_random`, and `random_
 Long runs write `ablation.jsonl` incrementally; use `--resume` to skip cells already present there.
 For the ABL-004 protocol, `scripts/run_abl004_full_ablation.sh` prepares Kodak-24 under
 `results/datasets/abl004`, appends the pinned COCO fixtures, and launches the resumable full sweep.
+Set `MAX_NEW_CELLS=N` on either wrapper to execute a bounded shard and stop cleanly after `N`
+new cells.
 
 ```
 python -m benchmarks.ablation path/to/images --budgets 2000 5000 10000 20000 --iters 1500 --target-psnr 35 --max-side 768 --resume

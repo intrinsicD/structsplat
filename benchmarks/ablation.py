@@ -124,6 +124,7 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
                  render_chunk=512, pixel_loss="l1", ssim_weight=0.3, compute_lpips=False,
                  relocate_every=None, relocate_count=64,
                  max_side: int | None = None, resume: bool = False,
+                 max_new_cells: int | None = None,
                  outdir="results", device=None, write_plots=True):
     import torch
     from structsplat import init as _init
@@ -164,9 +165,10 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
         "render_chunk": render_chunk, "pixel_loss": pixel_loss, "ssim_weight": ssim_weight,
         "compute_lpips": compute_lpips, "control_arms": CONTROL_ARMS,
         "relocate_every": relocate_every, "relocate_count": relocate_count,
-        "max_side": max_side, "resume": resume,
+        "max_side": max_side, "resume": resume, "max_new_cells": max_new_cells,
     }, device=device))
 
+    new_cells = 0
     for path in files:
         img = _load_image(path, max_side=max_side)
         target = torch.as_tensor(img, device=device)
@@ -280,6 +282,10 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
                                         with open(jsonl_path, "a", encoding="utf-8") as jf:
                                             jf.write(json.dumps(rec, default=str) + "\n")
                                         print({k: rec[k] for k in rec if k != "history"})
+                                        new_cells += 1
+                                        if max_new_cells is not None and new_cells >= max_new_cells:
+                                            _write(rows, outdir, write_plots=write_plots)
+                                            return rows
 
     _write(rows, outdir, write_plots=write_plots)
     return rows
@@ -456,6 +462,8 @@ if __name__ == "__main__":
     p.add_argument("--relocate-count", type=int, default=64)
     p.add_argument("--max-side", type=int, default=None)
     p.add_argument("--resume", action="store_true")
+    p.add_argument("--max-new-cells", type=int, default=None,
+                   help="run at most this many new cells, then rewrite outputs and exit")
     p.add_argument("--lpips", action="store_true", help="compute LPIPS for each run")
     p.add_argument("--no-plots", action="store_true")
     p.add_argument("--outdir", default="results")
@@ -468,5 +476,5 @@ if __name__ == "__main__":
                  coherence_powers=a.coherence_powers, render_chunk=a.render_chunk,
                  pixel_loss=a.pixel_loss, ssim_weight=a.ssim_weight, compute_lpips=a.lpips,
                  relocate_every=a.relocate_every, relocate_count=a.relocate_count,
-                 max_side=a.max_side, resume=a.resume,
+                 max_side=a.max_side, resume=a.resume, max_new_cells=a.max_new_cells,
                  outdir=a.outdir, device=a.device, write_plots=not a.no_plots)

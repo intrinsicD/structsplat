@@ -6,6 +6,10 @@ DATA_ROOT="${DATA_ROOT:-results/datasets/abl004}"
 OUTDIR="${OUTDIR:-results/abl004_ablation_full}"
 MAX_SIDE="${MAX_SIDE:-768}"
 DEVICE="${DEVICE:-cuda}"
+EXTRA_ARGS=()
+if [[ -n "${MAX_NEW_CELLS:-}" ]]; then
+  EXTRA_ARGS+=(--max-new-cells "$MAX_NEW_CELLS")
+fi
 
 python scripts/prepare_abl004_images.py --outdir "$DATA_ROOT"
 
@@ -18,4 +22,5 @@ python -m benchmarks.ablation "${IMAGES[@]}" \
   --max-side "$MAX_SIDE" \
   --resume \
   --device "$DEVICE" \
+  "${EXTRA_ARGS[@]}" \
   --outdir "$OUTDIR"

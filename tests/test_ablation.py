@@ -117,6 +117,34 @@ def test_ablation_max_side_and_resume_jsonl(tmp_path):
     assert cfg["resolved"]["max_side"] == 12
 
 
+def test_ablation_max_new_cells_advances_resumed_chunks(tmp_path):
+    img_path = tmp_path / "toy.png"
+    outdir = tmp_path / "chunks"
+    _write_toy(img_path)
+
+    kwargs = dict(
+        images=[str(img_path)],
+        budgets=[16],
+        strategies=["density_random", "random_relocate"],
+        seeds=[0],
+        iters=2,
+        target_psnr=None,
+        target_psnrs=[],
+        render_chunk=8,
+        outdir=str(outdir),
+        device="cpu",
+        write_plots=False,
+        max_new_cells=1,
+    )
+    first = run_ablation(**kwargs)
+    second = run_ablation(**kwargs, resume=True)
+
+    assert len(first) == 1
+    assert len(second) == 2
+    assert {r["strategy"] for r in second} == {"density_random", "random_relocate"}
+    assert sum(1 for _ in (outdir / "ablation.jsonl").open()) == 2
+
+
 def test_fitness_uses_best_config_not_pooled_mean():
     # two configs of one strategy at one budget: a good one and a bad one. fitness must return
     # the best config's mean, not the pooled mean that a wide hyperparameter sweep would dilute.
