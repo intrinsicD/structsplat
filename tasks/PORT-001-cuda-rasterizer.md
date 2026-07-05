@@ -46,3 +46,12 @@ CORE-001.
   `LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 PYTHONPATH=src:. pytest -q
   tests/test_render.py -k 'cuda_exact or cuda_tiled or cuda_empty or cuda_nonfinite'` passed
   14 CUDA renderer tests, and a tiny `FitConfig(renderer="cuda_tiled")` smoke completed on CUDA.
+- 2026-07-05 fair-protocol benchmark: Ran
+  `results/fair_density_control_cuda_tiled_difficult4/` on the same four fair-density finalist
+  rows used for the support-fade slice, Kodak difficult-four, budgets {2000,5000,10000}, seed 0,
+  max-side 768, 1500 iters, with `renderer=cuda_tiled`. The run completed 48/48 rows and wrote a
+  local `index.html` overview. Paired against exact `renderer=cuda`, `cuda_tiled` averaged
+  -0.1328 dB final PSNR, +0.0009 AUC, and +17.63 s fit time, or 1.69x slower. Slowdown was worst
+  on `kodim19` (+24.05 s mean, 1.86x) and high-budget rows still averaged 1.68x slower. Keep exact
+  CUDA for fair/ABL confirmation training sweeps; prioritize backward reductions and tighter
+  ellipse-tile bounds before treating tiled as an acceleration path.
