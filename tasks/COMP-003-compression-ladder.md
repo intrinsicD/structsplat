@@ -46,6 +46,15 @@ ladder.
 - [ ] Every rung: RD curve (bpp vs PSNR/MS-SSIM) before/after on the pinned image set,
       committed under `ara/evidence/`; round-trip exactness test per format change.
 
+## Progress notes
+
+- 2026-07-05: Added an optional self-describing `CodecConfig(stream_codec="png")` path that stores
+  the existing quantized byte streams as PNG-backed planes instead of zlib payloads. This is rung-4
+  infrastructure only, not a completed sorted-attribute-plane result: round-trip tests pass, but a
+  tiny 256-G toy smoke was worse than zlib at equal PSNR (2,756 bytes vs 2,348 bytes). The next
+  rung-4 step is a real `benchmarks/rate_distortion.py` comparison and likely true per-attribute
+  planes rather than raw byte-square planes.
+
 ## Interfaces touched
 `src/structsplat/codec.py`, `src/structsplat/fit.py` (QAT phase), `benchmarks/rate_distortion.py`,
 `tests/test_codec.py`. Rungs 4+ change the blob format → ADR-0007 amendment or ADR-0011+.

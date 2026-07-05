@@ -104,6 +104,23 @@ def test_codec_stream_transform_flags_are_self_describing():
     assert torch.isfinite(codec.decode(plain_blob).colors).all()
 
 
+def test_png_stream_codec_roundtrips_and_is_self_describing():
+    img = _toy()
+    target = torch.as_tensor(img)
+    field = _fitted_field(img, n=48)
+    fcfg = FitConfig()
+    ccfg = codec.CodecConfig(stream_codec="png")
+
+    blob = codec.encode(field, *img.shape[:2], ccfg, fcfg)
+    header = codec.blob_header(blob)
+    dec = codec.decode(blob)
+
+    assert header["stream_codec"] == "png"
+    assert len(header["stream_raw_lengths"]) == 4
+    d = (_render_of(field, target, fcfg) - _render_of(dec, target, fcfg)).abs()
+    assert float(d.max()) < 0.15 and float(d.mean()) < 0.01
+
+
 def test_opacity_roundtrip_and_render_parity():
     img = _toy()
     target = torch.as_tensor(img)

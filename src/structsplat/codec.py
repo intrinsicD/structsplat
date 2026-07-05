@@ -17,7 +17,9 @@ the quantization lattice before encoding (recovers most of the coarse-bit PSNR l
 Requires torch (post-fit stage); the pack/unpack math is plain NumPy.
 """
 from __future__ import annotations
+from io import BytesIO
 import json
+import math
 import struct
 import zlib
 from dataclasses import dataclass
@@ -46,6 +48,7 @@ class CodecConfig:
     color_delta: bool = True  # delta-code colors along the encoded order (Morton by default)
     means_byte_planar: bool = True  # split uint16/uint32 mean streams into byte planes
     rot_circular: bool = True  # 2^bits bins over [0, pi), with wraparound to bin 0
+    stream_codec: str = "zlib"  # zlib or png; png stores byte streams as Morton-ordered planes
     zlib_level: int = 9
     # per-channel color ranges; computed from data when None, fixed during QAT
     color_lo: list[float] | None = None
@@ -118,6 +121,47 @@ def _unpack_byte_planar(raw: bytes, bits: int, count: int) -> np.ndarray:
     planes = np.frombuffer(raw, dtype=np.uint8, count=count * itemsize).reshape(itemsize, count)
     interleaved = np.ascontiguousarray(planes.T)
     return np.frombuffer(interleaved.tobytes(), dtype=dtype, count=count).astype(np.uint32)
+
+
+def _png_encode_bytes(raw: bytes) -> bytes:
+    from PIL import Image
+
+    arr = np.frombuffer(raw, dtype=np.uint8)
+    side = max(1, int(math.ceil(math.sqrt(arr.size))))
+    padded = np.zeros(side * side, dtype=np.uint8)
+    padded[:arr.size] = arr
+    image = Image.fromarray(padded.reshape(side, side))
+    out = BytesIO()
+    image.save(out, format="PNG", optimize=True)
+    return out.getvalue()
+
+
+def _png_decode_bytes(payload: bytes, raw_len: int) -> bytes:
+    from PIL import Image
+
+    image = Image.open(BytesIO(payload)).convert("L")
+    arr = np.asarray(image, dtype=np.uint8).reshape(-1)
+    if arr.size < raw_len:
+        raise ValueError(f"PNG stream too short: got {arr.size} bytes, expected {raw_len}")
+    return arr[:raw_len].tobytes()
+
+
+def _encode_stream(raw: bytes, cfg: CodecConfig) -> bytes:
+    if cfg.stream_codec == "zlib":
+        return zlib.compress(raw, cfg.zlib_level)
+    if cfg.stream_codec == "png":
+        return _png_encode_bytes(raw)
+    raise ValueError(f"unknown stream_codec {cfg.stream_codec!r}; expected 'zlib' or 'png'")
+
+
+def _decode_stream(payload: bytes, codec: str, raw_len: int | None) -> bytes:
+    if codec == "zlib":
+        return zlib.decompress(payload)
+    if codec == "png":
+        if raw_len is None:
+            raise ValueError("PNG stream requires stream_raw_lengths in the codec header")
+        return _png_decode_bytes(payload, raw_len)
+    raise ValueError(f"unknown stream_codec {codec!r}; expected 'zlib' or 'png'")
 
 
 def _params(field: GaussianField):
@@ -220,6 +264,8 @@ def encode(field: GaussianField, H: int, W: int, cfg: CodecConfig | None = None,
         "color_delta": color_delta,
         "means_byte_planar": bool(cfg.means_byte_planar),
         "rot_circular": bool(cfg.rot_circular),
+        "stream_codec": cfg.stream_codec,
+        "stream_raw_lengths": [len(s) for s in streams],
         "color_lo": clo.tolist(), "color_hi": chi.tolist(),
         "scale_lo": slo.tolist(), "scale_hi": shi.tolist(),
         "means_lo": means_lo, "means_hi": means_hi,
@@ -236,8 +282,8 @@ def encode(field: GaussianField, H: int, W: int, cfg: CodecConfig | None = None,
     }).encode()
     blob = _MAGIC + struct.pack("<I", len(header)) + header
     for s in streams:
-        z = zlib.compress(s, cfg.zlib_level)
-        blob += struct.pack("<I", len(z)) + z
+        payload = _encode_stream(s, cfg)
+        blob += struct.pack("<I", len(payload)) + payload
     return blob
 
 
@@ -251,12 +297,15 @@ def decode(blob: bytes, device: str = "cpu") -> GaussianField:
     n, H, W = h["n"], h["H"], h["W"]
     b_means, b_scales, b_rot, b_colors = h["bits"]
     has_opacity = bool(h.get("has_opacity", False))
+    stream_codec = h.get("stream_codec", "zlib")
+    stream_raw_lengths = h.get("stream_raw_lengths", [])
 
     raws = []
-    for _ in range(5 if has_opacity else 4):
+    for i in range(5 if has_opacity else 4):
         (zlen,) = struct.unpack_from("<I", blob, off)
         off += 4
-        raws.append(zlib.decompress(blob[off:off + zlen]))
+        raw_len = int(stream_raw_lengths[i]) if i < len(stream_raw_lengths) else None
+        raws.append(_decode_stream(blob[off:off + zlen], stream_codec, raw_len))
         off += zlen
 
     if h.get("means_byte_planar", False):

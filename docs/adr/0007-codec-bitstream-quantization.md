@@ -57,6 +57,16 @@ RD metrics are display-referred (render clamped to `[0,1]` before PSNR/MS-SSIM);
 no-STE control row in `rate_distortion.py` isolates QAT's lattice-settling from the extra compute
 it spends. See ADR-0006 for the additive renderer these paths now honor.
 
+## Amendment (COMP-003): optional PNG stream payloads
+
+The default stream codec remains zlib. As rung-4 infrastructure, the `SSPL1` header now records
+`stream_codec` and `stream_raw_lengths`; `stream_codec="png"` stores each already-quantized byte
+stream as a padded grayscale PNG plane, while older blobs default to `zlib` when the field is
+absent. This is a backwards-compatible format extension and not yet a claimed RD improvement:
+initial smoke evidence showed raw byte-square PNG larger than zlib on a toy field, so the next
+COMP-003 step is a pinned `rate_distortion.py` comparison and, if promising, true per-attribute
+planes rather than raw byte planes.
+
 ## Links
 Depends on ADR-0002 (RS params), ADR-0003 (order-independent normalized renderer). Implements the
 first acceptance criterion of COMP-001; COMP-002 fixes render-semantics coverage and the means
