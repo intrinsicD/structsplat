@@ -2,9 +2,9 @@ session:
   id: "2026-07-05_001"
   date: "2026-07-05"
   started: "2026-07-05T01:03+0200"
-  last_turn: "2026-07-05T13:20+0200"
-  turn_count: 6
-  summary: "Implemented ABL-004 tooling/evidence, adopted HTML overview artifacts, and ran a fair density-control matched-policy comparison against GaussianImage/GaussianImage++/Image-GS/Instant-GI-style baselines."
+  last_turn: "2026-07-05T16:48+0200"
+  turn_count: 7
+  summary: "Implemented ABL-004 tooling/evidence, adopted HTML overview artifacts, ran a fair density-control matched-policy comparison, and added convergence reporting from saved histories."
 
 events_logged:
   - turn: 1
@@ -85,6 +85,18 @@ events_logged:
     routing: staged
     provenance: ai-suggested
     summary: "Structured placement shows positive PSNR evidence versus fair residual-growth analogues, but quadtree-WSE/on-edge plus residual growth beat the original flanking/tensor-growth story."
+  - turn: 7
+    type: experiment
+    id: "N39"
+    routing: direct
+    provenance: ai-executed
+    summary: "Added convergence reporting to the fair density-control harness and regenerated the difficult-four overview from existing JSONL histories."
+  - turn: 7
+    type: observation
+    id: "O20"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Convergence should be compared by AUC and target-hit rate before conditional hit iteration; structured rows lead the fair residual-growth analogues on AUC."
 
 ai_actions:
   - turn: 1
@@ -195,6 +207,25 @@ ai_actions:
       - "ara/trace/sessions/2026-07-05_001.yaml"
       - "ara/trace/sessions/session_index.yaml"
       - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 7
+    action: "Added convergence tables and plots to the fair density-control report generator, regenerated the difficult-four HTML overview without rerunning fits, inspected the new plots, and committed the code."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/fair_density_control_compare.py"
+      - "tests/test_fair_density_control_compare.py"
+      - "results/fair_density_control_difficult4/index.html"
+      - "results/fair_density_control_difficult4/summary.md"
+      - "results/fair_density_control_difficult4/convergence_curves.csv"
+      - "results/fair_density_control_difficult4/target_hit_rates.csv"
+      - "results/fair_density_control_difficult4/plots/mean_psnr_curve_by_budget.png"
+      - "results/fair_density_control_difficult4/plots/target_hit_rate_heatmap.png"
+      - "ara/evidence/fair-density-control-difficult4-2026-07-05/run.md"
+      - "ara/evidence/README.md"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/sessions/2026-07-05_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
 
 claims_touched: []
 
@@ -211,6 +242,8 @@ key_context:
     excerpt: "User clarified that they meant comparison against GaussianImage++ and other repos, including density-control behavior, same initial Gaussian count, and same iteration/convergence conditions."
   - turn: 6
     excerpt: "User asked to do the fair density-control comparison now."
+  - turn: 7
+    excerpt: "User asked how to compare convergence results for the fair density-control overview."
 
 open_threads:
   - "ABL-004 confirmation execution remains open: run the 1512-cell default confirmation set when compute is available."
@@ -222,9 +255,11 @@ open_threads:
   - "Future ABL-004 confirmation runs should persist final renders or fields if exact visual provenance is required; otherwise visual sheets require matched reruns and may show optimizer-path variability."
   - "After confirmation, decide whether to pivot the public thesis from anisotropic flanking specifically toward the broader structure-tensor density + WSE/quadtree allocation result."
   - "Native external-repository execution remains separate from the matched-policy analogue run; the current result isolates placement/growth policy inside StructSplat's fitter and renderer."
+  - "Convergence interpretation should be validated on the broader confirmation set; current AUC/hit-rate evidence is from the hard-selected seed-0 subset."
 
 ai_suggestions_pending:
   - "Use the ABL-004 confirmation runner with bounded `--max-new-cells` shards for scheduled confirmation."
   - "Keep the new codec stream flags enabled by default unless RD evidence shows a regression on real fitted fields."
   - "Split external-repo comparison into matched-policy, native-practical, and hybrid tracks so initialization, density control, and production implementation are not conflated."
   - "Use the fair density-control result to prioritize quadtree-WSE/on-edge plus residual growth in the next ABL-004 confirmation shard, while keeping MS-SSIM/perceptual checks explicit."
+  - "Keep convergence artifacts in every future fair comparison overview: mean PSNR curves, AUC tables, and target-hit-rate tables/heatmaps."

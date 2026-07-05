@@ -786,5 +786,35 @@ tree:
       - "ara/evidence/fair-density-control-difficult4-2026-07-05/run.md"
       - "commit 92c43d2"
       - "commit 00186a2"
+      - "commit 243fb37"
     also_depends_on: [N37]
+    status: resolved
+  - id: N39
+    type: experiment
+    title: "Fair density-control convergence reporting"
+    provenance: ai-executed
+    timestamp: "2026-07-05T16:48+0200"
+    result: >
+      Added convergence reporting to `benchmarks/fair_density_control_compare.py`
+      and regenerated `results/fair_density_control_difficult4/` from existing
+      JSONL histories without rerunning fits. The HTML overview now links
+      `convergence_curves.csv`, `target_hit_rates.csv`,
+      `plots/mean_psnr_curve_by_budget.png`, and
+      `plots/target_hit_rate_heatmap.png`. Mean AUC PSNR is led by
+      `SS qt-WSE + residual` at 25.947, followed by `SS on-edge + tensor`
+      at 25.937, `SS qt-WSE + tensor` at 25.923, and
+      `SS on-edge + residual` at 25.914. Paired AUC advantage for the best
+      StructSplat row is +1.340 versus GaussianImage++ residual and +0.532
+      versus Image-GS residual.
+    evidence:
+      - "benchmarks/fair_density_control_compare.py"
+      - "tests/test_fair_density_control_compare.py"
+      - "results/fair_density_control_difficult4/convergence_curves.csv"
+      - "results/fair_density_control_difficult4/target_hit_rates.csv"
+      - "results/fair_density_control_difficult4/plots/mean_psnr_curve_by_budget.png"
+      - "results/fair_density_control_difficult4/plots/target_hit_rate_heatmap.png"
+      - "results/fair_density_control_difficult4/index.html"
+      - "ara/evidence/fair-density-control-difficult4-2026-07-05/run.md"
+      - "commit 243fb37"
+    also_depends_on: [N38]
     status: resolved

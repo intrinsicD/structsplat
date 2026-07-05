@@ -208,3 +208,14 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O20
+    timestamp: "2026-07-05T16:48+0200"
+    provenance: ai-suggested
+    content: "For the fair density-control difficult-four comparison, convergence should be judged primarily by PSNR AUC and target-hit rate before conditional hit iteration; by that standard StructSplat structured rows converge better than the fair GaussianImage++/Image-GS residual-growth analogues, while very high 30/32 dB targets are limited by hard-image/high-budget reachability."
+    context: "Convergence report generated from existing JSONL histories: mean AUC leaders are SS qt-WSE + residual 25.947, SS on-edge + tensor 25.937, SS qt-WSE + tensor 25.923, and SS on-edge + residual 25.914; best paired AUC deltas are +1.340 vs GaussianImage++ residual and +0.532 vs Image-GS residual."
+    potential_type: claim
+    bound_to: [N38, N39]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

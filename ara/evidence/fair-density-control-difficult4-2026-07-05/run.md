@@ -34,6 +34,8 @@ Artifacts:
 - Summary: `results/fair_density_control_difficult4/summary.md`
 - Metrics: `results/fair_density_control_difficult4/metrics.csv`,
   `metrics.json`, `metrics.jsonl`
+- Convergence tables: `results/fair_density_control_difficult4/convergence_curves.csv`,
+  `target_hit_rates.csv`
 - Visuals: `plots/`, `grids/by_image/`, `grids/by_budget/`,
   `reconstructions/`
 
@@ -43,6 +45,8 @@ Completion:
 - Sum of recorded per-cell total time: 55.95 minutes.
 - Reconstructions written: 132 PNGs.
 - Visual grids written: four by-image grids and three by-budget grids.
+- Convergence report regenerated from existing JSONL histories without rerunning
+  fits after commit `243fb37`.
 
 Headline PSNR means:
 
@@ -72,6 +76,20 @@ Winner counts:
 - MS-SSIM: mixed. StructSplat rows won 9/12 slices; GaussianImage++ residual
   won 2/12 and GaussianImage fixed won 1/12.
 
+Convergence:
+
+- AUC should be treated as the primary single convergence score because it
+  integrates quality over the whole 1500-iteration trajectory.
+- Mean AUC PSNR leaders: `SS qt-WSE + residual` 25.947, `SS on-edge + tensor`
+  25.937, `SS qt-WSE + tensor` 25.923, `SS on-edge + residual` 25.914.
+- Paired mean AUC deltas: best StructSplat row vs GaussianImage++ residual
+  +1.340 dB-AUC; best StructSplat row vs Image-GS residual +0.532 dB-AUC.
+- Target-hit rates should be read before conditional mean hit iteration. At
+  28 dB, StructSplat tensor/on-edge/WSE rows hit 50-58% of image-budget cells
+  while Image-GS and GaussianImage++ hit 42%. At 30/32 dB, hit rates converge
+  because only the easier high-budget cells can reach those thresholds in this
+  hard subset.
+
 Interpretation:
 
 This is positive evidence for the broader structured-placement/density-control
@@ -79,6 +97,9 @@ direction under a fair same-start/same-cap growth protocol. The strongest
 rows are not the original flanking-specific hypothesis; they are quadtree-WSE
 or on-edge initialization combined with ordinary residual growth. Tensor-aware
 growth remains competitive but is not clearly superior to residual_add here.
+The convergence view strengthens the same conclusion: structured rows have
+higher AUC and generally better target-hit rates than the fair residual-growth
+analogues.
 
 Caveats:
 
