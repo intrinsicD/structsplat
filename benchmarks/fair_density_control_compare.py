@@ -418,12 +418,19 @@ def _fmt(v: float | None, digits: int = 4) -> str:
     return f"{float(v):.{digits}f}"
 
 
+def _fmt_pct(v: float | None) -> str:
+    if v is None:
+        return "-"
+    return f"{100.0 * float(v):.0f}%"
+
+
 def _write_outputs(rows: list[dict[str, Any]], outdir: Path, methods: list[str]) -> None:
     json_rows = json_safe_rows(rows, skip={"history"})
     write_json(outdir / "metrics.json", json_rows)
     if json_rows:
         fieldnames = sorted({k for r in json_rows for k in r.keys() if k not in {"fit_config", "init_config", "iters_to_targets"}})
         write_csv(outdir / "metrics.csv", json_rows, fieldnames=fieldnames, extrasaction="ignore")
+    _write_convergence_tables(rows, outdir, methods)
     _write_summary(rows, outdir, methods)
     _write_plots(rows, outdir, methods)
     _write_grids(rows, outdir, methods)
@@ -438,6 +445,150 @@ def _groups(rows: list[dict[str, Any]], keys: tuple[str, ...]) -> dict[tuple[Any
         key = tuple(row[k] for k in keys)
         out.setdefault(key, []).append(row)
     return out
+
+
+def _history_pairs(row: dict[str, Any]) -> list[tuple[int, float]]:
+    history = row.get("history") or {}
+    iters = history.get("iter") or []
+    psnrs = history.get("psnr") or []
+    out: list[tuple[int, float]] = []
+    for it, psnr in zip(iters, psnrs):
+        try:
+            out.append((int(it), float(psnr)))
+        except (TypeError, ValueError):
+            continue
+    return out
+
+
+def _history_elapsed(row: dict[str, Any]) -> list[tuple[int, float]]:
+    history = row.get("history") or {}
+    iters = history.get("iter") or []
+    elapsed = history.get("elapsed") or []
+    out: list[tuple[int, float]] = []
+    for it, seconds in zip(iters, elapsed):
+        try:
+            out.append((int(it), float(seconds)))
+        except (TypeError, ValueError):
+            continue
+    return out
+
+
+def _psnr_at_or_after(row: dict[str, Any], target_iter: int) -> float | None:
+    for it, psnr in _history_pairs(row):
+        if it >= target_iter:
+            return psnr
+    pairs = _history_pairs(row)
+    return pairs[-1][1] if pairs else None
+
+
+def _target_iter(row: dict[str, Any], target: float) -> int | None:
+    targets = row.get("iters_to_targets") or {}
+    raw = targets.get(str(float(target)))
+    if raw is None:
+        return None
+    try:
+        return int(raw)
+    except (TypeError, ValueError):
+        return None
+
+
+def _target_seconds(row: dict[str, Any], target: float) -> float | None:
+    target_iter = _target_iter(row, target)
+    if target_iter is None:
+        return None
+    for it, seconds in _history_elapsed(row):
+        if it >= target_iter:
+            return seconds
+    elapsed = _history_elapsed(row)
+    return elapsed[-1][1] if elapsed else None
+
+
+def _target_values(rows: list[dict[str, Any]]) -> list[float]:
+    vals: set[float] = set()
+    for row in rows:
+        for key in (row.get("iters_to_targets") or {}).keys():
+            try:
+                vals.add(float(key))
+            except (TypeError, ValueError):
+                continue
+    return sorted(vals)
+
+
+def _target_summary(vals: list[dict[str, Any]], target: float) -> dict[str, float | int | None]:
+    hit_iters = [_target_iter(r, target) for r in vals]
+    hit_iters = [v for v in hit_iters if v is not None]
+    hit_seconds = [_target_seconds(r, target) for r in vals]
+    hit_seconds = [v for v in hit_seconds if v is not None]
+    runs = len(vals)
+    hits = len(hit_iters)
+    return {
+        "runs": runs,
+        "hits": hits,
+        "hit_rate": hits / runs if runs else None,
+        "mean_iter": mean(hit_iters) if hit_iters else None,
+        "mean_seconds": mean(hit_seconds) if hit_seconds else None,
+    }
+
+
+def _write_convergence_tables(rows: list[dict[str, Any]], outdir: Path, methods: list[str]) -> None:
+    ok = [r for r in rows if r.get("status") == "ok"]
+    if not ok:
+        return
+    curve_rows = []
+    for (budget, method), vals in sorted(_groups(ok, ("final_budget", "method")).items()):
+        by_iter: dict[int, list[float]] = {}
+        for row in vals:
+            for it, psnr in _history_pairs(row):
+                by_iter.setdefault(it, []).append(psnr)
+        for it, psnrs in sorted(by_iter.items()):
+            curve_rows.append({
+                "final_budget": int(budget),
+                "method": method,
+                "method_label": METHOD_LABELS[method],
+                "iter": it,
+                "mean_psnr": mean(psnrs),
+                "std_psnr": _std_or_none(psnrs),
+                "runs": len(psnrs),
+            })
+    if curve_rows:
+        write_csv(
+            outdir / "convergence_curves.csv",
+            curve_rows,
+            fieldnames=["final_budget", "method", "method_label", "iter", "mean_psnr", "std_psnr", "runs"],
+        )
+
+    targets = _target_values(ok)
+    target_rows = []
+    scopes: list[tuple[str, list[dict[str, Any]]]] = [("all", ok)]
+    scopes += [(str(b), [r for r in ok if int(r["final_budget"]) == b]) for b in sorted({int(r["final_budget"]) for r in ok})]
+    for budget_scope, scope_vals in scopes:
+        for method in methods:
+            vals = [r for r in scope_vals if r["method"] == method]
+            for target in targets:
+                stats = _target_summary(vals, target)
+                target_rows.append({
+                    "budget": budget_scope,
+                    "method": method,
+                    "method_label": METHOD_LABELS[method],
+                    "target_psnr": target,
+                    **stats,
+                })
+    if target_rows:
+        write_csv(
+            outdir / "target_hit_rates.csv",
+            target_rows,
+            fieldnames=[
+                "budget",
+                "method",
+                "method_label",
+                "target_psnr",
+                "runs",
+                "hits",
+                "hit_rate",
+                "mean_iter",
+                "mean_seconds",
+            ],
+        )
 
 
 def _write_summary(rows: list[dict[str, Any]], outdir: Path, methods: list[str]) -> None:
@@ -479,6 +630,46 @@ def _write_summary(rows: list[dict[str, Any]], outdir: Path, methods: list[str])
             f"{_fmt(_mean_or_none([r['fit_seconds'] for r in vals]), 3)} | "
             f"{_fmt(_mean_or_none([r['total_seconds'] for r in vals]), 3)} |"
         )
+
+    targets = [t for t in _target_values(ok) if t in {22.0, 24.0, 26.0, 28.0, 30.0, 32.0}]
+    if targets:
+        lines += [
+            "",
+            "## Convergence",
+            "",
+            "AUC is the area under the logged PSNR-over-iteration curve; higher means better quality earlier in the same 1500-iteration budget.",
+            "",
+            "| Method | AUC | PSNR@0 | PSNR@375 | PSNR@750 | PSNR@1125 | Final PSNR |",
+            "|---|---:|---:|---:|---:|---:|---:|",
+        ]
+        for method in methods:
+            vals = [r for r in ok if r["method"] == method]
+            lines.append(
+                f"| {METHOD_LABELS[method]} | "
+                f"{_fmt(_mean_or_none([r.get('auc_psnr') for r in vals]), 3)} | "
+                f"{_fmt(_mean_or_none([_psnr_at_or_after(r, 0) for r in vals]), 3)} | "
+                f"{_fmt(_mean_or_none([_psnr_at_or_after(r, 375) for r in vals]), 3)} | "
+                f"{_fmt(_mean_or_none([_psnr_at_or_after(r, 750) for r in vals]), 3)} | "
+                f"{_fmt(_mean_or_none([_psnr_at_or_after(r, 1125) for r in vals]), 3)} | "
+                f"{_fmt(_mean_or_none([r.get('psnr') for r in vals]), 3)} |"
+            )
+
+        lines += [
+            "",
+            "Target-hit cells report hit rate across all image/budget cells and mean hit iteration among cells that reached the target.",
+            "",
+            "| Method | Hit 24 | Iter 24 | Hit 28 | Iter 28 | Hit 30 | Iter 30 | Hit 32 | Iter 32 |",
+            "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+        ]
+        selected_targets = [24.0, 28.0, 30.0, 32.0]
+        for method in methods:
+            vals = [r for r in ok if r["method"] == method]
+            cells: list[str] = []
+            for target in selected_targets:
+                stats = _target_summary(vals, target)
+                cells.append(_fmt_pct(stats["hit_rate"]))
+                cells.append(_fmt(stats["mean_iter"], 1))
+            lines.append(f"| {METHOD_LABELS[method]} | " + " | ".join(cells) + " |")
 
     lines += [
         "",
@@ -562,6 +753,49 @@ def _write_plots(rows: list[dict[str, Any]], outdir: Path, methods: list[str]) -
 
     for metric in ("psnr", "ms_ssim", "auc_psnr", "fit_seconds"):
         series(metric)
+
+    ncols = 1
+    nrows = len(budgets)
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(11, max(4, 3.6 * nrows)), squeeze=False)
+    for ax, budget in zip(axes.flat, budgets):
+        for method in methods:
+            vals = [r for r in ok if r["method"] == method and int(r["final_budget"]) == budget]
+            by_iter: dict[int, list[float]] = {}
+            for row in vals:
+                for it, psnr in _history_pairs(row):
+                    by_iter.setdefault(it, []).append(psnr)
+            if by_iter:
+                xs = sorted(by_iter)
+                ys = [mean(by_iter[it]) for it in xs]
+                ax.plot(xs, ys, linewidth=1.8, label=METHOD_LABELS[method])
+        ax.set_title(f"Mean PSNR convergence, {budget}G cap")
+        ax.set_xlabel("Iteration")
+        ax.set_ylabel("PSNR")
+        ax.grid(True, alpha=0.25)
+    axes.flat[0].legend(fontsize=8, ncols=2)
+    fig.tight_layout()
+    fig.savefig(plot_dir / "mean_psnr_curve_by_budget.png", dpi=160)
+    plt.close(fig)
+
+    targets = [t for t in _target_values(ok) if t in {22.0, 24.0, 26.0, 28.0, 30.0, 32.0}]
+    if targets:
+        mat = []
+        for method in methods:
+            vals = [r for r in ok if r["method"] == method]
+            mat.append([float(_target_summary(vals, t)["hit_rate"] or 0.0) for t in targets])
+        fig, ax = plt.subplots(figsize=(8, 6))
+        im = ax.imshow(np.array(mat), vmin=0.0, vmax=1.0, cmap="viridis")
+        ax.set_xticks(np.arange(len(targets)), [f"{t:g}" for t in targets])
+        ax.set_yticks(np.arange(len(methods)), [METHOD_LABELS[m] for m in methods])
+        ax.set_xlabel("Target PSNR")
+        ax.set_title("Target-hit rates across image/budget cells")
+        for y, row in enumerate(mat):
+            for x, val in enumerate(row):
+                ax.text(x, y, f"{100.0 * val:.0f}%", ha="center", va="center", color="white" if val < 0.55 else "black", fontsize=8)
+        fig.colorbar(im, ax=ax, label="Hit rate")
+        fig.tight_layout()
+        fig.savefig(plot_dir / "target_hit_rate_heatmap.png", dpi=160)
+        plt.close(fig)
 
     baseline = "gaussianimage_plus_residual"
     if any(r["method"] == baseline for r in ok):
@@ -700,6 +934,8 @@ def _write_index(outdir: Path, methods: list[str]) -> None:
         ("Mean PSNR by budget", "plots/mean_psnr_by_budget.png"),
         ("Mean MS-SSIM by budget", "plots/mean_ms_ssim_by_budget.png"),
         ("Mean AUC PSNR by budget", "plots/mean_auc_psnr_by_budget.png"),
+        ("Mean PSNR convergence", "plots/mean_psnr_curve_by_budget.png"),
+        ("Target-hit rates", "plots/target_hit_rate_heatmap.png"),
         ("Mean fit seconds by budget", "plots/mean_fit_seconds_by_budget.png"),
         ("Paired delta vs GaussianImage++", "plots/paired_delta_vs_gaussianimage_plus.png"),
     ]
@@ -720,7 +956,7 @@ def _write_index(outdir: Path, methods: list[str]) -> None:
         "<h1>Fair Density-Control Comparison</h1>",
         '<p class="note">Matched-policy benchmark: growth rows share the same initial count, final cap, growth waves, fitter, renderer, loss, target tracking, and iteration budget. External repos are represented by local analogues here; this is not a native external-pipeline benchmark.</p>',
         "<h2>Files</h2>",
-        '<p><a href="summary.md">summary.md</a> · <a href="metrics.csv">metrics.csv</a> · <a href="metrics.json">metrics.json</a> · <a href="config.json">config.json</a></p>',
+        '<p><a href="summary.md">summary.md</a> · <a href="metrics.csv">metrics.csv</a> · <a href="metrics.json">metrics.json</a> · <a href="convergence_curves.csv">convergence_curves.csv</a> · <a href="target_hit_rates.csv">target_hit_rates.csv</a> · <a href="config.json">config.json</a></p>',
         "<h2>Methods</h2><table><tr><th>Method</th><th>Track</th></tr>",
     ]
     for method in methods:

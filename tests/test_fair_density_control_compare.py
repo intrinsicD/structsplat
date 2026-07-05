@@ -86,5 +86,42 @@ def test_write_index_links_summary_metrics_and_images(tmp_path: Path):
     text = (tmp_path / "index.html").read_text(encoding="utf-8")
     assert "summary.md" in text
     assert "metrics.csv" in text
+    assert "convergence_curves.csv" in text
+    assert "target_hit_rates.csv" in text
     assert "mean_psnr_by_budget.png" in text
     assert "example.png" in text
+
+
+def test_write_convergence_tables_from_histories(tmp_path: Path):
+    rows = [
+        {
+            "status": "ok",
+            "final_budget": 100,
+            "method": "gaussianimage_fixed_full",
+            "method_label": F.METHOD_LABELS["gaussianimage_fixed_full"],
+            "history": {"iter": [0, 10, 20], "psnr": [18.0, 22.0, 25.0], "elapsed": [0.1, 0.2, 0.3]},
+            "iters_to_targets": {"22.0": 10.0, "24.0": 20.0},
+        },
+        {
+            "status": "ok",
+            "final_budget": 100,
+            "method": "gaussianimage_plus_residual",
+            "method_label": F.METHOD_LABELS["gaussianimage_plus_residual"],
+            "history": {"iter": [0, 10, 20], "psnr": [17.0, 21.0, 23.0], "elapsed": [0.1, 0.2, 0.3]},
+            "iters_to_targets": {"22.0": 20.0, "24.0": None},
+        },
+    ]
+
+    F._write_convergence_tables(
+        rows,
+        tmp_path,
+        ["gaussianimage_fixed_full", "gaussianimage_plus_residual"],
+    )
+
+    curves = (tmp_path / "convergence_curves.csv").read_text(encoding="utf-8")
+    targets = (tmp_path / "target_hit_rates.csv").read_text(encoding="utf-8")
+    assert "mean_psnr" in curves
+    assert "gaussianimage_fixed_full" in curves
+    assert "target_psnr" in targets
+    assert "gaussianimage_plus_residual" in targets
+    assert ",24.0,1,0," in targets
