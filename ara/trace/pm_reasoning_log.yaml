@@ -142,3 +142,8 @@ entries:
       - "Routed the user's request to always generate HTML overviews as N36 decision because it selects a durable artifact packaging convention."
       - "Recorded the user's disappointment as context and an open thesis-pivot thread, not as a claim, because it expresses research direction pressure rather than a new empirical result."
       - "Did not crystallize ABL-004 claims because the user reaction does not close the paired confirmation requirement."
+  - turn: "2026-07-05_001#5"
+    notes:
+      - "Routed the clarified external-repo comparison as N37 question because it opens a new protocol-design thread around density-control-aware fairness."
+      - "Staged O18 as a constraint because code inspection showed the current cross-repo harness is an analogue benchmark with asymmetric start/growth schedules."
+      - "Did not mark the current cross-repo harness as a dead end because it remains useful for matched-policy smoke tests, but it does not answer the user's requested fair protocol."

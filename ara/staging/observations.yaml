@@ -186,3 +186,14 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O18
+    timestamp: "2026-07-05T11:43+0200"
+    provenance: ai-suggested
+    content: "The existing cross-repo matrix is a matched-policy analogue, not a native external-repo benchmark, and its current growth schedules are not symmetric for same-initial-count fairness: StructSplat current starts near 80% of the final cap while GaussianImage++/Image-GS analogues start at 50% and grow with residual_add."
+    context: "User clarified that the desired comparison is against GaussianImage++ and other repos with density control, under same initial Gaussian count, iteration/convergence criteria, and fair matched settings."
+    potential_type: constraint
+    bound_to: [N17, N37]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

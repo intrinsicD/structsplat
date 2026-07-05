@@ -749,3 +749,16 @@ tree:
       - "commit bfe48cd"
     also_depends_on: [N35]
     status: resolved
+  - id: N37
+    type: question
+    title: "Fair density-control comparison against external repos"
+    provenance: user
+    timestamp: "2026-07-05T11:43+0200"
+    description: >
+      Design a fair comparison against GaussianImage, GaussianImage++,
+      Image-GS, and Instant-GI that accounts for their density-control /
+      progressive-growth behavior: same images, initial Gaussian count,
+      final budget cap, iteration or convergence criteria, metrics, and
+      visual artifact packaging, while comparing StructSplat initialization
+      and density-control variants against repo-inspired and native baselines.
+    status: open

@@ -22,8 +22,8 @@ sessions:
     open_threads: 6
   - id: "2026-07-05_001"
     date: "2026-07-05"
-    summary: "Implemented ABL-004 confirmation tooling, tiled exact CUDA rendering, support fade, INIT-003 spectral calibration tooling, COMP-003 codec rungs 1-3, task retirement/status updates, clean broad validation, difficult-image evidence, visual comparison artifacts, and a standing HTML overview convention."
-    turn_count: 4
-    events_count: 9
+    summary: "Implemented ABL-004 tooling/evidence, adopted HTML overview artifacts, and opened a fair density-control comparison question against GaussianImage, GaussianImage++, Image-GS, and Instant-GI."
+    turn_count: 5
+    events_count: 11
     claims_touched: []
-    open_threads: 8
+    open_threads: 9
