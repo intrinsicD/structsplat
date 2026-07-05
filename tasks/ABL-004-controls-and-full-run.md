@@ -104,6 +104,13 @@ conditions and honest controls?
   convention: any substantial ABL-004 benchmark/visual-audit result should include a local
   `index.html` overview that embeds the headline diagrams and comparison images and states whether
   images are original saved renders or matched reruns.
+- 2026-07-05: Tested feature-adaptive scale caps on the four fair-density finalist rows in
+  `results/fair_density_control_difficult4/`, scaled from the original 12 px / 160 px evidence
+  to a 57.6 px cap at max-side 768. The expanded exact-CUDA run completed 204/204 cells with
+  48 feature-cap rows. Feature caps were faster but not finalist-worthy here: paired against the
+  matching uncapped rows, they averaged -2.0531 dB PSNR, -0.8960 AUC, and -4.05 s fit time, with
+  wins only on `kodim07` at 10k (4/48 paired PSNR wins). Do not promote feature-cap variants to
+  the confirmation shortlist from this evidence.
 
 ## Decision-grade staged protocol
 
