@@ -219,3 +219,14 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O21
+    timestamp: "2026-07-05T19:28+0200"
+    provenance: ai-suggested
+    content: "Current growth already uses residual/error maps to place added Gaussians in high-error pixels, but the fair density-control comparison did not enable residual relocation of existing low-activity Gaussians; relocation exists in `fit.py` behind `relocate_every`/`relocate_count` and remains an untested fair-comparison variant."
+    context: "Code inspection after the user asked whether the difference images are used for growth and density control. `_add_from_residual` uses `(render_img - target).abs().mean(dim=2)` with spaced top-k pixels for `residual_add`/`residual_tensor_add`; `_relocate_from_residual` moves low-activity Gaussians to high-residual pixels but default config leaves relocation disabled."
+    potential_type: constraint
+    bound_to: [N38, N39, N40]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

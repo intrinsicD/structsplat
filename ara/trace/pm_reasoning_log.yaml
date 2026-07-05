@@ -162,3 +162,8 @@ entries:
       - "Routed the diff-row visual overview update as N40 experiment because it produced committed report-generator code and regenerated concrete visual artifacts."
       - "Did not stage a new claim because amplified difference maps are an inspection aid, not a new empirical conclusion."
       - "Left O19/O20 staged because this turn changed visualization packaging only."
+  - turn: "2026-07-05_001#9"
+    notes:
+      - "Staged O21 as a constraint because code inspection clarified current residual-map usage and an untested relocation capability."
+      - "Did not create a direct experiment node because no benchmark or code change was executed this turn."
+      - "Did not crystallize O21 because residual relocation still needs an explicit fair-comparison run before it becomes protocol guidance."

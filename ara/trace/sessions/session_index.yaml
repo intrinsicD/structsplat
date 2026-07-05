@@ -22,8 +22,8 @@ sessions:
     open_threads: 6
   - id: "2026-07-05_001"
     date: "2026-07-05"
-    summary: "Implemented ABL-004 tooling/evidence, adopted HTML overview artifacts, ran a fair density-control matched-policy comparison, added convergence reporting, and added target-difference visual rows."
-    turn_count: 8
-    events_count: 16
+    summary: "Implemented ABL-004 tooling/evidence, adopted HTML overview artifacts, ran a fair density-control matched-policy comparison, added convergence/difference visual reporting, and clarified residual-growth versus relocation behavior."
+    turn_count: 9
+    events_count: 17
     claims_touched: []
-    open_threads: 10
+    open_threads: 11
