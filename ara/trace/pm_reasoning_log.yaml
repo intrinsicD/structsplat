@@ -172,3 +172,8 @@ entries:
       - "Routed split-scheduled residual relocation implementation as N41 because it produced committed code, focused tests, and a smoke result."
       - "Staged O22 as a constraint because relocation rows are now implemented but not yet empirically compared on the difficult-four/full fair benchmark."
       - "Did not crystallize O21 or O22: the implementation closes the code gap, but performance and protocol guidance require the user's planned test run."
+  - turn: "2026-07-05_001#11"
+    notes:
+      - "Routed the resumed 156-cell relocation comparison as N42 because it produced new benchmark rows, regenerated visual artifacts, and paired-delta evidence."
+      - "Staged O23 as a claim because the result supports a bounded verdict against default promotion, but it remains hard-selected seed-0 evidence rather than full confirmation."
+      - "Did not crystallize O22 despite empirical resolution because O22 was a temporal unknown-state note; N42 supersedes it and O23 carries the interpretive claim."

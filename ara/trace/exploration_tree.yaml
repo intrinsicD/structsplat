@@ -871,3 +871,31 @@ tree:
       - "commit 0839f03"
     also_depends_on: [N38, N40]
     status: resolved
+  - id: N42
+    type: experiment
+    title: "Fair density-control relocation difficult-four test"
+    provenance: ai-executed
+    timestamp: "2026-07-05T21:22+0200"
+    result: >
+      Resumed `results/fair_density_control_difficult4/` after adding the two
+      relocation rows, using the system `libstdc++` preload required by the
+      local exact-CUDA extension. The expanded matched-policy run completed
+      156/156 ok cells with 13 methods, four difficult Kodak images, budgets
+      {2000,5000,10000}, seed 0, exact CUDA, max-side 768, 1500 iterations,
+      start fraction 0.5, and four growth waves. Paired against the matching
+      non-relocation residual rows, on-edge relocation changed mean PSNR by
+      +0.0326 dB with 5/12 PSNR wins, mean MS-SSIM by +0.00191, mean AUC by
+      -0.171 with 0/12 AUC wins, and mean fit time by +4.38 s. Quadtree-WSE
+      relocation changed mean PSNR by -0.1221 dB with 3/12 PSNR wins, mean
+      MS-SSIM by +0.00074, mean AUC by -0.212 with 0/12 AUC wins, and mean fit
+      time by +4.04 s. The updated overview contains 156 reconstructions and
+      160 diff PNGs.
+    evidence:
+      - "results/fair_density_control_difficult4/index.html"
+      - "results/fair_density_control_difficult4/summary.md"
+      - "results/fair_density_control_difficult4/metrics.jsonl"
+      - "results/fair_density_control_difficult4/grids"
+      - "results/fair_density_control_difficult4/diffs"
+      - "ara/evidence/fair-density-control-relocation-difficult4-2026-07-05/run.md"
+    also_depends_on: [N38, N39, N40, N41]
+    status: resolved

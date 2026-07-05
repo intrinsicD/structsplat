@@ -241,3 +241,14 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O23
+    timestamp: "2026-07-05T21:22+0200"
+    provenance: ai-suggested
+    content: "On the difficult-four seed-0 fair density-control subset, split-scheduled residual relocation is not default-worthy: it gives at most a tiny on-edge final-PSNR mean gain, hurts AUC in every paired cell, and adds roughly four seconds per fit."
+    context: "Expanded fair density-control run with 156/156 ok cells after adding on-edge and qt-WSE residual relocation rows. On-edge relocation: +0.0326 dB mean PSNR, -0.171 AUC, +4.38 s fit. Qt-WSE relocation: -0.1221 dB mean PSNR, -0.212 AUC, +4.04 s fit."
+    potential_type: claim
+    bound_to: [N42]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
