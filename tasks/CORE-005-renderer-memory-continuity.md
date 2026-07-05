@@ -24,7 +24,7 @@ CUDA renderers; one budget helper with documented semantics.
 - [x] Support fade `w = max(exp(-q/2) - exp(-sigma_cutoff^2/2), 0)` implemented in
       `_accumulate`, `gaussian_activity`, `_support_residual_scores`, and the CUDA kernels,
       behind a config flag; parity test reference-vs-CUDA with the fade on.
-- [ ] One benchmark slice (fixed seed/budget) comparing fade on/off for PSNR and
+- [x] One benchmark slice (fixed seed/budget) comparing fade on/off for PSNR and
       iters-to-target, logged; if the fade wins, flip the default via an ADR note.
 - [x] `_element_budget(chunk)` helper hoisted into `render.py`, imported by `fit.py`;
       `FitConfig.render_chunk` docstring states the unit (elements = chunk * 4096).
@@ -43,6 +43,15 @@ CUDA renderers; one budget helper with documented semantics.
   self-describing. Validation: reference fade tests passed; CUDA fade parity passed under
   `LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6` with 22 renderer tests; a tiny
   `FitConfig(renderer="cuda", support_fade=True)` smoke completed on CUDA.
+- 2026-07-05 benchmark decision: Added `--support-fade` as a real fair-density benchmark axis
+  in `benchmarks/fair_density_control_compare.py` and ran
+  `results/fair_density_control_supportfade_difficult4/` on the four current finalist rows
+  (`onedge`/`qt-WSE` x residual/tensor), Kodak difficult-four, budgets {2000,5000,10000}, seed 0,
+  max-side 768, 1500 iters, exact CUDA. The run completed 48/48 rows and wrote a local
+  `index.html` overview. Paired against the matching fade-off rows, support fade improved PSNR
+  only at 2k (+0.4209 dB mean, 9/16 wins) and improved AUC in 38/48 cells (+0.1073 mean), but
+  lost final PSNR overall (-0.1389 dB mean, 9/48 wins) and added +1.67 s mean fit time. Keep the
+  flag opt-in; do not flip the default or add an ADR default-change note from this slice.
 
 ## Interfaces touched
 `src/structsplat/render.py`, `src/structsplat/cuda_render.py`,
