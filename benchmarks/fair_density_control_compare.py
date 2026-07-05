@@ -715,7 +715,7 @@ def _write_summary(rows: list[dict[str, Any]], outdir: Path, methods: list[str])
 
     lines += [
         "",
-        "Plots are under `plots/`; visual grids are under `grids/`; per-cell reconstructions are under `reconstructions/`.",
+        f"Plots are under `plots/`; visual grids are under `grids/`; per-cell reconstructions are under `reconstructions/`; amplified x{DIFF_GAIN:g} absolute-difference maps are under `diffs/`.",
     ]
     (outdir / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -836,6 +836,7 @@ def _font(name: str, size: int):
 FONT = _font("DejaVuSans.ttf", 11)
 FONT_B = _font("DejaVuSans-Bold.ttf", 11)
 FONT_TITLE = _font("DejaVuSans-Bold.ttf", 14)
+DIFF_GAIN = 6.0
 
 
 def _fit_thumb(path: Path, size: tuple[int, int]) -> Image.Image:
@@ -844,6 +845,33 @@ def _fit_thumb(path: Path, size: tuple[int, int]) -> Image.Image:
     canvas = Image.new("RGB", size, (248, 248, 248))
     canvas.paste(thumb, ((size[0] - thumb.width) // 2, (size[1] - thumb.height) // 2))
     return canvas
+
+
+def _write_abs_diff_image(
+    target_path: Path,
+    recon_path: Path,
+    out_path: Path,
+    gain: float = DIFF_GAIN,
+) -> Path | None:
+    if not target_path.exists() or not recon_path.exists():
+        return None
+    target = Image.open(target_path).convert("RGB")
+    recon = Image.open(recon_path).convert("RGB")
+    if recon.size != target.size:
+        recon = recon.resize(target.size, Image.Resampling.BILINEAR)
+    target_arr = np.asarray(target, dtype=np.float32)
+    recon_arr = np.asarray(recon, dtype=np.float32)
+    diff = np.clip(np.abs(recon_arr - target_arr) * float(gain), 0.0, 255.0)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    Image.fromarray(diff.astype(np.uint8), mode="RGB").save(out_path)
+    return out_path
+
+
+def _write_zero_diff_image(target_path: Path, out_path: Path) -> Path:
+    size = Image.open(target_path).size if target_path.exists() else (8, 8)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    Image.new("RGB", size, (0, 0, 0)).save(out_path)
+    return out_path
 
 
 def _tile(path: Path | None, title: str, subtitle: str, size: tuple[int, int], label_h: int) -> Image.Image:
@@ -865,6 +893,7 @@ def _write_grids(rows: list[dict[str, Any]], outdir: Path, methods: list[str]) -
         return
     grid_image_dir = outdir / "grids" / "by_image"
     grid_budget_dir = outdir / "grids" / "by_budget"
+    diff_dir = outdir / "diffs"
     grid_image_dir.mkdir(parents=True, exist_ok=True)
     grid_budget_dir.mkdir(parents=True, exist_ok=True)
     by_cell = {
@@ -880,52 +909,89 @@ def _write_grids(rows: list[dict[str, Any]], outdir: Path, methods: list[str]) -
     row_label_w = 82
     header_h = 32
     cell_w, cell_h = tile_size[0], tile_size[1] + label_h
+    diff_gap = 4
+    pair_h = cell_h * 2 + diff_gap
+    diff_subtitle = f"|target-recon| x{DIFF_GAIN:g}"
 
     for seed in seeds:
         for image in images:
             cols = ["target", *methods]
             W = row_label_w + len(cols) * cell_w + (len(cols) - 1) * gap
-            H = header_h + len(budgets) * cell_h + (len(budgets) - 1) * gap
+            H = header_h + len(budgets) * pair_h + (len(budgets) - 1) * gap
             grid = Image.new("RGB", (W, H), "white")
             draw = ImageDraw.Draw(grid)
             draw.text((0, 6), f"{image} seed {seed}: budgets x methods", fill=(0, 0, 0), font=FONT_TITLE)
             target_path = Path(next(r["target_path"] for r in ok if r["image"] == image))
+            target_diff_path = _write_zero_diff_image(target_path, diff_dir / image / f"seed{seed}_target.png")
             for ridx, budget in enumerate(budgets):
-                y = header_h + ridx * (cell_h + gap)
+                y = header_h + ridx * (pair_h + gap)
+                y_diff = y + cell_h + diff_gap
                 draw.text((0, y + 6), f"{budget}G", fill=(0, 0, 0), font=FONT_TITLE)
+                draw.text((0, y_diff + 6), "diff", fill=(70, 70, 70), font=FONT_TITLE)
                 grid.paste(_tile(target_path, "Target", image, tile_size, label_h), (row_label_w, y))
+                grid.paste(_tile(target_diff_path, "Diff: target", "zero", tile_size, label_h), (row_label_w, y_diff))
                 for midx, method in enumerate(methods, 1):
                     rec = by_cell.get((image, budget, seed, method))
                     path = Path(rec["reconstruction_path"]) if rec and rec.get("status") == "ok" else None
+                    diff_path = (
+                        _write_abs_diff_image(
+                            target_path,
+                            path,
+                            diff_dir / image / str(budget) / f"seed{seed}_{method}.png",
+                        )
+                        if path is not None
+                        else None
+                    )
                     if rec and rec.get("status") == "ok":
                         subtitle = f"P {rec['psnr']:.2f} | MS {rec['ms_ssim']:.4f} | {rec['n_gaussians']}G"
                     else:
                         subtitle = "error/missing"
                     x = row_label_w + midx * (cell_w + gap)
                     grid.paste(_tile(path, METHOD_LABELS[method], subtitle, tile_size, label_h), (x, y))
+                    grid.paste(
+                        _tile(diff_path, f"Diff: {METHOD_LABELS[method]}", diff_subtitle, tile_size, label_h),
+                        (x, y_diff),
+                    )
             grid.save(grid_image_dir / f"{image}_seed{seed}_budgets_methods.png")
 
         for budget in budgets:
             cols = ["target", *methods]
             W = row_label_w + len(cols) * cell_w + (len(cols) - 1) * gap
-            H = header_h + len(images) * cell_h + (len(images) - 1) * gap
+            H = header_h + len(images) * pair_h + (len(images) - 1) * gap
             grid = Image.new("RGB", (W, H), "white")
             draw = ImageDraw.Draw(grid)
             draw.text((0, 6), f"{budget}G seed {seed}: images x methods", fill=(0, 0, 0), font=FONT_TITLE)
             for ridx, image in enumerate(images):
-                y = header_h + ridx * (cell_h + gap)
+                y = header_h + ridx * (pair_h + gap)
+                y_diff = y + cell_h + diff_gap
                 draw.text((0, y + 6), image, fill=(0, 0, 0), font=FONT_TITLE)
+                draw.text((0, y_diff + 6), "diff", fill=(70, 70, 70), font=FONT_TITLE)
                 target_path = Path(next(r["target_path"] for r in ok if r["image"] == image))
+                target_diff_path = _write_zero_diff_image(target_path, diff_dir / image / f"seed{seed}_target.png")
                 grid.paste(_tile(target_path, "Target", image, tile_size, label_h), (row_label_w, y))
+                grid.paste(_tile(target_diff_path, "Diff: target", "zero", tile_size, label_h), (row_label_w, y_diff))
                 for midx, method in enumerate(methods, 1):
                     rec = by_cell.get((image, budget, seed, method))
                     path = Path(rec["reconstruction_path"]) if rec and rec.get("status") == "ok" else None
+                    diff_path = (
+                        _write_abs_diff_image(
+                            target_path,
+                            path,
+                            diff_dir / image / str(budget) / f"seed{seed}_{method}.png",
+                        )
+                        if path is not None
+                        else None
+                    )
                     if rec and rec.get("status") == "ok":
                         subtitle = f"P {rec['psnr']:.2f} | MS {rec['ms_ssim']:.4f} | {rec['n_gaussians']}G"
                     else:
                         subtitle = "error/missing"
                     x = row_label_w + midx * (cell_w + gap)
                     grid.paste(_tile(path, METHOD_LABELS[method], subtitle, tile_size, label_h), (x, y))
+                    grid.paste(
+                        _tile(diff_path, f"Diff: {METHOD_LABELS[method]}", diff_subtitle, tile_size, label_h),
+                        (x, y_diff),
+                    )
             grid.save(grid_budget_dir / f"budget_{budget}_seed{seed}_images_methods.png")
 
 
@@ -955,6 +1021,7 @@ def _write_index(outdir: Path, methods: list[str]) -> None:
         "</style></head><body>",
         "<h1>Fair Density-Control Comparison</h1>",
         '<p class="note">Matched-policy benchmark: growth rows share the same initial count, final cap, growth waves, fitter, renderer, loss, target tracking, and iteration budget. External repos are represented by local analogues here; this is not a native external-pipeline benchmark.</p>',
+        f'<p class="note">Visual grids show each reconstruction row followed by an amplified absolute difference row: |target - reconstruction| x{DIFF_GAIN:g}, clipped for display.</p>',
         "<h2>Files</h2>",
         '<p><a href="summary.md">summary.md</a> · <a href="metrics.csv">metrics.csv</a> · <a href="metrics.json">metrics.json</a> · <a href="convergence_curves.csv">convergence_curves.csv</a> · <a href="target_hit_rates.csv">target_hit_rates.csv</a> · <a href="config.json">config.json</a></p>',
         "<h2>Methods</h2><table><tr><th>Method</th><th>Track</th></tr>",

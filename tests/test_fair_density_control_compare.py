@@ -88,8 +88,24 @@ def test_write_index_links_summary_metrics_and_images(tmp_path: Path):
     assert "metrics.csv" in text
     assert "convergence_curves.csv" in text
     assert "target_hit_rates.csv" in text
+    assert "absolute difference row" in text
     assert "mean_psnr_by_budget.png" in text
     assert "example.png" in text
+
+
+def test_write_abs_diff_image_amplifies_target_error(tmp_path: Path):
+    target = tmp_path / "target.png"
+    recon = tmp_path / "recon.png"
+    diff = tmp_path / "diff.png"
+    Image.fromarray(np.zeros((2, 2, 3), dtype=np.uint8), mode="RGB").save(target)
+    Image.fromarray(np.full((2, 2, 3), 10, dtype=np.uint8), mode="RGB").save(recon)
+
+    out = F._write_abs_diff_image(target, recon, diff, gain=3.0)
+
+    assert out == diff
+    arr = np.asarray(Image.open(diff).convert("RGB"))
+    assert arr.shape == (2, 2, 3)
+    assert np.all(arr == 30)
 
 
 def test_write_convergence_tables_from_histories(tmp_path: Path):
