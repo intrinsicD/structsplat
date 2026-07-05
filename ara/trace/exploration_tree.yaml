@@ -676,3 +676,31 @@ tree:
       - "ruff-2026-07-05"
     also_depends_on: [N28, N29, N30, N31, N32]
     status: resolved
+  - id: N34
+    type: experiment
+    title: "ABL-004 difficult four-image confirmation subset"
+    provenance: ai-executed
+    timestamp: "2026-07-05T09:52+0200"
+    result: >
+      Ran a 72-cell exact-CUDA ABL-004 confirmation subset on the four hardest
+      Kodak images from the previous 8-image screen by mean PSNR:
+      `kodim13`, `kodim01`, `kodim19`, and `kodim07`. The run used the six
+      current finalist/control variants, budgets 2000/5000/10000, seed 0,
+      max-side 768, and 1500 iterations. It completed 72/72 cells with 0
+      missing. Aggregate PSNR winners: at 2000, `aniso_flanking` 24.2718 dB
+      narrowly led `quadtree_wse` 24.2189 and `aniso_onedge` 24.0926; at 5000,
+      `quadtree_hybrid` 28.1390 and `quadtree_wse` 28.0666 led all tensor
+      on-edge/flanking arms; at 10000, `quadtree_wse` 30.9049 narrowly led
+      `aniso_onedge` 30.8031 and `iso_blue_noise` 30.7714. Floyd-Steinberg was
+      poor at low budget on these hard images, ranking 6/6 at 2000 and 5000,
+      but recovered to a close 5/6 at 10000. Per-image winners were mixed:
+      `quadtree_wse` won 4 of 12 image-budget groups, `aniso_onedge`,
+      `aniso_flanking`, `quadtree_hybrid`, and `iso_blue_noise` each won at
+      least one group, and Floyd-Steinberg won only `kodim19` at 10000.
+    evidence:
+      - "results/abl004_difficult4_test"
+      - "results/abl004_difficult4_test/confirmation_analysis.md"
+      - "results/abl004_difficult4_test/leaderboard.csv"
+      - "results/abl004_difficult4_test/rank_stability.csv"
+    also_depends_on: [N26, N28]
+    status: resolved
