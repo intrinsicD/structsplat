@@ -1,0 +1,40 @@
+session:
+  id: "2026-07-06_001"
+  date: "2026-07-06"
+  started: "2026-07-06T00:53+0200"
+  last_turn: "2026-07-06T00:53+0200"
+  turn_count: 1
+  summary: "Continued ABL-004 confirmation with the second bounded exact-CUDA shard and recorded task/evidence progress."
+
+events_logged:
+  - turn: 1
+    type: experiment
+    id: "N49"
+    routing: direct
+    provenance: ai-executed
+    summary: "Ran the second 18-cell ABL-004 confirmation shard: `kodim01`, budget 5000, all six variants, seeds {0,1,2}; confirmation is now 36/1,512 cells with zero errors."
+
+ai_actions:
+  - turn: 1
+    action: "Continued the resumable ABL-004 confirmation run and updated task/evidence bookkeeping."
+    provenance: ai-executed
+    files_changed:
+      - "tasks/ABL-004-controls-and-full-run.md"
+      - "ara/evidence/abl004-confirmation-shard2-2026-07-06/run.md"
+      - "ara/evidence/README.md"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/sessions/2026-07-06_001.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
+
+claims_touched: []
+
+key_context:
+  - turn: 1
+    excerpt: "User asked to continue the next tasks in correct order; ABL-004 was the next active science-gating task."
+
+open_threads:
+  - "Continue the ABL-004 confirmation matrix beyond `kodim01` budgets 2000 and 5000."
+  - "Do not retire ABL-004 or promote README claims until the decision-grade confirmation criteria are met."
+
+ai_suggestions_pending: []

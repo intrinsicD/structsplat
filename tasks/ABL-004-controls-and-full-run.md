@@ -120,6 +120,14 @@ conditions and honest controls?
   smoke/evidence only: 1,494 cells remain before confirmation is decision-grade. On this slice,
   `aniso_onedge` led mean PSNR (23.3672), followed by Floyd-Steinberg (23.2256) and
   `quadtree_hybrid` (23.1588).
+- 2026-07-06: Continued the default exact-CUDA confirmation run with a second bounded shard
+  (`kodim01`, budget 5000, all six variants, seeds {0,1,2}). The confirmation artifact now has
+  36/1,512 completed cells with zero errors, leaving 1,476 cells. At 5000 Gaussians on this
+  single-image slice, `aniso_onedge` and `iso_blue_noise` are statistically indistinguishable by
+  mean PSNR (25.5627 vs 25.5584), followed by `quadtree_wse` (25.4492), `aniso_flanking`
+  (25.3828), `quadtree_hybrid` (25.2802), and Floyd-Steinberg (25.2144). Treat this as continued
+  shard evidence only; the confirm stage still needs all remaining images/budgets before task
+  retirement or README claim promotion.
 
 ## Decision-grade staged protocol
 
