@@ -3,10 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
+import numpy as np
 from PIL import Image
 
 from benchmarks import fair_density_control_compare as F
-from structsplat.config import FitConfig
+from structsplat.config import FitConfig, StructureTensorConfig
 
 
 def test_growth_fit_cfg_reaches_final_cap_with_shared_schedule():
@@ -47,6 +48,32 @@ def test_method_tracks_keep_growth_methods_at_same_start_budget(tmp_path):
         assert cfg.max_gaussians == 2000
         assert cfg.split_every == 2
         assert cfg.split_count == 250
+
+
+def test_repo_growth_methods_honor_non_half_start_budget(tmp_path: Path):
+    img = np.full((24, 24, 3), 0.5, dtype=np.float32)
+    image_path = tmp_path / "target.png"
+    Image.fromarray((img * 255).astype(np.uint8), mode="RGB").save(image_path)
+    base = FitConfig(iters=20)
+    start_budget = 60
+
+    for method in ["gaussianimage_plus_residual", "image_gs_residual"]:
+        field, cfg, _seconds, actual_start, meta = F._build_method(
+            method=method,
+            img=img,
+            image_path=image_path,
+            final_budget=200,
+            start_budget=start_budget,
+            seed=3,
+            base_fit=base,
+            scfg=StructureTensorConfig(),
+            growth_waves=4,
+            device="cpu",
+        )
+        assert field.n == start_budget
+        assert actual_start == start_budget
+        assert meta["init_config"]["num_gaussians"] == start_budget
+        assert cfg.split_count == 35
 
 
 def test_write_index_links_summary_metrics_and_images(tmp_path: Path):

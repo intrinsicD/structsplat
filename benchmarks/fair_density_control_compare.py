@@ -233,28 +233,31 @@ def _build_method(
         }
 
     if method == "gaussianimage_plus_residual":
-        field, _fcfg, init_seconds, actual_start = build_comparison_analogue(
-            "gaussianimage_plus", img, image_path, final_budget, seed, device, base_fit, scfg
-        )
+        t0 = time.time()
+        icfg = InitConfig(strategy="random", num_gaussians=start_budget, seed=seed)
+        field = build_field(img, icfg, scfg, device=device)
+        init_seconds = time.time() - t0
         fcfg = _growth_fit_cfg(base_fit, final_budget, start_budget, "residual_add", growth_waves)
-        return field, fcfg, init_seconds, actual_start, {
-            "init_config": {"strategy": "random", "num_gaussians": actual_start, "seed": seed},
+        return field, fcfg, init_seconds, start_budget, {
+            "init_config": asdict(icfg),
             "growth_rule": "residual_add",
         }
 
     if method == "image_gs_residual":
-        field, _fcfg, init_seconds, actual_start = build_comparison_analogue(
-            "image_gs", img, image_path, final_budget, seed, device, base_fit, scfg
+        t0 = time.time()
+        icfg = InitConfig(
+            strategy="iso_blue_noise",
+            num_gaussians=start_budget,
+            density_mode="gradient",
+            sampling_mode="density_random",
+            scale_mode="spacing",
+            seed=seed,
         )
+        field = build_field(img, icfg, scfg, device=device)
+        init_seconds = time.time() - t0
         fcfg = _growth_fit_cfg(base_fit, final_budget, start_budget, "residual_add", growth_waves)
-        return field, fcfg, init_seconds, actual_start, {
-            "init_config": {
-                "strategy": "iso_blue_noise",
-                "density_mode": "gradient",
-                "sampling_mode": "density_random",
-                "num_gaussians": actual_start,
-                "seed": seed,
-            },
+        return field, fcfg, init_seconds, start_budget, {
+            "init_config": asdict(icfg),
             "growth_rule": "residual_add",
         }
 
