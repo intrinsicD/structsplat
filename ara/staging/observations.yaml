@@ -252,3 +252,14 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O24
+    timestamp: "2026-07-05T21:37+0200"
+    provenance: ai-suggested
+    content: "The highest-upside next algorithmic test is feature-adaptive scale caps on the current fair-density finalist rows, because the difficult-four winners still reach image-size max scales (~768 px) and previous held-out evidence showed feature caps can improve PSNR while reducing runtime."
+    context: "Backlog triage after split-scheduled relocation lost on AUC/runtime. Active tasks inspected included ABL-004, ABL-002, CORE-005, HIER-001, PORT-001, COMP-003, and FF-001. Current fair metrics show top rows have final_scale_max around 768 and p95 scales around 28-30 px."
+    potential_type: heuristic
+    bound_to: [N42, N43]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

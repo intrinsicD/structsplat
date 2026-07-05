@@ -2,9 +2,9 @@ session:
   id: "2026-07-05_001"
   date: "2026-07-05"
   started: "2026-07-05T01:03+0200"
-  last_turn: "2026-07-05T21:22+0200"
-  turn_count: 11
-  summary: "Implemented ABL-004 tooling/evidence, adopted HTML overview artifacts, ran a fair density-control matched-policy comparison, added convergence/difference visual reporting, clarified residual-growth versus relocation behavior, implemented split-scheduled relocation variants, and tested them on the difficult-four subset."
+  last_turn: "2026-07-05T21:37+0200"
+  turn_count: 12
+  summary: "Implemented ABL-004 tooling/evidence, adopted HTML overview artifacts, ran a fair density-control matched-policy comparison, added convergence/difference visual reporting, clarified residual-growth versus relocation behavior, tested split-scheduled relocation, and triaged next high-impact backlog work."
 
 events_logged:
   - turn: 1
@@ -133,6 +133,18 @@ events_logged:
     routing: staged
     provenance: ai-suggested
     summary: "Split-scheduled residual relocation is not default-worthy on the difficult-four seed-0 subset."
+  - turn: 12
+    type: question
+    id: "N43"
+    routing: direct
+    provenance: user
+    summary: "Prioritize high-impact backlog tasks and other ideas after the relocation comparison."
+  - turn: 12
+    type: observation
+    id: "O24"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Feature-adaptive scale caps are the highest-upside next algorithmic test for the current fair-density finalist rows."
 
 ai_actions:
   - turn: 1
@@ -315,6 +327,15 @@ ai_actions:
       - "ara/trace/sessions/2026-07-05_001.yaml"
       - "ara/trace/sessions/session_index.yaml"
       - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 12
+    action: "Inspected active backlog tasks and current fair-density scale/convergence metrics to prioritize next high-impact work."
+    provenance: ai-executed
+    files_changed:
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/sessions/2026-07-05_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
 
 claims_touched: []
 
@@ -341,6 +362,8 @@ key_context:
     excerpt: "User asked to do the four relocation-improvement points before the next test run."
   - turn: 11
     excerpt: "User asked to run the test after the relocation implementation."
+  - turn: 12
+    excerpt: "User asked whether there are other ideas or backlog tasks with large potential impact after the relocation result."
 
 open_threads:
   - "ABL-004 confirmation execution remains open: run the 1512-cell default confirmation set when compute is available."
@@ -354,6 +377,7 @@ open_threads:
   - "Native external-repository execution remains separate from the matched-policy analogue run; the current result isolates placement/growth policy inside StructSplat's fitter and renderer."
   - "Convergence interpretation should be validated on the broader confirmation set; current AUC/hit-rate evidence is from the hard-selected seed-0 subset."
   - "Do not promote split-scheduled residual relocation as a default from the difficult-four seed-0 result; only revisit with tuning or full confirmation evidence."
+  - "Test feature-adaptive scale caps on the current fair-density finalist rows before another broad confirmation run."
 
 ai_suggestions_pending:
   - "Use the ABL-004 confirmation runner with bounded `--max-new-cells` shards for scheduled confirmation."
@@ -363,3 +387,4 @@ ai_suggestions_pending:
   - "Keep convergence artifacts in every future fair comparison overview: mean PSNR curves, AUC tables, and target-hit-rate tables/heatmaps."
   - "Keep target-difference rows in future visual overviews where per-method image inspection is requested."
   - "If relocation is revisited, test tuned relocation fraction/downsample/source-selection variants rather than promoting the current split-scheduled setup."
+  - "Run a focused feature-cap fair comparison for `onedge`/`qt-WSE` residual/tensor finalist rows, then update the confirmation shortlist."

@@ -899,3 +899,13 @@ tree:
       - "ara/evidence/fair-density-control-relocation-difficult4-2026-07-05/run.md"
     also_depends_on: [N38, N39, N40, N41]
     status: resolved
+  - id: N43
+    type: question
+    title: "Prioritize high-impact backlog after relocation"
+    provenance: user
+    timestamp: "2026-07-05T21:37+0200"
+    description: >
+      After the fair density-control relocation test, identify other ideas or
+      backlog tasks that could have large impact and decide what is worth
+      trying next.
+    status: open
