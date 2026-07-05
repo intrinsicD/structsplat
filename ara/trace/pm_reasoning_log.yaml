@@ -147,3 +147,8 @@ entries:
       - "Routed the clarified external-repo comparison as N37 question because it opens a new protocol-design thread around density-control-aware fairness."
       - "Staged O18 as a constraint because code inspection showed the current cross-repo harness is an analogue benchmark with asymmetric start/growth schedules."
       - "Did not mark the current cross-repo harness as a dead end because it remains useful for matched-policy smoke tests, but it does not answer the user's requested fair protocol."
+  - turn: "2026-07-05_001#6"
+    notes:
+      - "Routed the fair density-control difficult-four run as N38 experiment because it produced a complete 132-cell benchmark with HTML overview, plots, grids, metrics, and reconstructions."
+      - "Staged O19 as a claim because the matched-policy evidence materially shifts the interpretation from disappointing internal visuals toward positive structured-placement evidence versus fair residual-growth analogues."
+      - "Did not crystallize O19 because the run is hard-selected, seed-0 only, and native external-repository execution remains a separate practical benchmark."

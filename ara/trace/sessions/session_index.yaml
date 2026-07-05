@@ -22,8 +22,8 @@ sessions:
     open_threads: 6
   - id: "2026-07-05_001"
     date: "2026-07-05"
-    summary: "Implemented ABL-004 tooling/evidence, adopted HTML overview artifacts, and opened a fair density-control comparison question against GaussianImage, GaussianImage++, Image-GS, and Instant-GI."
-    turn_count: 5
-    events_count: 11
+    summary: "Implemented ABL-004 tooling/evidence, adopted HTML overview artifacts, and ran a fair density-control matched-policy comparison against GaussianImage/GaussianImage++/Image-GS/Instant-GI-style baselines."
+    turn_count: 6
+    events_count: 13
     claims_touched: []
     open_threads: 9

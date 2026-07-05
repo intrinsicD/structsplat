@@ -197,3 +197,14 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O19
+    timestamp: "2026-07-05T13:20+0200"
+    provenance: ai-suggested
+    content: "In the seed-0 difficult-four matched density-control run, the broader StructSplat structured-placement idea shows positive PSNR evidence against fair GaussianImage++/Image-GS residual-growth analogues, but the original flanking-specific and tensor-growth claims are not the strongest story; quadtree-WSE/on-edge starts plus ordinary residual growth are the current best hybrids."
+    context: "Fair density-control difficult-four comparison: 132/132 exact-CUDA cells, same start fraction/final caps/growth waves/fitter/renderer/loss across growth rows, with local HTML overview and visual grids."
+    potential_type: claim
+    bound_to: [N37, N38]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

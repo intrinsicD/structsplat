@@ -762,3 +762,29 @@ tree:
       visual artifact packaging, while comparing StructSplat initialization
       and density-control variants against repo-inspired and native baselines.
     status: open
+  - id: N38
+    type: experiment
+    title: "Fair density-control difficult-four comparison"
+    provenance: ai-executed
+    timestamp: "2026-07-05T13:20+0200"
+    result: >
+      Implemented and ran `benchmarks/fair_density_control_compare.py` on the
+      difficult Kodak four-image subset. The matched-policy protocol used 11
+      methods, budgets {2000,5000,10000}, seed 0, exact CUDA, max-side 768,
+      1500 iterations, start fraction 0.5 for growth rows, and four growth
+      waves, producing 132/132 ok cells plus an HTML overview, plots, grids,
+      metrics, and reconstructions. Best mean PSNR was `SS qt-WSE + residual`
+      at 28.7143 dB, narrowly ahead of `SS on-edge + residual` at 28.7012 and
+      ahead of Image-GS residual at 28.4006. Top five PSNR means were all
+      StructSplat structured-placement rows; MS-SSIM remained mixed, with
+      StructSplat rows winning 9/12 image-budget slices.
+    evidence:
+      - "benchmarks/fair_density_control_compare.py"
+      - "tests/test_fair_density_control_compare.py"
+      - "results/fair_density_control_difficult4"
+      - "results/fair_density_control_difficult4/index.html"
+      - "ara/evidence/fair-density-control-difficult4-2026-07-05/run.md"
+      - "commit 92c43d2"
+      - "commit 00186a2"
+    also_depends_on: [N37]
+    status: resolved
