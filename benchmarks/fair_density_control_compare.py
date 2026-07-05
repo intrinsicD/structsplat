@@ -215,6 +215,8 @@ FEATURE_CAP_METHODS = {
     "structsplat_quadtree_wse_tensor_featurecap",
 }
 
+DEFAULT_FEATURE_CAP_REFERENCE_SIDE = 160.0
+
 
 def _one(x):
     return tuple(x) if isinstance(x, (list, tuple)) else (x,)
@@ -243,6 +245,15 @@ def _growth_fit_cfg(
         split_mode=split_mode,
         max_gaussians=int(final_budget),
     )
+
+
+def _feature_cap_pixels(img: np.ndarray, feature_cap: float,
+                        reference_side: float) -> float:
+    if feature_cap <= 0.0:
+        raise ValueError(f"feature_cap must be > 0, got {feature_cap}")
+    if reference_side <= 0.0:
+        raise ValueError(f"feature_cap_reference_side must be > 0, got {reference_side}")
+    return float(feature_cap) * (float(max(img.shape[:2])) / float(reference_side))
 
 
 def _relocation_growth_fit_cfg(
@@ -328,6 +339,7 @@ def _build_method(
     relocate_fraction: float = 0.25,
     relocate_downsample: int = 4,
     feature_cap: float = 12.0,
+    feature_cap_reference_side: float = DEFAULT_FEATURE_CAP_REFERENCE_SIDE,
 ) -> tuple[GaussianField, FitConfig, float, int, dict[str, Any]]:
     if method == "gaussianimage_fixed_full":
         t0 = time.time()
@@ -377,6 +389,10 @@ def _build_method(
         }
 
     if method in STRUCTSPLAT_INIT:
+        feature_cap_px = (
+            _feature_cap_pixels(img, feature_cap, feature_cap_reference_side)
+            if method in FEATURE_CAP_METHODS else None
+        )
         field, icfg, init_seconds = _structsplat_field(
             img,
             method,
@@ -384,7 +400,7 @@ def _build_method(
             seed,
             scfg,
             device,
-            feature_cap=feature_cap if method in FEATURE_CAP_METHODS else None,
+            feature_cap=feature_cap_px,
         )
         split_mode = STRUCTSPLAT_SPLIT_MODE[method]
         if method in RELOCATION_METHODS:
@@ -413,7 +429,10 @@ def _build_method(
         if method in FEATURE_CAP_METHODS:
             extra.update({
                 "scale_cap_rule": "feature",
-                "scale_cap_max": feature_cap,
+                "scale_cap_input": feature_cap,
+                "scale_cap_reference_side": feature_cap_reference_side,
+                "scale_cap_max": feature_cap_px,
+                "feature_cap_px": feature_cap_px,
             })
         return field, fcfg, init_seconds, start_budget, extra
 
@@ -470,6 +489,7 @@ def _cell_key(row: dict[str, Any]) -> tuple[Any, ...]:
         row.get("renderer"),
         row.get("pixel_loss"),
         float(row.get("ssim_weight")),
+        row.get("feature_cap_px") if str(row.get("method", "")).endswith("_featurecap") else None,
     )
 
 
@@ -501,6 +521,7 @@ def _fit_one(
     relocate_fraction: float = 0.25,
     relocate_downsample: int = 4,
     feature_cap: float = 12.0,
+    feature_cap_reference_side: float = DEFAULT_FEATURE_CAP_REFERENCE_SIDE,
 ) -> tuple[dict[str, Any], np.ndarray]:
     field, fcfg, init_seconds, actual_start, extra = _build_method(
         method,
@@ -516,6 +537,7 @@ def _fit_one(
         relocate_fraction,
         relocate_downsample,
         feature_cap,
+        feature_cap_reference_side,
     )
     out = fit(field, target, fcfg, verbose=False)
     render = out["render"].detach().clamp(0, 1)
@@ -545,7 +567,10 @@ def _fit_one(
         "relocate_fraction",
         "relocate_residual_downsample",
         "scale_cap_rule",
+        "scale_cap_input",
+        "scale_cap_reference_side",
         "scale_cap_max",
+        "feature_cap_px",
     ):
         if key in extra:
             row[key] = extra[key]
@@ -1232,6 +1257,7 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
         "relocate_fraction": args.relocate_fraction,
         "relocate_downsample": args.relocate_downsample,
         "feature_cap": args.feature_cap,
+        "feature_cap_reference_side": args.feature_cap_reference_side,
         "resume": args.resume,
         "max_new_cells": args.max_new_cells,
     }, device=device))
@@ -1281,6 +1307,10 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
                         "renderer": args.renderer,
                         "pixel_loss": args.pixel_loss,
                         "ssim_weight": args.ssim_weight,
+                        "feature_cap_px": (
+                            _feature_cap_pixels(img, args.feature_cap, args.feature_cap_reference_side)
+                            if method in FEATURE_CAP_METHODS else None
+                        ),
                     }
                     if _cell_key(key_row) in done:
                         print(f"[{cell_idx}/{total}] skip existing {image} {final_budget} {method}", flush=True)
@@ -1316,6 +1346,7 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
                             args.relocate_fraction,
                             args.relocate_downsample,
                             args.feature_cap,
+                            args.feature_cap_reference_side,
                         )
                         recon_path = recon_dir / image / str(final_budget) / f"seed{seed}_{method}.png"
                         save_image(render_np, recon_path)
@@ -1378,7 +1409,10 @@ def main() -> None:
     p.add_argument("--relocate-downsample", type=int, default=4,
                    help="coarse residual max-pool factor for relocation rows")
     p.add_argument("--feature-cap", type=float, default=12.0,
-                   help="absolute cap in pixels for feature-adaptive scale-cap rows")
+                   help="feature cap value at --feature-cap-reference-side for scale-cap rows")
+    p.add_argument("--feature-cap-reference-side", type=float,
+                   default=DEFAULT_FEATURE_CAP_REFERENCE_SIDE,
+                   help="image side length where --feature-cap is interpreted literally")
     p.add_argument("--resume", action="store_true")
     p.add_argument("--max-new-cells", type=int, default=None)
     p.add_argument("--device", default=None)

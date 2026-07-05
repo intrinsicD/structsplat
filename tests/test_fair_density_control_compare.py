@@ -127,6 +127,7 @@ def test_featurecap_method_sets_init_cap_and_growth(tmp_path: Path):
         growth_waves=4,
         device="cpu",
         feature_cap=9.0,
+        feature_cap_reference_side=24.0,
     )
 
     assert field.n == 100
@@ -138,7 +139,10 @@ def test_featurecap_method_sets_init_cap_and_growth(tmp_path: Path):
     assert meta["init_config"]["scale_cap_mode"] == "feature"
     assert meta["init_config"]["scale_cap_max"] == 9.0
     assert meta["scale_cap_rule"] == "feature"
+    assert meta["scale_cap_input"] == 9.0
+    assert meta["scale_cap_reference_side"] == 24.0
     assert meta["scale_cap_max"] == 9.0
+    assert meta["feature_cap_px"] == 9.0
 
 
 def test_write_index_links_summary_metrics_and_images(tmp_path: Path):
