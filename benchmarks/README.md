@@ -3,6 +3,12 @@
 All benchmark scripts write machine-readable rows plus enough resolved configuration to make a run
 self-describing. See the `benchmark` skill for the full protocol.
 
+For any substantial benchmark or visual-audit result that produces plots, reconstructions, or
+comparison grids, also write a local `index.html` overview in the result directory. It should embed
+the key diagrams/images, link the raw CSV/JSON artifacts, and state whether visuals are original
+saved renders or matched reruns. This keeps ignored `results/` artifacts inspectable without
+requiring the reader to hunt through subfolders.
+
 `common.py` is shared benchmark plumbing (`BENCH-003`): image load/save, trajectory PSNR AUC,
 JSON/CSV row writing, seed/config helpers, and shared COCO comparison analogue builders. It is not
 a CLI; scripts import it to avoid drifting helper behavior.

@@ -100,6 +100,10 @@ conditions and honest controls?
   missing-cell, leaderboard, paired-delta/bootstrap-CI, per-image/seed baseline-loss, pairwise,
   and rank-stability artifacts. A tiny CPU run verified the `run -> analyze` path; the default
   `plan` resolves to 28 images x 3 seeds x 3 budgets x 6 variants = 1,512 cells.
+- 2026-07-05: After inspecting the difficult-4 visual comparison, adopted a standing artifact
+  convention: any substantial ABL-004 benchmark/visual-audit result should include a local
+  `index.html` overview that embeds the headline diagrams and comparison images and states whether
+  images are original saved renders or matched reruns.
 
 ## Decision-grade staged protocol
 
@@ -112,7 +116,8 @@ scheduled multi-day job, use this predeclared staged protocol so stopping is evi
 2. **Confirm.** Run the top screen arms plus required controls on all 28 images, seeds {0,1,2},
    budgets {2k, 5k, 10k}. Current confirmation set after the 8-image screen:
    `aniso_onedge`, `aniso_flanking`, `quadtree_wse`, `quadtree_hybrid`, `iso_blue_noise`, and
-   `floyd_steinberg`. Report paired image/seed/budget deltas with confidence intervals.
+   `floyd_steinberg`. Report paired image/seed/budget deltas with confidence intervals and write a
+   local `index.html` overview embedding the key metric plots and visual grids.
 3. **High-budget check.** Run only finalists at 20k on all 28 images and seeds {0,1,2}, because
    the ABL-001 hypothesis already expects gaps to shrink at high budget.
 4. **Promotion rule.** README/ARA claims can be updated only from paired results. If
