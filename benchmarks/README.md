@@ -75,6 +75,18 @@ as if they were the public defaults.
 python -m benchmarks.cross_repo_matrix_compare --max-sides 160 240 --iters 80 200 --seeds 0 1
 ```
 
+`fair_density_control_compare.py` is the density-control-aware matched-policy benchmark. Growth
+rows share the same initial Gaussian count, final cap, growth-wave schedule, renderer, fitter,
+loss, and target tracking, then vary repo-inspired or StructSplat placement/growth policies. It
+always writes a local `index.html` overview. Caveat: this still does not run native external repo
+pipelines; it isolates policy differences under one executable fitter.
+
+```
+LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 \
+  STRUCTSPLAT_INSTANT_GI=/path/to/Instant-GI/quard_image.py \
+  python -m benchmarks.fair_density_control_compare --resume
+```
+
 `coco_fit_compare.py` is the legacy four-image matched comparison harness (`BENCH-003` back-compat
 only). Caveat: it is superseded by `cross_repo_matrix_compare.py`; keep it for reproducing older
 ARA evidence that names `results/coco_fit_compare`.
