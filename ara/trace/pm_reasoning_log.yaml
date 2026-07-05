@@ -192,3 +192,8 @@ entries:
       - "Routed the second ABL-004 confirmation shard as N49 because it produced new exact-CUDA benchmark evidence and updated the confirmation artifact to 36/1512 cells."
       - "Did not stage or crystallize a new ABL-004 claim because this is still one image and two budgets; the full paired confirmation matrix remains open."
       - "Created a new 2026-07-06 session because no session file existed for the current calendar day."
+  - turn: "2026-07-06_001#2"
+    notes:
+      - "Routed the third ABL-004 confirmation shard as N50 because it completed the `kodim01` 10000-Gaussian block and updated the artifact to 54/1512 cells."
+      - "Did not crystallize a claim from the `kodim01` 10k quadtree_wse lead because the result is still one image and not the paired multi-image confirmation stage."
+      - "Kept ABL-004 active rather than retiring it because 1458 expected confirmation cells remain."

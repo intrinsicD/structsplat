@@ -128,6 +128,13 @@ conditions and honest controls?
   (25.3828), `quadtree_hybrid` (25.2802), and Floyd-Steinberg (25.2144). Treat this as continued
   shard evidence only; the confirm stage still needs all remaining images/budgets before task
   retirement or README claim promotion.
+- 2026-07-06: Completed the next bounded confirmation shard (`kodim01`, budget 10000, all six
+  variants, seeds {0,1,2}), finishing the full `kodim01` block for confirmation budgets {2000,
+  5000, 10000}. The artifact now has 54/1,512 cells with zero errors, leaving 1,458 cells. At
+  10000 Gaussians on this single-image slice, `quadtree_wse` leads mean PSNR (27.8561), followed
+  by `iso_blue_noise` (27.7928), Floyd-Steinberg (27.7214), `aniso_flanking` (27.7189),
+  `aniso_onedge` (27.6979), and `quadtree_hybrid` (27.6669). This remains shard evidence only:
+  one image is not enough to retire ABL-004 or promote README claims.
 
 ## Decision-grade staged protocol
 
