@@ -14,6 +14,7 @@ from structsplat.fit import (
     _lr_factor,
     _make_optimizer,
     _maybe_prune,
+    _residual_candidate_pixels,
     _relocate_from_residual,
     _split_from_residual,
     fit,
@@ -410,6 +411,16 @@ def test_relocation_keeps_count_and_moves_low_activity_rows():
     assert stats["residual_mean"] > 0
 
 
+def test_coarse_residual_candidates_snap_to_best_full_res_pixel():
+    scores = torch.zeros(8, 8)
+    scores[2, 3] = 4.0
+    scores[6, 7] = 9.0
+
+    idx = _residual_candidate_pixels(scores, k=2, min_spacing=0.0, oversample=1.0, downsample=4)
+
+    assert idx.tolist() == [6 * 8 + 7, 2 * 8 + 3]
+
+
 def test_fit_relocation_keeps_n_constant():
     img = np.zeros((16, 16, 3), np.float32)
     img[:, 8:] = 1.0
@@ -425,6 +436,35 @@ def test_fit_relocation_keeps_n_constant():
     assert out["n_gaussians"] == 10
     assert out["history"]["relocate_events"]
     assert all(n == 10 for n in out["history"]["n_gaussians"])
+
+
+def test_fit_relocation_can_follow_split_schedule():
+    img = np.zeros((16, 16, 3), np.float32)
+    img[:, 8:] = 1.0
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=10, seed=0))
+    out = fit(
+        field,
+        target,
+        FitConfig(
+            iters=6,
+            log_every=1,
+            split_every=2,
+            split_count=2,
+            split_mode="residual_add",
+            max_gaussians=14,
+            relocate_at_split=True,
+            relocate_count=1,
+            relocate_residual_downsample=2,
+        ),
+        verbose=False,
+    )
+
+    events = out["history"]["relocate_events"]
+    assert [e["iter"] for e in events] == [1, 3]
+    assert all(e["trigger"] == "split" for e in events)
+    assert all(e["residual_downsample"] == 2.0 for e in events)
+    assert out["n_gaussians"] == 14
 
 
 def test_zero_opacity_gaussian_is_pruned():

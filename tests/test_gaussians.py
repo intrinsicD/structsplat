@@ -77,6 +77,13 @@ def test_fitconfig_rejects_negative_dilation():
     FitConfig(aa_dilation=0.0)  # valid
 
 
+def test_fitconfig_rejects_invalid_relocation_downsample():
+    from structsplat.config import FitConfig
+    with pytest.raises(ValueError, match="relocate_residual_downsample must be >= 1"):
+        FitConfig(relocate_residual_downsample=0)
+    FitConfig(relocate_residual_downsample=1)
+
+
 def test_negative_dilation_raises():
     g = GaussianField.from_numpy(np.zeros((3, 2)), np.full((3, 2), 2.0),
                                  np.zeros(3), np.zeros((3, 3)))

@@ -321,6 +321,69 @@ def _spaced_topk_pixels(scores: torch.Tensor, W: int, k: int, min_spacing: float
 
 
 @torch.no_grad()
+def _residual_candidate_pixels(score_map: torch.Tensor, k: int, min_spacing: float,
+                               oversample: float, downsample: int = 1) -> torch.Tensor:
+    """Select high-error pixels, optionally through a coarse max-pooled residual pyramid.
+
+    The coarse path keeps relocation candidate search cheap for large images. It first chooses
+    high-error coarse cells, then snaps each cell to its best full-resolution pixel. Spacing-NMS
+    remains exact full-resolution behavior because the current spacing selector already has the
+    intended fallback semantics and is normally disabled for relocation benchmarks.
+    """
+    H, W = score_map.shape
+    scores = score_map.reshape(-1)
+    if k <= 0:
+        return scores.new_empty((0,), dtype=torch.long)
+    k = min(int(k), int(scores.numel()))
+    if k <= 0:
+        return scores.new_empty((0,), dtype=torch.long)
+    if downsample <= 1 or min_spacing > 0.0:
+        return _spaced_topk_pixels(scores, W, k, min_spacing, oversample)
+
+    ds = max(1, min(int(downsample), H, W))
+    pooled = F.max_pool2d(score_map[None, None], kernel_size=ds, stride=ds, ceil_mode=True)[0, 0]
+    coarse_w = pooled.shape[1]
+    coarse_scores = pooled.reshape(-1)
+    candidate_count = min(
+        int(coarse_scores.numel()),
+        max(k, int(math.ceil(k * max(1.0, oversample)))),
+    )
+    coarse_idx = torch.topk(coarse_scores, k=candidate_count).indices.detach().cpu().tolist()
+
+    selected: list[int] = []
+    seen: set[int] = set()
+    for cidx in coarse_idx:
+        cy = cidx // coarse_w
+        cx = cidx - cy * coarse_w
+        y0 = cy * ds
+        x0 = cx * ds
+        y1 = min(y0 + ds, H)
+        x1 = min(x0 + ds, W)
+        patch = score_map[y0:y1, x0:x1]
+        if patch.numel() == 0:
+            continue
+        local = int(torch.argmax(patch.reshape(-1)).detach().cpu())
+        yy = y0 + local // (x1 - x0)
+        xx = x0 + local % (x1 - x0)
+        idx = yy * W + xx
+        if idx not in seen:
+            selected.append(idx)
+            seen.add(idx)
+            if len(selected) == k:
+                return torch.as_tensor(selected, device=scores.device, dtype=torch.long)
+
+    # Degenerate case: coarse cells were fewer than requested. Fill by exact full-res order while
+    # preserving the pixels already selected through the coarse pass.
+    for idx in torch.topk(scores, k=int(scores.numel())).indices.detach().cpu().tolist():
+        if idx not in seen:
+            selected.append(idx)
+            seen.add(idx)
+            if len(selected) == k:
+                break
+    return torch.as_tensor(selected[:k], device=scores.device, dtype=torch.long)
+
+
+@torch.no_grad()
 def _image_gradients(img: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
     gray = _luma(img)
     gx = torch.zeros_like(gray)
@@ -513,11 +576,12 @@ def _absgrad_wave_from_scores(field: GaussianField, grad_scores: torch.Tensor,
 def _relocate_from_residual(field: GaussianField, target: torch.Tensor,
                             render_img: torch.Tensor,
                             cfg: FitConfig
-                            ) -> tuple[GaussianField, int, torch.Tensor | None, dict[str, float]]:
+                            ) -> tuple[GaussianField, int, torch.Tensor | None,
+                                       dict[str, float | str]]:
     if cfg.relocate_count <= 0 or field.n <= 0:
         return field, 0, None, {}
     H, W = target.shape[:2]
-    k = min(cfg.relocate_count, field.n)
+    k = min(cfg.relocate_count, field.n, int(H * W))
     activity = gaussian_activity(
         field.means, field.conics(cfg.aa_dilation),
         field.radii(cfg.sigma_cutoff, cfg.aa_dilation), H, W, cfg.render_chunk,
@@ -528,10 +592,13 @@ def _relocate_from_residual(field: GaussianField, target: torch.Tensor,
         activity = activity * opac
     low_idx = torch.topk(-activity, k=k).indices
 
-    residual = (render_img - target).abs().mean(dim=2).reshape(-1)
+    residual_map = (render_img - target).abs().mean(dim=2)
     base_scale = math.sqrt((H * W) / max(field.n, 1)) * cfg.split_scale
     min_spacing = cfg.split_min_spacing * max(base_scale, _MIN_DENSIFY_SCALE)
-    pix = _spaced_topk_pixels(residual, W, k, min_spacing, cfg.split_oversample)
+    pix = _residual_candidate_pixels(
+        residual_map, k, min_spacing, cfg.split_oversample, cfg.relocate_residual_downsample
+    )
+    residual = residual_map.reshape(-1)
     y = torch.div(pix, W, rounding_mode="floor")
     x = pix - y * W
     means = field.means.detach().clone()
@@ -565,6 +632,8 @@ def _relocate_from_residual(field: GaussianField, target: torch.Tensor,
     stats = {
         "activity_mean": float(activity[low_idx].mean().detach().cpu()),
         "residual_mean": float(residual[pix].mean().detach().cpu()),
+        "residual_downsample": float(cfg.relocate_residual_downsample),
+        "activity_source": "gaussian_activity",
     }
     return GaussianField(means, log_scales, rotations, colors, opacities, scale_max), k, low_idx, stats
 
@@ -753,6 +822,13 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         # never restructure on the final iteration: the returned field/metrics would include
         # Gaussians that no optimizer step ever touched
         last_it = it == cfg.iters - 1
+        split_due = (not last_it and cfg.split_every is not None and cfg.split_every > 0
+                     and cfg.split_count > 0 and (it + 1) % cfg.split_every == 0)
+        relocate_periodic_due = (
+            not last_it and cfg.relocate_every is not None and cfg.relocate_every > 0
+            and (it + 1) % cfg.relocate_every == 0
+        )
+        relocate_split_due = bool(cfg.relocate_at_split and split_due)
         if (not last_it and cfg.prune_every is not None and cfg.prune_every > 0
                 and (it + 1) % cfg.prune_every == 0):
             field, keep = _maybe_prune(field, cfg, H, W)
@@ -760,20 +836,30 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 print(f"  prune {int((~keep).sum())} -> {field.n} gaussians")
             if keep is not None and cfg.split_mode == "absgrad_wave":
                 absgrad_scores = absgrad_scores[keep]
-        if (not last_it and cfg.relocate_every is not None and cfg.relocate_every > 0
-                and (it + 1) % cfg.relocate_every == 0):
+        if cfg.relocate_count > 0 and (relocate_periodic_due or relocate_split_due):
             field, relocated, reset_idx, relocate_stats = _relocate_from_residual(
                 field, target, img, cfg
             )
             if relocated > 0:
-                event = {"iter": it, "mode": "relocate", "count": relocated, **relocate_stats}
+                if relocate_periodic_due and relocate_split_due:
+                    trigger = "periodic+split"
+                elif relocate_split_due:
+                    trigger = "split"
+                else:
+                    trigger = "periodic"
+                event = {
+                    "iter": it,
+                    "mode": "relocate",
+                    "trigger": trigger,
+                    "count": relocated,
+                    **relocate_stats,
+                }
                 hist["relocate_events"].append(event)
                 if verbose:
                     print(f"  relocate {relocated} gaussians")
                 if cfg.split_mode == "absgrad_wave" and reset_idx is not None:
                     absgrad_scores[reset_idx] = 0
-        if (not last_it and cfg.split_every is not None and cfg.split_every > 0
-                and (it + 1) % cfg.split_every == 0):
+        if split_due:
             split_event = None
             absgrad_scores_carried = False
             if cfg.split_mode in ("duplicate", "fp_duplicate", "support_duplicate"):

@@ -63,9 +63,11 @@ DEFAULT_METHODS = [
     "image_gs_residual",
     "instant_gi_quadtree_fixed",
     "structsplat_onedge_residual",
+    "structsplat_onedge_residual_relocate",
     "structsplat_onedge_tensor",
     "structsplat_flanking_tensor",
     "structsplat_quadtree_wse_residual",
+    "structsplat_quadtree_wse_residual_relocate",
     "structsplat_quadtree_wse_tensor",
     "structsplat_quadtree_hybrid_tensor",
     "floyd_steinberg_tensor",
@@ -77,9 +79,11 @@ METHOD_LABELS = {
     "image_gs_residual": "Image-GS residual",
     "instant_gi_quadtree_fixed": "Instant-GI quadtree",
     "structsplat_onedge_residual": "SS on-edge + residual",
+    "structsplat_onedge_residual_relocate": "SS on-edge + residual relocate",
     "structsplat_onedge_tensor": "SS on-edge + tensor",
     "structsplat_flanking_tensor": "SS flanking + tensor",
     "structsplat_quadtree_wse_residual": "SS qt-WSE + residual",
+    "structsplat_quadtree_wse_residual_relocate": "SS qt-WSE + residual relocate",
     "structsplat_quadtree_wse_tensor": "SS qt-WSE + tensor",
     "structsplat_quadtree_hybrid_tensor": "SS qt-hybrid + tensor",
     "floyd_steinberg_tensor": "Floyd + tensor",
@@ -101,6 +105,9 @@ METHOD_NOTES = {
     "structsplat_onedge_residual": (
         "StructSplat on-edge initializer under the same residual-add growth as external analogues."
     ),
+    "structsplat_onedge_residual_relocate": (
+        "StructSplat on-edge residual-add growth plus split-scheduled residual relocation."
+    ),
     "structsplat_onedge_tensor": (
         "StructSplat on-edge initializer plus tensor-aware residual growth."
     ),
@@ -109,6 +116,9 @@ METHOD_NOTES = {
     ),
     "structsplat_quadtree_wse_residual": (
         "StructSplat quadtree-WSE initializer under the same residual-add growth as external analogues."
+    ),
+    "structsplat_quadtree_wse_residual_relocate": (
+        "StructSplat quadtree-WSE residual-add growth plus split-scheduled residual relocation."
     ),
     "structsplat_quadtree_wse_tensor": (
         "StructSplat quadtree-WSE initializer plus tensor-aware residual growth."
@@ -127,9 +137,11 @@ METHOD_TRACKS = {
     "image_gs_residual": "repo-growth",
     "instant_gi_quadtree_fixed": "fixed-full",
     "structsplat_onedge_residual": "same-growth",
+    "structsplat_onedge_residual_relocate": "same-growth+relocate",
     "structsplat_onedge_tensor": "tensor-growth",
     "structsplat_flanking_tensor": "tensor-growth",
     "structsplat_quadtree_wse_residual": "same-growth",
+    "structsplat_quadtree_wse_residual_relocate": "same-growth+relocate",
     "structsplat_quadtree_wse_tensor": "tensor-growth",
     "structsplat_quadtree_hybrid_tensor": "tensor-growth",
     "floyd_steinberg_tensor": "tensor-growth-control",
@@ -137,12 +149,31 @@ METHOD_TRACKS = {
 
 STRUCTSPLAT_INIT = {
     "structsplat_onedge_residual": ("aniso_onedge", "wse", 0.0),
+    "structsplat_onedge_residual_relocate": ("aniso_onedge", "wse", 0.0),
     "structsplat_onedge_tensor": ("aniso_onedge", "wse", 0.0),
     "structsplat_flanking_tensor": ("aniso_flanking", "wse", 0.5),
     "structsplat_quadtree_wse_residual": ("quadtree_wse", "wse", 0.0),
+    "structsplat_quadtree_wse_residual_relocate": ("quadtree_wse", "wse", 0.0),
     "structsplat_quadtree_wse_tensor": ("quadtree_wse", "wse", 0.0),
     "structsplat_quadtree_hybrid_tensor": ("quadtree_hybrid", "wse", 0.0),
     "floyd_steinberg_tensor": ("aniso_flanking", "floyd_steinberg", 0.5),
+}
+
+STRUCTSPLAT_SPLIT_MODE = {
+    "structsplat_onedge_residual": "residual_add",
+    "structsplat_onedge_residual_relocate": "residual_add",
+    "structsplat_onedge_tensor": "residual_tensor_add",
+    "structsplat_flanking_tensor": "residual_tensor_add",
+    "structsplat_quadtree_wse_residual": "residual_add",
+    "structsplat_quadtree_wse_residual_relocate": "residual_add",
+    "structsplat_quadtree_wse_tensor": "residual_tensor_add",
+    "structsplat_quadtree_hybrid_tensor": "residual_tensor_add",
+    "floyd_steinberg_tensor": "residual_tensor_add",
+}
+
+RELOCATION_METHODS = {
+    "structsplat_onedge_residual_relocate",
+    "structsplat_quadtree_wse_residual_relocate",
 }
 
 
@@ -172,6 +203,36 @@ def _growth_fit_cfg(
         split_count=split_count,
         split_mode=split_mode,
         max_gaussians=int(final_budget),
+    )
+
+
+def _relocation_growth_fit_cfg(
+    base: FitConfig,
+    final_budget: int,
+    start_budget: int,
+    split_mode: str,
+    growth_waves: int,
+    relocate_fraction: float,
+    relocate_downsample: int,
+) -> FitConfig:
+    if relocate_fraction < 0.0:
+        raise ValueError(f"relocate_fraction must be >= 0, got {relocate_fraction}")
+    cfg = _growth_fit_cfg(base, final_budget, start_budget, split_mode, growth_waves)
+    if cfg.split_count <= 0 or relocate_fraction == 0.0:
+        return replace(
+            cfg,
+            relocate_at_split=False,
+            relocate_every=None,
+            relocate_count=0,
+            relocate_residual_downsample=max(1, int(relocate_downsample)),
+        )
+    relocate_count = max(1, int(math.ceil(cfg.split_count * relocate_fraction)))
+    return replace(
+        cfg,
+        relocate_at_split=True,
+        relocate_every=None,
+        relocate_count=relocate_count,
+        relocate_residual_downsample=max(1, int(relocate_downsample)),
     )
 
 
@@ -222,6 +283,8 @@ def _build_method(
     scfg: StructureTensorConfig,
     growth_waves: int,
     device: str,
+    relocate_fraction: float = 0.25,
+    relocate_downsample: int = 4,
 ) -> tuple[GaussianField, FitConfig, float, int, dict[str, Any]]:
     if method == "gaussianimage_fixed_full":
         t0 = time.time()
@@ -274,7 +337,25 @@ def _build_method(
         field, icfg, init_seconds = _structsplat_field(
             img, method, start_budget, seed, scfg, device
         )
-        split_mode = "residual_add" if method.endswith("_residual") else "residual_tensor_add"
+        split_mode = STRUCTSPLAT_SPLIT_MODE[method]
+        if method in RELOCATION_METHODS:
+            fcfg = _relocation_growth_fit_cfg(
+                base_fit,
+                final_budget,
+                start_budget,
+                split_mode,
+                growth_waves,
+                relocate_fraction,
+                relocate_downsample,
+            )
+            return field, fcfg, init_seconds, start_budget, {
+                "init_config": asdict(icfg),
+                "growth_rule": f"{split_mode}+relocate",
+                "relocate_rule": "at_split",
+                "relocate_count_per_event": fcfg.relocate_count,
+                "relocate_fraction": relocate_fraction,
+                "relocate_residual_downsample": fcfg.relocate_residual_downsample,
+            }
         fcfg = _growth_fit_cfg(base_fit, final_budget, start_budget, split_mode, growth_waves)
         return field, fcfg, init_seconds, start_budget, {
             "init_config": asdict(icfg),
@@ -362,6 +443,8 @@ def _fit_one(
     growth_waves: int,
     device: str,
     want_lpips: bool,
+    relocate_fraction: float = 0.25,
+    relocate_downsample: int = 4,
 ) -> tuple[dict[str, Any], np.ndarray]:
     field, fcfg, init_seconds, actual_start, extra = _build_method(
         method,
@@ -374,6 +457,8 @@ def _fit_one(
         scfg,
         growth_waves,
         device,
+        relocate_fraction,
+        relocate_downsample,
     )
     out = fit(field, target, fcfg, verbose=False)
     render = out["render"].detach().clamp(0, 1)
@@ -397,6 +482,14 @@ def _fit_one(
         **_extra_metrics(render, target, want_lpips),
         **_scale_stats(out["field"]),
     }
+    for key in (
+        "relocate_rule",
+        "relocate_count_per_event",
+        "relocate_fraction",
+        "relocate_residual_downsample",
+    ):
+        if key in extra:
+            row[key] = extra[key]
     return row, render.cpu().numpy()
 
 
@@ -1077,6 +1170,8 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
         "pixel_loss": args.pixel_loss,
         "ssim_weight": args.ssim_weight,
         "lpips": args.lpips,
+        "relocate_fraction": args.relocate_fraction,
+        "relocate_downsample": args.relocate_downsample,
         "resume": args.resume,
         "max_new_cells": args.max_new_cells,
     }, device=device))
@@ -1158,6 +1253,8 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
                             args.growth_waves,
                             device,
                             args.lpips,
+                            args.relocate_fraction,
+                            args.relocate_downsample,
                         )
                         recon_path = recon_dir / image / str(final_budget) / f"seed{seed}_{method}.png"
                         save_image(render_np, recon_path)
@@ -1215,6 +1312,10 @@ def main() -> None:
     p.add_argument("--pixel-loss", choices=["l1", "l2", "charbonnier"], default="l1")
     p.add_argument("--ssim-weight", type=float, default=0.3)
     p.add_argument("--lpips", action="store_true")
+    p.add_argument("--relocate-fraction", type=float, default=0.25,
+                   help="fraction of split_count moved by relocation rows on each growth event")
+    p.add_argument("--relocate-downsample", type=int, default=4,
+                   help="coarse residual max-pool factor for relocation rows")
     p.add_argument("--resume", action="store_true")
     p.add_argument("--max-new-cells", type=int, default=None)
     p.add_argument("--device", default=None)

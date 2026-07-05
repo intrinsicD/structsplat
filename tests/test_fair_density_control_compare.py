@@ -36,14 +36,12 @@ def test_method_tracks_keep_growth_methods_at_same_start_budget(tmp_path):
         "gaussianimage_plus_residual",
         "image_gs_residual",
         "structsplat_onedge_residual",
+        "structsplat_onedge_residual_relocate",
         "structsplat_onedge_tensor",
         "structsplat_quadtree_wse_tensor",
     ]
     for method in growth_methods:
-        split_mode = "residual_add" if method.endswith("_residual") or method in {
-            "gaussianimage_plus_residual",
-            "image_gs_residual",
-        } else "residual_tensor_add"
+        split_mode = F.STRUCTSPLAT_SPLIT_MODE.get(method, "residual_add")
         cfg = F._growth_fit_cfg(base, 2000, start, split_mode, growth_waves=4)
         assert cfg.max_gaussians == 2000
         assert cfg.split_every == 2
@@ -74,6 +72,40 @@ def test_repo_growth_methods_honor_non_half_start_budget(tmp_path: Path):
         assert actual_start == start_budget
         assert meta["init_config"]["num_gaussians"] == start_budget
         assert cfg.split_count == 35
+
+
+def test_relocation_method_uses_split_scheduled_coarse_residual(tmp_path: Path):
+    img = np.full((24, 24, 3), 0.5, dtype=np.float32)
+    image_path = tmp_path / "target.png"
+    Image.fromarray((img * 255).astype(np.uint8), mode="RGB").save(image_path)
+
+    field, cfg, _seconds, actual_start, meta = F._build_method(
+        method="structsplat_onedge_residual_relocate",
+        img=img,
+        image_path=image_path,
+        final_budget=200,
+        start_budget=100,
+        seed=3,
+        base_fit=FitConfig(iters=20),
+        scfg=StructureTensorConfig(),
+        growth_waves=4,
+        device="cpu",
+        relocate_fraction=0.25,
+        relocate_downsample=4,
+    )
+
+    assert field.n == 100
+    assert actual_start == 100
+    assert cfg.split_mode == "residual_add"
+    assert cfg.split_every == 4
+    assert cfg.split_count == 25
+    assert cfg.relocate_at_split is True
+    assert cfg.relocate_every is None
+    assert cfg.relocate_count == 7
+    assert cfg.relocate_residual_downsample == 4
+    assert meta["growth_rule"] == "residual_add+relocate"
+    assert meta["relocate_rule"] == "at_split"
+    assert meta["relocate_count_per_event"] == 7
 
 
 def test_write_index_links_summary_metrics_and_images(tmp_path: Path):

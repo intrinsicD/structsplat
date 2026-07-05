@@ -95,8 +95,10 @@ class FitConfig:
     split_color_init: str = "target"    # target or residual; additive renderers force residual
     absgrad_decay: float = 1.0          # AbsGS-style |dL/dmu| accumulation decay
     relocate_every: int | None = None
+    relocate_at_split: bool = False      # relocate on split/growth iterations without a separate timer
     relocate_count: int = 0
     relocate_init_opacity: float = 0.05  # low-alpha function-preserving warm start
+    relocate_residual_downsample: int = 1  # coarse residual candidate search; 1 = exact full-res
     # residual_tensor_add anisotropy, mirroring InitConfig semantics so the densifier and the
     # init agree on what anisotropy means: ratio = 1 + (max_axis_ratio-1)*coherence**power.
     densify_max_axis_ratio: float = 6.0
@@ -128,6 +130,10 @@ class FitConfig:
         if not 0.0 < self.relocate_init_opacity < 1.0:
             raise ValueError(
                 f"relocate_init_opacity must be in (0, 1), got {self.relocate_init_opacity}")
+        if self.relocate_residual_downsample < 1:
+            raise ValueError(
+                "relocate_residual_downsample must be >= 1, "
+                f"got {self.relocate_residual_downsample}")
 
 
 @dataclass

@@ -75,8 +75,10 @@ def cmd_fit(args):
                      split_color_init=args.split_color_init,
                      absgrad_decay=args.absgrad_decay,
                      relocate_every=args.relocate_every,
+                     relocate_at_split=args.relocate_at_split,
                      relocate_count=args.relocate_count,
                      relocate_init_opacity=args.relocate_init_opacity,
+                     relocate_residual_downsample=args.relocate_residual_downsample,
                      max_gaussians=args.max_gaussians)
 
     if args.pyramid:
@@ -223,8 +225,12 @@ def main():
                    help="color initialization for normalized residual-add children")
     f.add_argument("--absgrad-decay", type=float, default=1.0)
     f.add_argument("--relocate-every", type=int, default=None)
+    f.add_argument("--relocate-at-split", action="store_true",
+                   help="relocate low-activity Gaussians on split/growth iterations")
     f.add_argument("--relocate-count", type=int, default=0)
     f.add_argument("--relocate-init-opacity", type=float, default=0.05)
+    f.add_argument("--relocate-residual-downsample", type=int, default=1,
+                   help="max-pool residual by this factor before relocation candidate search")
     f.add_argument("--max-gaussians", type=int, default=None)
     f.add_argument("--seed", type=int, default=0)
     f.add_argument("--outdir", default="runs")
