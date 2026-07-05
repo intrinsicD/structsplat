@@ -132,3 +132,8 @@ entries:
       - "Routed the difficult four-image run as N34 experiment because it produced a complete 72-cell benchmark and analysis artifacts."
       - "Did not crystallize O17 because this run is hard-selected and seed-0 only; it supports the quadtree/finalist pattern but does not close the ABL-004 confirmation question."
       - "Did not add a staged claim because the final response can summarize the result without treating this stress subset as a general conclusion."
+  - turn: "2026-07-05_001#3"
+    notes:
+      - "Routed the diagram and visual-grid generation as N35 experiment because it produced new derived figures, 72 matched rerun reconstructions, comparison grids, and an HTML index."
+      - "Did not stage a new ABL-004 claim because the visual artifacts support inspection of N34 rather than changing the seed-0 stress-subset interpretation."
+      - "Recorded the lack of persisted original renders as an open protocol follow-up because the matched reruns showed optimizer-path variability versus the CSV."

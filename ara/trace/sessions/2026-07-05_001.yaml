@@ -2,9 +2,9 @@ session:
   id: "2026-07-05_001"
   date: "2026-07-05"
   started: "2026-07-05T01:03+0200"
-  last_turn: "2026-07-05T09:52+0200"
-  turn_count: 2
-  summary: "Implemented and committed the ABL-004 confirmation runner, tiled exact CUDA renderer, CORE-005 support fade, INIT-003 spectral analyzer, COMP-003 codec rungs 1-3, task retirement/status updates, clean broad validation, and a 72-cell difficult-image ABL-004 subset."
+  last_turn: "2026-07-05T10:44+0200"
+  turn_count: 3
+  summary: "Implemented and committed the ABL-004 confirmation runner, tiled exact CUDA renderer, CORE-005 support fade, INIT-003 spectral analyzer, COMP-003 codec rungs 1-3, task retirement/status updates, clean broad validation, a 72-cell difficult-image ABL-004 subset, and difficult-4 metric/visual comparison artifacts."
 
 events_logged:
   - turn: 1
@@ -49,6 +49,12 @@ events_logged:
     routing: direct
     provenance: ai-executed
     summary: "Ran the 72-cell exact-CUDA ABL-004 difficult four-image subset; quadtree variants led at 5k/10k, aniso_flanking narrowly led at 2k, and Floyd-Steinberg remained weak at low budget."
+  - turn: 3
+    type: experiment
+    id: "N35"
+    routing: direct
+    provenance: ai-executed
+    summary: "Generated CSV-derived ABL-004 diagrams and reran 72/72 exact-CUDA cells to save difficult-4 visual comparison grids and reconstructions."
 
 ai_actions:
   - turn: 1
@@ -117,6 +123,18 @@ ai_actions:
     provenance: ai-executed
     files_changed:
       - "results/abl004_difficult4_test/"
+  - turn: 3
+    action: "Generated metric diagrams from `ablation.csv`, reran all 72 matching cells for final reconstruction images, assembled comparison grids, and wrote a local HTML index."
+    provenance: ai-executed
+    files_changed:
+      - "results/abl004_difficult4_test/diagrams/"
+      - "results/abl004_difficult4_test/visual_compare/"
+      - "ara/evidence/abl004-difficult4-visual-compare-2026-07-05/run.md"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/2026-07-05_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
+      - "ara/evidence/README.md"
 
 claims_touched: []
 
@@ -125,6 +143,8 @@ key_context:
     excerpt: "User asked to work on the points in correct order, plan each, implement, test and fix problems, commit changes, iterate until done, then start a thorough test."
   - turn: 2
     excerpt: "User asked for a test run on four difficult images."
+  - turn: 3
+    excerpt: "User asked to show diagrams and images to compare for `results/abl004_difficult4_test/ablation.csv`."
 
 open_threads:
   - "ABL-004 confirmation execution remains open: run the 1512-cell default confirmation set when compute is available."
@@ -133,6 +153,7 @@ open_threads:
   - "COMP-003 remains partial after rungs 1-3; sorted attribute planes, LSQ ranges, VQ, entropy coding, and joint RD training remain open."
   - "COMP-003 still needs committed RD evidence under `ara/evidence/` for the implemented rungs, beyond the tiny smoke run."
   - "The difficult-image subset is useful stress evidence but remains seed-0 and intentionally hard-selected; it should not replace the 28-image x 3-seed confirmation set."
+  - "Future ABL-004 confirmation runs should persist final renders or fields if exact visual provenance is required; otherwise visual sheets require matched reruns and may show optimizer-path variability."
 
 ai_suggestions_pending:
   - "Use the ABL-004 confirmation runner with bounded `--max-new-cells` shards for scheduled confirmation."

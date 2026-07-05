@@ -704,3 +704,29 @@ tree:
       - "results/abl004_difficult4_test/rank_stability.csv"
     also_depends_on: [N26, N28]
     status: resolved
+  - id: N35
+    type: experiment
+    title: "ABL-004 difficult four-image visual compare"
+    provenance: ai-executed
+    timestamp: "2026-07-05T10:44+0200"
+    result: >
+      Generated diagrams and visual comparison sheets for
+      `results/abl004_difficult4_test/ablation.csv`. Metric diagrams were
+      computed directly from the 72-row CSV and written under
+      `results/abl004_difficult4_test/diagrams/`. Because the original fitted
+      fields/final renders were not persisted, visual grids were produced by
+      rerunning the same 72 exact-CUDA cells: four difficult Kodak images,
+      budgets 2000/5000/10000, six variants, seed 0, max-side 768, and 1500
+      iterations. The rerun completed 72/72 cells with zero errors in 33.07
+      minutes, writing four targets, 72 reconstructions, four by-image grids,
+      three by-budget grids, render-check metrics, and a single local HTML index.
+      Grid labels use the original CSV metrics; `visual_metrics.csv` records
+      both CSV and rerun metrics. Mean rerun PSNR delta versus CSV was -0.0701
+      dB at 2000, +0.1579 dB at 5000, and +0.0103 dB at 10000.
+    evidence:
+      - "results/abl004_difficult4_test/diagrams"
+      - "results/abl004_difficult4_test/visual_compare"
+      - "results/abl004_difficult4_test/visual_compare/index.html"
+      - "ara/evidence/abl004-difficult4-visual-compare-2026-07-05/run.md"
+    also_depends_on: [N34]
+    status: resolved
