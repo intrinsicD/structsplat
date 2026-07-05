@@ -167,3 +167,8 @@ entries:
       - "Staged O21 as a constraint because code inspection clarified current residual-map usage and an untested relocation capability."
       - "Did not create a direct experiment node because no benchmark or code change was executed this turn."
       - "Did not crystallize O21 because residual relocation still needs an explicit fair-comparison run before it becomes protocol guidance."
+  - turn: "2026-07-05_001#10"
+    notes:
+      - "Routed split-scheduled residual relocation implementation as N41 because it produced committed code, focused tests, and a smoke result."
+      - "Staged O22 as a constraint because relocation rows are now implemented but not yet empirically compared on the difficult-four/full fair benchmark."
+      - "Did not crystallize O21 or O22: the implementation closes the code gap, but performance and protocol guidance require the user's planned test run."

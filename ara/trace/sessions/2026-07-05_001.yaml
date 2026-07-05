@@ -2,9 +2,9 @@ session:
   id: "2026-07-05_001"
   date: "2026-07-05"
   started: "2026-07-05T01:03+0200"
-  last_turn: "2026-07-05T19:28+0200"
-  turn_count: 9
-  summary: "Implemented ABL-004 tooling/evidence, adopted HTML overview artifacts, ran a fair density-control matched-policy comparison, added convergence/difference visual reporting, and clarified residual-growth versus relocation behavior."
+  last_turn: "2026-07-05T20:05+0200"
+  turn_count: 10
+  summary: "Implemented ABL-004 tooling/evidence, adopted HTML overview artifacts, ran a fair density-control matched-policy comparison, added convergence/difference visual reporting, clarified residual-growth versus relocation behavior, and implemented split-scheduled relocation variants."
 
 events_logged:
   - turn: 1
@@ -109,6 +109,18 @@ events_logged:
     routing: staged
     provenance: ai-suggested
     summary: "Growth uses residual maps to add Gaussians at high-error pixels; residual relocation of low-activity existing Gaussians exists but was disabled in the fair run."
+  - turn: 10
+    type: experiment
+    id: "N41"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented split-scheduled residual relocation, coarse residual candidate selection, and two fair-comparison relocation rows; focused validation and a one-cell smoke passed."
+  - turn: 10
+    type: observation
+    id: "O22"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Relocation rows are implemented but their quality/runtime effect remains unknown until the next fair density-control test run."
 
 ai_actions:
   - turn: 1
@@ -263,6 +275,22 @@ ai_actions:
       - "ara/trace/sessions/2026-07-05_001.yaml"
       - "ara/trace/sessions/session_index.yaml"
       - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 10
+    action: "Implemented and committed split-scheduled residual relocation support, coarse residual candidate search, CLI options, fair-comparison relocation rows, and focused tests."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/config.py"
+      - "src/structsplat/fit.py"
+      - "src/structsplat/cli.py"
+      - "benchmarks/fair_density_control_compare.py"
+      - "tests/test_fit_dynamics.py"
+      - "tests/test_fair_density_control_compare.py"
+      - "tests/test_gaussians.py"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/sessions/2026-07-05_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
 
 claims_touched: []
 
@@ -285,6 +313,8 @@ key_context:
     excerpt: "User asked to show difference images to the target for each variant in the row below each image."
   - turn: 9
     excerpt: "User asked whether the difference images are already used in growth and density control to move free Gaussians to largest-error areas."
+  - turn: 10
+    excerpt: "User asked to do the four relocation-improvement points before the next test run."
 
 open_threads:
   - "ABL-004 confirmation execution remains open: run the 1512-cell default confirmation set when compute is available."
@@ -297,7 +327,7 @@ open_threads:
   - "After confirmation, decide whether to pivot the public thesis from anisotropic flanking specifically toward the broader structure-tensor density + WSE/quadtree allocation result."
   - "Native external-repository execution remains separate from the matched-policy analogue run; the current result isolates placement/growth policy inside StructSplat's fitter and renderer."
   - "Convergence interpretation should be validated on the broader confirmation set; current AUC/hit-rate evidence is from the hard-selected seed-0 subset."
-  - "Residual relocation exists but has not been tested in the fair density-control comparison; evaluate it separately from residual addition."
+  - "Run the next fair density-control test including the new split-scheduled relocation rows to measure quality/runtime separately from residual addition."
 
 ai_suggestions_pending:
   - "Use the ABL-004 confirmation runner with bounded `--max-new-cells` shards for scheduled confirmation."
@@ -306,4 +336,4 @@ ai_suggestions_pending:
   - "Use the fair density-control result to prioritize quadtree-WSE/on-edge plus residual growth in the next ABL-004 confirmation shard, while keeping MS-SSIM/perceptual checks explicit."
   - "Keep convergence artifacts in every future fair comparison overview: mean PSNR curves, AUC tables, and target-hit-rate tables/heatmaps."
   - "Keep target-difference rows in future visual overviews where per-method image inspection is requested."
-  - "Add a relocation-enabled fair-comparison variant that uses `relocate_every`/`relocate_count` to recycle low-activity Gaussians into high-residual regions."
+  - "Evaluate the new relocation-enabled fair-comparison rows in the next HTML-overview benchmark run."

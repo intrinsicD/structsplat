@@ -842,3 +842,32 @@ tree:
       - "commit 866cb5f"
     also_depends_on: [N38, N39]
     status: resolved
+  - id: N41
+    type: experiment
+    title: "Split-scheduled residual relocation variants"
+    provenance: ai-executed
+    timestamp: "2026-07-05T20:05+0200"
+    result: >
+      Implemented split-scheduled residual relocation support and fair-comparison
+      relocation rows. `FitConfig` now exposes `relocate_at_split` and
+      `relocate_residual_downsample`; `fit.py` can trigger relocation on
+      split/growth events and select high-error relocation targets through a
+      coarse max-pooled residual candidate path while retaining the existing
+      exact Gaussian activity metric for low-activity source selection. The fair
+      density-control harness now includes opt-in/default rows for
+      `structsplat_onedge_residual_relocate` and
+      `structsplat_quadtree_wse_residual_relocate`, with row metadata for
+      relocation trigger, count fraction, and residual downsample factor. Focused
+      validation passed: ruff on touched files, 39 focused pytest tests, and a
+      one-cell CPU fair-harness smoke for the relocation row.
+    evidence:
+      - "src/structsplat/config.py"
+      - "src/structsplat/fit.py"
+      - "src/structsplat/cli.py"
+      - "benchmarks/fair_density_control_compare.py"
+      - "tests/test_fit_dynamics.py"
+      - "tests/test_fair_density_control_compare.py"
+      - "tests/test_gaussians.py"
+      - "commit 0839f03"
+    also_depends_on: [N38, N40]
+    status: resolved

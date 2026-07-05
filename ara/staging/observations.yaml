@@ -230,3 +230,14 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O22
+    timestamp: "2026-07-05T20:05+0200"
+    provenance: ai-suggested
+    content: "The fair harness now exposes split-scheduled residual relocation rows, but their quality/runtime effect remains unknown until the next fair density-control test run includes them."
+    context: "Implementation turn after the user asked to do the four relocation-improvement points before rerunning the benchmark. Code and focused tests were committed, but no difficult-four/full fair benchmark was rerun yet."
+    potential_type: constraint
+    bound_to: [N41]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
