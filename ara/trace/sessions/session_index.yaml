@@ -22,8 +22,8 @@ sessions:
     open_threads: 6
   - id: "2026-07-05_001"
     date: "2026-07-05"
-    summary: "Implemented ABL-004 confirmation tooling, tiled exact CUDA rendering, support fade, INIT-003 spectral calibration tooling, COMP-003 codec rungs 1-3, task retirement/status updates, clean broad validation, a 72-cell difficult-image ABL-004 subset, and difficult-4 visual comparison artifacts."
-    turn_count: 3
-    events_count: 8
+    summary: "Implemented ABL-004 confirmation tooling, tiled exact CUDA rendering, support fade, INIT-003 spectral calibration tooling, COMP-003 codec rungs 1-3, task retirement/status updates, clean broad validation, difficult-image evidence, visual comparison artifacts, and a standing HTML overview convention."
+    turn_count: 4
+    events_count: 9
     claims_touched: []
-    open_threads: 7
+    open_threads: 8

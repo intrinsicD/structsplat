@@ -730,3 +730,22 @@ tree:
       - "ara/evidence/abl004-difficult4-visual-compare-2026-07-05/run.md"
     also_depends_on: [N34]
     status: resolved
+  - id: N36
+    type: decision
+    title: "Use local HTML overviews for benchmark artifacts"
+    provenance: user
+    timestamp: "2026-07-05T11:05+0200"
+    choice: >
+      Treat local `index.html` overview pages as a standing output convention
+      for substantial benchmark and visual-audit result directories, embedding
+      key diagrams/images and linking raw CSV/JSON artifacts.
+    alternatives:
+      - "Leave plots, grids, and raw artifacts only as separate files in subdirectories."
+      - "Generate HTML overviews only ad hoc when requested."
+    evidence:
+      - "benchmarks/README.md"
+      - "tasks/ABL-004-controls-and-full-run.md"
+      - "results/abl004_difficult4_test/visual_compare/index.html"
+      - "commit bfe48cd"
+    also_depends_on: [N35]
+    status: resolved
