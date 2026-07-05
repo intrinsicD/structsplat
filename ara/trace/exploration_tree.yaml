@@ -818,3 +818,27 @@ tree:
       - "commit 243fb37"
     also_depends_on: [N38]
     status: resolved
+  - id: N40
+    type: experiment
+    title: "Fair density-control diff-row visual overview"
+    provenance: ai-executed
+    timestamp: "2026-07-05T19:11+0200"
+    result: >
+      Added amplified target-difference rows to
+      `benchmarks/fair_density_control_compare.py` visual grids and regenerated
+      `results/fair_density_control_difficult4/` from existing rows without
+      rerunning fits. The HTML overview now states that each reconstruction row
+      is followed by an amplified `|target - reconstruction| x6` difference row.
+      The result directory contains 136 diff PNGs under `diffs/` and enlarged
+      by-image/by-budget grids; representative grids were visually inspected.
+    evidence:
+      - "benchmarks/fair_density_control_compare.py"
+      - "tests/test_fair_density_control_compare.py"
+      - "results/fair_density_control_difficult4/index.html"
+      - "results/fair_density_control_difficult4/diffs"
+      - "results/fair_density_control_difficult4/grids/by_image"
+      - "results/fair_density_control_difficult4/grids/by_budget"
+      - "ara/evidence/fair-density-control-difficult4-2026-07-05/run.md"
+      - "commit 866cb5f"
+    also_depends_on: [N38, N39]
+    status: resolved

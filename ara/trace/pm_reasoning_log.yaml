@@ -157,3 +157,8 @@ entries:
       - "Routed convergence-report generation as N39 experiment because it added committed report code and regenerated concrete convergence artifacts from existing histories."
       - "Staged O20 as a claim because it interprets convergence evidence and establishes the comparison rule of AUC/hit-rate before conditional hit iteration."
       - "Did not crystallize O20 because it remains seed-0 difficult-subset evidence, and the user has not yet affirmed this convergence interpretation as the adopted protocol."
+  - turn: "2026-07-05_001#8"
+    notes:
+      - "Routed the diff-row visual overview update as N40 experiment because it produced committed report-generator code and regenerated concrete visual artifacts."
+      - "Did not stage a new claim because amplified difference maps are an inspection aid, not a new empirical conclusion."
+      - "Left O19/O20 staged because this turn changed visualization packaging only."

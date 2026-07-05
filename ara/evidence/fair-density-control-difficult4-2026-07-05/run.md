@@ -38,6 +38,7 @@ Artifacts:
   `target_hit_rates.csv`
 - Visuals: `plots/`, `grids/by_image/`, `grids/by_budget/`,
   `reconstructions/`
+- Difference maps: `results/fair_density_control_difficult4/diffs/`
 
 Completion:
 
@@ -47,6 +48,10 @@ Completion:
 - Visual grids written: four by-image grids and three by-budget grids.
 - Convergence report regenerated from existing JSONL histories without rerunning
   fits after commit `243fb37`.
+- Visual grids regenerated after commit `866cb5f` so every reconstruction row is
+  followed by an amplified `|target - reconstruction| x6` difference row. The
+  run wrote 136 diff PNGs: 132 method reconstructions plus four target zero-diff
+  alignment tiles.
 
 Headline PSNR means:
 
@@ -105,6 +110,8 @@ Caveats:
 
 - This is a matched-policy analogue benchmark inside StructSplat's fitter and
   renderer, not a native external-repository execution.
+- Difference maps are display-amplified residual visualizations, not additional
+  scalar metrics.
 - The Instant-GI row is the local quadtree/Delaunay fallback, not evidence about
   a learned Instant-GI checkpoint.
 - The subset is hard-selected and seed-0 only, so it should guide the next
