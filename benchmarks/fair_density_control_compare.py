@@ -294,6 +294,7 @@ def _base_fit(args: argparse.Namespace) -> FitConfig:
         target_psnrs=target_psnrs,
         render_chunk=args.render_chunk,
         renderer=args.renderer,
+        support_fade=bool(getattr(args, "support_fade", False)),
         pixel_loss=args.pixel_loss,
         ssim_weight=args.ssim_weight,
         compute_lpips=False,
@@ -487,6 +488,7 @@ def _cell_key(row: dict[str, Any]) -> tuple[Any, ...]:
         row.get("method"),
         int(row.get("iters")),
         row.get("renderer"),
+        bool(row.get("support_fade", False)),
         row.get("pixel_loss"),
         float(row.get("ssim_weight")),
         row.get("feature_cap_px") if str(row.get("method", "")).endswith("_featurecap") else None,
@@ -1250,6 +1252,7 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
         "target_psnr": args.target_psnr,
         "target_psnrs": args.target_psnrs,
         "renderer": args.renderer,
+        "support_fade": args.support_fade,
         "render_chunk": args.render_chunk,
         "pixel_loss": args.pixel_loss,
         "ssim_weight": args.ssim_weight,
@@ -1305,6 +1308,7 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
                         "method": method,
                         "iters": args.iters,
                         "renderer": args.renderer,
+                        "support_fade": args.support_fade,
                         "pixel_loss": args.pixel_loss,
                         "ssim_weight": args.ssim_weight,
                         "feature_cap_px": (
@@ -1401,6 +1405,8 @@ def main() -> None:
     p.add_argument("--corner-frac", type=float, default=0.15)
     p.add_argument("--render-chunk", type=int, default=512)
     p.add_argument("--renderer", default="cuda")
+    p.add_argument("--support-fade", action="store_true",
+                   help="enable C0 compact-support fade in the renderer and fit residual scoring")
     p.add_argument("--pixel-loss", choices=["l1", "l2", "charbonnier"], default="l1")
     p.add_argument("--ssim-weight", type=float, default=0.3)
     p.add_argument("--lpips", action="store_true")

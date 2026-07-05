@@ -26,6 +26,7 @@ def test_method_tracks_keep_growth_methods_at_same_start_budget(tmp_path):
         target_psnrs=[22.0],
         render_chunk=64,
         renderer="normalized",
+        support_fade=False,
         pixel_loss="l1",
         ssim_weight=0.3,
     )
@@ -48,6 +49,42 @@ def test_method_tracks_keep_growth_methods_at_same_start_budget(tmp_path):
         assert cfg.max_gaussians == 2000
         assert cfg.split_every == 2
         assert cfg.split_count == 250
+
+
+def test_base_fit_and_cell_key_include_support_fade_axis():
+    args = SimpleNamespace(
+        iters=10,
+        target_psnr=35.0,
+        target_psnrs=[22.0],
+        render_chunk=64,
+        renderer="normalized",
+        support_fade=True,
+        pixel_loss="l1",
+        ssim_weight=0.3,
+    )
+    cfg = F._base_fit(args)
+    assert cfg.support_fade is True
+
+    row = {
+        "image": "x",
+        "source_path": "x.png",
+        "max_side": 64,
+        "final_budget": 100,
+        "start_budget": 50,
+        "start_fraction": 0.5,
+        "growth_waves": 4,
+        "seed": 0,
+        "method": "structsplat_onedge_residual",
+        "iters": 10,
+        "renderer": "normalized",
+        "pixel_loss": "l1",
+        "ssim_weight": 0.3,
+    }
+    fade_off = F._cell_key(row)
+    fade_on = F._cell_key({**row, "support_fade": True})
+    assert fade_off != fade_on
+    assert fade_off[11] is False
+    assert fade_on[11] is True
 
 
 def test_repo_growth_methods_honor_non_half_start_budget(tmp_path: Path):
