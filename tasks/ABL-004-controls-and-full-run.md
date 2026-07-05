@@ -111,6 +111,15 @@ conditions and honest controls?
   matching uncapped rows, they averaged -2.0531 dB PSNR, -0.8960 AUC, and -4.05 s fit time, with
   wins only on `kodim07` at 10k (4/48 paired PSNR wins). Do not promote feature-cap variants to
   the confirmation shortlist from this evidence.
+- 2026-07-05: Started the default ABL-004 confirmation set after the fair-density follow-ups did
+  not change the shortlist or renderer. `results/abl004_confirmation/confirmation_plan.csv`
+  contains 1,512 expected cells (28 images x 3 seeds x 3 budgets x 6 variants). The first bounded
+  exact-CUDA shard completed 18/18 requested cells: `kodim01`, budget 2000, all six variants,
+  seeds {0,1,2}. `results/abl004_confirmation/index.html` now links the confirmation analysis,
+  scalar plots, missing-cell report, leaderboards, and paired-delta tables. This shard is partial
+  smoke/evidence only: 1,494 cells remain before confirmation is decision-grade. On this slice,
+  `aniso_onedge` led mean PSNR (23.3672), followed by Floyd-Steinberg (23.2256) and
+  `quadtree_hybrid` (23.1588).
 
 ## Decision-grade staged protocol
 

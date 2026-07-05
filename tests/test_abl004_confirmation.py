@@ -141,6 +141,10 @@ def test_confirmation_analysis_reports_pairs_missing_and_ranks(tmp_path):
     ranks = _read_csv(tmp_path / "rank_stability.csv")
     assert [r for r in ranks if r["strategy"] == "aniso_onedge"][0]["wins"] == "2"
     assert (tmp_path / "confirmation_analysis.md").exists()
+    index = (tmp_path / "index.html").read_text(encoding="utf-8")
+    assert "ABL-004 Confirmation Overview" in index
+    assert "confirmation_analysis.md" in index
+    assert "missing_cells.csv" in index
 
 
 def test_bootstrap_mean_ci_handles_empty_and_singleton():

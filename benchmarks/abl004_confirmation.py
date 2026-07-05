@@ -16,6 +16,7 @@ import csv
 import json
 import math
 from dataclasses import dataclass
+from html import escape
 from pathlib import Path
 from statistics import mean, median, pstdev
 from typing import Any, Iterable
@@ -474,6 +475,55 @@ def _write_summary(
     (outdir / "confirmation_analysis.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def _write_index(outdir: Path) -> None:
+    links = [
+        ("Confirmation analysis", "confirmation_analysis.md"),
+        ("Ablation summary", "summary.md"),
+        ("Confirmation config", "confirmation_config.json"),
+        ("Confirmation plan", "confirmation_plan.csv"),
+        ("Missing cells", "missing_cells.csv"),
+        ("Leaderboard", "leaderboard.csv"),
+        ("Paired deltas vs baseline", "paired_deltas_vs_baseline.csv"),
+        ("All pairwise deltas", "pairwise_deltas.csv"),
+        ("Paired units vs baseline", "paired_units_vs_baseline.csv"),
+        ("Rank stability", "rank_stability.csv"),
+        ("Raw JSONL rows", "ablation.jsonl"),
+    ]
+    plots = ["psnr_vs_budget.png", "psnr_vs_iters.png"]
+    html = [
+        "<!doctype html>",
+        '<html lang="en"><head><meta charset="utf-8">',
+        "<title>ABL-004 Confirmation Overview</title>",
+        "<style>",
+        "body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:24px;line-height:1.45;color:#1f2328;background:#fff}",
+        "h1{margin-bottom:0.25rem} .note{color:#57606a;max-width:80ch}",
+        "ul{padding-left:1.25rem} a{color:#0969da;text-decoration:none} a:hover{text-decoration:underline}",
+        ".plots{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-top:18px}",
+        "figure{margin:0} img{max-width:100%;border:1px solid #d0d7de;border-radius:6px;background:#fff}",
+        "figcaption{font-size:0.9rem;color:#57606a;margin-top:4px}",
+        "</style></head><body>",
+        "<h1>ABL-004 Confirmation Overview</h1>",
+        '<p class="note">Decision-grade confirmation artifacts. Results may be partial while '
+        "bounded shards are still running; see missing_cells.csv for remaining cells. "
+        "This overview embeds scalar plots only because the ablation confirmation harness does "
+        "not persist per-cell reconstruction images.</p>",
+        "<h2>Files</h2>",
+        "<ul>",
+    ]
+    for label, rel in links:
+        if (outdir / rel).exists():
+            html.append(f'<li><a href="{escape(rel)}">{escape(label)}</a></li>')
+    html += ["</ul>", "<h2>Plots</h2>", '<div class="plots">']
+    for rel in plots:
+        if (outdir / rel).exists():
+            html.append(
+                f'<figure><a href="{escape(rel)}"><img src="{escape(rel)}" alt="{escape(rel)}"></a>'
+                f"<figcaption>{escape(rel)}</figcaption></figure>"
+            )
+    html += ["</div>", "</body></html>"]
+    (outdir / "index.html").write_text("\n".join(html) + "\n", encoding="utf-8")
+
+
 def write_confirmation_analysis(
     outdir: Path,
     spec: ConfirmationSpec,
@@ -551,6 +601,7 @@ def write_confirmation_analysis(
         baseline_pairs=baseline_pairs,
         ranks=ranks,
     )
+    _write_index(outdir)
     return summary
 
 
