@@ -64,11 +64,15 @@ DEFAULT_METHODS = [
     "instant_gi_quadtree_fixed",
     "structsplat_onedge_residual",
     "structsplat_onedge_residual_relocate",
+    "structsplat_onedge_residual_featurecap",
     "structsplat_onedge_tensor",
+    "structsplat_onedge_tensor_featurecap",
     "structsplat_flanking_tensor",
     "structsplat_quadtree_wse_residual",
     "structsplat_quadtree_wse_residual_relocate",
+    "structsplat_quadtree_wse_residual_featurecap",
     "structsplat_quadtree_wse_tensor",
+    "structsplat_quadtree_wse_tensor_featurecap",
     "structsplat_quadtree_hybrid_tensor",
     "floyd_steinberg_tensor",
 ]
@@ -80,11 +84,15 @@ METHOD_LABELS = {
     "instant_gi_quadtree_fixed": "Instant-GI quadtree",
     "structsplat_onedge_residual": "SS on-edge + residual",
     "structsplat_onedge_residual_relocate": "SS on-edge + residual relocate",
+    "structsplat_onedge_residual_featurecap": "SS on-edge + residual feature cap",
     "structsplat_onedge_tensor": "SS on-edge + tensor",
+    "structsplat_onedge_tensor_featurecap": "SS on-edge + tensor feature cap",
     "structsplat_flanking_tensor": "SS flanking + tensor",
     "structsplat_quadtree_wse_residual": "SS qt-WSE + residual",
     "structsplat_quadtree_wse_residual_relocate": "SS qt-WSE + residual relocate",
+    "structsplat_quadtree_wse_residual_featurecap": "SS qt-WSE + residual feature cap",
     "structsplat_quadtree_wse_tensor": "SS qt-WSE + tensor",
+    "structsplat_quadtree_wse_tensor_featurecap": "SS qt-WSE + tensor feature cap",
     "structsplat_quadtree_hybrid_tensor": "SS qt-hybrid + tensor",
     "floyd_steinberg_tensor": "Floyd + tensor",
 }
@@ -108,8 +116,14 @@ METHOD_NOTES = {
     "structsplat_onedge_residual_relocate": (
         "StructSplat on-edge residual-add growth plus split-scheduled residual relocation."
     ),
+    "structsplat_onedge_residual_featurecap": (
+        "StructSplat on-edge residual-add growth with feature-adaptive per-Gaussian scale caps."
+    ),
     "structsplat_onedge_tensor": (
         "StructSplat on-edge initializer plus tensor-aware residual growth."
+    ),
+    "structsplat_onedge_tensor_featurecap": (
+        "StructSplat on-edge tensor-aware residual growth with feature-adaptive scale caps."
     ),
     "structsplat_flanking_tensor": (
         "StructSplat flanking initializer plus tensor-aware residual growth."
@@ -120,8 +134,14 @@ METHOD_NOTES = {
     "structsplat_quadtree_wse_residual_relocate": (
         "StructSplat quadtree-WSE residual-add growth plus split-scheduled residual relocation."
     ),
+    "structsplat_quadtree_wse_residual_featurecap": (
+        "StructSplat quadtree-WSE residual-add growth with feature-adaptive scale caps."
+    ),
     "structsplat_quadtree_wse_tensor": (
         "StructSplat quadtree-WSE initializer plus tensor-aware residual growth."
+    ),
+    "structsplat_quadtree_wse_tensor_featurecap": (
+        "StructSplat quadtree-WSE tensor-aware residual growth with feature-adaptive scale caps."
     ),
     "structsplat_quadtree_hybrid_tensor": (
         "StructSplat quadtree-hybrid initializer plus tensor-aware residual growth."
@@ -138,11 +158,15 @@ METHOD_TRACKS = {
     "instant_gi_quadtree_fixed": "fixed-full",
     "structsplat_onedge_residual": "same-growth",
     "structsplat_onedge_residual_relocate": "same-growth+relocate",
+    "structsplat_onedge_residual_featurecap": "same-growth+feature-cap",
     "structsplat_onedge_tensor": "tensor-growth",
+    "structsplat_onedge_tensor_featurecap": "tensor-growth+feature-cap",
     "structsplat_flanking_tensor": "tensor-growth",
     "structsplat_quadtree_wse_residual": "same-growth",
     "structsplat_quadtree_wse_residual_relocate": "same-growth+relocate",
+    "structsplat_quadtree_wse_residual_featurecap": "same-growth+feature-cap",
     "structsplat_quadtree_wse_tensor": "tensor-growth",
+    "structsplat_quadtree_wse_tensor_featurecap": "tensor-growth+feature-cap",
     "structsplat_quadtree_hybrid_tensor": "tensor-growth",
     "floyd_steinberg_tensor": "tensor-growth-control",
 }
@@ -150,11 +174,15 @@ METHOD_TRACKS = {
 STRUCTSPLAT_INIT = {
     "structsplat_onedge_residual": ("aniso_onedge", "wse", 0.0),
     "structsplat_onedge_residual_relocate": ("aniso_onedge", "wse", 0.0),
+    "structsplat_onedge_residual_featurecap": ("aniso_onedge", "wse", 0.0),
     "structsplat_onedge_tensor": ("aniso_onedge", "wse", 0.0),
+    "structsplat_onedge_tensor_featurecap": ("aniso_onedge", "wse", 0.0),
     "structsplat_flanking_tensor": ("aniso_flanking", "wse", 0.5),
     "structsplat_quadtree_wse_residual": ("quadtree_wse", "wse", 0.0),
     "structsplat_quadtree_wse_residual_relocate": ("quadtree_wse", "wse", 0.0),
+    "structsplat_quadtree_wse_residual_featurecap": ("quadtree_wse", "wse", 0.0),
     "structsplat_quadtree_wse_tensor": ("quadtree_wse", "wse", 0.0),
+    "structsplat_quadtree_wse_tensor_featurecap": ("quadtree_wse", "wse", 0.0),
     "structsplat_quadtree_hybrid_tensor": ("quadtree_hybrid", "wse", 0.0),
     "floyd_steinberg_tensor": ("aniso_flanking", "floyd_steinberg", 0.5),
 }
@@ -162,11 +190,15 @@ STRUCTSPLAT_INIT = {
 STRUCTSPLAT_SPLIT_MODE = {
     "structsplat_onedge_residual": "residual_add",
     "structsplat_onedge_residual_relocate": "residual_add",
+    "structsplat_onedge_residual_featurecap": "residual_add",
     "structsplat_onedge_tensor": "residual_tensor_add",
+    "structsplat_onedge_tensor_featurecap": "residual_tensor_add",
     "structsplat_flanking_tensor": "residual_tensor_add",
     "structsplat_quadtree_wse_residual": "residual_add",
     "structsplat_quadtree_wse_residual_relocate": "residual_add",
+    "structsplat_quadtree_wse_residual_featurecap": "residual_add",
     "structsplat_quadtree_wse_tensor": "residual_tensor_add",
+    "structsplat_quadtree_wse_tensor_featurecap": "residual_tensor_add",
     "structsplat_quadtree_hybrid_tensor": "residual_tensor_add",
     "floyd_steinberg_tensor": "residual_tensor_add",
 }
@@ -174,6 +206,13 @@ STRUCTSPLAT_SPLIT_MODE = {
 RELOCATION_METHODS = {
     "structsplat_onedge_residual_relocate",
     "structsplat_quadtree_wse_residual_relocate",
+}
+
+FEATURE_CAP_METHODS = {
+    "structsplat_onedge_residual_featurecap",
+    "structsplat_onedge_tensor_featurecap",
+    "structsplat_quadtree_wse_residual_featurecap",
+    "structsplat_quadtree_wse_tensor_featurecap",
 }
 
 
@@ -258,6 +297,7 @@ def _structsplat_field(
     seed: int,
     scfg: StructureTensorConfig,
     device: str,
+    feature_cap: float | None = None,
 ) -> tuple[GaussianField, InitConfig, float]:
     strategy, sampling_mode, flank = STRUCTSPLAT_INIT[method]
     icfg = InitConfig(
@@ -266,6 +306,8 @@ def _structsplat_field(
         seed=seed,
         sampling_mode=sampling_mode,
         flank_offset_frac=flank,
+        scale_cap_mode="feature" if feature_cap is not None else "none",
+        scale_cap_max=feature_cap,
     )
     t0 = time.time()
     field = build_field(img, icfg, scfg, device=device)
@@ -285,6 +327,7 @@ def _build_method(
     device: str,
     relocate_fraction: float = 0.25,
     relocate_downsample: int = 4,
+    feature_cap: float = 12.0,
 ) -> tuple[GaussianField, FitConfig, float, int, dict[str, Any]]:
     if method == "gaussianimage_fixed_full":
         t0 = time.time()
@@ -335,7 +378,13 @@ def _build_method(
 
     if method in STRUCTSPLAT_INIT:
         field, icfg, init_seconds = _structsplat_field(
-            img, method, start_budget, seed, scfg, device
+            img,
+            method,
+            start_budget,
+            seed,
+            scfg,
+            device,
+            feature_cap=feature_cap if method in FEATURE_CAP_METHODS else None,
         )
         split_mode = STRUCTSPLAT_SPLIT_MODE[method]
         if method in RELOCATION_METHODS:
@@ -357,10 +406,16 @@ def _build_method(
                 "relocate_residual_downsample": fcfg.relocate_residual_downsample,
             }
         fcfg = _growth_fit_cfg(base_fit, final_budget, start_budget, split_mode, growth_waves)
-        return field, fcfg, init_seconds, start_budget, {
+        extra = {
             "init_config": asdict(icfg),
             "growth_rule": split_mode,
         }
+        if method in FEATURE_CAP_METHODS:
+            extra.update({
+                "scale_cap_rule": "feature",
+                "scale_cap_max": feature_cap,
+            })
+        return field, fcfg, init_seconds, start_budget, extra
 
     valid = ", ".join(DEFAULT_METHODS)
     raise ValueError(f"unknown fair comparison method {method!r}; expected one of: {valid}")
@@ -445,6 +500,7 @@ def _fit_one(
     want_lpips: bool,
     relocate_fraction: float = 0.25,
     relocate_downsample: int = 4,
+    feature_cap: float = 12.0,
 ) -> tuple[dict[str, Any], np.ndarray]:
     field, fcfg, init_seconds, actual_start, extra = _build_method(
         method,
@@ -459,6 +515,7 @@ def _fit_one(
         device,
         relocate_fraction,
         relocate_downsample,
+        feature_cap,
     )
     out = fit(field, target, fcfg, verbose=False)
     render = out["render"].detach().clamp(0, 1)
@@ -487,6 +544,8 @@ def _fit_one(
         "relocate_count_per_event",
         "relocate_fraction",
         "relocate_residual_downsample",
+        "scale_cap_rule",
+        "scale_cap_max",
     ):
         if key in extra:
             row[key] = extra[key]
@@ -1172,6 +1231,7 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
         "lpips": args.lpips,
         "relocate_fraction": args.relocate_fraction,
         "relocate_downsample": args.relocate_downsample,
+        "feature_cap": args.feature_cap,
         "resume": args.resume,
         "max_new_cells": args.max_new_cells,
     }, device=device))
@@ -1255,6 +1315,7 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
                             args.lpips,
                             args.relocate_fraction,
                             args.relocate_downsample,
+                            args.feature_cap,
                         )
                         recon_path = recon_dir / image / str(final_budget) / f"seed{seed}_{method}.png"
                         save_image(render_np, recon_path)
@@ -1316,6 +1377,8 @@ def main() -> None:
                    help="fraction of split_count moved by relocation rows on each growth event")
     p.add_argument("--relocate-downsample", type=int, default=4,
                    help="coarse residual max-pool factor for relocation rows")
+    p.add_argument("--feature-cap", type=float, default=12.0,
+                   help="absolute cap in pixels for feature-adaptive scale-cap rows")
     p.add_argument("--resume", action="store_true")
     p.add_argument("--max-new-cells", type=int, default=None)
     p.add_argument("--device", default=None)

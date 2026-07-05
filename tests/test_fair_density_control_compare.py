@@ -37,7 +37,9 @@ def test_method_tracks_keep_growth_methods_at_same_start_budget(tmp_path):
         "image_gs_residual",
         "structsplat_onedge_residual",
         "structsplat_onedge_residual_relocate",
+        "structsplat_onedge_residual_featurecap",
         "structsplat_onedge_tensor",
+        "structsplat_onedge_tensor_featurecap",
         "structsplat_quadtree_wse_tensor",
     ]
     for method in growth_methods:
@@ -106,6 +108,37 @@ def test_relocation_method_uses_split_scheduled_coarse_residual(tmp_path: Path):
     assert meta["growth_rule"] == "residual_add+relocate"
     assert meta["relocate_rule"] == "at_split"
     assert meta["relocate_count_per_event"] == 7
+
+
+def test_featurecap_method_sets_init_cap_and_growth(tmp_path: Path):
+    img = np.full((24, 24, 3), 0.5, dtype=np.float32)
+    image_path = tmp_path / "target.png"
+    Image.fromarray((img * 255).astype(np.uint8), mode="RGB").save(image_path)
+
+    field, cfg, _seconds, actual_start, meta = F._build_method(
+        method="structsplat_quadtree_wse_tensor_featurecap",
+        img=img,
+        image_path=image_path,
+        final_budget=200,
+        start_budget=100,
+        seed=3,
+        base_fit=FitConfig(iters=20),
+        scfg=StructureTensorConfig(),
+        growth_waves=4,
+        device="cpu",
+        feature_cap=9.0,
+    )
+
+    assert field.n == 100
+    assert actual_start == 100
+    assert field.scale_max is not None
+    assert float(field.scale_max.max()) <= 9.0
+    assert cfg.split_mode == "residual_tensor_add"
+    assert cfg.split_count == 25
+    assert meta["init_config"]["scale_cap_mode"] == "feature"
+    assert meta["init_config"]["scale_cap_max"] == 9.0
+    assert meta["scale_cap_rule"] == "feature"
+    assert meta["scale_cap_max"] == 9.0
 
 
 def test_write_index_links_summary_metrics_and_images(tmp_path: Path):
