@@ -263,3 +263,47 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O25
+    timestamp: "2026-07-05T23:59+0200"
+    provenance: ai-suggested
+    content: "Feature-adaptive scale caps are not default-worthy for the current fair-density finalist rows at max-side 768: they reduce runtime but lose too much final PSNR and AUC except for isolated high-budget `kodim07` wins."
+    context: "Fair density-control difficult-four run expanded to 204/204 ok cells. Feature-cap rows averaged -2.0531 dB PSNR, -0.8960 AUC, and -4.05 s fit time versus matching uncapped finalists; wins were 4/48 and all on `kodim07` at 10000."
+    potential_type: claim
+    bound_to: [N44]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O26
+    timestamp: "2026-07-05T23:59+0200"
+    provenance: ai-suggested
+    content: "Support fade should remain opt-in for now: it improves early-convergence AUC on the difficult-four finalist slice, but loses final PSNR overall and adds fit time."
+    context: "CORE-005 support-fade benchmark completed 48/48 rows. Support fade changed mean PSNR by -0.1389 dB, mean AUC by +0.1073, and mean fit time by +1.67 s; default was not changed."
+    potential_type: claim
+    bound_to: [N45]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O27
+    timestamp: "2026-07-05T23:59+0200"
+    provenance: ai-suggested
+    content: "`cuda_tiled` is not yet a training-sweep acceleration path for the fair-density protocol; exact CUDA should remain the training renderer until tiled backward reductions and tighter tile bounds are implemented."
+    context: "48-cell fair finalist benchmark with `renderer=cuda_tiled` was 1.69x slower than exact CUDA on mean fit time, with neutral AUC and -0.1328 dB mean final PSNR."
+    potential_type: constraint
+    bound_to: [N46]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O28
+    timestamp: "2026-07-05T23:59+0200"
+    provenance: ai-suggested
+    content: "Raw byte-square PNG streams are probably not the right COMP-003 rung-4 endpoint; the optional PNG stream codec is useful format infrastructure, but the next meaningful test should use true per-attribute planes and pinned RD evidence."
+    context: "Implemented `CodecConfig(stream_codec=\"png\")` and validated round-trip tests; tiny 256-G toy smoke produced 2,756 bytes for PNG versus 2,348 bytes for zlib at equal PSNR."
+    potential_type: heuristic
+    bound_to: [N48]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

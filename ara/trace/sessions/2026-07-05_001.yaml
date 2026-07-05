@@ -2,9 +2,9 @@ session:
   id: "2026-07-05_001"
   date: "2026-07-05"
   started: "2026-07-05T01:03+0200"
-  last_turn: "2026-07-05T21:37+0200"
-  turn_count: 12
-  summary: "Implemented ABL-004 tooling/evidence, adopted HTML overview artifacts, ran a fair density-control matched-policy comparison, added convergence/difference visual reporting, clarified residual-growth versus relocation behavior, tested split-scheduled relocation, and triaged next high-impact backlog work."
+  last_turn: "2026-07-05T23:59+0200"
+  turn_count: 13
+  summary: "Implemented ABL-004 tooling/evidence, adopted HTML overview artifacts, ran fair density-control matched-policy/follow-up comparisons, tested relocation/feature-caps/support-fade/cuda_tiled, started confirmation, and advanced COMP-003 codec streams."
 
 events_logged:
   - turn: 1
@@ -145,6 +145,60 @@ events_logged:
     routing: staged
     provenance: ai-suggested
     summary: "Feature-adaptive scale caps are the highest-upside next algorithmic test for the current fair-density finalist rows."
+  - turn: 13
+    type: experiment
+    id: "N44"
+    routing: direct
+    provenance: ai-executed
+    summary: "Expanded fair density-control to 204/204 cells with feature-cap finalist rows; feature caps lost PSNR/AUC overall and were not promoted."
+  - turn: 13
+    type: experiment
+    id: "N45"
+    routing: direct
+    provenance: ai-executed
+    summary: "Added support-fade as a fair benchmark axis and ran 48 finalist cells; AUC improved but final PSNR/time did not justify a default change."
+  - turn: 13
+    type: experiment
+    id: "N46"
+    routing: direct
+    provenance: ai-executed
+    summary: "Ran 48 finalist cells with cuda_tiled; it was 1.69x slower than exact CUDA and remains unsuitable for training sweeps."
+  - turn: 13
+    type: experiment
+    id: "N47"
+    routing: direct
+    provenance: ai-executed
+    summary: "Materialized the 1,512-cell ABL-004 confirmation plan, ran the first 18-cell shard, and added a confirmation HTML overview."
+  - turn: 13
+    type: experiment
+    id: "N48"
+    routing: direct
+    provenance: ai-executed
+    summary: "Added optional PNG stream payloads to the codec; tests passed but toy byte-size smoke was worse than zlib."
+  - turn: 13
+    type: observation
+    id: "O25"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Feature caps are not default-worthy on the current fair-density finalist rows."
+  - turn: 13
+    type: observation
+    id: "O26"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Support fade should remain opt-in until broader evidence shows final-quality wins."
+  - turn: 13
+    type: observation
+    id: "O27"
+    routing: staged
+    provenance: ai-suggested
+    summary: "cuda_tiled should not be used for training sweeps before tiled backward and bounds optimization."
+  - turn: 13
+    type: observation
+    id: "O28"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Raw byte-square PNG streams are likely not the final COMP-003 rung-4 design."
 
 ai_actions:
   - turn: 1
@@ -336,6 +390,32 @@ ai_actions:
       - "ara/trace/sessions/2026-07-05_001.yaml"
       - "ara/trace/sessions/session_index.yaml"
       - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 13
+    action: "Completed the prioritized 1-5 task sequence: feature-cap finalist benchmark, support-fade benchmark, cuda_tiled benchmark, first ABL-004 confirmation shard with HTML overview, optional PNG codec-stream infrastructure, and full ruff/pytest validation."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/fair_density_control_compare.py"
+      - "tests/test_fair_density_control_compare.py"
+      - "benchmarks/abl004_confirmation.py"
+      - "tests/test_abl004_confirmation.py"
+      - "src/structsplat/codec.py"
+      - "tests/test_codec.py"
+      - "tasks/ABL-004-controls-and-full-run.md"
+      - "tasks/CORE-005-renderer-memory-continuity.md"
+      - "tasks/PORT-001-cuda-rasterizer.md"
+      - "tasks/COMP-003-compression-ladder.md"
+      - "docs/adr/0007-codec-bitstream-quantization.md"
+      - "ara/evidence/fair-density-control-featurecap-difficult4-2026-07-05/run.md"
+      - "ara/evidence/fair-density-control-supportfade-difficult4-2026-07-05/run.md"
+      - "ara/evidence/fair-density-control-cuda-tiled-difficult4-2026-07-05/run.md"
+      - "ara/evidence/abl004-confirmation-shard-2026-07-05/run.md"
+      - "ara/evidence/comp003-png-stream-smoke-2026-07-05/run.md"
+      - "ara/evidence/README.md"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/sessions/2026-07-05_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
 
 claims_touched: []
 
@@ -364,27 +444,30 @@ key_context:
     excerpt: "User asked to run the test after the relocation implementation."
   - turn: 12
     excerpt: "User asked whether there are other ideas or backlog tasks with large potential impact after the relocation result."
+  - turn: 13
+    excerpt: "User asked to work on tasks 1 to 5 in order, planning, implementing, testing, fixing, committing, retiring done tasks when applicable, and iterating."
 
 open_threads:
-  - "ABL-004 confirmation execution remains open: run the 1512-cell default confirmation set when compute is available."
-  - "CORE-005 remains partial: gradient checkpointing and fade on/off benchmark/ADR decision are still open."
+  - "ABL-004 confirmation execution remains open: the default plan has 18/1,512 cells complete, so 1,494 cells remain before decision-grade confirmation."
+  - "CORE-005 remains partial: gradient checkpointing per slice with measured peak-memory before/after is still open; support fade remains opt-in after the fair finalist benchmark."
   - "PORT-001 remains partial: shared-memory/block reductions, tighter ellipse-tile bounds, deterministic option, throughput target, and RHI pass remain open."
-  - "COMP-003 remains partial after rungs 1-3; sorted attribute planes, LSQ ranges, VQ, entropy coding, and joint RD training remain open."
-  - "COMP-003 still needs committed RD evidence under `ara/evidence/` for the implemented rungs, beyond the tiny smoke run."
+  - "COMP-003 remains partial after rungs 1-3 plus optional PNG stream infrastructure; sorted true attribute planes, LSQ ranges, VQ, entropy coding, and joint RD training remain open."
+  - "COMP-003 still needs pinned RD evidence under `ara/evidence/`; raw byte-square PNG was worse than zlib in the tiny toy smoke."
   - "The difficult-image subset is useful stress evidence but remains seed-0 and intentionally hard-selected; it should not replace the 28-image x 3-seed confirmation set."
   - "Future ABL-004 confirmation runs should persist final renders or fields if exact visual provenance is required; otherwise visual sheets require matched reruns and may show optimizer-path variability."
   - "After confirmation, decide whether to pivot the public thesis from anisotropic flanking specifically toward the broader structure-tensor density + WSE/quadtree allocation result."
   - "Native external-repository execution remains separate from the matched-policy analogue run; the current result isolates placement/growth policy inside StructSplat's fitter and renderer."
   - "Convergence interpretation should be validated on the broader confirmation set; current AUC/hit-rate evidence is from the hard-selected seed-0 subset."
   - "Do not promote split-scheduled residual relocation as a default from the difficult-four seed-0 result; only revisit with tuning or full confirmation evidence."
-  - "Test feature-adaptive scale caps on the current fair-density finalist rows before another broad confirmation run."
+  - "Do not promote feature-cap variants from the current fair-density finalist result; revisit only with a different cap design or broader confirmation evidence."
+  - "Do not use `cuda_tiled` for fair/ABL training sweeps until tiled backward reductions and tighter bounds are implemented."
 
 ai_suggestions_pending:
   - "Use the ABL-004 confirmation runner with bounded `--max-new-cells` shards for scheduled confirmation."
-  - "Keep the new codec stream flags enabled by default unless RD evidence shows a regression on real fitted fields."
+  - "Keep `CodecConfig(stream_codec=\"png\")` opt-in and test true per-attribute planes in `rate_distortion.py` before promoting any PNG-backed stream design."
   - "Split external-repo comparison into matched-policy, native-practical, and hybrid tracks so initialization, density control, and production implementation are not conflated."
   - "Use the fair density-control result to prioritize quadtree-WSE/on-edge plus residual growth in the next ABL-004 confirmation shard, while keeping MS-SSIM/perceptual checks explicit."
   - "Keep convergence artifacts in every future fair comparison overview: mean PSNR curves, AUC tables, and target-hit-rate tables/heatmaps."
   - "Keep target-difference rows in future visual overviews where per-method image inspection is requested."
   - "If relocation is revisited, test tuned relocation fraction/downsample/source-selection variants rather than promoting the current split-scheduled setup."
-  - "Run a focused feature-cap fair comparison for `onedge`/`qt-WSE` residual/tensor finalist rows, then update the confirmation shortlist."
+  - "For CORE-005, implement and measure gradient checkpointing separately; support fade is benchmarked and remains opt-in."

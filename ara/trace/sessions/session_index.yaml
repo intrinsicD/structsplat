@@ -22,8 +22,8 @@ sessions:
     open_threads: 6
   - id: "2026-07-05_001"
     date: "2026-07-05"
-    summary: "Implemented ABL-004 tooling/evidence, adopted HTML overview artifacts, ran a fair density-control matched-policy comparison, added convergence/difference visual reporting, clarified residual-growth versus relocation behavior, tested split-scheduled relocation, and triaged next high-impact backlog work."
-    turn_count: 12
-    events_count: 23
+    summary: "Implemented ABL-004 tooling/evidence, adopted HTML overview artifacts, ran fair density-control matched-policy and follow-up comparisons, tested relocation/feature-caps/support-fade/cuda_tiled, started confirmation, and advanced COMP-003 codec-stream infrastructure."
+    turn_count: 13
+    events_count: 32
     claims_touched: []
-    open_threads: 11
+    open_threads: 12

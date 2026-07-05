@@ -182,3 +182,8 @@ entries:
       - "Routed the user's high-impact backlog request as N43 because it opens a prioritization thread after the relocation result."
       - "Staged O24 as a heuristic because feature caps are the recommended next action, but the fair-density finalist rows have not yet tested that configuration."
       - "Did not crystallize O24 despite prior feature-cap evidence because that evidence came from a different held-out COCO setting and needs confirmation on the current Kodak fair-density protocol."
+  - turn: "2026-07-05_001#13"
+    notes:
+      - "Routed feature-cap, support-fade, cuda_tiled, ABL-004 confirmation shard, and PNG codec-stream work as direct experiments because each produced committed code and/or benchmark artifacts."
+      - "Staged O25-O28 rather than crystallizing claims because the fair-density follow-ups are hard-selected seed-0 subset evidence, the confirmation shard is 18/1512 cells, and the PNG codec result is a toy smoke."
+      - "Updated open threads to remove completed feature-cap/support-fade benchmark requests and to preserve remaining CORE-005, PORT-001, ABL-004, and COMP-003 work."

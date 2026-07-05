@@ -909,3 +909,120 @@ tree:
       backlog tasks that could have large impact and decide what is worth
       trying next.
     status: open
+  - id: N44
+    type: experiment
+    title: "Fair density-control feature-cap finalist test"
+    provenance: ai-executed
+    timestamp: "2026-07-05T23:59+0200"
+    result: >
+      Added four feature-cap finalist rows to
+      `benchmarks/fair_density_control_compare.py`, fixed the cap to scale from
+      12 px at reference side 160 to 57.6 px at max-side 768, and resumed the
+      difficult-four fair-density run. The expanded exact-CUDA benchmark
+      completed 204/204 ok cells with 48 feature-cap rows. Paired against the
+      matching uncapped finalist rows, feature caps averaged -2.0531 dB final
+      PSNR, -0.8960 AUC, and -4.05 s fit time, with only 4/48 PSNR wins, all on
+      `kodim07` at 10000 Gaussians. The confirmation shortlist was not changed.
+    evidence:
+      - "benchmarks/fair_density_control_compare.py"
+      - "tests/test_fair_density_control_compare.py"
+      - "results/fair_density_control_difficult4/index.html"
+      - "results/fair_density_control_difficult4/summary.md"
+      - "ara/evidence/fair-density-control-featurecap-difficult4-2026-07-05/run.md"
+      - "commit 1d99f26"
+      - "commit d875f93"
+      - "commit 1fd8569"
+    also_depends_on: [N38, N42, N43]
+    status: resolved
+  - id: N45
+    type: experiment
+    title: "CORE-005 support-fade fair benchmark"
+    provenance: ai-executed
+    timestamp: "2026-07-05T23:59+0200"
+    result: >
+      Added `--support-fade` as a real fair-density benchmark axis, including
+      `FitConfig.support_fade`, row metadata, and resume identity, then ran the
+      four current finalist rows with support fade on. The exact-CUDA
+      difficult-four run completed 48/48 ok cells and wrote an HTML overview.
+      Paired against matching support-fade-off rows, support fade improved AUC
+      in 38/48 cells (+0.1073 mean) but lost final PSNR overall (-0.1389 dB,
+      9/48 wins) and added +1.67 s mean fit time. It remains opt-in; no default
+      or ADR change was made.
+    evidence:
+      - "benchmarks/fair_density_control_compare.py"
+      - "tests/test_fair_density_control_compare.py"
+      - "tasks/CORE-005-renderer-memory-continuity.md"
+      - "results/fair_density_control_supportfade_difficult4/index.html"
+      - "ara/evidence/fair-density-control-supportfade-difficult4-2026-07-05/run.md"
+      - "commit a869671"
+      - "commit 65fffe5"
+    also_depends_on: [N38, N39, N44]
+    status: resolved
+  - id: N46
+    type: experiment
+    title: "cuda_tiled fair protocol benchmark"
+    provenance: ai-executed
+    timestamp: "2026-07-05T23:59+0200"
+    result: >
+      Ran the same four fair-density finalist rows with `renderer=cuda_tiled`
+      on the difficult-four exact-CUDA protocol. The 48/48-cell run completed
+      and wrote an HTML overview. Paired against exact `renderer=cuda`,
+      `cuda_tiled` averaged -0.1328 dB final PSNR, +0.0009 AUC, and +17.63 s
+      fit time, or 1.69x slower. Slowdown was worst on `kodim19` (+24.05 s,
+      1.86x). Exact CUDA remains the renderer for fair/ABL training sweeps;
+      PORT-001 should prioritize backward reductions and tighter tile bounds.
+    evidence:
+      - "tasks/PORT-001-cuda-rasterizer.md"
+      - "results/fair_density_control_cuda_tiled_difficult4/index.html"
+      - "ara/evidence/fair-density-control-cuda-tiled-difficult4-2026-07-05/run.md"
+      - "commit 9343dbd"
+    also_depends_on: [N16, N38, N45]
+    status: resolved
+  - id: N47
+    type: experiment
+    title: "ABL-004 default confirmation shard"
+    provenance: ai-executed
+    timestamp: "2026-07-05T23:59+0200"
+    result: >
+      Materialized the settled default ABL-004 confirmation plan after
+      feature-cap, support-fade, and cuda_tiled follow-ups did not change the
+      shortlist or renderer. The manifest contains 1,512 expected cells
+      (28 images x 3 seeds x 3 budgets x 6 variants). A bounded exact-CUDA
+      shard completed 18/18 requested cells: `kodim01`, budget 2000, all six
+      variants, seeds {0,1,2}. `benchmarks.abl004_confirmation` now writes a
+      local `index.html` overview for confirmation analysis artifacts. This is
+      partial smoke/evidence only; 1,494 cells remain before confirmation is
+      decision-grade.
+    evidence:
+      - "benchmarks/abl004_confirmation.py"
+      - "tests/test_abl004_confirmation.py"
+      - "tasks/ABL-004-controls-and-full-run.md"
+      - "results/abl004_confirmation/index.html"
+      - "results/abl004_confirmation/confirmation_analysis.md"
+      - "ara/evidence/abl004-confirmation-shard-2026-07-05/run.md"
+      - "commit a046c50"
+    also_depends_on: [N23, N26, N34, N44, N45, N46]
+    status: open
+  - id: N48
+    type: experiment
+    title: "COMP-003 optional PNG stream codec"
+    provenance: ai-executed
+    timestamp: "2026-07-05T23:59+0200"
+    result: >
+      Added optional self-describing `CodecConfig(stream_codec="png")` payloads
+      for the codec bitstream. The SSPL1 header now records `stream_codec` and
+      `stream_raw_lengths`; older blobs default to zlib. Focused validation
+      passed (`ruff` on codec tests and 14/14 codec tests). A tiny 256-G toy
+      smoke showed PNG byte-square streams worse than zlib at equal PSNR
+      (2,756 vs 2,348 bytes), so this is rung-4 infrastructure only, not a
+      completed RD improvement. COMP-003 still needs pinned `rate_distortion.py`
+      evidence and true per-attribute planes.
+    evidence:
+      - "src/structsplat/codec.py"
+      - "tests/test_codec.py"
+      - "tasks/COMP-003-compression-ladder.md"
+      - "docs/adr/0007-codec-bitstream-quantization.md"
+      - "ara/evidence/comp003-png-stream-smoke-2026-07-05/run.md"
+      - "commit 8d7923f"
+    also_depends_on: [N33]
+    status: resolved
