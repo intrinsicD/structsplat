@@ -262,3 +262,8 @@ entries:
       - "Routed the tiny learned predictor/trainer work as N64 because it produced committed code, tests, a deterministic training smoke, and a checkpoint-loading short-refinement smoke."
       - "Did not stage or crystallize a speedup/generalization claim because the run used one teacher row and only validates the learned-checkpoint contract."
       - "Opened a new 2026-07-07 session and kept FF-001 partial, with next closure pressure on multi-image train/validation evidence, ablations, equal-final-N comparisons, and distillation."
+  - turn: "2026-07-07_001#2"
+    notes:
+      - "Routed the FF-001 equal-N evaluator as N65 because it produced committed benchmark code, regression coverage, full-suite validation, and a smoke artifact comparing learned/tensor-prior/scratch rows at equal N."
+      - "Routed COMP-004 fit-time QAT/rate plumbing as N66 because it produced committed config/fit/CLI code, focused/full tests, and a codec RD smoke using the returned QAT codec config."
+      - "Did not stage positive quality or RD claims: N65's tiny learned checkpoint loses in the smoke, and N66 validates plumbing without a lambda sweep or low-bit improvement result."

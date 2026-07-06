@@ -2,9 +2,9 @@ session:
   id: "2026-07-07_001"
   date: "2026-07-07"
   started: "2026-07-07T00:31+0200"
-  last_turn: "2026-07-07T00:31+0200"
-  turn_count: 1
-  summary: "Continued FF-001 by adding a tiny learned predictor checkpoint path, deterministic trainer, focused/full tests, and smoke evidence."
+  last_turn: "2026-07-07T01:33+0200"
+  turn_count: 2
+  summary: "Continued FF-001 by adding a tiny learned predictor checkpoint path, deterministic trainer, equal-N evaluator, focused/full tests, and smoke evidence; then started COMP-004 fit-time QAT/rate plumbing."
 
 events_logged:
   - turn: 1
@@ -13,6 +13,18 @@ events_logged:
     routing: direct
     provenance: ai-executed
     summary: "Implemented and committed the tiny learned FF-001 checkpoint/trainer slice; focused validation passed 15 tests, full suite passed, and the one-image training smoke reduced loss from 1.623774 to 0.421427."
+  - turn: 2
+    type: experiment
+    id: "N65"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented and committed the FF-001 equal-N evaluator; the one-image smoke showed the tiny learned checkpoint behind tensor-prior and scratch baselines."
+  - turn: 2
+    type: experiment
+    id: "N66"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented and committed COMP-004 fit-time QAT/rate plumbing with focused tests, full-suite validation, and a codec RD smoke using the returned `qat_codec_config`."
 
 ai_actions:
   - turn: 1
@@ -27,18 +39,44 @@ ai_actions:
       - "tasks/FF-001-feedforward-predictor.md"
       - "ara/evidence/ff001-tiny-predictor-train-smoke-2026-07-07/run.md"
       - "ara/evidence/README.md"
+  - turn: 2
+    action: "Implemented, tested, benchmark-smoked, documented, and committed the FF-001 equal-N evaluation harness."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/feedforward_eval.py"
+      - "benchmarks/README.md"
+      - "tests/test_predictor.py"
+      - "tasks/FF-001-feedforward-predictor.md"
+      - "ara/evidence/ff001-equaln-eval-smoke-2026-07-07/run.md"
+      - "ara/evidence/README.md"
+  - turn: 2
+    action: "Implemented, tested, benchmark-smoked, documented, and committed COMP-004 fit-time QAT/rate plumbing."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/config.py"
+      - "src/structsplat/fit.py"
+      - "src/structsplat/cli.py"
+      - "tests/test_fit_dynamics.py"
+      - "tests/test_cli.py"
+      - "tasks/COMP-004-entropy-aware-fitting.md"
+      - "tasks/INDEX.md"
+      - "ara/evidence/comp004-fit-time-qat-smoke-2026-07-07/run.md"
+      - "ara/evidence/README.md"
 
 claims_touched: []
 
 key_context:
   - turn: 1
     excerpt: "User asked to continue the backlog with planning, implementation, tests/fixes, commits, and iteration; FF-001 remained the active partial SOTA backlog task."
+  - turn: 2
+    excerpt: "User asked to continue the backlog for multiple tasks; FF-001 equal-N comparison infrastructure and COMP-004 fit-time QAT/rate plumbing were selected as bounded adjacent slices."
 
 open_threads:
   - "Continue the ABL-004 confirmation matrix beyond the completed `kodim02` budget block."
   - "Check whether the PSNR-vs-iteration cluster structure repeats across more confirmation images before treating it as a claim."
   - "Do not retire ABL-004 or promote README claims until the decision-grade confirmation criteria are met."
-  - "Continue FF-001 beyond the tiny checkpoint smoke with multi-image teacher export, train/validation split, image-only versus tensor-prior ablation, equal-final-N wall-time comparisons, and predict-optimize-distill."
-  - "After FF-001 comparison evidence, return to COMP-004, PORT-002/PORT-003, and GEN-003."
+  - "Continue FF-001 beyond the smoke evaluator with multi-image teacher export, train/validation split, image-only versus tensor-prior ablation, and predict-optimize-distill."
+  - "Continue COMP-004 beyond fit-time plumbing with lambda sweeps, rate_distortion.py integration, and low-bit RD improvement evidence."
+  - "After FF-001/COMP-004 evidence, return to PORT-002/PORT-003 and GEN-003."
 
 ai_suggestions_pending: []

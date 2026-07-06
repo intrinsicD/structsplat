@@ -1394,3 +1394,49 @@ tree:
       - "tests/test_predictor.py"
     also_depends_on: [N54, N63]
     status: resolved
+  - id: N65
+    type: experiment
+    title: "FF-001 equal-N evaluation harness"
+    provenance: ai-executed
+    timestamp: "2026-07-07T01:33+0200"
+    result: >
+      Added `benchmarks.feedforward_eval` to compare learned, tensor-prior,
+      and scratch warm starts at equal final Gaussian count and short-refinement
+      iterations. The focused predictor/CLI check passed 7 tests, full
+      validation passed with 219 tests and 22 skips, and a one-image 16-Gaussian
+      CPU smoke wrote JSON/CSV/summary artifacts. The smoke intentionally
+      exposed the tiny learned checkpoint as weak: learned PSNR 17.4469 versus
+      tensor-prior 18.4464 and scratch 18.0079, with learned also slower on
+      this tiny case. FF-001 remains partial pending multi-image train/validation
+      evidence, ablations, and distillation.
+    evidence:
+      - "tasks/FF-001-feedforward-predictor.md"
+      - "ara/evidence/ff001-equaln-eval-smoke-2026-07-07/run.md"
+      - "benchmarks/feedforward_eval.py"
+      - "tests/test_predictor.py"
+      - "results/ff001_equaln_eval_smoke/summary.md"
+    also_depends_on: [N54, N63, N64]
+    status: resolved
+  - id: N66
+    type: experiment
+    title: "COMP-004 fit-time QAT and rate plumbing"
+    provenance: ai-executed
+    timestamp: "2026-07-07T01:33+0200"
+    result: >
+      Implemented the first COMP-004 slice: `FitConfig.qat_mode` with
+      `off`/`ste`/`noise`, `lambda_rate`, QAT bit-depth knobs, a differentiable
+      in-loop rate proxy over means, log-scales, rotations, colors, and
+      opacities, CLI flags, and a returned frozen `qat_codec_config` for final
+      encoding. Focused COMP/CLI checks passed 5 tests, full validation passed
+      with 223 tests and 22 skips, and a 16-Gaussian smoke encoded with the
+      returned bits 10/5/5/5 config at RD PSNR 18.101 and 10.0952 bpp. COMP-004
+      remains partial because no lambda sweep or low-bit RD improvement has
+      been shown yet.
+    evidence:
+      - "tasks/COMP-004-entropy-aware-fitting.md"
+      - "ara/evidence/comp004-fit-time-qat-smoke-2026-07-07/run.md"
+      - "src/structsplat/fit.py"
+      - "src/structsplat/config.py"
+      - "tests/test_fit_dynamics.py"
+    also_depends_on: [N54, N61]
+    status: resolved
