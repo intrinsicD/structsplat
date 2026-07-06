@@ -6,7 +6,12 @@ torch = pytest.importorskip("torch")
 
 from PIL import Image
 
-from benchmarks.stage_search import run_stage_search, _canonicalize, _refine_kwargs
+from benchmarks.stage_search import (
+    run_stage_search,
+    _canonicalize,
+    _color_solve_kwargs,
+    _refine_kwargs,
+)
 
 
 def _write_toy(path):
@@ -144,6 +149,36 @@ def test_aa_dilation_is_stage_axis(tmp_path):
     assert all("aa=" in r["config_label"] for r in rows)
 
 
+def test_color_solve_is_stage_axis(tmp_path):
+    img_path = tmp_path / "toy.png"
+    _write_toy(img_path)
+    rows = run_stage_search(
+        [str(img_path)], budgets=[16], seeds=[0], iters=10, max_side=None,
+        strategies=["aniso_flanking"], tensor_operators=["central"],
+        density_modes=["structure"], sampling_modes=["density_random"],
+        color_modes=["bilinear"], scale_modes=["spacing"], scale_cap_modes=["none"],
+        opacity_modes=["none"], renderers=["normalized"], aa_dilations=[0.0],
+        color_solve_modes=["none", "every10"],
+        pixel_losses=["l1"], optimizers=["adam"], lr_schedules=["none"],
+        refine_modes=["none"], pyramid_modes=["single"], render_chunk=8,
+        outdir=str(tmp_path / "color_solve"), device="cpu",
+    )
+    assert len(rows) == 2
+    by_mode = {r["color_solve"]: r for r in rows}
+    assert by_mode["none"]["color_solve_event_count"] == 0
+    assert by_mode["every10"]["color_solve_every"] == 10
+    assert by_mode["every10"]["color_solve_event_count"] == 1
+    assert all("color_solve=" in r["config_label"] for r in rows)
+
+
+def test_color_solve_kwargs_parse_stage_modes():
+    assert _color_solve_kwargs("none") == {"color_solve_every": None}
+    assert _color_solve_kwargs("every10") == {"color_solve_every": 10}
+    assert _color_solve_kwargs("every25") == {"color_solve_every": 25}
+    with pytest.raises(ValueError):
+        _color_solve_kwargs("every0")
+
+
 def test_config_json_is_written(tmp_path):
     img_path = tmp_path / "toy.png"
     outdir = tmp_path / "cfg"
@@ -214,7 +249,7 @@ def test_stage_influence_writes_paired_deltas(tmp_path):
         density_modes=["structure"], sampling_modes=["wse", "density_random"],
         orientation_modes=["tensor"], color_modes=["bilinear"], scale_modes=["spacing"],
         scale_cap_modes=["feature12"], opacity_modes=["none"], renderers=["normalized"],
-        aa_dilations=[0.0],
+        aa_dilations=[0.0], color_solve_modes=["none"],
         pixel_losses=["l1"],
         optimizers=["adam"], lr_schedules=["none"], refine_modes=["none"],
         pyramid_modes=["single"], target_psnr=5.0,

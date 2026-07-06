@@ -16,6 +16,7 @@ from structsplat.fit import (
     _maybe_prune,
     _residual_candidate_pixels,
     _relocate_from_residual,
+    _solve_colors_normalized,
     _split_from_residual,
     fit,
 )
@@ -162,6 +163,91 @@ def test_ssim_loss_is_skipped_when_weight_is_zero(monkeypatch):
     weighted_calls = calls["n"]
 
     assert weighted_calls - zero_weight_calls == 4
+
+
+def _color_solve_fixture():
+    H, W = 12, 12
+    means = torch.tensor([[3.0, 3.0], [8.0, 8.0]])
+    log_scales = torch.log(torch.full((2, 2), 0.45))
+    rotations = torch.zeros(2)
+    true_colors = torch.tensor([[0.2, 0.7, 0.1], [0.9, 0.1, 0.4]])
+    true_field = GaussianField(
+        means.clone(), log_scales.clone(), rotations.clone(), true_colors.clone()
+    )
+    cfg = FitConfig(
+        renderer="normalized",
+        render_chunk=1,
+        sigma_cutoff=2.0,
+        color_solve_lambda=0.0,
+        color_solve_maxiter=8,
+        ssim_weight=0.0,
+    )
+    from structsplat.render import render_field
+    target = render_field(
+        true_field.means,
+        true_field.conics(cfg.aa_dilation),
+        true_field.colors,
+        true_field.radii(cfg.sigma_cutoff, cfg.aa_dilation),
+        H,
+        W,
+        cfg.render_chunk,
+        cfg.renderer,
+        true_field.opacity_values(),
+        support_fade=cfg.support_fade,
+        sigma_cutoff=cfg.sigma_cutoff,
+    )
+    field = GaussianField(
+        means.clone(),
+        log_scales.clone(),
+        rotations.clone(),
+        torch.zeros_like(true_colors),
+    )
+    return field, true_colors, target, cfg, H, W
+
+
+def test_color_solve_recovers_fixed_geometry_colors():
+    field, true_colors, target, cfg, H, W = _color_solve_fixture()
+
+    stats = _solve_colors_normalized(field, target, cfg, H, W)
+
+    assert stats["iterations"] <= cfg.color_solve_maxiter
+    assert stats["relative_residual"] < 1e-4
+    assert torch.allclose(field.colors, true_colors, atol=1e-4)
+
+
+def test_fit_color_solve_runs_in_loop_and_fails_closed_for_other_renderers():
+    field, _true_colors, target, cfg, _H, _W = _color_solve_fixture()
+    out = fit(
+        field,
+        target,
+        FitConfig(
+            **{
+                **cfg.__dict__,
+                "iters": 1,
+                "log_every": 1,
+                "color_solve_every": 1,
+                "lr_means": 0.0,
+                "lr_scales": 0.0,
+                "lr_rot": 0.0,
+                "lr_color": 0.0,
+            }
+        ),
+        verbose=False,
+    )
+
+    events = out["history"]["color_solve_events"]
+    assert len(events) == 1
+    assert np.isfinite(out["psnr"])
+    assert out["psnr"] > 70.0
+
+    bad_field, _true_colors, bad_target, _cfg, _H, _W = _color_solve_fixture()
+    with pytest.raises(ValueError, match="renderer='normalized'"):
+        fit(
+            bad_field,
+            bad_target,
+            FitConfig(iters=1, color_solve_every=1, renderer="additive"),
+            verbose=False,
+        )
 
 
 def test_early_stop_is_opt_in_and_reports_iterations():

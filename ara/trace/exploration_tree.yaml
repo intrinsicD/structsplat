@@ -1160,7 +1160,7 @@ tree:
       - "Implement one idea immediately instead of creating the backlog first."
     evidence:
       - "tasks/INDEX.md"
-      - "tasks/FIT-005-exact-color-solve.md"
+      - "tasks/done/FIT-005-exact-color-solve.md"
       - "tasks/FIT-006-frequency-violation-densification.md"
       - "tasks/FF-001-feedforward-predictor.md"
       - "tasks/COMP-004-entropy-aware-fitting.md"

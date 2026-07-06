@@ -19,7 +19,6 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | CORE-005 | Reference renderer memory bound + C0-continuous support cutoff | partial | CORE-003, CORE-004 |
 | ABL-004 | Killer controls + full ABL-001 run + committed evidence | partial | BENCH-002, ABL-003, FIT-004 |
 | COMP-003 | Compression-ratio ladder (scale ranges → planes → LSQ → VQ → entropy) | partial | COMP-002, BENCH-002 |
-| FIT-005 | Exact / alternating color solve | todo | FIT-001, CORE-001 |
 | CORE-006 | Linear color basis per Gaussian | todo | CORE-001, FIT-001 |
 | FIT-006 | Frequency-violation densification | todo | INIT-001, FIT-004, BENCH-002 |
 | FIT-007 | Moment-preserving split / clone | todo | FIT-004 |
@@ -48,6 +47,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | FIT-002 | Fitter correctness (split colors, opacity pruning, history pairing) | `done/FIT-002-fitter-correctness.md` |
 | FIT-003 | Fit-loop speed (device-side targets, SSIM hygiene, fused SSIM) | `done/FIT-003-fit-loop-speed.md` |
 | FIT-004 | Densification & convergence upgrades (fp-growth, relocation, NMS) | `done/FIT-004-densification-upgrades.md` |
+| FIT-005 | Exact / alternating color solve | `done/FIT-005-exact-color-solve.md` |
 | HIER-002 | Pyramid bookkeeping (iteration accounting, budgets, schedules) | `done/HIER-002-pyramid-bookkeeping.md` |
 | BENCH-001 | Metric protocol (PSNR/MS-SSIM/LPIPS + iters-to-target) | `done/BENCH-001-metrics.md` |
 | BENCH-002 | Benchmark harness experimental-validity fixes (equal budgets, resumable sweeps, seed-aware comparisons) | `done/BENCH-002-harness-validity.md` |
@@ -68,7 +68,8 @@ SSIM backend, and FIT-004 added the densification/relocation controls needed for
 Next run ABL-004 (the actual experiment, with evidence committed). After that, the 2026-07 SOTA
 review suggests the most pragmatic improvement order:
 
-1. FIT-005 exact/alternating color solve — lowest implementation risk and immediately measurable.
+1. FIT-005 exact/alternating color solve — completed 2026-07-06; keep default off, stage-search
+   axis available as `color_solve=every10`.
 2. FIT-006 frequency-violation densification, optionally followed by FIT-007 moment-preserving
    split if split loss spikes remain visible.
 3. FF-001 feed-forward teacher-student warm start, with FIT-008 adaptive count as the natural

@@ -33,8 +33,8 @@ from structsplat.config import FitConfig, InitConfig, PyramidConfig, StructureTe
 # stage axes, in label order; values = the swappable options each stage exposes
 STAGE_KEYS = [
     "strategy", "tensor", "tensor_color", "density", "sampling", "orientation", "color",
-    "scale", "scale_cap", "opacity", "renderer", "aa", "loss", "optimizer", "lr_schedule",
-    "refine", "pyramid",
+    "scale", "scale_cap", "opacity", "renderer", "aa", "color_solve", "loss",
+    "optimizer", "lr_schedule", "refine", "pyramid",
 ]
 
 FACTORIAL_DEFAULTS: dict[str, tuple[str, ...]] = {
@@ -52,6 +52,7 @@ FACTORIAL_DEFAULTS: dict[str, tuple[str, ...]] = {
     "opacity_modes": ("none",),
     "renderers": ("normalized",),
     "aa_dilations": (0.0,),
+    "color_solve_modes": ("none",),
     "pixel_losses": ("l1", "charbonnier"),
     "optimizers": ("adam",),
     "lr_schedules": ("none", "cosine"),
@@ -81,6 +82,7 @@ INFLUENCE_DEFAULTS: dict[str, tuple[str, ...]] = {
         "cuda_tiled", "cuda_tiled_additive",
     ),
     "aa_dilations": (0.0, 0.3),
+    "color_solve_modes": ("none", "every10"),
     "pixel_losses": ("l1", "l2", "charbonnier"),
     "optimizers": ("adam", "adamw", "adan"),
     "lr_schedules": ("none", "cosine", "step"),
@@ -105,7 +107,7 @@ _AXIS_TO_KEY = {
     "density_modes": "density", "sampling_modes": "sampling",
     "orientation_modes": "orientation", "color_modes": "color", "scale_modes": "scale",
     "scale_cap_modes": "scale_cap", "opacity_modes": "opacity", "renderers": "renderer",
-    "aa_dilations": "aa", "pixel_losses": "loss",
+    "aa_dilations": "aa", "color_solve_modes": "color_solve", "pixel_losses": "loss",
     "optimizers": "optimizer", "lr_schedules": "lr_schedule", "refine_modes": "refine",
     "pyramid_modes": "pyramid",
 }
@@ -295,6 +297,25 @@ def _scale_cap_kwargs(mode: str) -> dict[str, Any]:
     )
 
 
+def _color_solve_kwargs(mode: str) -> dict[str, Any]:
+    if mode in ("none", "off"):
+        return {"color_solve_every": None}
+    if mode in ("every10", "cg10"):
+        return {"color_solve_every": 10}
+    if mode.startswith("every"):
+        suffix = mode[len("every"):]
+        try:
+            every = int(suffix)
+        except ValueError as exc:
+            raise ValueError(f"cannot parse color_solve mode {mode!r}") from exc
+        if every <= 0:
+            raise ValueError(f"color_solve interval must be positive, got {mode!r}")
+        return {"color_solve_every": every}
+    raise ValueError(
+        f"unknown color_solve mode {mode!r}; expected none, every10, or every<N>"
+    )
+
+
 def _seconds_to_target(history: dict, iters_to_target) -> float | None:
     """Wall seconds at the iteration where the target PSNR was first reached (interpolated)."""
     if iters_to_target is None:
@@ -360,6 +381,7 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         lr_decay_gamma=lr_decay_gamma,
         renderer=cfg["renderer"],
         aa_dilation=float(cfg["aa"]),
+        **_color_solve_kwargs(cfg["color_solve"]),
         max_gaussians=max_gaussians,
         target_psnr=target_psnr,
         target_psnrs=list(target_psnrs),
@@ -391,6 +413,7 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
     split_events = history.get("split_events", [])
     ranked_events = [e for e in split_events if e.get("mode") == "ranked_wave"]
     absgrad_events = [e for e in split_events if e.get("mode") == "absgrad_wave"]
+    color_solve_events = history.get("color_solve_events", [])
 
     def event_mean(events: list[dict], key: str) -> float | None:
         vals = [float(e[key]) for e in events if key in e]
@@ -420,6 +443,13 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         "ranked_wave_footprint_mean": event_mean(ranked_events, "footprint_mean"),
         "absgrad_score_mean": event_mean(absgrad_events, "absgrad_score_mean"),
         "absgrad_score_max": event_mean(absgrad_events, "absgrad_score_max"),
+        "color_solve_every": fcfg.color_solve_every,
+        "color_solve_lambda": fcfg.color_solve_lambda,
+        "color_solve_maxiter": fcfg.color_solve_maxiter,
+        "color_solve_event_count": len(color_solve_events),
+        "color_solve_relative_residual_mean": event_mean(
+            color_solve_events, "relative_residual"
+        ),
         "relocate_event_count": len(history.get("relocate_events", [])),
         "history": history,
         "prefix_metrics": out.get("prefix_metrics"),
@@ -445,6 +475,7 @@ def run_stage_search(
     opacity_modes=None,
     renderers=None,
     aa_dilations=None,
+    color_solve_modes=None,
     pixel_losses=None,
     optimizers=None,
     lr_schedules=None,
@@ -500,6 +531,7 @@ def run_stage_search(
         "scale_cap_modes": scale_cap_modes,
         "opacity_modes": opacity_modes, "renderers": renderers,
         "aa_dilations": aa_dilations,
+        "color_solve_modes": color_solve_modes,
         "pixel_losses": pixel_losses, "optimizers": optimizers,
         "lr_schedules": lr_schedules, "refine_modes": refine_modes,
         "pyramid_modes": pyramid_modes,
@@ -816,6 +848,8 @@ def main():
     p.add_argument("--opacity-modes", nargs="+", default=None)
     p.add_argument("--renderers", nargs="+", default=None)
     p.add_argument("--aa-dilations", type=float, nargs="+", default=None)
+    p.add_argument("--color-solve-modes", nargs="+", default=None,
+                   help="none, every10, or every<N>; normalized renderer only")
     p.add_argument("--pixel-losses", nargs="+", default=None)
     p.add_argument("--optimizers", nargs="+", default=None)
     p.add_argument("--lr-schedules", nargs="+", default=None)
@@ -854,6 +888,7 @@ def main():
         color_modes=a.color_modes, scale_modes=a.scale_modes,
         scale_cap_modes=a.scale_cap_modes, opacity_modes=a.opacity_modes,
         renderers=a.renderers, aa_dilations=a.aa_dilations,
+        color_solve_modes=a.color_solve_modes,
         pixel_losses=a.pixel_losses, optimizers=a.optimizers,
         lr_schedules=a.lr_schedules, refine_modes=a.refine_modes,
         pyramid_modes=a.pyramid_modes, render_chunk=a.chunk,

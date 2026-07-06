@@ -15,8 +15,10 @@ import torch.nn.functional as F
 from .config import FitConfig
 from .gaussians import GaussianField
 from .render import (
+    _EPS,
     _element_budget,
     _flat_tile_slices,
+    _support_weight,
     _tile_bounds,
     _tile_coords,
     gaussian_activity,
@@ -187,6 +189,169 @@ def _render(field: GaussianField, cfg: FitConfig, H: int, W: int) -> torch.Tenso
                         H, W, cfg.render_chunk, cfg.renderer, field.opacity_values(),
                         scales=field.scales(), rotations=field.rotations,
                         support_fade=cfg.support_fade, sigma_cutoff=cfg.sigma_cutoff)
+
+
+def _color_solve_enabled(cfg: FitConfig) -> bool:
+    return cfg.color_solve_every is not None and cfg.color_solve_every > 0
+
+
+@torch.no_grad()
+def _normalized_color_denominator(field: GaussianField, cfg: FitConfig,
+                                  H: int, W: int) -> torch.Tensor:
+    dev, dt = field.means.device, field.means.dtype
+    den = torch.zeros(H * W, 1, device=dev, dtype=dt)
+    means = field.means.detach()
+    conics = field.conics(cfg.aa_dilation).detach()
+    radii = field.radii(cfg.sigma_cutoff, cfg.aa_dilation)
+    opacities = field.opacity_values()
+    if opacities is not None:
+        opacities = opacities.detach()
+    x0, y0, Tx, n = _tile_bounds(means, radii, H, W)
+    budget = _element_budget(cfg.render_chunk)
+    for s, e in _flat_tile_slices(n, budget):
+        gid, px, py = _tile_coords(x0, y0, Tx, n, s, e, dev)
+        dx = px.to(dt) - means[gid, 0]
+        dy = py.to(dt) - means[gid, 1]
+        a, b, c = conics[gid, 0], conics[gid, 1], conics[gid, 2]
+        q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
+        w = _support_weight(q, cfg.sigma_cutoff, cfg.support_fade)
+        if opacities is not None:
+            w = w * opacities[gid]
+        den.index_add_(0, py * W + px, w[:, None])
+    return den
+
+
+@torch.no_grad()
+def _normalized_color_basis_apply(field: GaussianField, colors: torch.Tensor, cfg: FitConfig,
+                                  H: int, W: int, den: torch.Tensor) -> torch.Tensor:
+    dev, dt = field.means.device, field.means.dtype
+    out = torch.zeros(H * W, colors.shape[1], device=dev, dtype=dt)
+    means = field.means.detach()
+    conics = field.conics(cfg.aa_dilation).detach()
+    radii = field.radii(cfg.sigma_cutoff, cfg.aa_dilation)
+    opacities = field.opacity_values()
+    if opacities is not None:
+        opacities = opacities.detach()
+    x0, y0, Tx, n = _tile_bounds(means, radii, H, W)
+    budget = _element_budget(cfg.render_chunk)
+    for s, e in _flat_tile_slices(n, budget):
+        gid, px, py = _tile_coords(x0, y0, Tx, n, s, e, dev)
+        dx = px.to(dt) - means[gid, 0]
+        dy = py.to(dt) - means[gid, 1]
+        a, b, c = conics[gid, 0], conics[gid, 1], conics[gid, 2]
+        q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
+        w = _support_weight(q, cfg.sigma_cutoff, cfg.support_fade)
+        if opacities is not None:
+            w = w * opacities[gid]
+        flat = py * W + px
+        basis = w[:, None] / (den[flat] + _EPS)
+        out.index_add_(0, flat, basis * colors[gid])
+    return out.view(H, W, colors.shape[1])
+
+
+@torch.no_grad()
+def _normalized_color_basis_transpose(field: GaussianField, image: torch.Tensor,
+                                      cfg: FitConfig, H: int, W: int,
+                                      den: torch.Tensor) -> torch.Tensor:
+    dev, dt = field.means.device, field.means.dtype
+    out = torch.zeros(field.n, image.shape[-1], device=dev, dtype=dt)
+    means = field.means.detach()
+    conics = field.conics(cfg.aa_dilation).detach()
+    radii = field.radii(cfg.sigma_cutoff, cfg.aa_dilation)
+    opacities = field.opacity_values()
+    if opacities is not None:
+        opacities = opacities.detach()
+    x0, y0, Tx, n = _tile_bounds(means, radii, H, W)
+    budget = _element_budget(cfg.render_chunk)
+    for s, e in _flat_tile_slices(n, budget):
+        gid, px, py = _tile_coords(x0, y0, Tx, n, s, e, dev)
+        dx = px.to(dt) - means[gid, 0]
+        dy = py.to(dt) - means[gid, 1]
+        a, b, c = conics[gid, 0], conics[gid, 1], conics[gid, 2]
+        q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
+        w = _support_weight(q, cfg.sigma_cutoff, cfg.support_fade)
+        if opacities is not None:
+            w = w * opacities[gid]
+        flat = py * W + px
+        basis = w[:, None] / (den[flat] + _EPS)
+        out.index_add_(0, gid, basis * image[py, px].to(dt))
+    return out
+
+
+@torch.no_grad()
+def _solve_colors_normalized(field: GaussianField, target: torch.Tensor, cfg: FitConfig,
+                             H: int, W: int) -> dict[str, float | int]:
+    """Solve fixed-geometry normalized-renderer RGB colors with implicit CG.
+
+    The normalized renderer is linear in colors once means/scales/rotations/opacities are fixed:
+    render = A c. We solve `(A.T A + lambda I)c = A.T target + lambda c_prev` for the three RGB
+    channels simultaneously, without materializing the dense pixel-by-Gaussian matrix.
+    """
+    if cfg.renderer != "normalized":
+        raise ValueError(
+            "color_solve_every currently supports renderer='normalized' only; "
+            f"got {cfg.renderer!r}"
+        )
+    if field.n == 0:
+        return {"iterations": 0, "relative_residual": 0.0}
+
+    den = _normalized_color_denominator(field, cfg, H, W)
+    lam = float(cfg.color_solve_lambda)
+    x0 = field.colors.detach().clone()
+    b = _normalized_color_basis_transpose(field, target, cfg, H, W, den)
+    if lam > 0.0:
+        b = b + lam * x0
+
+    def normal_matvec(x: torch.Tensor) -> torch.Tensor:
+        ax = _normalized_color_basis_apply(field, x, cfg, H, W, den)
+        atax = _normalized_color_basis_transpose(field, ax, cfg, H, W, den)
+        if lam > 0.0:
+            atax = atax + lam * x
+        return atax
+
+    x = x0.clone()
+    r = b - normal_matvec(x)
+    p = r.clone()
+    rs = (r * r).sum(dim=0)
+    b_norm = torch.sqrt((b * b).sum(dim=0)).clamp_min(1e-12)
+    rel = torch.sqrt(rs) / b_norm
+    iterations = 0
+    eps = torch.finfo(field.colors.dtype).eps
+    for _ in range(int(cfg.color_solve_maxiter)):
+        if bool(torch.all(rel <= 1e-5)):
+            break
+        ap = normal_matvec(p)
+        denom = (p * ap).sum(dim=0)
+        valid = denom.abs() > eps
+        if not bool(torch.any(valid)):
+            break
+        safe_denom = torch.where(valid, denom, torch.ones_like(denom))
+        alpha = torch.where(valid, rs / safe_denom, torch.zeros_like(rs))
+        x = x + p * alpha
+        r = r - ap * alpha
+        rs_next = (r * r).sum(dim=0)
+        safe_rs = torch.where(rs > eps, rs, torch.ones_like(rs))
+        beta = torch.where(valid, rs_next / safe_rs, torch.zeros_like(rs))
+        p = r + p * beta
+        rs = rs_next
+        rel = torch.sqrt(rs) / b_norm
+        iterations += 1
+
+    field.colors.copy_(x)
+    return {
+        "iterations": iterations,
+        "relative_residual": float(rel.max().detach().cpu()),
+    }
+
+
+@torch.no_grad()
+def _reset_optimizer_state_for_param(opt: torch.optim.Optimizer, param: torch.Tensor) -> None:
+    state = opt.state.get(param)
+    if not state:
+        return
+    for value in state.values():
+        if torch.is_tensor(value) and value.shape == param.shape:
+            value.zero_()
 
 
 def _target_list(cfg: FitConfig) -> list[float]:
@@ -744,13 +909,18 @@ def _add_from_residual(field: GaussianField, target: torch.Tensor, render_img: t
 def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: bool = True,
         sched_offset: int = 0, sched_total: int | None = None) -> dict:
     H, W = target.shape[0], target.shape[1]
+    if _color_solve_enabled(cfg) and cfg.renderer != "normalized":
+        raise ValueError(
+            "color_solve_every currently supports renderer='normalized' only; "
+            f"got {cfg.renderer!r}"
+        )
     field.trainable()
     opt = _make_optimizer(field, cfg)
     base_lrs = [g["lr"] for g in opt.param_groups]
     lo, hi = math.log(0.35), math.log(max(H, W))
     hist = {
         "iter": [], "psnr": [], "loss": [], "n_gaussians": [], "elapsed": [],
-        "split_events": [], "relocate_events": [],
+        "split_events": [], "relocate_events": [], "color_solve_events": [],
     }
     absgrad_scores = torch.zeros(field.n, device=target.device, dtype=target.dtype)
     targets = _target_list(cfg)
@@ -801,6 +971,18 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             if getattr(field, "scale_max", None) is not None:
                 cap = torch.log(torch.clamp(field.scale_max, min=1e-3))
                 torch.minimum(field.log_scales, cap, out=field.log_scales)
+            if _color_solve_enabled(cfg) and (it + 1) % int(cfg.color_solve_every) == 0:
+                stats = _solve_colors_normalized(field, target, cfg, H, W)
+                _reset_optimizer_state_for_param(opt, field.colors)
+                event = {"iter": it, **stats}
+                hist["color_solve_events"].append(event)
+                img = _render(field, cfg, H, W)
+                if verbose:
+                    print(
+                        "  color solve "
+                        f"{int(stats['iterations'])} cg iters  "
+                        f"rel {float(stats['relative_residual']):.3e}"
+                    )
             mse_now = None
             if target_thresholds is not None and target_iters_device is not None:
                 mse_now = M.mse(img, target).detach().clamp_min(1e-12)

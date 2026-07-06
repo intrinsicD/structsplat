@@ -77,6 +77,9 @@ class FitConfig:
     aa_dilation: float = 0.0           # EWA-style low-pass: render with Sigma + d*I (px^2)
     render_chunk: int = 512            # reference renderer: max(render_chunk,64)*4096 elements
     renderer: str = "normalized"       # normalized/additive/cuda/cuda_tiled/gsplat variants
+    color_solve_every: int | None = None  # periodic fixed-geometry RGB least-squares solve
+    color_solve_lambda: float = 1e-4       # Tikhonov pull toward pre-solve colors
+    color_solve_maxiter: int = 32          # CG iterations for the color normal equations
     lr_schedule: str = "none"          # none, step, or cosine
     lr_decay_every: int | None = None
     lr_decay_gamma: float = 0.5
@@ -113,6 +116,15 @@ class FitConfig:
         # NaN renders (CORE-004). Reject it at construction rather than mid-fit.
         if self.aa_dilation < 0.0:
             raise ValueError(f"aa_dilation must be >= 0, got {self.aa_dilation}")
+        if self.color_solve_every is not None and self.color_solve_every < 0:
+            raise ValueError(
+                f"color_solve_every must be >= 0 or None, got {self.color_solve_every}")
+        if self.color_solve_lambda < 0.0:
+            raise ValueError(
+                f"color_solve_lambda must be >= 0, got {self.color_solve_lambda}")
+        if self.color_solve_maxiter <= 0:
+            raise ValueError(
+                f"color_solve_maxiter must be > 0, got {self.color_solve_maxiter}")
         if self.ssim_backend not in ("builtin", "fused", "auto"):
             raise ValueError(
                 f"ssim_backend must be builtin, fused, or auto, got {self.ssim_backend!r}")

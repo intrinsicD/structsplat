@@ -61,6 +61,9 @@ def cmd_fit(args):
                      loss_warmup_pixel_loss=args.loss_warmup_pixel_loss,
                      compute_lpips=args.lpips,
                      renderer=args.renderer,
+                     color_solve_every=args.color_solve_every,
+                     color_solve_lambda=args.color_solve_lambda,
+                     color_solve_maxiter=args.color_solve_maxiter,
                      support_fade=args.support_fade,
                      aa_dilation=args.aa_dilation,
                      lr_schedule=args.lr_schedule,
@@ -131,6 +134,7 @@ def cmd_stage_search(args):
         scale_modes=args.scale_modes, scale_cap_modes=args.scale_cap_modes,
         opacity_modes=args.opacity_modes, renderers=args.renderers,
         aa_dilations=args.aa_dilations,
+        color_solve_modes=args.color_solve_modes,
         pixel_losses=args.pixel_losses, optimizers=args.optimizers,
         lr_schedules=args.lr_schedules, refine_modes=args.refine_modes,
         pyramid_modes=args.pyramid_modes, render_chunk=args.chunk,
@@ -244,6 +248,12 @@ def main():
                        "cuda_tiled", "cuda_tiled_additive", "gsplat",
                    ],
                    default="normalized")
+    f.add_argument("--color-solve-every", type=int, default=None,
+                   help="periodically solve fixed-geometry RGB colors with CG; normalized renderer only")
+    f.add_argument("--color-solve-lambda", type=float, default=1e-4,
+                   help="Tikhonov pull toward pre-solve colors for --color-solve-every")
+    f.add_argument("--color-solve-maxiter", type=int, default=32,
+                   help="maximum CG iterations for each color solve")
     f.add_argument("--aa-dilation", type=float, default=0.0)
     f.add_argument("--support-fade", action="store_true",
                    help="subtract the Gaussian tail at sigma_cutoff for C0 compact support")
@@ -333,6 +343,7 @@ def main():
     s.add_argument("--opacity-modes", nargs="+", default=None)
     s.add_argument("--renderers", nargs="+", default=None)
     s.add_argument("--aa-dilations", type=float, nargs="+", default=None)
+    s.add_argument("--color-solve-modes", nargs="+", default=None)
     s.add_argument("--pixel-losses", nargs="+", default=None)
     s.add_argument("--optimizers", nargs="+", default=None)
     s.add_argument("--lr-schedules", nargs="+", default=None)
