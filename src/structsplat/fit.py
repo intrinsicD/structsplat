@@ -563,6 +563,73 @@ def _image_gradients(img: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
 
 
 @torch.no_grad()
+def _abs_laplacian(img: torch.Tensor) -> torch.Tensor:
+    gray = _luma(img)
+    padded = F.pad(gray[None, None], (1, 1, 1, 1), mode="replicate")[0, 0]
+    center = padded[1:-1, 1:-1]
+    lap = padded[1:-1, :-2] + padded[1:-1, 2:] + padded[:-2, 1:-1] + padded[2:, 1:-1] \
+        - 4.0 * center
+    return lap.abs()
+
+
+@torch.no_grad()
+def _freq_violation_scores(field: GaussianField, target: torch.Tensor,
+                           render_img: torch.Tensor, cfg: FitConfig
+                           ) -> tuple[torch.Tensor, torch.Tensor, dict[str, torch.Tensor]]:
+    H, W = target.shape[:2]
+    dev, dt = field.means.device, field.means.dtype
+    residual = (render_img - target).abs().mean(dim=2)
+    gx, gy = _image_gradients(target)
+    grad_mag = torch.sqrt(gx * gx + gy * gy)
+    freq = grad_mag + 0.5 * _abs_laplacian(target)
+    freq_ref = torch.quantile(freq.reshape(-1), 0.95)
+    if float(freq_ref.detach().cpu()) <= 1e-8:
+        freq_n = torch.zeros_like(freq)
+    else:
+        freq_n = torch.clamp(freq / freq_ref.clamp_min(1e-8), 0.0, 1.0)
+
+    x = torch.clamp(torch.round(field.means[:, 0]).long(), 0, W - 1)
+    y = torch.clamp(torch.round(field.means[:, 1]).long(), 0, H - 1)
+    f = freq_n[y, x].to(dt)
+    residual_sample = residual[y, x].to(dt)
+    residual_ref = torch.quantile(residual.reshape(-1), 0.9).to(dt).clamp_min(1e-8)
+    residual_n = torch.clamp(residual_sample / residual_ref, 0.0, 4.0)
+
+    gvec = torch.stack([gx[y, x].to(dt), gy[y, x].to(dt)], dim=1)
+    gnorm = torch.linalg.norm(gvec, dim=1, keepdim=True)
+    gdir = torch.where(gnorm > 1e-8, gvec / gnorm.clamp_min(1e-8), torch.zeros_like(gvec))
+
+    theta = field.rotations.detach()
+    c, s = torch.cos(theta), torch.sin(theta)
+    axis0 = torch.stack([c, s], dim=1)
+    axis1 = torch.stack([-s, c], dim=1)
+    align0 = torch.abs((axis0 * gdir).sum(dim=1))
+    align1 = torch.abs((axis1 * gdir).sum(dim=1))
+
+    base_limit = max(
+        math.sqrt((H * W) / max(field.n, 1)) * cfg.split_scale,
+        _MIN_DENSIFY_SCALE,
+    )
+    edge_limit = _MIN_DENSIFY_SCALE + (base_limit - _MIN_DENSIFY_SCALE) * (1.0 - f)
+    tangent_limit = edge_limit * 3.0
+    limit0 = edge_limit * align0 + tangent_limit * (1.0 - align0)
+    limit1 = edge_limit * align1 + tangent_limit * (1.0 - align1)
+
+    scales = field.scales().detach()
+    violation0 = scales[:, 0] / limit0.clamp_min(_MIN_DENSIFY_SCALE) - 1.0
+    violation1 = scales[:, 1] / limit1.clamp_min(_MIN_DENSIFY_SCALE) - 1.0
+    violation = torch.maximum(violation0, violation1)
+    split_axis = torch.where(violation0 >= violation1, 0, 1).to(device=dev, dtype=torch.long)
+    score = torch.clamp(violation, min=0.0) * f * (0.25 + residual_n)
+    return score, split_axis, {
+        "violation0": violation0,
+        "violation1": violation1,
+        "freq": f,
+        "residual": residual_sample,
+    }
+
+
+@torch.no_grad()
 def _maybe_prune(field: GaussianField, cfg: FitConfig, H: int,
                  W: int) -> tuple[GaussianField, torch.Tensor | None]:
     if cfg.prune_min_activity <= 0.0:
@@ -605,7 +672,8 @@ def _major_axis(scales: torch.Tensor, theta: torch.Tensor) -> tuple[torch.Tensor
 
 @torch.no_grad()
 def _fp_duplicate_indices(field: GaussianField, idx: torch.Tensor, cfg: FitConfig,
-                          H: int, W: int) -> tuple[GaussianField, int]:
+                          H: int, W: int, split_axis: torch.Tensor | None = None
+                          ) -> tuple[GaussianField, int]:
     k = int(idx.numel())
     if k <= 0:
         return field, 0
@@ -616,8 +684,17 @@ def _fp_duplicate_indices(field: GaussianField, idx: torch.Tensor, cfg: FitConfi
     colors = field.colors.detach().clone()
     scales = torch.exp(log_scales[idx])
     theta = rotations[idx]
-    direction, major = _major_axis(scales, theta)
-    offset = direction * major[:, None]
+    if split_axis is None:
+        direction, offset_scale = _major_axis(scales, theta)
+    else:
+        axis = split_axis.to(device=scales.device, dtype=torch.long)
+        c, s = torch.cos(theta), torch.sin(theta)
+        x_axis = torch.stack([c, s], dim=1)
+        y_axis = torch.stack([-s, c], dim=1)
+        use_x = axis == 0
+        direction = torch.where(use_x[:, None], x_axis, y_axis)
+        offset_scale = torch.where(use_x, scales[:, 0], scales[:, 1])
+    offset = direction * offset_scale[:, None]
 
     child_means = means[idx].clone() + offset
     means[idx] = means[idx] - offset
@@ -706,6 +783,33 @@ def _ranked_wave_from_residual(field: GaussianField, target: torch.Tensor,
         "residual_support_mean": float(components["residual_support"][idx].mean().detach().cpu()),
         "activity_mean": float(components["activity"][idx].mean().detach().cpu()),
         "footprint_mean": float(components["footprint"][idx].mean().detach().cpu()),
+    }
+    return grown, added, stats
+
+
+@torch.no_grad()
+def _freq_violation_from_residual(field: GaussianField, target: torch.Tensor,
+                                  render_img: torch.Tensor,
+                                  cfg: FitConfig) -> tuple[GaussianField, int, dict[str, float]]:
+    if cfg.split_count <= 0:
+        return field, 0, {}
+    if cfg.max_gaussians is not None and field.n >= cfg.max_gaussians:
+        return field, 0, {}
+    H, W = target.shape[:2]
+    room = field.n if cfg.max_gaussians is None else max(0, cfg.max_gaussians - field.n)
+    k = min(cfg.split_count, field.n, room)
+    if k <= 0:
+        return field, 0, {}
+    score, split_axis, components = _freq_violation_scores(field, target, render_img, cfg)
+    idx = torch.topk(score, k=k).indices
+    grown, added = _fp_duplicate_indices(field, idx, cfg, H, W, split_axis=split_axis[idx])
+    axis_sel = split_axis[idx]
+    stats = {
+        "freq_violation_score_mean": float(score[idx].mean().detach().cpu()),
+        "freq_violation_score_max": float(score[idx].max().detach().cpu()),
+        "freq_violation_axis0_count": int((axis_sel == 0).sum().detach().cpu()),
+        "freq_violation_axis1_count": int((axis_sel == 1).sum().detach().cpu()),
+        "freq_violation_freq_mean": float(components["freq"][idx].mean().detach().cpu()),
     }
     return grown, added, stats
 
@@ -1065,6 +1169,16 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                     "added": added,
                     **absgrad_stats,
                 }
+            elif cfg.split_mode == "freq_violation":
+                field, added, freq_stats = _freq_violation_from_residual(
+                    field, target, img, cfg
+                )
+                split_event = {
+                    "iter": it,
+                    "mode": cfg.split_mode,
+                    "added": added,
+                    **freq_stats,
+                }
             elif cfg.split_mode in ("residual_add", "residual_tensor_add"):
                 field, added = _add_from_residual(
                     field, target, img, cfg, tensor_aligned=cfg.split_mode == "residual_tensor_add"
@@ -1073,7 +1187,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 raise ValueError(
                     f"unknown split_mode {cfg.split_mode!r}; expected duplicate, "
                     "fp_duplicate, support_duplicate, residual_add, residual_tensor_add, "
-                    "ranked_wave, or absgrad_wave")
+                    "ranked_wave, absgrad_wave, or freq_violation")
             if verbose and added > 0:
                 print(f"  split +{added} -> {field.n} gaussians")
             if added > 0:

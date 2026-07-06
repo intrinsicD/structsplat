@@ -91,7 +91,7 @@ class FitConfig:
     prune_keep_min: int = 16
     split_every: int | None = None
     split_count: int = 0
-    split_mode: str = "duplicate"      # duplicate, fp_duplicate, support_duplicate, residual_add, residual_tensor_add, ranked_wave, absgrad_wave
+    split_mode: str = "duplicate"      # duplicate/fp/support/residual/ranked/absgrad/freq modes
     split_scale: float = 0.7
     split_oversample: float = 1.0       # residual_add candidate multiplier before spacing NMS
     split_min_spacing: float = 0.0      # residual_add NMS radius = this * base densify scale

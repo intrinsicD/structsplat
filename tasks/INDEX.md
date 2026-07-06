@@ -20,7 +20,6 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | ABL-004 | Killer controls + full ABL-001 run + committed evidence | partial | BENCH-002, ABL-003, FIT-004 |
 | COMP-003 | Compression-ratio ladder (scale ranges → planes → LSQ → VQ → entropy) | partial | COMP-002, BENCH-002 |
 | CORE-006 | Linear color basis per Gaussian | todo | CORE-001, FIT-001 |
-| FIT-006 | Frequency-violation densification | todo | INIT-001, FIT-004, BENCH-002 |
 | FIT-007 | Moment-preserving split / clone | todo | FIT-004 |
 | CORE-007 | Boundary-gated Gaussians | todo | INIT-004, CORE-001 |
 | CORE-008 | Hybrid Gaussian + edge primitives | todo | CORE-001, INIT-001, FIT-001 |
@@ -48,6 +47,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | FIT-003 | Fit-loop speed (device-side targets, SSIM hygiene, fused SSIM) | `done/FIT-003-fit-loop-speed.md` |
 | FIT-004 | Densification & convergence upgrades (fp-growth, relocation, NMS) | `done/FIT-004-densification-upgrades.md` |
 | FIT-005 | Exact / alternating color solve | `done/FIT-005-exact-color-solve.md` |
+| FIT-006 | Frequency-violation densification | `done/FIT-006-frequency-violation-densification.md` |
 | HIER-002 | Pyramid bookkeeping (iteration accounting, budgets, schedules) | `done/HIER-002-pyramid-bookkeeping.md` |
 | BENCH-001 | Metric protocol (PSNR/MS-SSIM/LPIPS + iters-to-target) | `done/BENCH-001-metrics.md` |
 | BENCH-002 | Benchmark harness experimental-validity fixes (equal budgets, resumable sweeps, seed-aware comparisons) | `done/BENCH-002-harness-validity.md` |
@@ -70,10 +70,11 @@ review suggests the most pragmatic improvement order:
 
 1. FIT-005 exact/alternating color solve — completed 2026-07-06; keep default off, stage-search
    axis available as `color_solve=every10`.
-2. FIT-006 frequency-violation densification, optionally followed by FIT-007 moment-preserving
-   split if split loss spikes remain visible.
-3. FF-001 feed-forward teacher-student warm start, with FIT-008 adaptive count as the natural
+2. FIT-006 frequency-violation densification — completed 2026-07-06; keep default off,
+   stage-search refine axis available as `freq_violation`.
+3. FIT-007 moment-preserving split if split loss spikes remain visible.
+4. FF-001 feed-forward teacher-student warm start, with FIT-008 adaptive count as the natural
    companion if fixed-N prediction underfits complex images.
-4. COMP-004 for compression-aware fitting once RD baselines are stable.
-5. PORT-002/PORT-003 if tiled CUDA remains strategically important after quality work.
-6. GEN-003 after GEN-001 has a debuggable SDS baseline.
+5. COMP-004 for compression-aware fitting once RD baselines are stable.
+6. PORT-002/PORT-003 if tiled CUDA remains strategically important after quality work.
+7. GEN-003 after GEN-001 has a debuggable SDS baseline.

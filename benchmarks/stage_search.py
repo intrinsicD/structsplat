@@ -88,7 +88,7 @@ INFLUENCE_DEFAULTS: dict[str, tuple[str, ...]] = {
     "lr_schedules": ("none", "cosine", "step"),
     "refine_modes": (
         "none", "prune", "duplicate", "fp_duplicate", "support_duplicate", "residual_add",
-        "residual_tensor_add", "ranked_wave", "absgrad_wave", "relocate",
+        "residual_tensor_add", "ranked_wave", "absgrad_wave", "freq_violation", "relocate",
         "residual_add_nms", "residual_tensor_add_nms",
         "residual_add_residual_color", "residual_tensor_add_residual_color",
         "residual_add_nms_residual_color", "residual_tensor_add_nms_residual_color",
@@ -194,6 +194,7 @@ def _refine_kwargs(mode: str, split_every: int | None, split_count: int,
         "residual_tensor_add": {"split_mode": "residual_tensor_add"},
         "ranked_wave": {"split_mode": "ranked_wave"},
         "absgrad_wave": {"split_mode": "absgrad_wave"},
+        "freq_violation": {"split_mode": "freq_violation"},
         "residual_add_nms": {
             "split_mode": "residual_add",
             "split_min_spacing": 1.0,
@@ -262,7 +263,8 @@ def _refine_kwargs(mode: str, split_every: int | None, split_count: int,
 def _refine_adds_capacity(mode: str) -> bool:
     return mode in {
         "duplicate", "fp_duplicate", "support_duplicate", "residual_add",
-        "residual_tensor_add", "ranked_wave", "absgrad_wave", "residual_add_nms",
+        "residual_tensor_add", "ranked_wave", "absgrad_wave", "freq_violation",
+        "residual_add_nms",
         "residual_tensor_add_nms", "residual_add_residual_color",
         "residual_tensor_add_residual_color", "residual_add_nms_residual_color",
         "residual_tensor_add_nms_residual_color", "prune_residual_add",
@@ -413,6 +415,7 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
     split_events = history.get("split_events", [])
     ranked_events = [e for e in split_events if e.get("mode") == "ranked_wave"]
     absgrad_events = [e for e in split_events if e.get("mode") == "absgrad_wave"]
+    freq_events = [e for e in split_events if e.get("mode") == "freq_violation"]
     color_solve_events = history.get("color_solve_events", [])
 
     def event_mean(events: list[dict], key: str) -> float | None:
@@ -443,6 +446,11 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         "ranked_wave_footprint_mean": event_mean(ranked_events, "footprint_mean"),
         "absgrad_score_mean": event_mean(absgrad_events, "absgrad_score_mean"),
         "absgrad_score_max": event_mean(absgrad_events, "absgrad_score_max"),
+        "freq_violation_score_mean": event_mean(freq_events, "freq_violation_score_mean"),
+        "freq_violation_score_max": event_mean(freq_events, "freq_violation_score_max"),
+        "freq_violation_axis0_count": event_mean(freq_events, "freq_violation_axis0_count"),
+        "freq_violation_axis1_count": event_mean(freq_events, "freq_violation_axis1_count"),
+        "freq_violation_freq_mean": event_mean(freq_events, "freq_violation_freq_mean"),
         "color_solve_every": fcfg.color_solve_every,
         "color_solve_lambda": fcfg.color_solve_lambda,
         "color_solve_maxiter": fcfg.color_solve_maxiter,

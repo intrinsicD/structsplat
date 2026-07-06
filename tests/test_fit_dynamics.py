@@ -11,6 +11,7 @@ from structsplat.gaussians import GaussianField
 from structsplat.fit import (
     _add_from_residual,
     _carry_adam_state,
+    _freq_violation_scores,
     _lr_factor,
     _make_optimizer,
     _maybe_prune,
@@ -377,6 +378,63 @@ def test_residual_add_color_init_is_configurable_and_additive_safe():
     assert torch.allclose(target_field.colors[-1, 0], torch.tensor(0.8), atol=1e-5)
     assert torch.allclose(residual_field.colors[-1, 0], torch.tensor(1.1), atol=1e-5)
     assert torch.allclose(additive_field.colors[-1, 0], torch.tensor(0.3), atol=1e-5)
+
+
+def test_freq_violation_scores_oversized_edge_before_smooth_region():
+    H, W = 32, 32
+    target = torch.zeros(H, W, 3)
+    target[:, 16:] = 1.0
+    render_img = torch.clamp(target + 0.1, 0.0, 1.0)
+    field = GaussianField(
+        means=torch.tensor([[16.0, 16.0], [8.0, 8.0]]),
+        log_scales=torch.log(torch.full((2, 2), 8.0)),
+        rotations=torch.zeros(2),
+        colors=torch.zeros(2, 3),
+    )
+
+    score, split_axis, components = _freq_violation_scores(
+        field,
+        target,
+        render_img,
+        FitConfig(split_mode="freq_violation", split_count=1),
+    )
+
+    assert score[0] > score[1]
+    assert components["freq"][0] > components["freq"][1]
+    assert int(split_axis[0]) == 0  # x-axis crosses the vertical step edge
+
+
+def test_freq_violation_split_logs_stats_and_respects_max_gaussians():
+    img = np.zeros((32, 32, 3), np.float32)
+    img[:, 16:] = 1.0
+    target = torch.as_tensor(img)
+    field = _init.build_field(
+        img,
+        InitConfig(strategy="random", num_gaussians=12, seed=0),
+    )
+
+    out = fit(
+        field,
+        target,
+        FitConfig(
+            iters=6,
+            log_every=1,
+            split_every=3,
+            split_count=4,
+            split_mode="freq_violation",
+            max_gaussians=16,
+        ),
+        verbose=False,
+    )
+
+    assert out["n_gaussians"] <= 16
+    events = [e for e in out["history"]["split_events"] if e["mode"] == "freq_violation"]
+    assert len(events) == 1
+    event = events[0]
+    assert event["added"] == 4
+    assert "freq_violation_score_mean" in event
+    assert "freq_violation_score_max" in event
+    assert event["freq_violation_axis0_count"] + event["freq_violation_axis1_count"] == 4
 
 
 def test_fp_duplicate_has_small_immediate_psnr_dip():
