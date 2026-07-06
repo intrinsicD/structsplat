@@ -16,7 +16,6 @@ FIT, HIER, BENCH, ABL, FF, COMP, PORT, MERGE, DOCS. Work items are picked up via
 | GEN-001 | Generative 2D Gaussians via SDS distillation (no dataset) | todo | CORE-001, ADR-0006 |
 | COMP-001 | Quantization + entropy/VQ codec (rate-distortion) | partial | FIT-001 |
 | PORT-001 | CUDA tile rasterizer → IntrinsicEngine RHI pass | partial | CORE-001 |
-| MERGE-001 | Integrate Claude core optimizations and Codex stage search into main | partial | CORE, INIT, FIT, HIER, BENCH, ABL, COMP |
 | CORE-005 | Reference renderer memory bound + C0-continuous support cutoff | partial | CORE-003, CORE-004 |
 | ABL-004 | Killer controls + full ABL-001 run + committed evidence | partial | BENCH-002, ABL-003, FIT-004 |
 | COMP-003 | Compression-ratio ladder (scale ranges → planes → LSQ → VQ → entropy) | partial | COMP-002, BENCH-002 |
@@ -43,6 +42,7 @@ FIT, HIER, BENCH, ABL, FF, COMP, PORT, MERGE, DOCS. Work items are picked up via
 | BENCH-002 | Benchmark harness experimental-validity fixes (equal budgets, resumable sweeps, seed-aware comparisons) | `done/BENCH-002-harness-validity.md` |
 | BENCH-003 | Benchmark script consolidation + documentation | `done/BENCH-003-benchmark-consolidation.md` |
 | ABL-003 | Bisect the undiagnosed −0.794 dB flagship regression | `done/ABL-003-regression-bisect.md` |
+| MERGE-001 | Integrate Claude core optimizations and Codex stage search into main | `done/MERGE-001-claude-codex-main.md` |
 | COMP-002 | Codec / metrics / CLI correctness and protocol fixes | `done/COMP-002-codec-correctness.md` |
 | DOCS-001 | Docs-sync backfill (stale status, missing ADRs, ara scaffold) | `done/DOCS-001-docs-sync-backfill.md` |
 

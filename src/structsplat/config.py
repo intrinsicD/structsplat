@@ -150,3 +150,76 @@ class PyramidConfig:
     level_grad_sigmas: list[float] | None = None
     level_tensor_sigmas: list[float] | None = None
     evaluate_prefixes: bool = True
+
+
+@dataclass
+class GenConfig:
+    """Configuration for text-to-Gaussian generation via latent SDS (GEN-001)."""
+
+    model_id: str = "stable-diffusion-v1-5/stable-diffusion-v1-5"
+    height: int = 512
+    width: int = 512
+    num_gaussians: int = 5000
+    sample_steps: int = 30
+    fit_iters: int = 500
+    refine_steps: int = 200
+    sample_guidance_scale: float = 7.5
+    sds_guidance_scale: float = 30.0
+    negative_prompt: str = ""
+    seed: int = 0
+    dtype: str = "float16"             # float32, float16, bfloat16
+    device: str | None = None
+    init_strategy: str = "aniso_flanking"
+    init_opacity: float = 0.8
+    renderer: str = "additive"
+    render_chunk: int = 512
+    sigma_cutoff: float = 3.0
+    support_fade: bool = False
+    aa_dilation: float = 0.0
+    lr_means: float = 1e-2
+    lr_scales: float = 3e-3
+    lr_rot: float = 1e-3
+    lr_color: float = 1e-2
+    lr_opacity: float = 3e-3
+    sds_t_min: int = 20
+    sds_t_max: int = 980
+    sds_weight: float = 1.0
+    opacity_l1: float = 1e-4
+    scale_l2: float = 1e-5
+    color_l2: float = 0.0
+    grad_clip_norm: float | None = 1.0
+    min_scale: float = 0.25
+    max_scale: float | None = None
+    color_min: float = 0.0
+    color_max: float = 1.0
+    save_resolutions: list[int] = field(default_factory=lambda: [256, 512, 1024])
+
+    def __post_init__(self):
+        if self.height <= 0 or self.width <= 0:
+            raise ValueError(f"height/width must be positive, got {self.height}x{self.width}")
+        if self.height % 8 != 0 or self.width % 8 != 0:
+            raise ValueError(
+                f"height and width must be divisible by 8 for Stable Diffusion, "
+                f"got {self.height}x{self.width}"
+            )
+        if self.num_gaussians <= 0:
+            raise ValueError(f"num_gaussians must be > 0, got {self.num_gaussians}")
+        if self.sample_steps <= 0:
+            raise ValueError(f"sample_steps must be > 0, got {self.sample_steps}")
+        if self.fit_iters < 0:
+            raise ValueError(f"fit_iters must be >= 0, got {self.fit_iters}")
+        if self.refine_steps < 0:
+            raise ValueError(f"refine_steps must be >= 0, got {self.refine_steps}")
+        if self.sds_t_min < 0 or self.sds_t_max <= self.sds_t_min:
+            raise ValueError(
+                f"expected 0 <= sds_t_min < sds_t_max, got "
+                f"{self.sds_t_min}..{self.sds_t_max}"
+            )
+        if not 0.0 < self.init_opacity < 1.0:
+            raise ValueError(f"init_opacity must be in (0, 1), got {self.init_opacity}")
+        if self.min_scale <= 0.0:
+            raise ValueError(f"min_scale must be > 0, got {self.min_scale}")
+        if self.max_scale is not None and self.max_scale <= self.min_scale:
+            raise ValueError(
+                f"max_scale must be > min_scale, got {self.max_scale} <= {self.min_scale}"
+            )

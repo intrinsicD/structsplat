@@ -24,6 +24,7 @@ is a **placeholder name** — rename freely (see the `docs-sync` skill).
 ```bash
 pip install -e .                 # torch, numpy, pillow, imageio
 pip install -e ".[metrics]"      # optional: lpips, pytorch-msssim
+pip install -e ".[gen]"          # optional: diffusers text-to-Gaussian generation
 pip install -e ".[dev]"          # pytest, ruff
 ```
 
@@ -45,6 +46,9 @@ structsplat stage-search ./images --budgets 1024 2048 --iters 300 --outdir resul
 # ΔPSNR / ΔMS-SSIM / ΔAUC / Δiters-to-target / Δseconds per stage option, ADR-0010)
 structsplat stage-search ./images --mode influence --budgets 2048 --seeds 0 1 2 \
     --iters 500 --target-psnr 30 --outdir results/stage_influence
+
+# text-to-Gaussian MVP: sample raster -> fit -> latent SDS refine -> save .npz + PNGs
+structsplat generate "flat red calendar app icon" --n 5000 --steps 200 --outdir runs/icon
 ```
 Strategies: `random`, `grid`, `iso_blue_noise`, `aniso_onedge`, `aniso_flanking`.
 Additional quadtree strategies: `quadtree_aggregate`, `quadtree_hybrid`, `quadtree_wse`.

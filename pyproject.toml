@@ -20,6 +20,7 @@ dependencies = [
 [project.optional-dependencies]
 # Perceptual metric + faster SSIM. The repo runs without these (PSNR/SSIM are built in).
 metrics = ["lpips>=0.1.4", "pytorch-msssim>=1.0"]
+gen = ["diffusers>=0.35", "transformers>=4.53", "accelerate>=1.8", "safetensors>=0.4"]
 dev = ["pytest>=7.4", "ruff>=0.4"]
 
 [project.scripts]

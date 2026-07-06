@@ -147,7 +147,60 @@ def cmd_stage_search(args):
     )
 
 
+def cmd_generate(args):
+    from .config import GenConfig
+    from .generate import generate
+
+    cfg = GenConfig(
+        model_id=args.model_id,
+        height=args.height,
+        width=args.width,
+        num_gaussians=args.num_gaussians,
+        sample_steps=args.sample_steps,
+        fit_iters=args.fit_iters,
+        refine_steps=args.steps,
+        sample_guidance_scale=args.sample_guidance_scale,
+        sds_guidance_scale=args.sds_guidance_scale,
+        negative_prompt=args.negative_prompt,
+        seed=args.seed,
+        dtype=args.dtype,
+        device=args.device,
+        init_strategy=args.strategy,
+        init_opacity=args.init_opacity,
+        renderer=args.renderer,
+        render_chunk=args.chunk,
+        sigma_cutoff=args.sigma_cutoff,
+        support_fade=args.support_fade,
+        aa_dilation=args.aa_dilation,
+        lr_means=args.lr_means,
+        lr_scales=args.lr_scales,
+        lr_rot=args.lr_rot,
+        lr_color=args.lr_color,
+        lr_opacity=args.lr_opacity,
+        sds_t_min=args.sds_t_min,
+        sds_t_max=args.sds_t_max,
+        grad_clip_norm=args.grad_clip_norm,
+        save_resolutions=args.resolutions,
+    )
+    sample = load_image(args.sample_image) if args.sample_image else None
+    out = generate(
+        args.prompt,
+        cfg,
+        sample_image=sample,
+        outdir=args.outdir,
+        verbose=not args.quiet,
+    )
+    paths = out.get("paths", {})
+    field_path = paths.get("field.npz", os.path.join(args.outdir, "field.npz"))
+    print(
+        f"\n{out['field'].n} gaussians | prompt {args.prompt!r} | "
+        f"saved {field_path}"
+    )
+
+
 def main():
+    from .config import GenConfig
+
     p = argparse.ArgumentParser(prog="structsplat")
     sub = p.add_subparsers(dest="cmd", required=True)
 
@@ -309,6 +362,47 @@ def main():
     s.add_argument("--device", default=None)
     s.add_argument("--verbose", action="store_true")
     s.set_defaults(func=cmd_stage_search)
+
+    g = sub.add_parser("generate", help="generate a GaussianField from a text prompt")
+    g.add_argument("prompt")
+    g.add_argument("--model-id", default=GenConfig.model_id)
+    g.add_argument("--n", type=int, default=GenConfig.num_gaussians, dest="num_gaussians")
+    g.add_argument("--steps", type=int, default=GenConfig.refine_steps,
+                   help="SDS refinement steps")
+    g.add_argument("--sample-steps", type=int, default=GenConfig.sample_steps)
+    g.add_argument("--fit-iters", type=int, default=GenConfig.fit_iters)
+    g.add_argument("--height", type=int, default=GenConfig.height)
+    g.add_argument("--width", type=int, default=GenConfig.width)
+    g.add_argument("--sample-guidance-scale", type=float, default=GenConfig.sample_guidance_scale)
+    g.add_argument("--sds-guidance-scale", type=float, default=GenConfig.sds_guidance_scale)
+    g.add_argument("--negative-prompt", default=GenConfig.negative_prompt)
+    g.add_argument("--sample-image", default=None,
+                   help="optional raster init image; SDS still uses the text prompt")
+    g.add_argument("--strategy", default=GenConfig.init_strategy)
+    g.add_argument("--init-opacity", type=float, default=GenConfig.init_opacity)
+    g.add_argument("--renderer",
+                   choices=["additive", "cuda_additive", "cuda_tiled_additive", "gsplat"],
+                   default=GenConfig.renderer)
+    g.add_argument("--aa-dilation", type=float, default=GenConfig.aa_dilation)
+    g.add_argument("--support-fade", action="store_true")
+    g.add_argument("--sigma-cutoff", type=float, default=GenConfig.sigma_cutoff)
+    g.add_argument("--chunk", type=int, default=GenConfig.render_chunk)
+    g.add_argument("--lr-means", type=float, default=GenConfig.lr_means)
+    g.add_argument("--lr-scales", type=float, default=GenConfig.lr_scales)
+    g.add_argument("--lr-rot", type=float, default=GenConfig.lr_rot)
+    g.add_argument("--lr-color", type=float, default=GenConfig.lr_color)
+    g.add_argument("--lr-opacity", type=float, default=GenConfig.lr_opacity)
+    g.add_argument("--sds-t-min", type=int, default=GenConfig.sds_t_min)
+    g.add_argument("--sds-t-max", type=int, default=GenConfig.sds_t_max)
+    g.add_argument("--grad-clip-norm", type=float, default=GenConfig.grad_clip_norm)
+    g.add_argument("--resolutions", type=int, nargs="*", default=GenConfig().save_resolutions,
+                   help="long-side PNG sizes rendered from the final field")
+    g.add_argument("--dtype", choices=["float32", "float16", "bfloat16"], default=GenConfig.dtype)
+    g.add_argument("--seed", type=int, default=GenConfig.seed)
+    g.add_argument("--device", default=None)
+    g.add_argument("--outdir", default="runs/generate")
+    g.add_argument("--quiet", action="store_true")
+    g.set_defaults(func=cmd_generate)
 
     args = p.parse_args()
     args.func(args)

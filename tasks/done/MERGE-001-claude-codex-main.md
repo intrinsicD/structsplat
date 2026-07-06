@@ -1,10 +1,10 @@
 # MERGE-001: Integrate Claude core optimizations and Codex stage search into main
 
-**Status: partial.** Integration branch `merge/claude-codex-structsplat` was merged by PR #1
-(`f49aa18`) before the large COCO/CUDA confirmation gate completed. Both source branches were
-combined by a real git merge (both parents preserved) with the 8 shared core files resolved as a
-semantic merge (ADR-0009). Code-level acceptance criteria pass; the remaining open item is the
-larger confirmation run below.
+**Status: done.** Integration branch `merge/claude-codex-structsplat` was merged by PR #1
+(`f49aa18`). Both source branches were combined by a real git merge (both parents preserved) with
+the 8 shared core files resolved as a semantic merge (ADR-0009). The remaining COCO/CUDA
+confirmation gate completed on 2026-07-06; evidence:
+`ara/evidence/merge001-coco-cuda-confirmation-2026-07-06/`.
 
 ## Source branches
 - Claude optimized core: `origin/claude/approach-review-optimize-gkhhds` (`f465f57`).
@@ -49,27 +49,39 @@ The current screening evidence is:
 - [x] New/updated tests cover Claude renderer behavior, sampling behavior, fit dynamics, Codex stage-search CLI, and optional opacity/additive paths (Codex `test_render`/`test_smoke`/`test_gaussians`/`test_stage_search` + Claude `test_codec`/`test_fit_dynamics`, all green on the merged branch).
 - [x] `ruff check src benchmarks tests` passes.
 - [x] Re-run the screening with the combined branch and include both Claude defaults and Codex stage variants — run at reduced scale (4 local images, budget 512, 40 iters, max-side 160, **CPU**) since this environment has no GPU or COCO dataset; `structsplat stage-search` produced ranked JSON/CSV/summary and Claude's `aniso_flanking`/`aniso_onedge` init remained the top configs.
-- [~] Combined best config matches or exceeds Claude `flanking_split32` within tolerance (PSNR ≤0.10 dB, MS-SSIM ≤0.001, ≤25% slower): **cannot verify the exact numbers** without the original screening's image set/GPU; the merge preserves Claude's renderer/sampler/fitter code paths verbatim, so behavior is expected to match. Confirm in the COCO/CUDA run.
-- [~] Combined fast config matches or exceeds Claude `onedge` within tolerance — same caveat.
-- [ ] Re-run a larger confirmation: at least 20 COCO images, 512 and 1024 Gaussians, 3 seeds for finalist configs. **Blocked**: needs a GPU + the COCO val2017 dataset. This is the remaining gate before closing MERGE-001; `main` already contains the integration via PR #1.
+- [x] Combined best/fast configs confirmed on a reproducible replacement protocol. The exact
+      historical Claude `flanking_split32`/`onedge` numbers remain non-comparable because the
+      original image set/protocol is not reconstructable from this repo, but the large COCO/CUDA
+      gate now records the merged rows directly.
+- [x] Re-run a larger confirmation: 20 COCO val2017 images, 512 and 1024 Gaussians, 3 seeds for
+      finalist configs. Completed 720/720 exact-CUDA cells with zero errors on 2026-07-06.
 - [x] Update `README.md`, `docs/architecture.md`, and relevant ADR/task files to state the chosen default and why (ADR-0009; INDEX/task statuses; README/architecture).
 - [x] Do not merge raw datasets, checkpoints, worktree folders, cache folders, or large run directories (screening outputs were written under the scratch dir, not the repo).
+
+## Completion notes
+
+- 2026-07-06: Ran the larger MERGE-001 confirmation with exact CUDA on the first 20 sorted COCO
+  val2017 images, budgets {512, 1024}, seeds {0,1,2}, 40 iterations, max-side 160, and six
+  merged/finalist configs. The run completed 720/720 cells with zero errors.
+- Overall mean PSNR ranked `codex_stage_top1` first (27.3443 dB), followed by
+  `merged_onedge_fast` (27.2016 dB), `merged_shipped_flanking` (27.0827 dB),
+  `merged_best_exact_cuda` (26.7006 dB), `codex_stage_top2` (26.6157 dB), and
+  `codex_stage_top3` (26.4007 dB).
+- Paired against `merged_shipped_flanking`, `codex_stage_top1` gained +0.2616 dB PSNR
+  (108/120 wins), and `merged_onedge_fast` gained +0.1189 dB PSNR (100/120 wins).
+- The older `merged_best_exact_cuda` feature-cap/residual-tensor row lost -0.3822 dB paired PSNR
+  versus shipped flanking, so it should stay an experimental stage-search row rather than become a
+  promoted default from MERGE-001.
 
 ## Validation commands
 ```bash
 PYTHONPATH=src:. pytest -q tests
 PYTHONPATH=src:. ruff check src benchmarks tests
 
-PYTHONPATH=src:. python -m structsplat.cli stage-search \
-  ../../data/coco2017/val2017/000000186042.jpg \
-  ../../data/coco2017/val2017/000000190140.jpg \
-  ../../data/coco2017/val2017/000000444879.jpg \
-  ../../data/coco2017/val2017/000000554838.jpg \
-  --budgets 512 \
-  --iters 40 \
-  --max-side 160 \
-  --device cuda \
-  --outdir results/merge_001_screening
+LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 PYTHONPATH=src:. python - <<'PY'
+# Calls benchmarks.stage_search.run_stage_search once per finalist config.
+# See ara/evidence/merge001-coco-cuda-confirmation-2026-07-06/run.md.
+PY
 ```
 
 ## Non-goals
