@@ -57,6 +57,10 @@ def test_stage_search_writes_ranked_outputs(tmp_path):
     assert (outdir / "stage_search.json").exists()
     assert (outdir / "stage_search.csv").exists()
     assert (outdir / "summary.md").exists()
+    index = (outdir / "index.html").read_text(encoding="utf-8")
+    assert "stage_search.csv" in index
+    assert "summary.md" in index
+    assert "Per-Stage Marginals" in index
 
 
 def test_stage_search_dedupes_equivalent_configs(tmp_path):

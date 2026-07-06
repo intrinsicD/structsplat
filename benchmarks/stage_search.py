@@ -19,6 +19,7 @@ import itertools
 import json
 import os
 import time
+from html import escape
 from pathlib import Path
 from statistics import mean, pstdev
 from typing import Any
@@ -831,7 +832,157 @@ def _write(rows, outdir: Path, mode: str = "factorial", baseline_label: str | No
         (outdir / "influence.md").write_text(summarize_influence(rows, baseline_label),
                                              encoding="utf-8")
         wrote += " / influence.md"
+    _write_index_html(rows, outdir, mode=mode)
+    wrote += " / index.html"
     print(f"\nwrote {wrote} to {outdir}")
+
+
+def _write_index_html(rows: list[dict[str, Any]], outdir: Path, *, mode: str) -> None:
+    ok_rows = [r for r in rows if r.get("status") != "error"]
+    error_rows = [r for r in rows if r.get("status") == "error"]
+    configs = {_config_label({k: r[k] for k in STAGE_KEYS}) for r in rows} if rows else set()
+    images = sorted({str(r.get("image", "")) for r in rows if r.get("image")})
+    budgets = sorted({r.get("budget") for r in rows if r.get("budget") is not None})
+    seeds = sorted({r.get("seed") for r in rows if r.get("seed") is not None})
+
+    links = [
+        ("summary.md", "summary.md"),
+        ("stage_search.csv", "stage_search.csv"),
+        ("stage_search.json", "stage_search.json"),
+        ("stage_search.jsonl", "stage_search.jsonl"),
+        ("config.json", "config.json"),
+    ]
+    if (outdir / "influence.md").exists():
+        links.insert(1, ("influence.md", "influence.md"))
+
+    groups: dict[tuple, list[dict[str, Any]]] = {}
+    for row in ok_rows:
+        groups.setdefault(_config_key(row), []).append(row)
+    ranked = []
+    for key, vals in groups.items():
+        psnrs = [v["psnr"] for v in vals]
+        ranked.append((mean(psnrs), key, vals))
+    ranked.sort(reverse=True, key=lambda x: x[0])
+
+    def row_mean(vals: list[dict[str, Any]], key: str) -> float | None:
+        xs = [v[key] for v in vals if v.get(key) is not None]
+        return mean(xs) if xs else None
+
+    def fmt(value: Any, spec: str = ".4f") -> str:
+        if value is None:
+            return "-"
+        if isinstance(value, (int, np.integer)):
+            return str(int(value))
+        if isinstance(value, (float, np.floating)):
+            return format(float(value), spec)
+        return escape(str(value))
+
+    html = [
+        "<!doctype html>",
+        '<html lang="en">',
+        "<head>",
+        '<meta charset="utf-8">',
+        '<meta name="viewport" content="width=device-width, initial-scale=1">',
+        "<title>StructSplat Stage Search</title>",
+        "<style>",
+        "body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:24px;line-height:1.35;color:#171717;background:#fafafa}",
+        "h1,h2{margin:0.9rem 0 0.55rem}",
+        ".meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:16px 0}",
+        ".card{border:1px solid #d4d4d4;background:#fff;padding:10px;border-radius:6px}",
+        ".label{font-size:12px;color:#525252;text-transform:uppercase;letter-spacing:.03em}",
+        ".value{font-size:20px;font-weight:650}",
+        "table{border-collapse:collapse;width:100%;background:#fff;margin:10px 0 22px}",
+        "th,td{border:1px solid #d4d4d4;padding:6px 8px;text-align:left;vertical-align:top}",
+        "th{background:#f0f0f0}",
+        "td.num{text-align:right;font-variant-numeric:tabular-nums}",
+        "code{font-size:12px;word-break:break-word}",
+        ".links a{margin-right:14px}",
+        ".note{color:#525252}",
+        "</style>",
+        "</head>",
+        "<body>",
+        "<h1>StructSplat Stage Search</h1>",
+        f'<p class="note">Mode: <code>{escape(mode)}</code>. Scalar benchmark overview; this harness does not emit reconstructions or plots.</p>',
+        '<p class="links">' + " ".join(
+            f'<a href="{escape(href)}">{escape(label)}</a>'
+            for label, href in links if (outdir / href).exists()
+        ) + "</p>",
+        '<div class="meta">',
+        f'<div class="card"><div class="label">Cells</div><div class="value">{len(rows)}</div></div>',
+        f'<div class="card"><div class="label">OK</div><div class="value">{len(ok_rows)}</div></div>',
+        f'<div class="card"><div class="label">Errors</div><div class="value">{len(error_rows)}</div></div>',
+        f'<div class="card"><div class="label">Configs</div><div class="value">{len(configs)}</div></div>',
+        f'<div class="card"><div class="label">Images</div><div class="value">{len(images)}</div></div>',
+        f'<div class="card"><div class="label">Budgets</div><div class="value">{len(budgets)}</div></div>',
+        f'<div class="card"><div class="label">Seeds</div><div class="value">{len(seeds)}</div></div>',
+        "</div>",
+        "<h2>Top Configs</h2>",
+        "<table><thead><tr><th>Rank</th><th>Budget</th><th>Mean PSNR</th><th>Mean MS-SSIM</th><th>Mean AUC</th><th>Mean fit s</th><th>Config</th></tr></thead><tbody>",
+    ]
+    for rank, (_score, _key, vals) in enumerate(ranked[:20], 1):
+        label = vals[0]["config_label"]
+        html.append(
+            "<tr>"
+            f'<td class="num">{rank}</td>'
+            f'<td class="num">{fmt(vals[0].get("budget"), ".0f")}</td>'
+            f'<td class="num">{fmt(row_mean(vals, "psnr"))}</td>'
+            f'<td class="num">{fmt(row_mean(vals, "ms_ssim"), ".5f")}</td>'
+            f'<td class="num">{fmt(row_mean(vals, "auc_psnr"), ".3f")}</td>'
+            f'<td class="num">{fmt(row_mean(vals, "fit_seconds"), ".3f")}</td>'
+            f"<td><code>{escape(label)}</code></td>"
+            "</tr>"
+        )
+    if not ranked:
+        html.append('<tr><td colspan="7">(no successful cells)</td></tr>')
+    html.append("</tbody></table>")
+
+    stage_rows = []
+    for stage in STAGE_KEYS:
+        levels = sorted({r[stage] for r in ok_rows}) if ok_rows else []
+        if len(levels) < 2:
+            continue
+        for level in levels:
+            vals = [r for r in ok_rows if r[stage] == level]
+            stage_rows.append((stage, level, vals))
+    if stage_rows:
+        html += [
+            "<h2>Per-Stage Marginals</h2>",
+            "<table><thead><tr><th>Stage</th><th>Level</th><th>Runs</th><th>PSNR</th><th>MS-SSIM</th><th>AUC</th><th>Fit s</th></tr></thead><tbody>",
+        ]
+        for stage, level, vals in stage_rows:
+            psnrs = [v["psnr"] for v in vals]
+            html.append(
+                "<tr>"
+                f"<td>{escape(str(stage))}</td>"
+                f"<td><code>{escape(str(level))}</code></td>"
+                f'<td class="num">{len(vals)}</td>'
+                f'<td class="num">{mean(psnrs):.3f} +/- {pstdev(psnrs):.3f}</td>'
+                f'<td class="num">{fmt(row_mean(vals, "ms_ssim"), ".5f")}</td>'
+                f'<td class="num">{fmt(row_mean(vals, "auc_psnr"), ".3f")}</td>'
+                f'<td class="num">{fmt(row_mean(vals, "fit_seconds"), ".3f")}</td>'
+                "</tr>"
+            )
+        html.append("</tbody></table>")
+
+    if error_rows:
+        html += [
+            "<h2>Error Cells</h2>",
+            "<table><thead><tr><th>Image</th><th>Budget</th><th>Seed</th><th>Config</th><th>Error</th></tr></thead><tbody>",
+        ]
+        for row in error_rows[:50]:
+            html.append(
+                "<tr>"
+                f"<td>{escape(str(row.get('image', '-')))}</td>"
+                f'<td class="num">{fmt(row.get("budget"), ".0f")}</td>'
+                f'<td class="num">{fmt(row.get("seed"), ".0f")}</td>'
+                f"<td><code>{escape(str(row.get('config_label', '-')))}</code></td>"
+                f"<td>{escape(str(row.get('error', '-')))}</td>"
+                "</tr>"
+            )
+        html.append("</tbody></table>")
+
+    html += ["</body>", "</html>"]
+    (outdir / "index.html").write_text("\n".join(html) + "\n", encoding="utf-8")
 
 
 def main():

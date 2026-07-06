@@ -32,6 +32,7 @@ PYTHONPATH=src:. python benchmarks/stage_search.py \
 ```
 
 Result: 6/6 cells completed with status `ok`.
+Live overview: `results/stage_search_new_stages_smoke/index.html`.
 
 | Refine | Color solve | PSNR | AUC | Split events | Color events | N | Fit s |
 |---|---|---:|---:|---:|---:|---:|---:|
