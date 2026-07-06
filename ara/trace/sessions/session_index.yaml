@@ -29,8 +29,8 @@ sessions:
     open_threads: 12
   - id: "2026-07-06_001"
     date: "2026-07-06"
-    summary: "Continued ABL-004 confirmation through the full `kodim01` and `kodim02` budget blocks, staged the curve-cluster interpretation, converted the 2026 SOTA review into tasks, and completed FIT-005/FIT-006/FIT-007."
-    turn_count: 8
-    events_count: 10
+    summary: "Continued ABL-004 confirmation through the full `kodim01` and `kodim02` budget blocks, staged the curve-cluster interpretation, converted the 2026 SOTA review into tasks, completed FIT-005/FIT-006/FIT-007, and smoke-tested the new stage axes."
+    turn_count: 9
+    events_count: 11
     claims_touched: []
     open_threads: 4

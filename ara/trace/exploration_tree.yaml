@@ -1230,3 +1230,24 @@ tree:
       - "benchmarks/stage_search.py"
     also_depends_on: [N54, N56]
     status: resolved
+  - id: N58
+    type: experiment
+    title: "New stage axes smoke"
+    provenance: ai-executed
+    timestamp: "2026-07-06T14:35+0200"
+    result: >
+      Ran focused stage-search tests for the newly exposed axes. Pytest passed
+      the color-solve axis and refine-kwargs tests, then a 6-cell CPU
+      stage-search smoke crossed `color_solve in {none,every10}` with
+      `refine in {none,freq_violation,moment_preserving}` on one pinned COCO
+      test image at max-side 32, budget 32, seed 0, and 10 iterations. All
+      cells completed with status `ok`; `every10` rows recorded one
+      color-solve event, `freq_violation` rows recorded split/frequency stats,
+      and `moment_preserving` rows completed with one split event and final
+      budget 32.
+    evidence:
+      - "ara/evidence/stage-search-new-stages-smoke-2026-07-06/run.md"
+      - "results/stage_search_new_stages_smoke/summary.md"
+      - "results/stage_search_new_stages_smoke/stage_search.json"
+    also_depends_on: [N55, N56, N57]
+    status: resolved

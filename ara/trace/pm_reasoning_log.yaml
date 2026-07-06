@@ -227,3 +227,8 @@ entries:
       - "Routed FIT-005, FIT-006, and FIT-007 as direct experiment nodes because each produced committed code, tests, task retirement, and benchmark-smoke evidence."
       - "Did not stage new default-selection claims: color solve, frequency-violation splitting, and moment-preserving splitting were exposed as opt-in/stage-search axes rather than adopted as defaults."
       - "Left existing ABL-004 and curve-cluster threads open because this backlog implementation turn did not add new confirmation-matrix evidence."
+  - turn: "2026-07-06_001#9"
+    notes:
+      - "Routed the new-stage smoke as N58 because it produced fresh test output and a saved run artifact validating stage-search integration."
+      - "Did not stage a quality claim from the 6-cell smoke because the run used one tiny image, one seed, 10 iterations, and was intended only as plumbing validation."
+      - "Kept the SOTA backlog open because the smoke validates FIT-005/FIT-006/FIT-007 stage exposure but does not start CORE-006 or FF-001."
