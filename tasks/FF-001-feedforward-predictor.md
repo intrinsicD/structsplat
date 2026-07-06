@@ -3,8 +3,8 @@
 **Status: partial.** First implementation slices landed 2026-07-06/07: stable predictor
 interface, `strategy=feedforward`, saved-field/tensor-prior warm starts, CLI short-refinement
 flags, teacher-field export, and a tiny learned CNN checkpoint trainer. Larger predictor
-architecture, distillation, equal-N speed/quality comparisons, and generalization tests remain
-open.
+architecture, distillation, decision-grade equal-N speed/quality comparisons, and generalization
+tests remain open.
 
 ## Context
 StructSplat is strong on hand-designed initialization and optimization, but it does not yet have
@@ -37,8 +37,9 @@ an input image, then refines for only 50-200 iterations with the existing fitter
       placement/budget map consumed by the existing initializer with clear scope.
 - [x] Short-refinement path exposed in CLI/config, e.g. `init="feedforward"` plus
       `fit_iters=50-200`.
-- [ ] Compared against optimized-from-scratch and structure-tensor warm-start at equal final N,
-      reporting quality, wall time, and speedup-to-target.
+- [~] Compared against optimized-from-scratch and structure-tensor warm-start at equal final N,
+      reporting quality, wall time, and speedup-to-target. Smoke evaluator exists; larger
+      train/validation comparison remains open.
 - [ ] Generalization test on images not used for teacher export.
 - [ ] Ablation: image-only predictor vs image+tensor-prior predictor.
 - [ ] If predict-optimize-distill is implemented, report teacher-only vs distilled predictor
@@ -61,8 +62,11 @@ an input image, then refines for only 50-200 iterations with the existing fitter
 - `benchmarks/feedforward_teacher_export.py` exports fitted teacher fields and a manifest for
   future model training.
 - `benchmarks/feedforward_train.py` trains the minimal checkpoint contract from that manifest.
+- `benchmarks/feedforward_eval.py` compares learned, tensor-prior, and scratch warm starts at equal
+  final N and short-refinement iterations.
 - Evidence: `ara/evidence/ff001-predictor-interface-smoke-2026-07-06/run.md`.
 - Evidence: `ara/evidence/ff001-tiny-predictor-train-smoke-2026-07-07/run.md`.
+- Evidence: `ara/evidence/ff001-equaln-eval-smoke-2026-07-07/run.md`.
 
 ## Depends on
 INIT-003, FIT-001. Optional follow-ups: FIT-008 for adaptive count, COMP-004 for

@@ -7,6 +7,7 @@ torch = pytest.importorskip("torch")
 
 from PIL import Image
 
+from benchmarks.feedforward_eval import evaluate_feedforward_predictor
 from benchmarks.feedforward_teacher_export import export_teacher_fields
 from benchmarks.feedforward_train import train_feedforward_predictor
 from structsplat import init as _init
@@ -186,3 +187,59 @@ def test_tiny_learned_predictor_trains_and_loads(tmp_path):
     )
     assert padded.n == 10
     assert torch.isfinite(padded.colors).all()
+
+
+def test_feedforward_eval_compares_equal_n_methods(tmp_path):
+    img_path = tmp_path / "toy.png"
+    teacher_dir = tmp_path / "teachers"
+    train_dir = tmp_path / "train"
+    eval_dir = tmp_path / "eval"
+    _write_toy(img_path)
+
+    export_teacher_fields(
+        [str(img_path)],
+        outdir=str(teacher_dir),
+        budget=8,
+        strategy="grid",
+        seed=0,
+        iters=1,
+        max_side=None,
+        render_chunk=8,
+        device="cpu",
+    )
+    train = train_feedforward_predictor(
+        teacher_dir / "teacher_manifest.json",
+        outdir=train_dir,
+        image_size=16,
+        hidden=8,
+        epochs=2,
+        lr=1e-3,
+        seed=0,
+        device="cpu",
+    )
+    rows = evaluate_feedforward_predictor(
+        [str(img_path)],
+        checkpoint=train["checkpoint_path"],
+        outdir=eval_dir,
+        budget=8,
+        iters=1,
+        max_side=None,
+        render_chunk=8,
+        seed=0,
+        device="cpu",
+        prior_strategy="grid",
+        scratch_strategy="random",
+    )
+
+    assert len(rows) == 3
+    assert {r["method"] for r in rows} == {"learned", "tensor_prior", "scratch"}
+    assert all(r["budget"] == 8 for r in rows)
+    assert all(r["n_gaussians"] == 8 for r in rows)
+    assert all(r["iterations_run"] == 1 for r in rows)
+    assert all(r["total_seconds"] >= 0.0 for r in rows)
+    assert (eval_dir / "feedforward_eval.json").exists()
+    assert (eval_dir / "feedforward_eval.csv").exists()
+    summary = (eval_dir / "summary.md").read_text(encoding="utf-8")
+    assert "learned" in summary
+    assert "tensor_prior" in summary
+    assert "scratch" in summary

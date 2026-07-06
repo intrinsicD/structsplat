@@ -71,14 +71,17 @@ adaptive-N sweeps can be compared fairly.
 python -m benchmarks.stage_search path/to/images --mode influence --budgets 2048 --iters 500
 ```
 
-`feedforward_teacher_export.py` and `feedforward_train.py` are the first FF-001 learned-predictor
-data path. The exporter runs a pinned teacher initializer/fitter and saves fitted `GaussianField`
-NPZ files plus a manifest. The trainer consumes that manifest, fits a tiny CNN Gaussian regressor,
-and writes a `predictor.pt` checkpoint loadable via `structsplat fit --strategy feedforward`.
+`feedforward_teacher_export.py`, `feedforward_train.py`, and `feedforward_eval.py` are the first
+FF-001 learned-predictor data path. The exporter runs a pinned teacher initializer/fitter and saves
+fitted `GaussianField` NPZ files plus a manifest. The trainer consumes that manifest, fits a tiny
+CNN Gaussian regressor, and writes a `predictor.pt` checkpoint loadable via
+`structsplat fit --strategy feedforward`. The evaluator compares learned, tensor-prior, and scratch
+warm starts at equal final N and short-refinement iterations.
 
 ```
 python -m benchmarks.feedforward_teacher_export path/to/images --budget 512 --iters 80 --max-side 160
 python -m benchmarks.feedforward_train results/feedforward_teacher_export/teacher_manifest.json
+python -m benchmarks.feedforward_eval path/to/images --checkpoint results/feedforward_train/predictor.pt --budget 512 --iters 80
 ```
 
 `cross_repo_matrix_compare.py` is the current matched comparison harness (`ABL-004` controls and
