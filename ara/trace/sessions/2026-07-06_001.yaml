@@ -2,9 +2,9 @@ session:
   id: "2026-07-06_001"
   date: "2026-07-06"
   started: "2026-07-06T00:53+0200"
-  last_turn: "2026-07-06T19:43+0200"
-  turn_count: 13
-  summary: "Continued ABL-004 confirmation through the full `kodim01` and `kodim02` budget blocks, staged the curve-cluster interpretation, converted the 2026 SOTA review into tasks, completed FIT-005/FIT-006/FIT-007/CORE-006/FIT-008, smoke-tested and regression-tested the new stage axes, and added stage-search HTML overviews."
+  last_turn: "2026-07-06T21:03+0200"
+  turn_count: 14
+  summary: "Continued ABL-004 confirmation through the full `kodim01` and `kodim02` budget blocks, staged the curve-cluster interpretation, converted the 2026 SOTA review into tasks, completed FIT-005/FIT-006/FIT-007/CORE-006/FIT-008, smoke-tested and regression-tested the new stage axes, added stage-search HTML overviews, and started FF-001 with a feed-forward warm-start interface plus teacher export."
 
 events_logged:
   - turn: 1
@@ -97,6 +97,12 @@ events_logged:
     routing: direct
     provenance: ai-executed
     summary: "Added and committed a regression test for the new-stage smoke matrix behind `results/stage_search_new_stages_smoke/index.html`; full suite passed."
+  - turn: 14
+    type: experiment
+    id: "N63"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented and committed the first FF-001 slice: predictor protocol, `strategy=feedforward`, saved-field/tensor-prior warm starts, CLI flags, teacher export, focused tests, full-suite validation, and smoke evidence."
 
 ai_actions:
   - turn: 1
@@ -269,6 +275,22 @@ ai_actions:
     provenance: ai-executed
     files_changed:
       - "tests/test_stage_search.py"
+  - turn: 14
+    action: "Implemented, tested, benchmark-smoked, and committed the first FF-001 feed-forward warm-start interface slice."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/predictor.py"
+      - "src/structsplat/init.py"
+      - "src/structsplat/config.py"
+      - "src/structsplat/cli.py"
+      - "benchmarks/feedforward_teacher_export.py"
+      - "benchmarks/README.md"
+      - "tests/test_predictor.py"
+      - "tests/test_cli.py"
+      - "tasks/FF-001-feedforward-predictor.md"
+      - "tasks/INDEX.md"
+      - "ara/evidence/ff001-predictor-interface-smoke-2026-07-06/run.md"
+      - "ara/evidence/README.md"
 
 claims_touched: []
 
@@ -299,11 +321,13 @@ key_context:
     excerpt: "After CORE-006, FIT-008 was selected as the next scoped backlog slice because it provides adaptive selected-N control needed by the larger FF-001 feed-forward task."
   - turn: 13
     excerpt: "User asked to make a test for the stages shown in `results/stage_search_new_stages_smoke/index.html`."
+  - turn: 14
+    excerpt: "User asked to continue the backlog after the stage-smoke test verdict; FF-001 was selected as the next SOTA backlog item after FIT-008."
 
 open_threads:
   - "Continue the ABL-004 confirmation matrix beyond the completed `kodim02` budget block."
   - "Check whether the PSNR-vs-iteration cluster structure repeats across more confirmation images before treating it as a claim."
   - "Do not retire ABL-004 or promote README claims until the decision-grade confirmation criteria are met."
-  - "Continue the SOTA backlog after FIT-005/FIT-006/FIT-007/CORE-006/FIT-008: next larger iteration is FF-001, then COMP-004, PORT-002/PORT-003, and GEN-003."
+  - "Continue FF-001 beyond the warm-start interface with an actual learned predictor, training/distillation loop, and equal-budget generalization comparisons; then return to COMP-004, PORT-002/PORT-003, and GEN-003."
 
 ai_suggestions_pending: []

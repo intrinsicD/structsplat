@@ -1344,3 +1344,28 @@ tree:
       - "results/stage_search_new_stages_smoke/index.html"
     also_depends_on: [N58, N59]
     status: resolved
+  - id: N63
+    type: experiment
+    title: "FF-001 feed-forward warm-start interface"
+    provenance: ai-executed
+    timestamp: "2026-07-06T21:03+0200"
+    result: >
+      Implemented the first scoped FF-001 slice: a predictor protocol and
+      `strategy=feedforward` initialization path, saved-field checkpoint
+      warm starts with budget truncation/padding, tensor-prior fallback
+      prediction, CLI flags for short-refinement warm starts, and a
+      `benchmarks.feedforward_teacher_export` script that exports fitted
+      teacher Gaussian fields plus manifests. Focused validation passed 14
+      tests, full validation passed with 217 tests and 22 skips, and a tiny
+      teacher-export smoke wrote a 16-Gaussian teacher field at 18.4464 dB
+      PSNR. FF-001 remains partial because no learned predictor, predictor
+      training loop, predict-optimize-distill loop, or generalization
+      comparison has been implemented yet.
+    evidence:
+      - "tasks/FF-001-feedforward-predictor.md"
+      - "ara/evidence/ff001-predictor-interface-smoke-2026-07-06/run.md"
+      - "src/structsplat/predictor.py"
+      - "benchmarks/feedforward_teacher_export.py"
+      - "tests/test_predictor.py"
+    also_depends_on: [N54, N61, N62]
+    status: resolved
