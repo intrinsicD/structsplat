@@ -50,6 +50,30 @@ def test_additive_renderer_runs_and_differs():
     assert add[3, 3, 0] > norm[3, 3, 0]
 
 
+def test_affine_color_basis_uses_local_coordinates_and_gradients():
+    means = np.array([[5.0, 5.0]])
+    scales = np.array([[1.0, 1.0]])
+    colors = np.array([[0.5, 0.5, 0.5]])
+    color_grads = np.zeros((1, 2, 3), dtype=np.float32)
+    color_grads[0, 0, 0] = 0.1
+    color_grads[0, 1, 1] = 0.2
+    g = GaussianField.from_numpy(means, scales, np.zeros(1), colors,
+                                  color_grads=color_grads).trainable()
+
+    img = render_field(
+        g.means, g.conics(), g.colors, g.radii(3.0), 11, 11,
+        mode="normalized", scales=g.scales(), rotations=g.rotations,
+        color_grads=g.color_grads,
+    )
+
+    assert torch.allclose(img[5, 5], torch.tensor([0.5, 0.5, 0.5]), atol=1e-5)
+    assert torch.allclose(img[5, 6], torch.tensor([0.6, 0.5, 0.5]), atol=1e-5)
+    assert torch.allclose(img[6, 5], torch.tensor([0.5, 0.7, 0.5]), atol=1e-5)
+    loss = img.square().mean()
+    loss.backward()
+    assert g.color_grads is not None and g.color_grads.grad is not None
+
+
 def test_support_fade_zeroes_tail_at_cutoff():
     means = np.array([[5.0, 5.0]])
     scales = np.full((1, 2), 1.0)
@@ -95,6 +119,13 @@ def test_cuda_renderer_is_explicit_about_requirements():
                 g.means, g.conics(), g.colors, g.radii(3.0), 10, 10,
                 mode="cuda_additive",
             )
+    affine = g.with_affine_colors()
+    with pytest.raises(ValueError, match="affine color rendering"):
+        render_field(
+            affine.means, affine.conics(), affine.colors, affine.radii(3.0), 10, 10,
+            mode="cuda", scales=affine.scales(), rotations=affine.rotations,
+            color_grads=affine.color_grads,
+        )
 
 
 def test_cuda_tile_index_culls_to_overlapping_tiles():

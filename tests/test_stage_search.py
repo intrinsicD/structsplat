@@ -177,6 +177,26 @@ def test_color_solve_is_stage_axis(tmp_path):
     assert all("color_solve=" in r["config_label"] for r in rows)
 
 
+def test_color_basis_is_stage_axis(tmp_path):
+    img_path = tmp_path / "toy.png"
+    _write_toy(img_path)
+    rows = run_stage_search(
+        [str(img_path)], budgets=[16], seeds=[0], iters=3, max_side=None,
+        strategies=["aniso_flanking"], tensor_operators=["central"],
+        density_modes=["structure"], sampling_modes=["density_random"],
+        color_modes=["bilinear"], scale_modes=["spacing"], scale_cap_modes=["none"],
+        opacity_modes=["none"], renderers=["normalized"], aa_dilations=[0.0],
+        color_basis_modes=["constant", "affine"], color_solve_modes=["none"],
+        pixel_losses=["l1"], optimizers=["adam"], lr_schedules=["none"],
+        refine_modes=["none"], pyramid_modes=["single"], render_chunk=8,
+        outdir=str(tmp_path / "color_basis"), device="cpu",
+    )
+    assert len(rows) == 2
+    assert {r["color_basis"] for r in rows} == {"constant", "affine"}
+    assert all(r["status"] == "ok" for r in rows)
+    assert all("color_basis=" in r["config_label"] for r in rows)
+
+
 def test_color_solve_kwargs_parse_stage_modes():
     assert _color_solve_kwargs("none") == {"color_solve_every": None}
     assert _color_solve_kwargs("every10") == {"color_solve_every": 10}
@@ -255,7 +275,7 @@ def test_stage_influence_writes_paired_deltas(tmp_path):
         density_modes=["structure"], sampling_modes=["wse", "density_random"],
         orientation_modes=["tensor"], color_modes=["bilinear"], scale_modes=["spacing"],
         scale_cap_modes=["feature12"], opacity_modes=["none"], renderers=["normalized"],
-        aa_dilations=[0.0], color_solve_modes=["none"],
+        aa_dilations=[0.0], color_basis_modes=["constant"], color_solve_modes=["none"],
         pixel_losses=["l1"],
         optimizers=["adam"], lr_schedules=["none"], refine_modes=["none"],
         pyramid_modes=["single"], target_psnr=5.0,

@@ -86,8 +86,25 @@ def _support_weight(q: torch.Tensor, sigma_cutoff: float, support_fade: bool) ->
     return w
 
 
+def _pixel_colors(colors, color_grads, gid, dx, dy, scales, rotations):
+    base = colors[gid]
+    if color_grads is None:
+        return base
+    if scales is None or rotations is None:
+        raise ValueError("affine color rendering requires scales and rotations")
+    theta = rotations[gid]
+    c, s = torch.cos(theta), torch.sin(theta)
+    sx = scales[gid, 0].clamp_min(1e-6)
+    sy = scales[gid, 1].clamp_min(1e-6)
+    local_x = (c * dx + s * dy) / sx
+    local_y = (-s * dx + c * dy) / sy
+    grads = color_grads[gid]
+    return base + grads[:, 0, :] * local_x[:, None] + grads[:, 1, :] * local_y[:, None]
+
+
 def _accumulate(means, conics, colors, radii, H, W, chunk, opacities, normalize: bool,
-                support_fade: bool = False, sigma_cutoff: float = 3.0):
+                support_fade: bool = False, sigma_cutoff: float = 3.0,
+                color_grads=None, scales=None, rotations=None):
     dev, dt = means.device, means.dtype
     num = torch.zeros(H * W, 3, device=dev, dtype=dt)
     den = torch.zeros(H * W, 1, device=dev, dtype=dt) if normalize else None
@@ -104,7 +121,8 @@ def _accumulate(means, conics, colors, radii, H, W, chunk, opacities, normalize:
         if opacities is not None:
             w = w * opacities[gid]
         flat = py * W + px
-        num = num.index_add(0, flat, w[:, None] * colors[gid])
+        pix_colors = _pixel_colors(colors, color_grads, gid, dx, dy, scales, rotations)
+        num = num.index_add(0, flat, w[:, None] * pix_colors)
         if normalize:
             den = den.index_add(0, flat, w[:, None])
 
@@ -114,20 +132,24 @@ def _accumulate(means, conics, colors, radii, H, W, chunk, opacities, normalize:
 
 
 def render(means, conics, colors, radii, H: int, W: int, chunk: int = 4096, opacities=None,
-           support_fade: bool = False, sigma_cutoff: float = 3.0):
+           support_fade: bool = False, sigma_cutoff: float = 3.0, color_grads=None,
+           scales=None, rotations=None):
     """Normalized weighted-sum rasterizer (ADR-0003 default)."""
     return _accumulate(
         means, conics, colors, radii, H, W, chunk, opacities, normalize=True,
-        support_fade=support_fade, sigma_cutoff=sigma_cutoff,
+        support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
+        scales=scales, rotations=rotations,
     )
 
 
 def render_additive(means, conics, colors, radii, H: int, W: int, chunk: int = 4096,
-                    opacities=None, support_fade: bool = False, sigma_cutoff: float = 3.0):
+                    opacities=None, support_fade: bool = False, sigma_cutoff: float = 3.0,
+                    color_grads=None, scales=None, rotations=None):
     """Additive / unnormalized accumulation (ADR-0006, opt-in)."""
     return _accumulate(
         means, conics, colors, radii, H, W, chunk, opacities, normalize=False,
-        support_fade=support_fade, sigma_cutoff=sigma_cutoff,
+        support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
+        scales=scales, rotations=rotations,
     )
 
 
@@ -187,16 +209,23 @@ def render_cuda_sum(means, scales, rotations, colors, H: int, W: int,
 def render_field(means, conics, colors, radii, H: int, W: int,
                  chunk: int = 4096, mode: str = "normalized", opacities=None,
                  scales=None, rotations=None, support_fade: bool = False,
-                 sigma_cutoff: float = 3.0):
+                 sigma_cutoff: float = 3.0, color_grads=None):
     if mode == "normalized":
         return render(
             means, conics, colors, radii, H, W, chunk, opacities,
-            support_fade=support_fade, sigma_cutoff=sigma_cutoff,
+            support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
+            scales=scales, rotations=rotations,
         )
     if mode == "additive":
         return render_additive(
             means, conics, colors, radii, H, W, chunk, opacities,
-            support_fade=support_fade, sigma_cutoff=sigma_cutoff,
+            support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
+            scales=scales, rotations=rotations,
+        )
+    if color_grads is not None:
+        raise ValueError(
+            "affine color rendering is currently supported by the reference normalized/additive "
+            f"renderers only; got renderer={mode!r}"
         )
     if mode in ("cuda", "cuda_normalized"):
         from .cuda_render import render_cuda_exact

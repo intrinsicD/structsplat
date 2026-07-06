@@ -37,6 +37,14 @@ _MAGIC = b"SSPL1"
 _SCALE_LO = float(np.log(0.35))  # matches fit.py's log-scale clamp
 
 
+def _ensure_constant_color_field(field: GaussianField) -> None:
+    if field.color_grads is not None:
+        raise ValueError(
+            "StructSplat codec v1 does not support affine color fields; "
+            "save NPZ fields or fit with color_basis='constant'"
+        )
+
+
 @dataclass
 class CodecConfig:
     bits_means: int = 16      # per coordinate
@@ -213,6 +221,7 @@ def _means_extent(means: np.ndarray, H: int, W: int) -> tuple[list[float], list[
 
 def encode(field: GaussianField, H: int, W: int, cfg: CodecConfig | None = None,
            fcfg: FitConfig | None = None) -> bytes:
+    _ensure_constant_color_field(field)
     cfg = cfg or CodecConfig()
     fcfg = fcfg or FitConfig()
     means, log_scales, theta, colors, opacity_p = _params(field)
@@ -394,6 +403,7 @@ def _ste_circular(x: torch.Tensor, period: float, bits: int) -> torch.Tensor:
 
 def quantized_view(field: GaussianField, H: int, W: int, cfg: CodecConfig) -> GaussianField:
     """A GaussianField whose parameters are fake-quantized with straight-through gradients."""
+    _ensure_constant_color_field(field)
     clo, chi = color_ranges(field) if cfg.color_lo is None or cfg.color_hi is None else (
         cfg.color_lo, cfg.color_hi
     )

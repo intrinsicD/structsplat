@@ -34,7 +34,7 @@ from structsplat.config import FitConfig, InitConfig, PyramidConfig, StructureTe
 # stage axes, in label order; values = the swappable options each stage exposes
 STAGE_KEYS = [
     "strategy", "tensor", "tensor_color", "density", "sampling", "orientation", "color",
-    "scale", "scale_cap", "opacity", "renderer", "aa", "color_solve", "loss",
+    "scale", "scale_cap", "opacity", "renderer", "aa", "color_basis", "color_solve", "loss",
     "optimizer", "lr_schedule", "refine", "pyramid",
 ]
 
@@ -53,6 +53,7 @@ FACTORIAL_DEFAULTS: dict[str, tuple[str, ...]] = {
     "opacity_modes": ("none",),
     "renderers": ("normalized",),
     "aa_dilations": (0.0,),
+    "color_basis_modes": ("constant",),
     "color_solve_modes": ("none",),
     "pixel_losses": ("l1", "charbonnier"),
     "optimizers": ("adam",),
@@ -83,6 +84,7 @@ INFLUENCE_DEFAULTS: dict[str, tuple[str, ...]] = {
         "cuda_tiled", "cuda_tiled_additive",
     ),
     "aa_dilations": (0.0, 0.3),
+    "color_basis_modes": ("constant", "affine"),
     "color_solve_modes": ("none", "every10"),
     "pixel_losses": ("l1", "l2", "charbonnier"),
     "optimizers": ("adam", "adamw", "adan"),
@@ -109,7 +111,8 @@ _AXIS_TO_KEY = {
     "density_modes": "density", "sampling_modes": "sampling",
     "orientation_modes": "orientation", "color_modes": "color", "scale_modes": "scale",
     "scale_cap_modes": "scale_cap", "opacity_modes": "opacity", "renderers": "renderer",
-    "aa_dilations": "aa", "color_solve_modes": "color_solve", "pixel_losses": "loss",
+    "aa_dilations": "aa", "color_basis_modes": "color_basis",
+    "color_solve_modes": "color_solve", "pixel_losses": "loss",
     "optimizers": "optimizer", "lr_schedules": "lr_schedule", "refine_modes": "refine",
     "pyramid_modes": "pyramid",
 }
@@ -386,6 +389,7 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         lr_decay_gamma=lr_decay_gamma,
         renderer=cfg["renderer"],
         aa_dilation=float(cfg["aa"]),
+        color_basis=cfg["color_basis"],
         **_color_solve_kwargs(cfg["color_solve"]),
         max_gaussians=max_gaussians,
         target_psnr=target_psnr,
@@ -486,6 +490,7 @@ def run_stage_search(
     opacity_modes=None,
     renderers=None,
     aa_dilations=None,
+    color_basis_modes=None,
     color_solve_modes=None,
     pixel_losses=None,
     optimizers=None,
@@ -542,6 +547,7 @@ def run_stage_search(
         "scale_cap_modes": scale_cap_modes,
         "opacity_modes": opacity_modes, "renderers": renderers,
         "aa_dilations": aa_dilations,
+        "color_basis_modes": color_basis_modes,
         "color_solve_modes": color_solve_modes,
         "pixel_losses": pixel_losses, "optimizers": optimizers,
         "lr_schedules": lr_schedules, "refine_modes": refine_modes,
@@ -1009,6 +1015,8 @@ def main():
     p.add_argument("--opacity-modes", nargs="+", default=None)
     p.add_argument("--renderers", nargs="+", default=None)
     p.add_argument("--aa-dilations", type=float, nargs="+", default=None)
+    p.add_argument("--color-basis-modes", nargs="+", default=None,
+                   help="constant or affine")
     p.add_argument("--color-solve-modes", nargs="+", default=None,
                    help="none, every10, or every<N>; normalized renderer only")
     p.add_argument("--pixel-losses", nargs="+", default=None)
@@ -1049,6 +1057,7 @@ def main():
         color_modes=a.color_modes, scale_modes=a.scale_modes,
         scale_cap_modes=a.scale_cap_modes, opacity_modes=a.opacity_modes,
         renderers=a.renderers, aa_dilations=a.aa_dilations,
+        color_basis_modes=a.color_basis_modes,
         color_solve_modes=a.color_solve_modes,
         pixel_losses=a.pixel_losses, optimizers=a.optimizers,
         lr_schedules=a.lr_schedules, refine_modes=a.refine_modes,

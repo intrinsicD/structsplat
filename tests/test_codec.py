@@ -45,6 +45,15 @@ def test_roundtrip_precision_and_bpp():
     assert float(err) <= (img.shape[1] - 1) / (2 ** 16 - 1) + 1e-4
 
 
+def test_codec_rejects_affine_color_fields():
+    img = _toy()
+    field = _fitted_field(img, n=16).with_affine_colors()
+    with pytest.raises(ValueError, match="codec v1 does not support affine"):
+        codec.encode(field, *img.shape[:2], codec.CodecConfig())
+    with pytest.raises(ValueError, match="codec v1 does not support affine"):
+        codec.quantized_view(field, *img.shape[:2], codec.CodecConfig())
+
+
 def test_morton_reorder_changes_order_not_content():
     img = _toy()
     target = torch.as_tensor(img)

@@ -61,6 +61,8 @@ def cmd_fit(args):
                      loss_warmup_pixel_loss=args.loss_warmup_pixel_loss,
                      compute_lpips=args.lpips,
                      renderer=args.renderer,
+                     color_basis=args.color_basis,
+                     color_grad_l2=args.color_grad_l2,
                      color_solve_every=args.color_solve_every,
                      color_solve_lambda=args.color_solve_lambda,
                      color_solve_maxiter=args.color_solve_maxiter,
@@ -134,6 +136,7 @@ def cmd_stage_search(args):
         scale_modes=args.scale_modes, scale_cap_modes=args.scale_cap_modes,
         opacity_modes=args.opacity_modes, renderers=args.renderers,
         aa_dilations=args.aa_dilations,
+        color_basis_modes=args.color_basis_modes,
         color_solve_modes=args.color_solve_modes,
         pixel_losses=args.pixel_losses, optimizers=args.optimizers,
         lr_schedules=args.lr_schedules, refine_modes=args.refine_modes,
@@ -250,6 +253,10 @@ def main():
                    default="normalized")
     f.add_argument("--color-solve-every", type=int, default=None,
                    help="periodically solve fixed-geometry RGB colors with CG; normalized renderer only")
+    f.add_argument("--color-basis", choices=["constant", "affine"], default="constant",
+                   help="per-Gaussian color model")
+    f.add_argument("--color-grad-l2", type=float, default=1e-4,
+                   help="L2 regularization for affine color coefficients")
     f.add_argument("--color-solve-lambda", type=float, default=1e-4,
                    help="Tikhonov pull toward pre-solve colors for --color-solve-every")
     f.add_argument("--color-solve-maxiter", type=int, default=32,
@@ -346,6 +353,7 @@ def main():
     s.add_argument("--opacity-modes", nargs="+", default=None)
     s.add_argument("--renderers", nargs="+", default=None)
     s.add_argument("--aa-dilations", type=float, nargs="+", default=None)
+    s.add_argument("--color-basis-modes", nargs="+", default=None)
     s.add_argument("--color-solve-modes", nargs="+", default=None)
     s.add_argument("--pixel-losses", nargs="+", default=None)
     s.add_argument("--optimizers", nargs="+", default=None)

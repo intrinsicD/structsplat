@@ -33,6 +33,27 @@ def test_radii_positive_and_save_load(tmp_path):
     assert torch.allclose(g.means, h.means)
 
 
+def test_affine_color_save_load_and_append_padding(tmp_path):
+    grads = np.zeros((2, 2, 3), dtype=np.float32)
+    grads[:, 0, 0] = [0.1, 0.2]
+    a = GaussianField.from_numpy(
+        np.zeros((2, 2)), np.full((2, 2), 2.0), np.zeros(2), np.zeros((2, 3)),
+        color_grads=grads,
+    )
+    p = tmp_path / "affine.npz"
+    a.save(str(p))
+    loaded = GaussianField.load(str(p))
+    assert loaded.color_grads is not None
+    assert torch.allclose(loaded.color_grads, a.color_grads)
+
+    b = GaussianField.from_numpy(np.ones((1, 2)), np.full((1, 2), 2.0),
+                                 np.zeros(1), np.ones((1, 3)))
+    ab = a.append(b)
+    assert ab.color_grads is not None
+    assert torch.allclose(ab.color_grads[:2], a.color_grads)
+    assert torch.allclose(ab.color_grads[2], torch.zeros(2, 3))
+
+
 def test_append_preserves_none_opacity_appearance():
     # None opacity renders as 1.0; after appending an opacity-carrying field, the padded
     # logits of the None side must stay ~1.0, not silently become sigmoid(0)=0.5
@@ -56,13 +77,16 @@ def test_from_numpy_copies_and_does_not_alias_caller():
     colors = np.zeros((4, 3), dtype=np.float32)
     opacities = np.ones(4, dtype=np.float32)
     scale_max = np.full((4, 2), 5.0, dtype=np.float32)
+    color_grads = np.zeros((4, 2, 3), dtype=np.float32)
     g = GaussianField.from_numpy(means, scales, angles, colors,
-                                 opacities=opacities, scale_max=scale_max)
+                                 opacities=opacities, scale_max=scale_max,
+                                 color_grads=color_grads)
     assert not np.shares_memory(g.means.numpy(), means)
     assert not np.shares_memory(g.rotations.numpy(), angles)
     assert not np.shares_memory(g.colors.numpy(), colors)
     assert not np.shares_memory(g.opacities.numpy(), opacities)
     assert not np.shares_memory(g.scale_max.numpy(), scale_max)
+    assert not np.shares_memory(g.color_grads.numpy(), color_grads)
     # mutating the field must leave the caller arrays untouched
     with torch.no_grad():
         g.means.add_(1.0)
@@ -75,6 +99,10 @@ def test_fitconfig_rejects_negative_dilation():
     with pytest.raises(ValueError, match="aa_dilation must be >= 0"):
         FitConfig(aa_dilation=-0.1)
     FitConfig(aa_dilation=0.0)  # valid
+    with pytest.raises(ValueError, match="color_basis must be constant or affine"):
+        FitConfig(color_basis="quadratic")
+    with pytest.raises(ValueError, match="color_grad_l2 must be >= 0"):
+        FitConfig(color_grad_l2=-1.0)
 
 
 def test_fitconfig_rejects_invalid_relocation_downsample():

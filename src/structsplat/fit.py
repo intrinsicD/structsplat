@@ -188,11 +188,18 @@ def _render(field: GaussianField, cfg: FitConfig, H: int, W: int) -> torch.Tenso
                         field.radii(cfg.sigma_cutoff, cfg.aa_dilation),
                         H, W, cfg.render_chunk, cfg.renderer, field.opacity_values(),
                         scales=field.scales(), rotations=field.rotations,
-                        support_fade=cfg.support_fade, sigma_cutoff=cfg.sigma_cutoff)
+                        support_fade=cfg.support_fade, sigma_cutoff=cfg.sigma_cutoff,
+                        color_grads=field.color_grads)
 
 
 def _color_solve_enabled(cfg: FitConfig) -> bool:
     return cfg.color_solve_every is not None and cfg.color_solve_every > 0
+
+
+def _ensure_color_basis(field: GaussianField, cfg: FitConfig) -> GaussianField:
+    if cfg.color_basis == "affine":
+        return field.with_affine_colors()
+    return field
 
 
 @torch.no_grad()
@@ -291,6 +298,11 @@ def _solve_colors_normalized(field: GaussianField, target: torch.Tensor, cfg: Fi
         raise ValueError(
             "color_solve_every currently supports renderer='normalized' only; "
             f"got {cfg.renderer!r}"
+        )
+    if field.color_grads is not None:
+        raise ValueError(
+            "color_solve_every currently supports color_basis='constant' only; "
+            "affine color coefficients are optimized with Adam"
         )
     if field.n == 0:
         return {"iterations": 0, "relative_residual": 0.0}
@@ -682,6 +694,7 @@ def _fp_duplicate_indices(field: GaussianField, idx: torch.Tensor, cfg: FitConfi
     log_scales = field.log_scales.detach().clone()
     rotations = field.rotations.detach().clone()
     colors = field.colors.detach().clone()
+    color_grads = None if field.color_grads is None else field.color_grads.detach().clone()
     scales = torch.exp(log_scales[idx])
     theta = rotations[idx]
     if split_axis is None:
@@ -726,9 +739,12 @@ def _fp_duplicate_indices(field: GaussianField, idx: torch.Tensor, cfg: FitConfi
 
     scale_max = None if field.scale_max is None else field.scale_max.detach().clone()
     child_scale_max = None if field.scale_max is None else field.scale_max.detach()[idx].clone()
+    child_color_grads = None if color_grads is None else color_grads[idx].clone()
     child = GaussianField(child_means, child_log_scales, child_rotations, child_colors,
-                          child_opacities, child_scale_max)
-    return GaussianField(means, log_scales, rotations, colors, opacities, scale_max).append(child), k
+                          child_opacities, child_scale_max, child_color_grads)
+    return GaussianField(
+        means, log_scales, rotations, colors, opacities, scale_max, color_grads
+    ).append(child), k
 
 
 @torch.no_grad()
@@ -744,6 +760,7 @@ def _moment_preserving_duplicate_indices(field: GaussianField, idx: torch.Tensor
     log_scales = field.log_scales.detach().clone()
     rotations = field.rotations.detach().clone()
     colors = field.colors.detach().clone()
+    color_grads = None if field.color_grads is None else field.color_grads.detach().clone()
     scales = torch.exp(log_scales[idx])
     theta = rotations[idx]
     if split_axis is None:
@@ -794,9 +811,12 @@ def _moment_preserving_duplicate_indices(field: GaussianField, idx: torch.Tensor
 
     scale_max = None if field.scale_max is None else field.scale_max.detach().clone()
     child_scale_max = None if field.scale_max is None else field.scale_max.detach()[idx].clone()
+    child_color_grads = None if color_grads is None else color_grads[idx].clone()
     child = GaussianField(child_means, child_log_scales, child_rotations, child_colors,
-                          child_opacities, child_scale_max)
-    return GaussianField(means, log_scales, rotations, colors, opacities, scale_max).append(child), k
+                          child_opacities, child_scale_max, child_color_grads)
+    return GaussianField(
+        means, log_scales, rotations, colors, opacities, scale_max, color_grads
+    ).append(child), k
 
 
 @torch.no_grad()
@@ -942,6 +962,7 @@ def _relocate_from_residual(field: GaussianField, target: torch.Tensor,
     log_scales = field.log_scales.detach().clone()
     rotations = field.rotations.detach().clone()
     colors = field.colors.detach().clone()
+    color_grads = None if field.color_grads is None else field.color_grads.detach().clone()
     new_means = torch.stack([x.to(target.dtype), y.to(target.dtype)], dim=1)
     means[low_idx] = new_means
     base = max(base_scale, _MIN_DENSIFY_SCALE)
@@ -953,6 +974,8 @@ def _relocate_from_residual(field: GaussianField, target: torch.Tensor,
         # Low-opacity children colored like the current normalized render add almost no visible
         # jump, then the optimizer can move them toward the target residual.
         colors[low_idx] = render_img[y, x]
+    if color_grads is not None:
+        color_grads[low_idx] = 0.0
 
     if field.opacities is None:
         opacities = torch.full((field.n,), 10.0, device=means.device, dtype=means.dtype)
@@ -972,7 +995,10 @@ def _relocate_from_residual(field: GaussianField, target: torch.Tensor,
         "residual_downsample": float(cfg.relocate_residual_downsample),
         "activity_source": "gaussian_activity",
     }
-    return GaussianField(means, log_scales, rotations, colors, opacities, scale_max), k, low_idx, stats
+    return (
+        GaussianField(means, log_scales, rotations, colors, opacities, scale_max, color_grads),
+        k, low_idx, stats,
+    )
 
 
 @torch.no_grad()
@@ -1083,10 +1109,16 @@ def _add_from_residual(field: GaussianField, target: torch.Tensor, render_img: t
 def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: bool = True,
         sched_offset: int = 0, sched_total: int | None = None) -> dict:
     H, W = target.shape[0], target.shape[1]
+    field = _ensure_color_basis(field, cfg)
     if _color_solve_enabled(cfg) and cfg.renderer != "normalized":
         raise ValueError(
             "color_solve_every currently supports renderer='normalized' only; "
             f"got {cfg.renderer!r}"
+        )
+    if _color_solve_enabled(cfg) and field.color_grads is not None:
+        raise ValueError(
+            "color_solve_every currently supports color_basis='constant' only; "
+            "affine color coefficients are optimized with Adam"
         )
     field.trainable()
     opt = _make_optimizer(field, cfg)
@@ -1131,6 +1163,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         else:
             s = M.ssim(img, target, backend=cfg.ssim_backend)
             loss = (1 - cfg.ssim_weight) * pix + cfg.ssim_weight * (1 - s)
+        if field.color_grads is not None and cfg.color_grad_l2 > 0.0:
+            loss = loss + cfg.color_grad_l2 * (field.color_grads * field.color_grads).mean()
         opt.zero_grad(set_to_none=True)
         loss.backward()
         if cfg.split_mode == "absgrad_wave" and field.means.grad is not None:

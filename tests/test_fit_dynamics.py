@@ -250,6 +250,31 @@ def test_fit_color_solve_runs_in_loop_and_fails_closed_for_other_renderers():
             FitConfig(iters=1, color_solve_every=1, renderer="additive"),
             verbose=False,
         )
+    affine_field, _true_colors, affine_target, _cfg, _H, _W = _color_solve_fixture()
+    with pytest.raises(ValueError, match="color_basis='constant'"):
+        fit(
+            affine_field,
+            affine_target,
+            FitConfig(iters=1, color_basis="affine", color_solve_every=1),
+            verbose=False,
+        )
+
+
+def test_fit_affine_color_basis_adds_trainable_coefficients():
+    img = np.zeros((16, 16, 3), np.float32)
+    img[:, :, 0] = np.linspace(0.0, 1.0, 16)[None, :]
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="grid", num_gaussians=8, seed=0))
+    out = fit(
+        field,
+        target,
+        FitConfig(iters=3, log_every=1, color_basis="affine", ssim_weight=0.0),
+        verbose=False,
+    )
+    assert out["field"].color_grads is not None
+    assert out["field"].color_grads.requires_grad
+    assert torch.isfinite(out["field"].color_grads).all()
+    assert np.isfinite(out["psnr"])
 
 
 def test_early_stop_is_opt_in_and_reports_iterations():

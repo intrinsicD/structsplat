@@ -77,6 +77,8 @@ class FitConfig:
     aa_dilation: float = 0.0           # EWA-style low-pass: render with Sigma + d*I (px^2)
     render_chunk: int = 512            # reference renderer: max(render_chunk,64)*4096 elements
     renderer: str = "normalized"       # normalized/additive/cuda/cuda_tiled/gsplat variants
+    color_basis: str = "constant"      # constant or affine local color model
+    color_grad_l2: float = 1e-4        # affine coefficient L2 regularization
     color_solve_every: int | None = None  # periodic fixed-geometry RGB least-squares solve
     color_solve_lambda: float = 1e-4       # Tikhonov pull toward pre-solve colors
     color_solve_maxiter: int = 32          # CG iterations for the color normal equations
@@ -125,6 +127,11 @@ class FitConfig:
         if self.color_solve_maxiter <= 0:
             raise ValueError(
                 f"color_solve_maxiter must be > 0, got {self.color_solve_maxiter}")
+        if self.color_basis not in ("constant", "affine"):
+            raise ValueError(
+                f"color_basis must be constant or affine, got {self.color_basis!r}")
+        if self.color_grad_l2 < 0.0:
+            raise ValueError(f"color_grad_l2 must be >= 0, got {self.color_grad_l2}")
         if self.ssim_backend not in ("builtin", "fused", "auto"):
             raise ValueError(
                 f"ssim_backend must be builtin, fused, or auto, got {self.ssim_backend!r}")

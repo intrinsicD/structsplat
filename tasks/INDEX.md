@@ -19,7 +19,6 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | CORE-005 | Reference renderer memory bound + C0-continuous support cutoff | partial | CORE-003, CORE-004 |
 | ABL-004 | Killer controls + full ABL-001 run + committed evidence | partial | BENCH-002, ABL-003, FIT-004 |
 | COMP-003 | Compression-ratio ladder (scale ranges → planes → LSQ → VQ → entropy) | partial | COMP-002, BENCH-002 |
-| CORE-006 | Linear color basis per Gaussian | todo | CORE-001, FIT-001 |
 | CORE-007 | Boundary-gated Gaussians | todo | INIT-004, CORE-001 |
 | CORE-008 | Hybrid Gaussian + edge primitives | todo | CORE-001, INIT-001, FIT-001 |
 | FIT-008 | Self-adaptive Gaussian count | todo | FIT-004, BENCH-002 |
@@ -36,6 +35,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | CORE-002 | RS Gaussian parameterization + conics | `done/CORE-002-rs-gaussian-params.md` |
 | CORE-003 | Edge-aware render support window (off-image support + tile waste) | `done/CORE-003-render-support-clamp.md` |
 | CORE-004 | Renderer + GaussianField correctness fixes (CUDA N=0, int-cast UB, aliasing, dilation) | `done/CORE-004-renderer-field-correctness.md` |
+| CORE-006 | Linear color basis per Gaussian | `done/CORE-006-affine-color-basis.md` |
 | INIT-001 | Structure tensor: energy, orientation, flat/edge/corner | `done/INIT-001-structure-tensor.md` |
 | INIT-002 | Density field (image + residual) | `done/INIT-002-density-field.md` |
 | INIT-003 | Anisotropic blue-noise sampling (WSE + metric) | `done/INIT-003-anisotropic-pds.md` |
@@ -74,8 +74,10 @@ review suggests the most pragmatic improvement order:
    stage-search refine axis available as `freq_violation`.
 3. FIT-007 moment-preserving split — completed 2026-07-06; keep default off,
    stage-search refine axis available as `moment_preserving`.
-4. FF-001 feed-forward teacher-student warm start, with FIT-008 adaptive count as the natural
+4. CORE-006 affine color basis — completed 2026-07-06; keep default `constant`, stage-search
+   axis available as `color_basis=affine`.
+5. FF-001 feed-forward teacher-student warm start, with FIT-008 adaptive count as the natural
    companion if fixed-N prediction underfits complex images.
-5. COMP-004 for compression-aware fitting once RD baselines are stable.
-6. PORT-002/PORT-003 if tiled CUDA remains strategically important after quality work.
-7. GEN-003 after GEN-001 has a debuggable SDS baseline.
+6. COMP-004 for compression-aware fitting once RD baselines are stable.
+7. PORT-002/PORT-003 if tiled CUDA remains strategically important after quality work.
+8. GEN-003 after GEN-001 has a debuggable SDS baseline.
