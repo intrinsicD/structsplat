@@ -2,9 +2,9 @@ session:
   id: "2026-07-06_001"
   date: "2026-07-06"
   started: "2026-07-06T00:53+0200"
-  last_turn: "2026-07-06T14:01+0200"
-  turn_count: 7
-  summary: "Continued ABL-004 confirmation through the full `kodim01` and `kodim02` budget blocks, staged the curve-cluster interpretation for follow-up, and converted the 2026 SOTA review ideas into active task files."
+  last_turn: "2026-07-06T14:28+0200"
+  turn_count: 8
+  summary: "Continued ABL-004 confirmation through the full `kodim01` and `kodim02` budget blocks, staged the curve-cluster interpretation, converted the 2026 SOTA review into tasks, and completed FIT-005/FIT-006/FIT-007."
 
 events_logged:
   - turn: 1
@@ -49,6 +49,24 @@ events_logged:
     routing: direct
     provenance: user
     summary: "Promoted the supplied SOTA review ideas into active task files and updated the task index with the practical priority order: FIT-005, FIT-006/FIT-007, FF-001/FIT-008, COMP-004, PORT-002/003, GEN-003."
+  - turn: 8
+    type: experiment
+    id: "N55"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented and benchmark-smoked FIT-005 alternating normalized color solve; it improved small-smoke PSNR/AUC but increased fit time, so it remains opt-in."
+  - turn: 8
+    type: experiment
+    id: "N56"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented and benchmark-smoked FIT-006 frequency-violation densification; it beat ranked/AbsGrad split modes on the difficult-four smoke but not residual_tensor_add aggregate."
+  - turn: 8
+    type: experiment
+    id: "N57"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented and benchmark-smoked FIT-007 moment-preserving split; it reduced immediate post-split loss dips versus fp_duplicate and passed the full suite."
 
 ai_actions:
   - turn: 1
@@ -137,6 +155,24 @@ ai_actions:
       - "ara/trace/sessions/session_index.yaml"
       - "ara/trace/sessions/2026-07-06_001.yaml"
       - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 8
+    action: "Implemented, tested, benchmark-smoked, retired, and committed FIT-005 exact color solve, FIT-006 frequency-violation densification, and FIT-007 moment-preserving split."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/fit.py"
+      - "src/structsplat/cli.py"
+      - "benchmarks/ablation.py"
+      - "benchmarks/stage_search.py"
+      - "tests/test_fit_dynamics.py"
+      - "tests/test_stage_search.py"
+      - "tasks/INDEX.md"
+      - "tasks/done/FIT-005-exact-color-solve.md"
+      - "tasks/done/FIT-006-frequency-violation-densification.md"
+      - "tasks/done/FIT-007-moment-preserving-split.md"
+      - "ara/evidence/fit005-color-solve-smoke-2026-07-06/run.md"
+      - "ara/evidence/fit006-frequency-violation-smoke-2026-07-06/run.md"
+      - "ara/evidence/fit007-moment-preserving-smoke-2026-07-06/run.md"
+      - "ara/evidence/README.md"
 
 claims_touched: []
 
@@ -155,11 +191,13 @@ key_context:
     excerpt: "After committing shard 5, the next missing confirmation block was `kodim02` budget 10000 across all variants and seeds."
   - turn: 7
     excerpt: "User asked to create tasks for a static repo/code review that identified amortized/feed-forward prediction, QAT/entropy-aware fitting, frequency-aware densification, boundary constraints, CUDA tiled improvements, and VSD as missing or high-upside directions."
+  - turn: 8
+    excerpt: "User asked to continue with the backlog: plan the tasks, implement them, test and fix them, commit, and iterate."
 
 open_threads:
   - "Continue the ABL-004 confirmation matrix beyond the completed `kodim02` budget block."
   - "Check whether the PSNR-vs-iteration cluster structure repeats across more confirmation images before treating it as a claim."
   - "Do not retire ABL-004 or promote README claims until the decision-grade confirmation criteria are met."
-  - "After ABL-004, consider the new SOTA backlog in priority order: FIT-005, FIT-006/FIT-007, FF-001/FIT-008, COMP-004, PORT-002/PORT-003, then GEN-003."
+  - "Continue the SOTA backlog after FIT-005/FIT-006/FIT-007: CORE-006 remains the color-basis follow-up, and the index priority moves toward FF-001/FIT-008, COMP-004, PORT-002/PORT-003, then GEN-003."
 
 ai_suggestions_pending: []

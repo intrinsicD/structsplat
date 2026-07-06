@@ -222,3 +222,8 @@ entries:
       - "Routed the user's SOTA-task request as N54 decision because task files and the index now commit the review ideas into the active backlog."
       - "Did not stage or crystallize the SOTA assertions themselves because this turn created planning artifacts rather than validating the cited papers or running benchmarks."
       - "Preserved the user's practical priority order in tasks/INDEX.md instead of treating all new tasks as equal next actions."
+  - turn: "2026-07-06_001#8"
+    notes:
+      - "Routed FIT-005, FIT-006, and FIT-007 as direct experiment nodes because each produced committed code, tests, task retirement, and benchmark-smoke evidence."
+      - "Did not stage new default-selection claims: color solve, frequency-violation splitting, and moment-preserving splitting were exposed as opt-in/stage-search axes rather than adopted as defaults."
+      - "Left existing ABL-004 and curve-cluster threads open because this backlog implementation turn did not add new confirmation-matrix evidence."

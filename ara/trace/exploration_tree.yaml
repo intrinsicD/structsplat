@@ -1166,3 +1166,67 @@ tree:
       - "tasks/COMP-004-entropy-aware-fitting.md"
       - "tasks/GEN-003-vsd-multiparticle-distillation.md"
     status: resolved
+  - id: N55
+    type: experiment
+    title: "FIT-005 alternating normalized color solve"
+    provenance: ai-executed
+    timestamp: "2026-07-06T14:28+0200"
+    result: >
+      Implemented an opt-in alternating RGB solve for fixed normalized
+      Gaussian geometry using implicit conjugate gradient with ridge
+      regularization, CLI/stage-search/ablation metadata, focused tests, and
+      task/evidence retirement. On two COCO test images at max-side 64, 64
+      Gaussians, and 60 iterations, `color_solve_every=10` improved mean PSNR
+      from 20.5118 to 21.0403 and mean AUC from 19.1648 to 19.4761, while mean
+      fit time increased from 0.6263 s to 1.3917 s. The feature remained
+      opt-in rather than default.
+    evidence:
+      - "tasks/done/FIT-005-exact-color-solve.md"
+      - "ara/evidence/fit005-color-solve-smoke-2026-07-06/run.md"
+      - "src/structsplat/fit.py"
+      - "benchmarks/stage_search.py"
+    also_depends_on: [N54]
+    status: resolved
+  - id: N56
+    type: experiment
+    title: "FIT-006 frequency-violation densification"
+    provenance: ai-executed
+    timestamp: "2026-07-06T14:28+0200"
+    result: >
+      Implemented `split_mode=freq_violation`, scoring residual, target
+      gradient, absolute Laplacian, anisotropic scale, and local-axis
+      alignment to split oversized Gaussians along the most violating axis.
+      The difficult-four smoke at max-side 64, 64->80 Gaussians, 60
+      iterations, and one split wave placed `freq_violation` above
+      `ranked_wave` and `absgrad_wave` on mean final PSNR/AUC, but still below
+      `residual_tensor_add` in aggregate. Full validation passed with 197
+      tests and 22 skips before commit, so the mode was exposed as a
+      stage-search axis but not promoted to default.
+    evidence:
+      - "tasks/done/FIT-006-frequency-violation-densification.md"
+      - "ara/evidence/fit006-frequency-violation-smoke-2026-07-06/run.md"
+      - "src/structsplat/fit.py"
+      - "benchmarks/stage_search.py"
+    also_depends_on: [N54, N55]
+    status: resolved
+  - id: N57
+    type: experiment
+    title: "FIT-007 moment-preserving split"
+    provenance: ai-executed
+    timestamp: "2026-07-06T14:28+0200"
+    result: >
+      Implemented `split_mode=moment_preserving`, replacing one Gaussian with
+      two opacity-halved children whose pre-clamp first and second moments
+      approximate the parent along the chosen split axis. The difficult-four
+      smoke at max-side 64, 64->80 Gaussians, 60 iterations, and one split
+      wave improved mean final PSNR/AUC over `fp_duplicate` and reduced the
+      immediate post-split PSNR dip from -1.1625 dB to -0.2128 dB. Full
+      validation passed with 200 tests and 22 skips before commit, and the
+      mode was exposed for stage-search without changing defaults.
+    evidence:
+      - "tasks/done/FIT-007-moment-preserving-split.md"
+      - "ara/evidence/fit007-moment-preserving-smoke-2026-07-06/run.md"
+      - "src/structsplat/fit.py"
+      - "benchmarks/stage_search.py"
+    also_depends_on: [N54, N56]
+    status: resolved
