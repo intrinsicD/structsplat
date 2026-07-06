@@ -276,9 +276,11 @@ def main():
     f.add_argument("--split-every", type=int, default=None)
     f.add_argument("--split-count", type=int, default=0)
     f.add_argument("--split-mode",
-                   choices=["duplicate", "fp_duplicate", "support_duplicate", "residual_add",
-                            "residual_tensor_add", "ranked_wave", "absgrad_wave",
-                            "freq_violation"],
+                   choices=[
+                       "duplicate", "fp_duplicate", "moment_preserving", "support_duplicate",
+                       "residual_add", "residual_tensor_add", "ranked_wave", "absgrad_wave",
+                       "freq_violation",
+                   ],
                    default="duplicate")
     f.add_argument("--split-scale", type=float, default=0.7)
     f.add_argument("--split-oversample", type=float, default=1.0,

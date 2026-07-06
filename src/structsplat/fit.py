@@ -732,6 +732,74 @@ def _fp_duplicate_indices(field: GaussianField, idx: torch.Tensor, cfg: FitConfi
 
 
 @torch.no_grad()
+def _moment_preserving_duplicate_indices(field: GaussianField, idx: torch.Tensor,
+                                         cfg: FitConfig, H: int, W: int,
+                                         split_axis: torch.Tensor | None = None
+                                         ) -> tuple[GaussianField, int]:
+    k = int(idx.numel())
+    if k <= 0:
+        return field, 0
+
+    means = field.means.detach().clone()
+    log_scales = field.log_scales.detach().clone()
+    rotations = field.rotations.detach().clone()
+    colors = field.colors.detach().clone()
+    scales = torch.exp(log_scales[idx])
+    theta = rotations[idx]
+    if split_axis is None:
+        use_x = scales[:, 0] >= scales[:, 1]
+    else:
+        use_x = split_axis.to(device=scales.device, dtype=torch.long) == 0
+    c, s = torch.cos(theta), torch.sin(theta)
+    x_axis = torch.stack([c, s], dim=1)
+    y_axis = torch.stack([-s, c], dim=1)
+    direction = torch.where(use_x[:, None], x_axis, y_axis)
+    axis_scale = torch.where(use_x, scales[:, 0], scales[:, 1])
+    shrink = min(max(float(cfg.split_scale), 1e-4), 1.0 - 1e-4)
+    offset_scale = axis_scale * math.sqrt(max(1.0 - shrink * shrink, 0.0))
+    offset = direction * offset_scale[:, None]
+
+    child_means = means[idx].clone() + offset
+    means[idx] = means[idx] - offset
+    means[idx, 0].clamp_(0, W - 1)
+    means[idx, 1].clamp_(0, H - 1)
+    child_means[:, 0].clamp_(0, W - 1)
+    child_means[:, 1].clamp_(0, H - 1)
+
+    child_log_scales = log_scales[idx].clone()
+    parent_log_scales = log_scales[idx].clone()
+    axis_idx = torch.where(use_x, 0, 1)
+    parent_log_scales[torch.arange(k, device=axis_idx.device), axis_idx] += math.log(shrink)
+    child_log_scales[torch.arange(k, device=axis_idx.device), axis_idx] += math.log(shrink)
+    log_scales[idx] = _clamp_new_log_scales(
+        parent_log_scales,
+        None if field.scale_max is None else field.scale_max.detach()[idx],
+    )
+    child_log_scales = _clamp_new_log_scales(
+        child_log_scales,
+        None if field.scale_max is None else field.scale_max.detach()[idx].clone(),
+    )
+    child_rotations = theta.clone()
+    child_colors = colors[idx].clone()
+
+    if field.opacities is None:
+        opacities = torch.full((field.n,), 10.0, device=means.device, dtype=means.dtype)
+        parent_opacity = torch.ones(k, device=means.device, dtype=means.dtype)
+    else:
+        opacities = field.opacities.detach().clone()
+        parent_opacity = torch.sigmoid(opacities[idx])
+    split_opacity = parent_opacity * 0.5
+    opacities[idx] = _logit(split_opacity)
+    child_opacities = _logit(split_opacity)
+
+    scale_max = None if field.scale_max is None else field.scale_max.detach().clone()
+    child_scale_max = None if field.scale_max is None else field.scale_max.detach()[idx].clone()
+    child = GaussianField(child_means, child_log_scales, child_rotations, child_colors,
+                          child_opacities, child_scale_max)
+    return GaussianField(means, log_scales, rotations, colors, opacities, scale_max).append(child), k
+
+
+@torch.no_grad()
 def _ranked_wave_scores(field: GaussianField, residual: torch.Tensor,
                         cfg: FitConfig) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
     H, W = residual.shape
@@ -931,6 +999,8 @@ def _split_from_residual(field: GaussianField, target: torch.Tensor, render_img:
     idx = torch.topk(scores, k=k).indices
     if cfg.split_mode == "fp_duplicate":
         return _fp_duplicate_indices(field, idx, cfg, H, W)
+    if cfg.split_mode == "moment_preserving":
+        return _moment_preserving_duplicate_indices(field, idx, cfg, H, W)
     means = field.means.detach()[idx].clone()
     scales = field.scales().detach()[idx]
     theta = field.rotations.detach()[idx]
@@ -1148,7 +1218,9 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         if split_due:
             split_event = None
             absgrad_scores_carried = False
-            if cfg.split_mode in ("duplicate", "fp_duplicate", "support_duplicate"):
+            if cfg.split_mode in (
+                "duplicate", "fp_duplicate", "moment_preserving", "support_duplicate"
+            ):
                 field, added = _split_from_residual(field, target, img, cfg)
             elif cfg.split_mode == "ranked_wave":
                 field, added, ranked_stats = _ranked_wave_from_residual(field, target, img, cfg)
@@ -1186,8 +1258,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             else:
                 raise ValueError(
                     f"unknown split_mode {cfg.split_mode!r}; expected duplicate, "
-                    "fp_duplicate, support_duplicate, residual_add, residual_tensor_add, "
-                    "ranked_wave, absgrad_wave, or freq_violation")
+                    "fp_duplicate, moment_preserving, support_duplicate, residual_add, "
+                    "residual_tensor_add, ranked_wave, absgrad_wave, or freq_violation")
             if verbose and added > 0:
                 print(f"  split +{added} -> {field.n} gaussians")
             if added > 0:

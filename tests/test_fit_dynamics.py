@@ -15,6 +15,7 @@ from structsplat.fit import (
     _lr_factor,
     _make_optimizer,
     _maybe_prune,
+    _moment_preserving_duplicate_indices,
     _residual_candidate_pixels,
     _relocate_from_residual,
     _solve_colors_normalized,
@@ -460,6 +461,106 @@ def test_fp_duplicate_has_small_immediate_psnr_dip():
     assert k == 8
     assert after_psnr >= before_psnr - 0.05
     assert grown.opacities is not None
+
+
+def _field_covariance(field: GaussianField) -> torch.Tensor:
+    scales = field.scales()
+    c = torch.cos(field.rotations)
+    s = torch.sin(field.rotations)
+    r = torch.stack([
+        torch.stack([c, -s], dim=-1),
+        torch.stack([s, c], dim=-1),
+    ], dim=-2)
+    d = torch.zeros(field.n, 2, 2)
+    d[:, 0, 0] = scales[:, 0] ** 2
+    d[:, 1, 1] = scales[:, 1] ** 2
+    return r @ d @ r.transpose(-1, -2)
+
+
+def test_moment_preserving_split_preserves_mass_mean_and_covariance():
+    mean = torch.tensor([[20.0, 20.0]])
+    log_scales = torch.log(torch.tensor([[4.0, 2.0]]))
+    rotations = torch.tensor([0.37])
+    field = GaussianField(mean, log_scales, rotations, torch.ones(1, 3))
+    parent_cov = _field_covariance(field)[0]
+
+    grown, k = _moment_preserving_duplicate_indices(
+        field,
+        torch.tensor([0]),
+        FitConfig(split_mode="moment_preserving", split_scale=0.7),
+        H=64,
+        W=64,
+    )
+
+    assert k == 1
+    opac = grown.opacity_values()
+    weights = opac / opac.sum()
+    mix_mean = (weights[:, None] * grown.means).sum(dim=0)
+    covs = _field_covariance(grown)
+    centered = grown.means - mix_mean
+    mix_cov = torch.sum(
+        weights[:, None, None] * (covs + centered[:, :, None] * centered[:, None, :]),
+        dim=0,
+    )
+
+    assert torch.allclose(opac.sum(), torch.tensor(1.0), atol=1e-5)
+    assert torch.allclose(mix_mean, mean[0], atol=1e-5)
+    assert torch.allclose(mix_cov, parent_cov, atol=1e-4)
+
+
+def test_moment_preserving_split_has_no_worse_dip_than_fp_duplicate():
+    from structsplat.render import render_field
+
+    img = np.zeros((32, 32, 3), np.float32)
+    img[:, :16] = [0.2, 0.4, 0.8]
+    img[:, 16:] = [0.9, 0.6, 0.1]
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="aniso_flanking", num_gaussians=48,
+                                              seed=0))
+    base = dict(renderer="normalized", split_count=8, max_gaussians=80, render_chunk=32)
+    before = render_field(field.means, field.conics(), field.colors, field.radii(3.0),
+                          32, 32, chunk=32, mode="normalized", opacities=field.opacity_values())
+    before_psnr = M.psnr(before, target)
+
+    fp, _ = _split_from_residual(
+        field, target, before, FitConfig(split_mode="fp_duplicate", **base)
+    )
+    mp, _ = _split_from_residual(
+        field, target, before, FitConfig(split_mode="moment_preserving", **base)
+    )
+    fp_after = render_field(fp.means, fp.conics(), fp.colors, fp.radii(3.0),
+                            32, 32, chunk=32, mode="normalized", opacities=fp.opacity_values())
+    mp_after = render_field(mp.means, mp.conics(), mp.colors, mp.radii(3.0),
+                            32, 32, chunk=32, mode="normalized", opacities=mp.opacity_values())
+    fp_drop = min(0.0, M.psnr(fp_after, target) - before_psnr)
+    mp_drop = min(0.0, M.psnr(mp_after, target) - before_psnr)
+
+    assert mp_drop >= fp_drop - 1e-4
+
+
+def test_moment_preserving_split_runs_under_additive_renderer():
+    img = np.zeros((20, 20, 3), np.float32)
+    img[:, 10:] = 0.5
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=8, seed=0))
+
+    out = fit(
+        field,
+        target,
+        FitConfig(
+            renderer="additive",
+            iters=5,
+            log_every=1,
+            split_every=2,
+            split_count=2,
+            split_mode="moment_preserving",
+            max_gaussians=12,
+        ),
+        verbose=False,
+    )
+
+    assert np.isfinite(out["psnr"])
+    assert out["n_gaussians"] == 12
 
 
 def test_ranked_wave_grows_exactly_and_logs_components():

@@ -20,7 +20,6 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | ABL-004 | Killer controls + full ABL-001 run + committed evidence | partial | BENCH-002, ABL-003, FIT-004 |
 | COMP-003 | Compression-ratio ladder (scale ranges → planes → LSQ → VQ → entropy) | partial | COMP-002, BENCH-002 |
 | CORE-006 | Linear color basis per Gaussian | todo | CORE-001, FIT-001 |
-| FIT-007 | Moment-preserving split / clone | todo | FIT-004 |
 | CORE-007 | Boundary-gated Gaussians | todo | INIT-004, CORE-001 |
 | CORE-008 | Hybrid Gaussian + edge primitives | todo | CORE-001, INIT-001, FIT-001 |
 | FIT-008 | Self-adaptive Gaussian count | todo | FIT-004, BENCH-002 |
@@ -48,6 +47,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | FIT-004 | Densification & convergence upgrades (fp-growth, relocation, NMS) | `done/FIT-004-densification-upgrades.md` |
 | FIT-005 | Exact / alternating color solve | `done/FIT-005-exact-color-solve.md` |
 | FIT-006 | Frequency-violation densification | `done/FIT-006-frequency-violation-densification.md` |
+| FIT-007 | Moment-preserving split / clone | `done/FIT-007-moment-preserving-split.md` |
 | HIER-002 | Pyramid bookkeeping (iteration accounting, budgets, schedules) | `done/HIER-002-pyramid-bookkeeping.md` |
 | BENCH-001 | Metric protocol (PSNR/MS-SSIM/LPIPS + iters-to-target) | `done/BENCH-001-metrics.md` |
 | BENCH-002 | Benchmark harness experimental-validity fixes (equal budgets, resumable sweeps, seed-aware comparisons) | `done/BENCH-002-harness-validity.md` |
@@ -72,7 +72,8 @@ review suggests the most pragmatic improvement order:
    axis available as `color_solve=every10`.
 2. FIT-006 frequency-violation densification — completed 2026-07-06; keep default off,
    stage-search refine axis available as `freq_violation`.
-3. FIT-007 moment-preserving split if split loss spikes remain visible.
+3. FIT-007 moment-preserving split — completed 2026-07-06; keep default off,
+   stage-search refine axis available as `moment_preserving`.
 4. FF-001 feed-forward teacher-student warm start, with FIT-008 adaptive count as the natural
    companion if fixed-N prediction underfits complex images.
 5. COMP-004 for compression-aware fitting once RD baselines are stable.

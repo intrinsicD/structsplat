@@ -87,8 +87,9 @@ INFLUENCE_DEFAULTS: dict[str, tuple[str, ...]] = {
     "optimizers": ("adam", "adamw", "adan"),
     "lr_schedules": ("none", "cosine", "step"),
     "refine_modes": (
-        "none", "prune", "duplicate", "fp_duplicate", "support_duplicate", "residual_add",
-        "residual_tensor_add", "ranked_wave", "absgrad_wave", "freq_violation", "relocate",
+        "none", "prune", "duplicate", "fp_duplicate", "moment_preserving",
+        "support_duplicate", "residual_add", "residual_tensor_add", "ranked_wave",
+        "absgrad_wave", "freq_violation", "relocate",
         "residual_add_nms", "residual_tensor_add_nms",
         "residual_add_residual_color", "residual_tensor_add_residual_color",
         "residual_add_nms_residual_color", "residual_tensor_add_nms_residual_color",
@@ -189,6 +190,7 @@ def _refine_kwargs(mode: str, split_every: int | None, split_count: int,
     split_variants: dict[str, dict[str, Any]] = {
         "duplicate": {"split_mode": "duplicate"},
         "fp_duplicate": {"split_mode": "fp_duplicate"},
+        "moment_preserving": {"split_mode": "moment_preserving"},
         "support_duplicate": {"split_mode": "support_duplicate"},
         "residual_add": {"split_mode": "residual_add"},
         "residual_tensor_add": {"split_mode": "residual_tensor_add"},
@@ -262,9 +264,9 @@ def _refine_kwargs(mode: str, split_every: int | None, split_count: int,
 
 def _refine_adds_capacity(mode: str) -> bool:
     return mode in {
-        "duplicate", "fp_duplicate", "support_duplicate", "residual_add",
-        "residual_tensor_add", "ranked_wave", "absgrad_wave", "freq_violation",
-        "residual_add_nms",
+        "duplicate", "fp_duplicate", "moment_preserving", "support_duplicate",
+        "residual_add", "residual_tensor_add", "ranked_wave", "absgrad_wave",
+        "freq_violation", "residual_add_nms",
         "residual_tensor_add_nms", "residual_add_residual_color",
         "residual_tensor_add_residual_color", "residual_add_nms_residual_color",
         "residual_tensor_add_nms_residual_color", "prune_residual_add",

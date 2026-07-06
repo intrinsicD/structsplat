@@ -123,6 +123,7 @@ def test_refine_kwargs_threads_fit004_modes():
     assert combined["split_color_init"] == "residual"
 
     assert _refine_kwargs("fp_duplicate", 5, 7, None, 0.0)["split_mode"] == "fp_duplicate"
+    assert _refine_kwargs("moment_preserving", 5, 7, None, 0.0)["split_mode"] == "moment_preserving"
     assert _refine_kwargs("ranked_wave", 5, 7, None, 0.0)["split_mode"] == "ranked_wave"
     assert _refine_kwargs("absgrad_wave", 5, 7, None, 0.0)["split_mode"] == "absgrad_wave"
     assert _refine_kwargs("freq_violation", 5, 7, None, 0.0)["split_mode"] == "freq_violation"
