@@ -142,6 +142,13 @@ conditions and honest controls?
   `iso_blue_noise` (30.8091), `quadtree_hybrid` (30.7088), and `aniso_flanking` (30.5071).
   Floyd-Steinberg remains slower to PSNR 30.0 on this slice (124.3 mean iters) than the
   tensor-aware WSE rows (62.3-66.0). This is still partial confirmation evidence only.
+- 2026-07-06: Completed the next bounded confirmation shard (`kodim02`, budget 5000, all six
+  variants, seeds {0,1,2}). The artifact now has 90/1,512 cells with zero errors, leaving
+  1,422 cells. At 5000 Gaussians on this single-image slice, `aniso_onedge` leads mean PSNR
+  (33.5770), followed by `quadtree_wse` (33.4950), `quadtree_hybrid` (33.3821),
+  `iso_blue_noise` (33.3478), `aniso_flanking` (33.3136), and Floyd-Steinberg (33.2920).
+  The 5000-Gaussian aggregate now spans two images and six paired units; `aniso_onedge` remains
+  first at 29.5698 mean PSNR, with `quadtree_wse` second at 29.4721.
 
 ## Decision-grade staged protocol
 
