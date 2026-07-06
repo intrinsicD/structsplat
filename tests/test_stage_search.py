@@ -177,6 +177,68 @@ def test_color_solve_is_stage_axis(tmp_path):
     assert all("color_solve=" in r["config_label"] for r in rows)
 
 
+def test_new_stage_smoke_matrix_records_expected_events_and_html(tmp_path):
+    img_path = tmp_path / "toy.png"
+    outdir = tmp_path / "new_stages"
+    _write_toy(img_path)
+
+    rows = run_stage_search(
+        [str(img_path)], budgets=[32], seeds=[0], iters=10, max_side=None,
+        strategies=["aniso_flanking"], tensor_operators=["central"], tensor_colors=["luma"],
+        density_modes=["structure"], sampling_modes=["density_random"],
+        orientation_modes=["tensor"], color_modes=["bilinear"], scale_modes=["spacing"],
+        scale_cap_modes=["none"], opacity_modes=["none"], renderers=["normalized"],
+        aa_dilations=[0.0], color_basis_modes=["constant"],
+        color_solve_modes=["none", "every10"], pixel_losses=["l1"], optimizers=["adam"],
+        lr_schedules=["none"], refine_modes=["none", "freq_violation", "moment_preserving"],
+        pyramid_modes=["single"], split_every=5, split_count=8, render_chunk=8,
+        outdir=str(outdir), device="cpu",
+    )
+
+    assert len(rows) == 6
+    assert all(r["status"] == "ok" for r in rows)
+    assert {(r["color_solve"], r["refine"]) for r in rows} == {
+        ("none", "none"),
+        ("none", "freq_violation"),
+        ("none", "moment_preserving"),
+        ("every10", "none"),
+        ("every10", "freq_violation"),
+        ("every10", "moment_preserving"),
+    }
+
+    for row in rows:
+        if row["color_solve"] == "every10":
+            assert row["color_solve_every"] == 10
+            assert row["color_solve_event_count"] == 1
+        else:
+            assert row["color_solve_every"] is None
+            assert row["color_solve_event_count"] == 0
+
+        if row["refine"] == "none":
+            assert row["split_event_count"] == 0
+            assert row["n_gaussians"] == row["budget"]
+            assert row["init_budget"] == row["budget"]
+        else:
+            assert row["split_event_count"] == 1
+            assert row["n_gaussians"] == row["budget"]
+            assert row["init_budget"] < row["budget"]
+
+        if row["refine"] == "freq_violation":
+            assert row["freq_violation_score_mean"] is not None
+            assert (
+                row["freq_violation_axis0_count"] + row["freq_violation_axis1_count"]
+                == row["split_event_count"] * 8
+            )
+
+    html = (outdir / "index.html").read_text(encoding="utf-8")
+    assert "Cells</div><div class=\"value\">6</div>" in html
+    assert "OK</div><div class=\"value\">6</div>" in html
+    assert "<code>every10</code>" in html
+    assert "<code>freq_violation</code>" in html
+    assert "<code>moment_preserving</code>" in html
+    assert "stage_search.json" in html
+
+
 def test_color_basis_is_stage_axis(tmp_path):
     img_path = tmp_path / "toy.png"
     _write_toy(img_path)
