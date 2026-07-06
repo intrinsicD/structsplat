@@ -41,6 +41,11 @@ class InitConfig:
     color_radius: float = 1.5          # local mean radius or extra side-sample offset
     opacity_mode: str = "none"         # none or constant
     init_opacity: float = 0.9
+    # FF-001: feed-forward warm-start entry point. The first implementation supports a stable
+    # predictor interface, optional saved-field warm starts, and a deterministic tensor-prior
+    # fallback while learned predictors/training mature.
+    predictor_checkpoint: str | None = None
+    predictor_fallback_strategy: str = "aniso_flanking"
     seed: int = 0
 
     def __post_init__(self):
@@ -49,6 +54,8 @@ class InitConfig:
         if self.candidate_oversample < 1.0:
             raise ValueError(
                 f"candidate_oversample must be >= 1, got {self.candidate_oversample}")
+        if self.predictor_fallback_strategy == "feedforward":
+            raise ValueError("predictor_fallback_strategy cannot be feedforward")
 
 
 @dataclass

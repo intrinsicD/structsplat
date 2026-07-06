@@ -1,6 +1,8 @@
 # FF-001: Feed-forward init predictor (warm-start)
 
-**Status: todo (future).** Big SOTA-gap task from the 2026-07 amortized 2DGS review.
+**Status: partial.** First implementation slice landed 2026-07-06: stable predictor interface,
+`strategy=feedforward`, saved-field/tensor-prior warm starts, CLI short-refinement flags, and
+teacher-field export. Learned prediction/training/distillation remain open.
 
 ## Context
 StructSplat is strong on hand-designed initialization and optimization, but it does not yet have
@@ -25,13 +27,13 @@ an input image, then refines for only 50-200 iterations with the existing fitter
    FIT-008.
 
 ## Acceptance criteria
-- [ ] `src/structsplat/predictor.py` or equivalent module with a documented model interface:
+- [x] `src/structsplat/predictor.py` or equivalent module with a documented model interface:
       `image, budget/options -> GaussianField`.
-- [ ] Dataset/export script for teacher fields and a minimal training script with deterministic
-      config logging.
-- [ ] Predictor can emit positions, covariance/orientation, colors, and optional opacity; or emits a
+- [~] Dataset/export script for teacher fields and a minimal training script with deterministic
+      config logging. Export exists; training script remains open.
+- [~] Predictor can emit positions, covariance/orientation, colors, and optional opacity; or emits a
       placement/budget map consumed by the existing initializer with clear scope.
-- [ ] Short-refinement path exposed in CLI/config, e.g. `init="feedforward"` plus
+- [x] Short-refinement path exposed in CLI/config, e.g. `init="feedforward"` plus
       `fit_iters=50-200`.
 - [ ] Compared against optimized-from-scratch and structure-tensor warm-start at equal final N,
       reporting quality, wall time, and speedup-to-target.
@@ -44,6 +46,16 @@ an input image, then refines for only 50-200 iterations with the existing fitter
 `src/structsplat/predictor.py` (new), `src/structsplat/init.py`, `src/structsplat/fit.py`,
 `src/structsplat/config.py`, `src/structsplat/cli.py`, training/export scripts under
 `benchmarks/` or `tools/`, tests for shape/range/round-trip invariants.
+
+## Current implementation notes
+
+- `InitConfig(strategy="feedforward")` calls `structsplat.predictor.predict_field`.
+- `predictor_checkpoint` loads a saved `GaussianField` and truncates/pads to the requested budget.
+- Without a checkpoint, `predictor_fallback_strategy` delegates to an existing deterministic
+  tensor-prior initializer. This is an executable API fallback, not a learned model.
+- `benchmarks/feedforward_teacher_export.py` exports fitted teacher fields and a manifest for
+  future model training.
+- Evidence: `ara/evidence/ff001-predictor-interface-smoke-2026-07-06/run.md`.
 
 ## Depends on
 INIT-003, FIT-001. Optional follow-ups: FIT-008 for adaptive count, COMP-004 for

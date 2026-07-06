@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from structsplat.cli import load_image, save_image
+from structsplat.cli import load_image, main, save_image
 
 
 def test_save_image_rounds_not_truncates(tmp_path):
@@ -15,3 +15,39 @@ def test_save_image_rounds_not_truncates(tmp_path):
     back = load_image(str(p))
     # every exact k/255 level must survive the round-trip; truncation shifted them down
     assert np.abs(back - img).max() <= 1e-6
+
+
+def test_fit_cli_accepts_feedforward_short_refinement(tmp_path, monkeypatch, capsys):
+    pytest.importorskip("torch")
+    img = np.zeros((12, 12, 3), np.float32)
+    img[:, 6:] = 1.0
+    path = tmp_path / "toy.png"
+    save_image(str(path), img)
+    outdir = tmp_path / "runs"
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "structsplat",
+            "fit",
+            str(path),
+            "--strategy",
+            "feedforward",
+            "--predictor-fallback-strategy",
+            "grid",
+            "--num-gaussians",
+            "8",
+            "--iters",
+            "1",
+            "--chunk",
+            "8",
+            "--outdir",
+            str(outdir),
+            "--device",
+            "cpu",
+        ],
+    )
+
+    main()
+
+    assert (outdir / "toy_feedforward.npz").exists()
+    assert "8 gaussians" in capsys.readouterr().out

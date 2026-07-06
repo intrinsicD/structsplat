@@ -6,6 +6,7 @@ STRATEGIES:
   iso_blue_noise    density-adaptive isotropic blue noise                (feature-aware, no anisotropy)
   aniso_onedge      anisotropic blue noise, centers ON features          (tensor-oriented)
   aniso_flanking    anisotropic blue noise, edge centers pushed to flanks (the proposed default)
+  feedforward       FF-001 predictor API: saved-field warm start or tensor-prior fallback
   quadtree_aggregate density-adaptive quadtree cells with aggregate color/features
   quadtree_hybrid   aggregate smooth cells, WSE/flanking samples for detailed cells
   quadtree_wse      quadtree budget cells with local WSE/flanking samples
@@ -28,7 +29,7 @@ from .gaussians import GaussianField
 
 STRATEGIES = (
     "random", "grid", "iso_blue_noise", "aniso_onedge", "aniso_flanking",
-    "quadtree_aggregate", "quadtree_hybrid", "quadtree_wse",
+    "feedforward", "quadtree_aggregate", "quadtree_hybrid", "quadtree_wse",
 )
 
 
@@ -585,6 +586,9 @@ def build_field(img: np.ndarray, icfg: InitConfig,
     color_pts = None
     colors = None
 
+    if strat == "feedforward":
+        from .predictor import predict_field
+        return predict_field(img, icfg, scfg, density=density, tensor=tensor, device=device)
     if strat == "random":
         pts = rng.random((n, 2)) * np.array([W, H]) - 0.5   # pixel centers at integer coords
         spacing = np.full(n, np.sqrt(H * W / n))            # mean per-point area -> spacing

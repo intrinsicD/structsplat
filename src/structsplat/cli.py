@@ -46,7 +46,9 @@ def cmd_fit(args):
                       color_mode=args.color_mode,
                       color_radius=args.color_radius,
                       opacity_mode=args.opacity_mode,
-                      init_opacity=args.init_opacity)
+                      init_opacity=args.init_opacity,
+                      predictor_checkpoint=args.predictor_checkpoint,
+                      predictor_fallback_strategy=args.predictor_fallback_strategy)
     scfg = StructureTensorConfig(grad_sigma=args.grad_sigma,
                                  tensor_sigma=args.tensor_sigma,
                                  gradient_operator=args.tensor_operator,
@@ -230,6 +232,11 @@ def main():
     f.add_argument("image")
     f.add_argument("--strategy", default="aniso_flanking")
     f.add_argument("--num-gaussians", type=int, default=20000, dest="num_gaussians")
+    f.add_argument("--predictor-checkpoint", default=None,
+                   help="saved GaussianField used by strategy=feedforward")
+    f.add_argument("--predictor-fallback-strategy", default="aniso_flanking",
+                   help="tensor-prior strategy used by strategy=feedforward when no saved "
+                        "checkpoint is provided or padding is needed")
     f.add_argument("--iters", type=int, default=2000)
     f.add_argument("--pyramid", action="store_true")
     f.add_argument("--pyramid-levels", type=int, default=4)
