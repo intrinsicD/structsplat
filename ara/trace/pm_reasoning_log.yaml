@@ -202,3 +202,8 @@ entries:
       - "Staged O29 with user provenance because the user identified the curve-cluster interpretation and the assistant only quantified it from existing histories."
       - "Did not crystallize O29 because the current confirmation curves cover only `kodim01`; recurrence across more images is the closure condition."
       - "Recorded cluster interpretation as a claim candidate, not a heuristic, because it describes observed method behavior rather than a procedure."
+  - turn: "2026-07-06_001#4"
+    notes:
+      - "Routed the fourth ABL-004 confirmation shard as N51 because it produced new exact-CUDA benchmark evidence and updated the confirmation artifact to 72/1512 cells."
+      - "Did not crystallize a claim from the `kodim02` 2000-Gaussian on-edge lead because confirmation still covers only two images at this budget and remains far from decision-grade."
+      - "Kept O29 staged because this turn adds a second image at 2000 Gaussians, but not enough budget/image coverage to settle the curve-cluster interpretation."

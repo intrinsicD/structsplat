@@ -135,6 +135,13 @@ conditions and honest controls?
   by `iso_blue_noise` (27.7928), Floyd-Steinberg (27.7214), `aniso_flanking` (27.7189),
   `aniso_onedge` (27.6979), and `quadtree_hybrid` (27.6669). This remains shard evidence only:
   one image is not enough to retire ABL-004 or promote README claims.
+- 2026-07-06: Completed the next bounded confirmation shard (`kodim02`, budget 2000, all six
+  variants, seeds {0,1,2}). The artifact now has 72/1,512 cells with zero errors, leaving
+  1,440 cells. At 2000 Gaussians on this single-image slice, `aniso_onedge` leads mean PSNR
+  (31.2651), followed by `quadtree_wse` (31.1883), Floyd-Steinberg (30.8809),
+  `iso_blue_noise` (30.8091), `quadtree_hybrid` (30.7088), and `aniso_flanking` (30.5071).
+  Floyd-Steinberg remains slower to PSNR 30.0 on this slice (124.3 mean iters) than the
+  tensor-aware WSE rows (62.3-66.0). This is still partial confirmation evidence only.
 
 ## Decision-grade staged protocol
 

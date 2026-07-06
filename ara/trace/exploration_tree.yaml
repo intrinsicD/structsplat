@@ -1072,3 +1072,27 @@ tree:
       - "ara/evidence/abl004-confirmation-shard3-2026-07-06/run.md"
     also_depends_on: [N47, N49]
     status: resolved
+  - id: N51
+    type: experiment
+    title: "ABL-004 confirmation fourth shard"
+    provenance: ai-executed
+    timestamp: "2026-07-06T08:22+0200"
+    result: >
+      Continued the default ABL-004 confirmation run with a bounded exact-CUDA
+      shard using `--resume --max-new-cells 18`. The shard completed `kodim02`,
+      budget 2000, all six variants, seeds {0,1,2}, bringing the confirmation
+      artifact to 72/1,512 cells with zero errors and 1,440 missing cells. On
+      this single-image 2000-Gaussian slice, mean PSNR ranked `aniso_onedge`
+      31.2651, `quadtree_wse` 31.1883, Floyd-Steinberg 30.8809,
+      `iso_blue_noise` 30.8091, `quadtree_hybrid` 30.7088, and
+      `aniso_flanking` 30.5071. Floyd-Steinberg reached PSNR 30.0 much later
+      than the tensor-aware WSE rows on this slice: 124.3 mean iterations versus
+      62.3-66.0.
+    evidence:
+      - "tasks/ABL-004-controls-and-full-run.md"
+      - "results/abl004_confirmation/index.html"
+      - "results/abl004_confirmation/confirmation_analysis.md"
+      - "results/abl004_confirmation/summary.md"
+      - "ara/evidence/abl004-confirmation-shard4-2026-07-06/run.md"
+    also_depends_on: [N47, N49, N50]
+    status: resolved
