@@ -2,9 +2,9 @@ session:
   id: "2026-07-06_001"
   date: "2026-07-06"
   started: "2026-07-06T00:53+0200"
-  last_turn: "2026-07-06T08:34+0200"
-  turn_count: 5
-  summary: "Continued ABL-004 confirmation through the full `kodim01` budget block, staged the curve-cluster interpretation, and ran the `kodim02` 2000/5000-Gaussian confirmation shards."
+  last_turn: "2026-07-06T08:47+0200"
+  turn_count: 6
+  summary: "Continued ABL-004 confirmation through the full `kodim01` and `kodim02` budget blocks, and staged the curve-cluster interpretation for follow-up."
 
 events_logged:
   - turn: 1
@@ -37,6 +37,12 @@ events_logged:
     routing: direct
     provenance: ai-executed
     summary: "Ran the fifth 18-cell ABL-004 confirmation shard: `kodim02`, budget 5000, all six variants, seeds {0,1,2}; confirmation is now 90/1,512 cells with zero errors."
+  - turn: 6
+    type: experiment
+    id: "N53"
+    routing: direct
+    provenance: ai-executed
+    summary: "Ran the sixth 18-cell ABL-004 confirmation shard: `kodim02`, budget 10000, all six variants, seeds {0,1,2}; confirmation is now 108/1,512 cells with zero errors."
 
 ai_actions:
   - turn: 1
@@ -91,6 +97,17 @@ ai_actions:
       - "ara/trace/sessions/session_index.yaml"
       - "ara/trace/sessions/2026-07-06_001.yaml"
       - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 6
+    action: "Continued the resumable ABL-004 confirmation run through the `kodim02` 10000-Gaussian shard and updated task/evidence bookkeeping."
+    provenance: ai-executed
+    files_changed:
+      - "tasks/ABL-004-controls-and-full-run.md"
+      - "ara/evidence/abl004-confirmation-shard6-2026-07-06/run.md"
+      - "ara/evidence/README.md"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/sessions/2026-07-06_001.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
 
 claims_touched: []
 
@@ -105,9 +122,11 @@ key_context:
     excerpt: "User asked to continue working through tasks in the correct order with plan, implementation, tests/fixes, commits, and iteration."
   - turn: 5
     excerpt: "After committing shard 4, the next missing confirmation block was `kodim02` budget 5000 across all variants and seeds."
+  - turn: 6
+    excerpt: "After committing shard 5, the next missing confirmation block was `kodim02` budget 10000 across all variants and seeds."
 
 open_threads:
-  - "Continue the ABL-004 confirmation matrix beyond the completed `kodim02` budget-5000 shard."
+  - "Continue the ABL-004 confirmation matrix beyond the completed `kodim02` budget block."
   - "Check whether the PSNR-vs-iteration cluster structure repeats across more confirmation images before treating it as a claim."
   - "Do not retire ABL-004 or promote README claims until the decision-grade confirmation criteria are met."
 

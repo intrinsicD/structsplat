@@ -149,6 +149,13 @@ conditions and honest controls?
   `iso_blue_noise` (33.3478), `aniso_flanking` (33.3136), and Floyd-Steinberg (33.2920).
   The 5000-Gaussian aggregate now spans two images and six paired units; `aniso_onedge` remains
   first at 29.5698 mean PSNR, with `quadtree_wse` second at 29.4721.
+- 2026-07-06: Completed the next bounded confirmation shard (`kodim02`, budget 10000, all six
+  variants, seeds {0,1,2}), finishing the full `kodim02` block for confirmation budgets {2000,
+  5000, 10000}. The artifact now has 108/1,512 cells with zero errors, leaving 1,404 cells. At
+  10000 Gaussians on this single-image slice, `aniso_onedge` leads mean PSNR (35.7905),
+  followed by `quadtree_wse` (35.7700), `iso_blue_noise` (35.7505), `quadtree_hybrid`
+  (35.7436), Floyd-Steinberg (35.5835), and `aniso_flanking` (35.5701). Across the current
+  two-image 10000-Gaussian aggregate, `quadtree_wse` narrowly leads mean PSNR (31.8131).
 
 ## Decision-grade staged protocol
 

@@ -1120,3 +1120,28 @@ tree:
       - "ara/evidence/abl004-confirmation-shard5-2026-07-06/run.md"
     also_depends_on: [N47, N49, N50, N51]
     status: resolved
+  - id: N53
+    type: experiment
+    title: "ABL-004 confirmation sixth shard"
+    provenance: ai-executed
+    timestamp: "2026-07-06T08:47+0200"
+    result: >
+      Continued the default ABL-004 confirmation run with a bounded exact-CUDA
+      shard using `--resume --max-new-cells 18`. The shard completed `kodim02`,
+      budget 10000, all six variants, seeds {0,1,2}, bringing the confirmation
+      artifact to 108/1,512 cells with zero errors and 1,404 missing cells. The
+      full `kodim02` confirmation-budget block is now present. On the
+      single-image 10000-Gaussian slice, mean PSNR ranked `aniso_onedge`
+      35.7905, `quadtree_wse` 35.7700, `iso_blue_noise` 35.7505,
+      `quadtree_hybrid` 35.7436, Floyd-Steinberg 35.5835, and
+      `aniso_flanking` 35.5701. The aggregate 10000-Gaussian leaderboard now
+      spans two images and six paired units per strategy, with `quadtree_wse`
+      first at 31.8131 mean PSNR.
+    evidence:
+      - "tasks/ABL-004-controls-and-full-run.md"
+      - "results/abl004_confirmation/index.html"
+      - "results/abl004_confirmation/confirmation_analysis.md"
+      - "results/abl004_confirmation/summary.md"
+      - "ara/evidence/abl004-confirmation-shard6-2026-07-06/run.md"
+    also_depends_on: [N47, N49, N50, N51, N52]
+    status: resolved

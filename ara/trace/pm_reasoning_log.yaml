@@ -212,3 +212,8 @@ entries:
       - "Routed the fifth ABL-004 confirmation shard as N52 because it produced new exact-CUDA benchmark evidence and updated the confirmation artifact to 90/1512 cells."
       - "Did not crystallize a claim from the `kodim02` 5000-Gaussian on-edge lead because confirmation still covers only two images at this budget and remains far from decision-grade."
       - "Left O29 staged because the added shard strengthens the need to inspect convergence clusters across images, but still lacks broad budget/image coverage."
+  - turn: "2026-07-06_001#6"
+    notes:
+      - "Routed the sixth ABL-004 confirmation shard as N53 because it produced new exact-CUDA benchmark evidence and updated the confirmation artifact to 108/1512 cells."
+      - "Did not crystallize a claim from the split `kodim02` slice versus aggregate 10k ranking because both are still two-image partial confirmation signals."
+      - "Left O29 staged because the completed `kodim02` block gives more trajectory evidence but does not yet satisfy the multi-image confirmation closure condition."
