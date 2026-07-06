@@ -20,6 +20,7 @@ from structsplat.fit import (
     _relocate_from_residual,
     _solve_colors_normalized,
     _split_from_residual,
+    estimated_raw_bpp,
     fit,
 )
 from structsplat import metrics as M
@@ -258,6 +259,112 @@ def test_fit_color_solve_runs_in_loop_and_fails_closed_for_other_renderers():
             FitConfig(iters=1, color_basis="affine", color_solve_every=1),
             verbose=False,
         )
+
+
+def _adaptive_fixture(n=8):
+    img = np.zeros((16, 16, 3), np.float32)
+    img[:, 8:] = 1.0
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=n, seed=3))
+    return img, target, field
+
+
+def test_adaptive_count_stops_when_target_psnr_reached_without_growth():
+    _img, target, field = _adaptive_fixture(8)
+    out = fit(
+        field,
+        target,
+        FitConfig(
+            iters=5,
+            log_every=1,
+            target_psnr=0.0,
+            adaptive_count=True,
+            max_gaussians=16,
+            adaptive_growth_every=1,
+            adaptive_growth_count=4,
+            ssim_weight=0.0,
+        ),
+        verbose=False,
+    )
+
+    assert out["adaptive_stop_reason"] == "target_psnr_reached"
+    assert out["n_gaussians"] == 8
+    assert out["history"]["adaptive_events"][0]["action"] == "stop"
+    assert out["history"]["adaptive_selected_n"] == 8
+
+
+def test_adaptive_count_stops_at_max_gaussians():
+    _img, target, field = _adaptive_fixture(8)
+    out = fit(
+        field,
+        target,
+        FitConfig(
+            iters=5,
+            log_every=1,
+            target_psnr=99.0,
+            adaptive_count=True,
+            max_gaussians=8,
+            adaptive_growth_every=1,
+            adaptive_growth_count=4,
+            ssim_weight=0.0,
+        ),
+        verbose=False,
+    )
+
+    assert out["adaptive_stop_reason"] == "max_gaussians_reached"
+    assert out["n_gaussians"] == 8
+
+
+def test_adaptive_count_stops_at_target_bpp_cap():
+    _img, target, field = _adaptive_fixture(8)
+    cap = estimated_raw_bpp(field, *target.shape[:2])
+    out = fit(
+        field,
+        target,
+        FitConfig(
+            iters=5,
+            log_every=1,
+            target_psnr=99.0,
+            target_bpp=cap,
+            adaptive_count=True,
+            adaptive_growth_every=1,
+            adaptive_growth_count=4,
+            ssim_weight=0.0,
+        ),
+        verbose=False,
+    )
+
+    assert out["adaptive_stop_reason"] == "target_bpp_reached"
+    assert out["n_gaussians"] == 8
+    assert out["estimated_bpp"] == pytest.approx(cap)
+
+
+def test_adaptive_count_grows_then_stops_on_stall():
+    _img, target, field = _adaptive_fixture(8)
+    out = fit(
+        field,
+        target,
+        FitConfig(
+            iters=6,
+            log_every=1,
+            target_psnr=99.0,
+            adaptive_count=True,
+            max_gaussians=12,
+            adaptive_growth_every=1,
+            adaptive_growth_count=2,
+            adaptive_split_mode="residual_add",
+            adaptive_min_delta_psnr=1e6,
+            adaptive_patience=1,
+            ssim_weight=0.0,
+        ),
+        verbose=False,
+    )
+
+    events = out["history"]["adaptive_events"]
+    assert events[0]["action"] == "grow"
+    assert events[0]["added"] == 2
+    assert out["adaptive_stop_reason"] == "stalled"
+    assert 10 <= out["n_gaussians"] <= 12
 
 
 def test_fit_affine_color_basis_adds_trainable_coefficients():

@@ -7,6 +7,7 @@ optional warmup), optimizer, LR schedule, renderer mode, opacity, and residual d
 Requires torch.
 """
 from __future__ import annotations
+from dataclasses import replace
 import math
 import time
 import torch
@@ -1106,6 +1107,80 @@ def _add_from_residual(field: GaussianField, target: torch.Tensor, render_img: t
                                       scale_max=scale_max)), k
 
 
+def _raw_attribute_bits_per_gaussian(field: GaussianField) -> int:
+    attrs = 2 + 2 + 1 + 3  # xy, log-scales, rotation, RGB
+    if field.opacities is not None:
+        attrs += 1
+    if field.color_grads is not None:
+        attrs += 6  # cx/cy RGB affine coefficients
+    return attrs * 32
+
+
+def estimated_raw_bpp(field: GaussianField, H: int, W: int) -> float:
+    """Raw float32 attribute rate used as FIT-008's cheap in-loop rate proxy."""
+    pixels = max(1, int(H) * int(W))
+    return float(field.n * _raw_attribute_bits_per_gaussian(field)) / float(pixels)
+
+
+def _adaptive_effective_max_gaussians(field: GaussianField, cfg: FitConfig,
+                                      H: int, W: int) -> int | None:
+    cap = cfg.max_gaussians
+    if cfg.target_bpp is not None:
+        bits = max(1, _raw_attribute_bits_per_gaussian(field))
+        rate_cap = max(1, int(math.floor(float(cfg.target_bpp) * H * W / bits)))
+        cap = rate_cap if cap is None else min(int(cap), rate_cap)
+    return cap
+
+
+def _adaptive_stop_reason(cfg: FitConfig, field: GaussianField, H: int, W: int,
+                          psnr_now: float, ms_ssim_now: float | None,
+                          stale_waves: int) -> str | None:
+    if cfg.target_psnr is not None and psnr_now >= float(cfg.target_psnr):
+        return "target_psnr_reached"
+    if cfg.target_ms_ssim is not None and ms_ssim_now is not None \
+            and ms_ssim_now >= float(cfg.target_ms_ssim):
+        return "target_ms_ssim_reached"
+    if cfg.target_bpp is not None and estimated_raw_bpp(field, H, W) >= float(cfg.target_bpp):
+        return "target_bpp_reached"
+    cap = _adaptive_effective_max_gaussians(field, cfg, H, W)
+    if cap is not None and field.n >= cap:
+        return "max_gaussians_reached"
+    if stale_waves >= cfg.adaptive_patience:
+        return "stalled"
+    return None
+
+
+@torch.no_grad()
+def _adaptive_growth_from_residual(field: GaussianField, target: torch.Tensor,
+                                   render_img: torch.Tensor, cfg: FitConfig,
+                                   H: int, W: int) -> tuple[GaussianField, int, dict[str, float]]:
+    cap = _adaptive_effective_max_gaussians(field, cfg, H, W)
+    room = field.n if cap is None else max(0, cap - field.n)
+    k = min(int(cfg.adaptive_growth_count), int(room))
+    if k <= 0:
+        return field, 0, {}
+    grow_cfg = replace(
+        cfg,
+        split_count=k,
+        split_mode=cfg.adaptive_split_mode,
+        max_gaussians=field.n + k,
+    )
+    if cfg.adaptive_split_mode == "ranked_wave":
+        return _ranked_wave_from_residual(field, target, render_img, grow_cfg)
+    if cfg.adaptive_split_mode == "freq_violation":
+        return _freq_violation_from_residual(field, target, render_img, grow_cfg)
+    if cfg.adaptive_split_mode in ("residual_add", "residual_tensor_add"):
+        grown, added = _add_from_residual(
+            field,
+            target,
+            render_img,
+            grow_cfg,
+            tensor_aligned=cfg.adaptive_split_mode == "residual_tensor_add",
+        )
+        return grown, added, {}
+    return (*_split_from_residual(field, target, render_img, grow_cfg), {})
+
+
 def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: bool = True,
         sched_offset: int = 0, sched_total: int | None = None) -> dict:
     H, W = target.shape[0], target.shape[1]
@@ -1127,6 +1202,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
     hist = {
         "iter": [], "psnr": [], "loss": [], "n_gaussians": [], "elapsed": [],
         "split_events": [], "relocate_events": [], "color_solve_events": [],
+        "adaptive_events": [],
     }
     absgrad_scores = torch.zeros(field.n, device=target.device, dtype=target.dtype)
     targets = _target_list(cfg)
@@ -1146,6 +1222,9 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
     best_logged_psnr = -math.inf
     stale_logs = 0
     stopped_early = False
+    adaptive_prev_psnr: float | None = None
+    adaptive_stale_waves = 0
+    adaptive_stop = None
     last_iter = -1
 
     for it in range(cfg.iters):
@@ -1173,7 +1252,12 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                     field.means.grad.detach().abs().sum(dim=1)
                 )
         opt.step()
+        last_it = it == cfg.iters - 1
         log_now = it % cfg.log_every == 0 or it == cfg.iters - 1
+        adaptive_due = (
+            cfg.adaptive_count and not last_it
+            and (it + 1) % int(cfg.adaptive_growth_every) == 0
+        )
         with torch.no_grad():
             field.log_scales.clamp_(lo, hi)
             if getattr(field, "scale_max", None) is not None:
@@ -1204,6 +1288,10 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 if mse_now is None:
                     mse_now = M.mse(img, target).detach().clamp_min(1e-12)
                 p_now = float(M.psnr_from_mse(mse_now))
+            elif adaptive_due:
+                if mse_now is None:
+                    mse_now = M.mse(img, target).detach().clamp_min(1e-12)
+                p_now = float(M.psnr_from_mse(mse_now))
 
         keep = None
         added = 0
@@ -1211,7 +1299,6 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         reset_idx = None
         # never restructure on the final iteration: the returned field/metrics would include
         # Gaussians that no optimizer step ever touched
-        last_it = it == cfg.iters - 1
         split_due = (not last_it and cfg.split_every is not None and cfg.split_every > 0
                      and cfg.split_count > 0 and (it + 1) % cfg.split_every == 0)
         relocate_periodic_due = (
@@ -1304,6 +1391,74 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                     absgrad_scores = torch.cat(
                         [absgrad_scores, absgrad_scores.new_zeros(added)], dim=0
                     )
+        adaptive_should_stop = False
+        if adaptive_due:
+            ms_ssim_now = None
+            if cfg.target_ms_ssim is not None:
+                with torch.no_grad():
+                    ms_ssim_now = float(M.ms_ssim(img, target))
+            marginal = None if adaptive_prev_psnr is None else p_now - adaptive_prev_psnr
+            if marginal is not None:
+                if marginal < cfg.adaptive_min_delta_psnr:
+                    adaptive_stale_waves += 1
+                else:
+                    adaptive_stale_waves = 0
+            reason = _adaptive_stop_reason(
+                cfg, field, H, W, p_now, ms_ssim_now, adaptive_stale_waves
+            )
+            event = {
+                "iter": it,
+                "psnr": p_now,
+                "n_gaussians": field.n,
+                "estimated_bpp": estimated_raw_bpp(field, H, W),
+                "marginal_psnr": marginal,
+                "stale_waves": adaptive_stale_waves,
+            }
+            if ms_ssim_now is not None:
+                event["ms_ssim"] = ms_ssim_now
+            if reason is not None:
+                adaptive_stop = reason
+                hist["adaptive_events"].append({**event, "action": "stop", "reason": reason})
+                adaptive_should_stop = True
+                if verbose:
+                    print(f"  adaptive stop {reason} at {field.n} gaussians")
+            else:
+                field, adaptive_added, adaptive_stats = _adaptive_growth_from_residual(
+                    field, target, img, cfg, H, W
+                )
+                if adaptive_added <= 0:
+                    adaptive_stop = "no_growth"
+                    hist["adaptive_events"].append(
+                        {**event, "action": "stop", "reason": adaptive_stop}
+                    )
+                    adaptive_should_stop = True
+                else:
+                    growth_event = {
+                        **event,
+                        "action": "grow",
+                        "mode": cfg.adaptive_split_mode,
+                        "added": adaptive_added,
+                        "n_after": field.n,
+                        **adaptive_stats,
+                    }
+                    hist["adaptive_events"].append(growth_event)
+                    hist["split_events"].append(
+                        {
+                            "iter": it,
+                            "mode": cfg.adaptive_split_mode,
+                            "trigger": "adaptive",
+                            "added": adaptive_added,
+                            **adaptive_stats,
+                        }
+                    )
+                    if verbose:
+                        print(f"  adaptive grow +{adaptive_added} -> {field.n} gaussians")
+                    if cfg.split_mode == "absgrad_wave":
+                        absgrad_scores = torch.cat(
+                            [absgrad_scores, absgrad_scores.new_zeros(adaptive_added)], dim=0
+                        )
+                    added += adaptive_added
+            adaptive_prev_psnr = p_now
         if keep is not None or added > 0 or relocated > 0:
             field.trainable()
             opt = _carry_adam_state(opt, field, cfg, keep, added, reset_idx=reset_idx)
@@ -1328,6 +1483,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                         if verbose:
                             print(f"  early stop at iter {it}  best_psnr {best_logged_psnr:6.2f}")
                         break
+            if adaptive_should_stop:
+                break
 
     fit_seconds = time.time() - start_time  # before the final eval: metrics (esp. LPIPS
     with torch.no_grad():                   # model construction) must not pollute the timing
@@ -1337,11 +1494,20 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 str(t): (None if int(v) < 0 else int(v)) for t, v in zip(targets, reached)
             }
         img = _render(field, cfg, H, W)
+        final_psnr = M.psnr(img, target)
+        final_ms_ssim = M.ms_ssim(img, target)
+        if cfg.adaptive_count and adaptive_stop is None:
+            adaptive_stop = _adaptive_stop_reason(
+                cfg, field, H, W, final_psnr, final_ms_ssim, adaptive_stale_waves
+            ) or "iteration_limit"
+        if cfg.adaptive_count:
+            hist["adaptive_stop_reason"] = adaptive_stop
+            hist["adaptive_selected_n"] = field.n
         out = {
             "field": field, "history": hist, "render": img,
-            "psnr": M.psnr(img, target),
+            "psnr": final_psnr,
             "ssim": float(M.ssim(img, target, backend=cfg.ssim_backend)),
-            "ms_ssim": M.ms_ssim(img, target),
+            "ms_ssim": final_ms_ssim,
             "lpips": M.LPIPS.distance(img, target) if cfg.compute_lpips else None,
             "iters_to_target": (
                 iters_to_targets.get(str(float(cfg.target_psnr)))
@@ -1352,5 +1518,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             "fit_seconds": fit_seconds,
             "iterations_run": last_iter + 1,
             "stopped_early": stopped_early,
+            "adaptive_stop_reason": adaptive_stop if cfg.adaptive_count else None,
+            "adaptive_selected_n": field.n if cfg.adaptive_count else None,
+            "estimated_bpp": estimated_raw_bpp(field, H, W),
         }
     return out

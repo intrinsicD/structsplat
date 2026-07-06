@@ -21,7 +21,7 @@ def run_rd(images, budgets=(2000, 5000), strategy="aniso_flanking", seeds=(0,),
     from structsplat.cli import load_image
     from structsplat import init as _init, codec
     from structsplat.config import InitConfig, FitConfig
-    from structsplat.fit import fit
+    from structsplat.fit import estimated_raw_bpp, fit
     from benchmarks.ablation import _iter_images
 
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
@@ -56,7 +56,10 @@ def run_rd(images, budgets=(2000, 5000), strategy="aniso_flanking", seeds=(0,),
                 field = out["field"]
                 base = {"image": name, "budget": budget, "seed": seed,
                         "strategy": strategy, "iters": iters, "qat_iters": qat_iters,
-                        "zlib_level": ccfg_zlib(), "fit_psnr": round(out["psnr"], 4)}
+                        "zlib_level": ccfg_zlib(), "fit_psnr": round(out["psnr"], 4),
+                        "n_gaussians": int(field.n),
+                        "adaptive_stop_reason": out.get("adaptive_stop_reason"),
+                        "estimated_raw_bpp": round(estimated_raw_bpp(field, *target.shape[:2]), 4)}
                 for mix in bit_mixes:
                     ccfg = codec.CodecConfig(bits_means=mix[0], bits_scales=mix[1],
                                              bits_rot=mix[2], bits_colors=mix[3])
@@ -101,10 +104,11 @@ def _write(rows, outdir, run_config=None):
     lines = ["# Rate-distortion (bpp vs quality)\n"]
     if run_config is not None:
         lines.append("Config: " + ", ".join(f"{k}={v}" for k, v in run_config.items()) + "\n")
-    lines += ["| image | budget | bits (mu/s/rot/c) | mode | bpp | PSNR | MS-SSIM |",
-              "|---|---:|---|---|---:|---:|---:|"]
+    lines += ["| image | budget | N | bits (mu/s/rot/c) | mode | bpp | PSNR | MS-SSIM |",
+              "|---|---:|---:|---|---|---:|---:|---:|"]
     for r in rows:
-        lines.append(f"| {r['image']} | {r['budget']} | {r['bits']} | {r.get('mode', '')} "
+        lines.append(f"| {r['image']} | {r['budget']} | {r.get('n_gaussians', r['budget'])} "
+                     f"| {r['bits']} | {r.get('mode', '')} "
                      f"| {r['bpp']:.3f} | {r['psnr']:.2f} | {r['ms_ssim']:.4f} |")
     with open(os.path.join(outdir, "rate_distortion.md"), "w") as f:
         f.write("\n".join(lines) + "\n")

@@ -62,6 +62,10 @@ FIT-004 residual densification variants are exposed as refine arms such as `resi
 `absgrad_wave`; stretch controls also include `optimizer=adan` and the `aa` stage from
 `--aa-dilations`. CORE-006 affine colors are exposed as `--color-basis-modes affine`; keep
 `constant` as the baseline/default until larger sweeps justify promotion.
+FIT-008 adaptive count is a global controller rather than a stage axis: add `--adaptive-count`
+with `--max-gaussians` and/or `--target-bpp` plus optional `--target-psnr`/`--target-ms-ssim`.
+Rows report selected N, raw-attribute bpp, adaptive event counts, and stop reason so fixed-N and
+adaptive-N sweeps can be compared fairly.
 
 ```
 python -m benchmarks.stage_search path/to/images --mode influence --budgets 2048 --iters 500
@@ -124,7 +128,8 @@ python -m benchmarks.init_spectral_analysis path/to/images --num-gaussians 2048 
 
 `rate_distortion.py` evaluates the codec/QAT path (`COMP-001/COMP-003`) and records full
 codec/render semantics per row. Caveat: QAT rows spend extra optimization; compare them with the
-`refine_noste` equal-compute control.
+`refine_noste` equal-compute control. Rows include the fitted/selected Gaussian count and a
+raw-attribute bpp proxy so adaptive-count fits remain auditable in compression tables.
 
 ```
 python -m benchmarks.rate_distortion path/to/images --budgets 2000 5000 --iters 1500 --qat-iters 150

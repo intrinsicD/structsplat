@@ -340,7 +340,9 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
              color_radius, init_opacity, lr_decay_every, lr_decay_gamma, split_every, split_count,
              prune_every, prune_min_activity, max_gaussians, pyramid_levels,
              pyramid_fractions, pyramid_iters_per_level, compute_lpips,
-             target_psnr, target_psnrs, log_every, verbose):
+             target_psnr, target_psnrs, target_ms_ssim, target_bpp, adaptive_count,
+             adaptive_growth_every, adaptive_growth_count, adaptive_split_mode,
+             adaptive_min_delta_psnr, adaptive_patience, log_every, verbose):
     from structsplat import init as _init
     from structsplat.fit import fit
     from structsplat.pyramid import fit_pyramid
@@ -394,6 +396,14 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         max_gaussians=max_gaussians,
         target_psnr=target_psnr,
         target_psnrs=list(target_psnrs),
+        target_ms_ssim=target_ms_ssim,
+        target_bpp=target_bpp,
+        adaptive_count=adaptive_count,
+        adaptive_growth_every=adaptive_growth_every,
+        adaptive_growth_count=adaptive_growth_count,
+        adaptive_split_mode=adaptive_split_mode,
+        adaptive_min_delta_psnr=adaptive_min_delta_psnr,
+        adaptive_patience=adaptive_patience,
         log_every=log_every,
         **refine,
     )
@@ -424,6 +434,7 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
     absgrad_events = [e for e in split_events if e.get("mode") == "absgrad_wave"]
     freq_events = [e for e in split_events if e.get("mode") == "freq_violation"]
     color_solve_events = history.get("color_solve_events", [])
+    adaptive_events = history.get("adaptive_events", [])
 
     def event_mean(events: list[dict], key: str) -> float | None:
         vals = [float(e[key]) for e in events if key in e]
@@ -466,6 +477,14 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
             color_solve_events, "relative_residual"
         ),
         "relocate_event_count": len(history.get("relocate_events", [])),
+        "adaptive_count": bool(adaptive_count),
+        "adaptive_event_count": len(adaptive_events),
+        "adaptive_growth_count": sum(1 for e in adaptive_events if e.get("action") == "grow"),
+        "adaptive_stop_reason": out.get("adaptive_stop_reason"),
+        "adaptive_selected_n": out.get("adaptive_selected_n"),
+        "estimated_bpp": round(float(out.get("estimated_bpp", 0.0)), 4),
+        "target_ms_ssim": target_ms_ssim,
+        "target_bpp": target_bpp,
         "history": history,
         "prefix_metrics": out.get("prefix_metrics"),
     }
@@ -525,6 +544,14 @@ def run_stage_search(
     compute_lpips=False,
     target_psnr: float | None = None,
     target_psnrs=(),
+    target_ms_ssim: float | None = None,
+    target_bpp: float | None = None,
+    adaptive_count: bool = False,
+    adaptive_growth_every: int = 50,
+    adaptive_growth_count: int = 64,
+    adaptive_split_mode: str = "residual_tensor_add",
+    adaptive_min_delta_psnr: float = 0.02,
+    adaptive_patience: int = 2,
     log_every: int | None = None,
     dedupe: bool = True,
     outdir="results/stage_search",
@@ -569,7 +596,13 @@ def run_stage_search(
         "ssim_backend": ssim_backend,
         "split_count": split_count, "prune_every": prune_every,
         "prune_min_activity": prune_min_activity, "max_gaussians": max_gaussians,
-        "target_psnr": target_psnr, "dedupe": dedupe,
+        "target_psnr": target_psnr, "target_ms_ssim": target_ms_ssim,
+        "target_bpp": target_bpp, "adaptive_count": adaptive_count,
+        "adaptive_growth_every": adaptive_growth_every,
+        "adaptive_growth_count": adaptive_growth_count,
+        "adaptive_split_mode": adaptive_split_mode,
+        "adaptive_min_delta_psnr": adaptive_min_delta_psnr,
+        "adaptive_patience": adaptive_patience, "dedupe": dedupe,
     }, device=device))
     if pyramid_iters_per_level is None:
         pyramid_iters_per_level = max(1, iters // max(1, pyramid_levels))
@@ -662,7 +695,14 @@ def run_stage_search(
                             pyramid_levels=pyramid_levels, pyramid_fractions=pyramid_fractions,
                             pyramid_iters_per_level=pyramid_iters_per_level,
                             compute_lpips=compute_lpips, target_psnr=target_psnr,
-                            target_psnrs=target_psnrs, log_every=log_every, verbose=verbose,
+                            target_psnrs=target_psnrs, target_ms_ssim=target_ms_ssim,
+                            target_bpp=target_bpp, adaptive_count=adaptive_count,
+                            adaptive_growth_every=adaptive_growth_every,
+                            adaptive_growth_count=adaptive_growth_count,
+                            adaptive_split_mode=adaptive_split_mode,
+                            adaptive_min_delta_psnr=adaptive_min_delta_psnr,
+                            adaptive_patience=adaptive_patience,
+                            log_every=log_every, verbose=verbose,
                         )
                         row = {**base_row, "status": "ok", **metrics}
                     except Exception as exc:  # one broken arm must not void the whole sweep
@@ -1030,6 +1070,21 @@ def main():
     p.add_argument("--target-psnr", type=float, default=None,
                    help="record iters/seconds-to-target for convergence-rate comparisons")
     p.add_argument("--target-psnrs", type=float, nargs="*", default=[])
+    p.add_argument("--target-ms-ssim", type=float, default=None)
+    p.add_argument("--target-bpp", type=float, default=None)
+    p.add_argument("--adaptive-count", action="store_true",
+                   help="enable FIT-008 self-adaptive Gaussian count controller")
+    p.add_argument("--adaptive-growth-every", type=int, default=50)
+    p.add_argument("--adaptive-growth-count", type=int, default=64)
+    p.add_argument("--adaptive-split-mode",
+                   choices=[
+                       "residual_add", "residual_tensor_add", "ranked_wave",
+                       "freq_violation", "fp_duplicate", "moment_preserving",
+                       "support_duplicate",
+                   ],
+                   default="residual_tensor_add")
+    p.add_argument("--adaptive-min-delta-psnr", type=float, default=0.02)
+    p.add_argument("--adaptive-patience", type=int, default=2)
     p.add_argument("--log-every", type=int, default=None)
     p.add_argument("--no-dedupe", action="store_true",
                    help="keep configs that are provably equivalent (not recommended)")
@@ -1068,6 +1123,13 @@ def main():
         max_gaussians=a.max_gaussians, pyramid_levels=a.pyramid_levels,
         pyramid_fractions=a.pyramid_fractions, pyramid_iters_per_level=a.pyramid_iters_per_level,
         compute_lpips=a.lpips, target_psnr=a.target_psnr, target_psnrs=a.target_psnrs,
+        target_ms_ssim=a.target_ms_ssim, target_bpp=a.target_bpp,
+        adaptive_count=a.adaptive_count,
+        adaptive_growth_every=a.adaptive_growth_every,
+        adaptive_growth_count=a.adaptive_growth_count,
+        adaptive_split_mode=a.adaptive_split_mode,
+        adaptive_min_delta_psnr=a.adaptive_min_delta_psnr,
+        adaptive_patience=a.adaptive_patience,
         log_every=a.log_every, dedupe=not a.no_dedupe,
         max_configs=a.max_configs, shuffle_configs=a.shuffle_configs,
         config_seed=a.config_seed, outdir=a.outdir, device=a.device, verbose=a.verbose,

@@ -109,6 +109,14 @@ class FitConfig:
     densify_max_axis_ratio: float = 6.0
     densify_coherence_power: float = 1.0
     max_gaussians: int | None = None
+    adaptive_count: bool = False           # grow until target/stall/max-N instead of fixed-N
+    target_ms_ssim: float | None = None    # adaptive stop target; final metric is always recorded
+    target_bpp: float | None = None        # raw-attribute rate cap/target used by adaptive mode
+    adaptive_growth_every: int = 50
+    adaptive_growth_count: int = 64
+    adaptive_split_mode: str = "residual_tensor_add"
+    adaptive_min_delta_psnr: float = 0.02  # min gain between adaptive checks to keep growing
+    adaptive_patience: int = 2             # stale adaptive checks before stopping
     early_stop_patience: int | None = None  # logged evals without improvement; None disables
     early_stop_min_delta: float = 0.0       # PSNR improvement required to reset patience
     early_stop_min_iters: int = 0           # do not early-stop before this iteration
@@ -153,6 +161,33 @@ class FitConfig:
             raise ValueError(
                 "relocate_residual_downsample must be >= 1, "
                 f"got {self.relocate_residual_downsample}")
+        if self.max_gaussians is not None and self.max_gaussians <= 0:
+            raise ValueError(f"max_gaussians must be > 0 when set, got {self.max_gaussians}")
+        if self.target_ms_ssim is not None and not 0.0 <= self.target_ms_ssim <= 1.0:
+            raise ValueError(f"target_ms_ssim must be in [0, 1], got {self.target_ms_ssim}")
+        if self.target_bpp is not None and self.target_bpp <= 0.0:
+            raise ValueError(f"target_bpp must be > 0 when set, got {self.target_bpp}")
+        adaptive_modes = (
+            "residual_add", "residual_tensor_add", "ranked_wave", "freq_violation",
+            "fp_duplicate", "moment_preserving", "support_duplicate",
+        )
+        if self.adaptive_split_mode not in adaptive_modes:
+            raise ValueError(
+                "adaptive_split_mode must be one of "
+                f"{', '.join(adaptive_modes)}, got {self.adaptive_split_mode!r}")
+        if self.adaptive_growth_every <= 0:
+            raise ValueError(
+                f"adaptive_growth_every must be > 0, got {self.adaptive_growth_every}")
+        if self.adaptive_growth_count <= 0:
+            raise ValueError(
+                f"adaptive_growth_count must be > 0, got {self.adaptive_growth_count}")
+        if self.adaptive_min_delta_psnr < 0.0:
+            raise ValueError(
+                f"adaptive_min_delta_psnr must be >= 0, got {self.adaptive_min_delta_psnr}")
+        if self.adaptive_patience <= 0:
+            raise ValueError(f"adaptive_patience must be > 0, got {self.adaptive_patience}")
+        if self.adaptive_count and self.max_gaussians is None and self.target_bpp is None:
+            raise ValueError("adaptive_count requires max_gaussians or target_bpp")
 
 
 @dataclass

@@ -197,6 +197,33 @@ def test_color_basis_is_stage_axis(tmp_path):
     assert all("color_basis=" in r["config_label"] for r in rows)
 
 
+def test_adaptive_count_metadata_is_recorded(tmp_path):
+    img_path = tmp_path / "toy.png"
+    _write_toy(img_path)
+    rows = run_stage_search(
+        [str(img_path)], budgets=[8], seeds=[0], iters=4, max_side=None,
+        strategies=["aniso_flanking"], tensor_operators=["central"],
+        density_modes=["structure"], sampling_modes=["density_random"],
+        color_modes=["bilinear"], scale_modes=["spacing"], scale_cap_modes=["none"],
+        opacity_modes=["none"], renderers=["normalized"], aa_dilations=[0.0],
+        color_basis_modes=["constant"], color_solve_modes=["none"],
+        pixel_losses=["l1"], optimizers=["adam"], lr_schedules=["none"],
+        refine_modes=["none"], pyramid_modes=["single"], render_chunk=8,
+        adaptive_count=True, max_gaussians=12, target_psnr=99.0,
+        adaptive_growth_every=1, adaptive_growth_count=2,
+        adaptive_split_mode="residual_add", adaptive_min_delta_psnr=1e6,
+        adaptive_patience=1, outdir=str(tmp_path / "adaptive"), device="cpu",
+    )
+
+    assert len(rows) == 1 and rows[0]["status"] == "ok"
+    row = rows[0]
+    assert row["adaptive_count"] is True
+    assert row["adaptive_event_count"] >= 1
+    assert row["adaptive_stop_reason"] in {"stalled", "max_gaussians_reached"}
+    assert row["adaptive_selected_n"] == row["n_gaussians"]
+    assert row["estimated_bpp"] > 0.0
+
+
 def test_color_solve_kwargs_parse_stage_modes():
     assert _color_solve_kwargs("none") == {"color_solve_every": None}
     assert _color_solve_kwargs("every10") == {"color_solve_every": 10}

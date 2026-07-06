@@ -53,7 +53,9 @@ def cmd_fit(args):
                                  color_space=args.tensor_color,
                                  flat_frac=args.flat_frac,
                                  corner_frac=args.corner_frac)
-    fcfg = FitConfig(iters=args.iters, target_psnr=args.target_psnr, render_chunk=args.chunk,
+    fcfg = FitConfig(iters=args.iters, target_psnr=args.target_psnr,
+                     target_ms_ssim=args.target_ms_ssim, target_bpp=args.target_bpp,
+                     render_chunk=args.chunk,
                      optimizer=args.optimizer,
                      pixel_loss=args.pixel_loss, ssim_weight=args.ssim_weight,
                      ssim_backend=args.ssim_backend,
@@ -84,7 +86,13 @@ def cmd_fit(args):
                      relocate_count=args.relocate_count,
                      relocate_init_opacity=args.relocate_init_opacity,
                      relocate_residual_downsample=args.relocate_residual_downsample,
-                     max_gaussians=args.max_gaussians)
+                     max_gaussians=args.max_gaussians,
+                     adaptive_count=args.adaptive_count,
+                     adaptive_growth_every=args.adaptive_growth_every,
+                     adaptive_growth_count=args.adaptive_growth_count,
+                     adaptive_split_mode=args.adaptive_split_mode,
+                     adaptive_min_delta_psnr=args.adaptive_min_delta_psnr,
+                     adaptive_patience=args.adaptive_patience)
 
     if args.pyramid:
         # honor --iters when --iters-per-level is not given, so the pyramid spends the
@@ -148,6 +156,13 @@ def cmd_stage_search(args):
         pyramid_levels=args.pyramid_levels, pyramid_fractions=args.pyramid_fractions,
         pyramid_iters_per_level=args.pyramid_iters_per_level, compute_lpips=args.lpips,
         target_psnr=args.target_psnr, target_psnrs=args.target_psnrs,
+        target_ms_ssim=args.target_ms_ssim, target_bpp=args.target_bpp,
+        adaptive_count=args.adaptive_count,
+        adaptive_growth_every=args.adaptive_growth_every,
+        adaptive_growth_count=args.adaptive_growth_count,
+        adaptive_split_mode=args.adaptive_split_mode,
+        adaptive_min_delta_psnr=args.adaptive_min_delta_psnr,
+        adaptive_patience=args.adaptive_patience,
         log_every=args.log_every, dedupe=not args.no_dedupe,
         max_configs=args.max_configs, shuffle_configs=args.shuffle_configs,
         config_seed=args.config_seed, outdir=args.outdir, device=args.device, verbose=args.verbose,
@@ -222,6 +237,10 @@ def main():
     f.add_argument("--iters-per-level", type=int, default=None,
                    help="default: --iters / --pyramid-levels")
     f.add_argument("--target-psnr", type=float, default=None, dest="target_psnr")
+    f.add_argument("--target-ms-ssim", type=float, default=None, dest="target_ms_ssim",
+                   help="adaptive-count stop target for MS-SSIM")
+    f.add_argument("--target-bpp", type=float, default=None, dest="target_bpp",
+                   help="adaptive-count raw-attribute bpp cap/target")
     f.add_argument("--chunk", type=int, default=512)
     f.add_argument("--tensor-operator", choices=["central", "sobel", "scharr"], default="central")
     f.add_argument("--tensor-color", choices=["luma", "rgb"], default="luma")
@@ -305,6 +324,19 @@ def main():
     f.add_argument("--relocate-residual-downsample", type=int, default=1,
                    help="max-pool residual by this factor before relocation candidate search")
     f.add_argument("--max-gaussians", type=int, default=None)
+    f.add_argument("--adaptive-count", action="store_true",
+                   help="grow until target/max-N/stall instead of using a fixed final count")
+    f.add_argument("--adaptive-growth-every", type=int, default=50)
+    f.add_argument("--adaptive-growth-count", type=int, default=64)
+    f.add_argument("--adaptive-split-mode",
+                   choices=[
+                       "residual_add", "residual_tensor_add", "ranked_wave",
+                       "freq_violation", "fp_duplicate", "moment_preserving",
+                       "support_duplicate",
+                   ],
+                   default="residual_tensor_add")
+    f.add_argument("--adaptive-min-delta-psnr", type=float, default=0.02)
+    f.add_argument("--adaptive-patience", type=int, default=2)
     f.add_argument("--seed", type=int, default=0)
     f.add_argument("--outdir", default="runs")
     f.add_argument("--device", default=None)
@@ -366,6 +398,8 @@ def main():
     s.add_argument("--target-psnr", type=float, default=None, dest="target_psnr",
                    help="record iters/seconds-to-target (convergence-rate comparisons)")
     s.add_argument("--target-psnrs", type=float, nargs="*", default=[])
+    s.add_argument("--target-ms-ssim", type=float, default=None, dest="target_ms_ssim")
+    s.add_argument("--target-bpp", type=float, default=None, dest="target_bpp")
     s.add_argument("--log-every", type=int, default=None)
     s.add_argument("--no-dedupe", action="store_true")
     s.add_argument("--split-every", type=int, default=None)
@@ -373,6 +407,19 @@ def main():
     s.add_argument("--prune-every", type=int, default=None)
     s.add_argument("--prune-min-activity", type=float, default=0.0)
     s.add_argument("--max-gaussians", type=int, default=None)
+    s.add_argument("--adaptive-count", action="store_true",
+                   help="enable FIT-008 self-adaptive Gaussian count controller")
+    s.add_argument("--adaptive-growth-every", type=int, default=50)
+    s.add_argument("--adaptive-growth-count", type=int, default=64)
+    s.add_argument("--adaptive-split-mode",
+                   choices=[
+                       "residual_add", "residual_tensor_add", "ranked_wave",
+                       "freq_violation", "fp_duplicate", "moment_preserving",
+                       "support_duplicate",
+                   ],
+                   default="residual_tensor_add")
+    s.add_argument("--adaptive-min-delta-psnr", type=float, default=0.02)
+    s.add_argument("--adaptive-patience", type=int, default=2)
     s.add_argument("--pyramid-levels", type=int, default=2)
     s.add_argument("--pyramid-fractions", type=float, nargs="+", default=[0.35, 0.65])
     s.add_argument("--pyramid-iters-per-level", type=int, default=None)

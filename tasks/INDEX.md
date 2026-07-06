@@ -21,7 +21,6 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | COMP-003 | Compression-ratio ladder (scale ranges → planes → LSQ → VQ → entropy) | partial | COMP-002, BENCH-002 |
 | CORE-007 | Boundary-gated Gaussians | todo | INIT-004, CORE-001 |
 | CORE-008 | Hybrid Gaussian + edge primitives | todo | CORE-001, INIT-001, FIT-001 |
-| FIT-008 | Self-adaptive Gaussian count | todo | FIT-004, BENCH-002 |
 | COMP-004 | QAT + entropy-aware fitting | todo | COMP-001, COMP-003, FIT-001 |
 | PORT-002 | GPU-native tile index + fused loss/backward | todo | PORT-001, FIT-003 |
 | PORT-003 | Avoid atomics in tiled backward | todo | PORT-001 |
@@ -48,6 +47,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | FIT-005 | Exact / alternating color solve | `done/FIT-005-exact-color-solve.md` |
 | FIT-006 | Frequency-violation densification | `done/FIT-006-frequency-violation-densification.md` |
 | FIT-007 | Moment-preserving split / clone | `done/FIT-007-moment-preserving-split.md` |
+| FIT-008 | Self-adaptive Gaussian count | `done/FIT-008-self-adaptive-gaussian-count.md` |
 | HIER-002 | Pyramid bookkeeping (iteration accounting, budgets, schedules) | `done/HIER-002-pyramid-bookkeeping.md` |
 | BENCH-001 | Metric protocol (PSNR/MS-SSIM/LPIPS + iters-to-target) | `done/BENCH-001-metrics.md` |
 | BENCH-002 | Benchmark harness experimental-validity fixes (equal budgets, resumable sweeps, seed-aware comparisons) | `done/BENCH-002-harness-validity.md` |
@@ -76,8 +76,9 @@ review suggests the most pragmatic improvement order:
    stage-search refine axis available as `moment_preserving`.
 4. CORE-006 affine color basis — completed 2026-07-06; keep default `constant`, stage-search
    axis available as `color_basis=affine`.
-5. FF-001 feed-forward teacher-student warm start, with FIT-008 adaptive count as the natural
-   companion if fixed-N prediction underfits complex images.
-6. COMP-004 for compression-aware fitting once RD baselines are stable.
-7. PORT-002/PORT-003 if tiled CUDA remains strategically important after quality work.
-8. GEN-003 after GEN-001 has a debuggable SDS baseline.
+5. FIT-008 self-adaptive Gaussian count — completed 2026-07-06; keep default fixed-N, but
+   `--adaptive-count` now exposes target/max-N/stall-controlled growth and selected-N metadata.
+6. FF-001 feed-forward teacher-student warm start, now able to consume FIT-008 selected-N metadata.
+7. COMP-004 for compression-aware fitting once RD baselines are stable.
+8. PORT-002/PORT-003 if tiled CUDA remains strategically important after quality work.
+9. GEN-003 after GEN-001 has a debuggable SDS baseline.

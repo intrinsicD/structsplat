@@ -103,6 +103,14 @@ def test_fitconfig_rejects_negative_dilation():
         FitConfig(color_basis="quadratic")
     with pytest.raises(ValueError, match="color_grad_l2 must be >= 0"):
         FitConfig(color_grad_l2=-1.0)
+    with pytest.raises(ValueError, match="adaptive_count requires"):
+        FitConfig(adaptive_count=True)
+    with pytest.raises(ValueError, match="target_ms_ssim"):
+        FitConfig(target_ms_ssim=1.5)
+    with pytest.raises(ValueError, match="target_bpp"):
+        FitConfig(target_bpp=0.0)
+    with pytest.raises(ValueError, match="adaptive_split_mode"):
+        FitConfig(adaptive_split_mode="bogus")
 
 
 def test_fitconfig_rejects_invalid_relocation_downsample():
