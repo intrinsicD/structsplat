@@ -233,7 +233,7 @@ def main():
     f.add_argument("--strategy", default="aniso_flanking")
     f.add_argument("--num-gaussians", type=int, default=20000, dest="num_gaussians")
     f.add_argument("--predictor-checkpoint", default=None,
-                   help="saved GaussianField used by strategy=feedforward")
+                   help="saved GaussianField or learned .pt checkpoint used by strategy=feedforward")
     f.add_argument("--predictor-fallback-strategy", default="aniso_flanking",
                    help="tensor-prior strategy used by strategy=feedforward when no saved "
                         "checkpoint is provided or padding is needed")

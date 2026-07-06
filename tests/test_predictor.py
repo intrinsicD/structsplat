@@ -8,6 +8,7 @@ torch = pytest.importorskip("torch")
 from PIL import Image
 
 from benchmarks.feedforward_teacher_export import export_teacher_fields
+from benchmarks.feedforward_train import train_feedforward_predictor
 from structsplat import init as _init
 from structsplat.config import InitConfig
 from structsplat.gaussians import GaussianField
@@ -112,3 +113,76 @@ def test_teacher_export_writes_manifest_and_fields(tmp_path):
     assert field.n == 8
     assert (outdir / "config.json").exists()
     assert (outdir / "summary.md").exists()
+
+
+def test_tiny_learned_predictor_trains_and_loads(tmp_path):
+    img_path = tmp_path / "toy.png"
+    teacher_dir = tmp_path / "teachers"
+    train_dir = tmp_path / "train"
+    _write_toy(img_path)
+
+    export_teacher_fields(
+        [str(img_path)],
+        outdir=str(teacher_dir),
+        budget=8,
+        strategy="grid",
+        seed=0,
+        iters=1,
+        max_side=None,
+        render_chunk=8,
+        device="cpu",
+    )
+    result = train_feedforward_predictor(
+        teacher_dir / "teacher_manifest.json",
+        outdir=train_dir,
+        image_size=16,
+        hidden=8,
+        epochs=2,
+        lr=1e-3,
+        seed=0,
+        device="cpu",
+    )
+
+    ckpt = train_dir / "predictor.pt"
+    assert result["checkpoint_path"] == str(ckpt)
+    assert ckpt.exists()
+    assert (train_dir / "loss_history.csv").exists()
+    assert (train_dir / "summary.md").exists()
+
+    img = _toy()
+    field = _init.build_field(
+        img,
+        InitConfig(
+            strategy="feedforward",
+            num_gaussians=8,
+            predictor_checkpoint=str(ckpt),
+            predictor_fallback_strategy="grid",
+        ),
+    )
+    assert field.n == 8
+    assert torch.isfinite(field.means).all()
+    assert torch.isfinite(field.log_scales).all()
+    assert torch.isfinite(field.colors).all()
+    assert torch.isfinite(field.opacities).all()
+    assert float(field.means[:, 0].min()) >= 0.0
+    assert float(field.means[:, 0].max()) <= img.shape[1] - 1
+    assert float(field.means[:, 1].min()) >= 0.0
+    assert float(field.means[:, 1].max()) <= img.shape[0] - 1
+
+    trunc = _init.build_field(
+        img,
+        InitConfig(strategy="feedforward", num_gaussians=4, predictor_checkpoint=str(ckpt)),
+    )
+    assert trunc.n == 4
+
+    padded = _init.build_field(
+        img,
+        InitConfig(
+            strategy="feedforward",
+            num_gaussians=10,
+            predictor_checkpoint=str(ckpt),
+            predictor_fallback_strategy="grid",
+        ),
+    )
+    assert padded.n == 10
+    assert torch.isfinite(padded.colors).all()
