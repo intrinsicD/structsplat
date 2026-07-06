@@ -1145,3 +1145,24 @@ tree:
       - "ara/evidence/abl004-confirmation-shard6-2026-07-06/run.md"
     also_depends_on: [N47, N49, N50, N51, N52]
     status: resolved
+  - id: N54
+    type: decision
+    title: "Promote 2026 SOTA review ideas to task backlog"
+    provenance: user
+    timestamp: "2026-07-06T14:01+0200"
+    choice: >
+      Convert the static repo/code-review ideas into active StructSplat task files, preserving
+      the practical priority order of exact color solve, frequency-aware densification, and
+      feed-forward teacher-student initialization.
+    alternatives:
+      - "Leave the SOTA review as prose without task tracking."
+      - "Only update existing FF/GEN/COMP tasks and skip standalone follow-up tasks."
+      - "Implement one idea immediately instead of creating the backlog first."
+    evidence:
+      - "tasks/INDEX.md"
+      - "tasks/FIT-005-exact-color-solve.md"
+      - "tasks/FIT-006-frequency-violation-densification.md"
+      - "tasks/FF-001-feedforward-predictor.md"
+      - "tasks/COMP-004-entropy-aware-fitting.md"
+      - "tasks/GEN-003-vsd-multiparticle-distillation.md"
+    status: resolved

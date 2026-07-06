@@ -1,14 +1,50 @@
 # FF-001: Feed-forward init predictor (warm-start)
 
-**Status: todo (future).**
+**Status: todo (future).** Big SOTA-gap task from the 2026-07 amortized 2DGS review.
+
+## Context
+StructSplat is strong on hand-designed initialization and optimization, but it does not yet have
+the current fastest pattern: amortized Gaussian prediction followed by short refinement. Instant
+GaussianImage-style coarse prediction and AIR-style predict-optimize-distill are the clearest path
+to a 10x fitting-time win rather than another small optimizer gain.
 
 ## Goal
-Predict Gaussian parameters (or a placement/probability map) in one forward pass to warm-start the
-fitter, using the structure-tensor init as supervision/prior (cf. Instant-GI PPM, Fast-2DGS).
+Train a small feed-forward model that predicts a warm-start Gaussian field, budget map, or both from
+an input image, then refines for only 50-200 iterations with the existing fitter.
+
+## Approach
+1. Build a teacher dataset by running the best current StructSplat pipeline on pinned image crops and
+   saving fields, stage metadata, fit traces, and quality metrics.
+2. Train a compact U-Net/ConvNeXt-style predictor to output density/budget maps plus Gaussian
+   attributes or local candidate sets.
+3. Add a self-supervised predict-optimize-distill loop: predict -> short optimize -> distill the
+   refined field back into the predictor target.
+4. Keep structure-tensor priors available as inputs or auxiliary losses so the network does not have
+   to rediscover edge orientation from scratch.
+5. Evaluate both fixed-N and adaptive-N variants; adaptive count can share the controller in
+   FIT-008.
 
 ## Acceptance criteria
-- [ ] Predicts positions+covariance+color from the image; fitter converges in far fewer iters.
-- [ ] Compared against optimized-from-scratch and against structure-tensor init as warm-start.
+- [ ] `src/structsplat/predictor.py` or equivalent module with a documented model interface:
+      `image, budget/options -> GaussianField`.
+- [ ] Dataset/export script for teacher fields and a minimal training script with deterministic
+      config logging.
+- [ ] Predictor can emit positions, covariance/orientation, colors, and optional opacity; or emits a
+      placement/budget map consumed by the existing initializer with clear scope.
+- [ ] Short-refinement path exposed in CLI/config, e.g. `init="feedforward"` plus
+      `fit_iters=50-200`.
+- [ ] Compared against optimized-from-scratch and structure-tensor warm-start at equal final N,
+      reporting quality, wall time, and speedup-to-target.
+- [ ] Generalization test on images not used for teacher export.
+- [ ] Ablation: image-only predictor vs image+tensor-prior predictor.
+- [ ] If predict-optimize-distill is implemented, report teacher-only vs distilled predictor
+      quality and refinement iterations saved.
+
+## Interfaces touched
+`src/structsplat/predictor.py` (new), `src/structsplat/init.py`, `src/structsplat/fit.py`,
+`src/structsplat/config.py`, `src/structsplat/cli.py`, training/export scripts under
+`benchmarks/` or `tools/`, tests for shape/range/round-trip invariants.
 
 ## Depends on
-INIT-003, FIT-001.
+INIT-003, FIT-001. Optional follow-ups: FIT-008 for adaptive count, COMP-004 for
+compression-aware prediction.

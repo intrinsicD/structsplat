@@ -2,9 +2,9 @@ session:
   id: "2026-07-06_001"
   date: "2026-07-06"
   started: "2026-07-06T00:53+0200"
-  last_turn: "2026-07-06T08:47+0200"
-  turn_count: 6
-  summary: "Continued ABL-004 confirmation through the full `kodim01` and `kodim02` budget blocks, and staged the curve-cluster interpretation for follow-up."
+  last_turn: "2026-07-06T14:01+0200"
+  turn_count: 7
+  summary: "Continued ABL-004 confirmation through the full `kodim01` and `kodim02` budget blocks, staged the curve-cluster interpretation for follow-up, and converted the 2026 SOTA review ideas into active task files."
 
 events_logged:
   - turn: 1
@@ -43,6 +43,12 @@ events_logged:
     routing: direct
     provenance: ai-executed
     summary: "Ran the sixth 18-cell ABL-004 confirmation shard: `kodim02`, budget 10000, all six variants, seeds {0,1,2}; confirmation is now 108/1,512 cells with zero errors."
+  - turn: 7
+    type: decision
+    id: "N54"
+    routing: direct
+    provenance: user
+    summary: "Promoted the supplied SOTA review ideas into active task files and updated the task index with the practical priority order: FIT-005, FIT-006/FIT-007, FF-001/FIT-008, COMP-004, PORT-002/003, GEN-003."
 
 ai_actions:
   - turn: 1
@@ -108,6 +114,29 @@ ai_actions:
       - "ara/trace/sessions/session_index.yaml"
       - "ara/trace/sessions/2026-07-06_001.yaml"
       - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 7
+    action: "Created standalone task files for the supplied SOTA ideas, expanded FF-001, cross-linked GEN-001 and COMP-003, and updated tasks/INDEX.md."
+    provenance: ai-executed
+    files_changed:
+      - "tasks/INDEX.md"
+      - "tasks/FF-001-feedforward-predictor.md"
+      - "tasks/GEN-001-sds-distillation.md"
+      - "tasks/COMP-003-compression-ladder.md"
+      - "tasks/FIT-005-exact-color-solve.md"
+      - "tasks/CORE-006-affine-color-basis.md"
+      - "tasks/FIT-006-frequency-violation-densification.md"
+      - "tasks/FIT-007-moment-preserving-split.md"
+      - "tasks/CORE-007-boundary-gated-gaussians.md"
+      - "tasks/CORE-008-hybrid-edge-primitives.md"
+      - "tasks/FIT-008-self-adaptive-gaussian-count.md"
+      - "tasks/COMP-004-entropy-aware-fitting.md"
+      - "tasks/PORT-002-gpu-native-tile-index-fused-loss.md"
+      - "tasks/PORT-003-tiled-backward-reductions.md"
+      - "tasks/GEN-003-vsd-multiparticle-distillation.md"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/sessions/2026-07-06_001.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
 
 claims_touched: []
 
@@ -124,10 +153,13 @@ key_context:
     excerpt: "After committing shard 4, the next missing confirmation block was `kodim02` budget 5000 across all variants and seeds."
   - turn: 6
     excerpt: "After committing shard 5, the next missing confirmation block was `kodim02` budget 10000 across all variants and seeds."
+  - turn: 7
+    excerpt: "User asked to create tasks for a static repo/code review that identified amortized/feed-forward prediction, QAT/entropy-aware fitting, frequency-aware densification, boundary constraints, CUDA tiled improvements, and VSD as missing or high-upside directions."
 
 open_threads:
   - "Continue the ABL-004 confirmation matrix beyond the completed `kodim02` budget block."
   - "Check whether the PSNR-vs-iteration cluster structure repeats across more confirmation images before treating it as a claim."
   - "Do not retire ABL-004 or promote README claims until the decision-grade confirmation criteria are met."
+  - "After ABL-004, consider the new SOTA backlog in priority order: FIT-005, FIT-006/FIT-007, FF-001/FIT-008, COMP-004, PORT-002/PORT-003, then GEN-003."
 
 ai_suggestions_pending: []

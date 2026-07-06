@@ -42,7 +42,8 @@ ladder.
       (ECCV 2024, arXiv 2403.14530). Stretch: a tiny learned feature-plane context.
 - [ ] **8. Joint RD training (stretch).** `loss += lambda_rate * bits_estimate(field)` with a
       factorized prior over the quantized symbols during the QAT phase; sweep lambda in
-      `rate_distortion.py` to trace the full curve. (arXiv 2406.01597)
+      `rate_distortion.py` to trace the full curve. (arXiv 2406.01597) Detailed fit-time QAT and
+      entropy-aware optimization is tracked in COMP-004.
 - [ ] Every rung: RD curve (bpp vs PSNR/MS-SSIM) before/after on the pinned image set,
       committed under `ara/evidence/`; round-trip exactness test per format change.
 

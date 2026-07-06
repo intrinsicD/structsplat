@@ -29,8 +29,8 @@ sessions:
     open_threads: 12
   - id: "2026-07-06_001"
     date: "2026-07-06"
-    summary: "Continued ABL-004 confirmation through the full `kodim01` and `kodim02` budget blocks, and staged the curve-cluster interpretation for follow-up."
-    turn_count: 6
-    events_count: 6
+    summary: "Continued ABL-004 confirmation through the full `kodim01` and `kodim02` budget blocks, staged the curve-cluster interpretation for follow-up, and converted the 2026 SOTA review ideas into active task files."
+    turn_count: 7
+    events_count: 7
     claims_touched: []
-    open_threads: 3
+    open_threads: 4

@@ -1,7 +1,7 @@
 # Task index
 
 Active work stays in `tasks/`; retired completed work lives in `tasks/done/`. Areas: CORE, INIT,
-FIT, HIER, BENCH, ABL, FF, COMP, PORT, MERGE, DOCS. Work items are picked up via the
+FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked up via the
 `task-workflow` skill.
 
 ## Active Tasks
@@ -19,6 +19,17 @@ FIT, HIER, BENCH, ABL, FF, COMP, PORT, MERGE, DOCS. Work items are picked up via
 | CORE-005 | Reference renderer memory bound + C0-continuous support cutoff | partial | CORE-003, CORE-004 |
 | ABL-004 | Killer controls + full ABL-001 run + committed evidence | partial | BENCH-002, ABL-003, FIT-004 |
 | COMP-003 | Compression-ratio ladder (scale ranges → planes → LSQ → VQ → entropy) | partial | COMP-002, BENCH-002 |
+| FIT-005 | Exact / alternating color solve | todo | FIT-001, CORE-001 |
+| CORE-006 | Linear color basis per Gaussian | todo | CORE-001, FIT-001 |
+| FIT-006 | Frequency-violation densification | todo | INIT-001, FIT-004, BENCH-002 |
+| FIT-007 | Moment-preserving split / clone | todo | FIT-004 |
+| CORE-007 | Boundary-gated Gaussians | todo | INIT-004, CORE-001 |
+| CORE-008 | Hybrid Gaussian + edge primitives | todo | CORE-001, INIT-001, FIT-001 |
+| FIT-008 | Self-adaptive Gaussian count | todo | FIT-004, BENCH-002 |
+| COMP-004 | QAT + entropy-aware fitting | todo | COMP-001, COMP-003, FIT-001 |
+| PORT-002 | GPU-native tile index + fused loss/backward | todo | PORT-001, FIT-003 |
+| PORT-003 | Avoid atomics in tiled backward | todo | PORT-001 |
+| GEN-003 | VSD / multi-particle distillation | todo | GEN-001 |
 
 ## Retired Done Tasks
 
@@ -54,5 +65,14 @@ performance and scale follow-ups stay active under PORT/FIT/INIT/BENCH/ABL tasks
 CORE-004/FIT-002/HIER-002/COMP-002/INIT-005/BENCH-002/ABL-003 fix confirmed bugs and
 science-gating ambiguities. FIT-003 removed fit-loop metric overhead and added the optional fused
 SSIM backend, and FIT-004 added the densification/relocation controls needed for the experiment.
-Next run ABL-004 (the actual experiment, with evidence committed). After that, continue the
-improvement tracks: INIT-006 (speed), CORE-005 (quality/convergence), and COMP-003 (rate).
+Next run ABL-004 (the actual experiment, with evidence committed). After that, the 2026-07 SOTA
+review suggests the most pragmatic improvement order:
+
+1. FIT-005 exact/alternating color solve — lowest implementation risk and immediately measurable.
+2. FIT-006 frequency-violation densification, optionally followed by FIT-007 moment-preserving
+   split if split loss spikes remain visible.
+3. FF-001 feed-forward teacher-student warm start, with FIT-008 adaptive count as the natural
+   companion if fixed-N prediction underfits complex images.
+4. COMP-004 for compression-aware fitting once RD baselines are stable.
+5. PORT-002/PORT-003 if tiled CUDA remains strategically important after quality work.
+6. GEN-003 after GEN-001 has a debuggable SDS baseline.

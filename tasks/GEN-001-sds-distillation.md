@@ -23,7 +23,8 @@ pretrained diffusion model, conditioned on a prompt, using score distillation.
    run SDS in latent space; gradient flows `ε_φ(z_t) − ε` → through `E` → through the renderer → θ.
 3. **VSD / VPSD upgrade.** Replace the SDS mean-seeking term with a variational score (a LoRA on the
    frozen model modeling the particle distribution) to cut SDS over-saturation and mode collapse
-   (SVGDreamer's VPSD). Heavier, much better quality/diversity.
+   (SVGDreamer's VPSD). Heavier, much better quality/diversity; tracked as GEN-003 once the SDS
+   baseline is debuggable.
 4. **Init from a raster sample (fast path).** Sample one raster image from the pretrained model, fit
    it with StructSplat (`init` + `fit`), then SDS/VSD-refine in Gaussian space. Reuses the whole
    analysis stack and converges far faster than from scratch (VectorFusion initializes from an image
@@ -40,7 +41,7 @@ pretrained diffusion model, conditioned on a prompt, using score distillation.
 - [ ] Classifier-free guidance exposed (high CFG for vanilla SDS; normal CFG for VSD).
 - [ ] `raster-sample → fit → refine` pipeline wired, reusing `init` / `fit`.
 - [ ] Uses the additive renderer mode; opacity + scale regularization prevents degenerate Gaussians.
-- [ ] VSD / LoRA variant behind a flag.
+- [ ] VSD / LoRA variant behind a flag, or explicitly handed off to GEN-003 after the baseline.
 - [ ] Eval: CLIP score (prompt alignment) + multi-resolution renders of the same θ (demonstrating
       resolution independence) + Gaussian count; optional FID on a class-conditional set.
 - [ ] `structsplat generate "<prompt>" --n 5000 --steps N` subcommand; saves θ (.npz) + PNG(s).
