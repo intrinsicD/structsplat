@@ -307,3 +307,14 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O29
+    timestamp: "2026-07-06T08:10+0200"
+    provenance: user
+    content: "The current ABL-004 confirmation PSNR-vs-iteration curves should be interpreted as clustered trajectory families, not just as a final-PSNR leaderboard; budget forms the dominant bands, and within each budget some methods share convergence/plateau behavior."
+    context: "User highlighted the cluster structure in `results/abl004_confirmation/index.html` after the complete `kodim01` confirmation block. Quantitative curve inspection showed nearest-neighbor trajectory groupings such as on-edge/quadtree-WSE at 5k and flanking/Floyd/on-edge/hybrid proximity at 10k, but the evidence is still one image and three seeds."
+    potential_type: claim
+    bound_to: [N47, N49, N50]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

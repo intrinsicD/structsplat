@@ -197,3 +197,8 @@ entries:
       - "Routed the third ABL-004 confirmation shard as N50 because it completed the `kodim01` 10000-Gaussian block and updated the artifact to 54/1512 cells."
       - "Did not crystallize a claim from the `kodim01` 10k quadtree_wse lead because the result is still one image and not the paired multi-image confirmation stage."
       - "Kept ABL-004 active rather than retiring it because 1458 expected confirmation cells remain."
+  - turn: "2026-07-06_001#3"
+    notes:
+      - "Staged O29 with user provenance because the user identified the curve-cluster interpretation and the assistant only quantified it from existing histories."
+      - "Did not crystallize O29 because the current confirmation curves cover only `kodim01`; recurrence across more images is the closure condition."
+      - "Recorded cluster interpretation as a claim candidate, not a heuristic, because it describes observed method behavior rather than a procedure."

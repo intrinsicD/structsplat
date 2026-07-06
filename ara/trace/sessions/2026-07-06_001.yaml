@@ -2,9 +2,9 @@ session:
   id: "2026-07-06_001"
   date: "2026-07-06"
   started: "2026-07-06T00:53+0200"
-  last_turn: "2026-07-06T01:04+0200"
-  turn_count: 2
-  summary: "Continued ABL-004 confirmation through the full `kodim01` budget block and recorded task/evidence progress."
+  last_turn: "2026-07-06T08:10+0200"
+  turn_count: 3
+  summary: "Continued ABL-004 confirmation through the full `kodim01` budget block, then staged the curve-cluster interpretation for follow-up."
 
 events_logged:
   - turn: 1
@@ -19,6 +19,12 @@ events_logged:
     routing: direct
     provenance: ai-executed
     summary: "Ran the third 18-cell ABL-004 confirmation shard: `kodim01`, budget 10000, all six variants, seeds {0,1,2}; confirmation is now 54/1,512 cells with zero errors."
+  - turn: 3
+    type: observation
+    id: "O29"
+    routing: staged
+    provenance: user
+    summary: "The PSNR-vs-iteration plot should be interpreted as clustered trajectory families, with budget bands and within-budget method clusters, rather than only as a final leaderboard."
 
 ai_actions:
   - turn: 1
@@ -43,6 +49,14 @@ ai_actions:
       - "ara/trace/sessions/session_index.yaml"
       - "ara/trace/sessions/2026-07-06_001.yaml"
       - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 3
+    action: "Quantified current ABL-004 PSNR-vs-iteration curve groupings from the saved histories and staged the cluster interpretation for follow-up."
+    provenance: ai-executed
+    files_changed:
+      - "ara/staging/observations.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/sessions/2026-07-06_001.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
 
 claims_touched: []
 
@@ -51,9 +65,12 @@ key_context:
     excerpt: "User asked to continue the next tasks in correct order; ABL-004 was the next active science-gating task."
   - turn: 2
     excerpt: "After committing shard 2, the next missing confirmation block was `kodim01` budget 10000 across all variants and seeds."
+  - turn: 3
+    excerpt: "User noted that the methods cluster into multiple clusters in the ABL-004 confirmation overview."
 
 open_threads:
   - "Continue the ABL-004 confirmation matrix beyond the completed `kodim01` budget block."
+  - "Check whether the PSNR-vs-iteration cluster structure repeats across more confirmation images before treating it as a claim."
   - "Do not retire ABL-004 or promote README claims until the decision-grade confirmation criteria are met."
 
 ai_suggestions_pending: []
