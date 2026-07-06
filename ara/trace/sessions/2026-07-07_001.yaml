@@ -1,0 +1,44 @@
+session:
+  id: "2026-07-07_001"
+  date: "2026-07-07"
+  started: "2026-07-07T00:31+0200"
+  last_turn: "2026-07-07T00:31+0200"
+  turn_count: 1
+  summary: "Continued FF-001 by adding a tiny learned predictor checkpoint path, deterministic trainer, focused/full tests, and smoke evidence."
+
+events_logged:
+  - turn: 1
+    type: experiment
+    id: "N64"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented and committed the tiny learned FF-001 checkpoint/trainer slice; focused validation passed 15 tests, full suite passed, and the one-image training smoke reduced loss from 1.623774 to 0.421427."
+
+ai_actions:
+  - turn: 1
+    action: "Implemented, tested, benchmark-smoked, documented, and committed the FF-001 tiny learned predictor checkpoint path."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/predictor.py"
+      - "src/structsplat/cli.py"
+      - "benchmarks/feedforward_train.py"
+      - "benchmarks/README.md"
+      - "tests/test_predictor.py"
+      - "tasks/FF-001-feedforward-predictor.md"
+      - "ara/evidence/ff001-tiny-predictor-train-smoke-2026-07-07/run.md"
+      - "ara/evidence/README.md"
+
+claims_touched: []
+
+key_context:
+  - turn: 1
+    excerpt: "User asked to continue the backlog with planning, implementation, tests/fixes, commits, and iteration; FF-001 remained the active partial SOTA backlog task."
+
+open_threads:
+  - "Continue the ABL-004 confirmation matrix beyond the completed `kodim02` budget block."
+  - "Check whether the PSNR-vs-iteration cluster structure repeats across more confirmation images before treating it as a claim."
+  - "Do not retire ABL-004 or promote README claims until the decision-grade confirmation criteria are met."
+  - "Continue FF-001 beyond the tiny checkpoint smoke with multi-image teacher export, train/validation split, image-only versus tensor-prior ablation, equal-final-N wall-time comparisons, and predict-optimize-distill."
+  - "After FF-001 comparison evidence, return to COMP-004, PORT-002/PORT-003, and GEN-003."
+
+ai_suggestions_pending: []

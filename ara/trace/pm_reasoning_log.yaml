@@ -257,3 +257,8 @@ entries:
       - "Routed the first FF-001 implementation slice as N63 because it produced committed code, focused/full tests, teacher-export smoke artifacts, and task-status updates."
       - "Did not stage or crystallize a SOTA speedup claim because the slice exposes warm-start plumbing and teacher data export, but does not yet include a learned predictor or fair prediction-plus-refinement comparison."
       - "Kept FF-001 open/partial with closure criteria around learned prediction, training/distillation, checkpoint evaluation, and equal-N generalization comparisons."
+  - turn: "2026-07-07_001#1"
+    notes:
+      - "Routed the tiny learned predictor/trainer work as N64 because it produced committed code, tests, a deterministic training smoke, and a checkpoint-loading short-refinement smoke."
+      - "Did not stage or crystallize a speedup/generalization claim because the run used one teacher row and only validates the learned-checkpoint contract."
+      - "Opened a new 2026-07-07 session and kept FF-001 partial, with next closure pressure on multi-image train/validation evidence, ablations, equal-final-N comparisons, and distillation."

@@ -34,3 +34,10 @@ sessions:
     events_count: 16
     claims_touched: []
     open_threads: 4
+  - id: "2026-07-07_001"
+    date: "2026-07-07"
+    summary: "Continued FF-001 by adding a tiny learned predictor checkpoint path, deterministic trainer, focused/full tests, and smoke evidence."
+    turn_count: 1
+    events_count: 1
+    claims_touched: []
+    open_threads: 5

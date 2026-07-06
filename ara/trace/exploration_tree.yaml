@@ -1369,3 +1369,28 @@ tree:
       - "tests/test_predictor.py"
     also_depends_on: [N54, N61, N62]
     status: resolved
+  - id: N64
+    type: experiment
+    title: "FF-001 tiny learned predictor checkpoint"
+    provenance: ai-executed
+    timestamp: "2026-07-07T00:31+0200"
+    result: >
+      Implemented the next FF-001 slice: a tiny CNN Gaussian regressor,
+      normalized teacher-target encoding/decoding, safe `.pt` checkpoint
+      serialization, learned-checkpoint loading through `strategy=feedforward`,
+      and `benchmarks.feedforward_train` for deterministic training from the
+      teacher manifest. Focused predictor/CLI/smoke validation passed 15
+      tests, full validation passed with 218 tests and 22 skips, and the
+      one-image CPU training smoke reduced loss from 1.623774 to 0.421427 over
+      20 epochs. The resulting checkpoint emitted a 16-Gaussian field and ran
+      through a 2-iteration short-refinement smoke at PSNR 17.4469 and
+      MS-SSIM 0.41073. FF-001 remains partial: this is a minimal learned
+      checkpoint contract, not a speedup/generalization/distillation result.
+    evidence:
+      - "tasks/FF-001-feedforward-predictor.md"
+      - "ara/evidence/ff001-tiny-predictor-train-smoke-2026-07-07/run.md"
+      - "src/structsplat/predictor.py"
+      - "benchmarks/feedforward_train.py"
+      - "tests/test_predictor.py"
+    also_depends_on: [N54, N63]
+    status: resolved
