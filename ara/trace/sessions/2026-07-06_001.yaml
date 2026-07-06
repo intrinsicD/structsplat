@@ -2,9 +2,9 @@ session:
   id: "2026-07-06_001"
   date: "2026-07-06"
   started: "2026-07-06T00:53+0200"
-  last_turn: "2026-07-06T18:47+0200"
-  turn_count: 11
-  summary: "Continued ABL-004 confirmation through the full `kodim01` and `kodim02` budget blocks, staged the curve-cluster interpretation, converted the 2026 SOTA review into tasks, completed FIT-005/FIT-006/FIT-007/CORE-006, smoke-tested the new stage axes, and added stage-search HTML overviews."
+  last_turn: "2026-07-06T18:58+0200"
+  turn_count: 12
+  summary: "Continued ABL-004 confirmation through the full `kodim01` and `kodim02` budget blocks, staged the curve-cluster interpretation, converted the 2026 SOTA review into tasks, completed FIT-005/FIT-006/FIT-007/CORE-006/FIT-008, smoke-tested the new stage axes, and added stage-search HTML overviews."
 
 events_logged:
   - turn: 1
@@ -85,6 +85,12 @@ events_logged:
     routing: direct
     provenance: ai-executed
     summary: "Implemented, tested, benchmark-smoked, retired, and committed CORE-006 affine color basis; affine improved tiny-smoke PSNR/AUC but remains opt-in."
+  - turn: 12
+    type: experiment
+    id: "N61"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented, tested, benchmark-smoked, retired, and committed FIT-008 adaptive Gaussian-count control; fixed-32 beat adaptive in the tiny smoke, so it remains opt-in."
 
 ai_actions:
   - turn: 1
@@ -235,6 +241,23 @@ ai_actions:
       - "tasks/done/CORE-006-affine-color-basis.md"
       - "ara/evidence/core006-affine-color-smoke-2026-07-06/run.md"
       - "ara/evidence/README.md"
+  - turn: 12
+    action: "Implemented, tested, benchmark-smoked, retired, and committed FIT-008 adaptive Gaussian-count controller."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/config.py"
+      - "src/structsplat/fit.py"
+      - "src/structsplat/cli.py"
+      - "benchmarks/stage_search.py"
+      - "benchmarks/rate_distortion.py"
+      - "benchmarks/README.md"
+      - "tests/test_fit_dynamics.py"
+      - "tests/test_gaussians.py"
+      - "tests/test_stage_search.py"
+      - "tasks/INDEX.md"
+      - "tasks/done/FIT-008-self-adaptive-gaussian-count.md"
+      - "ara/evidence/fit008-adaptive-count-smoke-2026-07-06/run.md"
+      - "ara/evidence/README.md"
 
 claims_touched: []
 
@@ -261,11 +284,13 @@ key_context:
     excerpt: "User asked about the missing `index.html` file for the new-stage smoke output."
   - turn: 11
     excerpt: "User asked to continue backlog iteration and linked the new-stage `index.html`; CORE-006 was selected as the next scoped SOTA backlog task after FIT-005/FIT-006/FIT-007."
+  - turn: 12
+    excerpt: "After CORE-006, FIT-008 was selected as the next scoped backlog slice because it provides adaptive selected-N control needed by the larger FF-001 feed-forward task."
 
 open_threads:
   - "Continue the ABL-004 confirmation matrix beyond the completed `kodim02` budget block."
   - "Check whether the PSNR-vs-iteration cluster structure repeats across more confirmation images before treating it as a claim."
   - "Do not retire ABL-004 or promote README claims until the decision-grade confirmation criteria are met."
-  - "Continue the SOTA backlog after FIT-005/FIT-006/FIT-007/CORE-006: next larger iterations are FF-001/FIT-008, then COMP-004, PORT-002/PORT-003, and GEN-003."
+  - "Continue the SOTA backlog after FIT-005/FIT-006/FIT-007/CORE-006/FIT-008: next larger iteration is FF-001, then COMP-004, PORT-002/PORT-003, and GEN-003."
 
 ai_suggestions_pending: []

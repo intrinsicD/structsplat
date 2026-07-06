@@ -242,3 +242,8 @@ entries:
       - "Routed CORE-006 as N60 because it produced committed code, tests, task retirement, and benchmark-smoke evidence."
       - "Did not stage or crystallize a default-promotion claim because the affine result is a tiny 2-image/2-budget smoke; constant remains the default and affine is only a stage-search axis."
       - "Did not start FF-001/FIT-008 in the same trace entry because those are larger follow-up iterations that should get their own implementation/evidence cycle."
+  - turn: "2026-07-06_001#12"
+    notes:
+      - "Routed FIT-008 as N61 because it produced committed code, focused/full tests, benchmark-smoke evidence, and task retirement."
+      - "Did not stage or crystallize an adaptive-count quality claim because the tiny smoke validated control flow but fixed-32 outperformed adaptive 16->32."
+      - "Kept FF-001 open as the next SOTA iteration; FIT-008 now supplies selected-N metadata but does not implement amortized prediction."

@@ -1297,3 +1297,30 @@ tree:
       - "benchmarks/stage_search.py"
     also_depends_on: [N54, N59]
     status: resolved
+  - id: N61
+    type: experiment
+    title: "FIT-008 adaptive Gaussian count controller"
+    provenance: ai-executed
+    timestamp: "2026-07-06T18:58+0200"
+    result: >
+      Implemented opt-in self-adaptive Gaussian-count fitting. `FitConfig`
+      now supports `adaptive_count` with PSNR/MS-SSIM/raw-BPP/max-N/stall
+      stopping, residual-growth cadence controls, selected-N/history metadata,
+      CLI and stage-search wiring, and rate-distortion row metadata for
+      fitted/selected N. Full validation passed with 210 tests and 22 skips.
+      A tiny two-image CPU smoke compared adaptive 16->32 against fixed 32 at
+      max-side 32 and 17 iterations: adaptive selected N=32 and stopped with
+      `max_gaussians_reached` in both rows, but fixed 32 won mean PSNR
+      20.3149 vs 19.5006 and mean AUC 19.2296 vs 18.2459. The controller is
+      validated as opt-in infrastructure, not a promoted default.
+    evidence:
+      - "tasks/done/FIT-008-self-adaptive-gaussian-count.md"
+      - "ara/evidence/fit008-adaptive-count-smoke-2026-07-06/run.md"
+      - "results/fit008_adaptive_count_smoke/index.html"
+      - "results/fit008_fixed32_smoke/index.html"
+      - "src/structsplat/fit.py"
+      - "src/structsplat/config.py"
+      - "benchmarks/stage_search.py"
+      - "benchmarks/rate_distortion.py"
+    also_depends_on: [N54, N60]
+    status: resolved
