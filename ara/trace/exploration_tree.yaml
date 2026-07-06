@@ -1251,3 +1251,23 @@ tree:
       - "results/stage_search_new_stages_smoke/stage_search.json"
     also_depends_on: [N55, N56, N57]
     status: resolved
+  - id: N59
+    type: experiment
+    title: "Stage-search HTML overview backfill"
+    provenance: ai-executed
+    timestamp: "2026-07-06T15:19+0200"
+    result: >
+      Corrected the new-stage smoke packaging after the user noted the missing
+      `index.html`. `benchmarks/stage_search.py` now writes a local scalar
+      overview page linking summary/config/raw artifacts and showing top
+      configs, per-stage marginals, and error cells. The stage-search test
+      suite passed 11/11, and the new-stage smoke was rerun so
+      `results/stage_search_new_stages_smoke/index.html` exists.
+    evidence:
+      - "benchmarks/stage_search.py"
+      - "tests/test_stage_search.py"
+      - "benchmarks/README.md"
+      - "results/stage_search_new_stages_smoke/index.html"
+      - "ara/evidence/stage-search-new-stages-smoke-2026-07-06/run.md"
+    also_depends_on: [N58]
+    status: resolved

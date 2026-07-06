@@ -2,9 +2,9 @@ session:
   id: "2026-07-06_001"
   date: "2026-07-06"
   started: "2026-07-06T00:53+0200"
-  last_turn: "2026-07-06T14:35+0200"
-  turn_count: 9
-  summary: "Continued ABL-004 confirmation through the full `kodim01` and `kodim02` budget blocks, staged the curve-cluster interpretation, converted the 2026 SOTA review into tasks, completed FIT-005/FIT-006/FIT-007, and smoke-tested the new stage axes."
+  last_turn: "2026-07-06T15:19+0200"
+  turn_count: 10
+  summary: "Continued ABL-004 confirmation through the full `kodim01` and `kodim02` budget blocks, staged the curve-cluster interpretation, converted the 2026 SOTA review into tasks, completed FIT-005/FIT-006/FIT-007, smoke-tested the new stage axes, and added stage-search HTML overviews."
 
 events_logged:
   - turn: 1
@@ -73,6 +73,12 @@ events_logged:
     routing: direct
     provenance: ai-executed
     summary: "Ran focused pytest checks and a 6-cell CPU stage-search smoke for color_solve=every10, refine=freq_violation, and refine=moment_preserving; all cells completed ok."
+  - turn: 10
+    type: experiment
+    id: "N59"
+    routing: direct
+    provenance: ai-executed
+    summary: "Added automatic `index.html` generation to stage-search, reran tests and the new-stage smoke, and verified the regenerated HTML page."
 
 ai_actions:
   - turn: 1
@@ -189,6 +195,19 @@ ai_actions:
       - "ara/trace/sessions/2026-07-06_001.yaml"
       - "ara/trace/sessions/session_index.yaml"
       - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 10
+    action: "Backfilled stage-search HTML overview generation, tested it, reran the new-stage smoke, and updated evidence."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/stage_search.py"
+      - "tests/test_stage_search.py"
+      - "benchmarks/README.md"
+      - "ara/evidence/stage-search-new-stages-smoke-2026-07-06/run.md"
+      - "ara/evidence/README.md"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/2026-07-06_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
 
 claims_touched: []
 
@@ -211,6 +230,8 @@ key_context:
     excerpt: "User asked to continue with the backlog: plan the tasks, implement them, test and fix them, commit, and iterate."
   - turn: 9
     excerpt: "User asked to run a test for the new stage-search stages."
+  - turn: 10
+    excerpt: "User asked about the missing `index.html` file for the new-stage smoke output."
 
 open_threads:
   - "Continue the ABL-004 confirmation matrix beyond the completed `kodim02` budget block."
