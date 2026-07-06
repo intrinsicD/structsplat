@@ -1324,3 +1324,23 @@ tree:
       - "benchmarks/rate_distortion.py"
     also_depends_on: [N54, N60]
     status: resolved
+  - id: N62
+    type: experiment
+    title: "New-stage smoke matrix regression test"
+    provenance: ai-executed
+    timestamp: "2026-07-06T19:43+0200"
+    result: >
+      Added `test_new_stage_smoke_matrix_records_expected_events_and_html`
+      to cover the exact stage matrix behind
+      `results/stage_search_new_stages_smoke/index.html`: `color_solve in
+      {none,every10}` crossed with `refine in {none,freq_violation,
+      moment_preserving}`. The test asserts 6/6 ok rows, color-solve event
+      counts, split events and final equal budgets for refinement rows,
+      frequency-violation stats, and generated `index.html` links/levels.
+      Focused pytest passed 1 test in 1.98 s; full validation passed with 211
+      tests and 22 skips.
+    evidence:
+      - "tests/test_stage_search.py"
+      - "results/stage_search_new_stages_smoke/index.html"
+    also_depends_on: [N58, N59]
+    status: resolved

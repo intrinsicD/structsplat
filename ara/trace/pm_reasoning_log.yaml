@@ -247,3 +247,8 @@ entries:
       - "Routed FIT-008 as N61 because it produced committed code, focused/full tests, benchmark-smoke evidence, and task retirement."
       - "Did not stage or crystallize an adaptive-count quality claim because the tiny smoke validated control flow but fixed-32 outperformed adaptive 16->32."
       - "Kept FF-001 open as the next SOTA iteration; FIT-008 now supplies selected-N metadata but does not implement amortized prediction."
+  - turn: "2026-07-06_001#13"
+    notes:
+      - "Routed the stage-smoke pytest addition as N62 because it converted the prior manual smoke matrix into committed regression coverage and produced a full-suite result."
+      - "Did not stage a quality claim because the test asserts plumbing, metadata, and HTML generation for known axes rather than ranking methods."
+      - "Kept N62 dependent on N58/N59 so the validation is linked to the original smoke and the later index.html packaging correction."

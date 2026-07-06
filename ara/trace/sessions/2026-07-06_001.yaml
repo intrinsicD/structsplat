@@ -2,9 +2,9 @@ session:
   id: "2026-07-06_001"
   date: "2026-07-06"
   started: "2026-07-06T00:53+0200"
-  last_turn: "2026-07-06T18:58+0200"
-  turn_count: 12
-  summary: "Continued ABL-004 confirmation through the full `kodim01` and `kodim02` budget blocks, staged the curve-cluster interpretation, converted the 2026 SOTA review into tasks, completed FIT-005/FIT-006/FIT-007/CORE-006/FIT-008, smoke-tested the new stage axes, and added stage-search HTML overviews."
+  last_turn: "2026-07-06T19:43+0200"
+  turn_count: 13
+  summary: "Continued ABL-004 confirmation through the full `kodim01` and `kodim02` budget blocks, staged the curve-cluster interpretation, converted the 2026 SOTA review into tasks, completed FIT-005/FIT-006/FIT-007/CORE-006/FIT-008, smoke-tested and regression-tested the new stage axes, and added stage-search HTML overviews."
 
 events_logged:
   - turn: 1
@@ -91,6 +91,12 @@ events_logged:
     routing: direct
     provenance: ai-executed
     summary: "Implemented, tested, benchmark-smoked, retired, and committed FIT-008 adaptive Gaussian-count control; fixed-32 beat adaptive in the tiny smoke, so it remains opt-in."
+  - turn: 13
+    type: experiment
+    id: "N62"
+    routing: direct
+    provenance: ai-executed
+    summary: "Added and committed a regression test for the new-stage smoke matrix behind `results/stage_search_new_stages_smoke/index.html`; full suite passed."
 
 ai_actions:
   - turn: 1
@@ -258,6 +264,11 @@ ai_actions:
       - "tasks/done/FIT-008-self-adaptive-gaussian-count.md"
       - "ara/evidence/fit008-adaptive-count-smoke-2026-07-06/run.md"
       - "ara/evidence/README.md"
+  - turn: 13
+    action: "Added a pytest regression for the new-stage smoke matrix and committed it."
+    provenance: ai-executed
+    files_changed:
+      - "tests/test_stage_search.py"
 
 claims_touched: []
 
@@ -286,6 +297,8 @@ key_context:
     excerpt: "User asked to continue backlog iteration and linked the new-stage `index.html`; CORE-006 was selected as the next scoped SOTA backlog task after FIT-005/FIT-006/FIT-007."
   - turn: 12
     excerpt: "After CORE-006, FIT-008 was selected as the next scoped backlog slice because it provides adaptive selected-N control needed by the larger FF-001 feed-forward task."
+  - turn: 13
+    excerpt: "User asked to make a test for the stages shown in `results/stage_search_new_stages_smoke/index.html`."
 
 open_threads:
   - "Continue the ABL-004 confirmation matrix beyond the completed `kodim02` budget block."
