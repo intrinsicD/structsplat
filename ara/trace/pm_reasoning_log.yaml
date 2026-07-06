@@ -237,3 +237,8 @@ entries:
       - "Routed the missing-index correction as N59 because it changed benchmark artifact generation and produced a passing stage-search test run plus regenerated smoke output."
       - "Did not stage a new research claim: this is artifact-packaging compliance with the existing HTML overview convention, not a scientific result."
       - "Kept N58 as the stage-axis smoke and made N59 depend on it so future readers see the packaging correction as a follow-up, not a separate benchmark."
+  - turn: "2026-07-06_001#11"
+    notes:
+      - "Routed CORE-006 as N60 because it produced committed code, tests, task retirement, and benchmark-smoke evidence."
+      - "Did not stage or crystallize a default-promotion claim because the affine result is a tiny 2-image/2-budget smoke; constant remains the default and affine is only a stage-search axis."
+      - "Did not start FF-001/FIT-008 in the same trace entry because those are larger follow-up iterations that should get their own implementation/evidence cycle."

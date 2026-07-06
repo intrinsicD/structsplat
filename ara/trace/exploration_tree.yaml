@@ -1271,3 +1271,29 @@ tree:
       - "ara/evidence/stage-search-new-stages-smoke-2026-07-06/run.md"
     also_depends_on: [N58]
     status: resolved
+  - id: N60
+    type: experiment
+    title: "CORE-006 affine color basis"
+    provenance: ai-executed
+    timestamp: "2026-07-06T18:47+0200"
+    result: >
+      Implemented an opt-in affine color basis per Gaussian with coefficients
+      `c0 + cx dx + cy dy` evaluated in each Gaussian's local scale-normalized
+      frame. The change added `GaussianField.color_grads`, reference normalized
+      and additive renderer support, fit-loop regularization, CLI/stage-search
+      axes, NPZ persistence, and fail-closed guards for codec/CUDA paths that
+      do not support affine colors. Full validation passed with 205 tests and
+      22 skips. A two-image, two-budget CPU stage-search smoke at max-side 32
+      and 20 iterations found affine rows improved mean PSNR from 20.4391 to
+      21.5029 and mean AUC from 19.1186 to 19.8572, while mean fit time rose
+      from 0.1056 s to 0.1390 s. The default remains `color_basis=constant`.
+    evidence:
+      - "tasks/done/CORE-006-affine-color-basis.md"
+      - "ara/evidence/core006-affine-color-smoke-2026-07-06/run.md"
+      - "results/core006_affine_color_smoke/index.html"
+      - "src/structsplat/gaussians.py"
+      - "src/structsplat/render.py"
+      - "src/structsplat/fit.py"
+      - "benchmarks/stage_search.py"
+    also_depends_on: [N54, N59]
+    status: resolved
