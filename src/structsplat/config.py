@@ -89,6 +89,13 @@ class FitConfig:
     color_solve_every: int | None = None  # periodic fixed-geometry RGB least-squares solve
     color_solve_lambda: float = 1e-4       # Tikhonov pull toward pre-solve colors
     color_solve_maxiter: int = 32          # CG iterations for the color normal equations
+    qat_mode: str = "off"                  # off, ste, or noise; COMP-004 fit-time QAT
+    lambda_rate: float = 0.0               # weight on differentiable in-loop rate proxy
+    qat_bits_means: int = 16
+    qat_bits_scales: int = 8
+    qat_bits_rot: int = 8
+    qat_bits_colors: int = 8
+    qat_bits_opacity: int = 8
     lr_schedule: str = "none"          # none, step, or cosine
     lr_decay_every: int | None = None
     lr_decay_gamma: float = 0.5
@@ -142,6 +149,16 @@ class FitConfig:
         if self.color_solve_maxiter <= 0:
             raise ValueError(
                 f"color_solve_maxiter must be > 0, got {self.color_solve_maxiter}")
+        if self.qat_mode not in ("off", "ste", "noise"):
+            raise ValueError(f"qat_mode must be off, ste, or noise, got {self.qat_mode!r}")
+        if self.lambda_rate < 0.0:
+            raise ValueError(f"lambda_rate must be >= 0, got {self.lambda_rate}")
+        for name in (
+            "qat_bits_means", "qat_bits_scales", "qat_bits_rot",
+            "qat_bits_colors", "qat_bits_opacity",
+        ):
+            if getattr(self, name) <= 0:
+                raise ValueError(f"{name} must be > 0, got {getattr(self, name)}")
         if self.color_basis not in ("constant", "affine"):
             raise ValueError(
                 f"color_basis must be constant or affine, got {self.color_basis!r}")

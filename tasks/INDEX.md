@@ -21,7 +21,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | COMP-003 | Compression-ratio ladder (scale ranges → planes → LSQ → VQ → entropy) | partial | COMP-002, BENCH-002 |
 | CORE-007 | Boundary-gated Gaussians | todo | INIT-004, CORE-001 |
 | CORE-008 | Hybrid Gaussian + edge primitives | todo | CORE-001, INIT-001, FIT-001 |
-| COMP-004 | QAT + entropy-aware fitting | todo | COMP-001, COMP-003, FIT-001 |
+| COMP-004 | QAT + entropy-aware fitting | partial | COMP-001, COMP-003, FIT-001 |
 | PORT-002 | GPU-native tile index + fused loss/backward | todo | PORT-001, FIT-003 |
 | PORT-003 | Avoid atomics in tiled backward | todo | PORT-001 |
 | GEN-003 | VSD / multi-particle distillation | todo | GEN-001 |

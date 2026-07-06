@@ -1,6 +1,8 @@
 # COMP-004: QAT + entropy-aware fitting
 
-**Status: todo.** Move compression pressure into optimization, not only post-fit coding.
+**Status: partial.** First implementation slice landed 2026-07-07: fit-time QAT modes,
+`lambda_rate`, a differentiable rate proxy, returned frozen codec config, CLI flags, tests, and a
+small encode/RD smoke. Decision-grade RD improvements and lambda sweeps remain open.
 
 ## Context
 The existing codec and COMP-003 ladder cover post-fit quantization plus QAT rungs. The stronger
@@ -19,10 +21,12 @@ final encoding.
 4. Sweep `lambda_rate` to trace an actual RD curve with fitted-for-compression fields.
 
 ## Acceptance criteria
-- [ ] `FitConfig.qat_mode` supports at least `off`, `ste`, and `noise`; `lambda_rate` is logged.
-- [ ] Differentiable bit estimate covers positions, scales, rotations, colors, and opacity if
+- [x] `FitConfig.qat_mode` supports at least `off`, `ste`, and `noise`; `lambda_rate` is logged.
+- [x] Differentiable bit estimate covers positions, scales, rotations, colors, and opacity if
       enabled.
-- [ ] Final encoded file uses the same quantizer assumptions optimized during fitting.
+- [~] Final encoded file uses the same quantizer assumptions optimized during fitting. `fit()`
+      returns `qat_codec_config`; automated final-file wiring through every codec benchmark remains
+      open.
 - [ ] Tests show QAT improves low-bit reconstruction over post-hoc quantization on a tiny fixture.
 - [ ] `benchmarks/rate_distortion.py` can sweep lambda and write RD evidence for each point.
 - [ ] COMP-003 rungs that remain codec-only are kept compatible with this fit-time mode.
@@ -30,6 +34,18 @@ final encoding.
 ## Interfaces touched
 `src/structsplat/fit.py`, `src/structsplat/codec.py`, `src/structsplat/config.py`,
 `benchmarks/rate_distortion.py`, `tests/test_codec.py`, `tests/test_fit*.py`.
+
+## Current implementation notes
+
+- `FitConfig.qat_mode` accepts `off`, `ste`, and `noise`.
+- `lambda_rate` adds `lambda_rate * differentiable_rate_bpp(...)` during fitting.
+- The in-loop rate proxy covers means, log-scales, rotations, colors, and opacity probabilities
+  when opacity logits are present.
+- `qat_mode="ste"` renders through the existing codec fake-quantized view.
+- `qat_mode="noise"` renders through additive quantization noise using the same bit depths.
+- Fit-time QAT currently fails closed for `color_basis="affine"` because codec v1 cannot encode
+  affine color coefficients.
+- Evidence: `ara/evidence/comp004-fit-time-qat-smoke-2026-07-07/run.md`.
 
 ## Depends on
 COMP-001, COMP-003, FIT-001.

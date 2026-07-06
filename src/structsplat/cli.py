@@ -70,6 +70,13 @@ def cmd_fit(args):
                      color_solve_every=args.color_solve_every,
                      color_solve_lambda=args.color_solve_lambda,
                      color_solve_maxiter=args.color_solve_maxiter,
+                     qat_mode=args.qat_mode,
+                     lambda_rate=args.lambda_rate,
+                     qat_bits_means=args.qat_bits_means,
+                     qat_bits_scales=args.qat_bits_scales,
+                     qat_bits_rot=args.qat_bits_rot,
+                     qat_bits_colors=args.qat_bits_colors,
+                     qat_bits_opacity=args.qat_bits_opacity,
                      support_fade=args.support_fade,
                      aa_dilation=args.aa_dilation,
                      lr_schedule=args.lr_schedule,
@@ -287,6 +294,15 @@ def main():
                    help="Tikhonov pull toward pre-solve colors for --color-solve-every")
     f.add_argument("--color-solve-maxiter", type=int, default=32,
                    help="maximum CG iterations for each color solve")
+    f.add_argument("--qat-mode", choices=["off", "ste", "noise"], default="off",
+                   help="fit-time quantization-aware render mode")
+    f.add_argument("--lambda-rate", type=float, default=0.0,
+                   help="weight for differentiable fit-time rate proxy")
+    f.add_argument("--qat-bits-means", type=int, default=16)
+    f.add_argument("--qat-bits-scales", type=int, default=8)
+    f.add_argument("--qat-bits-rot", type=int, default=8)
+    f.add_argument("--qat-bits-colors", type=int, default=8)
+    f.add_argument("--qat-bits-opacity", type=int, default=8)
     f.add_argument("--aa-dilation", type=float, default=0.0)
     f.add_argument("--support-fade", action="store_true",
                    help="subtract the Gaussian tail at sigma_cutoff for C0 compact support")

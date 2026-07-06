@@ -20,9 +20,11 @@ from structsplat.fit import (
     _relocate_from_residual,
     _solve_colors_normalized,
     _split_from_residual,
+    differentiable_rate_bpp,
     estimated_raw_bpp,
     fit,
 )
+from structsplat import codec
 from structsplat import metrics as M
 
 
@@ -216,6 +218,80 @@ def test_color_solve_recovers_fixed_geometry_colors():
     assert stats["iterations"] <= cfg.color_solve_maxiter
     assert stats["relative_residual"] < 1e-4
     assert torch.allclose(field.colors, true_colors, atol=1e-4)
+
+
+def test_fit_time_qat_ste_returns_codec_config_and_rate_history():
+    img = np.zeros((16, 16, 3), np.float32)
+    img[:, 8:] = 1.0
+    target = torch.as_tensor(img)
+    field = _init.build_field(
+        img,
+        InitConfig(strategy="random", num_gaussians=12, opacity_mode="constant", seed=0),
+    )
+
+    cfg = FitConfig(
+        iters=3,
+        log_every=1,
+        ssim_weight=0.0,
+        qat_mode="ste",
+        lambda_rate=0.01,
+        qat_bits_means=10,
+        qat_bits_scales=5,
+        qat_bits_rot=5,
+        qat_bits_colors=5,
+    )
+    out = fit(field, target, cfg, verbose=False)
+
+    assert out["qat_mode"] == "ste"
+    assert out["lambda_rate"] == pytest.approx(0.01)
+    assert out["qat_rate_bpp"] is not None and out["qat_rate_bpp"] > 0
+    assert out["qat_codec_config"] is not None
+    assert len(out["history"]["qat_rate_bpp"]) == len(out["history"]["iter"])
+    assert all(v is not None and v > 0 for v in out["history"]["qat_rate_bpp"])
+    rd = codec.rd_point(out["field"], target, cfg, out["qat_codec_config"])
+    assert np.isfinite(rd["psnr"])
+    assert rd["bits"] == [10, 5, 5, 5]
+
+
+def test_fit_time_qat_noise_runs_and_affine_fails_closed():
+    img = np.zeros((12, 12, 3), np.float32)
+    img[:, 6:] = 1.0
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=8, seed=0))
+    out = fit(
+        field,
+        target,
+        FitConfig(iters=2, log_every=1, ssim_weight=0.0, qat_mode="noise"),
+        verbose=False,
+    )
+    assert np.isfinite(out["psnr"])
+    assert out["qat_codec_config"] is not None
+
+    affine_field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=8, seed=0))
+    with pytest.raises(ValueError, match="color_basis='constant'"):
+        fit(
+            affine_field,
+            target,
+            FitConfig(iters=1, color_basis="affine", qat_mode="ste"),
+            verbose=False,
+        )
+
+
+def test_differentiable_rate_proxy_has_gradients():
+    img = np.zeros((12, 12, 3), np.float32)
+    field = _init.build_field(
+        img,
+        InitConfig(strategy="random", num_gaussians=8, opacity_mode="constant", seed=0),
+    ).trainable()
+    rate = differentiable_rate_bpp(field, 12, 12, FitConfig(lambda_rate=0.1))
+    rate.backward()
+
+    assert float(rate.detach()) > 0.0
+    assert field.means.grad is not None
+    assert field.colors.grad is not None
+    assert field.opacities is not None and field.opacities.grad is not None
+    assert torch.isfinite(field.means.grad).all()
+    assert torch.isfinite(field.colors.grad).all()
 
 
 def test_fit_color_solve_runs_in_loop_and_fails_closed_for_other_renderers():

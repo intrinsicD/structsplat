@@ -51,3 +51,43 @@ def test_fit_cli_accepts_feedforward_short_refinement(tmp_path, monkeypatch, cap
 
     assert (outdir / "toy_feedforward.npz").exists()
     assert "8 gaussians" in capsys.readouterr().out
+
+
+def test_fit_cli_accepts_qat_rate_flags(tmp_path, monkeypatch, capsys):
+    pytest.importorskip("torch")
+    img = np.zeros((12, 12, 3), np.float32)
+    img[:, 6:] = 1.0
+    path = tmp_path / "toy.png"
+    save_image(str(path), img)
+    outdir = tmp_path / "runs"
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "structsplat",
+            "fit",
+            str(path),
+            "--strategy",
+            "random",
+            "--num-gaussians",
+            "8",
+            "--iters",
+            "1",
+            "--chunk",
+            "8",
+            "--qat-mode",
+            "ste",
+            "--lambda-rate",
+            "0.01",
+            "--qat-bits-colors",
+            "5",
+            "--outdir",
+            str(outdir),
+            "--device",
+            "cpu",
+        ],
+    )
+
+    main()
+
+    assert (outdir / "toy_random.npz").exists()
+    assert "8 gaussians" in capsys.readouterr().out

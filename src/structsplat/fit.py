@@ -193,6 +193,141 @@ def _render(field: GaussianField, cfg: FitConfig, H: int, W: int) -> torch.Tenso
                         color_grads=field.color_grads)
 
 
+def _qat_enabled(cfg: FitConfig) -> bool:
+    return cfg.qat_mode != "off"
+
+
+def _make_qat_codec_config(field: GaussianField, cfg: FitConfig):
+    """Freeze codec quantizer assumptions for fit-time QAT and later encoding."""
+    from .codec import CodecConfig, color_ranges, scale_ranges
+
+    color_lo, color_hi = color_ranges(field)
+    scale_lo, scale_hi = scale_ranges(field)
+    return CodecConfig(
+        bits_means=cfg.qat_bits_means,
+        bits_scales=cfg.qat_bits_scales,
+        bits_rot=cfg.qat_bits_rot,
+        bits_colors=cfg.qat_bits_colors,
+        bits_opacity=cfg.qat_bits_opacity,
+        color_lo=color_lo,
+        color_hi=color_hi,
+        scale_lo=scale_lo,
+        scale_hi=scale_hi,
+    )
+
+
+def _noise_quantize(x: torch.Tensor, lo, hi, bits: int) -> torch.Tensor:
+    levels = (1 << bits) - 1
+    lo = torch.as_tensor(lo, device=x.device, dtype=x.dtype)
+    hi = torch.as_tensor(hi, device=x.device, dtype=x.dtype)
+    step = (hi - lo).clamp_min(1e-12) / max(levels, 1)
+    return (x + (torch.rand_like(x) - 0.5) * step).clamp(lo, hi)
+
+
+def _noise_circular(x: torch.Tensor, period: float, bits: int) -> torch.Tensor:
+    levels = 1 << bits
+    period_t = torch.as_tensor(period, device=x.device, dtype=x.dtype)
+    step = period_t / max(levels, 1)
+    return torch.remainder(torch.remainder(x, period_t) + (torch.rand_like(x) - 0.5) * step,
+                           period_t)
+
+
+def _noise_quantized_view(field: GaussianField, H: int, W: int, ccfg) -> GaussianField:
+    if field.color_grads is not None:
+        raise ValueError(
+            "fit-time QAT currently supports color_basis='constant' only; "
+            "codec v1 cannot encode affine color fields"
+        )
+    slo = torch.as_tensor(ccfg.scale_lo, dtype=field.log_scales.dtype,
+                          device=field.log_scales.device)
+    shi = torch.as_tensor(ccfg.scale_hi, dtype=field.log_scales.dtype,
+                          device=field.log_scales.device)
+    clo = torch.as_tensor(ccfg.color_lo, dtype=field.colors.dtype, device=field.colors.device)
+    chi = torch.as_tensor(ccfg.color_hi, dtype=field.colors.dtype, device=field.colors.device)
+    means = torch.stack([
+        _noise_quantize(field.means[:, 0], 0.0, W - 1.0, ccfg.bits_means),
+        _noise_quantize(field.means[:, 1], 0.0, H - 1.0, ccfg.bits_means),
+    ], dim=1)
+    log_scales = _noise_quantize(field.log_scales, slo, shi, ccfg.bits_scales)
+    theta = (
+        _noise_circular(field.rotations, float(torch.pi), ccfg.bits_rot)
+        if ccfg.rot_circular
+        else _noise_quantize(torch.remainder(field.rotations, torch.pi), 0.0, float(torch.pi),
+                             ccfg.bits_rot)
+    )
+    colors = _noise_quantize(field.colors, clo, chi, ccfg.bits_colors)
+    opacities = None
+    if field.opacities is not None:
+        p = _noise_quantize(torch.sigmoid(field.opacities), 0.0, 1.0, ccfg.bits_opacity)
+        p = p.clamp(1e-4, 1.0 - 1e-4)
+        opacities = torch.log(p / (1.0 - p))
+    return GaussianField(means, log_scales, theta, colors, opacities)
+
+
+def _qat_field_view(field: GaussianField, cfg: FitConfig, H: int, W: int, ccfg):
+    if not _qat_enabled(cfg):
+        return field
+    if field.color_grads is not None:
+        raise ValueError(
+            "fit-time QAT currently supports color_basis='constant' only; "
+            "codec v1 cannot encode affine color fields"
+        )
+    if cfg.qat_mode == "ste":
+        from .codec import quantized_view
+
+        return quantized_view(field, H, W, ccfg)
+    if cfg.qat_mode == "noise":
+        return _noise_quantized_view(field, H, W, ccfg)
+    raise ValueError(f"unknown qat_mode {cfg.qat_mode!r}")
+
+
+def _render_loss_view(field: GaussianField, cfg: FitConfig, H: int, W: int, qat_ccfg=None):
+    qf = _qat_field_view(field, cfg, H, W, qat_ccfg) if _qat_enabled(cfg) else field
+    return _render(qf, cfg, H, W)
+
+
+def differentiable_rate_bpp(field: GaussianField, H: int, W: int, cfg: FitConfig) -> torch.Tensor:
+    """Smooth in-loop rate proxy used by COMP-004.
+
+    This is not the final entropy model. It covers every encoded attribute with a Laplace-like
+    residual code-length proxy in bits/pixel so rate pressure can affect gradients during fitting.
+    Actual RD numbers still come from `codec.encode`/`rd_point`.
+    """
+
+    area = max(float(H * W), 1.0)
+    bits = field.means.new_tensor(0.0)
+
+    def add_proxy(x: torch.Tensor, step, center=None) -> torch.Tensor:
+        step_t = torch.as_tensor(step, device=x.device, dtype=x.dtype).clamp_min(1e-12)
+        if center is None:
+            center_t = x.detach().median(dim=0).values if x.ndim > 1 else x.detach().median()
+        else:
+            center_t = torch.as_tensor(center, device=x.device, dtype=x.dtype)
+        return torch.log1p(((x - center_t) / step_t).abs()).sum() / math.log(2.0)
+
+    mean_steps = field.means.new_tensor([
+        max(float(W - 1), 1.0) / max((1 << cfg.qat_bits_means) - 1, 1),
+        max(float(H - 1), 1.0) / max((1 << cfg.qat_bits_means) - 1, 1),
+    ])
+    bits = bits + add_proxy(field.means, mean_steps)
+    # Use a conservative unit-range step for log-scales/colors in the proxy; exact frozen codec
+    # ranges are returned separately as `qat_codec_config` when QAT is enabled.
+    bits = bits + add_proxy(field.log_scales, 1.0 / max((1 << cfg.qat_bits_scales) - 1, 1))
+    bits = bits + add_proxy(
+        torch.remainder(field.rotations, torch.pi),
+        float(torch.pi) / max(1 << cfg.qat_bits_rot, 1),
+        center=float(torch.pi) * 0.5,
+    )
+    bits = bits + add_proxy(field.colors, 1.0 / max((1 << cfg.qat_bits_colors) - 1, 1))
+    if field.opacities is not None:
+        bits = bits + add_proxy(
+            torch.sigmoid(field.opacities),
+            1.0 / max((1 << cfg.qat_bits_opacity) - 1, 1),
+            center=0.5,
+        )
+    return bits / area
+
+
 def _color_solve_enabled(cfg: FitConfig) -> bool:
     return cfg.color_solve_every is not None and cfg.color_solve_every > 0
 
@@ -1185,6 +1320,12 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         sched_offset: int = 0, sched_total: int | None = None) -> dict:
     H, W = target.shape[0], target.shape[1]
     field = _ensure_color_basis(field, cfg)
+    if _qat_enabled(cfg) and field.color_grads is not None:
+        raise ValueError(
+            "fit-time QAT currently supports color_basis='constant' only; "
+            "codec v1 cannot encode affine color fields"
+        )
+    qat_ccfg = _make_qat_codec_config(field, cfg) if _qat_enabled(cfg) else None
     if _color_solve_enabled(cfg) and cfg.renderer != "normalized":
         raise ValueError(
             "color_solve_every currently supports renderer='normalized' only; "
@@ -1202,7 +1343,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
     hist = {
         "iter": [], "psnr": [], "loss": [], "n_gaussians": [], "elapsed": [],
         "split_events": [], "relocate_events": [], "color_solve_events": [],
-        "adaptive_events": [],
+        "adaptive_events": [], "qat_rate_bpp": [], "rate_loss": [],
     }
     absgrad_scores = torch.zeros(field.n, device=target.device, dtype=target.dtype)
     targets = _target_list(cfg)
@@ -1232,7 +1373,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         factor = _lr_factor(cfg, it, sched_offset, sched_total)
         for g, base in zip(opt.param_groups, base_lrs):
             g["lr"] = base * factor
-        img = _render(field, cfg, H, W)
+        img = _render_loss_view(field, cfg, H, W, qat_ccfg)
         # count that produced this render/PSNR, before any prune/split restructures the field;
         # logging the post-restructure field.n would pair a pre-step PSNR with a post-step N.
         n_at_render = field.n
@@ -1244,6 +1385,10 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             loss = (1 - cfg.ssim_weight) * pix + cfg.ssim_weight * (1 - s)
         if field.color_grads is not None and cfg.color_grad_l2 > 0.0:
             loss = loss + cfg.color_grad_l2 * (field.color_grads * field.color_grads).mean()
+        rate_bpp = None
+        if cfg.lambda_rate > 0.0:
+            rate_bpp = differentiable_rate_bpp(field, H, W, cfg)
+            loss = loss + float(cfg.lambda_rate) * rate_bpp
         opt.zero_grad(set_to_none=True)
         loss.backward()
         if cfg.split_mode == "absgrad_wave" and field.means.grad is not None:
@@ -1470,6 +1615,13 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             hist["loss"].append(loss.item())
             hist["n_gaussians"].append(n_at_render)
             hist["elapsed"].append(time.time() - start_time)
+            if rate_bpp is None:
+                hist["qat_rate_bpp"].append(None)
+                hist["rate_loss"].append(None)
+            else:
+                rb = float(rate_bpp.detach().cpu())
+                hist["qat_rate_bpp"].append(rb)
+                hist["rate_loss"].append(float(cfg.lambda_rate) * rb)
             if verbose:
                 print(f"  iter {it:5d}  psnr {p_now:6.2f}  loss {loss.item():.5f}")
             if cfg.early_stop_patience is not None and it >= cfg.early_stop_min_iters:
@@ -1521,5 +1673,10 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             "adaptive_stop_reason": adaptive_stop if cfg.adaptive_count else None,
             "adaptive_selected_n": field.n if cfg.adaptive_count else None,
             "estimated_bpp": estimated_raw_bpp(field, H, W),
+            "qat_mode": cfg.qat_mode,
+            "lambda_rate": float(cfg.lambda_rate),
+            "qat_rate_bpp": float(differentiable_rate_bpp(field, H, W, cfg).detach().cpu())
+            if cfg.lambda_rate > 0.0 else None,
+            "qat_codec_config": qat_ccfg,
         }
     return out
