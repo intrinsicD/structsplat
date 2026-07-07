@@ -93,3 +93,13 @@ tensor-prior checkpoint still lost clearly to `quadtree_wse` (25.3249 dB, AUC 24
 `strategy=feedforward` as an experimental warm-start path; do not promote learned initialization
 without a larger architecture or predict-optimize-distill evidence. See
 `ara/evidence/ff001-multimage-tensor-ablation-2026-07-07/`.
+
+## C10: Fit-time QAT is searchable, not a codec default
+
+COMP-004 added fit-time `qat_mode`, `lambda_rate`, a differentiable rate proxy, and RD benchmark
+lambda sweeps. On the 2026-07-07 Kodak4 slice at 512 Gaussians and four codec ladders, fit-time
+STE QAT improves encoded low/mid-bit PSNR over direct post-hoc quantization, but it does not beat
+the existing post-fit QAT control overall. Post-fit QAT averaged +0.6580 dB over direct encode,
+while the best fit-time lambda averaged +0.6539 dB and barely changed actual bpp. Keep
+`qat_mode` / `lambda_rate` searchable for future codec experiments; do not promote them as the
+default compression path yet. See `ara/evidence/comp004-lambda-sweep-2026-07-07/`.

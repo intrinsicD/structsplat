@@ -19,7 +19,6 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | COMP-003 | Compression-ratio ladder (scale ranges → planes → LSQ → VQ → entropy) | partial | COMP-002, BENCH-002 |
 | CORE-007 | Boundary-gated Gaussians | todo | INIT-004, CORE-001 |
 | CORE-008 | Hybrid Gaussian + edge primitives | todo | CORE-001, INIT-001, FIT-001 |
-| COMP-004 | QAT + entropy-aware fitting | partial | COMP-001, COMP-003, FIT-001 |
 | PORT-002 | GPU-native tile index + fused loss/backward | todo | PORT-001, FIT-003 |
 | PORT-003 | Avoid atomics in tiled backward | todo | PORT-001 |
 | GEN-003 | VSD / multi-particle distillation | todo | GEN-001 |
@@ -67,6 +66,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | INIT-008 | Feature-relative scale caps (fix the cap-scaling failure) | `done/INIT-008-feature-relative-scale-caps.md` |
 | MERGE-001 | Integrate Claude core optimizations and Codex stage search into main | `done/MERGE-001-claude-codex-main.md` |
 | COMP-002 | Codec / metrics / CLI correctness and protocol fixes | `done/COMP-002-codec-correctness.md` |
+| COMP-004 | QAT + entropy-aware fitting | `done/COMP-004-entropy-aware-fitting.md` |
 | DOCS-001 | Docs-sync backfill (stale status, missing ADRs, ara scaffold) | `done/DOCS-001-docs-sync-backfill.md` |
 
 Retired tasks remain valid dependency IDs. They describe completed reference/correctness work; the
@@ -93,7 +93,8 @@ review suggests the most pragmatic improvement order:
 6. FF-001 feed-forward teacher-student warm start — completed 2026-07-07. Tensor-prior inputs make
    the tiny predictor useful versus random scratch on a held-out slice, but it still loses to the
    hand `quadtree_wse` prior; keep `strategy=feedforward` experimental.
-7. COMP-004 for compression-aware fitting once RD baselines are stable.
+7. COMP-004 compression-aware fitting — completed 2026-07-07. Fit-time STE QAT and lambda sweeps
+   are available, but post-fit QAT remains the stronger default on the local RD slice.
 8. PORT-002/PORT-003 if tiled CUDA remains strategically important after quality work.
 9. GEN-003 after GEN-001 has a debuggable SDS baseline.
 
@@ -135,4 +136,7 @@ INIT-007) and shifted the frontier from init strategies to fitter knobs and swee
     Gaussian layer is a strong low-budget quality candidate (`frac0.05_grid8`: +1.0152 dB mean
     PSNR over 24 pairs), but it loses AUC at 5000 rows; keep it searchable and default off.
 12. FF-001 — completed 2026-07-07 with multi-image teacher training and tensor-prior input
-   ablation. COMP-004 (lambda sweep) is the next remaining item in this pair.
+   ablation.
+13. COMP-004 — completed 2026-07-07. Fit-time STE QAT helps low/mid-bit direct-encode quality,
+   but the existing post-fit QAT control is still marginally better overall; keep the new knobs
+   searchable, not default.

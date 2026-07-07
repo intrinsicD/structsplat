@@ -542,6 +542,39 @@ def test_fit_time_qat_noise_runs_and_affine_fails_closed():
         )
 
 
+def test_fit_time_qat_improves_tiny_low_bit_encoded_psnr():
+    img = np.zeros((20, 20, 3), np.float32)
+    img[:, 10:] = 1.0
+    img[3:8, 3:8] = [1.0, 0.5, 0.0]
+    target = torch.as_tensor(img)
+    base = _init.build_field(img, InitConfig(strategy="random", num_gaussians=24, seed=0))
+    base_out = fit(
+        base,
+        target,
+        FitConfig(iters=20, log_every=10, ssim_weight=0.0),
+        verbose=False,
+    )
+    coarse = codec.CodecConfig(bits_means=8, bits_scales=4, bits_rot=4, bits_colors=4)
+    before = codec.rd_point(
+        base_out["field"], target, FitConfig(ssim_weight=0.0), coarse
+    )["psnr"]
+
+    qcfg = FitConfig(
+        iters=20,
+        log_every=10,
+        ssim_weight=0.0,
+        qat_mode="ste",
+        qat_bits_means=8,
+        qat_bits_scales=4,
+        qat_bits_rot=4,
+        qat_bits_colors=4,
+    )
+    qout = fit(base_out["field"].detached(), target, qcfg, verbose=False)
+    after = codec.rd_point(qout["field"], target, qcfg, qout["qat_codec_config"])["psnr"]
+
+    assert after > before
+
+
 def test_differentiable_rate_proxy_has_gradients():
     img = np.zeros((12, 12, 3), np.float32)
     field = _init.build_field(

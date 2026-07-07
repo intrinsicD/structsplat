@@ -92,6 +92,37 @@ def test_rate_distortion_run_rd_tiny_smoke(tmp_path):
     assert (outdir / "rate_distortion.md").exists()
 
 
+def test_rate_distortion_fit_qat_lambda_sweep_rows(tmp_path):
+    img_path = tmp_path / "toy.png"
+    outdir = tmp_path / "rd_qat"
+    _write_toy(img_path, size=16)
+
+    rows = rd.run_rd(
+        [str(img_path)],
+        budgets=(8,),
+        strategy="random",
+        seeds=(0,),
+        iters=1,
+        bit_mixes=((8, 5, 5, 5),),
+        qat_iters=1,
+        fit_qat_modes=("ste",),
+        lambda_rates=(0.0, 0.01),
+        render_chunk=8,
+        outdir=str(outdir),
+        device="cpu",
+    )
+
+    assert {r["mode"] for r in rows} == {"none", "qat", "refine_noste", "fit_qat"}
+    fit_rows = [r for r in rows if r["mode"] == "fit_qat"]
+    assert len(fit_rows) == 2
+    assert {r["lambda_rate"] for r in fit_rows} == {0.0, 0.01}
+    assert all(r["fit_qat_mode"] == "ste" for r in fit_rows)
+    assert all(r["bits"] == "8/5/5/5" for r in fit_rows)
+    cfg = json.loads((outdir / "rate_distortion_config.json").read_text(encoding="utf-8"))
+    assert cfg["resolved"]["lambda_rates"] == [0.0, 0.01]
+    assert cfg["resolved"]["fit_qat_modes"] == ["ste"]
+
+
 def test_coco_summary_keeps_zero_ok_method_cells(tmp_path):
     rows = [
         {

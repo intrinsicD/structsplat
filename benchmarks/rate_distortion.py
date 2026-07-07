@@ -7,7 +7,7 @@ encoding. Emits JSON + CSV + markdown alongside the ablation outputs. Torch impo
 from __future__ import annotations
 import os
 
-from benchmarks.common import run_config as _run_config, write_csv, write_json
+from benchmarks.common import load_image, run_config as _run_config, write_csv, write_json
 from structsplat.config import DEFAULT_INIT_STRATEGY
 
 DEFAULT_BIT_MIXES = ((16, 8, 8, 8), (12, 8, 6, 8), (12, 6, 6, 6), (10, 5, 5, 5))
@@ -15,11 +15,11 @@ DEFAULT_BIT_MIXES = ((16, 8, 8, 8), (12, 8, 6, 8), (12, 6, 6, 6), (10, 5, 5, 5))
 
 def run_rd(images, budgets=(2000, 5000), strategy=DEFAULT_INIT_STRATEGY, seeds=(0,),
            iters=1500, bit_mixes=DEFAULT_BIT_MIXES, qat_iters=150,
+           fit_qat_modes=(), lambda_rates=(), max_side=None, renderer="normalized",
            render_chunk=512, lr_means=None, lr_decay_every=None,
            outdir="results_rd", device=None):
     import torch
     from dataclasses import replace
-    from structsplat.cli import load_image
     from structsplat import init as _init, codec
     from structsplat.config import InitConfig, FitConfig
     from structsplat.fit import estimated_raw_bpp, fit
@@ -34,19 +34,21 @@ def run_rd(images, budgets=(2000, 5000), strategy=DEFAULT_INIT_STRATEGY, seeds=(
     # self-contained run record (invariant 5): every knob that moves the numbers + versions
     run_config = _run_config({
         "strategy": strategy, "iters": iters, "qat_iters": qat_iters,
+        "fit_qat_modes": list(fit_qat_modes), "lambda_rates": list(lambda_rates),
+        "max_side": max_side, "renderer": renderer,
         "zlib_level": codec.CodecConfig().zlib_level, "seeds": list(seeds),
         "lr_means": lr_means, "lr_decay_every": lr_decay_every, "render_chunk": render_chunk,
         "bit_mixes": ["/".join(map(str, m)) for m in bit_mixes],
     }, device=device)
     rows = []
     for path in files:
-        img = load_image(path)
+        img = load_image(path, max_side)
         target = torch.as_tensor(img, device=device)
         name = os.path.splitext(os.path.basename(path))[0]
         for budget in budgets:
             for seed in seeds:
                 icfg = InitConfig(strategy=strategy, num_gaussians=budget, seed=seed)
-                fkw = {"iters": iters, "render_chunk": render_chunk}
+                fkw = {"iters": iters, "render_chunk": render_chunk, "renderer": renderer}
                 if lr_means is not None:
                     fkw["lr_means"] = lr_means
                 if lr_decay_every is not None:
@@ -59,6 +61,8 @@ def run_rd(images, budgets=(2000, 5000), strategy=DEFAULT_INIT_STRATEGY, seeds=(
                         "strategy": strategy, "iters": iters, "qat_iters": qat_iters,
                         "zlib_level": ccfg_zlib(), "fit_psnr": round(out["psnr"], 4),
                         "n_gaussians": int(field.n),
+                        "fit_qat_mode": "off", "lambda_rate": 0.0,
+                        "qat_rate_bpp": None, "rate_loss": None,
                         "adaptive_stop_reason": out.get("adaptive_stop_reason"),
                         "estimated_raw_bpp": round(estimated_raw_bpp(field, *target.shape[:2]), 4)}
                 for mix in bit_mixes:
@@ -80,6 +84,40 @@ def run_rd(images, budgets=(2000, 5000), strategy=DEFAULT_INIT_STRATEGY, seeds=(
                         rc = codec.rd_point(ctrl, target, fcfg, ccfg)
                         rows.append({**base, "mode": "refine_noste", "qat": False, **_row(rc)})
                         print(rows[-1])
+                    if qat_iters > 0:
+                        for fit_qat_mode in fit_qat_modes:
+                            for lambda_rate in lambda_rates:
+                                qfield = field.detached()
+                                qcfg = replace(
+                                    fcfg,
+                                    iters=qat_iters,
+                                    qat_mode=str(fit_qat_mode),
+                                    lambda_rate=float(lambda_rate),
+                                    qat_bits_means=ccfg.bits_means,
+                                    qat_bits_scales=ccfg.bits_scales,
+                                    qat_bits_rot=ccfg.bits_rot,
+                                    qat_bits_colors=ccfg.bits_colors,
+                                    qat_bits_opacity=ccfg.bits_opacity,
+                                )
+                                qout = fit(qfield, target, qcfg, verbose=False)
+                                qfield = qout["field"]
+                                qccfg = qout.get("qat_codec_config") or ccfg
+                                rr = codec.rd_point(qfield, target, qcfg, qccfg)
+                                rb = qout.get("qat_rate_bpp")
+                                rows.append({
+                                    **base,
+                                    "mode": "fit_qat",
+                                    "qat": True,
+                                    "fit_qat_mode": str(fit_qat_mode),
+                                    "lambda_rate": float(lambda_rate),
+                                    "qat_rate_bpp": None if rb is None else round(float(rb), 6),
+                                    "rate_loss": None if rb is None else round(
+                                        float(lambda_rate) * float(rb), 6
+                                    ),
+                                    "fit_psnr": round(float(qout["psnr"]), 4),
+                                    **_row(rr),
+                                })
+                                print(rows[-1])
 
     _write(rows, outdir, run_config)
     return rows
@@ -105,11 +143,14 @@ def _write(rows, outdir, run_config=None):
     lines = ["# Rate-distortion (bpp vs quality)\n"]
     if run_config is not None:
         lines.append("Config: " + ", ".join(f"{k}={v}" for k, v in run_config.items()) + "\n")
-    lines += ["| image | budget | N | bits (mu/s/rot/c) | mode | bpp | PSNR | MS-SSIM |",
-              "|---|---:|---:|---|---|---:|---:|---:|"]
+    lines += [
+        "| image | budget | N | bits (mu/s/rot/c) | mode | qat mode | lambda | bpp | PSNR | MS-SSIM |",
+        "|---|---:|---:|---|---|---|---:|---:|---:|---:|",
+    ]
     for r in rows:
         lines.append(f"| {r['image']} | {r['budget']} | {r.get('n_gaussians', r['budget'])} "
-                     f"| {r['bits']} | {r.get('mode', '')} "
+                     f"| {r['bits']} | {r.get('mode', '')} | {r.get('fit_qat_mode', 'off')} "
+                     f"| {r.get('lambda_rate', 0.0):.2g} "
                      f"| {r['bpp']:.3f} | {r['psnr']:.2f} | {r['ms_ssim']:.4f} |")
     with open(os.path.join(outdir, "rate_distortion.md"), "w") as f:
         f.write("\n".join(lines) + "\n")
@@ -125,6 +166,10 @@ if __name__ == "__main__":
     p.add_argument("--seeds", type=int, nargs="+", default=[0])
     p.add_argument("--iters", type=int, default=1500)
     p.add_argument("--qat-iters", type=int, default=150)
+    p.add_argument("--fit-qat-modes", nargs="*", default=[])
+    p.add_argument("--lambda-rates", type=float, nargs="*", default=[])
+    p.add_argument("--max-side", type=int, default=None)
+    p.add_argument("--renderer", default="normalized")
     p.add_argument("--lr-means", type=float, default=None)
     p.add_argument("--lr-decay-every", type=int, default=None)
     p.add_argument("--render-chunk", type=int, default=512)
@@ -132,5 +177,7 @@ if __name__ == "__main__":
     p.add_argument("--device", default=None)
     a = p.parse_args()
     run_rd(a.images, budgets=a.budgets, strategy=a.strategy, seeds=a.seeds, iters=a.iters,
-           qat_iters=a.qat_iters, lr_means=a.lr_means, lr_decay_every=a.lr_decay_every,
+           qat_iters=a.qat_iters, fit_qat_modes=tuple(a.fit_qat_modes),
+           lambda_rates=tuple(a.lambda_rates), max_side=a.max_side, renderer=a.renderer,
+           lr_means=a.lr_means, lr_decay_every=a.lr_decay_every,
            render_chunk=a.render_chunk, outdir=a.outdir, device=a.device)
