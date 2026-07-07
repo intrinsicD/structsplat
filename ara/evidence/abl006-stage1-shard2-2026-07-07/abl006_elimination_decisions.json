@@ -1,0 +1,48 @@
+{
+  "protocol": "ABL-006 successive halving",
+  "version": 1,
+  "rule": {
+    "metric": "psnr",
+    "ci_method": "bootstrap_mean_ci",
+    "confidence": 0.95,
+    "pairing_key": [
+      "image",
+      "seed",
+      "budget"
+    ],
+    "leader": "highest mean PSNR among complete paired units in the stage",
+    "survivor": "CI for arm-minus-leader overlaps zero",
+    "elimination": "CI for arm-minus-leader is strictly below zero",
+    "frozen_before_stage1_complete": true
+  },
+  "stages": {
+    "stage1": {
+      "budget": 2000,
+      "seeds": [
+        0,
+        1
+      ],
+      "survivors": null,
+      "eliminated": []
+    },
+    "stage2": {
+      "budget": 5000,
+      "seeds": [
+        0,
+        1
+      ],
+      "survivors": null,
+      "eliminated": []
+    },
+    "stage3": {
+      "budget": 10000,
+      "seeds": [
+        0,
+        1
+      ],
+      "extra_seed": 2,
+      "finalists": null,
+      "eliminated": []
+    }
+  }
+}

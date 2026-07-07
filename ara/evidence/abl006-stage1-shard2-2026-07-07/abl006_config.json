@@ -1,0 +1,109 @@
+{
+  "resolved": {
+    "protocol": "ABL-006 successive halving",
+    "images": [
+      "results/datasets/abl004/kodak24/kodim01.png",
+      "results/datasets/abl004/kodak24/kodim02.png",
+      "results/datasets/abl004/kodak24/kodim03.png",
+      "results/datasets/abl004/kodak24/kodim04.png",
+      "results/datasets/abl004/kodak24/kodim05.png",
+      "results/datasets/abl004/kodak24/kodim06.png",
+      "results/datasets/abl004/kodak24/kodim07.png",
+      "results/datasets/abl004/kodak24/kodim08.png",
+      "results/datasets/abl004/kodak24/kodim09.png",
+      "results/datasets/abl004/kodak24/kodim10.png",
+      "results/datasets/abl004/kodak24/kodim11.png",
+      "results/datasets/abl004/kodak24/kodim12.png",
+      "results/datasets/abl004/kodak24/kodim13.png",
+      "results/datasets/abl004/kodak24/kodim14.png",
+      "results/datasets/abl004/kodak24/kodim15.png",
+      "results/datasets/abl004/kodak24/kodim16.png",
+      "results/datasets/abl004/kodak24/kodim17.png",
+      "results/datasets/abl004/kodak24/kodim18.png",
+      "results/datasets/abl004/kodak24/kodim19.png",
+      "results/datasets/abl004/kodak24/kodim20.png",
+      "results/datasets/abl004/kodak24/kodim21.png",
+      "results/datasets/abl004/kodak24/kodim22.png",
+      "results/datasets/abl004/kodak24/kodim23.png",
+      "results/datasets/abl004/kodak24/kodim24.png",
+      "tests/test_images/COCO_train2014_000000000009.jpg",
+      "tests/test_images/COCO_train2014_000000000025.jpg",
+      "tests/test_images/COCO_train2014_000000000030.jpg",
+      "tests/test_images/COCO_train2014_000000000034.jpg"
+    ],
+    "budgets": [
+      2000,
+      5000,
+      10000
+    ],
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "strategies": [
+      "aniso_onedge",
+      "aniso_flanking",
+      "quadtree_wse",
+      "quadtree_hybrid",
+      "iso_blue_noise",
+      "floyd_steinberg"
+    ],
+    "planned_cells": 336,
+    "run_groups": [
+      {
+        "run_group": "stage1_budget2000",
+        "stage": 1,
+        "budgets": [
+          2000
+        ],
+        "seeds": [
+          0,
+          1
+        ],
+        "strategies": [
+          "aniso_flanking",
+          "aniso_onedge",
+          "floyd_steinberg",
+          "iso_blue_noise",
+          "quadtree_hybrid",
+          "quadtree_wse"
+        ]
+      }
+    ],
+    "decisions_path": "results/abl004_confirmation/abl006_elimination_decisions.json",
+    "rule": {
+      "metric": "psnr",
+      "ci_method": "bootstrap_mean_ci",
+      "confidence": 0.95,
+      "pairing_key": [
+        "image",
+        "seed",
+        "budget"
+      ],
+      "leader": "highest mean PSNR among complete paired units in the stage",
+      "survivor": "CI for arm-minus-leader overlaps zero",
+      "elimination": "CI for arm-minus-leader is strictly below zero",
+      "frozen_before_stage1_complete": true
+    },
+    "max_side": 768,
+    "iters": 1500,
+    "renderer": "cuda",
+    "render_chunk": 512,
+    "target_psnr": 35.0,
+    "target_psnrs": [
+      28.0,
+      30.0,
+      32.0
+    ],
+    "baseline": "aniso_onedge"
+  },
+  "device": null,
+  "versions": {
+    "torch": "2.7.0+cu126",
+    "torch_cuda": "12.6",
+    "cuda_available": true,
+    "numpy": "2.2.4",
+    "structsplat": "0.1.0"
+  }
+}

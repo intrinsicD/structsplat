@@ -46,10 +46,11 @@ The staged plan writes `abl006_plan.csv`, `abl006_config.json`,
 arms are not counted as missing high-budget cells. Harness evidence is committed under
 `ara/evidence/abl006-halving-harness-2026-07-07/`.
 
-Ran the first bounded stage-1 shard after preparing the full Kodak-24 + COCO4 image set:
-`kodim01`, budget 2000, seeds {0,1}, all six arms. The shard completed 12/12 requested cells and
-the staged analysis is now 12/336 complete. Evidence is under
-`ara/evidence/abl006-stage1-shard1-2026-07-07/`. This is not enough for elimination decisions.
+Ran two bounded stage-1 shards after preparing the full Kodak-24 + COCO4 image set:
+`kodim01` and `kodim02`, budget 2000, seeds {0,1}, all six arms. The shards completed 24/24
+requested cells and the staged analysis is now 24/336 complete. Evidence is under
+`ara/evidence/abl006-stage1-shard1-2026-07-07/` and
+`ara/evidence/abl006-stage1-shard2-2026-07-07/`. This is not enough for elimination decisions.
 
 ## Interfaces touched
 `benchmarks/abl004_confirmation.py`, `ara/evidence/`, `tasks/ABL-004-controls-and-full-run.md`,
