@@ -19,10 +19,13 @@ from structsplat.fit import (
     _make_optimizer,
     _maybe_prune,
     _moment_preserving_duplicate_indices,
+    _pixel_loss,
+    _prepare_loss_weight_map,
     _residual_candidate_pixels,
     _relocate_from_residual,
     _solve_colors_normalized,
     _split_from_residual,
+    _weighted_pixel_loss,
     differentiable_rate_bpp,
     estimated_raw_bpp,
     fit,
@@ -38,6 +41,55 @@ def test_lr_factor_is_global_step_decay():
     assert _lr_factor(cfg, 100) == 0.5
     assert _lr_factor(cfg, 250) == 0.25
     assert _lr_factor(FitConfig(lr_decay_every=None), 1000) == 1.0
+
+
+def test_unweighted_pixel_loss_matches_legacy_reduction():
+    pred = torch.rand(5, 6, 3)
+    target = torch.rand(5, 6, 3)
+    for kind in ("l1", "l2", "charbonnier"):
+        legacy = _pixel_loss(pred, target, kind)
+        weighted = _weighted_pixel_loss(pred, target, kind, 1e-3, None)
+        assert torch.equal(legacy, weighted)
+
+
+def test_tensor_loss_weight_map_is_constant_and_normalized():
+    target = torch.zeros(4, 5, 3)
+    energy = torch.zeros(4, 5)
+    energy[:, 2:] = 4.0
+    cfg = FitConfig(loss_weighting="tensor", loss_weight_beta=2.0)
+
+    weight = _prepare_loss_weight_map(target, cfg, energy)
+
+    assert weight is not None
+    assert weight.requires_grad is False
+    assert float(weight.min()) == pytest.approx(1.0)
+    assert float(weight.max()) == pytest.approx(3.0)
+
+
+def test_fit_tensor_loss_weighting_has_finite_gradients_and_metadata():
+    img = np.zeros((16, 16, 3), np.float32)
+    img[:, 8:] = 1.0
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=12, seed=0))
+
+    out = fit(
+        field,
+        target,
+        FitConfig(
+            iters=4,
+            log_every=1,
+            ssim_weight=0.0,
+            loss_weighting="tensor",
+            loss_weight_beta=1.5,
+        ),
+        verbose=False,
+    )
+
+    assert torch.isfinite(out["field"].means).all()
+    assert out["loss_weighting"] == "tensor"
+    assert out["loss_weight_beta"] == pytest.approx(1.5)
+    assert out["loss_weight_mean"] is not None and out["loss_weight_mean"] >= 1.0
+    assert out["loss_weight_max"] is not None and out["loss_weight_max"] <= 2.5 + 1e-6
 
 
 def test_carry_adam_state_preserves_moments_across_prune_and_split():

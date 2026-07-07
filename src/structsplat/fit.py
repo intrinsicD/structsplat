@@ -27,6 +27,7 @@ from .render import (
     render_field,
 )
 from . import metrics as M
+from . import structure_tensor as st
 
 # Renderer modes that accumulate additively (ADR-0006): a new/split Gaussian stacks on the
 # existing accumulation, so it must carry the residual color, not the full target color.
@@ -189,15 +190,57 @@ def _carry_adam_state(opt_old, field: GaussianField, cfg: FitConfig,
     return opt_new
 
 
+def _pixel_loss_map(pred: torch.Tensor, target: torch.Tensor, kind: str,
+                    charbonnier_eps: float = 1e-3) -> torch.Tensor:
+    diff = pred - target
+    if kind == "l1":
+        return diff.abs().mean(dim=2)
+    if kind == "l2":
+        return (diff * diff).mean(dim=2)
+    if kind == "charbonnier":
+        return torch.sqrt(diff * diff + charbonnier_eps ** 2).mean(dim=2)
+    raise ValueError(f"unknown pixel_loss {kind!r}; expected l1, l2, or charbonnier")
+
+
 def _pixel_loss(pred: torch.Tensor, target: torch.Tensor, kind: str,
                 charbonnier_eps: float = 1e-3) -> torch.Tensor:
-    if kind == "l1":
-        return (pred - target).abs().mean()
-    if kind == "l2":
-        return F.mse_loss(pred, target)
-    if kind == "charbonnier":
-        return torch.sqrt((pred - target) ** 2 + charbonnier_eps ** 2).mean()
-    raise ValueError(f"unknown pixel_loss {kind!r}; expected l1, l2, or charbonnier")
+    return _pixel_loss_map(pred, target, kind, charbonnier_eps).mean()
+
+
+def _weighted_pixel_loss(pred: torch.Tensor, target: torch.Tensor, kind: str,
+                         charbonnier_eps: float, weight: torch.Tensor | None) -> torch.Tensor:
+    loss_map = _pixel_loss_map(pred, target, kind, charbonnier_eps)
+    if weight is None:
+        return loss_map.mean()
+    w = weight.to(device=loss_map.device, dtype=loss_map.dtype)
+    return (loss_map * w).sum() / w.sum().clamp_min(1e-12)
+
+
+def _prepare_loss_weight_map(target: torch.Tensor, cfg: FitConfig,
+                             loss_weight_map=None) -> torch.Tensor | None:
+    if cfg.loss_weighting == "none":
+        return None
+    if cfg.loss_weighting != "tensor":
+        raise ValueError(
+            f"loss_weighting must be none or tensor, got {cfg.loss_weighting!r}")
+    if loss_weight_map is None:
+        energy = st.compute(target.detach().cpu().numpy()).energy
+        weight = torch.as_tensor(energy, device=target.device, dtype=target.dtype)
+    else:
+        weight = torch.as_tensor(loss_weight_map, device=target.device, dtype=target.dtype)
+    if weight.ndim == 3 and weight.shape[-1] == 1:
+        weight = weight[..., 0]
+    if weight.ndim != 2:
+        raise ValueError(f"loss_weight_map must have shape (H,W), got {tuple(weight.shape)}")
+    H, W = target.shape[:2]
+    if tuple(weight.shape) != (H, W):
+        weight = F.interpolate(
+            weight[None, None], size=(H, W), mode="bilinear", align_corners=False
+        )[0, 0]
+    weight = torch.nan_to_num(weight.detach(), nan=0.0, posinf=0.0, neginf=0.0).clamp_min(0.0)
+    ref = weight.max().clamp_min(1e-12)
+    norm = torch.where(ref > 1e-12, (weight / ref).clamp(0.0, 1.0), torch.zeros_like(weight))
+    return (1.0 + float(cfg.loss_weight_beta) * norm).detach()
 
 
 def _loss_kind(cfg: FitConfig, it: int) -> str:
@@ -1520,8 +1563,9 @@ def _adaptive_growth_from_residual(field: GaussianField, target: torch.Tensor,
 
 
 def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: bool = True,
-        sched_offset: int = 0, sched_total: int | None = None) -> dict:
+        sched_offset: int = 0, sched_total: int | None = None, loss_weight_map=None) -> dict:
     H, W = target.shape[0], target.shape[1]
+    pixel_weight = _prepare_loss_weight_map(target, cfg, loss_weight_map)
     field = _ensure_color_basis(field, cfg)
     if _qat_enabled(cfg) and field.color_grads is not None:
         raise ValueError(
@@ -1610,7 +1654,9 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         # count that produced this render/PSNR, before any prune/split restructures the field;
         # logging the post-restructure field.n would pair a pre-step PSNR with a post-step N.
         n_at_render = field.n
-        pix = _pixel_loss(img, target, _loss_kind(cfg, it), cfg.charbonnier_eps)
+        pix = _weighted_pixel_loss(
+            img, target, _loss_kind(cfg, it), cfg.charbonnier_eps, pixel_weight
+        )
         if cfg.ssim_weight == 0.0:
             loss = pix
         else:
@@ -1972,5 +2018,13 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             "qat_rate_bpp": float(differentiable_rate_bpp(field, H, W, cfg).detach().cpu())
             if cfg.lambda_rate > 0.0 else None,
             "qat_codec_config": qat_ccfg,
+            "loss_weighting": cfg.loss_weighting,
+            "loss_weight_beta": float(cfg.loss_weight_beta),
+            "loss_weight_mean": (
+                None if pixel_weight is None else float(pixel_weight.mean().detach().cpu())
+            ),
+            "loss_weight_max": (
+                None if pixel_weight is None else float(pixel_weight.max().detach().cpu())
+            ),
         }
     return out

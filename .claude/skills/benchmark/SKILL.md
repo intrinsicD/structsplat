@@ -77,6 +77,12 @@ density radius / quadtree leaf side rather than image-side scaling. The difficul
 protocol rejected it for promotion: it fixed most of the old absolute-cap damage, but averaged
 -0.3733 dB PSNR against matching uncapped rows over 48 paired cells and lost at budget 2000.
 
+Structure-tensor loss weighting is also searchable, not a default. FIT-012 adds
+`--loss-weight-modes none tensor` (`tensor_<beta>` accepted), which weights only the pixel-loss
+term; SSIM and all reported metrics stay unweighted. The difficult-four fair-regime slice was
+strategy-dependent: tensor weighting helped `aniso_onedge`, hurt `quadtree_wse`, was nearly
+PSNR-neutral overall (+0.0061 dB over 16 pairs), and lost AUC on average.
+
 ## Experimental-validity rules (BENCH-002 — a sweep result is trustworthy by construction)
 - **Equal budgets.** Refine (adding) arms are capped at the cell budget and start below it so
   their planned additions land *at* budget — never compare a refine arm that carries +split_count

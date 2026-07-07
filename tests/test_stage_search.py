@@ -13,6 +13,7 @@ from benchmarks.stage_search import (
     _canonicalize,
     _color_solve_kwargs,
     _legacy_refine_config,
+    _loss_weight_kwargs,
     _refine_kwargs,
     _refine_kwargs_from_config,
     _row_temper_kwargs,
@@ -63,6 +64,8 @@ def test_stage_search_writes_ranked_outputs(tmp_path):
     assert len(rows) == 4
     assert {r["tensor"] for r in rows} == {"central", "scharr"}
     assert {r["opacity"] for r in rows} == {"none", "constant"}
+    assert all(r["loss_weighting"] == "none" for r in rows)
+    assert all(r["edge_mae"] >= 0.0 for r in rows)
     assert (outdir / "stage_search.json").exists()
     assert (outdir / "stage_search.csv").exists()
     assert (outdir / "summary.md").exists()
@@ -182,6 +185,7 @@ def test_stage_search_resume_skips_completed_cells_and_limits_new_cells(tmp_path
         "color_basis_modes": ["constant"],
         "color_solve_modes": ["none"],
         "pixel_losses": ["l1", "charbonnier"],
+        "loss_weight_modes": ["none"],
         "optimizers": ["adam"],
         "lr_schedules": ["none"],
         "refine_modes": ["none"],
@@ -370,6 +374,44 @@ def test_feature_relative_scale_cap_is_stage_axis():
         "scale_cap_max": None,
     }
     assert "feature_rel" in INFLUENCE_DEFAULTS["scale_cap_modes"]
+
+
+def test_loss_weighting_is_stage_axis():
+    assert _loss_weight_kwargs("none") == {"loss_weighting": "none"}
+    assert _loss_weight_kwargs("tensor") == {
+        "loss_weighting": "tensor",
+        "loss_weight_beta": 1.0,
+    }
+    assert _loss_weight_kwargs("tensor_2.5") == {
+        "loss_weighting": "tensor",
+        "loss_weight_beta": 2.5,
+    }
+    assert "tensor" in INFLUENCE_DEFAULTS["loss_weight_modes"]
+
+
+def test_stage_search_runs_tensor_loss_weighting(tmp_path):
+    img_path = tmp_path / "toy.png"
+    _write_toy(img_path)
+    rows = run_stage_search(
+        [str(img_path)], budgets=[16], seeds=[0], iters=3, max_side=None,
+        strategies=["aniso_onedge"], tensor_operators=["central"], tensor_colors=["luma"],
+        density_modes=["structure"], sampling_modes=["density_random"],
+        orientation_modes=["tensor"], color_modes=["bilinear"], scale_modes=["spacing"],
+        scale_cap_modes=["none"], opacity_modes=["none"], renderers=["normalized"],
+        aa_dilations=[0.0], color_basis_modes=["constant"], color_solve_modes=["none"],
+        pixel_losses=["l1"], loss_weight_modes=["none", "tensor"],
+        optimizers=["adam"], lr_schedules=["none"], refine_modes=["none"],
+        pyramid_modes=["single"], render_chunk=8, outdir=str(tmp_path / "loss_weight"),
+        device="cpu",
+    )
+
+    assert len(rows) == 2
+    by_weight = {r["loss_weight"]: r for r in rows}
+    assert by_weight["none"]["loss_weighting"] == "none"
+    assert by_weight["none"]["loss_weight_mean"] is None
+    assert by_weight["tensor"]["loss_weighting"] == "tensor"
+    assert by_weight["tensor"]["loss_weight_mean"] >= 1.0
+    assert by_weight["tensor"]["loss_weight_max"] >= by_weight["tensor"]["loss_weight_mean"]
 
 
 def test_split_recovery_levers_are_stage_axes(tmp_path):
@@ -643,7 +685,7 @@ def test_stage_influence_writes_paired_deltas(tmp_path):
         orientation_modes=["tensor"], color_modes=["bilinear"], scale_modes=["spacing"],
         scale_cap_modes=["feature12"], opacity_modes=["none"], renderers=["normalized"],
         aa_dilations=[0.0], color_basis_modes=["constant"], color_solve_modes=["none"],
-        pixel_losses=["l1"],
+        pixel_losses=["l1"], loss_weight_modes=["none"],
         optimizers=["adam"], lr_schedules=["none"], refine_modes=["none"],
         pyramid_modes=["single"], target_psnr=5.0,
         render_chunk=8, outdir=str(outdir), device="cpu",

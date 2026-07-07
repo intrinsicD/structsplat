@@ -60,6 +60,8 @@ def cmd_fit(args):
                      render_chunk=args.chunk,
                      optimizer=args.optimizer,
                      pixel_loss=args.pixel_loss, ssim_weight=args.ssim_weight,
+                     loss_weighting=args.loss_weighting,
+                     loss_weight_beta=args.loss_weight_beta,
                      ssim_backend=args.ssim_backend,
                      loss_warmup_iters=args.loss_warmup_iters,
                      loss_warmup_pixel_loss=args.loss_warmup_pixel_loss,
@@ -161,7 +163,8 @@ def cmd_stage_search(args):
         aa_dilations=args.aa_dilations,
         color_basis_modes=args.color_basis_modes,
         color_solve_modes=args.color_solve_modes,
-        pixel_losses=args.pixel_losses, optimizers=args.optimizers,
+        pixel_losses=args.pixel_losses, loss_weight_modes=args.loss_weight_modes,
+        optimizers=args.optimizers,
         lr_schedules=args.lr_schedules, refine_modes=args.refine_modes,
         state_seed_modes=args.state_seed_modes,
         row_temper_modes=args.row_temper_modes,
@@ -324,6 +327,8 @@ def main():
                    help="iterations used to ramp scheduled support fade off")
     f.add_argument("--optimizer", choices=["adam", "adamw", "adan"], default="adam")
     f.add_argument("--pixel-loss", choices=["l1", "l2", "charbonnier"], default="l1")
+    f.add_argument("--loss-weighting", choices=["none", "tensor"], default="none")
+    f.add_argument("--loss-weight-beta", type=float, default=1.0)
     f.add_argument("--loss-warmup-iters", type=int, default=0)
     f.add_argument("--loss-warmup-pixel-loss", choices=["l1", "l2", "charbonnier"], default="l2")
     f.add_argument("--ssim-weight", type=float, default=0.3)
@@ -434,6 +439,7 @@ def main():
     s.add_argument("--color-basis-modes", nargs="+", default=None)
     s.add_argument("--color-solve-modes", nargs="+", default=None)
     s.add_argument("--pixel-losses", nargs="+", default=None)
+    s.add_argument("--loss-weight-modes", nargs="+", default=None)
     s.add_argument("--optimizers", nargs="+", default=None)
     s.add_argument("--lr-schedules", nargs="+", default=None)
     s.add_argument("--refine-modes", nargs="+", default=None)

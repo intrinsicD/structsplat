@@ -51,9 +51,9 @@ python -m benchmarks.abl004_confirmation analyze --outdir results/abl004_confirm
 ```
 
 `stage_search.py` runs `ABL-002`: factorial or influence-mode sweeps across tensor, density,
-sampling, orientation, color, affine color basis, scale-cap, renderer, loss, optimizer, factored
-refinement (`refine_site`, `refine_primitive`, `refine_nms` plus color/prune/relocate flags), and
-pyramid stages.
+sampling, orientation, color, affine color basis, scale-cap, renderer, pixel loss, optional
+pixel-loss weighting, optimizer, factored refinement (`refine_site`, `refine_primitive`,
+`refine_nms` plus color/prune/relocate flags), and pyramid stages.
 Caveat: factorial marginals are observational when axes co-vary; use `--mode influence` for paired
 one-factor deltas around a baseline. Outputs include `stage_search.jsonl`, `stage_search.json`,
 `stage_search.csv`, `summary.md`, and a local scalar `index.html` overview.
@@ -76,9 +76,12 @@ seeding and young-row tempering did not improve split recovery, and scheduled fa
 fade-on AUC at 5k/10k despite preserving fade-off final PSNR. INIT-008 adds
 `scale_cap=feature_rel`, a local-radius feature cap. The difficult-four fair-density protocol
 keeps it searchable but default off: it repaired most old `feature` cap losses but averaged
--0.3733 dB PSNR versus matching uncapped rows. FIT-008 adaptive count is a global
-controller
-rather than a stage axis: add `--adaptive-count`
+-0.3733 dB PSNR versus matching uncapped rows. FIT-012 adds
+`--loss-weight-modes none tensor` (`tensor_<beta>` accepted) for structure-tensor weighting of the
+pixel-loss term only; SSIM and reported metrics remain unweighted. The difficult-four fair-regime
+slice keeps it searchable but default off: tensor weighting was PSNR-neutral overall (+0.0061 dB
+over 16 pairs), helped `aniso_onedge`, hurt `quadtree_wse`, and lost AUC on average. FIT-008
+adaptive count is a global controller rather than a stage axis: add `--adaptive-count`
 with `--max-gaussians` and/or `--target-bpp` plus optional `--target-psnr`/`--target-ms-ssim`.
 Rows report selected N, raw-attribute bpp, adaptive event counts, and stop reason so fixed-N and
 adaptive-N sweeps can be compared fairly.

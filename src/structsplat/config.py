@@ -172,6 +172,8 @@ class FitConfig:
     optimizer: str = "adam"            # adam, adamw, or adan
     pixel_loss: str = "l1"             # l1, l2, or charbonnier; SSIM term is mixed separately
     charbonnier_eps: float = 1e-3
+    loss_weighting: str = "none"       # none or tensor; weights only the pixel-loss term
+    loss_weight_beta: float = 1.0      # tensor mode: w = 1 + beta * normalized tensor energy
     loss_warmup_iters: int = 0
     loss_warmup_pixel_loss: str = "l2"
     ssim_weight: float = 0.3           # loss = (1-w)*L1 + w*(1-SSIM); Instant-GI/AIR default
@@ -281,6 +283,11 @@ class FitConfig:
                 f"color_solve_maxiter must be > 0, got {self.color_solve_maxiter}")
         if self.qat_mode not in ("off", "ste", "noise"):
             raise ValueError(f"qat_mode must be off, ste, or noise, got {self.qat_mode!r}")
+        if self.loss_weighting not in ("none", "tensor"):
+            raise ValueError(
+                f"loss_weighting must be none or tensor, got {self.loss_weighting!r}")
+        if self.loss_weight_beta < 0.0:
+            raise ValueError(f"loss_weight_beta must be >= 0, got {self.loss_weight_beta}")
         if self.lambda_rate < 0.0:
             raise ValueError(f"lambda_rate must be >= 0, got {self.lambda_rate}")
         for name in (

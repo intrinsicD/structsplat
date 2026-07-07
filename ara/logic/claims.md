@@ -48,3 +48,14 @@ has a small non-significant 10000-Gaussian PSNR lead while `aniso_onedge` has hi
 The claim that survives is structure-tensor-driven, density-aware placement, with `quadtree_wse`
 as the high-budget PSNR default candidate and `aniso_onedge` as the low-budget/MS-SSIM alternative.
 Default retirement is INIT-007 (ADR-0013).
+
+## C06: Structure-tensor loss weighting is searchable, not a default
+
+FIT-012 added `loss_weight=tensor`, which weights only the pixel-loss term by normalized
+structure-tensor energy while leaving SSIM and all reported metrics unweighted. The fair-regime
+difficult-four slice at budgets 2000/5000 produced 16 paired tensor-vs-none cells: mean PSNR was
+effectively neutral (+0.0061 dB), edge MAE improved in 10/16 pairs, but mean AUC fell by -0.0107
+and the result split by strategy. Tensor weighting helped `aniso_onedge` (+0.2661 dB mean PSNR)
+and hurt `quadtree_wse` (-0.2538 dB mean PSNR). Keep it available as a stage-search axis and
+default it off unless a future task proves a narrower promoted recipe. See
+`ara/evidence/fit012-edge-weighted-loss-2026-07-07/`.

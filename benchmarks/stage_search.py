@@ -26,6 +26,7 @@ from statistics import mean, pstdev
 from typing import Any
 
 import numpy as np
+import torch
 
 from benchmarks.common import load_image as _load_image
 from benchmarks.common import HEADLINE_TARGET_PSNRS, headline_target_psnrs
@@ -46,7 +47,7 @@ from structsplat.config import (
 STAGE_KEYS = [
     "strategy", "tensor", "tensor_color", "density", "sampling", "orientation", "color",
     "scale", "scale_cap", "opacity", "renderer", "aa", "color_basis", "color_solve", "loss",
-    "optimizer", "lr_schedule", "refine_site", "refine_primitive", "refine_nms",
+    "loss_weight", "optimizer", "lr_schedule", "refine_site", "refine_primitive", "refine_nms",
     "refine_color", "refine_prune", "refine_relocate", "state_seed", "row_temper",
     "support_fade", "pyramid",
 ]
@@ -69,6 +70,7 @@ FACTORIAL_DEFAULTS: dict[str, tuple[str, ...]] = {
     "color_basis_modes": ("constant",),
     "color_solve_modes": ("none",),
     "pixel_losses": ("l1", "charbonnier"),
+    "loss_weight_modes": ("none",),
     "optimizers": ("adam",),
     "lr_schedules": ("none", "cosine"),
     "refine_sites": ("none", "residual"),
@@ -108,6 +110,7 @@ INFLUENCE_DEFAULTS: dict[str, tuple[str, ...]] = {
     "color_basis_modes": ("constant", "affine"),
     "color_solve_modes": ("none", "every10"),
     "pixel_losses": ("l1", "l2", "charbonnier"),
+    "loss_weight_modes": ("none", "tensor"),
     "optimizers": ("adam", "adamw", "adan"),
     "lr_schedules": ("none", "cosine", "step"),
     "refine_sites": (
@@ -137,6 +140,7 @@ _AXIS_TO_KEY = {
     "scale_cap_modes": "scale_cap", "opacity_modes": "opacity", "renderers": "renderer",
     "aa_dilations": "aa", "color_basis_modes": "color_basis",
     "color_solve_modes": "color_solve", "pixel_losses": "loss",
+    "loss_weight_modes": "loss_weight",
     "optimizers": "optimizer", "lr_schedules": "lr_schedule",
     "refine_modes": "refine",
     "refine_sites": "refine_site", "refine_primitives": "refine_primitive",
@@ -337,6 +341,7 @@ def _normalize_refine_config(cfg: dict[str, Any]) -> dict[str, Any]:
     c.setdefault("state_seed", "off")
     c.setdefault("row_temper", "off")
     c.setdefault("support_fade", "off")
+    c.setdefault("loss_weight", "none")
     c["refine"] = _refine_label(c)
     return c
 
@@ -501,6 +506,24 @@ def _support_fade_kwargs(mode: str) -> dict[str, Any]:
     raise ValueError(f"unknown support_fade mode {mode!r}; expected off, on, or until<F>")
 
 
+def _loss_weight_kwargs(mode: str) -> dict[str, Any]:
+    if mode in ("off", "none", "false", "0"):
+        return {"loss_weighting": "none"}
+    if mode in ("tensor", "edge", "structure", "on", "true", "1"):
+        return {"loss_weighting": "tensor", "loss_weight_beta": 1.0}
+    for prefix in ("tensor", "edge", "structure"):
+        if mode.startswith(prefix):
+            suffix = mode[len(prefix):].lstrip("_")
+            try:
+                beta = float(suffix)
+            except ValueError as exc:
+                raise ValueError(f"cannot parse loss_weight mode {mode!r}") from exc
+            if beta < 0.0:
+                raise ValueError(f"loss_weight beta must be >= 0, got {mode!r}")
+            return {"loss_weighting": "tensor", "loss_weight_beta": beta}
+    raise ValueError(f"unknown loss_weight mode {mode!r}; expected none or tensor[_beta]")
+
+
 def _split_recovery_stats(history: dict[str, Any]) -> dict[str, float | None]:
     events = history.get("split_events", [])
     its = history.get("iter", [])
@@ -543,6 +566,25 @@ def _seconds_to_target(history: dict, iters_to_target) -> float | None:
     return float(np.interp(iters_to_target, its, el))
 
 
+def _edge_mae(render, target) -> float:
+    render = render.detach().clamp(0, 1)
+    target = target.detach().clamp(0, 1)
+    luma = target.new_tensor([0.2126, 0.7152, 0.0722])
+    err = ((render - target).abs() * luma).sum(dim=2)
+    gray = (target * luma).sum(dim=2)
+    gx = gray.new_zeros(gray.shape)
+    gy = gray.new_zeros(gray.shape)
+    gx[:, 1:-1] = 0.5 * (gray[:, 2:] - gray[:, :-2])
+    gx[:, 0] = gray[:, 1] - gray[:, 0] if gray.shape[1] > 1 else 0.0
+    gx[:, -1] = gray[:, -1] - gray[:, -2] if gray.shape[1] > 1 else 0.0
+    gy[1:-1, :] = 0.5 * (gray[2:, :] - gray[:-2, :])
+    gy[0, :] = gray[1, :] - gray[0, :] if gray.shape[0] > 1 else 0.0
+    gy[-1, :] = gray[-1, :] - gray[-2, :] if gray.shape[0] > 1 else 0.0
+    edge = torch.sqrt(gx * gx + gy * gy)
+    weight = 0.1 + edge / edge.mean().clamp_min(1e-6)
+    return float((err * weight).mean().detach().cpu())
+
+
 def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight,
              ssim_backend, flank_offset, max_axis_ratio, coherence_power, init_scale_mult,
              density_base, density_power, flat_frac, corner_frac, grad_sigma, tensor_sigma,
@@ -554,6 +596,7 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
              adaptive_min_delta_psnr, adaptive_patience, early_stop_patience,
              early_stop_min_delta, early_stop_min_iters, log_every, verbose):
     from structsplat import init as _init
+    from structsplat import structure_tensor as _st
     from structsplat.fit import fit
     from structsplat.pyramid import fit_pyramid
 
@@ -565,6 +608,9 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         flat_frac=flat_frac,
         corner_frac=corner_frac,
     )
+    loss_tensor = None
+    if cfg["loss_weight"] not in ("none", "off"):
+        loss_tensor = _st.compute(img, scfg)
     icfg = InitConfig(
         strategy=cfg["strategy"],
         num_gaussians=budget,
@@ -595,6 +641,7 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         ssim_backend=ssim_backend,
         compute_lpips=compute_lpips,
         pixel_loss=cfg["loss"],
+        **_loss_weight_kwargs(cfg["loss_weight"]),
         optimizer=cfg["optimizer"],
         lr_schedule=cfg["lr_schedule"],
         # only step reads it; leaking it into schedule="none" configs would silently
@@ -628,9 +675,14 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
 
     start = time.time()
     if cfg["pyramid"] == "single":
-        field = _init.build_field(img, icfg, scfg, device=target.device)
+        field = _init.build_field(
+            img, icfg, scfg, tensor=loss_tensor, device=target.device
+        )
         init_seconds = time.time() - start
-        out = fit(field, target, fcfg, verbose=verbose)
+        out = fit(
+            field, target, fcfg, verbose=verbose,
+            loss_weight_map=None if loss_tensor is None else loss_tensor.energy,
+        )
         elapsed = time.time() - start
     elif cfg["pyramid"] == "pyramid":
         init_seconds = 0.0
@@ -639,7 +691,10 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
             level_fractions=list(pyramid_fractions),
             iters_per_level=pyramid_iters_per_level,
         )
-        out = fit_pyramid(img, target, icfg, fcfg, pcfg, scfg, verbose=verbose)
+        out = fit_pyramid(
+            img, target, icfg, fcfg, pcfg, scfg, verbose=verbose,
+            loss_weight_map=None if loss_tensor is None else loss_tensor.energy,
+        )
         elapsed = time.time() - start
     else:
         raise ValueError(f"unknown pyramid mode {cfg['pyramid']!r}; expected single or pyramid")
@@ -677,6 +732,7 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         "ssim": round(float(out["ssim"]), 5),
         "ms_ssim": round(float(out["ms_ssim"]), 5),
         "lpips": out.get("lpips"),
+        "edge_mae": round(_edge_mae(out["render"], target), 6),
         "auc_psnr": _psnr_auc(
             history,
             nominal_iters=iters if early_stop_patience is not None else None,
@@ -714,6 +770,10 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         "color_solve_relative_residual_mean": event_mean(
             color_solve_events, "relative_residual"
         ),
+        "loss_weighting": fcfg.loss_weighting,
+        "loss_weight_beta": float(fcfg.loss_weight_beta),
+        "loss_weight_mean": out.get("loss_weight_mean"),
+        "loss_weight_max": out.get("loss_weight_max"),
         "relocate_event_count": len(history.get("relocate_events", [])),
         "seed_new_row_optimizer_state": bool(fcfg.seed_new_row_optimizer_state),
         "new_row_temper_iters": int(fcfg.new_row_temper_iters),
@@ -763,6 +823,7 @@ def run_stage_search(
     color_basis_modes=None,
     color_solve_modes=None,
     pixel_losses=None,
+    loss_weight_modes=None,
     optimizers=None,
     lr_schedules=None,
     refine_modes=None,
@@ -848,7 +909,8 @@ def run_stage_search(
         "aa_dilations": aa_dilations,
         "color_basis_modes": color_basis_modes,
         "color_solve_modes": color_solve_modes,
-        "pixel_losses": pixel_losses, "optimizers": optimizers,
+        "pixel_losses": pixel_losses, "loss_weight_modes": loss_weight_modes,
+        "optimizers": optimizers,
         "lr_schedules": lr_schedules,
         "state_seed_modes": state_seed_modes,
         "row_temper_modes": row_temper_modes,
@@ -1458,6 +1520,8 @@ def main():
     p.add_argument("--color-solve-modes", nargs="+", default=None,
                    help="none, every10, or every<N>; normalized renderer only")
     p.add_argument("--pixel-losses", nargs="+", default=None)
+    p.add_argument("--loss-weight-modes", nargs="+", default=None,
+                   help="none, tensor, or tensor_<beta>; weights only the pixel-loss term")
     p.add_argument("--optimizers", nargs="+", default=None)
     p.add_argument("--lr-schedules", nargs="+", default=None)
     p.add_argument("--refine-modes", nargs="+", default=None,
@@ -1543,7 +1607,8 @@ def main():
         renderers=a.renderers, aa_dilations=a.aa_dilations,
         color_basis_modes=a.color_basis_modes,
         color_solve_modes=a.color_solve_modes,
-        pixel_losses=a.pixel_losses, optimizers=a.optimizers,
+        pixel_losses=a.pixel_losses, loss_weight_modes=a.loss_weight_modes,
+        optimizers=a.optimizers,
         lr_schedules=a.lr_schedules, refine_modes=a.refine_modes,
         refine_sites=a.refine_sites,
         refine_primitives=a.refine_primitives,
