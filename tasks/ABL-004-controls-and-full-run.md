@@ -40,10 +40,10 @@ conditions and honest controls?
 - [x] Cross-repo matrix re-run on images disjoint from the four used for config selection,
       with a `structsplat_shipped_defaults` row alongside `structsplat_current`; O14/N17
       reworded to "best-searched config vs repo-inspired policy analogues".
-- [ ] Summary artifacts (summary.md, metrics.csv, config.json) committed under
+- [x] Summary artifacts (summary.md, metrics.csv, config.json) committed under
       `ara/evidence/` with evidence-index entries (results/ stays gitignored; curated evidence
       does not) — closing the "every quantitative claim cites absent files" gap.
-- [ ] README's hypothesis section updated with the measured answer (either direction), and
+- [x] README's hypothesis section updated with the measured answer (either direction), and
       `ara/logic/claims.md` populated with the promoted/parked claims.
 - [ ] ABL-001's status updated accordingly (done or failed-with-findings).
 
@@ -156,6 +156,15 @@ conditions and honest controls?
   followed by `quadtree_wse` (35.7700), `iso_blue_noise` (35.7505), `quadtree_hybrid`
   (35.7436), Floyd-Steinberg (35.5835), and `aniso_flanking` (35.5701). Across the current
   two-image 10000-Gaussian aggregate, `quadtree_wse` narrowly leads mean PSNR (31.8131).
+- 2026-07-07: Completed ABL-006, the predeclared successive-halving replacement for the remaining
+  flat confirmation. Evidence: `ara/evidence/abl006-complete-2026-07-07/`. The staged run completed
+  728/728 cells with 0 missing, using Kodak-24 + COCO4, exact CUDA, max-side 768, 1500 iterations,
+  and 3-seed finalist confirmation. `aniso_flanking`, `quadtree_hybrid`, `iso_blue_noise`, and
+  Floyd-Steinberg were eliminated at stage 1. `quadtree_wse` is the significant budget-5000 PSNR
+  winner (+0.0930 dB vs `aniso_onedge`, 95% CI [+0.0168, +0.1700]) and has a small non-significant
+  budget-10000 PSNR lead; `aniso_onedge` remains the low-budget/MS-SSIM alternative. README and
+  `ara/logic/claims.md` now cite this measured answer. ABL-004 remains partial only because its
+  broader original scope still includes the flat full ABL-001/20k/control matrix.
 
 ## Decision-grade staged protocol
 

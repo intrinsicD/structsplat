@@ -286,3 +286,62 @@ def test_halving_analysis_uses_staged_expected_counts(tmp_path):
     assert elimination[0]["strategy"] == "aniso_onedge"
     index = (tmp_path / "index.html").read_text(encoding="utf-8")
     assert "ABL-006 Successive-Halving Overview" in index
+
+
+def test_halving_rank_stability_uses_staged_expected_arms(tmp_path):
+    spec = ConfirmationSpec(
+        images=("a.png",),
+        budgets=(2000, 5000, 10000),
+        seeds=(0, 1, 2),
+        strategies=("aniso_onedge", "aniso_flanking", "quadtree_wse"),
+        max_side=16,
+        iters=2,
+        renderer="normalized",
+        baseline="aniso_onedge",
+    )
+    decisions = default_halving_decisions(spec)
+    decisions["stages"]["stage1"]["survivors"] = ["aniso_onedge", "quadtree_wse"]
+    decisions["stages"]["stage1"]["eliminated"] = [{
+        "strategy": "aniso_flanking",
+        "reason": "test",
+        "mean_delta_psnr": -0.1,
+        "ci95_low_psnr": -0.2,
+        "ci95_high_psnr": -0.01,
+    }]
+    decisions["stages"]["stage2"]["survivors"] = ["aniso_onedge", "quadtree_wse"]
+    (tmp_path / HALVING_DECISIONS).write_text(json.dumps(decisions), encoding="utf-8")
+    rows = [
+        _row("a", 5000, 0, "aniso_onedge", 29.0, 0.91),
+        _row("a", 5000, 0, "quadtree_wse", 30.0, 0.92),
+        _row("a", 10000, 0, "aniso_onedge", 31.0, 0.93),
+        _row("a", 10000, 0, "quadtree_wse", 32.0, 0.94),
+    ]
+    _write_jsonl(tmp_path / "ablation.jsonl", rows)
+
+    write_halving_analysis(
+        tmp_path,
+        spec,
+        bootstrap_samples=10,
+        bootstrap_seed=0,
+    )
+
+    ranks = _read_csv(tmp_path / "rank_stability.csv")
+    qt_5000 = [
+        r for r in ranks
+        if r["budget"] == "5000" and r["strategy"] == "quadtree_wse"
+    ][0]
+    flank_5000 = [
+        r for r in ranks
+        if r["budget"] == "5000" and r["strategy"] == "aniso_flanking"
+    ][0]
+    qt_10000 = [
+        r for r in ranks
+        if r["budget"] == "10000" and r["strategy"] == "quadtree_wse"
+    ][0]
+    assert qt_5000["complete_image_seed_groups"] == "1"
+    assert qt_5000["wins"] == "1"
+    assert float(qt_5000["mean_rank"]) == 1.0
+    assert flank_5000["complete_image_seed_groups"] == "1"
+    assert flank_5000["wins"] == "0"
+    assert flank_5000["mean_rank"] == ""
+    assert qt_10000["complete_image_seed_groups"] == "1"

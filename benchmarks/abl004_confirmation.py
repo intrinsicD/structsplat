@@ -641,7 +641,12 @@ def paired_deltas(
     return pairwise, unit_rows
 
 
-def rank_stability(rows_by_key: dict[tuple, dict[str, Any]], spec: ConfirmationSpec) -> list[dict[str, Any]]:
+def rank_stability(
+    rows_by_key: dict[tuple, dict[str, Any]],
+    spec: ConfirmationSpec,
+    *,
+    expected_runs: dict[tuple[int, str], int] | None = None,
+) -> list[dict[str, Any]]:
     rows = list(rows_by_key.values())
     by_group: dict[tuple[str, int, int], list[dict[str, Any]]] = {}
     for row in rows:
@@ -649,9 +654,23 @@ def rank_stability(rows_by_key: dict[tuple, dict[str, Any]], spec: ConfirmationS
     rank_values: dict[tuple[int, str], list[int]] = {}
     wins: dict[tuple[int, str], int] = {}
     complete_groups: dict[int, int] = {int(b): 0 for b in spec.budgets}
+    expected_by_budget: dict[int, set[str]] = {}
+    for budget in spec.budgets:
+        budget_int = int(budget)
+        if expected_runs is None:
+            expected_by_budget[budget_int] = set(spec.strategies)
+        else:
+            expected_by_budget[budget_int] = {
+                strategy
+                for strategy in spec.strategies
+                if expected_runs.get((budget_int, strategy), 0) > 0
+            }
     for (_image, budget, _seed), vals in by_group.items():
-        vals = [v for v in vals if v["strategy"] in spec.strategies]
-        if len({v["strategy"] for v in vals}) != len(spec.strategies):
+        expected_strategies = expected_by_budget.get(int(budget), set(spec.strategies))
+        if not expected_strategies:
+            continue
+        vals = [v for v in vals if v["strategy"] in expected_strategies]
+        if {v["strategy"] for v in vals} != expected_strategies:
             continue
         complete_groups[budget] += 1
         ranked = sorted(vals, key=lambda r: float(r["psnr"]), reverse=True)
@@ -875,10 +894,11 @@ def _write_analysis(
 ) -> dict[str, Any]:
     rows_by_key = _dedupe_rows(load_ablation_rows(outdir), spec)
     missing = _missing_from_plan(rows_by_key, plan)
+    expected_runs = _expected_runs_by_budget_strategy(plan)
     board = leaderboard(
         rows_by_key,
         spec,
-        expected_runs=_expected_runs_by_budget_strategy(plan),
+        expected_runs=expected_runs,
     )
     baseline_pairs, baseline_units = paired_deltas(
         rows_by_key,
@@ -894,7 +914,7 @@ def _write_analysis(
         bootstrap_samples=bootstrap_samples,
         bootstrap_seed=bootstrap_seed,
     )
-    ranks = rank_stability(rows_by_key, spec)
+    ranks = rank_stability(rows_by_key, spec, expected_runs=expected_runs)
     target_fields = _target_fieldnames(_headline_targets(spec))
 
     cell_fields = list(plan[0].keys()) if plan else []

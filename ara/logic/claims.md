@@ -34,12 +34,13 @@ external-repo runs where possible, and a declared target metric. See trace node 
 
 Across the 2026-07-04 8-image exact-CUDA screen
 (`ara/evidence/abl004-stage-screen-8img-cuda-2026-07-04/`), the 2026-07-05 fair density-control
-comparison (`ara/evidence/fair-density-control-difficult4-2026-07-05/`), and the first ABL-004
-confirmation shards, `aniso_flanking` never leads a decision-grade slice: `aniso_onedge` wins at
-budget 2000 (+0.24 dB paired, 7/8 wins), `quadtree_wse`/`quadtree_hybrid` lead at >=5000, and
-flanking is the weakest StructSplat row in the fair comparison. Its only observed niche is
-tiny-budget/short-fit cells, and only bundled with unrelated fitter knobs
-(`ara/evidence/merge001-coco-cuda-confirmation-2026-07-06/`, codex top1). The claim that
-survives: structure-tensor-driven, density-aware placement (on-edge, quadtree-WSE) beats matched
-unstructured and residual-growth analogues in every fair PSNR slice. Default retirement is
-INIT-007 (ADR-0013); the remaining confirmation runs as successive halving under ABL-006.
+comparison (`ara/evidence/fair-density-control-difficult4-2026-07-05/`), and the completed ABL-006
+successive-halving confirmation (`ara/evidence/abl006-complete-2026-07-07/`),
+`aniso_flanking` never leads a decision-grade slice and is eliminated at stage 1. ABL-006's
+3-seed finalist confirmation gives a budget-specific answer: `aniso_onedge` has the higher
+2000-Gaussian mean PSNR but not a significant paired lead over `quadtree_wse`; `quadtree_wse` is
+the clear 5000-Gaussian PSNR winner (+0.0930 dB, 95% CI [+0.0168, +0.1700]); and `quadtree_wse`
+has a small non-significant 10000-Gaussian PSNR lead while `aniso_onedge` has higher MS-SSIM.
+The claim that survives is structure-tensor-driven, density-aware placement, with `quadtree_wse`
+as the high-budget PSNR default candidate and `aniso_onedge` as the low-budget/MS-SSIM alternative.
+Default retirement is INIT-007 (ADR-0013).

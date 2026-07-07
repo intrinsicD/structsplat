@@ -28,7 +28,6 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | INIT-007 | Retire the flanking default (measured answer + ADR) | todo | INIT-004, ABL-006 |
 | INIT-008 | Feature-relative scale caps (fix the cap-scaling failure) | todo | ADR-0012, INIT-003 |
 | ABL-005 | Fitter-knob influence pass at the fair regime | blocked/partial — native CUDA affine or split protocol needed | ADR-0010, FIT-005/006/007, CORE-006 |
-| ABL-006 | Successive-halving execution of the remaining confirmation | partial — stage 2 complete, stage 3/seed-2 pending 280 cells | ABL-004, BENCH-002 |
 | FIT-009 | Factor the refine axis into orthogonal sub-axes | todo | FIT-004, FIT-006, FIT-007 |
 | FIT-010 | Cheap color-solve schedules (init / final / on-split) | todo | FIT-005 |
 | FIT-011 | Split-recovery micro-levers (moment seeding, warmup, scheduled fade) | todo | FIT-004, FIT-007, CORE-005 |
@@ -64,6 +63,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | BENCH-003 | Benchmark script consolidation + documentation | `done/BENCH-003-benchmark-consolidation.md` |
 | BENCH-004 | Sweep-cost controls (plateau exit, multi-target tables, proxy regime) | `done/BENCH-004-sweep-cost-controls.md` |
 | ABL-003 | Bisect the undiagnosed −0.794 dB flagship regression | `done/ABL-003-regression-bisect.md` |
+| ABL-006 | Successive-halving execution of the remaining confirmation | `done/ABL-006-successive-halving-confirmation.md` |
 | MERGE-001 | Integrate Claude core optimizations and Codex stage search into main | `done/MERGE-001-claude-codex-main.md` |
 | COMP-002 | Codec / metrics / CLI correctness and protocol fixes | `done/COMP-002-codec-correctness.md` |
 | DOCS-001 | Docs-sync backfill (stale status, missing ADRs, ara scaffold) | `done/DOCS-001-docs-sync-backfill.md` |
@@ -104,8 +104,8 @@ INIT-007) and shifted the frontier from init strategies to fitter knobs and swee
 2. ABL-005 fitter-knob influence pass — the +0.26 dB `charbonnier`/`variance`/`opacity` bundle
    and the FIT-005/006/007/CORE-006 candidates, isolated at the fair regime. Highest expected
    dB-per-GPU-hour in the queue.
-3. ABL-006 successive-halving confirmation — finishes ABL-004's remaining cells at half to
-   two-thirds cost; feeds INIT-007's default flip (ADR-0013).
+3. ABL-006 successive-halving confirmation — completed 2026-07-07; feeds INIT-007's default flip
+   (ADR-0013).
 4. FIT-009 refine-axis factoring, then FIT-010/FIT-011 — convergence-rate work targeting the
    measured split dip; `residual_tensor x moment_preserving` is the first inexpressible
    combination to test.

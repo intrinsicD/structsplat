@@ -1,0 +1,67 @@
+[
+  {
+    "run_group": "stage1_budget2000",
+    "stage": 1,
+    "budgets": [
+      2000
+    ],
+    "seeds": [
+      0,
+      1
+    ],
+    "strategies": [
+      "aniso_flanking",
+      "aniso_onedge",
+      "floyd_steinberg",
+      "iso_blue_noise",
+      "quadtree_hybrid",
+      "quadtree_wse"
+    ]
+  },
+  {
+    "run_group": "stage2_budget5000",
+    "stage": 2,
+    "budgets": [
+      5000
+    ],
+    "seeds": [
+      0,
+      1
+    ],
+    "strategies": [
+      "aniso_onedge",
+      "quadtree_wse"
+    ]
+  },
+  {
+    "run_group": "stage3_budget10000",
+    "stage": 3,
+    "budgets": [
+      10000
+    ],
+    "seeds": [
+      0,
+      1
+    ],
+    "strategies": [
+      "aniso_onedge",
+      "quadtree_wse"
+    ]
+  },
+  {
+    "run_group": "stage3_seed2_all_budgets",
+    "stage": 3,
+    "budgets": [
+      2000,
+      5000,
+      10000
+    ],
+    "seeds": [
+      2
+    ],
+    "strategies": [
+      "aniso_onedge",
+      "quadtree_wse"
+    ]
+  }
+]

@@ -1,7 +1,6 @@
 # ABL-006: Successive-halving execution of the remaining confirmation
 
-**Status: partial.** Harness, stage-1 decision, and stage-2 decision are complete; stage 3 GPU
-runs and README winner update remain open. Supersedes the flat execution plan of the ABL-004
+**Status: done.** Completed 2026-07-07. Supersedes the flat execution plan of the ABL-004
 confirmation manifest (the
 protocol and arms are unchanged; only the run order and stopping rule change).
 
@@ -34,9 +33,9 @@ by roughly half to two-thirds without weakening the statistical claim for the ar
       the staged cell list and honors elimination decisions recorded in a committed JSON.
 - [x] Elimination rule stated in the config artifact before stage 1 completes (no post-hoc
       tuning): CI method, confidence level, pairing key.
-- [ ] Final `summary.md` + `leaderboard.csv` + elimination trail committed under
+- [x] Final `summary.md` + `leaderboard.csv` + elimination trail committed under
       `ara/evidence/abl006-*/`; ABL-004's remaining acceptance boxes ticked by this evidence.
-- [ ] README hypothesis status paragraph updated with the per-budget winners.
+- [x] README hypothesis status paragraph updated with the per-budget winners.
 
 ## 2026-07-07 partial
 Added `halving-plan` / `halving-run` subcommands to `benchmarks/abl004_confirmation.py`.
@@ -66,6 +65,15 @@ complete for the current plan. `quadtree_wse` leads at 29.7977 dB mean PSNR vers
 `ara/evidence/abl006-stage2-complete-2026-07-07/`. The regenerated staged analysis is 448/728
 complete with 280 cells pending: budget-10000 stage 3 for both finalists plus seed 2 for both
 finalists at all three budgets.
+
+Completed stage 3 and seed-2 confirmation. Final evidence is under
+`ara/evidence/abl006-complete-2026-07-07/`: 728/728 staged cells complete, 0 missing. Final PSNR
+result: `aniso_onedge` has the higher budget-2000 mean but not a significant paired lead over
+`quadtree_wse`; `quadtree_wse` is the significant budget-5000 PSNR winner (+0.0930 dB, 95% CI
+[+0.0168, +0.1700]); and `quadtree_wse` has a small non-significant budget-10000 PSNR lead
+(+0.0357 dB, 95% CI [-0.0041, +0.0778]) while `aniso_onedge` has higher budget-10000 MS-SSIM.
+README and `ara/logic/claims.md` now cite this result. A rank-stability bug for staged eliminated
+arms was fixed so the 5000/10000 stability tables rank only expected survivor arms.
 
 ## Interfaces touched
 `benchmarks/abl004_confirmation.py`, `ara/evidence/`, `tasks/ABL-004-controls-and-full-run.md`,

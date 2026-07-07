@@ -9,7 +9,8 @@ normalized weighted-sum rasterizer. The research contribution is the **initializ
   Gaussians), *orientation* (how to elongate them), and *classification* (flat / edge / corner);
 - Gaussians are placed by **anisotropic, density-adaptive blue noise** (Weighted Sample Elimination
   with a Mahalanobis metric) — packing across edges, spreading along them, no clumping, no grid;
-- edges are **flanked** (not centered on the discontinuity), corners are centered, flats are sparse;
+- edges are tensor-aligned and density-aware; flanking remains available as a control, but the
+  current evidence favors on-edge/quadtree WSE placement over flanking;
 - the layout is built **progressively** (coarse→fine), so prefixes act as a level-of-detail stack.
 
 The pieces exist separately in prior work (anisotropic blue noise; structured 2D-GS init;
@@ -30,8 +31,8 @@ pip install -e ".[dev]"          # pytest, ruff
 
 ## Quickstart
 ```bash
-# fit one image with the proposed init
-structsplat fit photo.png --strategy aniso_flanking --num-gaussians 20000 --iters 2000
+# fit one image with the measured high-budget PSNR winner
+structsplat fit photo.png --strategy quadtree_wse --num-gaussians 20000 --iters 2000
 
 # progressive (hierarchical) fit
 structsplat fit photo.png --pyramid --num-gaussians 20000
@@ -91,22 +92,20 @@ iso_blue_noise > grid > random` at low budgets, with the gap shrinking as the bu
 flanking never wins, the honest move is to prefer the simpler strategy — the benchmark is designed
 to tell you either way.
 
-**Measured answer (2026-07-04..06): the flanking half of the hypothesis is dead; the
-structured-placement half stands.** `aniso_flanking` never leads a decision-grade slice:
-`aniso_onedge` wins at budget 2000 (+0.24 dB paired, 7/8 image wins) and
-`quadtree_wse`/`quadtree_hybrid` lead at ≥5000
-(`ara/evidence/abl004-stage-screen-8img-cuda-2026-07-04/`), and flanking is the weakest
-StructSplat row in the fair density-control comparison
-(`ara/evidence/fair-density-control-difficult4-2026-07-05/`). What survives — strongly — is
-structure-tensor-driven, density-aware placement itself: StructSplat structured rows beat matched
-GaussianImage++/Image-GS-style residual-growth analogues in all 12 fair PSNR slices (best row
-+1.03 dB / +0.31 dB paired). See `ara/logic/claims.md` C05.
+**Measured answer (2026-07-04..07): the flanking half of the hypothesis is dead; the
+structured-placement half stands.** ABL-006 completed the decision-grade successive-halving
+confirmation on Kodak-24 + COCO4 at max-side 768, 1500 iterations, exact CUDA, and 3-seed finalist
+confirmation (`ara/evidence/abl006-complete-2026-07-07/`). Final PSNR winners are budget-specific:
+`aniso_onedge` has the higher mean at 2000 Gaussians, but its paired PSNR lead over
+`quadtree_wse` is not significant; `quadtree_wse` is the clear 5000-Gaussian PSNR winner
+(+0.0930 dB, 95% CI [+0.0168, +0.1700]); and `quadtree_wse` has a small non-significant PSNR lead
+at 10000 (+0.0357 dB, 95% CI [-0.0041, +0.0778]) while `aniso_onedge` has higher MS-SSIM.
 
-Status: the shipped default is still `aniso_flanking` until INIT-007 lands the flip with
-ADR-0013, citing the remaining confirmation (ABL-006 runs it as successive halving; the flat
-ABL-004 manifest is 108/1,512 cells complete). Flanking stays available as a control arm. The
-cross-repo caveat stands: these are matched policy analogues inside StructSplat's harness, not
-native external pipelines.
+Operational status: prefer `quadtree_wse` for high-budget PSNR work and keep `aniso_onedge` as the
+low-budget/MS-SSIM alternative. `aniso_flanking`, `quadtree_hybrid`, `iso_blue_noise`, and
+Floyd-Steinberg were eliminated at stage 1 by the frozen CI rule. The shipped CLI default is still
+unchanged until INIT-007 lands the code/default flip with ADR-0013. The cross-repo caveat stands:
+these are matched policy analogues inside StructSplat's harness, not native external pipelines.
 
 ## Verification status
 Init-time math is validated numerically in this environment: structure-tensor orientation/labels,

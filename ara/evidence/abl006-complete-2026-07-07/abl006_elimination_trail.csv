@@ -1,0 +1,5 @@
+stage,strategy,reason,mean_delta_psnr,ci95_low_psnr,ci95_high_psnr
+stage1,aniso_flanking,arm-minus-leader PSNR CI strictly below zero,-0.17955714285714297,-0.29774767857142853,-0.06957642857142848
+stage1,quadtree_hybrid,arm-minus-leader PSNR CI strictly below zero,-0.1295214285714285,-0.24833879464285713,-0.010229017857142616
+stage1,iso_blue_noise,arm-minus-leader PSNR CI strictly below zero,-0.4721589285714286,-0.6334754910714288,-0.3138231696428571
+stage1,floyd_steinberg,arm-minus-leader PSNR CI strictly below zero,-2.9436714285714283,-3.7910283482142844,-2.154331785714285
