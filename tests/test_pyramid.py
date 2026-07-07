@@ -64,6 +64,34 @@ def test_pyramid_aggregates_iterations_run_across_levels():
     assert out["stopped_early"] is False
 
 
+def test_pyramid_accepts_explicit_level_iteration_schedule():
+    img = _toy()
+    target = torch.as_tensor(img)
+    icfg = InitConfig(strategy="iso_blue_noise", num_gaussians=32, seed=0)
+    fcfg = FitConfig(iters=999, log_every=1)
+    pcfg = PyramidConfig(
+        levels=2,
+        level_fractions=[0.5, 0.5],
+        iters_per_level=99,
+        level_iters=[2, 4],
+    )
+    out = fit_pyramid(img, target, icfg, fcfg, pcfg, verbose=False)
+    assert out["iterations_run"] == 6
+    assert out["level_iters"] == [2, 4]
+    assert [s["iters"] for s in out["level_summaries"]] == [2, 4]
+    assert max(out["history"]["iter"]) == 5
+
+
+def test_pyramid_rejects_incomplete_level_iteration_schedule():
+    img = _toy()
+    target = torch.as_tensor(img)
+    icfg = InitConfig(strategy="iso_blue_noise", num_gaussians=32, seed=0)
+    fcfg = FitConfig(iters=999, log_every=1)
+    pcfg = PyramidConfig(levels=3, level_fractions=[0.2, 0.3, 0.5], level_iters=[2, 4])
+    with pytest.raises(ValueError, match="level_iters"):
+        fit_pyramid(img, target, icfg, fcfg, pcfg, verbose=False)
+
+
 def test_pyramid_early_stop_leaves_no_phantom_iteration_gap():
     img = _toy()
     target = torch.as_tensor(img)

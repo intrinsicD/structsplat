@@ -60,13 +60,13 @@ and hurt `quadtree_wse` (-0.2538 dB mean PSNR). Keep it available as a stage-sea
 default it off unless a future task proves a narrower promoted recipe. See
 `ara/evidence/fit012-edge-weighted-loss-2026-07-07/`.
 
-## C07: Pyramid fitting is a final-quality candidate with unresolved convergence cost
+## C07: Pyramid fitting has a local quality candidate, not a shipped default yet
 
-HIER-003 overturned the stale claim that the image pyramid simply loses final quality. On the
-fair-regime difficult-four slice, the current 0.35/0.65 two-level pyramid beat single-stage final
-PSNR in 16/16 matched pairs with +1.0000 dB mean PSNR and +0.01399 mean MS-SSIM. The tradeoff is
-convergence: it lost PSNR AUC in 16/16 pairs with -1.3540 mean AUC. Extra coarse iterations,
-0.1/0.9 + cosine, and a matched residual-add refine twin did not solve that. Keep `pyramid=single`
-as the default; treat `pyramid=pyramid` as an offline/final-quality or prefix-LOD candidate until
-HIER-004 repairs or scopes the AUC cost. See
-`ara/evidence/hier003-pyramid-diagnosis-2026-07-07/`.
+HIER-003 overturned the stale claim that the image pyramid simply loses final quality, but exposed
+an AUC loss for the old 750/750 two-level schedule. HIER-004 repaired that local tradeoff with
+explicit per-level iteration schedules: `level_iters=[150, 1350]` on the 0.35/0.65 budget split
+beats the 750/750 pyramid control by +0.0601 dB mean PSNR and is AUC-neutral versus single-stage
+(+0.0011 mean AUC) on the difficult-four 2k/5k slice. Keep `pyramid=single` as the shipped default
+until larger multi-seed confirmation; use 150/1350 as the pyramid quality candidate. See
+`ara/evidence/hier003-pyramid-diagnosis-2026-07-07/` and
+`ara/evidence/hier004-pyramid-convergence-repair-2026-07-07/`.

@@ -399,6 +399,9 @@ class PyramidConfig:
     # A cosine lr_schedule spans the whole pyramid run (one decay across all levels), not a
     # per-level warm restart, so it is comparable to a single-stage cosine (HIER-002 / ADR-0010).
     iters_per_level: int = 500
+    # Optional explicit per-level iteration counts, coarse -> fine. When set, this overrides
+    # iters_per_level and lets HIER-004 test schedules like 300/1200 at the same total horizon.
+    level_iters: list[int] | None = None
     residual_grad_sigma: float = 0.8   # structure tensor of the residual is sharper
     level_grad_sigmas: list[float] | None = None
     level_tensor_sigmas: list[float] | None = None

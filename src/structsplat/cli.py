@@ -117,7 +117,8 @@ def cmd_fit(args):
         per_level = args.iters_per_level or max(1, args.iters // max(1, args.pyramid_levels))
         pcfg = PyramidConfig(levels=args.pyramid_levels,
                              level_fractions=args.level_fractions,
-                             iters_per_level=per_level)
+                             iters_per_level=per_level,
+                             level_iters=args.level_iters)
         out = fit_pyramid(img, target, icfg, fcfg, pcfg, scfg)
     else:
         field = _init.build_field(img, icfg, scfg, device=device)
@@ -175,7 +176,9 @@ def cmd_stage_search(args):
         split_count=args.split_count, prune_every=args.prune_every,
         prune_min_activity=args.prune_min_activity, max_gaussians=args.max_gaussians,
         pyramid_levels=args.pyramid_levels, pyramid_fractions=args.pyramid_fractions,
-        pyramid_iters_per_level=args.pyramid_iters_per_level, compute_lpips=args.lpips,
+        pyramid_iters_per_level=args.pyramid_iters_per_level,
+        pyramid_level_iters=args.pyramid_level_iters,
+        compute_lpips=args.lpips,
         target_psnr=args.target_psnr, target_psnrs=args.target_psnrs,
         target_ms_ssim=args.target_ms_ssim, target_bpp=args.target_bpp,
         adaptive_count=args.adaptive_count,
@@ -262,6 +265,8 @@ def main():
     f.add_argument("--level-fractions", type=float, nargs="+", default=[0.1, 0.2, 0.3, 0.4])
     f.add_argument("--iters-per-level", type=int, default=None,
                    help="default: --iters / --pyramid-levels")
+    f.add_argument("--level-iters", type=int, nargs="+", default=None,
+                   help="explicit coarse-to-fine pyramid iteration counts")
     f.add_argument("--target-psnr", type=float, default=None, dest="target_psnr")
     f.add_argument("--target-ms-ssim", type=float, default=None, dest="target_ms_ssim",
                    help="adaptive-count stop target for MS-SSIM")
@@ -481,6 +486,7 @@ def main():
     s.add_argument("--pyramid-levels", type=int, default=2)
     s.add_argument("--pyramid-fractions", type=float, nargs="+", default=[0.35, 0.65])
     s.add_argument("--pyramid-iters-per-level", type=int, default=None)
+    s.add_argument("--pyramid-level-iters", type=int, nargs="+", default=None)
     s.add_argument("--lpips", action="store_true")
     s.add_argument("--max-configs", type=int, default=None)
     s.add_argument("--shuffle-configs", action="store_true")

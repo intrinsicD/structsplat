@@ -590,7 +590,7 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
              density_base, density_power, flat_frac, corner_frac, grad_sigma, tensor_sigma,
              color_radius, init_opacity, lr_decay_every, lr_decay_gamma, split_every, split_count,
              prune_every, prune_min_activity, max_gaussians, pyramid_levels,
-             pyramid_fractions, pyramid_iters_per_level, compute_lpips,
+             pyramid_fractions, pyramid_iters_per_level, pyramid_level_iters, compute_lpips,
              target_psnr, target_psnrs, target_ms_ssim, target_bpp, adaptive_count,
              adaptive_growth_every, adaptive_growth_count, adaptive_split_mode,
              adaptive_min_delta_psnr, adaptive_patience, early_stop_patience,
@@ -690,6 +690,7 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
             levels=pyramid_levels,
             level_fractions=list(pyramid_fractions),
             iters_per_level=pyramid_iters_per_level,
+            level_iters=None if pyramid_level_iters is None else list(pyramid_level_iters),
         )
         out = fit_pyramid(
             img, target, icfg, fcfg, pcfg, scfg, verbose=verbose,
@@ -798,6 +799,8 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         "target_bpp": target_bpp,
         "history": history,
         "prefix_metrics": out.get("prefix_metrics"),
+        "level_iters": out.get("level_iters"),
+        "level_budgets": out.get("level_budgets"),
     }
 
 
@@ -862,6 +865,7 @@ def run_stage_search(
     pyramid_levels=2,
     pyramid_fractions=(0.35, 0.65),
     pyramid_iters_per_level=None,
+    pyramid_level_iters=None,
     compute_lpips=False,
     target_psnr: float | None = None,
     target_psnrs=(),
@@ -939,6 +943,8 @@ def run_stage_search(
 
     if pyramid_iters_per_level is None:
         pyramid_iters_per_level = max(1, iters // max(1, pyramid_levels))
+    if pyramid_level_iters is not None:
+        pyramid_level_iters = [int(v) for v in pyramid_level_iters]
     if split_every is None:
         split_every = max(1, iters // 2)
     if split_count <= 0:
@@ -962,6 +968,9 @@ def run_stage_search(
         "ssim_backend": ssim_backend,
         "split_count": split_count, "prune_every": prune_every,
         "prune_min_activity": prune_min_activity, "max_gaussians": max_gaussians,
+        "pyramid_levels": pyramid_levels, "pyramid_fractions": list(pyramid_fractions),
+        "pyramid_iters_per_level": pyramid_iters_per_level,
+        "pyramid_level_iters": pyramid_level_iters,
         "target_psnr": target_psnr, "target_psnrs": list(target_psnrs),
         "target_ms_ssim": target_ms_ssim, "target_bpp": target_bpp,
         "adaptive_count": adaptive_count,
@@ -1096,6 +1105,7 @@ def run_stage_search(
                             prune_min_activity=prune_min_activity, max_gaussians=cap,
                             pyramid_levels=pyramid_levels, pyramid_fractions=pyramid_fractions,
                             pyramid_iters_per_level=pyramid_iters_per_level,
+                            pyramid_level_iters=pyramid_level_iters,
                             compute_lpips=compute_lpips, target_psnr=target_psnr,
                             target_psnrs=target_psnrs, target_ms_ssim=target_ms_ssim,
                             target_bpp=target_bpp, adaptive_count=adaptive_count,
@@ -1585,6 +1595,8 @@ def main():
     p.add_argument("--pyramid-levels", type=int, default=2)
     p.add_argument("--pyramid-fractions", type=float, nargs="+", default=[0.35, 0.65])
     p.add_argument("--pyramid-iters-per-level", type=int, default=None)
+    p.add_argument("--pyramid-level-iters", type=int, nargs="+", default=None,
+                   help="explicit coarse-to-fine pyramid iteration counts")
     p.add_argument("--lpips", action="store_true")
     p.add_argument("--max-configs", type=int, default=None)
     p.add_argument("--resume", action="store_true",
@@ -1625,6 +1637,7 @@ def main():
         prune_every=a.prune_every, prune_min_activity=a.prune_min_activity,
         max_gaussians=a.max_gaussians, pyramid_levels=a.pyramid_levels,
         pyramid_fractions=a.pyramid_fractions, pyramid_iters_per_level=a.pyramid_iters_per_level,
+        pyramid_level_iters=a.pyramid_level_iters,
         compute_lpips=a.lpips, target_psnr=a.target_psnr, target_psnrs=a.target_psnrs,
         target_ms_ssim=a.target_ms_ssim, target_bpp=a.target_bpp,
         adaptive_count=a.adaptive_count,

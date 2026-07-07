@@ -562,6 +562,28 @@ def test_color_basis_is_stage_axis(tmp_path):
     assert all("color_basis=" in r["config_label"] for r in rows)
 
 
+def test_stage_search_records_explicit_pyramid_level_iters(tmp_path):
+    img_path = tmp_path / "toy.png"
+    _write_toy(img_path)
+    rows = run_stage_search(
+        [str(img_path)], budgets=[16], seeds=[0], iters=6, max_side=None,
+        strategies=["aniso_flanking"], tensor_operators=["central"], tensor_colors=["luma"],
+        density_modes=["structure"], sampling_modes=["density_random"],
+        orientation_modes=["tensor"], color_modes=["bilinear"], scale_modes=["spacing"],
+        scale_cap_modes=["none"], opacity_modes=["none"], renderers=["normalized"],
+        aa_dilations=[0.0], color_basis_modes=["constant"], color_solve_modes=["none"],
+        pixel_losses=["l1"], optimizers=["adam"], lr_schedules=["none"],
+        refine_modes=["none"], pyramid_modes=["pyramid"],
+        pyramid_levels=2, pyramid_fractions=[0.5, 0.5], pyramid_level_iters=[2, 4],
+        render_chunk=8, outdir=str(tmp_path / "pyramid_level_iters"), device="cpu",
+    )
+
+    assert len(rows) == 1
+    assert rows[0]["status"] == "ok"
+    assert rows[0]["level_iters"] == [2, 4]
+    assert rows[0]["iterations_run"] == 6
+
+
 def test_adaptive_count_metadata_is_recorded(tmp_path):
     img_path = tmp_path / "toy.png"
     _write_toy(img_path)

@@ -83,10 +83,10 @@ term; SSIM and all reported metrics stay unweighted. The difficult-four fair-reg
 strategy-dependent: tensor weighting helped `aniso_onedge`, hurt `quadtree_wse`, was nearly
 PSNR-neutral overall (+0.0061 dB over 16 pairs), and lost AUC on average.
 
-Pyramid fitting is a final-quality candidate with unresolved convergence cost. HIER-003 found the
-current 0.35/0.65 two-level `pyramid=pyramid` arm beat `single` final PSNR in 16/16 difficult-four
-2k/5k pairs (+1.0000 dB mean), but lost AUC in 16/16 pairs (-1.3540 mean). Keep `pyramid=single`
-as the default for convergence-sensitive comparisons until HIER-004 repairs or scopes the AUC hit.
+Pyramid fitting has a repaired local quality candidate, but not a shipped default yet. HIER-004
+adds explicit schedules with `--pyramid-level-iters`; `150 1350` on the 0.35/0.65 budget split
+beats the old 750/750 pyramid by +0.0601 dB and is AUC-neutral versus single (+0.0011) on the
+difficult-four 2k/5k slice. Keep `pyramid=single` as the default until larger confirmation.
 
 ## Experimental-validity rules (BENCH-002 — a sweep result is trustworthy by construction)
 - **Equal budgets.** Refine (adding) arms are capped at the cell budget and start below it so

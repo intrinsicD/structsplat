@@ -55,6 +55,20 @@ def _level_value(values, lvl: int, default):
     return values[min(lvl, len(values) - 1)]
 
 
+def _level_iters(pcfg: PyramidConfig) -> list[int]:
+    if pcfg.level_iters is None:
+        iters = [int(pcfg.iters_per_level)] * int(pcfg.levels)
+    else:
+        iters = [int(v) for v in pcfg.level_iters[:pcfg.levels]]
+        if len(iters) < pcfg.levels:
+            raise ValueError(
+                f"PyramidConfig.levels={pcfg.levels} but only "
+                f"{len(pcfg.level_iters)} level_iters given")
+    if any(v <= 0 for v in iters):
+        raise ValueError(f"pyramid level iterations must be > 0, got {iters}")
+    return iters
+
+
 def _level_tensor_cfg(base: StructureTensorConfig | None, pcfg: PyramidConfig,
                       lvl: int) -> StructureTensorConfig:
     base = base or StructureTensorConfig()
@@ -122,10 +136,13 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
     stopped_at_total = None
     # nominal planned span, so a cosine LR schedule covers the whole pyramid rather than
     # restarting each level (HIER-002); early stops do not change the schedule shape.
-    sched_total = pcfg.levels * pcfg.iters_per_level
+    level_iters = _level_iters(pcfg)
+    sched_total = sum(level_iters)
     budgets = _allocate_budget(total, fracs)   # sums exactly to `total`
-    level_cfg = FitConfig(**{**fcfg.__dict__, "iters": pcfg.iters_per_level})
     for lvl, frac in enumerate(fracs):
+        level_it = level_iters[lvl]
+        level_offset = sum(level_iters[:lvl])
+        level_cfg = FitConfig(**{**fcfg.__dict__, "iters": level_it})
         n_lvl = budgets[lvl]
         if lvl == 0 and n_lvl <= 0:
             raise ValueError(
@@ -155,7 +172,7 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
         if verbose:
             print(f"[pyramid] level {lvl}: +{new.n} -> {field.n} gaussians")
         out = fit(field, target, level_cfg, verbose=verbose,
-                  sched_offset=lvl * pcfg.iters_per_level, sched_total=sched_total,
+                  sched_offset=level_offset, sched_total=sched_total,
                   loss_weight_map=loss_weight_map)
         field = out["field"]
         counts[-1] = field.n
@@ -169,15 +186,15 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
             if combined_itt[key] is None and v is not None:
                 combined_itt[key] = iter_offset + v
         fit_seconds_total += float(out.get("fit_seconds", 0.0))
-        level_iters = int(out.get("iterations_run", level_cfg.iters))
-        iterations_run_total += level_iters
+        level_iters_run = int(out.get("iterations_run", level_cfg.iters))
+        iterations_run_total += level_iters_run
         if bool(out.get("stopped_early", False)):
             stopped_early_any = True
             if stopped_at_total is None and out.get("stopped_at") is not None:
                 stopped_at_total = iter_offset + int(out["stopped_at"])
         # advance by iterations actually run, not the full level budget: an early-stopped level
         # would otherwise insert phantom iterations into the combined axis / iters-to-target.
-        iter_offset += level_iters
+        iter_offset += level_iters_run
         if combined["elapsed"]:
             elapsed_offset = combined["elapsed"][-1]
         level_summaries.append({
@@ -186,6 +203,7 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
             "n_gaussians": field.n,
             "psnr": out["psnr"],
             "ms_ssim": out["ms_ssim"],
+            "iters": level_it,
         })
 
     out["history"] = combined
@@ -201,6 +219,7 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
     out["level_summaries"] = level_summaries
     out["level_counts"] = counts
     out["level_budgets"] = budgets   # placed per level; sums to num_gaussians
+    out["level_iters"] = level_iters
     if pcfg.evaluate_prefixes:
         restructures = (((level_cfg.prune_every or 0) > 0 and level_cfg.prune_min_activity > 0)
                         or ((level_cfg.split_every or 0) > 0 and level_cfg.split_count > 0))

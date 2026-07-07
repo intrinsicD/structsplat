@@ -25,7 +25,6 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | PORT-003 | Avoid atomics in tiled backward | todo | PORT-001 |
 | GEN-003 | VSD / multi-particle distillation | todo | GEN-001 |
 | ABL-005 | Fitter-knob influence pass at the fair regime | blocked/partial — native CUDA affine or split protocol needed | ADR-0010, FIT-005/006/007, CORE-006 |
-| HIER-004 | Pyramid convergence repair and promotion decision | todo | HIER-001, HIER-003, BENCH-004 |
 | CORE-009 | DC / background layer under the detail Gaussians | todo | CORE-001, ADR-0003/0006 |
 
 ## Retired Done Tasks
@@ -57,6 +56,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | FIT-012 | Edge-weighted pixel loss (structure-tensor loss weighting) | `done/FIT-012-edge-weighted-loss.md` |
 | HIER-002 | Pyramid bookkeeping (iteration accounting, budgets, schedules) | `done/HIER-002-pyramid-bookkeeping.md` |
 | HIER-003 | Pyramid equal-iteration diagnosis (fix or retire HIER-001) | `done/HIER-003-pyramid-iteration-accounting.md` |
+| HIER-004 | Pyramid convergence repair and promotion decision | `done/HIER-004-pyramid-convergence-repair.md` |
 | BENCH-001 | Metric protocol (PSNR/MS-SSIM/LPIPS + iters-to-target) | `done/BENCH-001-metrics.md` |
 | BENCH-002 | Benchmark harness experimental-validity fixes (equal budgets, resumable sweeps, seed-aware comparisons) | `done/BENCH-002-harness-validity.md` |
 | BENCH-003 | Benchmark script consolidation + documentation | `done/BENCH-003-benchmark-consolidation.md` |
@@ -125,7 +125,10 @@ INIT-007) and shifted the frontier from init strategies to fitter knobs and swee
 9. HIER-003 pyramid diagnosis — completed 2026-07-07. The current two-level pyramid is a
    final-quality positive (+1.0000 dB mean PSNR over the difficult-four 2k/5k slice), but it loses
    AUC in every pair (-1.3540 mean), so HIER-001 stays open and HIER-004 owns convergence repair.
-10. HIER-004 pyramid convergence repair and CORE-009 background layer — the two low-frequency
-   coverage investigations still open; either may produce a default or an honest scoped claim.
-11. FF-001 (multi-image teacher training; the 2026-07-07 equal-N smoke is a measured negative for
+10. HIER-004 pyramid convergence repair — completed 2026-07-07. Explicit per-level schedules are
+   available; 150/1350 repairs the AUC loss while preserving final PSNR on the difficult-four
+   slice (+0.0601 dB vs the 750/750 pyramid control and +0.0011 AUC vs single). Keep `single` as
+   shipped default pending larger confirmation; use 150/1350 as the pyramid quality candidate.
+11. CORE-009 background layer is the remaining low-frequency coverage investigation.
+12. FF-001 (multi-image teacher training; the 2026-07-07 equal-N smoke is a measured negative for
    the tiny checkpoint) and COMP-004 (lambda sweep) continue in their existing task files.

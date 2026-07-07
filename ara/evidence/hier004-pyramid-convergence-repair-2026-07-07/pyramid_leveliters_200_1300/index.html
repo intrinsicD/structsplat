@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StructSplat Stage Search</title>
+<style>
+body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:24px;line-height:1.35;color:#171717;background:#fafafa}
+h1,h2{margin:0.9rem 0 0.55rem}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:16px 0}
+.card{border:1px solid #d4d4d4;background:#fff;padding:10px;border-radius:6px}
+.label{font-size:12px;color:#525252;text-transform:uppercase;letter-spacing:.03em}
+.value{font-size:20px;font-weight:650}
+table{border-collapse:collapse;width:100%;background:#fff;margin:10px 0 22px}
+th,td{border:1px solid #d4d4d4;padding:6px 8px;text-align:left;vertical-align:top}
+th{background:#f0f0f0}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+code{font-size:12px;word-break:break-word}
+.links a{margin-right:14px}
+.note{color:#525252}
+</style>
+</head>
+<body>
+<h1>StructSplat Stage Search</h1>
+<p class="note">Mode: <code>factorial</code>. Scalar benchmark overview; this harness does not emit reconstructions or plots.</p>
+<p class="links"><a href="summary.md">summary.md</a> <a href="stage_search.csv">stage_search.csv</a> <a href="stage_search.json">stage_search.json</a> <a href="stage_search.jsonl">stage_search.jsonl</a> <a href="config.json">config.json</a></p>
+<div class="meta">
+<div class="card"><div class="label">Cells</div><div class="value">16</div></div>
+<div class="card"><div class="label">OK</div><div class="value">16</div></div>
+<div class="card"><div class="label">Errors</div><div class="value">0</div></div>
+<div class="card"><div class="label">Configs</div><div class="value">2</div></div>
+<div class="card"><div class="label">Images</div><div class="value">4</div></div>
+<div class="card"><div class="label">Budgets</div><div class="value">2</div></div>
+<div class="card"><div class="label">Seeds</div><div class="value">1</div></div>
+</div>
+<h2>Top Configs</h2>
+<table><thead><tr><th>Rank</th><th>Budget</th><th>Mean PSNR</th><th>Mean MS-SSIM</th><th>Mean AUC</th><th>Mean fit s</th><th>Config</th></tr></thead><tbody>
+<tr><td class="num">1</td><td class="num">5000</td><td class="num">28.7945</td><td class="num">0.94794</td><td class="num">27.552</td><td class="num">5.800</td><td><code>strategy=quadtree_wse|tensor=central|tensor_color=luma|density=structure|sampling=wse|orientation=tensor|color=bilinear|scale=spacing|scale_cap=none|opacity=none|renderer=cuda|aa=0.0|color_basis=constant|color_solve=none|loss=l1|loss_weight=none|optimizer=adam|lr_schedule=none|refine_site=none|refine_primitive=sampled_add|refine_nms=off|refine_color=target|refine_prune=off|refine_relocate=off|state_seed=off|row_temper=off|support_fade=off|pyramid=pyramid</code></td></tr>
+<tr><td class="num">2</td><td class="num">5000</td><td class="num">28.7920</td><td class="num">0.94917</td><td class="num">27.557</td><td class="num">5.836</td><td><code>strategy=aniso_onedge|tensor=central|tensor_color=luma|density=structure|sampling=wse|orientation=tensor|color=bilinear|scale=spacing|scale_cap=none|opacity=none|renderer=cuda|aa=0.0|color_basis=constant|color_solve=none|loss=l1|loss_weight=none|optimizer=adam|lr_schedule=none|refine_site=none|refine_primitive=sampled_add|refine_nms=off|refine_color=target|refine_prune=off|refine_relocate=off|state_seed=off|row_temper=off|support_fade=off|pyramid=pyramid</code></td></tr>
+<tr><td class="num">3</td><td class="num">2000</td><td class="num">25.2686</td><td class="num">0.89797</td><td class="num">24.623</td><td class="num">5.433</td><td><code>strategy=quadtree_wse|tensor=central|tensor_color=luma|density=structure|sampling=wse|orientation=tensor|color=bilinear|scale=spacing|scale_cap=none|opacity=none|renderer=cuda|aa=0.0|color_basis=constant|color_solve=none|loss=l1|loss_weight=none|optimizer=adam|lr_schedule=none|refine_site=none|refine_primitive=sampled_add|refine_nms=off|refine_color=target|refine_prune=off|refine_relocate=off|state_seed=off|row_temper=off|support_fade=off|pyramid=pyramid</code></td></tr>
+<tr><td class="num">4</td><td class="num">2000</td><td class="num">24.7463</td><td class="num">0.89731</td><td class="num">24.573</td><td class="num">5.683</td><td><code>strategy=aniso_onedge|tensor=central|tensor_color=luma|density=structure|sampling=wse|orientation=tensor|color=bilinear|scale=spacing|scale_cap=none|opacity=none|renderer=cuda|aa=0.0|color_basis=constant|color_solve=none|loss=l1|loss_weight=none|optimizer=adam|lr_schedule=none|refine_site=none|refine_primitive=sampled_add|refine_nms=off|refine_color=target|refine_prune=off|refine_relocate=off|state_seed=off|row_temper=off|support_fade=off|pyramid=pyramid</code></td></tr>
+</tbody></table>
+<h2>Per-Stage Marginals</h2>
+<table><thead><tr><th>Stage</th><th>Level</th><th>Runs</th><th>PSNR</th><th>MS-SSIM</th><th>AUC</th><th>Fit s</th></tr></thead><tbody>
+<tr><td>strategy</td><td><code>aniso_onedge</code></td><td class="num">8</td><td class="num">26.769 +/- 4.336</td><td class="num">0.92324</td><td class="num">26.065</td><td class="num">5.759</td></tr>
+<tr><td>strategy</td><td><code>quadtree_wse</code></td><td class="num">8</td><td class="num">27.032 +/- 4.468</td><td class="num">0.92296</td><td class="num">26.088</td><td class="num">5.616</td></tr>
+</tbody></table>
+</body>
+</html>

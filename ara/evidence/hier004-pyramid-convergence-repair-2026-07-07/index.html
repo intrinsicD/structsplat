@@ -1,0 +1,49 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>HIER-004 Pyramid Convergence Repair</title>
+<style>
+body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:24px;line-height:1.45;color:#171717;background:#fafafa}
+main{max-width:1120px;margin:auto}
+table{border-collapse:collapse;width:100%;background:#fff;margin:16px 0}
+th,td{border:1px solid #d4d4d4;padding:7px 8px;text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{background:#f0f0f0}
+.note{background:#fff;border-left:4px solid #236b3b;padding:10px 12px}
+code{background:#eee;padding:1px 4px;border-radius:3px}
+a{color:#0645ad}
+</style>
+<main>
+<h1>HIER-004 Pyramid Convergence Repair</h1>
+<p class="note">Verdict: <code>pyramid_level_iters=[150, 1350]</code> preserves the pyramid
+final-quality gain and removes the AUC loss on the difficult-four 2k/5k slice. Keep
+<code>pyramid=single</code> as shipped default until larger confirmation.</p>
+
+<table>
+<thead><tr><th>arm</th><th>dPSNR vs 750/750</th><th>dAUC vs single</th><th>dEdge-MAE vs single</th><th>decision</th></tr></thead>
+<tbody>
+<tr><td>pyramid_leveliters_150_1350</td><td>+0.0601</td><td>+0.0011</td><td>-0.000893</td><td>pass</td></tr>
+<tr><td>pyramid_leveliters_200_1300</td><td>-0.0429</td><td>-0.1319</td><td>-0.000967</td><td>pass</td></tr>
+<tr><td>pyramid_leveliters_300_1200</td><td>-0.0562</td><td>-0.3567</td><td>-0.000913</td><td>fail AUC</td></tr>
+<tr><td>pyramid_leveliters_375_1125</td><td>-0.0531</td><td>-0.5126</td><td>-0.000978</td><td>fail AUC</td></tr>
+<tr><td>pyramid_leveliters_500_1000</td><td>-0.1543</td><td>-0.8244</td><td>-0.000533</td><td>fail PSNR/AUC</td></tr>
+</tbody>
+</table>
+
+<h2>Artifacts</h2>
+<ul>
+<li><a href="run.md">run.md</a></li>
+<li><a href="combined_rows_with_controls.csv">combined_rows_with_controls.csv</a></li>
+<li><a href="paired_deltas_vs_controls.csv">paired_deltas_vs_controls.csv</a></li>
+<li><a href="candidate_summary.csv">candidate_summary.csv</a></li>
+<li><a href="arm_means.csv">arm_means.csv</a></li>
+<li>Per-arm reports:
+<a href="single_1500/index.html">single_1500</a>,
+<a href="pyramid_split_1500/index.html">pyramid_split_1500</a>,
+<a href="pyramid_leveliters_150_1350/index.html">150/1350</a>,
+<a href="pyramid_leveliters_200_1300/index.html">200/1300</a>,
+<a href="pyramid_leveliters_300_1200/index.html">300/1200</a>,
+<a href="pyramid_leveliters_375_1125/index.html">375/1125</a>,
+<a href="pyramid_leveliters_500_1000/index.html">500/1000</a>
+</li>
+</ul>
+</main>
