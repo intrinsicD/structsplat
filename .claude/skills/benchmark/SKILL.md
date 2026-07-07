@@ -62,6 +62,11 @@ Refinement is factored (FIT-009): prefer explicit axes `--refine-sites`,
 factored fields. `refine_site=none` makes primitive/NMS/color inert; non-`sampled_add` primitives
 make NMS/color inert.
 
+Color solving is also scheduled explicitly (FIT-010). `--color-solve-modes every10` remains the
+promoted quality arm; `init`, `final`, `on_split`, and compositions such as `init+on_split` are
+available for screening. The FIT-010 smoke did not justify replacing `every10`, though `on_split`
+is useful when measuring split-dip recovery.
+
 ## Experimental-validity rules (BENCH-002 — a sweep result is trustworthy by construction)
 - **Equal budgets.** Refine (adding) arms are capped at the cell budget and start below it so
   their planned additions land *at* budget — never compare a refine arm that carries +split_count

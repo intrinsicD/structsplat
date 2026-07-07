@@ -153,6 +153,7 @@ class FitConfig:
     color_basis: str = "constant"      # constant or affine local color model
     color_grad_l2: float = 1e-4        # affine coefficient L2 regularization
     color_solve_every: int | None = None  # periodic fixed-geometry RGB least-squares solve
+    color_solve_schedule: str = "every"   # none/every/init/final/on_split, composable with +
     color_solve_lambda: float = 1e-4       # Tikhonov pull toward pre-solve colors
     color_solve_maxiter: int = 32          # CG iterations for the color normal equations
     qat_mode: str = "off"                  # off, ste, or noise; COMP-004 fit-time QAT
@@ -212,6 +213,14 @@ class FitConfig:
         if self.color_solve_every is not None and self.color_solve_every < 0:
             raise ValueError(
                 f"color_solve_every must be >= 0 or None, got {self.color_solve_every}")
+        color_solve_tokens = set(str(self.color_solve_schedule).split("+"))
+        valid_color_solve_tokens = {"none", "every", "init", "final", "on_split"}
+        if not color_solve_tokens <= valid_color_solve_tokens or (
+            "none" in color_solve_tokens and len(color_solve_tokens) > 1
+        ):
+            raise ValueError(
+                "color_solve_schedule must be none, every, init, final, on_split, "
+                f"or a + composition, got {self.color_solve_schedule!r}")
         if self.color_solve_lambda < 0.0:
             raise ValueError(
                 f"color_solve_lambda must be >= 0, got {self.color_solve_lambda}")

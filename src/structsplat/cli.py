@@ -68,6 +68,7 @@ def cmd_fit(args):
                      color_basis=args.color_basis,
                      color_grad_l2=args.color_grad_l2,
                      color_solve_every=args.color_solve_every,
+                     color_solve_schedule=args.color_solve_schedule,
                      color_solve_lambda=args.color_solve_lambda,
                      color_solve_maxiter=args.color_solve_maxiter,
                      qat_mode=args.qat_mode,
@@ -286,6 +287,8 @@ def main():
                    default="normalized")
     f.add_argument("--color-solve-every", type=int, default=None,
                    help="periodically solve fixed-geometry RGB colors with CG; normalized renderer only")
+    f.add_argument("--color-solve-schedule", default="every",
+                   help="none/every/init/final/on_split, composable with +")
     f.add_argument("--color-basis", choices=["constant", "affine"], default="constant",
                    help="per-Gaussian color model")
     f.add_argument("--color-grad-l2", type=float, default=1e-4,

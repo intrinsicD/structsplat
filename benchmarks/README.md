@@ -66,7 +66,11 @@ FIT-009's difficult-four slice did not promote `residual_tensor x moment_preserv
 searchable combination. Stretch controls also include `optimizer=adan` and the `aa` stage from
 `--aa-dilations`. CORE-006 affine colors are exposed as `--color-basis-modes affine`; keep
 `constant` as the baseline/default until larger sweeps justify promotion.
-FIT-008 adaptive count is a global controller rather than a stage axis: add `--adaptive-count`
+FIT-010 adds event color-solve schedules to the `color_solve` axis: `every<N>` remains the
+promoted quality arm, while `init`, `final`, `on_split`, and compositions such as
+`init+on_split` are available for screening. The FIT-010 smoke did not meet the rule for replacing
+`every10`, though `on_split` helped split recovery. FIT-008 adaptive count is a global controller
+rather than a stage axis: add `--adaptive-count`
 with `--max-gaussians` and/or `--target-bpp` plus optional `--target-psnr`/`--target-ms-ssim`.
 Rows report selected N, raw-attribute bpp, adaptive event counts, and stop reason so fixed-N and
 adaptive-N sweeps can be compared fairly.

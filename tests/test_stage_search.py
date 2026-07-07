@@ -482,9 +482,26 @@ def test_adaptive_count_metadata_is_recorded(tmp_path):
 
 
 def test_color_solve_kwargs_parse_stage_modes():
-    assert _color_solve_kwargs("none") == {"color_solve_every": None}
-    assert _color_solve_kwargs("every10") == {"color_solve_every": 10}
-    assert _color_solve_kwargs("every25") == {"color_solve_every": 25}
+    assert _color_solve_kwargs("none") == {
+        "color_solve_every": None,
+        "color_solve_schedule": "none",
+    }
+    assert _color_solve_kwargs("every10") == {
+        "color_solve_every": 10,
+        "color_solve_schedule": "every",
+    }
+    assert _color_solve_kwargs("every25") == {
+        "color_solve_every": 25,
+        "color_solve_schedule": "every",
+    }
+    assert _color_solve_kwargs("init+on_split") == {
+        "color_solve_every": None,
+        "color_solve_schedule": "init+on_split",
+    }
+    assert _color_solve_kwargs("every10+on_split") == {
+        "color_solve_every": 10,
+        "color_solve_schedule": "every+on_split",
+    }
     with pytest.raises(ValueError):
         _color_solve_kwargs("every0")
 

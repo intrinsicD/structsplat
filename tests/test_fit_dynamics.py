@@ -380,6 +380,7 @@ def test_fit_color_solve_runs_in_loop_and_fails_closed_for_other_renderers():
 
     events = out["history"]["color_solve_events"]
     assert len(events) == 1
+    assert events[0]["trigger"] == "every"
     assert np.isfinite(out["psnr"])
     assert out["psnr"] > 70.0
 
@@ -404,6 +405,7 @@ def test_fit_color_solve_runs_in_loop_and_fails_closed_for_other_renderers():
             verbose=False,
         )
         assert len(cuda_out["history"]["color_solve_events"]) == 1
+        assert cuda_out["history"]["color_solve_events"][0]["trigger"] == "every"
         assert np.isfinite(cuda_out["psnr"])
 
     bad_field, _true_colors, bad_target, _cfg, _H, _W = _color_solve_fixture()
@@ -422,6 +424,55 @@ def test_fit_color_solve_runs_in_loop_and_fails_closed_for_other_renderers():
             FitConfig(iters=1, color_basis="affine", color_solve_every=1),
             verbose=False,
         )
+
+
+def test_color_solve_init_final_and_on_split_schedules():
+    for schedule, trigger in (("init", "init"), ("final", "final")):
+        field, _true_colors, target, cfg, _H, _W = _color_solve_fixture()
+        out = fit(
+            field,
+            target,
+            FitConfig(
+                **{
+                    **cfg.__dict__,
+                    "iters": 1,
+                    "log_every": 1,
+                    "color_solve_every": None,
+                    "color_solve_schedule": schedule,
+                    "lr_means": 0.0,
+                    "lr_scales": 0.0,
+                    "lr_rot": 0.0,
+                    "lr_color": 0.0,
+                }
+            ),
+            verbose=False,
+        )
+        events = out["history"]["color_solve_events"]
+        assert [e["trigger"] for e in events] == [trigger]
+        assert out["psnr"] > 70.0
+
+    img = np.zeros((16, 16, 3), np.float32)
+    img[:, 8:] = 1.0
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=8, seed=0))
+    out = fit(
+        field,
+        target,
+        FitConfig(
+            iters=3,
+            log_every=1,
+            split_every=1,
+            split_count=2,
+            max_gaussians=12,
+            color_solve_schedule="on_split",
+            color_solve_every=None,
+            render_chunk=8,
+        ),
+        verbose=False,
+    )
+    events = out["history"]["color_solve_events"]
+    assert events
+    assert all(e["trigger"] == "on_split" for e in events)
 
 
 def _adaptive_fixture(n=8):

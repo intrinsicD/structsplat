@@ -331,8 +331,19 @@ def differentiable_rate_bpp(field: GaussianField, H: int, W: int, cfg: FitConfig
     return bits / area
 
 
+def _color_solve_schedule_tokens(cfg: FitConfig) -> set[str]:
+    tokens = set(str(cfg.color_solve_schedule).split("+"))
+    if tokens == {"none"}:
+        return set()
+    if cfg.color_solve_every is not None and cfg.color_solve_every > 0:
+        tokens.add("every")
+    else:
+        tokens.discard("every")
+    return tokens
+
+
 def _color_solve_enabled(cfg: FitConfig) -> bool:
-    return cfg.color_solve_every is not None and cfg.color_solve_every > 0
+    return bool(_color_solve_schedule_tokens(cfg))
 
 
 def _color_solve_renderer_supported(renderer: str) -> bool:
@@ -1401,6 +1412,22 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         "split_events": [], "relocate_events": [], "color_solve_events": [],
         "adaptive_events": [], "qat_rate_bpp": [], "rate_loss": [],
     }
+    color_solve_tokens = _color_solve_schedule_tokens(cfg)
+    start_time = time.time()
+
+    def run_color_solve_event(iter_idx: int, trigger: str) -> None:
+        stats = _solve_colors_normalized(field, target, cfg, H, W)
+        _reset_optimizer_state_for_param(opt, field.colors)
+        hist["color_solve_events"].append({"iter": iter_idx, "trigger": trigger, **stats})
+        if verbose:
+            print(
+                "  color solve "
+                f"{trigger} {int(stats['iterations'])} cg iters  "
+                f"rel {float(stats['relative_residual']):.3e}"
+            )
+
+    if "init" in color_solve_tokens:
+        run_color_solve_event(0, "init")
     absgrad_scores = torch.zeros(field.n, device=target.device, dtype=target.dtype)
     targets = _target_list(cfg)
     iters_to_targets = {str(t): None for t in targets}
@@ -1415,7 +1442,6 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         target_iters_device = torch.full(
             (len(targets),), -1, device=target.device, dtype=torch.long
         )
-    start_time = time.time()
     best_logged_psnr = -math.inf
     stale_logs = 0
     stopped_early = False
@@ -1464,18 +1490,14 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             if getattr(field, "scale_max", None) is not None:
                 cap = torch.log(torch.clamp(field.scale_max, min=1e-3))
                 torch.minimum(field.log_scales, cap, out=field.log_scales)
-            if _color_solve_enabled(cfg) and (it + 1) % int(cfg.color_solve_every) == 0:
-                stats = _solve_colors_normalized(field, target, cfg, H, W)
-                _reset_optimizer_state_for_param(opt, field.colors)
-                event = {"iter": it, **stats}
-                hist["color_solve_events"].append(event)
+            if (
+                "every" in color_solve_tokens
+                and cfg.color_solve_every is not None
+                and cfg.color_solve_every > 0
+                and (it + 1) % int(cfg.color_solve_every) == 0
+            ):
+                run_color_solve_event(it, "every")
                 img = _render(field, cfg, H, W)
-                if verbose:
-                    print(
-                        "  color solve "
-                        f"{int(stats['iterations'])} cg iters  "
-                        f"rel {float(stats['relative_residual']):.3e}"
-                    )
             mse_now = None
             if target_thresholds is not None and target_iters_device is not None:
                 mse_now = M.mse(img, target).detach().clamp_min(1e-12)
@@ -1671,6 +1693,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             field.trainable()
             opt = _carry_adam_state(opt, field, cfg, keep, added, reset_idx=reset_idx)
             base_lrs = [g["lr"] for g in opt.param_groups]
+            if "on_split" in color_solve_tokens and (added > 0 or relocated > 0):
+                run_color_solve_event(it, "on_split")
 
         if log_now:
             hist["iter"].append(it)
@@ -1700,6 +1724,9 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                         break
             if adaptive_should_stop:
                 break
+
+    if "final" in color_solve_tokens:
+        run_color_solve_event(last_iter, "final")
 
     fit_seconds = time.time() - start_time  # before the final eval: metrics (esp. LPIPS
     with torch.no_grad():                   # model construction) must not pollute the timing

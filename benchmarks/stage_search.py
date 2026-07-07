@@ -410,21 +410,35 @@ def _scale_cap_kwargs(mode: str) -> dict[str, Any]:
 
 def _color_solve_kwargs(mode: str) -> dict[str, Any]:
     if mode in ("none", "off"):
-        return {"color_solve_every": None}
-    if mode in ("every10", "cg10"):
-        return {"color_solve_every": 10}
-    if mode.startswith("every"):
-        suffix = mode[len("every"):]
-        try:
-            every = int(suffix)
-        except ValueError as exc:
-            raise ValueError(f"cannot parse color_solve mode {mode!r}") from exc
-        if every <= 0:
-            raise ValueError(f"color_solve interval must be positive, got {mode!r}")
-        return {"color_solve_every": every}
-    raise ValueError(
-        f"unknown color_solve mode {mode!r}; expected none, every10, or every<N>"
-    )
+        return {"color_solve_every": None, "color_solve_schedule": "none"}
+    tokens = mode.split("+")
+    schedule: list[str] = []
+    every: int | None = None
+    for token in tokens:
+        if token == "cg10":
+            token = "every10"
+        if token.startswith("every"):
+            suffix = token[len("every"):]
+            try:
+                every = int(suffix)
+            except ValueError as exc:
+                raise ValueError(f"cannot parse color_solve mode {mode!r}") from exc
+            if every <= 0:
+                raise ValueError(f"color_solve interval must be positive, got {mode!r}")
+            schedule.append("every")
+        elif token in ("init", "final", "on_split"):
+            schedule.append(token)
+        else:
+            raise ValueError(
+                f"unknown color_solve mode {mode!r}; expected none, every<N>, init, "
+                "final, on_split, or a + composition"
+            )
+    # Preserve the user's trigger order while removing duplicates.
+    deduped = list(dict.fromkeys(schedule))
+    return {
+        "color_solve_every": every,
+        "color_solve_schedule": "+".join(deduped) if deduped else "none",
+    }
 
 
 def _seconds_to_target(history: dict, iters_to_target) -> float | None:
@@ -597,6 +611,7 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         "freq_violation_axis1_count": event_mean(freq_events, "freq_violation_axis1_count"),
         "freq_violation_freq_mean": event_mean(freq_events, "freq_violation_freq_mean"),
         "color_solve_every": fcfg.color_solve_every,
+        "color_solve_schedule": fcfg.color_solve_schedule,
         "color_solve_lambda": fcfg.color_solve_lambda,
         "color_solve_maxiter": fcfg.color_solve_maxiter,
         "color_solve_event_count": len(color_solve_events),
