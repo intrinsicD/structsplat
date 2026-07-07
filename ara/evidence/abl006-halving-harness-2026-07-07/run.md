@@ -16,10 +16,12 @@ python -m benchmarks.abl004_confirmation halving-plan \
 
 Result:
 
-- Local default image list resolved to 12 images, so the first-stage default plan contains
-  144 cells: 12 images x budget 2000 x seeds {0,1} x 6 arms.
+- `scripts/prepare_abl004_images.py` prepared the intended image set:
+  Kodak-24 plus 4 pinned COCO fixtures.
+- The first-stage default plan contains 336 cells:
+  28 images x budget 2000 x seeds {0,1} x 6 arms.
 - The committed decisions file has no survivor decisions yet, so only stage 1 is planned.
-- The final ABL-006 run still needs the full confirmation image set and stage decisions recorded
+- The final ABL-006 run still needs the staged GPU execution and survivor decisions recorded
   after each stage.
 
 Focused validation:
