@@ -85,6 +85,10 @@ adaptive count is a global controller rather than a stage axis: add `--adaptive-
 with `--max-gaussians` and/or `--target-bpp` plus optional `--target-psnr`/`--target-ms-ssim`.
 Rows report selected N, raw-attribute bpp, adaptive event counts, and stop reason so fixed-N and
 adaptive-N sweeps can be compared fairly.
+HIER-003 changed the pyramid read: `pyramid=pyramid` is no longer a final-PSNR loser in the
+difficult-four 2k/5k slice (+1.0000 dB mean vs `single`), but it lost AUC in every pair
+(-1.3540 mean). Keep `pyramid=single` as the default for convergence-sensitive comparisons; use
+HIER-004 before promoting pyramid beyond an offline/final-quality arm.
 
 ```
 python -m benchmarks.stage_search path/to/images --mode influence --budgets 2048 --iters 500

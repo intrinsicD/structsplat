@@ -59,3 +59,14 @@ and the result split by strategy. Tensor weighting helped `aniso_onedge` (+0.266
 and hurt `quadtree_wse` (-0.2538 dB mean PSNR). Keep it available as a stage-search axis and
 default it off unless a future task proves a narrower promoted recipe. See
 `ara/evidence/fit012-edge-weighted-loss-2026-07-07/`.
+
+## C07: Pyramid fitting is a final-quality candidate with unresolved convergence cost
+
+HIER-003 overturned the stale claim that the image pyramid simply loses final quality. On the
+fair-regime difficult-four slice, the current 0.35/0.65 two-level pyramid beat single-stage final
+PSNR in 16/16 matched pairs with +1.0000 dB mean PSNR and +0.01399 mean MS-SSIM. The tradeoff is
+convergence: it lost PSNR AUC in 16/16 pairs with -1.3540 mean AUC. Extra coarse iterations,
+0.1/0.9 + cosine, and a matched residual-add refine twin did not solve that. Keep `pyramid=single`
+as the default; treat `pyramid=pyramid` as an offline/final-quality or prefix-LOD candidate until
+HIER-004 repairs or scopes the AUC cost. See
+`ara/evidence/hier003-pyramid-diagnosis-2026-07-07/`.

@@ -1,0 +1,46 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>HIER-003 Pyramid Diagnosis</title>
+<style>
+body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:24px;line-height:1.45;color:#171717;background:#fafafa}
+main{max-width:1100px;margin:auto}
+table{border-collapse:collapse;width:100%;background:#fff;margin:16px 0}
+th,td{border:1px solid #d4d4d4;padding:7px 8px;text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{background:#f0f0f0}
+.note{background:#fff;border-left:4px solid #555;padding:10px 12px}
+code{background:#eee;padding:1px 4px;border-radius:3px}
+a{color:#0645ad}
+</style>
+<main>
+<h1>HIER-003 Pyramid Diagnosis</h1>
+<p class="note">Verdict: current two-level <code>pyramid=pyramid</code> is a final-quality
+positive, not a failed idea, but it loses convergence/AUC enough to stay default-off.</p>
+
+<table>
+<thead><tr><th>arm</th><th>pairs</th><th>dPSNR mean</th><th>dMS-SSIM mean</th><th>dEdge-MAE mean</th><th>dAUC mean</th><th>dFit sec mean</th></tr></thead>
+<tbody>
+<tr><td>pyramid_split_1500</td><td>16</td><td>+1.0000</td><td>+0.01399</td><td>-0.000562</td><td>-1.3540</td><td>+0.2499</td></tr>
+<tr><td>pyramid_frac10_cosine</td><td>16</td><td>+0.4441</td><td>+0.00595</td><td>+0.003396</td><td>-3.0657</td><td>+0.1457</td></tr>
+<tr><td>pyramid_fullfield_iters</td><td>16</td><td>+0.0794</td><td>+0.00354</td><td>+0.001081</td><td>-1.5716</td><td>+5.2312</td></tr>
+<tr><td>refine_twin</td><td>16</td><td>-0.4537</td><td>-0.02392</td><td>+0.003038</td><td>-1.9926</td><td>-0.0063</td></tr>
+</tbody>
+</table>
+
+<h2>Artifacts</h2>
+<ul>
+<li><a href="run.md">run.md</a></li>
+<li><a href="combined_rows.csv">combined_rows.csv</a></li>
+<li><a href="paired_deltas_vs_single.csv">paired_deltas_vs_single.csv</a></li>
+<li><a href="aggregate_deltas.csv">aggregate_deltas.csv</a></li>
+<li><a href="arm_means.csv">arm_means.csv</a></li>
+<li>Per-arm reports:
+<a href="single_1500/index.html">single_1500</a>,
+<a href="pyramid_split_1500/index.html">pyramid_split_1500</a>,
+<a href="pyramid_fullfield_iters/index.html">pyramid_fullfield_iters</a>,
+<a href="pyramid_frac10_cosine/index.html">pyramid_frac10_cosine</a>,
+<a href="refine_twin_b2000/index.html">refine_twin_b2000</a>,
+<a href="refine_twin_b5000/index.html">refine_twin_b5000</a>
+</li>
+</ul>
+</main>
