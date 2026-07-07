@@ -2,10 +2,16 @@ import csv
 import json
 
 from benchmarks.abl004_confirmation import (
+    HALVING_DECISIONS,
     ConfirmationSpec,
     bootstrap_mean_ci,
+    default_halving_decisions,
     expected_cells,
+    halving_run_groups,
+    successive_halving_cells,
     write_confirmation_analysis,
+    write_halving_analysis,
+    write_halving_plan,
     write_plan,
 )
 
@@ -163,3 +169,120 @@ def test_confirmation_analysis_reports_pairs_missing_and_ranks(tmp_path):
 def test_bootstrap_mean_ci_handles_empty_and_singleton():
     assert bootstrap_mean_ci([], samples=10) == (None, None, None)
     assert bootstrap_mean_ci([2.0], samples=10) == (2.0, 2.0, 2.0)
+
+
+def test_halving_plan_stages_follow_survivor_decisions():
+    spec = ConfirmationSpec(
+        images=("a.png", "b.png"),
+        budgets=(2000, 5000, 10000),
+        seeds=(0, 1, 2),
+        strategies=("aniso_onedge", "quadtree_wse"),
+        max_side=16,
+        iters=2,
+        renderer="normalized",
+    )
+    decisions = default_halving_decisions(spec)
+
+    cells = successive_halving_cells(spec, decisions)
+    assert len(cells) == 8
+    assert {c["stage"] for c in cells} == {1}
+
+    decisions["stages"]["stage1"]["survivors"] = ["quadtree_wse"]
+    cells = successive_halving_cells(spec, decisions)
+    assert len(cells) == 12
+    assert {c["run_group"] for c in cells} == {"stage1_budget2000", "stage2_budget5000"}
+
+    decisions["stages"]["stage2"]["survivors"] = ["quadtree_wse"]
+    cells = successive_halving_cells(spec, decisions)
+    assert len(cells) == 22
+    groups = halving_run_groups(spec, decisions)
+    assert [g["run_group"] for g in groups] == [
+        "stage1_budget2000",
+        "stage2_budget5000",
+        "stage3_budget10000",
+        "stage3_seed2_all_budgets",
+    ]
+    assert groups[-1]["budgets"] == [2000, 5000, 10000]
+    assert groups[-1]["seeds"] == [2]
+
+
+def test_halving_plan_writes_artifacts_and_default_decisions(tmp_path):
+    spec = ConfirmationSpec(
+        images=("a.png", "b.png"),
+        budgets=(2000, 5000, 10000),
+        seeds=(0, 1, 2),
+        strategies=("aniso_onedge", "quadtree_wse"),
+        max_side=16,
+        iters=2,
+        renderer="normalized",
+    )
+
+    cells = write_halving_plan(spec, tmp_path)
+
+    assert len(cells) == 8
+    assert (tmp_path / HALVING_DECISIONS).exists()
+    assert (tmp_path / "abl006_plan.csv").exists()
+    assert (tmp_path / "abl006_run_groups.json").exists()
+    assert (tmp_path / "abl006_elimination_trail.csv").exists()
+    cfg = json.loads((tmp_path / "abl006_config.json").read_text())
+    assert cfg["resolved"]["protocol"] == "ABL-006 successive halving"
+    assert cfg["resolved"]["planned_cells"] == 8
+    assert cfg["resolved"]["rule"]["pairing_key"] == ["image", "seed", "budget"]
+
+
+def test_halving_analysis_uses_staged_expected_counts(tmp_path):
+    spec = ConfirmationSpec(
+        images=("a.png", "b.png"),
+        budgets=(2000, 5000, 10000),
+        seeds=(0, 1, 2),
+        strategies=("aniso_onedge", "quadtree_wse"),
+        max_side=16,
+        iters=2,
+        renderer="normalized",
+        baseline="aniso_onedge",
+    )
+    decisions = default_halving_decisions(spec)
+    decisions["stages"]["stage1"]["survivors"] = ["quadtree_wse"]
+    decisions["stages"]["stage1"]["eliminated"] = [{
+        "strategy": "aniso_onedge",
+        "reason": "test",
+        "mean_delta_psnr": -0.1,
+        "ci95_low_psnr": -0.2,
+        "ci95_high_psnr": -0.01,
+    }]
+    decisions["stages"]["stage2"]["survivors"] = ["quadtree_wse"]
+    (tmp_path / HALVING_DECISIONS).write_text(json.dumps(decisions), encoding="utf-8")
+    rows = [
+        _row("a", 2000, 0, "aniso_onedge", 28.0, 0.90),
+        _row("a", 2000, 0, "quadtree_wse", 29.0, 0.91),
+        _row("a", 5000, 0, "quadtree_wse", 30.0, 0.92),
+        _row("a", 10000, 0, "quadtree_wse", 31.0, 0.93),
+        _row("a", 2000, 2, "quadtree_wse", 29.5, 0.915),
+    ]
+    _write_jsonl(tmp_path / "ablation.jsonl", rows)
+
+    summary = write_halving_analysis(
+        tmp_path,
+        spec,
+        bootstrap_samples=10,
+        bootstrap_seed=0,
+    )
+
+    assert summary["expected_cells"] == 22
+    assert summary["completed_cells"] == 5
+    assert summary["missing_cells"] == 17
+    leaderboard = _read_csv(tmp_path / "leaderboard.csv")
+    onedge_5000 = [
+        r for r in leaderboard
+        if r["budget"] == "5000" and r["strategy"] == "aniso_onedge"
+    ][0]
+    assert onedge_5000["expected_runs"] == "0"
+    qt_2000 = [
+        r for r in leaderboard
+        if r["budget"] == "2000" and r["strategy"] == "quadtree_wse"
+    ][0]
+    assert qt_2000["expected_runs"] == "6"
+    elimination = _read_csv(tmp_path / "abl006_elimination_trail.csv")
+    assert elimination[0]["strategy"] == "aniso_onedge"
+    index = (tmp_path / "index.html").read_text(encoding="utf-8")
+    assert "ABL-006 Successive-Halving Overview" in index

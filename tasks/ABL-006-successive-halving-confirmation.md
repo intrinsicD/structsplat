@@ -1,6 +1,8 @@
 # ABL-006: Successive-halving execution of the remaining confirmation
 
-**Status: todo.** Supersedes the flat execution plan of the ABL-004 confirmation manifest (the
+**Status: partial.** Harness and frozen-rule plan artifacts are implemented; the staged GPU run,
+stage decisions, and README winner update remain open. Supersedes the flat execution plan of the
+ABL-004 confirmation manifest (the
 protocol and arms are unchanged; only the run order and stopping rule change).
 
 ## Context
@@ -28,13 +30,21 @@ by roughly half to two-thirds without weakening the statistical claim for the ar
    dropped (BENCH-002 no-silent-caps rule).
 
 ## Acceptance criteria
-- [ ] A `plan`/`run` mode in `benchmarks/abl004_confirmation.py` (or a thin wrapper) that emits
+- [x] A `plan`/`run` mode in `benchmarks/abl004_confirmation.py` (or a thin wrapper) that emits
       the staged cell list and honors elimination decisions recorded in a committed JSON.
-- [ ] Elimination rule stated in the config artifact before stage 1 completes (no post-hoc
+- [x] Elimination rule stated in the config artifact before stage 1 completes (no post-hoc
       tuning): CI method, confidence level, pairing key.
 - [ ] Final `summary.md` + `leaderboard.csv` + elimination trail committed under
       `ara/evidence/abl006-*/`; ABL-004's remaining acceptance boxes ticked by this evidence.
 - [ ] README hypothesis status paragraph updated with the per-budget winners.
+
+## 2026-07-07 partial
+Added `halving-plan` / `halving-run` subcommands to `benchmarks/abl004_confirmation.py`.
+The staged plan writes `abl006_plan.csv`, `abl006_config.json`,
+`abl006_elimination_decisions.json`, `abl006_run_groups.json`, and
+`abl006_elimination_trail.csv`. The analysis path now supports staged expected cells so eliminated
+arms are not counted as missing high-budget cells. Harness evidence is committed under
+`ara/evidence/abl006-halving-harness-2026-07-07/`.
 
 ## Interfaces touched
 `benchmarks/abl004_confirmation.py`, `ara/evidence/`, `tasks/ABL-004-controls-and-full-run.md`,

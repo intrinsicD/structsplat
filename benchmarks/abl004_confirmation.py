@@ -43,6 +43,7 @@ DEFAULT_STRATEGIES = [
 DEFAULT_BUDGETS = [2000, 5000, 10000]
 DEFAULT_SEEDS = [0, 1, 2]
 DEFAULT_TARGET_PSNRS = [22.0, 24.0, 26.0, 28.0, 30.0, 32.0]
+HALVING_DECISIONS = "abl006_elimination_decisions.json"
 
 
 @dataclass(frozen=True)
@@ -143,6 +144,235 @@ def write_plan(spec: ConfirmationSpec, outdir: Path) -> list[dict[str, Any]]:
     return cells
 
 
+def default_halving_decisions(spec: ConfirmationSpec) -> dict[str, Any]:
+    return {
+        "protocol": "ABL-006 successive halving",
+        "version": 1,
+        "rule": {
+            "metric": "psnr",
+            "ci_method": "bootstrap_mean_ci",
+            "confidence": 0.95,
+            "pairing_key": ["image", "seed", "budget"],
+            "leader": "highest mean PSNR among complete paired units in the stage",
+            "survivor": "CI for arm-minus-leader overlaps zero",
+            "elimination": "CI for arm-minus-leader is strictly below zero",
+            "frozen_before_stage1_complete": True,
+        },
+        "stages": {
+            "stage1": {
+                "budget": int(spec.budgets[0]),
+                "seeds": [int(s) for s in spec.seeds[:2]],
+                "survivors": None,
+                "eliminated": [],
+            },
+            "stage2": {
+                "budget": int(spec.budgets[1]) if len(spec.budgets) > 1 else None,
+                "seeds": [int(s) for s in spec.seeds[:2]],
+                "survivors": None,
+                "eliminated": [],
+            },
+            "stage3": {
+                "budget": int(spec.budgets[2]) if len(spec.budgets) > 2 else None,
+                "seeds": [int(s) for s in spec.seeds[:2]],
+                "extra_seed": int(spec.seeds[2]) if len(spec.seeds) > 2 else None,
+                "finalists": None,
+                "eliminated": [],
+            },
+        },
+    }
+
+
+def _halving_decisions_path(outdir: Path, path: Path | None) -> Path:
+    return path if path is not None else outdir / HALVING_DECISIONS
+
+
+def load_halving_decisions(path: Path, spec: ConfirmationSpec) -> dict[str, Any]:
+    if not path.exists():
+        decisions = default_halving_decisions(spec)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(decisions, indent=2) + "\n", encoding="utf-8")
+        return decisions
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _survivors(decisions: dict[str, Any], stage: str) -> list[str] | None:
+    raw = (decisions.get("stages", {}).get(stage, {}) or {}).get("survivors")
+    if raw is None:
+        raw = (decisions.get("stages", {}).get(stage, {}) or {}).get("finalists")
+    if raw is None:
+        return None
+    return [str(v) for v in raw]
+
+
+def _validate_halving_decisions(spec: ConfirmationSpec, decisions: dict[str, Any]) -> None:
+    allowed = set(spec.strategies)
+    for stage in ("stage1", "stage2", "stage3"):
+        selected = _survivors(decisions, stage)
+        if selected is None:
+            continue
+        unknown = sorted(set(selected) - allowed)
+        if unknown:
+            raise ValueError(
+                f"{stage} contains unknown survivor/finalist arm(s) {unknown}; "
+                f"expected one of {sorted(allowed)}"
+            )
+
+
+def _validate_halving_spec(spec: ConfirmationSpec) -> None:
+    if len(spec.budgets) < 3:
+        raise ValueError("ABL-006 requires at least three budgets")
+    if len(spec.seeds) < 3:
+        raise ValueError("ABL-006 requires at least three seeds")
+
+
+def successive_halving_cells(
+    spec: ConfirmationSpec,
+    decisions: dict[str, Any],
+) -> list[dict[str, Any]]:
+    _validate_halving_spec(spec)
+    _validate_halving_decisions(spec, decisions)
+    cells: list[dict[str, Any]] = []
+
+    def add(stage: int, run_group: str, budgets: Iterable[int],
+            seeds: Iterable[int], strategies: Iterable[str]) -> None:
+        for source_path in spec.images:
+            image = Path(source_path).stem
+            for budget in budgets:
+                for seed in seeds:
+                    for strategy in strategies:
+                        cells.append({
+                            "stage": stage,
+                            "run_group": run_group,
+                            "image": image,
+                            "source_path": source_path,
+                            "budget": int(budget),
+                            "seed": int(seed),
+                            "strategy": strategy,
+                            "max_side": int(spec.max_side),
+                            "iters": int(spec.iters),
+                            "renderer": spec.renderer,
+                        })
+
+    stage1_seeds = [int(s) for s in spec.seeds[:2]]
+    add(
+        1,
+        f"stage1_budget{int(spec.budgets[0])}",
+        [int(spec.budgets[0])],
+        stage1_seeds,
+        spec.strategies,
+    )
+
+    stage1_survivors = _survivors(decisions, "stage1")
+    if not stage1_survivors:
+        return cells
+    add(
+        2,
+        f"stage2_budget{int(spec.budgets[1])}",
+        [int(spec.budgets[1])],
+        stage1_seeds,
+        stage1_survivors,
+    )
+
+    stage2_survivors = _survivors(decisions, "stage2")
+    if not stage2_survivors:
+        return cells
+    add(
+        3,
+        f"stage3_budget{int(spec.budgets[2])}",
+        [int(spec.budgets[2])],
+        stage1_seeds,
+        stage2_survivors,
+    )
+    add(3, "stage3_seed2_all_budgets", spec.budgets, [int(spec.seeds[2])], stage2_survivors)
+    return cells
+
+
+def halving_run_groups(
+    spec: ConfirmationSpec,
+    decisions: dict[str, Any],
+) -> list[dict[str, Any]]:
+    cells = successive_halving_cells(spec, decisions)
+    groups: dict[str, dict[str, Any]] = {}
+    for cell in cells:
+        group = groups.setdefault(cell["run_group"], {
+            "run_group": cell["run_group"],
+            "stage": cell["stage"],
+            "budgets": set(),
+            "seeds": set(),
+            "strategies": set(),
+        })
+        group["budgets"].add(int(cell["budget"]))
+        group["seeds"].add(int(cell["seed"]))
+        group["strategies"].add(str(cell["strategy"]))
+    out = []
+    for group in sorted(groups.values(), key=lambda g: (g["stage"], g["run_group"])):
+        out.append({
+            "run_group": group["run_group"],
+            "stage": int(group["stage"]),
+            "budgets": sorted(group["budgets"]),
+            "seeds": sorted(group["seeds"]),
+            "strategies": sorted(group["strategies"]),
+        })
+    return out
+
+
+def _eliminated_rows(decisions: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = []
+    for stage, entry in sorted((decisions.get("stages") or {}).items()):
+        for item in entry.get("eliminated") or []:
+            rec = {"stage": stage}
+            if isinstance(item, dict):
+                rec.update(item)
+            else:
+                rec["strategy"] = str(item)
+            rows.append(rec)
+    return rows
+
+
+def write_halving_plan(
+    spec: ConfirmationSpec,
+    outdir: Path,
+    *,
+    decisions_path: Path | None = None,
+) -> list[dict[str, Any]]:
+    outdir.mkdir(parents=True, exist_ok=True)
+    path = _halving_decisions_path(outdir, decisions_path)
+    decisions = load_halving_decisions(path, spec)
+    cells = successive_halving_cells(spec, decisions)
+    groups = halving_run_groups(spec, decisions)
+    write_config(
+        str(outdir),
+        run_config({
+            "protocol": "ABL-006 successive halving",
+            "images": list(spec.images),
+            "budgets": list(spec.budgets),
+            "seeds": list(spec.seeds),
+            "strategies": list(spec.strategies),
+            "planned_cells": len(cells),
+            "run_groups": groups,
+            "decisions_path": str(path),
+            "rule": decisions.get("rule", {}),
+            "max_side": spec.max_side,
+            "iters": spec.iters,
+            "renderer": spec.renderer,
+            "render_chunk": spec.render_chunk,
+            "target_psnr": spec.target_psnr,
+            "target_psnrs": list(spec.target_psnrs),
+            "baseline": spec.baseline,
+        }),
+        name="abl006_config.json",
+    )
+    write_csv(outdir / "abl006_plan.csv", cells)
+    elim = _eliminated_rows(decisions)
+    _write_rows(
+        outdir / "abl006_elimination_trail.csv",
+        elim,
+        ["stage", "strategy", "reason", "mean_delta_psnr", "ci95_low_psnr", "ci95_high_psnr"],
+    )
+    write_json(outdir / "abl006_run_groups.json", groups)
+    return cells
+
+
 def load_ablation_rows(outdir: Path) -> list[dict[str, Any]]:
     jsonl = outdir / "ablation.jsonl"
     if jsonl.exists():
@@ -165,6 +395,30 @@ def _row_key(row: dict[str, Any]) -> tuple[str, int, int, str]:
 
 def _cell_key(cell: dict[str, Any]) -> tuple[str, int, int, str]:
     return (str(cell["image"]), int(cell["budget"]), int(cell["seed"]), str(cell["strategy"]))
+
+
+def _missing_from_plan(
+    rows_by_key: dict[tuple, dict[str, Any]],
+    cells: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    completed = set(rows_by_key)
+    return [cell for cell in cells if _cell_key(cell) not in completed]
+
+
+def _expected_runs_by_budget_strategy(
+    cells: Iterable[dict[str, Any]],
+) -> dict[tuple[int, str], int]:
+    counts: dict[tuple[int, str], int] = {}
+    seen: set[tuple[str, int, int, str]] = set()
+    for cell in cells:
+        key = _cell_key(cell)
+        if key in seen:
+            continue
+        seen.add(key)
+        budget = int(cell["budget"])
+        strategy = str(cell["strategy"])
+        counts[(budget, strategy)] = counts.get((budget, strategy), 0) + 1
+    return counts
 
 
 def _dedupe_rows(rows: Iterable[dict[str, Any]], spec: ConfirmationSpec) -> dict[tuple, dict[str, Any]]:
@@ -255,7 +509,12 @@ def _target_fieldnames(targets: list[float]) -> list[str]:
     return out
 
 
-def leaderboard(rows_by_key: dict[tuple, dict[str, Any]], spec: ConfirmationSpec) -> list[dict[str, Any]]:
+def leaderboard(
+    rows_by_key: dict[tuple, dict[str, Any]],
+    spec: ConfirmationSpec,
+    *,
+    expected_runs: dict[tuple[int, str], int] | None = None,
+) -> list[dict[str, Any]]:
     rows = list(rows_by_key.values())
     targets = _headline_targets(spec)
     out = []
@@ -271,7 +530,11 @@ def leaderboard(rows_by_key: dict[tuple, dict[str, Any]], spec: ConfirmationSpec
                 "budget": int(budget),
                 "strategy": strategy,
                 "runs": len(vals),
-                "expected_runs": len(spec.images) * len(spec.seeds),
+                "expected_runs": (
+                    expected_runs.get((int(budget), strategy), 0)
+                    if expected_runs is not None
+                    else len(spec.images) * len(spec.seeds)
+                ),
                 "mean_psnr": _mean_or_none(r.get("psnr") for r in vals),
                 "std_psnr": _std_or_none(r.get("psnr") for r in vals),
                 "mean_ms_ssim": _mean_or_none(r.get("ms_ssim") for r in vals),
@@ -423,12 +686,15 @@ def _write_summary(
     outdir: Path,
     spec: ConfirmationSpec,
     *,
+    title: str = "ABL-004 Confirmation Analysis",
     completed: int,
     expected: int,
     missing: list[dict[str, Any]],
     board: list[dict[str, Any]],
     baseline_pairs: list[dict[str, Any]],
     ranks: list[dict[str, Any]],
+    plan_file: str = "confirmation_plan.csv",
+    extra_files: list[str] | None = None,
 ) -> None:
     targets = _headline_targets(spec)
     target_header = "".join(
@@ -437,7 +703,7 @@ def _write_summary(
     )
     target_align = "|---:" * (2 * len(targets))
     lines = [
-        "# ABL-004 Confirmation Analysis",
+        f"# {title}",
         "",
         f"Expected cells: {expected}",
         f"Completed cells: {completed}",
@@ -500,7 +766,7 @@ def _write_summary(
         "",
         "## Files",
         "",
-        "- `confirmation_plan.csv`: expected cells.",
+        f"- `{plan_file}`: expected cells.",
         "- `missing_cells.csv`: cells not yet present in `ablation.jsonl` / `ablation.json`.",
         "- `leaderboard.csv`: aggregate budget x strategy means.",
         "- `paired_deltas_vs_baseline.csv`: strategy minus baseline paired deltas.",
@@ -508,15 +774,31 @@ def _write_summary(
         "- `paired_units_vs_baseline.csv`: per image x seed paired rows for failure inspection.",
         "- `rank_stability.csv`: per-budget winner counts and rank distribution.",
     ]
+    for item in extra_files or []:
+        lines.append(item)
     (outdir / "confirmation_analysis.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def _write_index(outdir: Path) -> None:
+def _write_index(
+    outdir: Path,
+    *,
+    title: str = "ABL-004 Confirmation Overview",
+    note: str | None = None,
+    config_file: str = "confirmation_config.json",
+    plan_file: str = "confirmation_plan.csv",
+    extra_links: list[tuple[str, str]] | None = None,
+) -> None:
+    note = note or (
+        "Decision-grade confirmation artifacts. Results may be partial while "
+        "bounded shards are still running; see missing_cells.csv for remaining cells. "
+        "This overview embeds scalar plots only because the ablation confirmation harness does "
+        "not persist per-cell reconstruction images."
+    )
     links = [
         ("Confirmation analysis", "confirmation_analysis.md"),
         ("Ablation summary", "summary.md"),
-        ("Confirmation config", "confirmation_config.json"),
-        ("Confirmation plan", "confirmation_plan.csv"),
+        ("Confirmation config", config_file),
+        ("Confirmation plan", plan_file),
         ("Missing cells", "missing_cells.csv"),
         ("Leaderboard", "leaderboard.csv"),
         ("Paired deltas vs baseline", "paired_deltas_vs_baseline.csv"),
@@ -525,11 +807,12 @@ def _write_index(outdir: Path) -> None:
         ("Rank stability", "rank_stability.csv"),
         ("Raw JSONL rows", "ablation.jsonl"),
     ]
+    links.extend(extra_links or [])
     plots = ["psnr_vs_budget.png", "psnr_vs_iters.png"]
     html = [
         "<!doctype html>",
         '<html lang="en"><head><meta charset="utf-8">',
-        "<title>ABL-004 Confirmation Overview</title>",
+        f"<title>{escape(title)}</title>",
         "<style>",
         "body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:24px;line-height:1.45;color:#1f2328;background:#fff}",
         "h1{margin-bottom:0.25rem} .note{color:#57606a;max-width:80ch}",
@@ -538,11 +821,8 @@ def _write_index(outdir: Path) -> None:
         "figure{margin:0} img{max-width:100%;border:1px solid #d0d7de;border-radius:6px;background:#fff}",
         "figcaption{font-size:0.9rem;color:#57606a;margin-top:4px}",
         "</style></head><body>",
-        "<h1>ABL-004 Confirmation Overview</h1>",
-        '<p class="note">Decision-grade confirmation artifacts. Results may be partial while '
-        "bounded shards are still running; see missing_cells.csv for remaining cells. "
-        "This overview embeds scalar plots only because the ablation confirmation harness does "
-        "not persist per-cell reconstruction images.</p>",
+        f"<h1>{escape(title)}</h1>",
+        f'<p class="note">{escape(note)}</p>',
         "<h2>Files</h2>",
         "<ul>",
     ]
@@ -569,9 +849,37 @@ def write_confirmation_analysis(
 ) -> dict[str, Any]:
     outdir.mkdir(parents=True, exist_ok=True)
     plan = write_plan(spec, outdir)
+    return _write_analysis(
+        outdir,
+        spec,
+        plan,
+        bootstrap_samples=bootstrap_samples,
+        bootstrap_seed=bootstrap_seed,
+    )
+
+
+def _write_analysis(
+    outdir: Path,
+    spec: ConfirmationSpec,
+    plan: list[dict[str, Any]],
+    *,
+    bootstrap_samples: int = 5000,
+    bootstrap_seed: int = 0,
+    analysis_title: str = "ABL-004 Confirmation Analysis",
+    index_title: str = "ABL-004 Confirmation Overview",
+    index_note: str | None = None,
+    config_file: str = "confirmation_config.json",
+    plan_file: str = "confirmation_plan.csv",
+    extra_links: list[tuple[str, str]] | None = None,
+    extra_summary_files: list[str] | None = None,
+) -> dict[str, Any]:
     rows_by_key = _dedupe_rows(load_ablation_rows(outdir), spec)
-    missing = missing_cells(rows_by_key, spec)
-    board = leaderboard(rows_by_key, spec)
+    missing = _missing_from_plan(rows_by_key, plan)
+    board = leaderboard(
+        rows_by_key,
+        spec,
+        expected_runs=_expected_runs_by_budget_strategy(plan),
+    )
     baseline_pairs, baseline_units = paired_deltas(
         rows_by_key,
         spec,
@@ -589,7 +897,7 @@ def write_confirmation_analysis(
     ranks = rank_stability(rows_by_key, spec)
     target_fields = _target_fieldnames(_headline_targets(spec))
 
-    cell_fields = list(expected_cells(spec)[0].keys()) if spec.images else []
+    cell_fields = list(plan[0].keys()) if plan else []
     _write_rows(outdir / "missing_cells.csv", missing, cell_fields)
     _write_rows(outdir / "leaderboard.csv", board, [
         "budget", "strategy", "runs", "expected_runs", "mean_psnr", "std_psnr",
@@ -632,15 +940,62 @@ def write_confirmation_analysis(
     _write_summary(
         outdir,
         spec,
+        title=analysis_title,
         completed=len(rows_by_key),
         expected=len(plan),
         missing=missing,
         board=board,
         baseline_pairs=baseline_pairs,
         ranks=ranks,
+        plan_file=plan_file,
+        extra_files=extra_summary_files,
     )
-    _write_index(outdir)
+    _write_index(
+        outdir,
+        title=index_title,
+        note=index_note,
+        config_file=config_file,
+        plan_file=plan_file,
+        extra_links=extra_links,
+    )
     return summary
+
+
+def write_halving_analysis(
+    outdir: Path,
+    spec: ConfirmationSpec,
+    *,
+    decisions_path: Path | None = None,
+    bootstrap_samples: int = 5000,
+    bootstrap_seed: int = 0,
+) -> dict[str, Any]:
+    plan = write_halving_plan(spec, outdir, decisions_path=decisions_path)
+    return _write_analysis(
+        outdir,
+        spec,
+        plan,
+        bootstrap_samples=bootstrap_samples,
+        bootstrap_seed=bootstrap_seed,
+        analysis_title="ABL-006 Successive-Halving Analysis",
+        index_title="ABL-006 Successive-Halving Overview",
+        index_note=(
+            "Successive-halving confirmation artifacts. Missing cells are measured against the "
+            "staged plan only; dropped arms are listed in the elimination trail instead of being "
+            "counted as unrun high-budget cells."
+        ),
+        config_file="abl006_config.json",
+        plan_file="abl006_plan.csv",
+        extra_links=[
+            ("ABL-006 decisions", HALVING_DECISIONS),
+            ("ABL-006 run groups", "abl006_run_groups.json"),
+            ("ABL-006 elimination trail", "abl006_elimination_trail.csv"),
+        ],
+        extra_summary_files=[
+            "- `abl006_elimination_decisions.json`: frozen rule and stage survivor decisions.",
+            "- `abl006_elimination_trail.csv`: eliminated arms and decision statistics.",
+            "- `abl006_run_groups.json`: cartesian shards executed by `halving-run`.",
+        ],
+    )
 
 
 def run_confirmation(args: argparse.Namespace) -> dict[str, Any]:
@@ -686,6 +1041,76 @@ def run_confirmation(args: argparse.Namespace) -> dict[str, Any]:
     )
 
 
+def _completed_ablation_keys(outdir: Path, spec: ConfirmationSpec) -> set[tuple]:
+    return set(_dedupe_rows(load_ablation_rows(outdir), spec))
+
+
+def run_halving(args: argparse.Namespace) -> dict[str, Any]:
+    spec = make_spec(args)
+    outdir = args.outdir
+    decisions_path = _halving_decisions_path(outdir, args.decisions)
+    write_halving_plan(spec, outdir, decisions_path=decisions_path)
+    decisions = load_halving_decisions(decisions_path, spec)
+    groups = halving_run_groups(spec, decisions)
+    remaining = args.max_new_cells
+
+    for idx, group in enumerate(groups):
+        if remaining is not None and remaining <= 0:
+            break
+        group_resume = bool(args.resume or idx > 0)
+        before = _completed_ablation_keys(outdir, spec) if group_resume else set()
+        print(
+            "running "
+            f"{group['run_group']} budgets={group['budgets']} seeds={group['seeds']} "
+            f"strategies={group['strategies']} resume={group_resume}",
+            flush=True,
+        )
+        run_ablation(
+            list(spec.images),
+            budgets=list(group["budgets"]),
+            strategies=list(group["strategies"]),
+            seeds=list(group["seeds"]),
+            iters=spec.iters,
+            target_psnr=spec.target_psnr,
+            target_psnrs=list(spec.target_psnrs),
+            flank_offsets=[0.5],
+            flat_fracs=[0.02],
+            corner_fracs=[0.15],
+            max_axis_ratios=[6.0],
+            coherence_powers=[1.0],
+            render_chunk=spec.render_chunk,
+            renderer=spec.renderer,
+            pixel_loss=args.pixel_loss,
+            ssim_weight=args.ssim_weight,
+            compute_lpips=args.lpips,
+            early_exit=args.early_exit,
+            early_exit_window=args.early_exit_window,
+            early_exit_min_delta=args.early_exit_min_delta,
+            early_exit_min_iters=args.early_exit_min_iters,
+            max_side=spec.max_side,
+            resume=group_resume,
+            max_new_cells=remaining,
+            outdir=str(outdir),
+            device=args.device,
+            write_plots=not args.no_plots,
+        )
+        if remaining is not None:
+            after = _completed_ablation_keys(outdir, spec)
+            remaining -= len(after - before)
+
+    if args.no_analyze:
+        return {"analyzed": False, "run_groups": len(groups)}
+    summary = write_halving_analysis(
+        outdir,
+        spec,
+        decisions_path=decisions_path,
+        bootstrap_samples=args.bootstrap_samples,
+        bootstrap_seed=args.bootstrap_seed,
+    )
+    summary["run_groups"] = len(groups)
+    return summary
+
+
 def _add_common_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--outdir", type=Path, default=DEFAULT_OUTDIR)
     parser.add_argument("--images", nargs="*", default=None)
@@ -704,6 +1129,23 @@ def _add_common_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--device", default=None)
 
 
+def _add_run_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--max-new-cells", type=int, default=None)
+    parser.add_argument("--pixel-loss", choices=["l1", "l2", "charbonnier"], default="l1")
+    parser.add_argument("--ssim-weight", type=float, default=0.3)
+    parser.add_argument("--lpips", action="store_true")
+    parser.add_argument("--early-exit", action="store_true",
+                        help="opt-in plateau early exit; raw rows record stopped_at")
+    parser.add_argument("--early-exit-window", type=int, default=150)
+    parser.add_argument("--early-exit-min-delta", type=float, default=0.02)
+    parser.add_argument("--early-exit-min-iters", type=int, default=None)
+    parser.add_argument("--no-plots", action="store_true")
+    parser.add_argument("--no-analyze", action="store_true")
+    parser.add_argument("--bootstrap-samples", type=int, default=5000)
+    parser.add_argument("--bootstrap-seed", type=int, default=0)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="ABL-004 confirmation runner and analysis")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -713,20 +1155,16 @@ def main() -> None:
 
     run_p = sub.add_parser("run", help="run a resumable confirmation shard")
     _add_common_args(run_p)
-    run_p.add_argument("--resume", action="store_true")
-    run_p.add_argument("--max-new-cells", type=int, default=None)
-    run_p.add_argument("--pixel-loss", choices=["l1", "l2", "charbonnier"], default="l1")
-    run_p.add_argument("--ssim-weight", type=float, default=0.3)
-    run_p.add_argument("--lpips", action="store_true")
-    run_p.add_argument("--early-exit", action="store_true",
-                       help="opt-in plateau early exit; raw rows record stopped_at")
-    run_p.add_argument("--early-exit-window", type=int, default=150)
-    run_p.add_argument("--early-exit-min-delta", type=float, default=0.02)
-    run_p.add_argument("--early-exit-min-iters", type=int, default=None)
-    run_p.add_argument("--no-plots", action="store_true")
-    run_p.add_argument("--no-analyze", action="store_true")
-    run_p.add_argument("--bootstrap-samples", type=int, default=5000)
-    run_p.add_argument("--bootstrap-seed", type=int, default=0)
+    _add_run_args(run_p)
+
+    halving_plan_p = sub.add_parser("halving-plan", help="write the ABL-006 staged manifest")
+    _add_common_args(halving_plan_p)
+    halving_plan_p.add_argument("--decisions", type=Path, default=None)
+
+    halving_run_p = sub.add_parser("halving-run", help="run ABL-006 staged confirmation shards")
+    _add_common_args(halving_run_p)
+    halving_run_p.add_argument("--decisions", type=Path, default=None)
+    _add_run_args(halving_run_p)
 
     analyze_p = sub.add_parser("analyze", help="analyze existing ablation rows")
     _add_common_args(analyze_p)
@@ -740,6 +1178,13 @@ def main() -> None:
         print(f"wrote {len(cells)} expected cells to {args.outdir / 'confirmation_plan.csv'}")
     elif args.cmd == "run":
         summary = run_confirmation(args)
+        print(json.dumps(summary, indent=2, default=str))
+    elif args.cmd == "halving-plan":
+        spec = make_spec(args)
+        cells = write_halving_plan(spec, args.outdir, decisions_path=args.decisions)
+        print(f"wrote {len(cells)} staged cells to {args.outdir / 'abl006_plan.csv'}")
+    elif args.cmd == "halving-run":
+        summary = run_halving(args)
         print(json.dumps(summary, indent=2, default=str))
     elif args.cmd == "analyze":
         spec = make_spec(args)
