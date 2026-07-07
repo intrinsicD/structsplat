@@ -43,6 +43,8 @@ def cmd_fit(args):
                       init_scale_mult=args.init_scale_mult,
                       scale_cap_mode=args.scale_cap_mode,
                       scale_cap_max=args.scale_cap_max,
+                      background_fraction=args.background_fraction,
+                      background_grid=args.background_grid,
                       color_mode=args.color_mode,
                       color_radius=args.color_radius,
                       opacity_mode=args.opacity_mode,
@@ -160,6 +162,7 @@ def cmd_stage_search(args):
         sampling_modes=args.sampling_modes, orientation_modes=args.orientation_modes,
         color_modes=args.color_modes,
         scale_modes=args.scale_modes, scale_cap_modes=args.scale_cap_modes,
+        background_modes=args.background_modes,
         opacity_modes=args.opacity_modes, renderers=args.renderers,
         aa_dilations=args.aa_dilations,
         color_basis_modes=args.color_basis_modes,
@@ -294,6 +297,10 @@ def main():
     f.add_argument("--scale-cap-mode", choices=["none", "hard", "feature", "feature_rel"],
                    default="none")
     f.add_argument("--scale-cap-max", type=float, default=None)
+    f.add_argument("--background-fraction", type=float, default=0.0,
+                   help="fraction of total Gaussian budget reserved for frozen broad bg rows")
+    f.add_argument("--background-grid", type=int, default=0,
+                   help="max side of jittered-grid background layer; 0 disables it")
     f.add_argument("--opacity-mode", choices=["none", "constant"], default="none")
     f.add_argument("--init-opacity", type=float, default=0.9)
     f.add_argument("--renderer",
@@ -438,6 +445,8 @@ def main():
     s.add_argument("--color-modes", nargs="+", default=None)
     s.add_argument("--scale-modes", nargs="+", default=None)
     s.add_argument("--scale-cap-modes", nargs="+", default=None)
+    s.add_argument("--background-modes", nargs="+", default=None,
+                   help="off or frac<F>_grid<N>, e.g. frac0.10_grid16")
     s.add_argument("--opacity-modes", nargs="+", default=None)
     s.add_argument("--renderers", nargs="+", default=None)
     s.add_argument("--aa-dilations", type=float, nargs="+", default=None)

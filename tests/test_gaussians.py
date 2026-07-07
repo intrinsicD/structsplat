@@ -138,3 +138,24 @@ def test_opacity_save_load(tmp_path):
     h = GaussianField.load(str(p))
     assert h.opacities is not None
     assert torch.allclose(g.opacity_values(), h.opacity_values())
+
+
+def test_background_mask_save_load_and_append_padding(tmp_path):
+    a = GaussianField.from_numpy(
+        np.zeros((2, 2)),
+        np.full((2, 2), 2.0),
+        np.zeros(2),
+        np.zeros((2, 3)),
+        background_mask=np.array([True, False]),
+    )
+    p = tmp_path / "g_bg.npz"
+    a.save(str(p))
+    loaded = GaussianField.load(str(p))
+    assert loaded.background_count == 1
+    assert torch.equal(loaded.background_mask, a.background_mask)
+
+    b = GaussianField.from_numpy(np.ones((1, 2)), np.full((1, 2), 2.0),
+                                 np.zeros(1), np.ones((1, 3)))
+    ab = a.append(b)
+    assert ab.background_count == 1
+    assert torch.equal(ab.background_mask, torch.tensor([True, False, False]))

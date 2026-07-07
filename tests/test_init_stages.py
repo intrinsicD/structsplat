@@ -233,6 +233,34 @@ def test_candidate_oversample_below_one_is_rejected():
     InitConfig(candidate_oversample=1.0)  # valid
 
 
+def test_background_layer_reserves_budget_and_marks_rows():
+    img = _toy()
+    cfg = InitConfig(
+        strategy="random",
+        num_gaussians=20,
+        background_fraction=0.25,
+        background_grid=4,
+        seed=0,
+    )
+    f = I.build_field(img, cfg)
+
+    _assert_field_ok(f, 20)
+    assert I.background_count(cfg) == 5
+    assert f.background_count == 5
+    assert torch.equal(f.background_mask[:5], torch.ones(5, dtype=torch.bool))
+    assert torch.equal(f.background_mask[5:], torch.zeros(15, dtype=torch.bool))
+    bg_scales = torch.exp(f.log_scales[:5])
+    assert torch.allclose(bg_scales[:, 0], bg_scales[:, 1])
+    assert torch.isfinite(f.colors[:5]).all()
+
+
+def test_background_fraction_validation():
+    with pytest.raises(ValueError, match="background_fraction"):
+        InitConfig(background_fraction=1.0, background_grid=4)
+    with pytest.raises(ValueError, match="background_grid"):
+        InitConfig(background_fraction=0.1, background_grid=0)
+
+
 def test_flank_offset_clears_blur_width():
     # the offset floor is applied after the fraction, so flanked edge centers clear the blur
     # width (INIT-005) instead of degenerating toward on-edge placement.

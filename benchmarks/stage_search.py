@@ -46,10 +46,10 @@ from structsplat.config import (
 # stage axes, in label order; values = the swappable options each stage exposes
 STAGE_KEYS = [
     "strategy", "tensor", "tensor_color", "density", "sampling", "orientation", "color",
-    "scale", "scale_cap", "opacity", "renderer", "aa", "color_basis", "color_solve", "loss",
-    "loss_weight", "optimizer", "lr_schedule", "refine_site", "refine_primitive", "refine_nms",
-    "refine_color", "refine_prune", "refine_relocate", "state_seed", "row_temper",
-    "support_fade", "pyramid",
+    "scale", "scale_cap", "background", "opacity", "renderer", "aa", "color_basis",
+    "color_solve", "loss", "loss_weight", "optimizer", "lr_schedule", "refine_site",
+    "refine_primitive", "refine_nms", "refine_color", "refine_prune", "refine_relocate",
+    "state_seed", "row_temper", "support_fade", "pyramid",
 ]
 
 FACTORIAL_DEFAULTS: dict[str, tuple[str, ...]] = {
@@ -64,6 +64,7 @@ FACTORIAL_DEFAULTS: dict[str, tuple[str, ...]] = {
     # baseline matches the shipped default (config.py scale_cap_mode='none', ADR-0009); it had
     # silently diverged to feature12 with no held-out justification (BENCH-002)
     "scale_cap_modes": ("none",),
+    "background_modes": ("off",),
     "opacity_modes": ("none",),
     "renderers": ("normalized",),
     "aa_dilations": (0.0,),
@@ -101,6 +102,7 @@ INFLUENCE_DEFAULTS: dict[str, tuple[str, ...]] = {
     "color_modes": ("bilinear", "local_mean", "two_sided"),
     "scale_modes": ("spacing", "uniform", "knn"),
     "scale_cap_modes": ("none", "feature12", "feature_rel", "hard8"),
+    "background_modes": ("off", "frac0.05_grid8", "frac0.10_grid16"),
     "opacity_modes": ("none", "constant"),
     "renderers": (
         "normalized", "additive", "cuda", "cuda_additive",
@@ -138,6 +140,7 @@ _AXIS_TO_KEY = {
     "density_modes": "density", "sampling_modes": "sampling",
     "orientation_modes": "orientation", "color_modes": "color", "scale_modes": "scale",
     "scale_cap_modes": "scale_cap", "opacity_modes": "opacity", "renderers": "renderer",
+    "background_modes": "background",
     "aa_dilations": "aa", "color_basis_modes": "color_basis",
     "color_solve_modes": "color_solve", "pixel_losses": "loss",
     "loss_weight_modes": "loss_weight",
@@ -342,6 +345,7 @@ def _normalize_refine_config(cfg: dict[str, Any]) -> dict[str, Any]:
     c.setdefault("row_temper", "off")
     c.setdefault("support_fade", "off")
     c.setdefault("loss_weight", "none")
+    c.setdefault("background", "off")
     c["refine"] = _refine_label(c)
     return c
 
@@ -524,6 +528,40 @@ def _loss_weight_kwargs(mode: str) -> dict[str, Any]:
     raise ValueError(f"unknown loss_weight mode {mode!r}; expected none or tensor[_beta]")
 
 
+def _background_kwargs(mode: str) -> dict[str, Any]:
+    if mode in ("off", "none", "false", "0"):
+        return {"background_fraction": 0.0, "background_grid": 0}
+    frac = None
+    grid = None
+    for token in mode.replace("-", "_").split("_"):
+        if token.startswith("frac"):
+            suffix = token[len("frac"):]
+            try:
+                frac = float(suffix)
+            except ValueError as exc:
+                raise ValueError(f"cannot parse background mode {mode!r}") from exc
+        elif token.startswith("f") and len(token) > 1:
+            try:
+                frac = float(token[1:])
+            except ValueError as exc:
+                raise ValueError(f"cannot parse background mode {mode!r}") from exc
+        elif token.startswith("grid"):
+            suffix = token[len("grid"):]
+            try:
+                grid = int(suffix)
+            except ValueError as exc:
+                raise ValueError(f"cannot parse background mode {mode!r}") from exc
+        elif token.startswith("g") and len(token) > 1:
+            try:
+                grid = int(token[1:])
+            except ValueError as exc:
+                raise ValueError(f"cannot parse background mode {mode!r}") from exc
+    if frac is None or grid is None:
+        raise ValueError(
+            f"unknown background mode {mode!r}; expected off or frac<F>_grid<N>")
+    return {"background_fraction": frac, "background_grid": grid}
+
+
 def _split_recovery_stats(history: dict[str, Any]) -> dict[str, float | None]:
     events = history.get("split_events", [])
     its = history.get("iter", [])
@@ -585,6 +623,28 @@ def _edge_mae(render, target) -> float:
     return float((err * weight).mean().detach().cpu())
 
 
+def _large_support_stats(field, cfg: FitConfig, H: int, W: int) -> dict[str, float | int]:
+    with torch.no_grad():
+        radii = field.radii(cfg.sigma_cutoff, cfg.aa_dilation).to(device=field.means.device)
+        area = ((2 * radii[:, 0] + 1) * (2 * radii[:, 1] + 1)).to(torch.float32)
+        large = area > (0.25 * float(H * W))
+        bg = getattr(field, "background_mask", None)
+        if bg is None:
+            bg = torch.zeros(field.n, device=field.means.device, dtype=torch.bool)
+        else:
+            bg = bg.to(device=field.means.device, dtype=torch.bool)
+        detail = ~bg
+        count = int(large.sum().detach().cpu())
+        detail_count = int((large & detail).sum().detach().cpu())
+        n_detail = max(1, int(detail.sum().detach().cpu()))
+        return {
+            "large_support_count": count,
+            "large_support_fraction": round(count / max(1, int(field.n)), 6),
+            "large_support_detail_count": detail_count,
+            "large_support_detail_fraction": round(detail_count / n_detail, 6),
+        }
+
+
 def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight,
              ssim_backend, flank_offset, max_axis_ratio, coherence_power, init_scale_mult,
              density_base, density_power, flat_frac, corner_frac, grad_sigma, tensor_sigma,
@@ -600,6 +660,7 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
     from structsplat.fit import fit
     from structsplat.pyramid import fit_pyramid
 
+    H, W = img.shape[:2]
     scfg = StructureTensorConfig(
         grad_sigma=grad_sigma,
         tensor_sigma=tensor_sigma,
@@ -623,6 +684,7 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         orientation_mode=cfg["orientation"],
         scale_mode=cfg["scale"],
         **_scale_cap_kwargs(cfg["scale_cap"]),
+        **_background_kwargs(cfg["background"]),
         init_scale_mult=init_scale_mult,
         flank_offset_frac=flank_offset,
         color_mode=cfg["color"],
@@ -728,6 +790,8 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         # fit_pyramid aggregates per-level fit time; the rest of the wall clock is the
         # interleaved init/density/tensor work, i.e. this mode's init cost
         init_seconds = max(elapsed - fit_seconds, 0.0)
+    background_count = int(out.get("background_count", out["field"].background_count))
+    detail_count = int(out.get("detail_count", out["field"].n - background_count))
     return {
         "psnr": round(float(out["psnr"]), 4),
         "ssim": round(float(out["ssim"]), 5),
@@ -745,6 +809,12 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         "iters_to_targets": out.get("iters_to_targets", {}),
         "seconds_to_target": _seconds_to_target(history, iters_to_target),
         "n_gaussians": int(out["n_gaussians"]),
+        "background_fraction": float(icfg.background_fraction),
+        "background_grid": int(icfg.background_grid),
+        "background_count": background_count,
+        "detail_count": detail_count,
+        "background_actual_fraction": round(background_count / max(1, int(out["n_gaussians"])), 6),
+        **_large_support_stats(out["field"], fcfg, H, W),
         "iterations_run": int(out.get("iterations_run", iters)),
         "stopped_early": bool(out.get("stopped_early", False)),
         "stopped_at": out.get("stopped_at"),
@@ -820,6 +890,7 @@ def run_stage_search(
     color_modes=None,
     scale_modes=None,
     scale_cap_modes=None,
+    background_modes=None,
     opacity_modes=None,
     renderers=None,
     aa_dilations=None,
@@ -909,6 +980,7 @@ def run_stage_search(
         "sampling_modes": sampling_modes, "orientation_modes": orientation_modes,
         "color_modes": color_modes, "scale_modes": scale_modes,
         "scale_cap_modes": scale_cap_modes,
+        "background_modes": background_modes,
         "opacity_modes": opacity_modes, "renderers": renderers,
         "aa_dilations": aa_dilations,
         "color_basis_modes": color_basis_modes,

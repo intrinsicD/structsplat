@@ -46,6 +46,47 @@ def _mark_new_parent_idx(field: GaussianField, idx: torch.Tensor) -> GaussianFie
     return field
 
 
+def _background_mask(field: GaussianField) -> torch.Tensor | None:
+    mask = getattr(field, "background_mask", None)
+    if mask is None or int(mask.numel()) != int(field.n):
+        return None
+    if not bool(mask.any()):
+        return None
+    return mask.to(device=field.means.device, dtype=torch.bool)
+
+
+def _detail_count(field: GaussianField) -> int:
+    mask = _background_mask(field)
+    if mask is None:
+        return int(field.n)
+    return int((~mask).sum().item())
+
+
+def _mask_background_scores(scores: torch.Tensor, field: GaussianField,
+                            fill: float = -float("inf")) -> torch.Tensor:
+    mask = _background_mask(field)
+    if mask is None:
+        return scores
+    out = scores.clone()
+    out[mask.to(device=out.device)] = fill
+    return out
+
+
+def _zero_background_geometry_state(field: GaussianField, opt: torch.optim.Optimizer) -> None:
+    mask = _background_mask(field)
+    if mask is None:
+        return
+    for param in (field.means, field.log_scales, field.rotations):
+        if param.grad is not None:
+            param.grad[mask] = 0
+        state = opt.state.get(param)
+        if not state:
+            continue
+        for value in state.values():
+            if torch.is_tensor(value) and value.shape == param.shape:
+                value[mask] = 0
+
+
 class _Adan(torch.optim.Optimizer):
     """Small local Adan implementation with per-parameter tensor state."""
 
@@ -969,10 +1010,16 @@ def _maybe_prune(field: GaussianField, cfg: FitConfig, H: int,
     if opac is not None:
         activity = activity * opac
     keep = activity > cfg.prune_min_activity
+    bg = _background_mask(field)
+    if bg is not None:
+        keep = keep | bg.to(device=keep.device)
     if int(keep.sum()) < cfg.prune_keep_min:
-        topk = torch.topk(activity, k=min(cfg.prune_keep_min, field.n)).indices
-        keep = torch.zeros_like(activity, dtype=torch.bool)
-        keep[topk] = True
+        need = min(cfg.prune_keep_min, field.n) - int(keep.sum())
+        activity_fill = activity.clone()
+        activity_fill[keep] = -float("inf")
+        if need > 0:
+            topk = torch.topk(activity_fill, k=need).indices
+            keep[topk] = True
     if int(keep.sum()) >= field.n:
         return field, None
     return field.subset(keep), keep
@@ -1054,8 +1101,12 @@ def _fp_duplicate_indices(field: GaussianField, idx: torch.Tensor, cfg: FitConfi
     child_color_grads = None if color_grads is None else color_grads[idx].clone()
     child = GaussianField(child_means, child_log_scales, child_rotations, child_colors,
                           child_opacities, child_scale_max, child_color_grads)
+    background_mask = (
+        None if field.background_mask is None else field.background_mask.detach().clone()
+    )
     grown = GaussianField(
-        means, log_scales, rotations, colors, opacities, scale_max, color_grads
+        means, log_scales, rotations, colors, opacities, scale_max, color_grads,
+        background_mask,
     ).append(child)
     return _mark_new_parent_idx(grown, idx), k
 
@@ -1127,8 +1178,12 @@ def _moment_preserving_duplicate_indices(field: GaussianField, idx: torch.Tensor
     child_color_grads = None if color_grads is None else color_grads[idx].clone()
     child = GaussianField(child_means, child_log_scales, child_rotations, child_colors,
                           child_opacities, child_scale_max, child_color_grads)
+    background_mask = (
+        None if field.background_mask is None else field.background_mask.detach().clone()
+    )
     grown = GaussianField(
-        means, log_scales, rotations, colors, opacities, scale_max, color_grads
+        means, log_scales, rotations, colors, opacities, scale_max, color_grads,
+        background_mask,
     ).append(child)
     return _mark_new_parent_idx(grown, idx), k
 
@@ -1229,12 +1284,13 @@ def _ranked_wave_from_residual(field: GaussianField, target: torch.Tensor,
     H, W = target.shape[:2]
     residual = (render_img - target).abs().mean(dim=2)
     room = field.n if cfg.max_gaussians is None else max(0, cfg.max_gaussians - field.n)
-    k = min(cfg.split_count, field.n, room)
+    k = min(cfg.split_count, _detail_count(field), room)
     if k <= 0:
         return field, 0, {}
     score, components = _ranked_wave_scores(
         field, residual, cfg, support_fade_alpha=support_fade_alpha
     )
+    score = _mask_background_scores(score, field)
     idx = torch.topk(score, k=k).indices
     grown, added = _duplicate_primitive_indices(field, idx, target, render_img, cfg, H, W)
     stats = {
@@ -1256,10 +1312,11 @@ def _freq_violation_from_residual(field: GaussianField, target: torch.Tensor,
         return field, 0, {}
     H, W = target.shape[:2]
     room = field.n if cfg.max_gaussians is None else max(0, cfg.max_gaussians - field.n)
-    k = min(cfg.split_count, field.n, room)
+    k = min(cfg.split_count, _detail_count(field), room)
     if k <= 0:
         return field, 0, {}
     score, split_axis, components = _freq_violation_scores(field, target, render_img, cfg)
+    score = _mask_background_scores(score, field)
     idx = torch.topk(score, k=k).indices
     grown, added = _duplicate_primitive_indices(
         field, idx, target, render_img, cfg, H, W, split_axis=split_axis[idx]
@@ -1285,10 +1342,10 @@ def _absgrad_wave_from_scores(field: GaussianField, target: torch.Tensor,
     if cfg.max_gaussians is not None and field.n >= cfg.max_gaussians:
         return field, 0, {}, grad_scores
     room = field.n if cfg.max_gaussians is None else max(0, cfg.max_gaussians - field.n)
-    k = min(cfg.split_count, field.n, room)
+    k = min(cfg.split_count, _detail_count(field), room)
     if k <= 0:
         return field, 0, {}, grad_scores
-    scores = grad_scores.detach()
+    scores = _mask_background_scores(grad_scores.detach(), field)
     idx = torch.topk(scores, k=k).indices
     grown, added = _duplicate_primitive_indices(
         field, idx, target, render_img, cfg, H, W
@@ -1315,7 +1372,9 @@ def _relocate_from_residual(field: GaussianField, target: torch.Tensor,
     if cfg.relocate_count <= 0 or field.n <= 0:
         return field, 0, None, {}
     H, W = target.shape[:2]
-    k = min(cfg.relocate_count, field.n, int(H * W))
+    k = min(cfg.relocate_count, _detail_count(field), int(H * W))
+    if k <= 0:
+        return field, 0, None, {}
     activity = gaussian_activity(
         field.means, field.conics(cfg.aa_dilation),
         field.radii(cfg.sigma_cutoff, cfg.aa_dilation), H, W, cfg.render_chunk,
@@ -1324,6 +1383,7 @@ def _relocate_from_residual(field: GaussianField, target: torch.Tensor,
     opac = field.opacity_values()
     if opac is not None:
         activity = activity * opac
+    activity = _mask_background_scores(activity, field, fill=float("inf"))
     low_idx = torch.topk(-activity, k=k).indices
 
     residual_map = (render_img - target).abs().mean(dim=2)
@@ -1373,7 +1433,16 @@ def _relocate_from_residual(field: GaussianField, target: torch.Tensor,
         "activity_source": "gaussian_activity",
     }
     return (
-        GaussianField(means, log_scales, rotations, colors, opacities, scale_max, color_grads),
+        GaussianField(
+            means,
+            log_scales,
+            rotations,
+            colors,
+            opacities,
+            scale_max,
+            color_grads,
+            None if field.background_mask is None else field.background_mask.detach().clone(),
+        ),
         k, low_idx, stats,
     )
 
@@ -1416,10 +1485,11 @@ def _split_from_residual(field: GaussianField, target: torch.Tensor, render_img:
             "refine_site must be residual, residual_tensor, or support in _split_from_residual, "
             f"got {cfg.refine_site!r}")
     room = field.n if cfg.max_gaussians is None else max(0, cfg.max_gaussians - field.n)
-    k = min(cfg.split_count, field.n, room)
+    k = min(cfg.split_count, _detail_count(field), room)
     if k <= 0:
         return field, 0
 
+    scores = _mask_background_scores(scores, field)
     idx = torch.topk(scores, k=k).indices
     return _duplicate_primitive_indices(field, idx, target, render_img, cfg, H, W)
 
@@ -1676,6 +1746,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                     field.means.grad.detach().abs().sum(dim=1)
                 )
         temper_snapshot = _capture_young_row_temper_snapshots(field, row_birth_iter, it, cfg)
+        _zero_background_geometry_state(field, opt)
         opt.step()
         tempered_count = _apply_young_row_temper_snapshot(temper_snapshot)
         last_it = it == cfg.iters - 1
@@ -2006,6 +2077,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             ),
             "iters_to_targets": iters_to_targets,
             "n_gaussians": field.n,
+            "background_count": field.background_count,
+            "detail_count": field.n - field.background_count,
             "fit_seconds": fit_seconds,
             "iterations_run": last_iter + 1,
             "stopped_early": stopped_early,

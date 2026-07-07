@@ -528,6 +528,45 @@ def _opacity_logits(n: int, mode: str, init_opacity: float) -> np.ndarray | None
     raise ValueError(f"unknown opacity_mode {mode!r}; expected none or constant")
 
 
+def background_count(icfg: InitConfig) -> int:
+    if icfg.background_fraction <= 0.0 or icfg.background_grid <= 0 or icfg.num_gaussians <= 1:
+        return 0
+    requested = max(1, int(round(icfg.num_gaussians * icfg.background_fraction)))
+    grid_cap = int(icfg.background_grid) * int(icfg.background_grid)
+    return min(icfg.num_gaussians - 1, grid_cap, requested)
+
+
+def _background_layer(img: np.ndarray, icfg: InitConfig, rng: np.random.Generator,
+                      device: str) -> GaussianField | None:
+    n = background_count(icfg)
+    if n <= 0:
+        return None
+    H, W = img.shape[:2]
+    grid = int(icfg.background_grid)
+    cell_w = W / max(grid, 1)
+    cell_h = H / max(grid, 1)
+    gx, gy = np.meshgrid(np.arange(grid), np.arange(grid))
+    xs = (gx + rng.random((grid, grid))) * cell_w - 0.5
+    ys = (gy + rng.random((grid, grid))) * cell_h - 0.5
+    pts = np.stack([xs.ravel(), ys.ravel()], 1)
+    if len(pts) > n:
+        pts = pts[np.round(np.linspace(0, len(pts) - 1, n)).astype(int)]
+    pts[:, 0] = np.clip(pts[:, 0], -0.5, W - 0.5)
+    pts[:, 1] = np.clip(pts[:, 1], -0.5, H - 0.5)
+    sigma = max(float(np.sqrt(cell_w * cell_h)), 1e-3)
+    scales = np.full((len(pts), 2), sigma, dtype=np.float32)
+    colors = _local_mean_colors(img, pts, max(cell_w, cell_h) * 0.5)
+    return GaussianField.from_numpy(
+        pts,
+        scales,
+        np.zeros(len(pts), dtype=np.float32),
+        colors,
+        _opacity_logits(len(pts), icfg.opacity_mode, icfg.init_opacity),
+        device=device,
+        background_mask=np.ones(len(pts), dtype=bool),
+    )
+
+
 def _jittered_grid_positions(H: int, W: int, n: int, rng: np.random.Generator) -> tuple[np.ndarray, np.ndarray]:
     gw = int(round(np.sqrt(n * W / H)))
     gh = int(np.ceil(n / max(gw, 1)))
@@ -639,6 +678,20 @@ def build_field(img: np.ndarray, icfg: InitConfig,
                 device: str = "cpu") -> GaussianField:
     H, W = img.shape[:2]
     rng = np.random.default_rng(icfg.seed)
+    bg_count = background_count(icfg)
+    if bg_count > 0:
+        detail_cfg = replace(
+            icfg,
+            num_gaussians=icfg.num_gaussians - bg_count,
+            background_fraction=0.0,
+            background_grid=0,
+        )
+        bg = _background_layer(img, icfg, rng, device)
+        detail = build_field(
+            img, detail_cfg, scfg, density=density, tensor=tensor, device=device
+        )
+        return bg.append(detail) if bg is not None else detail
+
     n = icfg.num_gaussians
     strat = icfg.strategy
     diag = float(np.hypot(H, W))

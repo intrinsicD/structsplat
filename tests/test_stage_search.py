@@ -10,6 +10,7 @@ from benchmarks.stage_search import (
     INFLUENCE_DEFAULTS,
     LEGACY_REFINE_MODES,
     run_stage_search,
+    _background_kwargs,
     _canonicalize,
     _color_solve_kwargs,
     _legacy_refine_config,
@@ -179,6 +180,7 @@ def test_stage_search_resume_skips_completed_cells_and_limits_new_cells(tmp_path
         "color_modes": ["bilinear"],
         "scale_modes": ["spacing"],
         "scale_cap_modes": ["none"],
+        "background_modes": ["off"],
         "opacity_modes": ["none"],
         "renderers": ["normalized"],
         "aa_dilations": [0.0],
@@ -387,6 +389,42 @@ def test_loss_weighting_is_stage_axis():
         "loss_weight_beta": 2.5,
     }
     assert "tensor" in INFLUENCE_DEFAULTS["loss_weight_modes"]
+
+
+def test_background_layer_is_stage_axis():
+    assert _background_kwargs("off") == {"background_fraction": 0.0, "background_grid": 0}
+    assert _background_kwargs("frac0.25_grid4") == {
+        "background_fraction": 0.25,
+        "background_grid": 4,
+    }
+    assert "frac0.10_grid16" in INFLUENCE_DEFAULTS["background_modes"]
+
+
+def test_stage_search_runs_background_layer_and_logs_accounting(tmp_path):
+    img_path = tmp_path / "toy.png"
+    _write_toy(img_path)
+    rows = run_stage_search(
+        [str(img_path)], budgets=[16], seeds=[0], iters=3, max_side=None,
+        strategies=["random"], tensor_operators=["central"], tensor_colors=["luma"],
+        density_modes=["structure"], sampling_modes=["wse"],
+        orientation_modes=["tensor"], color_modes=["bilinear"], scale_modes=["spacing"],
+        scale_cap_modes=["none"], background_modes=["off", "frac0.25_grid2"],
+        opacity_modes=["none"], renderers=["normalized"], aa_dilations=[0.0],
+        color_basis_modes=["constant"], color_solve_modes=["none"],
+        pixel_losses=["l1"], loss_weight_modes=["none"],
+        optimizers=["adam"], lr_schedules=["none"], refine_modes=["none"],
+        pyramid_modes=["single"], render_chunk=8, outdir=str(tmp_path / "background"),
+        device="cpu",
+    )
+
+    assert len(rows) == 2
+    by_bg = {r["background"]: r for r in rows}
+    assert by_bg["off"]["background_count"] == 0
+    assert by_bg["frac0.25_grid2"]["background_count"] == 4
+    assert by_bg["frac0.25_grid2"]["detail_count"] == 12
+    assert by_bg["frac0.25_grid2"]["background_actual_fraction"] == pytest.approx(0.25)
+    assert by_bg["frac0.25_grid2"]["large_support_count"] >= 0
+    assert "background=frac0.25_grid2" in by_bg["frac0.25_grid2"]["config_label"]
 
 
 def test_stage_search_runs_tensor_loss_weighting(tmp_path):
@@ -705,7 +743,8 @@ def test_stage_influence_writes_paired_deltas(tmp_path):
         tensor_operators=["central"], tensor_colors=["luma", "rgb"],
         density_modes=["structure"], sampling_modes=["wse", "density_random"],
         orientation_modes=["tensor"], color_modes=["bilinear"], scale_modes=["spacing"],
-        scale_cap_modes=["feature12"], opacity_modes=["none"], renderers=["normalized"],
+        scale_cap_modes=["feature12"], background_modes=["off"],
+        opacity_modes=["none"], renderers=["normalized"],
         aa_dilations=[0.0], color_basis_modes=["constant"], color_solve_modes=["none"],
         pixel_losses=["l1"], loss_weight_modes=["none"],
         optimizers=["adam"], lr_schedules=["none"], refine_modes=["none"],

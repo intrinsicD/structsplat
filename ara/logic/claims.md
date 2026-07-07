@@ -70,3 +70,14 @@ beats the 750/750 pyramid control by +0.0601 dB mean PSNR and is AUC-neutral ver
 until larger multi-seed confirmation; use 150/1350 as the pyramid quality candidate. See
 `ara/evidence/hier003-pyramid-diagnosis-2026-07-07/` and
 `ara/evidence/hier004-pyramid-convergence-repair-2026-07-07/`.
+
+## C08: The counted background layer is a low-budget candidate, not a default
+
+CORE-009 added a stage-searchable frozen-geometry Gaussian background layer whose rows count
+against `num_gaussians` and whose colors remain learnable. On the difficult-four fair-regime slice
+at budgets 1000/2000/5000, `background=frac0.05_grid8` averaged +1.0152 dB PSNR and +0.01412
+MS-SSIM over 24 paired cells versus `background=off`, winning PSNR in 22/24 pairs. The effect is
+budget-dependent: +1.8768 dB at 1000 rows, +1.1183 dB at 2000 rows, and only +0.0504 dB at 5000
+rows, where AUC lost in every pair. Keep the layer searchable and default off. Do not claim a true
+additive background/compositing layer until a new ADR and larger confirmation justify changing
+renderer semantics. See `ara/evidence/core009-background-layer-2026-07-07/`.

@@ -92,6 +92,43 @@ def test_fit_tensor_loss_weighting_has_finite_gradients_and_metadata():
     assert out["loss_weight_max"] is not None and out["loss_weight_max"] <= 2.5 + 1e-6
 
 
+def test_background_geometry_is_frozen_but_colors_train():
+    target = torch.ones(16, 16, 3)
+    field = GaussianField.from_numpy(
+        np.array([[7.5, 7.5], [2.0, 2.0]], dtype=np.float32),
+        np.array([[12.0, 12.0], [1.0, 1.0]], dtype=np.float32),
+        np.zeros(2, dtype=np.float32),
+        np.zeros((2, 3), dtype=np.float32),
+        background_mask=np.array([True, False]),
+    )
+    bg_means = field.means[0].detach().clone()
+    bg_log_scales = field.log_scales[0].detach().clone()
+    bg_rot = field.rotations[0].detach().clone()
+
+    out = fit(
+        field,
+        target,
+        FitConfig(
+            iters=4,
+            log_every=1,
+            ssim_weight=0.0,
+            lr_means=0.5,
+            lr_scales=0.5,
+            lr_rot=0.5,
+            lr_color=0.2,
+            renderer="normalized",
+        ),
+        verbose=False,
+    )
+
+    fitted = out["field"]
+    assert fitted.background_count == 1
+    assert torch.allclose(fitted.means[0], bg_means)
+    assert torch.allclose(fitted.log_scales[0], bg_log_scales)
+    assert torch.allclose(fitted.rotations[0], bg_rot)
+    assert not torch.allclose(fitted.colors[0], torch.zeros(3))
+
+
 def test_carry_adam_state_preserves_moments_across_prune_and_split():
     img = np.random.default_rng(0).random((16, 16, 3)).astype(np.float32)
     field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=8, seed=0))

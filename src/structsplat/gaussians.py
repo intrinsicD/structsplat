@@ -14,7 +14,7 @@ import torch
 
 class GaussianField:
     def __init__(self, means, log_scales, rotations, colors, opacities=None, scale_max=None,
-                 color_grads=None):
+                 color_grads=None, background_mask=None):
         self.means = means            # (N,2) float
         self.log_scales = log_scales  # (N,2)
         self.rotations = rotations    # (N,)
@@ -22,10 +22,12 @@ class GaussianField:
         self.opacities = opacities    # optional logits, (N,)
         self.scale_max = scale_max    # optional per-Gaussian optimization cap, (N,2)
         self.color_grads = color_grads  # optional local affine color coeffs, (N,2,3)
+        self.background_mask = background_mask  # optional bool mask: frozen-geometry bg rows
 
     @classmethod
     def from_numpy(cls, means, scales, angles, colors, opacities=None, scale_max=None,
-                   device="cpu", dtype=torch.float32, color_grads=None):
+                   device="cpu", dtype=torch.float32, color_grads=None,
+                   background_mask=None):
         def t(a):
             # Always copy: torch.as_tensor is zero-copy for float32 CPU ndarrays, so without
             # the clone an optimizer step would mutate the caller's init arrays in place
@@ -36,12 +38,23 @@ class GaussianField:
         opacity_t = None if opacities is None else t(opacities).reshape(-1)
         scale_max_t = None if scale_max is None else t(scale_max)
         color_grads_t = None if color_grads is None else t(color_grads)
+        background_mask_t = None
+        if background_mask is not None:
+            background_mask_t = torch.as_tensor(
+                np.asarray(background_mask), device=device, dtype=torch.bool
+            ).reshape(-1).clone()
         return cls(t(means), torch.log(t(scales)), t(angles).reshape(-1), t(colors),
-                   opacity_t, scale_max_t, color_grads_t)
+                   opacity_t, scale_max_t, color_grads_t, background_mask_t)
 
     @property
     def n(self) -> int:
         return self.means.shape[0]
+
+    @property
+    def background_count(self) -> int:
+        if self.background_mask is None:
+            return 0
+        return int(self.background_mask.detach().sum().item())
 
     def detached(self) -> "GaussianField":
         """Return a leaf-tensor copy suitable for rebuilding an optimizer."""
@@ -53,6 +66,7 @@ class GaussianField:
             None if self.opacities is None else self.opacities.detach().clone(),
             None if self.scale_max is None else self.scale_max.detach().clone(),
             None if self.color_grads is None else self.color_grads.detach().clone(),
+            None if self.background_mask is None else self.background_mask.detach().clone(),
         )
 
     def subset(self, idx) -> "GaussianField":
@@ -64,6 +78,7 @@ class GaussianField:
             None if self.opacities is None else self.opacities.detach()[idx].clone(),
             None if self.scale_max is None else self.scale_max.detach()[idx].clone(),
             None if self.color_grads is None else self.color_grads.detach()[idx].clone(),
+            None if self.background_mask is None else self.background_mask.detach()[idx].clone(),
         )
 
     def append(self, other: "GaussianField") -> "GaussianField":
@@ -100,6 +115,18 @@ class GaussianField:
                 b = torch.zeros(other.n, 2, 3, device=a.device, dtype=a.dtype)
             return cat(a, b)
 
+        def cat_background_mask(a, b):
+            if a is None and b is None:
+                return None
+            if a is None:
+                a = torch.zeros(self.n, device=b.device, dtype=torch.bool)
+            if b is None:
+                b = torch.zeros(other.n, device=a.device, dtype=torch.bool)
+            return torch.cat(
+                [a.detach().to(dtype=torch.bool), b.detach().to(device=a.device, dtype=torch.bool)],
+                dim=0,
+            ).clone()
+
         return GaussianField(
             cat(self.means, other.means),
             cat(self.log_scales, other.log_scales),
@@ -108,6 +135,7 @@ class GaussianField:
             cat_optional(self.opacities, other.opacities),
             cat_scale_max(self.scale_max, other.scale_max),
             cat_color_grads(self.color_grads, other.color_grads),
+            cat_background_mask(self.background_mask, other.background_mask),
         )
 
     def trainable(self) -> "GaussianField":
@@ -144,6 +172,7 @@ class GaussianField:
             self.opacities,
             self.scale_max,
             torch.zeros(self.n, 2, 3, device=self.colors.device, dtype=self.colors.dtype),
+            self.background_mask,
         )
 
     def scales(self):
@@ -205,6 +234,8 @@ class GaussianField:
             data["scale_max"] = self.scale_max.detach().cpu().numpy()
         if self.color_grads is not None:
             data["color_grads"] = self.color_grads.detach().cpu().numpy()
+        if self.background_mask is not None:
+            data["background_mask"] = self.background_mask.detach().cpu().numpy()
         np.savez(path, **data)
 
     @classmethod
@@ -217,5 +248,9 @@ class GaussianField:
         opacities = t("opacities") if "opacities" in z.files else None
         scale_max = t("scale_max") if "scale_max" in z.files else None
         color_grads = t("color_grads") if "color_grads" in z.files else None
+        background_mask = (
+            torch.as_tensor(z["background_mask"], device=device, dtype=torch.bool)
+            if "background_mask" in z.files else None
+        )
         return cls(t("means"), t("log_scales"), t("rotations"), t("colors"),
-                   opacities, scale_max, color_grads)
+                   opacities, scale_max, color_grads, background_mask)

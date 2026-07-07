@@ -105,6 +105,8 @@ class InitConfig:
     scale_feature_rel_min: float = 0.5
     scale_feature_rel_quantile: float = 0.4
     scale_feature_rel_flat_mult: float | None = None  # None leaves sparse/flat rows uncapped
+    background_fraction: float = 0.0  # fraction of total N reserved for frozen broad bg rows
+    background_grid: int = 0          # max side of jittered-grid bg layer; 0 disables it
     flank_offset_frac: float | None = None  # strategy-aware default; override to ablate offset
     color_mode: str = "bilinear"       # bilinear, local_mean, two_sided, or aggregate (quadtree)
     color_radius: float = 1.5          # local mean radius or extra side-sample offset
@@ -155,6 +157,15 @@ class InitConfig:
             raise ValueError(
                 "scale_feature_rel_flat_mult must be > 0 when set, "
                 f"got {self.scale_feature_rel_flat_mult}")
+        if not (0.0 <= self.background_fraction < 1.0):
+            raise ValueError(
+                "background_fraction must be in [0, 1), "
+                f"got {self.background_fraction}")
+        if self.background_grid < 0:
+            raise ValueError(f"background_grid must be >= 0, got {self.background_grid}")
+        if self.background_fraction > 0.0 and self.background_grid <= 0:
+            raise ValueError(
+                "background_grid must be > 0 when background_fraction is enabled")
         if self.predictor_fallback_strategy == "feedforward":
             raise ValueError("predictor_fallback_strategy cannot be feedforward")
 

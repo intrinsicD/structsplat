@@ -25,7 +25,6 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | PORT-003 | Avoid atomics in tiled backward | todo | PORT-001 |
 | GEN-003 | VSD / multi-particle distillation | todo | GEN-001 |
 | ABL-005 | Fitter-knob influence pass at the fair regime | blocked/partial — native CUDA affine or split protocol needed | ADR-0010, FIT-005/006/007, CORE-006 |
-| CORE-009 | DC / background layer under the detail Gaussians | todo | CORE-001, ADR-0003/0006 |
 
 ## Retired Done Tasks
 
@@ -36,6 +35,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | CORE-003 | Edge-aware render support window (off-image support + tile waste) | `done/CORE-003-render-support-clamp.md` |
 | CORE-004 | Renderer + GaussianField correctness fixes (CUDA N=0, int-cast UB, aliasing, dilation) | `done/CORE-004-renderer-field-correctness.md` |
 | CORE-006 | Linear color basis per Gaussian | `done/CORE-006-affine-color-basis.md` |
+| CORE-009 | DC / background layer under the detail Gaussians | `done/CORE-009-dc-background-layer.md` |
 | INIT-001 | Structure tensor: energy, orientation, flat/edge/corner | `done/INIT-001-structure-tensor.md` |
 | INIT-002 | Density field (image + residual) | `done/INIT-002-density-field.md` |
 | INIT-003 | Anisotropic blue-noise sampling (WSE + metric) | `done/INIT-003-anisotropic-pds.md` |
@@ -129,6 +129,8 @@ INIT-007) and shifted the frontier from init strategies to fitter knobs and swee
    available; 150/1350 repairs the AUC loss while preserving final PSNR on the difficult-four
    slice (+0.0601 dB vs the 750/750 pyramid control and +0.0011 AUC vs single). Keep `single` as
    shipped default pending larger confirmation; use 150/1350 as the pyramid quality candidate.
-11. CORE-009 background layer is the remaining low-frequency coverage investigation.
+11. CORE-009 background layer — completed 2026-07-07. A counted frozen-geometry background
+    Gaussian layer is a strong low-budget quality candidate (`frac0.05_grid8`: +1.0152 dB mean
+    PSNR over 24 pairs), but it loses AUC at 5000 rows; keep it searchable and default off.
 12. FF-001 (multi-image teacher training; the 2026-07-07 equal-N smoke is a measured negative for
    the tiny checkpoint) and COMP-004 (lambda sweep) continue in their existing task files.
