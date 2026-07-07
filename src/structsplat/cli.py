@@ -283,7 +283,8 @@ def main():
     f.add_argument("--color-radius", type=float, default=1.5)
     f.add_argument("--scale-mode", choices=["spacing", "uniform", "knn"], default="spacing")
     f.add_argument("--init-scale-mult", type=float, default=1.0)
-    f.add_argument("--scale-cap-mode", choices=["none", "hard", "feature"], default="none")
+    f.add_argument("--scale-cap-mode", choices=["none", "hard", "feature", "feature_rel"],
+                   default="none")
     f.add_argument("--scale-cap-max", type=float, default=None)
     f.add_argument("--opacity-mode", choices=["none", "constant"], default="none")
     f.add_argument("--init-opacity", type=float, default=0.9)

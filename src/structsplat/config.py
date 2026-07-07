@@ -93,11 +93,18 @@ class InitConfig:
     orientation_mode: str = "tensor"   # tensor (strategy default), random, or zero
     scale_mode: str = "spacing"        # spacing, uniform, or knn
     init_scale_mult: float = 1.0       # multiply local spacing to get initial std
-    scale_cap_mode: str = "none"       # none, hard, or feature
+    scale_cap_mode: str = "none"       # none, hard, feature, or feature_rel
     scale_cap_max: float | None = None # absolute sigma cap, in pixels
     scale_feature_sigma: float = 3.0   # feature mode: visible half-length ~= sigma*value
     scale_feature_min: float = 0.75    # minimum adaptive sigma cap
     scale_feature_energy_frac: float = 0.25  # stop edge run when energy drops below this local frac
+    # feature_rel mode: cap detail Gaussians relative to local WSE radius / quadtree leaf side.
+    # RS axes are (along edge, across edge), so along edges needs a looser cap.
+    scale_feature_rel_across: float = 1.0
+    scale_feature_rel_along: float = 4.0
+    scale_feature_rel_min: float = 0.5
+    scale_feature_rel_quantile: float = 0.4
+    scale_feature_rel_flat_mult: float | None = None  # None leaves sparse/flat rows uncapped
     flank_offset_frac: float | None = None  # strategy-aware default; override to ablate offset
     color_mode: str = "bilinear"       # bilinear, local_mean, two_sided, or aggregate (quadtree)
     color_radius: float = 1.5          # local mean radius or extra side-sample offset
@@ -120,6 +127,34 @@ class InitConfig:
         if self.candidate_oversample < 1.0:
             raise ValueError(
                 f"candidate_oversample must be >= 1, got {self.candidate_oversample}")
+        if self.scale_cap_mode not in ("none", "hard", "feature", "feature_rel"):
+            raise ValueError(
+                "scale_cap_mode must be none, hard, feature, or feature_rel, "
+                f"got {self.scale_cap_mode!r}")
+        if self.scale_cap_max is not None and self.scale_cap_max <= 0.0:
+            raise ValueError(f"scale_cap_max must be > 0 when set, got {self.scale_cap_max}")
+        for name in (
+            "scale_feature_sigma",
+            "scale_feature_min",
+            "scale_feature_rel_across",
+            "scale_feature_rel_along",
+            "scale_feature_rel_min",
+        ):
+            value = float(getattr(self, name))
+            if value <= 0.0:
+                raise ValueError(f"{name} must be > 0, got {value}")
+        if not (0.0 <= self.scale_feature_energy_frac <= 1.0):
+            raise ValueError(
+                "scale_feature_energy_frac must be in [0, 1], "
+                f"got {self.scale_feature_energy_frac}")
+        if not (0.0 <= self.scale_feature_rel_quantile <= 1.0):
+            raise ValueError(
+                "scale_feature_rel_quantile must be in [0, 1], "
+                f"got {self.scale_feature_rel_quantile}")
+        if self.scale_feature_rel_flat_mult is not None and self.scale_feature_rel_flat_mult <= 0.0:
+            raise ValueError(
+                "scale_feature_rel_flat_mult must be > 0 when set, "
+                f"got {self.scale_feature_rel_flat_mult}")
         if self.predictor_fallback_strategy == "feedforward":
             raise ValueError("predictor_fallback_strategy cannot be feedforward")
 

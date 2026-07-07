@@ -98,7 +98,7 @@ INFLUENCE_DEFAULTS: dict[str, tuple[str, ...]] = {
     "orientation_modes": ("tensor", "random", "zero"),
     "color_modes": ("bilinear", "local_mean", "two_sided"),
     "scale_modes": ("spacing", "uniform", "knn"),
-    "scale_cap_modes": ("none", "feature12", "hard8"),
+    "scale_cap_modes": ("none", "feature12", "feature_rel", "hard8"),
     "opacity_modes": ("none", "constant"),
     "renderers": (
         "normalized", "additive", "cuda", "cuda_additive",
@@ -410,6 +410,8 @@ def _scale_cap_kwargs(mode: str) -> dict[str, Any]:
     if mode in aliases:
         cap_mode, cap = aliases[mode]
         return {"scale_cap_mode": cap_mode, "scale_cap_max": cap}
+    if mode in ("feature_rel", "feature_relative", "rel_feature"):
+        return {"scale_cap_mode": "feature_rel", "scale_cap_max": None}
     for prefix, cap_mode in (("feature_cap", "feature"), ("feature", "feature"), ("hard", "hard")):
         if mode.startswith(prefix):
             suffix = mode[len(prefix):].lstrip("_")
@@ -419,7 +421,8 @@ def _scale_cap_kwargs(mode: str) -> dict[str, Any]:
                 raise ValueError(f"cannot parse scale cap mode {mode!r}") from exc
             return {"scale_cap_mode": cap_mode, "scale_cap_max": cap}
     raise ValueError(
-        f"unknown scale_cap mode {mode!r}; expected none, hard8, hard12, feature8, or feature12"
+        f"unknown scale_cap mode {mode!r}; expected none, hard8, hard12, feature8, "
+        "feature12, or feature_rel"
     )
 
 
@@ -1446,7 +1449,7 @@ def main():
     p.add_argument("--color-modes", nargs="+", default=None)
     p.add_argument("--scale-modes", nargs="+", default=None)
     p.add_argument("--scale-cap-modes", nargs="+", default=None,
-                   help="none, hard8/hard12, feature8/feature12, or feature_cap<N>")
+                   help="none, hard8/hard12, feature8/feature12, feature_cap<N>, or feature_rel")
     p.add_argument("--opacity-modes", nargs="+", default=None)
     p.add_argument("--renderers", nargs="+", default=None)
     p.add_argument("--aa-dilations", type=float, nargs="+", default=None)

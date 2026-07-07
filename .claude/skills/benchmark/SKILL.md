@@ -72,6 +72,11 @@ Split-recovery micro-levers are explicit axes (FIT-011): `--state-seed-modes off
 did not promote any default: state seeding/tempering hurt PSNR/AUC without improving recovery, and
 scheduled fade missed fade-on AUC at 5k/10k despite preserving fade-off final PSNR.
 
+Scale caps are searchable, not defaults. INIT-008 adds `scale_cap=feature_rel`, derived from local
+density radius / quadtree leaf side rather than image-side scaling. The difficult-four fair-density
+protocol rejected it for promotion: it fixed most of the old absolute-cap damage, but averaged
+-0.3733 dB PSNR against matching uncapped rows over 48 paired cells and lost at budget 2000.
+
 ## Experimental-validity rules (BENCH-002 — a sweep result is trustworthy by construction)
 - **Equal budgets.** Refine (adding) arms are capped at the cell budget and start below it so
   their planned additions land *at* budget — never compare a refine arm that carries +split_count

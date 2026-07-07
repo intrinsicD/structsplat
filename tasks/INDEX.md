@@ -24,7 +24,6 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | PORT-002 | GPU-native tile index + fused loss/backward | todo | PORT-001, FIT-003 |
 | PORT-003 | Avoid atomics in tiled backward | todo | PORT-001 |
 | GEN-003 | VSD / multi-particle distillation | todo | GEN-001 |
-| INIT-008 | Feature-relative scale caps (fix the cap-scaling failure) | todo | ADR-0012, INIT-003 |
 | ABL-005 | Fitter-knob influence pass at the fair regime | blocked/partial — native CUDA affine or split protocol needed | ADR-0010, FIT-005/006/007, CORE-006 |
 | FIT-012 | Edge-weighted pixel loss (structure-tensor loss weighting) | todo | FIT-001, INIT-001 |
 | HIER-003 | Pyramid equal-iteration diagnosis (fix or retire HIER-001) | todo | HIER-001, HIER-002 |
@@ -64,6 +63,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | ABL-003 | Bisect the undiagnosed −0.794 dB flagship regression | `done/ABL-003-regression-bisect.md` |
 | ABL-006 | Successive-halving execution of the remaining confirmation | `done/ABL-006-successive-halving-confirmation.md` |
 | INIT-007 | Retire the flanking default (measured answer + ADR) | `done/INIT-007-retire-flanking-default.md` |
+| INIT-008 | Feature-relative scale caps (fix the cap-scaling failure) | `done/INIT-008-feature-relative-scale-caps.md` |
 | MERGE-001 | Integrate Claude core optimizations and Codex stage search into main | `done/MERGE-001-claude-codex-main.md` |
 | COMP-002 | Codec / metrics / CLI correctness and protocol fixes | `done/COMP-002-codec-correctness.md` |
 | DOCS-001 | Docs-sync backfill (stale status, missing ADRs, ara scaffold) | `done/DOCS-001-docs-sync-backfill.md` |
@@ -115,8 +115,10 @@ INIT-007) and shifted the frontier from init strategies to fitter knobs and swee
 6. FIT-011 split-recovery micro-levers — completed 2026-07-07. State seeding and row tempering did
    not improve split recovery, and scheduled fade missed the AUC promotion rule; keep all three
    searchable, default off.
-7. INIT-008 feature-relative caps and FIT-012 edge-weighted loss — quality levers with clear
-   accept/park criteria.
+7. INIT-008 feature-relative caps — completed 2026-07-07. `feature_rel` repairs most of the old
+   resolution-scaled cap failure but fails the no-loss promotion rule (48 paired cells, mean
+   dPSNR -0.3733 vs uncapped); keep it searchable and default off. FIT-012 edge-weighted loss is
+   the next quality lever with clear accept/park criteria.
 8. HIER-003 pyramid diagnosis and CORE-009 background layer — the two low-frequency-coverage
    investigations; either may produce a default or an honest retirement.
 9. FF-001 (multi-image teacher training; the 2026-07-07 equal-N smoke is a measured negative for

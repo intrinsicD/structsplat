@@ -66,8 +66,10 @@ init-strategy × budget sweep.
   the same clipped-support equations. `renderer=gsplat` is kept as a separate alpha/sum comparator
   because it is not numerically equivalent to the normalized reference.
 - `scale_cap_mode=feature` gives each Gaussian a local support ceiling from the structure tensor's
-  feature run length. The fitter clamps optimized scales to the field-owned cap, preventing long
-  edge spikes without changing the renderer equation.
+  feature run length. `scale_cap_mode=feature_rel` instead derives the cap from local density
+  radius / quadtree leaf side with separate along/across multipliers. The fitter clamps optimized
+  scales to the field-owned cap, preventing long edge spikes without changing the renderer
+  equation. Both cap modes are searchable and default off after INIT-008's fair-density negative.
 
 ## Extension seams
 - Init strategies: `init.STRATEGIES` (the ablation variables).

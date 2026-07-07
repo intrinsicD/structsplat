@@ -73,7 +73,10 @@ promoted quality arm, while `init`, `final`, `on_split`, and compositions such a
 `--state-seed-modes off on`, `--row-temper-modes off warmup<N>`, and
 `--support-fade-modes off on until<F>`. The FIT-011 smokes were negative for promotion: state
 seeding and young-row tempering did not improve split recovery, and scheduled fade missed
-fade-on AUC at 5k/10k despite preserving fade-off final PSNR. FIT-008 adaptive count is a global
+fade-on AUC at 5k/10k despite preserving fade-off final PSNR. INIT-008 adds
+`scale_cap=feature_rel`, a local-radius feature cap. The difficult-four fair-density protocol
+keeps it searchable but default off: it repaired most old `feature` cap losses but averaged
+-0.3733 dB PSNR versus matching uncapped rows. FIT-008 adaptive count is a global
 controller
 rather than a stage axis: add `--adaptive-count`
 with `--max-gaussians` and/or `--target-bpp` plus optional `--target-psnr`/`--target-ms-ssim`.

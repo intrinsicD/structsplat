@@ -6,11 +6,15 @@ StructSplat's current strength is not a final codec claim; it is that initializa
 fitting, densification, pyramid, and codec choices are exposed as testable stages with JSON/CSV
 evidence. See `benchmarks/stage_search.py`, ADR-0010, and ABL-002.
 
-## C02: Feature-aware scale caps are a strong default candidate, not a settled law
+## C02: Feature-aware scale caps are searchable controls, not a current default candidate
 
-Feature-adaptive caps reduced scale outliers and improved the small COCO screens, but caps can
-trade broad low-frequency support against detail recovery. They should stay in stage-search until
-ABL-004 confirms them across larger image sets, budgets, and seeds. See H02 and ADR-0012.
+Feature-adaptive caps reduced scale outliers and improved the small COCO screens, but the
+fair-density difficult-four protocol rejected both the old resolution-scaled cap and the INIT-008
+feature-relative repair as defaults. `feature_rel` improved strongly over the old absolute cap, but
+still averaged -0.3733 dB PSNR versus matching uncapped rows over 48 paired cells and lost badly at
+budget 2000. Keep scale caps as stage-search controls; do not present them as a default candidate
+without a new task and stronger evidence. See ADR-0012 and
+`ara/evidence/init008-feature-relative-scale-caps-2026-07-07/`.
 
 ## C03: Exact CUDA is a semantic accelerator, while gsplat is a comparator
 

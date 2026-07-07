@@ -7,6 +7,7 @@ torch = pytest.importorskip("torch")
 from PIL import Image
 
 from benchmarks.stage_search import (
+    INFLUENCE_DEFAULTS,
     LEGACY_REFINE_MODES,
     run_stage_search,
     _canonicalize,
@@ -15,6 +16,7 @@ from benchmarks.stage_search import (
     _refine_kwargs,
     _refine_kwargs_from_config,
     _row_temper_kwargs,
+    _scale_cap_kwargs,
     _state_seed_kwargs,
     _support_fade_kwargs,
     summarize,
@@ -356,6 +358,18 @@ def test_split_recovery_stage_mode_parsers():
         "support_fade": False,
         "support_fade_until_frac": 0.5,
     }
+
+
+def test_feature_relative_scale_cap_is_stage_axis():
+    assert _scale_cap_kwargs("feature_rel") == {
+        "scale_cap_mode": "feature_rel",
+        "scale_cap_max": None,
+    }
+    assert _scale_cap_kwargs("feature_relative") == {
+        "scale_cap_mode": "feature_rel",
+        "scale_cap_max": None,
+    }
+    assert "feature_rel" in INFLUENCE_DEFAULTS["scale_cap_modes"]
 
 
 def test_split_recovery_levers_are_stage_axes(tmp_path):

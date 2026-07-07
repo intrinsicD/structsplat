@@ -227,13 +227,13 @@ def _quadtree_cell_aggregates(
 
 def _quadtree_aggregate_init(img: np.ndarray, density: np.ndarray, tensor: st.StructureTensor,
                              icfg: InitConfig) -> tuple[np.ndarray, np.ndarray, np.ndarray,
-                                                        np.ndarray, np.ndarray]:
+                                                        np.ndarray, np.ndarray, np.ndarray]:
     """Density-prioritized quadtree initialization with cell aggregate attributes."""
     leaves = _quadtree_leaves(density, icfg.num_gaussians)
     pts, spacing, angles, ratios, colors, _ = _quadtree_cell_aggregates(
         img, density, tensor, icfg, leaves
     )
-    return pts, spacing, angles, ratios, colors
+    return pts, spacing, spacing.copy(), angles, ratios, colors
 
 
 def _tensor_attrs_at_points(tensor: st.StructureTensor, pts: np.ndarray,
@@ -338,14 +338,14 @@ def _feature_run_lengths(tensor: st.StructureTensor, pts: np.ndarray, angles: np
 
 
 def _scale_caps(tensor: st.StructureTensor | None, pts: np.ndarray, angles: np.ndarray,
-                scales: np.ndarray, icfg: InitConfig,
+                scales: np.ndarray, feature_scale: np.ndarray | None, icfg: InitConfig,
                 scfg: StructureTensorConfig | None) -> np.ndarray | None:
     mode = icfg.scale_cap_mode
     if mode == "none":
         return None
-    if mode not in ("hard", "feature"):
+    if mode not in ("hard", "feature", "feature_rel"):
         raise ValueError("unknown scale_cap_mode "
-                         f"{mode!r}; expected none, hard, or feature")
+                         f"{mode!r}; expected none, hard, feature, or feature_rel")
     if icfg.scale_cap_max is None and mode == "hard":
         raise ValueError("scale_cap_mode='hard' requires scale_cap_max")
 
@@ -361,6 +361,43 @@ def _scale_caps(tensor: st.StructureTensor | None, pts: np.ndarray, angles: np.n
         adaptive = np.maximum(adaptive, scales[:, 1])
         finite = np.isfinite(adaptive)
         caps[finite, 0] = np.minimum(caps[finite, 0], adaptive[finite])
+    elif mode == "feature_rel":
+        has_feature_scale = feature_scale is not None
+        if feature_scale is None:
+            # Fallback for direct helper use: geometric-mean scale is resolution relative, but
+            # all shipped init strategies pass an explicit WSE radius or quadtree leaf side.
+            feature_scale = np.sqrt(np.maximum(scales[:, 0] * scales[:, 1], 1e-12))
+        base = np.maximum(np.asarray(feature_scale, dtype=np.float64), icfg.scale_feature_rel_min)
+        if base.shape[0] != scales.shape[0]:
+            raise ValueError(
+                f"feature_scale length {base.shape[0]} does not match scales length {scales.shape[0]}"
+            )
+        rel = np.full_like(scales, np.inf, dtype=np.float64)
+        finite_base = base[np.isfinite(base)]
+        if (
+            has_feature_scale
+            and finite_base.size > 1
+            and float(finite_base.max() - finite_base.min()) > 1e-6
+        ):
+            # `feature_rel` should track local content scale, not the fraction of pixels a
+            # fixed-sigma tensor labels as non-flat after resizing. Sparse/high-radius samples
+            # are the flat coverage rows and stay loose by default.
+            threshold = float(np.quantile(finite_base, icfg.scale_feature_rel_quantile))
+            detail = base < threshold
+            if not detail.any() and icfg.scale_feature_rel_quantile > 0.0:
+                detail = base <= threshold
+        elif tensor is not None:
+            detail = _nearest(tensor.label, pts) != 0
+        else:
+            detail = np.ones(scales.shape[0], dtype=bool)
+        rel[detail, 0] = icfg.scale_feature_rel_along * base[detail]
+        rel[detail, 1] = icfg.scale_feature_rel_across * base[detail]
+        flat = ~detail
+        if icfg.scale_feature_rel_flat_mult is not None and flat.any():
+            rel[flat] = icfg.scale_feature_rel_flat_mult * base[flat, None]
+        finite = np.isfinite(rel)
+        rel[finite] = np.maximum(rel[finite], icfg.scale_feature_rel_min)
+        caps = np.minimum(caps, rel)
     if np.isinf(caps).all():
         return None
     return caps.astype(np.float32)
@@ -376,7 +413,7 @@ def _normalize_density(density: np.ndarray) -> np.ndarray:
 
 def _quadtree_wse_init(img: np.ndarray, density: np.ndarray, tensor: st.StructureTensor,
                        icfg: InitConfig, rng: np.random.Generator
-                       ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+                       ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Use quadtree cells only for budget allocation; place local WSE samples inside cells."""
     n = icfg.num_gaussians
     leaf_count = max(1, min(n, n // 4 if n >= 4 else n))
@@ -396,7 +433,7 @@ def _quadtree_wse_init(img: np.ndarray, density: np.ndarray, tensor: st.Structur
             order = np.argsort(-(raw - extra))
             counts[order[:remainder]] += 1
 
-    pts_parts, spacing_parts = [], []
+    pts_parts, spacing_parts, feature_scale_parts = [], [], []
     for (x0, y0, x1, y1), k in zip(leaves, counts):
         if k <= 0:
             continue
@@ -405,21 +442,29 @@ def _quadtree_wse_init(img: np.ndarray, density: np.ndarray, tensor: st.Structur
         cand_local = de.sample_candidates(local, n_cand, rng)
         cand = cand_local + np.array([x0, y0], dtype=np.float64)
         local_r = _radius_map(local, k)
+        local_feature_r = _radius_map(local, k, r_max=np.inf)
         r_i = _nearest(local_r, cand_local)
+        feature_r_i = _nearest(local_feature_r, cand_local)
         angle = _nearest(tensor.across_edge_angle, cand)
         coh = np.clip(_nearest(tensor.coherence, cand), 0.0, 1.0) ** icfg.coherence_power
         metric = sa.anisotropy_metric(angle, 1.0 + (icfg.max_axis_ratio - 1.0) * coh)
         keep = sa.eliminate(cand, k, r_i, metric=metric)
         pts_parts.append(cand[keep])
         spacing_parts.append(r_i[keep] * _SPACING_PER_RADIUS)
+        feature_scale_parts.append(feature_r_i[keep])
 
     pts = np.concatenate(pts_parts, axis=0) if pts_parts else np.empty((0, 2), dtype=np.float64)
     spacing = np.concatenate(spacing_parts, axis=0) if spacing_parts else np.empty(0, dtype=np.float64)
+    feature_scale = (
+        np.concatenate(feature_scale_parts, axis=0)
+        if feature_scale_parts else np.empty(0, dtype=np.float64)
+    )
     if len(pts) > n:
         pts = pts[:n]
         spacing = spacing[:n]
+        feature_scale = feature_scale[:n]
     angles, ratios = _tensor_attrs_at_points(tensor, pts, icfg, anisotropic=True)
-    return pts, spacing, angles, ratios
+    return pts, spacing, feature_scale, angles, ratios
 
 
 def _quadtree_hybrid_init(
@@ -429,7 +474,7 @@ def _quadtree_hybrid_init(
     scfg: StructureTensorConfig | None,
     icfg: InitConfig,
     rng: np.random.Generator,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray | None]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray | None]:
     """Aggregate low-detail cells and use WSE/flanking samples for the remaining budget."""
     n = icfg.num_gaussians
     n_agg = min(n, max(1, int(round(0.25 * n))))
@@ -437,6 +482,7 @@ def _quadtree_hybrid_init(
     q_pts, q_spacing, q_angles, q_ratios, q_colors, detail = _quadtree_cell_aggregates(
         img, density, tensor, icfg, leaves
     )
+    q_feature_scale = q_spacing.copy()
     agg_idx = np.argsort(detail)[:n_agg]
 
     smooth_mask = np.zeros(density.shape, dtype=bool)
@@ -450,7 +496,7 @@ def _quadtree_hybrid_init(
     n_wse = n - n_agg
     if n_wse > 0:
         wse_cfg = replace(icfg, num_gaussians=n_wse)
-        wse_pts, wse_spacing = _blue_noise_positions(
+        wse_pts, wse_spacing, wse_feature_scale = _blue_noise_positions(
             img, high_density, tensor, wse_cfg, anisotropic=True, rng=rng
         )
         wse_angles, wse_ratios = _tensor_attrs_at_points(tensor, wse_pts, icfg, anisotropic=True)
@@ -458,17 +504,19 @@ def _quadtree_hybrid_init(
     else:
         wse_pts = np.empty((0, 2), dtype=np.float64)
         wse_spacing = np.empty(0, dtype=np.float64)
+        wse_feature_scale = np.empty(0, dtype=np.float64)
         wse_angles = np.empty(0, dtype=np.float64)
         wse_ratios = np.empty(0, dtype=np.float64)
 
     pts = np.concatenate([q_pts[agg_idx], wse_pts], axis=0)
     spacing = np.concatenate([q_spacing[agg_idx], wse_spacing], axis=0)
+    feature_scale = np.concatenate([q_feature_scale[agg_idx], wse_feature_scale], axis=0)
     angles = np.concatenate([q_angles[agg_idx], wse_angles], axis=0)
     ratios = np.concatenate([q_ratios[agg_idx], wse_ratios], axis=0)
     colors = None
     if icfg.color_mode == "aggregate":
         colors = np.concatenate([q_colors[agg_idx], _bilinear(img, wse_pts)], axis=0)
-    return pts, spacing, angles, ratios, colors
+    return pts, spacing, feature_scale, angles, ratios, colors
 
 
 def _opacity_logits(n: int, mode: str, init_opacity: float) -> np.ndarray | None:
@@ -534,19 +582,27 @@ SAMPLING_MODES = ("wse", "density_random", "floyd_steinberg", "jittered_grid",
 def _blue_noise_positions(img, density, tensor, icfg, anisotropic, rng):
     n = icfg.num_gaussians
     rmap = _radius_map(density, n)
+    feature_rmap = _radius_map(density, n, r_max=np.inf)
     H, W = density.shape
     mode = icfg.sampling_mode
     if mode == "density_random":
         pts = de.sample_candidates(density, n, rng)
-        return pts, _nearest(rmap, pts) * _SPACING_PER_RADIUS
+        spacing = _nearest(rmap, pts) * _SPACING_PER_RADIUS
+        feature_scale = _nearest(feature_rmap, pts)
+        return pts, spacing, feature_scale
     if mode == "floyd_steinberg":
         pts = sa.floyd_steinberg(density, n)
-        return pts, _nearest(rmap, pts) * _SPACING_PER_RADIUS
+        spacing = _nearest(rmap, pts) * _SPACING_PER_RADIUS
+        feature_scale = _nearest(feature_rmap, pts)
+        return pts, spacing, feature_scale
     if mode == "jittered_grid":
-        return _jittered_grid_positions(H, W, n, rng)
+        pts, spacing = _jittered_grid_positions(H, W, n, rng)
+        return pts, spacing, spacing.copy()
     if mode == "halton":
         pts = de.warp_unit_points(sa.halton_unit(n, rng), density)
-        return pts, _nearest(rmap, pts) * _SPACING_PER_RADIUS
+        spacing = _nearest(rmap, pts) * _SPACING_PER_RADIUS
+        feature_scale = _nearest(feature_rmap, pts)
+        return pts, spacing, feature_scale
     if mode not in ("wse", "dart_throwing", "farthest_point", "cvt"):
         raise ValueError(
             f"unknown sampling_mode {mode!r}; expected one of {SAMPLING_MODES}"
@@ -556,8 +612,11 @@ def _blue_noise_positions(img, density, tensor, icfg, anisotropic, rng):
         pts = sa.cvt(cand, n, rng=rng)
         pts[:, 0] = np.clip(pts[:, 0], 0.0, W - 1.0)
         pts[:, 1] = np.clip(pts[:, 1], 0.0, H - 1.0)
-        return pts, _nearest(rmap, pts) * _SPACING_PER_RADIUS
+        spacing = _nearest(rmap, pts) * _SPACING_PER_RADIUS
+        feature_scale = _nearest(feature_rmap, pts)
+        return pts, spacing, feature_scale
     r_i = _nearest(rmap, cand)
+    feature_r_i = _nearest(feature_rmap, cand)
     metric = None
     if anisotropic:
         angle = _nearest(tensor.across_edge_angle, cand)
@@ -570,7 +629,7 @@ def _blue_noise_positions(img, density, tensor, icfg, anisotropic, rng):
         keep = sa.farthest_point(cand, n, r_i=r_i, metric=metric, rng=rng)
     else:
         keep = sa.eliminate(cand, n, r_i, metric=metric)
-    return cand[keep], r_i[keep] * _SPACING_PER_RADIUS
+    return cand[keep], r_i[keep] * _SPACING_PER_RADIUS, feature_r_i[keep]
 
 
 def build_field(img: np.ndarray, icfg: InitConfig,
@@ -592,6 +651,7 @@ def build_field(img: np.ndarray, icfg: InitConfig,
     if strat == "random":
         pts = rng.random((n, 2)) * np.array([W, H]) - 0.5   # pixel centers at integer coords
         spacing = np.full(n, np.sqrt(H * W / n))            # mean per-point area -> spacing
+        feature_scale = spacing.copy()
         angles = np.zeros(n)
         ratios = np.ones(n)
     elif strat == "grid":
@@ -604,6 +664,7 @@ def build_field(img: np.ndarray, icfg: InitConfig,
         if len(pts) > n:  # drop evenly across the grid, not the bottom rows
             pts = pts[np.round(np.linspace(0, len(pts) - 1, n)).astype(int)]
         spacing = np.full(len(pts), np.sqrt((W / gw) * (H / gh)))
+        feature_scale = spacing.copy()
         angles = np.zeros(len(pts))
         ratios = np.ones(len(pts))
     else:
@@ -612,7 +673,7 @@ def build_field(img: np.ndarray, icfg: InitConfig,
         if density is None:
             density = de.density_from_tensor_and_image(img, tensor, icfg, scfg)
         if strat == "quadtree_aggregate":
-            pts, spacing, angles, ratios, colors = _quadtree_aggregate_init(
+            pts, spacing, feature_scale, angles, ratios, colors = _quadtree_aggregate_init(
                 img, density, tensor, icfg
             )
             if icfg.color_mode == "bilinear":
@@ -624,14 +685,16 @@ def build_field(img: np.ndarray, icfg: InitConfig,
                     "quadtree_aggregate supports color_mode aggregate, bilinear, or local_mean"
                 )
         elif strat == "quadtree_wse":
-            pts, spacing, angles, ratios = _quadtree_wse_init(img, density, tensor, icfg, rng)
+            pts, spacing, feature_scale, angles, ratios = _quadtree_wse_init(
+                img, density, tensor, icfg, rng
+            )
             if icfg.color_mode == "aggregate":
                 raise ValueError(
                     "quadtree_wse uses sampled colors; use color_mode bilinear or local_mean"
                 )
             pts, _ = _flank_edge_points(pts, spacing, ratios, tensor, scfg, icfg)
         elif strat == "quadtree_hybrid":
-            pts, spacing, angles, ratios, colors = _quadtree_hybrid_init(
+            pts, spacing, feature_scale, angles, ratios, colors = _quadtree_hybrid_init(
                 img, density, tensor, scfg, icfg, rng
             )
             if icfg.color_mode not in ("aggregate", "bilinear", "local_mean"):
@@ -640,7 +703,9 @@ def build_field(img: np.ndarray, icfg: InitConfig,
                 )
         else:
             anisotropic = strat in ("aniso_onedge", "aniso_flanking")
-            pts, spacing = _blue_noise_positions(img, density, tensor, icfg, anisotropic, rng)
+            pts, spacing, feature_scale = _blue_noise_positions(
+                img, density, tensor, icfg, anisotropic, rng
+            )
             angles = _nearest(tensor.along_edge_angle, pts)      # elongate along the edge
             coh = np.clip(_nearest(tensor.coherence, pts), 0.0, 1.0) ** icfg.coherence_power
             ratios = 1.0 + (icfg.max_axis_ratio - 1.0) * coh if anisotropic else np.ones(len(pts))
@@ -651,6 +716,7 @@ def build_field(img: np.ndarray, icfg: InitConfig,
                 two_sided=icfg.color_mode == "two_sided")
 
     n_out = len(pts)
+    feature_scale = np.asarray(feature_scale, dtype=np.float64)[:n_out]
     m = icfg.init_scale_mult
     ratios = np.maximum(ratios, 1.0)
     # orientation stage: 'tensor' keeps the strategy's angles (structure-tensor tangent for the
@@ -673,9 +739,9 @@ def build_field(img: np.ndarray, icfg: InitConfig,
     s_along = spacing * np.sqrt(ratios) * m
     s_across = spacing / np.sqrt(ratios) * m
     scales = np.stack([s_along, s_across], 1)                # sx along tangent, sy across
-    if icfg.scale_cap_mode == "feature" and tensor is None:
+    if icfg.scale_cap_mode in ("feature", "feature_rel") and tensor is None:
         tensor = st.compute(img, scfg)
-    scale_max = _scale_caps(tensor, pts, angles[:n_out], scales, icfg, scfg)
+    scale_max = _scale_caps(tensor, pts, angles[:n_out], scales, feature_scale, icfg, scfg)
     if scale_max is not None:
         scales = np.minimum(scales, scale_max)
     if colors is None:

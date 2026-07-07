@@ -310,3 +310,67 @@ def test_hard_scale_cap_is_stored_and_applied():
     assert f.scale_max is not None
     assert torch.isfinite(f.scale_max).all()
     assert float(torch.exp(f.log_scales).max()) <= 3.0 + 1e-6
+
+
+def test_feature_relative_scale_caps_use_local_feature_scale():
+    H, W = 6, 8
+    zeros = np.zeros((H, W), dtype=np.float32)
+    label = np.zeros((H, W), dtype=np.uint8)
+    label[:, 3:5] = 1
+    tensor = ST.StructureTensor(
+        lam1=zeros, lam2=zeros, across_edge_angle=zeros, coherence=zeros,
+        energy=label.astype(np.float32), label=label, energy_ref=1.0,
+    )
+    pts = np.array([[3.0, 2.0], [1.0, 2.0]], dtype=np.float64)
+    scales = np.array([[12.0, 4.0], [12.0, 4.0]], dtype=np.float64)
+    feature_scale = np.array([2.0, 2.0], dtype=np.float64)
+    cfg = InitConfig(
+        scale_cap_mode="feature_rel",
+        scale_feature_rel_along=4.0,
+        scale_feature_rel_across=1.0,
+    )
+
+    caps = I._scale_caps(tensor, pts, np.zeros(2), scales, feature_scale, cfg, None)
+
+    assert caps is not None
+    np.testing.assert_allclose(caps[0], [8.0, 2.0])
+    assert np.isinf(caps[1]).all()
+
+
+def test_feature_relative_scale_caps_bind_resolution_invariant_fraction():
+    def continuous_edge(h, w):
+        yy, xx = np.mgrid[0:h, 0:w]
+        x = xx / max(w - 1, 1)
+        y = yy / max(h - 1, 1)
+        img = np.zeros((h, w, 3), dtype=np.float32)
+        img[..., 0] = (x > 0.48).astype(np.float32)
+        img[..., 1] = (y > 0.55).astype(np.float32) * 0.75
+        img[..., 2] = ((x + y) > 1.05).astype(np.float32) * 0.5
+        return img
+
+    def bind_fraction(side):
+        img = continuous_edge(int(round(side * 0.75)), side)
+        field = I.build_field(
+            img,
+            InitConfig(
+                strategy="aniso_onedge",
+                num_gaussians=256,
+                sampling_mode="density_random",
+                scale_cap_mode="feature_rel",
+                scale_feature_rel_along=3.0,
+                scale_feature_rel_across=1.0,
+                seed=3,
+            ),
+        )
+        assert field.scale_max is not None
+        caps = field.scale_max
+        scales = torch.exp(field.log_scales)
+        finite = torch.isfinite(caps)
+        bound = finite & torch.isclose(scales, caps, rtol=1e-4, atol=1e-4)
+        return float(bound.any(dim=1).float().mean())
+
+    frac160 = bind_fraction(160)
+    frac768 = bind_fraction(768)
+
+    assert frac160 > 0.0
+    assert abs(frac160 - frac768) <= 0.10

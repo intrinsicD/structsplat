@@ -39,9 +39,12 @@ def test_method_tracks_keep_growth_methods_at_same_start_budget(tmp_path):
         "structsplat_onedge_residual",
         "structsplat_onedge_residual_relocate",
         "structsplat_onedge_residual_featurecap",
+        "structsplat_onedge_residual_feature_rel",
         "structsplat_onedge_tensor",
         "structsplat_onedge_tensor_featurecap",
+        "structsplat_onedge_tensor_feature_rel",
         "structsplat_quadtree_wse_tensor",
+        "structsplat_quadtree_wse_tensor_feature_rel",
     ]
     for method in growth_methods:
         split_mode = F.STRUCTSPLAT_SPLIT_MODE.get(method, "residual_add")
@@ -180,6 +183,39 @@ def test_featurecap_method_sets_init_cap_and_growth(tmp_path: Path):
     assert meta["scale_cap_reference_side"] == 24.0
     assert meta["scale_cap_max"] == 9.0
     assert meta["feature_cap_px"] == 9.0
+
+
+def test_feature_relative_method_sets_init_cap_and_growth(tmp_path: Path):
+    img = np.zeros((24, 24, 3), dtype=np.float32)
+    img[:, 12:] = 1.0
+    image_path = tmp_path / "target.png"
+    Image.fromarray((img * 255).astype(np.uint8), mode="RGB").save(image_path)
+
+    field, cfg, _seconds, actual_start, meta = F._build_method(
+        method="structsplat_quadtree_wse_tensor_feature_rel",
+        img=img,
+        image_path=image_path,
+        final_budget=200,
+        start_budget=100,
+        seed=3,
+        base_fit=FitConfig(iters=20),
+        scfg=StructureTensorConfig(),
+        growth_waves=4,
+        device="cpu",
+    )
+
+    assert field.n == 100
+    assert actual_start == 100
+    assert field.scale_max is not None
+    assert cfg.split_mode == "residual_tensor_add"
+    assert cfg.split_count == 25
+    assert meta["init_config"]["scale_cap_mode"] == "feature_rel"
+    assert meta["init_config"]["scale_cap_max"] is None
+    assert meta["scale_cap_rule"] == "feature_rel"
+    assert meta["scale_cap_input"] is None
+    assert meta["scale_cap_reference_side"] is None
+    assert meta["scale_cap_max"] is None
+    assert meta["feature_cap_px"] is None
 
 
 def test_write_index_links_summary_metrics_and_images(tmp_path: Path):

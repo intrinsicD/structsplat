@@ -754,6 +754,37 @@ def test_fit_respects_field_scale_caps():
     assert float(torch.exp(out["field"].log_scales).max().detach()) <= 1.25 + 1e-6
 
 
+def test_fit_respects_feature_relative_scale_caps():
+    img = np.zeros((24, 24, 3), np.float32)
+    img[:, 12:] = 1.0
+    target = torch.as_tensor(img)
+    field = _init.build_field(
+        img,
+        InitConfig(
+            strategy="aniso_onedge",
+            num_gaussians=24,
+            sampling_mode="density_random",
+            scale_cap_mode="feature_rel",
+            scale_feature_rel_along=3.0,
+            scale_feature_rel_across=1.0,
+            seed=1,
+        ),
+    )
+    assert field.scale_max is not None
+    assert torch.isfinite(field.scale_max).any()
+    out = fit(
+        field,
+        target,
+        FitConfig(iters=6, log_every=1, lr_scales=1.0),
+        verbose=False,
+    )
+    scales = torch.exp(out["field"].log_scales)
+    caps = out["field"].scale_max
+    finite = torch.isfinite(caps)
+    assert finite.any()
+    assert bool((scales[finite] <= caps[finite] + 1e-6).all())
+
+
 def test_split_uses_residual_colors_under_additive_renderer():
     # additive splits must carry the residual (target - render), not the full target color,
     # or the child double-counts brightness (FIT-002 #1).

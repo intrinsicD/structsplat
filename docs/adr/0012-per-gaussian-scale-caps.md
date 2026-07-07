@@ -20,6 +20,8 @@ through `InitConfig.scale_cap_mode`:
 - `none`: no cap, historical behavior;
 - `hard`: a global absolute sigma cap;
 - `feature`: a local feature-aware cap from structure-tensor run lengths and configured minimums.
+- `feature_rel`: a feature-relative cap from local density radius / quadtree leaf side with
+  separate along/across multipliers and loose sparse-region rows.
 
 The fitter clamps optimized scales to the owned field cap after optimizer steps. The cap is a field
 constraint, not a renderer change: rendering still uses the same Gaussian equations and
@@ -27,6 +29,12 @@ constraint, not a renderer change: rendering still uses the same Gaussian equati
 
 Stage-search exposes scale caps as a searchable axis so the project can promote or demote caps by
 evidence rather than making them unconditional.
+
+2026-07-07 update: INIT-008 tested `feature_rel` on the fair-density difficult-four protocol that
+previously rejected resolution-scaled `feature` caps. `feature_rel` repaired most of the old loss
+relative to absolute `feature` caps, but still averaged -0.3733 dB PSNR versus matching uncapped
+rows and failed the no-loss criterion at 2000/5000 budgets. Scale caps remain opt-in/searchable,
+not a default candidate for the current fair-density protocol.
 
 ## Consequences
 
@@ -37,6 +45,8 @@ evidence rather than making them unconditional.
   children rather than stretching to cover missing detail.
 - Too-small caps can reduce MS-SSIM or suppress useful broad low-frequency support, so caps remain
   a stage-search axis and not a universal guarantee.
+- Current fair-density evidence closes the feature-cap default candidacy; future cap work needs a
+  new task and a new promotion rule, not reuse of the old `feature12` claim.
 - Code that subsets/appends/saves/loads fields must preserve `scale_max`; tests cover this.
 
 ## Links

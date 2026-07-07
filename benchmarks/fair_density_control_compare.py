@@ -67,14 +67,18 @@ DEFAULT_METHODS = [
     "structsplat_onedge_residual",
     "structsplat_onedge_residual_relocate",
     "structsplat_onedge_residual_featurecap",
+    "structsplat_onedge_residual_feature_rel",
     "structsplat_onedge_tensor",
     "structsplat_onedge_tensor_featurecap",
+    "structsplat_onedge_tensor_feature_rel",
     "structsplat_flanking_tensor",
     "structsplat_quadtree_wse_residual",
     "structsplat_quadtree_wse_residual_relocate",
     "structsplat_quadtree_wse_residual_featurecap",
+    "structsplat_quadtree_wse_residual_feature_rel",
     "structsplat_quadtree_wse_tensor",
     "structsplat_quadtree_wse_tensor_featurecap",
+    "structsplat_quadtree_wse_tensor_feature_rel",
     "structsplat_quadtree_hybrid_tensor",
     "floyd_steinberg_tensor",
 ]
@@ -87,14 +91,18 @@ METHOD_LABELS = {
     "structsplat_onedge_residual": "SS on-edge + residual",
     "structsplat_onedge_residual_relocate": "SS on-edge + residual relocate",
     "structsplat_onedge_residual_featurecap": "SS on-edge + residual feature cap",
+    "structsplat_onedge_residual_feature_rel": "SS on-edge + residual feature-rel cap",
     "structsplat_onedge_tensor": "SS on-edge + tensor",
     "structsplat_onedge_tensor_featurecap": "SS on-edge + tensor feature cap",
+    "structsplat_onedge_tensor_feature_rel": "SS on-edge + tensor feature-rel cap",
     "structsplat_flanking_tensor": "SS flanking + tensor",
     "structsplat_quadtree_wse_residual": "SS qt-WSE + residual",
     "structsplat_quadtree_wse_residual_relocate": "SS qt-WSE + residual relocate",
     "structsplat_quadtree_wse_residual_featurecap": "SS qt-WSE + residual feature cap",
+    "structsplat_quadtree_wse_residual_feature_rel": "SS qt-WSE + residual feature-rel cap",
     "structsplat_quadtree_wse_tensor": "SS qt-WSE + tensor",
     "structsplat_quadtree_wse_tensor_featurecap": "SS qt-WSE + tensor feature cap",
+    "structsplat_quadtree_wse_tensor_feature_rel": "SS qt-WSE + tensor feature-rel cap",
     "structsplat_quadtree_hybrid_tensor": "SS qt-hybrid + tensor",
     "floyd_steinberg_tensor": "Floyd + tensor",
 }
@@ -121,11 +129,17 @@ METHOD_NOTES = {
     "structsplat_onedge_residual_featurecap": (
         "StructSplat on-edge residual-add growth with feature-adaptive per-Gaussian scale caps."
     ),
+    "structsplat_onedge_residual_feature_rel": (
+        "StructSplat on-edge residual-add growth with feature-relative local-radius scale caps."
+    ),
     "structsplat_onedge_tensor": (
         "StructSplat on-edge initializer plus tensor-aware residual growth."
     ),
     "structsplat_onedge_tensor_featurecap": (
         "StructSplat on-edge tensor-aware residual growth with feature-adaptive scale caps."
+    ),
+    "structsplat_onedge_tensor_feature_rel": (
+        "StructSplat on-edge tensor-aware residual growth with feature-relative local-radius caps."
     ),
     "structsplat_flanking_tensor": (
         "StructSplat flanking initializer plus tensor-aware residual growth."
@@ -139,11 +153,17 @@ METHOD_NOTES = {
     "structsplat_quadtree_wse_residual_featurecap": (
         "StructSplat quadtree-WSE residual-add growth with feature-adaptive scale caps."
     ),
+    "structsplat_quadtree_wse_residual_feature_rel": (
+        "StructSplat quadtree-WSE residual-add growth with feature-relative local-radius caps."
+    ),
     "structsplat_quadtree_wse_tensor": (
         "StructSplat quadtree-WSE initializer plus tensor-aware residual growth."
     ),
     "structsplat_quadtree_wse_tensor_featurecap": (
         "StructSplat quadtree-WSE tensor-aware residual growth with feature-adaptive scale caps."
+    ),
+    "structsplat_quadtree_wse_tensor_feature_rel": (
+        "StructSplat quadtree-WSE tensor-aware residual growth with feature-relative local-radius caps."
     ),
     "structsplat_quadtree_hybrid_tensor": (
         "StructSplat quadtree-hybrid initializer plus tensor-aware residual growth."
@@ -161,14 +181,18 @@ METHOD_TRACKS = {
     "structsplat_onedge_residual": "same-growth",
     "structsplat_onedge_residual_relocate": "same-growth+relocate",
     "structsplat_onedge_residual_featurecap": "same-growth+feature-cap",
+    "structsplat_onedge_residual_feature_rel": "same-growth+feature-rel-cap",
     "structsplat_onedge_tensor": "tensor-growth",
     "structsplat_onedge_tensor_featurecap": "tensor-growth+feature-cap",
+    "structsplat_onedge_tensor_feature_rel": "tensor-growth+feature-rel-cap",
     "structsplat_flanking_tensor": "tensor-growth",
     "structsplat_quadtree_wse_residual": "same-growth",
     "structsplat_quadtree_wse_residual_relocate": "same-growth+relocate",
     "structsplat_quadtree_wse_residual_featurecap": "same-growth+feature-cap",
+    "structsplat_quadtree_wse_residual_feature_rel": "same-growth+feature-rel-cap",
     "structsplat_quadtree_wse_tensor": "tensor-growth",
     "structsplat_quadtree_wse_tensor_featurecap": "tensor-growth+feature-cap",
+    "structsplat_quadtree_wse_tensor_feature_rel": "tensor-growth+feature-rel-cap",
     "structsplat_quadtree_hybrid_tensor": "tensor-growth",
     "floyd_steinberg_tensor": "tensor-growth-control",
 }
@@ -177,14 +201,18 @@ STRUCTSPLAT_INIT = {
     "structsplat_onedge_residual": ("aniso_onedge", "wse", 0.0),
     "structsplat_onedge_residual_relocate": ("aniso_onedge", "wse", 0.0),
     "structsplat_onedge_residual_featurecap": ("aniso_onedge", "wse", 0.0),
+    "structsplat_onedge_residual_feature_rel": ("aniso_onedge", "wse", 0.0),
     "structsplat_onedge_tensor": ("aniso_onedge", "wse", 0.0),
     "structsplat_onedge_tensor_featurecap": ("aniso_onedge", "wse", 0.0),
+    "structsplat_onedge_tensor_feature_rel": ("aniso_onedge", "wse", 0.0),
     "structsplat_flanking_tensor": ("aniso_flanking", "wse", 0.5),
     "structsplat_quadtree_wse_residual": ("quadtree_wse", "wse", 0.0),
     "structsplat_quadtree_wse_residual_relocate": ("quadtree_wse", "wse", 0.0),
     "structsplat_quadtree_wse_residual_featurecap": ("quadtree_wse", "wse", 0.0),
+    "structsplat_quadtree_wse_residual_feature_rel": ("quadtree_wse", "wse", 0.0),
     "structsplat_quadtree_wse_tensor": ("quadtree_wse", "wse", 0.0),
     "structsplat_quadtree_wse_tensor_featurecap": ("quadtree_wse", "wse", 0.0),
+    "structsplat_quadtree_wse_tensor_feature_rel": ("quadtree_wse", "wse", 0.0),
     "structsplat_quadtree_hybrid_tensor": ("quadtree_hybrid", "wse", 0.0),
     "floyd_steinberg_tensor": ("aniso_flanking", "floyd_steinberg", 0.5),
 }
@@ -193,14 +221,18 @@ STRUCTSPLAT_SPLIT_MODE = {
     "structsplat_onedge_residual": "residual_add",
     "structsplat_onedge_residual_relocate": "residual_add",
     "structsplat_onedge_residual_featurecap": "residual_add",
+    "structsplat_onedge_residual_feature_rel": "residual_add",
     "structsplat_onedge_tensor": "residual_tensor_add",
     "structsplat_onedge_tensor_featurecap": "residual_tensor_add",
+    "structsplat_onedge_tensor_feature_rel": "residual_tensor_add",
     "structsplat_flanking_tensor": "residual_tensor_add",
     "structsplat_quadtree_wse_residual": "residual_add",
     "structsplat_quadtree_wse_residual_relocate": "residual_add",
     "structsplat_quadtree_wse_residual_featurecap": "residual_add",
+    "structsplat_quadtree_wse_residual_feature_rel": "residual_add",
     "structsplat_quadtree_wse_tensor": "residual_tensor_add",
     "structsplat_quadtree_wse_tensor_featurecap": "residual_tensor_add",
+    "structsplat_quadtree_wse_tensor_feature_rel": "residual_tensor_add",
     "structsplat_quadtree_hybrid_tensor": "residual_tensor_add",
     "floyd_steinberg_tensor": "residual_tensor_add",
 }
@@ -215,6 +247,13 @@ FEATURE_CAP_METHODS = {
     "structsplat_onedge_tensor_featurecap",
     "structsplat_quadtree_wse_residual_featurecap",
     "structsplat_quadtree_wse_tensor_featurecap",
+}
+
+FEATURE_REL_METHODS = {
+    "structsplat_onedge_residual_feature_rel",
+    "structsplat_onedge_tensor_feature_rel",
+    "structsplat_quadtree_wse_residual_feature_rel",
+    "structsplat_quadtree_wse_tensor_feature_rel",
 }
 
 DEFAULT_FEATURE_CAP_REFERENCE_SIDE = 160.0
@@ -315,16 +354,20 @@ def _structsplat_field(
     scfg: StructureTensorConfig,
     device: str,
     feature_cap: float | None = None,
+    feature_rel: bool = False,
 ) -> tuple[GaussianField, InitConfig, float]:
     strategy, sampling_mode, flank = STRUCTSPLAT_INIT[method]
+    scale_cap_mode = "feature_rel" if feature_rel else (
+        "feature" if feature_cap is not None else "none"
+    )
     icfg = InitConfig(
         strategy=strategy,
         num_gaussians=start_budget,
         seed=seed,
         sampling_mode=sampling_mode,
         flank_offset_frac=flank,
-        scale_cap_mode="feature" if feature_cap is not None else "none",
-        scale_cap_max=feature_cap,
+        scale_cap_mode=scale_cap_mode,
+        scale_cap_max=feature_cap if not feature_rel else None,
     )
     t0 = time.time()
     field = build_field(img, icfg, scfg, device=device)
@@ -407,6 +450,7 @@ def _build_method(
             scfg,
             device,
             feature_cap=feature_cap_px,
+            feature_rel=method in FEATURE_REL_METHODS,
         )
         split_mode = STRUCTSPLAT_SPLIT_MODE[method]
         if method in RELOCATION_METHODS:
@@ -439,6 +483,14 @@ def _build_method(
                 "scale_cap_reference_side": feature_cap_reference_side,
                 "scale_cap_max": feature_cap_px,
                 "feature_cap_px": feature_cap_px,
+            })
+        elif method in FEATURE_REL_METHODS:
+            extra.update({
+                "scale_cap_rule": "feature_rel",
+                "scale_cap_input": None,
+                "scale_cap_reference_side": None,
+                "scale_cap_max": None,
+                "feature_cap_px": None,
             })
         return field, fcfg, init_seconds, start_budget, extra
 
