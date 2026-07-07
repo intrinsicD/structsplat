@@ -40,6 +40,16 @@ gradient feeds.
 * Deduplication changes factorial cell counts versus the pre-ADR harness when inert combinations
   were requested; `--no-dedupe` restores the old behavior for reproducing historical sweeps.
 
+## Protocol note: factored refinement axes (FIT-009)
+
+The original `refine` stage mixed site selection, growth primitive, and sampled-add NMS into flat
+strings such as `residual_tensor_add_nms_residual_color`. FIT-009 splits that into explicit
+stage fields: `refine_site`, `refine_primitive`, and `refine_nms`, with `refine_color`,
+`refine_prune`, and `refine_relocate` as orthogonal flags. Legacy `--refine-modes` aliases remain
+accepted and are normalized into those fields before labels, dedupe, budget accounting, and
+summaries are produced. Canonicalization pins primitive/NMS/color when `refine_site=none`, and pins
+NMS/color for non-`sampled_add` primitives because those controls are inert there.
+
 ## Protocol note: LR schedule in pyramid vs single-stage cells (HIER-002)
 
 The `lr_schedule` axis must mean the same thing in every cell. A `cosine` schedule spans the

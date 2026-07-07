@@ -55,6 +55,13 @@ ADR-0009 production config). `influence.md` reports **paired** deltas per stage 
 mode (`--mode factorial`, default) stays the best-combination search; both dedupe configs whose
 differing stage is provably inert. Pass `--target-psnr` or iters-to-target stays empty.
 
+Refinement is factored (FIT-009): prefer explicit axes `--refine-sites`,
+`--refine-primitives`, and `--refine-nms-modes` plus `--refine-color-inits`,
+`--refine-prune-modes`, and `--refine-relocate-modes`. Legacy `--refine-modes` strings such as
+`residual_tensor_add_nms_residual_color` remain aliases, but new experiments should report the
+factored fields. `refine_site=none` makes primitive/NMS/color inert; non-`sampled_add` primitives
+make NMS/color inert.
+
 ## Experimental-validity rules (BENCH-002 — a sweep result is trustworthy by construction)
 - **Equal budgets.** Refine (adding) arms are capped at the cell budget and start below it so
   their planned additions land *at* budget — never compare a refine arm that carries +split_count

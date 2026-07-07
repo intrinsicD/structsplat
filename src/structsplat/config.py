@@ -6,6 +6,60 @@ from dataclasses import dataclass, field
 DEFAULT_INIT_STRATEGY = "quadtree_wse"
 DEFAULT_PREDICTOR_FALLBACK_STRATEGY = DEFAULT_INIT_STRATEGY
 
+REFINE_SITES = (
+    "none", "residual", "residual_tensor", "support", "absgrad", "ranked",
+    "freq_violation",
+)
+REFINE_PRIMITIVES = ("duplicate", "fp", "moment_preserving", "sampled_add")
+REFINE_NMS_MODES = ("off", "on")
+
+_REFINE_ALIAS_TABLE: dict[str, tuple[str, str, str]] = {
+    "none": ("none", "duplicate", "off"),
+    "duplicate": ("residual", "duplicate", "off"),
+    "fp_duplicate": ("residual", "fp", "off"),
+    "moment_preserving": ("residual", "moment_preserving", "off"),
+    "support_duplicate": ("support", "duplicate", "off"),
+    "residual_add": ("residual", "sampled_add", "off"),
+    "residual_tensor_add": ("residual_tensor", "sampled_add", "off"),
+    "ranked_wave": ("ranked", "fp", "off"),
+    "absgrad_wave": ("absgrad", "fp", "off"),
+    "freq_violation": ("freq_violation", "fp", "off"),
+    "residual_add_nms": ("residual", "sampled_add", "on"),
+    "residual_tensor_add_nms": ("residual_tensor", "sampled_add", "on"),
+}
+
+_FACTORED_REFINE_ALIASES: dict[tuple[str, str], str] = {
+    ("none", "duplicate"): "none",
+    ("residual", "duplicate"): "duplicate",
+    ("residual", "fp"): "fp_duplicate",
+    ("residual", "moment_preserving"): "moment_preserving",
+    ("support", "duplicate"): "support_duplicate",
+    ("residual", "sampled_add"): "residual_add",
+    ("residual_tensor", "sampled_add"): "residual_tensor_add",
+    ("ranked", "fp"): "ranked_wave",
+    ("absgrad", "fp"): "absgrad_wave",
+    ("freq_violation", "fp"): "freq_violation",
+}
+
+
+def refine_alias_to_axes(mode: str) -> tuple[str, str, str]:
+    try:
+        return _REFINE_ALIAS_TABLE[mode]
+    except KeyError as exc:
+        expected = ", ".join(sorted(_REFINE_ALIAS_TABLE))
+        raise ValueError(f"unknown refine alias {mode!r}; expected one of: {expected}") from exc
+
+
+def refine_axes_to_alias(site: str, primitive: str, nms: str = "off") -> str:
+    if site == "none":
+        return "none"
+    alias = _FACTORED_REFINE_ALIASES.get((site, primitive))
+    if alias is None:
+        return f"{site}_{primitive}"
+    if nms == "on" and alias in ("residual_add", "residual_tensor_add"):
+        return f"{alias}_nms"
+    return alias
+
 
 def default_flank_offset_for_strategy(strategy: str) -> float:
     return 0.5 if strategy == "aniso_flanking" else 0.0
@@ -119,7 +173,10 @@ class FitConfig:
     prune_keep_min: int = 16
     split_every: int | None = None
     split_count: int = 0
-    split_mode: str = "duplicate"      # duplicate/fp/support/residual/ranked/absgrad/freq modes
+    split_mode: str = "duplicate"      # legacy alias for refine_site/primitive/nms
+    refine_site: str | None = None     # none/residual/residual_tensor/support/absgrad/ranked/freq
+    refine_primitive: str | None = None  # duplicate/fp/moment_preserving/sampled_add
+    refine_nms: str | None = None      # off/on; on applies sampled-add spacing defaults
     split_scale: float = 0.7
     split_oversample: float = 1.0       # residual_add candidate multiplier before spacing NMS
     split_min_spacing: float = 0.0      # residual_add NMS radius = this * base densify scale
@@ -179,6 +236,37 @@ class FitConfig:
         if self.ssim_backend not in ("builtin", "fused", "auto"):
             raise ValueError(
                 f"ssim_backend must be builtin, fused, or auto, got {self.ssim_backend!r}")
+        has_factored_refine = (
+            self.refine_site is not None
+            or self.refine_primitive is not None
+            or self.refine_nms is not None
+        )
+        if has_factored_refine and self.split_mode not in _REFINE_ALIAS_TABLE:
+            legacy_site, legacy_primitive, legacy_nms = ("residual", "duplicate", "off")
+        else:
+            legacy_site, legacy_primitive, legacy_nms = refine_alias_to_axes(self.split_mode)
+        site = self.refine_site or legacy_site
+        primitive = self.refine_primitive or legacy_primitive
+        nms = self.refine_nms or legacy_nms
+        if site not in REFINE_SITES:
+            raise ValueError(
+                f"refine_site must be one of {', '.join(REFINE_SITES)}, got {site!r}")
+        if primitive not in REFINE_PRIMITIVES:
+            raise ValueError(
+                "refine_primitive must be one of "
+                f"{', '.join(REFINE_PRIMITIVES)}, got {primitive!r}")
+        if nms not in REFINE_NMS_MODES:
+            raise ValueError(
+                f"refine_nms must be off or on, got {nms!r}")
+        self.refine_site = site
+        self.refine_primitive = primitive
+        self.refine_nms = nms
+        self.split_mode = refine_axes_to_alias(site, primitive, nms)
+        if self.refine_nms == "on":
+            if self.split_min_spacing == 0.0:
+                self.split_min_spacing = 1.0
+            if self.split_oversample == 1.0:
+                self.split_oversample = 8.0
         if self.split_oversample < 1.0:
             raise ValueError(f"split_oversample must be >= 1, got {self.split_oversample}")
         if self.split_min_spacing < 0.0:

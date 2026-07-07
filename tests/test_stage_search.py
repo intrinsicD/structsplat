@@ -7,10 +7,13 @@ torch = pytest.importorskip("torch")
 from PIL import Image
 
 from benchmarks.stage_search import (
+    LEGACY_REFINE_MODES,
     run_stage_search,
     _canonicalize,
     _color_solve_kwargs,
+    _legacy_refine_config,
     _refine_kwargs,
+    _refine_kwargs_from_config,
     summarize,
 )
 
@@ -271,6 +274,28 @@ def test_refine_kwargs_threads_fit004_modes():
     }
 
 
+def test_legacy_refine_alias_table_covers_all_influence_modes():
+    for mode in LEGACY_REFINE_MODES:
+        cfg = _legacy_refine_config(mode)
+        kwargs = _refine_kwargs_from_config(cfg, 5, 7, 3, 1e-2)
+        assert cfg["refine"] == mode
+        assert cfg["refine_site"] in {
+            "none", "residual", "residual_tensor", "support", "ranked", "absgrad",
+            "freq_violation",
+        }
+        assert cfg["refine_primitive"] in {
+            "duplicate", "fp", "moment_preserving", "sampled_add",
+        }
+        assert cfg["refine_nms"] in {"off", "on"}
+        assert cfg["refine_color"] in {"target", "residual"}
+        if cfg["refine_site"] != "none":
+            assert kwargs["split_every"] == 5
+            assert kwargs["split_count"] == 7
+            assert kwargs["refine_site"] == cfg["refine_site"]
+            assert kwargs["refine_primitive"] == cfg["refine_primitive"]
+            assert kwargs["refine_nms"] == cfg["refine_nms"]
+
+
 def test_aa_dilation_is_stage_axis(tmp_path):
     img_path = tmp_path / "toy.png"
     _write_toy(img_path)
@@ -371,6 +396,42 @@ def test_new_stage_smoke_matrix_records_expected_events_and_html(tmp_path):
     assert "<code>freq_violation</code>" in html
     assert "<code>moment_preserving</code>" in html
     assert "stage_search.json" in html
+
+
+def test_factored_refine_axes_smoke_residual_tensor_moment(tmp_path):
+    img_path = tmp_path / "toy.png"
+    outdir = tmp_path / "factored_refine"
+    _write_toy(img_path)
+
+    rows = run_stage_search(
+        [str(img_path)], budgets=[32], seeds=[0], iters=10, max_side=None,
+        strategies=["aniso_flanking"], tensor_operators=["central"], tensor_colors=["luma"],
+        density_modes=["structure"], sampling_modes=["density_random"],
+        orientation_modes=["tensor"], color_modes=["bilinear"], scale_modes=["spacing"],
+        scale_cap_modes=["none"], opacity_modes=["none"], renderers=["normalized"],
+        aa_dilations=[0.0], color_basis_modes=["constant"], color_solve_modes=["none"],
+        pixel_losses=["l1"], optimizers=["adam"], lr_schedules=["none"],
+        refine_sites=["none", "residual", "residual_tensor"],
+        refine_primitives=["sampled_add", "moment_preserving"],
+        refine_nms_modes=["off"], refine_color_inits=["target"],
+        refine_prune_modes=["off"], refine_relocate_modes=["off"],
+        pyramid_modes=["single"], split_every=5, split_count=8, render_chunk=8,
+        outdir=str(outdir), device="cpu",
+    )
+
+    assert len(rows) == 5  # site=none makes primitive inert and dedupes one cell
+    assert all(r["status"] == "ok" for r in rows)
+    combos = {(r["refine_site"], r["refine_primitive"]) for r in rows}
+    assert ("residual_tensor", "moment_preserving") in combos
+    target = [
+        r for r in rows
+        if r["refine_site"] == "residual_tensor"
+        and r["refine_primitive"] == "moment_preserving"
+    ][0]
+    assert target["split_event_count"] == 1
+    assert target["n_gaussians"] == target["budget"]
+    assert target["init_budget"] < target["budget"]
+    assert "refine_site=residual_tensor" in target["config_label"]
 
 
 def test_color_basis_is_stage_axis(tmp_path):

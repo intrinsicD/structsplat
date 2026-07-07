@@ -245,6 +245,9 @@ def _growth_fit_cfg(
         split_every=split_every,
         split_count=split_count,
         split_mode=split_mode,
+        refine_site=None,
+        refine_primitive=None,
+        refine_nms=None,
         max_gaussians=int(final_budget),
     )
 

@@ -38,13 +38,16 @@ from structsplat.config import (
     InitConfig,
     PyramidConfig,
     StructureTensorConfig,
+    refine_alias_to_axes,
+    refine_axes_to_alias,
 )
 
 # stage axes, in label order; values = the swappable options each stage exposes
 STAGE_KEYS = [
     "strategy", "tensor", "tensor_color", "density", "sampling", "orientation", "color",
     "scale", "scale_cap", "opacity", "renderer", "aa", "color_basis", "color_solve", "loss",
-    "optimizer", "lr_schedule", "refine", "pyramid",
+    "optimizer", "lr_schedule", "refine_site", "refine_primitive", "refine_nms",
+    "refine_color", "refine_prune", "refine_relocate", "pyramid",
 ]
 
 FACTORIAL_DEFAULTS: dict[str, tuple[str, ...]] = {
@@ -67,7 +70,12 @@ FACTORIAL_DEFAULTS: dict[str, tuple[str, ...]] = {
     "pixel_losses": ("l1", "charbonnier"),
     "optimizers": ("adam",),
     "lr_schedules": ("none", "cosine"),
-    "refine_modes": ("none", "residual_add"),
+    "refine_sites": ("none", "residual"),
+    "refine_primitives": ("sampled_add",),
+    "refine_nms_modes": ("off",),
+    "refine_color_inits": ("target",),
+    "refine_prune_modes": ("off",),
+    "refine_relocate_modes": ("off",),
     "pyramid_modes": ("single",),
 }
 
@@ -98,15 +106,15 @@ INFLUENCE_DEFAULTS: dict[str, tuple[str, ...]] = {
     "pixel_losses": ("l1", "l2", "charbonnier"),
     "optimizers": ("adam", "adamw", "adan"),
     "lr_schedules": ("none", "cosine", "step"),
-    "refine_modes": (
-        "none", "prune", "duplicate", "fp_duplicate", "moment_preserving",
-        "support_duplicate", "residual_add", "residual_tensor_add", "ranked_wave",
-        "absgrad_wave", "freq_violation", "relocate",
-        "residual_add_nms", "residual_tensor_add_nms",
-        "residual_add_residual_color", "residual_tensor_add_residual_color",
-        "residual_add_nms_residual_color", "residual_tensor_add_nms_residual_color",
-        "prune_residual_add", "prune_residual_tensor_add",
+    "refine_sites": (
+        "none", "residual", "residual_tensor", "support", "ranked", "absgrad",
+        "freq_violation",
     ),
+    "refine_primitives": ("fp", "duplicate", "moment_preserving", "sampled_add"),
+    "refine_nms_modes": ("off", "on"),
+    "refine_color_inits": ("target", "residual"),
+    "refine_prune_modes": ("off", "on"),
+    "refine_relocate_modes": ("off", "on"),
     "pyramid_modes": ("single", "pyramid"),
 }
 
@@ -122,7 +130,11 @@ _AXIS_TO_KEY = {
     "scale_cap_modes": "scale_cap", "opacity_modes": "opacity", "renderers": "renderer",
     "aa_dilations": "aa", "color_basis_modes": "color_basis",
     "color_solve_modes": "color_solve", "pixel_losses": "loss",
-    "optimizers": "optimizer", "lr_schedules": "lr_schedule", "refine_modes": "refine",
+    "optimizers": "optimizer", "lr_schedules": "lr_schedule",
+    "refine_modes": "refine",
+    "refine_sites": "refine_site", "refine_primitives": "refine_primitive",
+    "refine_nms_modes": "refine_nms", "refine_color_inits": "refine_color",
+    "refine_prune_modes": "refine_prune", "refine_relocate_modes": "refine_relocate",
     "pyramid_modes": "pyramid",
 }
 
@@ -182,7 +194,8 @@ def _canonicalize(cfg: dict[str, Any], canonical: dict[str, str]) -> dict[str, A
         tensor, not the density), so the density stage is inert under it.
       * two_sided color sampling only diverges from bilinear inside the aniso_flanking branch.
     """
-    c = dict(cfg)
+    canonical = _normalize_refine_config(canonical)
+    c = _normalize_refine_config(cfg)
     strat = c["strategy"]
     if strat in ("random", "grid"):
         feature_cap = str(c.get("scale_cap", "none")).startswith("feature")
@@ -201,6 +214,15 @@ def _canonicalize(cfg: dict[str, Any], canonical: dict[str, str]) -> dict[str, A
         c["density"] = canonical["density"]
     if strat != "aniso_flanking" and c["color"] == "two_sided":
         c["color"] = "bilinear"
+    if c.get("refine_site") == "none":
+        for k in ("refine_primitive", "refine_nms", "refine_color"):
+            c[k] = canonical[k]
+    if c.get("refine_primitive") != "sampled_add":
+        # NMS and residual-color initialization are sampled-add controls; duplicate-style
+        # primitives ignore them, so pin them to avoid duplicate equivalent cells.
+        c["refine_nms"] = canonical["refine_nms"]
+        c["refine_color"] = canonical["refine_color"]
+    c = _normalize_refine_config(c)
     return c
 
 
@@ -219,93 +241,144 @@ def _influence_configs(axes: dict[str, tuple]):
             yield {**base, key: v}
 
 
-def _refine_kwargs(mode: str, split_every: int | None, split_count: int,
-                   prune_every: int | None, prune_min_activity: float) -> dict[str, Any]:
-    split_variants: dict[str, dict[str, Any]] = {
-        "duplicate": {"split_mode": "duplicate"},
-        "fp_duplicate": {"split_mode": "fp_duplicate"},
-        "moment_preserving": {"split_mode": "moment_preserving"},
-        "support_duplicate": {"split_mode": "support_duplicate"},
-        "residual_add": {"split_mode": "residual_add"},
-        "residual_tensor_add": {"split_mode": "residual_tensor_add"},
-        "ranked_wave": {"split_mode": "ranked_wave"},
-        "absgrad_wave": {"split_mode": "absgrad_wave"},
-        "freq_violation": {"split_mode": "freq_violation"},
-        "residual_add_nms": {
-            "split_mode": "residual_add",
-            "split_min_spacing": 1.0,
-            "split_oversample": 8.0,
-        },
-        "residual_tensor_add_nms": {
-            "split_mode": "residual_tensor_add",
-            "split_min_spacing": 1.0,
-            "split_oversample": 8.0,
-        },
-        "residual_add_residual_color": {
-            "split_mode": "residual_add",
-            "split_color_init": "residual",
-        },
-        "residual_tensor_add_residual_color": {
-            "split_mode": "residual_tensor_add",
-            "split_color_init": "residual",
-        },
-        "residual_add_nms_residual_color": {
-            "split_mode": "residual_add",
-            "split_min_spacing": 1.0,
-            "split_oversample": 8.0,
-            "split_color_init": "residual",
-        },
-        "residual_tensor_add_nms_residual_color": {
-            "split_mode": "residual_tensor_add",
-            "split_min_spacing": 1.0,
-            "split_oversample": 8.0,
-            "split_color_init": "residual",
-        },
+LEGACY_REFINE_MODES = (
+    "none", "prune", "duplicate", "fp_duplicate", "moment_preserving",
+    "support_duplicate", "residual_add", "residual_tensor_add", "ranked_wave",
+    "absgrad_wave", "freq_violation", "relocate", "residual_add_nms",
+    "residual_tensor_add_nms", "residual_add_residual_color",
+    "residual_tensor_add_residual_color", "residual_add_nms_residual_color",
+    "residual_tensor_add_nms_residual_color", "prune_residual_add",
+    "prune_residual_tensor_add",
+)
+
+
+def _base_refine_config() -> dict[str, Any]:
+    return {
+        "refine": "none",
+        "refine_site": "none",
+        "refine_primitive": "duplicate",
+        "refine_nms": "off",
+        "refine_color": "target",
+        "refine_prune": "off",
+        "refine_relocate": "off",
     }
+
+
+def _legacy_refine_config(mode: str) -> dict[str, Any]:
+    c = _base_refine_config()
+    c["refine"] = mode
     if mode == "none":
-        return {}
+        return c
     if mode == "prune":
-        return {
+        c["refine_prune"] = "on"
+        return c
+    if mode == "relocate":
+        c["refine_relocate"] = "on"
+        return c
+    core = mode
+    if core.startswith("prune_"):
+        c["refine_prune"] = "on"
+        core = core[len("prune_"):]
+    if core.endswith("_residual_color"):
+        c["refine_color"] = "residual"
+        core = core[:-len("_residual_color")]
+    site, primitive, nms = refine_alias_to_axes(core)
+    c.update({
+        "refine_site": site,
+        "refine_primitive": primitive,
+        "refine_nms": nms,
+    })
+    return c
+
+
+def _refine_label(cfg: dict[str, Any]) -> str:
+    site = cfg["refine_site"]
+    primitive = cfg["refine_primitive"]
+    nms = cfg["refine_nms"]
+    if site == "none":
+        label = "none"
+    else:
+        label = refine_axes_to_alias(site, primitive, nms)
+    if cfg.get("refine_color") == "residual" and site != "none" and primitive == "sampled_add":
+        label += "_residual_color"
+    if cfg.get("refine_prune") == "on":
+        label = "prune" if label == "none" else f"prune_{label}"
+    if cfg.get("refine_relocate") == "on":
+        label = "relocate" if label == "none" else f"{label}_relocate"
+    return label
+
+
+def _normalize_refine_config(cfg: dict[str, Any]) -> dict[str, Any]:
+    c = dict(cfg)
+    if "refine" in c and not all(k in c for k in (
+        "refine_site", "refine_primitive", "refine_nms", "refine_color",
+        "refine_prune", "refine_relocate",
+    )):
+        c.update(_legacy_refine_config(c["refine"]))
+    else:
+        c.setdefault("refine_site", "none")
+        c.setdefault("refine_primitive", "duplicate")
+        c.setdefault("refine_nms", "off")
+        c.setdefault("refine_color", "target")
+        c.setdefault("refine_prune", "off")
+        c.setdefault("refine_relocate", "off")
+    c["refine"] = _refine_label(c)
+    return c
+
+
+def _refine_kwargs_from_config(cfg: dict[str, Any], split_every: int | None,
+                               split_count: int, prune_every: int | None,
+                               prune_min_activity: float) -> dict[str, Any]:
+    refine_cfg = _normalize_refine_config(cfg)
+    out: dict[str, Any] = {}
+    if refine_cfg["refine_prune"] == "on":
+        out.update({
             "prune_every": prune_every,
             "prune_min_activity": prune_min_activity,
-        }
-    if mode == "relocate":
-        return {
+        })
+    if refine_cfg["refine_relocate"] == "on":
+        out.update({
             "relocate_every": split_every,
             "relocate_count": split_count,
-        }
-    if mode in split_variants:
-        return {
+        })
+    if refine_cfg["refine_site"] != "none":
+        out.update({
             "split_every": split_every,
             "split_count": split_count,
-            **split_variants[mode],
-        }
-    if mode in ("prune_residual_add", "prune_residual_tensor_add"):
-        return {
-            "prune_every": prune_every,
-            "prune_min_activity": prune_min_activity,
-            "split_every": split_every,
-            "split_count": split_count,
-            "split_mode": "residual_tensor_add"
-            if mode == "prune_residual_tensor_add" else "residual_add",
-        }
-    expected = ", ".join(["none", "prune", "relocate", *split_variants,
-                          "prune_residual_add", "prune_residual_tensor_add"])
-    raise ValueError(
-        f"unknown refine mode {mode!r}; expected one of: {expected}"
+            "split_mode": refine_axes_to_alias(
+                refine_cfg["refine_site"],
+                refine_cfg["refine_primitive"],
+                "off",
+            ),
+            "refine_site": refine_cfg["refine_site"],
+            "refine_primitive": refine_cfg["refine_primitive"],
+            "refine_nms": refine_cfg["refine_nms"],
+            "split_color_init": refine_cfg["refine_color"],
+        })
+        if refine_cfg["refine_nms"] == "on":
+            out.update({"split_min_spacing": 1.0, "split_oversample": 8.0})
+    return out
+
+
+def _refine_kwargs(mode: str, split_every: int | None, split_count: int,
+                   prune_every: int | None, prune_min_activity: float) -> dict[str, Any]:
+    if mode not in LEGACY_REFINE_MODES:
+        expected = ", ".join(LEGACY_REFINE_MODES)
+        raise ValueError(f"unknown refine mode {mode!r}; expected one of: {expected}")
+    out = _refine_kwargs_from_config(
+        _legacy_refine_config(mode), split_every, split_count,
+        prune_every, prune_min_activity,
     )
+    for key in ("refine_site", "refine_primitive", "refine_nms"):
+        out.pop(key, None)
+    if out.get("split_color_init") == "target":
+        out.pop("split_color_init", None)
+    return out
 
 
-def _refine_adds_capacity(mode: str) -> bool:
-    return mode in {
-        "duplicate", "fp_duplicate", "moment_preserving", "support_duplicate",
-        "residual_add", "residual_tensor_add", "ranked_wave", "absgrad_wave",
-        "freq_violation", "residual_add_nms",
-        "residual_tensor_add_nms", "residual_add_residual_color",
-        "residual_tensor_add_residual_color", "residual_add_nms_residual_color",
-        "residual_tensor_add_nms_residual_color", "prune_residual_add",
-        "prune_residual_tensor_add",
-    }
+def _refine_adds_capacity(refine: str | dict[str, Any]) -> bool:
+    cfg = _legacy_refine_config(refine) if isinstance(refine, str) else _normalize_refine_config(refine)
+    return cfg["refine_site"] != "none"
 
 
 def _scale_cap_kwargs(mode: str) -> dict[str, Any]:
@@ -406,7 +479,9 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         init_opacity=init_opacity,
         seed=seed,
     )
-    refine = _refine_kwargs(cfg["refine"], split_every, split_count, prune_every, prune_min_activity)
+    refine = _refine_kwargs_from_config(
+        cfg, split_every, split_count, prune_every, prune_min_activity
+    )
     fcfg = FitConfig(
         iters=iters,
         render_chunk=render_chunk,
@@ -464,9 +539,18 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
     iters_to_target = out.get("iters_to_target")
     fit_seconds = float(out.get("fit_seconds", 0.0))
     split_events = history.get("split_events", [])
-    ranked_events = [e for e in split_events if e.get("mode") == "ranked_wave"]
-    absgrad_events = [e for e in split_events if e.get("mode") == "absgrad_wave"]
-    freq_events = [e for e in split_events if e.get("mode") == "freq_violation"]
+    ranked_events = [
+        e for e in split_events
+        if e.get("mode") == "ranked_wave" or e.get("refine_site") == "ranked"
+    ]
+    absgrad_events = [
+        e for e in split_events
+        if e.get("mode") == "absgrad_wave" or e.get("refine_site") == "absgrad"
+    ]
+    freq_events = [
+        e for e in split_events
+        if e.get("mode") == "freq_violation" or e.get("refine_site") == "freq_violation"
+    ]
     color_solve_events = history.get("color_solve_events", [])
     adaptive_events = history.get("adaptive_events", [])
 
@@ -558,6 +642,12 @@ def run_stage_search(
     optimizers=None,
     lr_schedules=None,
     refine_modes=None,
+    refine_sites=None,
+    refine_primitives=None,
+    refine_nms_modes=None,
+    refine_color_inits=None,
+    refine_prune_modes=None,
+    refine_relocate_modes=None,
     pyramid_modes=None,
     render_chunk=512,
     ssim_weight=0.3,
@@ -614,6 +704,12 @@ def run_stage_search(
 
     if mode not in ("factorial", "influence"):
         raise ValueError(f"unknown mode {mode!r}; expected factorial or influence")
+    explicit_refine = (
+        refine_sites, refine_primitives, refine_nms_modes, refine_color_inits,
+        refine_prune_modes, refine_relocate_modes,
+    )
+    if refine_modes is not None and any(v is not None for v in explicit_refine):
+        raise ValueError("use either legacy refine_modes or explicit refine axes, not both")
     defaults = INFLUENCE_DEFAULTS if mode == "influence" else FACTORIAL_DEFAULTS
     supplied = {
         "strategies": strategies, "tensor_operators": tensor_operators,
@@ -626,9 +722,20 @@ def run_stage_search(
         "color_basis_modes": color_basis_modes,
         "color_solve_modes": color_solve_modes,
         "pixel_losses": pixel_losses, "optimizers": optimizers,
-        "lr_schedules": lr_schedules, "refine_modes": refine_modes,
+        "lr_schedules": lr_schedules,
         "pyramid_modes": pyramid_modes,
     }
+    if refine_modes is not None:
+        supplied["refine_modes"] = refine_modes
+    else:
+        supplied.update({
+            "refine_sites": refine_sites,
+            "refine_primitives": refine_primitives,
+            "refine_nms_modes": refine_nms_modes,
+            "refine_color_inits": refine_color_inits,
+            "refine_prune_modes": refine_prune_modes,
+            "refine_relocate_modes": refine_relocate_modes,
+        })
     axes = {a: _one(v) if v is not None else defaults[a] for a, v in supplied.items()}
 
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
@@ -681,12 +788,13 @@ def run_stage_search(
         "dedupe": dedupe,
     }, device=device))
 
-    canonical = {_AXIS_TO_KEY[a]: vals[0] for a, vals in axes.items()}
+    canonical = _normalize_refine_config({_AXIS_TO_KEY[a]: vals[0] for a, vals in axes.items()})
     raw = _influence_configs(axes) if mode == "influence" else _iter_configs(axes)
     configs, seen = [], set()
     n_dropped = 0
     for cfg in raw:
-        c = _canonicalize(cfg, canonical) if dedupe else dict(cfg)
+        normalized = _normalize_refine_config(cfg)
+        c = _canonicalize(normalized, canonical) if dedupe else normalized
         c["label"] = _config_label(c)
         if c["label"] in seen:
             n_dropped += 1
@@ -703,7 +811,8 @@ def run_stage_search(
 
     baseline_label = None
     if mode == "influence":
-        base = _canonicalize({_AXIS_TO_KEY[a]: vals[0] for a, vals in axes.items()}, canonical)
+        base = _normalize_refine_config({_AXIS_TO_KEY[a]: vals[0] for a, vals in axes.items()})
+        base = _canonicalize(base, canonical)
         baseline_label = _config_label(base)
 
     jsonl_path = out_path / "stage_search.jsonl"
@@ -735,7 +844,7 @@ def run_stage_search(
                     # they ran with up to +split_count more capacity than the baselines they rank
                     # against, confounding "refine wins" with extra capacity.
                     cap = budget if max_gaussians is None else max_gaussians
-                    adds = _refine_adds_capacity(cfg["refine"])
+                    adds = _refine_adds_capacity(cfg)
                     init_budget = max(1, budget - split_count) if adds else budget
                     base_row = {
                         "image": image_name, "budget": budget, "seed": seed,
@@ -826,7 +935,8 @@ def run_stage_search(
 
 
 def _config_key(row):
-    return tuple(row[k] for k in STAGE_KEYS) + (row["budget"],)
+    r = _normalize_refine_config(row)
+    return tuple(r[k] for k in STAGE_KEYS) + (row["budget"],)
 
 
 def _fmt(v, spec=".4f"):
@@ -870,7 +980,9 @@ def _target_reach_stat(pairs: list[dict], target: float) -> str:
 
 
 def summarize(rows, top_k: int = 20) -> str:
-    rows = [r for r in rows if r.get("status") != "error"]  # broken cells never enter the ranking
+    rows = [
+        _normalize_refine_config(r) for r in rows if r.get("status") != "error"
+    ]  # broken cells never enter the ranking
     if not rows:
         return "# StructSplat Stage Search\n\n(no successful cells)\n"
     groups: dict[tuple, list[dict[str, Any]]] = {}
@@ -916,7 +1028,7 @@ def stage_effects(rows) -> str:
     stages that were swept); for influence-mode runs prefer `summarize_influence`, which
     reports paired deltas against the baseline instead.
     """
-    rows = [r for r in rows if r.get("status") != "error"]
+    rows = [_normalize_refine_config(r) for r in rows if r.get("status") != "error"]
     targets = headline_target_psnrs(rows, defaults=HEADLINE_TARGET_PSNRS)
     target_header, target_align = _target_table_columns(targets)
     lines = [
@@ -953,7 +1065,7 @@ def summarize_influence(rows, baseline_label: str) -> str:
     the metric differences are aggregated. Positive ΔPSNR/ΔAUC = variant better; negative
     Δiters-to-target / Δseconds = variant faster.
     """
-    rows = [r for r in rows if r.get("status") != "error"]
+    rows = [_normalize_refine_config(r) for r in rows if r.get("status") != "error"]
     base = {(r["image"], r["budget"], r["seed"]): r for r in rows if r["config_label"] == baseline_label}
     if not base:
         return "# Stage influence\n\n(no baseline rows found)\n"
@@ -1039,6 +1151,7 @@ def _write(rows, outdir: Path, mode: str = "factorial", baseline_label: str | No
 
 
 def _write_index_html(rows: list[dict[str, Any]], outdir: Path, *, mode: str) -> None:
+    rows = [_normalize_refine_config(r) for r in rows]
     ok_rows = [r for r in rows if r.get("status") != "error"]
     error_rows = [r for r in rows if r.get("status") == "error"]
     configs = {_config_label({k: r[k] for k in STAGE_KEYS}) for r in rows} if rows else set()
@@ -1217,7 +1330,20 @@ def main():
     p.add_argument("--pixel-losses", nargs="+", default=None)
     p.add_argument("--optimizers", nargs="+", default=None)
     p.add_argument("--lr-schedules", nargs="+", default=None)
-    p.add_argument("--refine-modes", nargs="+", default=None)
+    p.add_argument("--refine-modes", nargs="+", default=None,
+                   help="legacy flat refine aliases; prefer the explicit refine axes")
+    p.add_argument("--refine-sites", nargs="+", default=None,
+                   help="none, residual, residual_tensor, support, ranked, absgrad, freq_violation")
+    p.add_argument("--refine-primitives", nargs="+", default=None,
+                   help="duplicate, fp, moment_preserving, sampled_add")
+    p.add_argument("--refine-nms-modes", nargs="+", default=None,
+                   help="off or on")
+    p.add_argument("--refine-color-inits", nargs="+", default=None,
+                   help="target or residual")
+    p.add_argument("--refine-prune-modes", nargs="+", default=None,
+                   help="off or on")
+    p.add_argument("--refine-relocate-modes", nargs="+", default=None,
+                   help="off or on")
     p.add_argument("--pyramid-modes", nargs="+", default=None)
     p.add_argument("--chunk", type=int, default=512)
     p.add_argument("--ssim-weight", type=float, default=0.3)
@@ -1283,6 +1409,12 @@ def main():
         color_solve_modes=a.color_solve_modes,
         pixel_losses=a.pixel_losses, optimizers=a.optimizers,
         lr_schedules=a.lr_schedules, refine_modes=a.refine_modes,
+        refine_sites=a.refine_sites,
+        refine_primitives=a.refine_primitives,
+        refine_nms_modes=a.refine_nms_modes,
+        refine_color_inits=a.refine_color_inits,
+        refine_prune_modes=a.refine_prune_modes,
+        refine_relocate_modes=a.refine_relocate_modes,
         pyramid_modes=a.pyramid_modes, render_chunk=a.chunk,
         ssim_weight=a.ssim_weight, ssim_backend=a.ssim_backend,
         split_every=a.split_every, split_count=a.split_count,

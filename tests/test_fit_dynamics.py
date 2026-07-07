@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 torch = pytest.importorskip("torch")
-from structsplat.config import FitConfig, InitConfig
+from structsplat.config import FitConfig, InitConfig, refine_alias_to_axes
 from structsplat import init as _init
 from structsplat.gaussians import GaussianField
 from structsplat.fit import (
@@ -112,6 +112,58 @@ def test_no_restructure_on_final_iteration():
     out = fit(field, target, FitConfig(iters=10, log_every=5, split_every=5, split_count=4,
                                        split_mode="residual_add"), verbose=False)
     assert out["n_gaussians"] == 12  # one split at it=4, none at it=9
+
+
+@pytest.mark.parametrize("mode", [
+    "none",
+    "duplicate",
+    "fp_duplicate",
+    "moment_preserving",
+    "support_duplicate",
+    "residual_add",
+    "residual_tensor_add",
+    "ranked_wave",
+    "absgrad_wave",
+    "freq_violation",
+    "residual_add_nms",
+    "residual_tensor_add_nms",
+])
+def test_legacy_split_alias_matches_factored_refine_fields(mode):
+    img = np.zeros((16, 16, 3), np.float32)
+    img[:, 8:] = 1.0
+    target = torch.as_tensor(img)
+    site, primitive, nms = refine_alias_to_axes(mode)
+    common = dict(
+        iters=5,
+        log_every=1,
+        split_every=2,
+        split_count=2,
+        max_gaussians=12,
+        render_chunk=8,
+    )
+
+    legacy_field = _init.build_field(
+        img, InitConfig(strategy="random", num_gaussians=8, seed=0))
+    factored_field = _init.build_field(
+        img, InitConfig(strategy="random", num_gaussians=8, seed=0))
+    legacy = fit(
+        legacy_field,
+        target,
+        FitConfig(split_mode=mode, **common),
+        verbose=False,
+    )
+    factored = fit(
+        factored_field,
+        target,
+        FitConfig(refine_site=site, refine_primitive=primitive, refine_nms=nms, **common),
+        verbose=False,
+    )
+
+    assert legacy["n_gaussians"] == factored["n_gaussians"]
+    assert legacy["psnr"] == pytest.approx(factored["psnr"], abs=1e-7)
+    assert torch.allclose(legacy["field"].means, factored["field"].means, atol=0, rtol=0)
+    assert torch.allclose(legacy["field"].log_scales, factored["field"].log_scales, atol=0, rtol=0)
+    assert torch.allclose(legacy["field"].colors, factored["field"].colors, atol=0, rtol=0)
 
 
 def test_int_target_psnrs_are_recorded():
@@ -805,6 +857,34 @@ def test_moment_preserving_split_runs_under_additive_renderer():
 
     assert np.isfinite(out["psnr"])
     assert out["n_gaussians"] == 12
+
+
+def test_residual_tensor_site_can_use_moment_preserving_primitive():
+    img = np.zeros((24, 24, 3), np.float32)
+    img[:, 12:] = 1.0
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=12, seed=0))
+
+    out = fit(
+        field,
+        target,
+        FitConfig(
+            iters=5,
+            log_every=1,
+            split_every=2,
+            split_count=3,
+            refine_site="residual_tensor",
+            refine_primitive="moment_preserving",
+            max_gaussians=18,
+        ),
+        verbose=False,
+    )
+
+    assert out["n_gaussians"] == 18
+    events = out["history"]["split_events"]
+    assert [e["added"] for e in events] == [3, 3]
+    assert all(e["refine_site"] == "residual_tensor" for e in events)
+    assert all(e["refine_primitive"] == "moment_preserving" for e in events)
 
 
 def test_ranked_wave_grows_exactly_and_logs_components():

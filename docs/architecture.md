@@ -37,7 +37,9 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
 ## Stage-search (ABL-002, protocol in ADR-0010)
 `benchmarks/stage_search.py` sweeps configurations across every swappable stage — tensor operator,
 tensor color space, density mode, sampling mode, orientation mode, init strategy, color mode,
-scale mode, opacity, renderer, loss, optimizer, LR schedule, refinement, pyramid — in two modes:
+scale mode, opacity, renderer, loss, optimizer, LR schedule, factored refinement
+(`refine_site`, `refine_primitive`, `refine_nms` plus color/prune/relocate flags), pyramid — in
+two modes:
 **factorial** (full product, ranked, for the best complete config) and **influence**
 (one-factor-at-a-time paired deltas vs the baseline = first value of each axis; emits
 `influence.md` with ΔPSNR/ΔMS-SSIM/ΔAUC/Δiters-to-target/Δseconds per stage option). Configs

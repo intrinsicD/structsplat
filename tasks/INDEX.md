@@ -26,7 +26,6 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | GEN-003 | VSD / multi-particle distillation | todo | GEN-001 |
 | INIT-008 | Feature-relative scale caps (fix the cap-scaling failure) | todo | ADR-0012, INIT-003 |
 | ABL-005 | Fitter-knob influence pass at the fair regime | blocked/partial — native CUDA affine or split protocol needed | ADR-0010, FIT-005/006/007, CORE-006 |
-| FIT-009 | Factor the refine axis into orthogonal sub-axes | todo | FIT-004, FIT-006, FIT-007 |
 | FIT-010 | Cheap color-solve schedules (init / final / on-split) | todo | FIT-005 |
 | FIT-011 | Split-recovery micro-levers (moment seeding, warmup, scheduled fade) | todo | FIT-004, FIT-007, CORE-005 |
 | FIT-012 | Edge-weighted pixel loss (structure-tensor loss weighting) | todo | FIT-001, INIT-001 |
@@ -56,6 +55,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | FIT-006 | Frequency-violation densification | `done/FIT-006-frequency-violation-densification.md` |
 | FIT-007 | Moment-preserving split / clone | `done/FIT-007-moment-preserving-split.md` |
 | FIT-008 | Self-adaptive Gaussian count | `done/FIT-008-self-adaptive-gaussian-count.md` |
+| FIT-009 | Factor the refine axis into orthogonal sub-axes | `done/FIT-009-factor-refine-axis.md` |
 | HIER-002 | Pyramid bookkeeping (iteration accounting, budgets, schedules) | `done/HIER-002-pyramid-bookkeeping.md` |
 | BENCH-001 | Metric protocol (PSNR/MS-SSIM/LPIPS + iters-to-target) | `done/BENCH-001-metrics.md` |
 | BENCH-002 | Benchmark harness experimental-validity fixes (equal budgets, resumable sweeps, seed-aware comparisons) | `done/BENCH-002-harness-validity.md` |
@@ -106,12 +106,13 @@ INIT-007) and shifted the frontier from init strategies to fitter knobs and swee
    dB-per-GPU-hour in the queue.
 3. ABL-006 successive-halving confirmation — completed 2026-07-07; fed INIT-007's default flip
    (ADR-0013), also completed 2026-07-07.
-4. FIT-009 refine-axis factoring, then FIT-010/FIT-011 — convergence-rate work targeting the
-   measured split dip; `residual_tensor x moment_preserving` is the first inexpressible
-   combination to test.
-5. INIT-008 feature-relative caps and FIT-012 edge-weighted loss — quality levers with clear
+4. FIT-009 refine-axis factoring — completed 2026-07-07. The new
+   `residual_tensor x moment_preserving` combination is now expressible but did not win the
+   difficult-four fair slice; keep it as searchable, not default.
+5. FIT-010/FIT-011 — convergence-rate work targeting color-solve timing and measured split dips.
+6. INIT-008 feature-relative caps and FIT-012 edge-weighted loss — quality levers with clear
    accept/park criteria.
-6. HIER-003 pyramid diagnosis and CORE-009 background layer — the two low-frequency-coverage
+7. HIER-003 pyramid diagnosis and CORE-009 background layer — the two low-frequency-coverage
    investigations; either may produce a default or an honest retirement.
-7. FF-001 (multi-image teacher training; the 2026-07-07 equal-N smoke is a measured negative for
+8. FF-001 (multi-image teacher training; the 2026-07-07 equal-N smoke is a measured negative for
    the tiny checkpoint) and COMP-004 (lambda sweep) continue in their existing task files.

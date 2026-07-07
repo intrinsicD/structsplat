@@ -963,6 +963,55 @@ def _moment_preserving_duplicate_indices(field: GaussianField, idx: torch.Tensor
 
 
 @torch.no_grad()
+def _simple_duplicate_indices(field: GaussianField, idx: torch.Tensor, target: torch.Tensor,
+                              render_img: torch.Tensor, cfg: FitConfig, H: int, W: int
+                              ) -> tuple[GaussianField, int]:
+    k = int(idx.numel())
+    if k <= 0:
+        return field, 0
+
+    means = field.means.detach()[idx].clone()
+    scales = field.scales().detach()[idx]
+    theta = field.rotations.detach()[idx]
+    direction = torch.stack([torch.cos(theta), torch.sin(theta)], dim=1)
+    sign = torch.where(torch.arange(k, device=means.device) % 2 == 0, 1.0, -1.0).unsqueeze(1)
+    offset = direction * scales[:, :1] * 0.35 * sign
+    means = means + offset
+    means[:, 0].clamp_(0, W - 1)
+    means[:, 1].clamp_(0, H - 1)
+    log_scales = field.log_scales.detach()[idx].clone() + math.log(cfg.split_scale)
+    rotations = theta.clone()
+    if cfg.renderer in _ADDITIVE_RENDERERS:
+        # additive stacks on the existing accumulation: full target colors double-count
+        # brightness at the child positions; the residual is what the child should add.
+        colors = _nearest_image_colors((target - render_img).detach(), means)
+    else:
+        colors = _nearest_image_colors(target, means)
+    opacities = None if field.opacities is None else field.opacities.detach()[idx].clone()
+    scale_max = None if field.scale_max is None else field.scale_max.detach()[idx].clone()
+    log_scales = _clamp_new_log_scales(log_scales, scale_max)
+    new = GaussianField(means, log_scales, rotations, colors, opacities, scale_max)
+    return field.append(new), k
+
+
+@torch.no_grad()
+def _duplicate_primitive_indices(field: GaussianField, idx: torch.Tensor, target: torch.Tensor,
+                                 render_img: torch.Tensor, cfg: FitConfig, H: int, W: int,
+                                 split_axis: torch.Tensor | None = None
+                                 ) -> tuple[GaussianField, int]:
+    if cfg.refine_primitive == "duplicate":
+        return _simple_duplicate_indices(field, idx, target, render_img, cfg, H, W)
+    if cfg.refine_primitive == "fp":
+        return _fp_duplicate_indices(field, idx, cfg, H, W, split_axis=split_axis)
+    if cfg.refine_primitive == "moment_preserving":
+        return _moment_preserving_duplicate_indices(field, idx, cfg, H, W,
+                                                   split_axis=split_axis)
+    raise ValueError(
+        "refine_primitive='sampled_add' is only valid for residual/residual_tensor "
+        "sampled-add growth")
+
+
+@torch.no_grad()
 def _ranked_wave_scores(field: GaussianField, residual: torch.Tensor,
                         cfg: FitConfig) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
     H, W = residual.shape
@@ -1008,7 +1057,7 @@ def _ranked_wave_from_residual(field: GaussianField, target: torch.Tensor,
         return field, 0, {}
     score, components = _ranked_wave_scores(field, residual, cfg)
     idx = torch.topk(score, k=k).indices
-    grown, added = _fp_duplicate_indices(field, idx, cfg, H, W)
+    grown, added = _duplicate_primitive_indices(field, idx, target, render_img, cfg, H, W)
     stats = {
         "score_mean": float(score[idx].mean().detach().cpu()),
         "residual_support_mean": float(components["residual_support"][idx].mean().detach().cpu()),
@@ -1033,7 +1082,9 @@ def _freq_violation_from_residual(field: GaussianField, target: torch.Tensor,
         return field, 0, {}
     score, split_axis, components = _freq_violation_scores(field, target, render_img, cfg)
     idx = torch.topk(score, k=k).indices
-    grown, added = _fp_duplicate_indices(field, idx, cfg, H, W, split_axis=split_axis[idx])
+    grown, added = _duplicate_primitive_indices(
+        field, idx, target, render_img, cfg, H, W, split_axis=split_axis[idx]
+    )
     axis_sel = split_axis[idx]
     stats = {
         "freq_violation_score_mean": float(score[idx].mean().detach().cpu()),
@@ -1046,7 +1097,8 @@ def _freq_violation_from_residual(field: GaussianField, target: torch.Tensor,
 
 
 @torch.no_grad()
-def _absgrad_wave_from_scores(field: GaussianField, grad_scores: torch.Tensor,
+def _absgrad_wave_from_scores(field: GaussianField, target: torch.Tensor,
+                              render_img: torch.Tensor, grad_scores: torch.Tensor,
                               cfg: FitConfig, H: int, W: int
                               ) -> tuple[GaussianField, int, dict[str, float], torch.Tensor]:
     if cfg.split_count <= 0:
@@ -1059,7 +1111,9 @@ def _absgrad_wave_from_scores(field: GaussianField, grad_scores: torch.Tensor,
         return field, 0, {}, grad_scores
     scores = grad_scores.detach()
     idx = torch.topk(scores, k=k).indices
-    grown, added = _fp_duplicate_indices(field, idx, cfg, H, W)
+    grown, added = _duplicate_primitive_indices(
+        field, idx, target, render_img, cfg, H, W
+    )
     stats = {
         "absgrad_score_mean": float(scores[idx].mean().detach().cpu()),
         "absgrad_score_max": float(scores[idx].max().detach().cpu()),
@@ -1151,47 +1205,39 @@ def _split_from_residual(field: GaussianField, target: torch.Tensor, render_img:
         return field, 0
     if cfg.max_gaussians is not None and field.n >= cfg.max_gaussians:
         return field, 0
+    if cfg.refine_site == "none":
+        return field, 0
+    if cfg.refine_primitive == "sampled_add":
+        if cfg.refine_site not in ("residual", "residual_tensor"):
+            raise ValueError(
+                "refine_primitive='sampled_add' requires refine_site residual or "
+                f"residual_tensor, got {cfg.refine_site!r}")
+        return _add_from_residual(
+            field, target, render_img, cfg, tensor_aligned=cfg.refine_site == "residual_tensor"
+        )
 
     H, W = target.shape[:2]
     residual = (render_img - target).abs().mean(dim=2)
     x = torch.clamp(torch.round(field.means[:, 0]).long(), 0, W - 1)
     y = torch.clamp(torch.round(field.means[:, 1]).long(), 0, H - 1)
-    if cfg.split_mode == "support_duplicate":
+    if cfg.refine_site == "support":
         scores = _support_residual_scores(field, residual, cfg)
-    else:
+    elif cfg.refine_site == "residual_tensor":
+        smoothed = F.avg_pool2d(residual[None, None], 3, stride=1, padding=1)[0, 0]
+        scores = (0.7 * residual + 0.3 * smoothed)[y, x]
+    elif cfg.refine_site == "residual":
         scores = residual[y, x]
+    else:
+        raise ValueError(
+            "refine_site must be residual, residual_tensor, or support in _split_from_residual, "
+            f"got {cfg.refine_site!r}")
     room = field.n if cfg.max_gaussians is None else max(0, cfg.max_gaussians - field.n)
     k = min(cfg.split_count, field.n, room)
     if k <= 0:
         return field, 0
 
     idx = torch.topk(scores, k=k).indices
-    if cfg.split_mode == "fp_duplicate":
-        return _fp_duplicate_indices(field, idx, cfg, H, W)
-    if cfg.split_mode == "moment_preserving":
-        return _moment_preserving_duplicate_indices(field, idx, cfg, H, W)
-    means = field.means.detach()[idx].clone()
-    scales = field.scales().detach()[idx]
-    theta = field.rotations.detach()[idx]
-    direction = torch.stack([torch.cos(theta), torch.sin(theta)], dim=1)
-    sign = torch.where(torch.arange(k, device=means.device) % 2 == 0, 1.0, -1.0).unsqueeze(1)
-    offset = direction * scales[:, :1] * 0.35 * sign
-    means = means + offset
-    means[:, 0].clamp_(0, W - 1)
-    means[:, 1].clamp_(0, H - 1)
-    log_scales = field.log_scales.detach()[idx].clone() + math.log(cfg.split_scale)
-    rotations = theta.clone()
-    if cfg.renderer in _ADDITIVE_RENDERERS:
-        # additive stacks on the existing accumulation: full target colors double-count
-        # brightness at the child positions; the residual is what the child should add.
-        colors = _nearest_image_colors((target - render_img).detach(), means)
-    else:
-        colors = _nearest_image_colors(target, means)
-    opacities = None if field.opacities is None else field.opacities.detach()[idx].clone()
-    scale_max = None if field.scale_max is None else field.scale_max.detach()[idx].clone()
-    log_scales = _clamp_new_log_scales(log_scales, scale_max)
-    new = GaussianField(means, log_scales, rotations, colors, opacities, scale_max)
-    return field.append(new), k
+    return _duplicate_primitive_indices(field, idx, target, render_img, cfg, H, W)
 
 
 @torch.no_grad()
@@ -1305,6 +1351,9 @@ def _adaptive_growth_from_residual(field: GaussianField, target: torch.Tensor,
         cfg,
         split_count=k,
         split_mode=cfg.adaptive_split_mode,
+        refine_site=None,
+        refine_primitive=None,
+        refine_nms=None,
         max_gaussians=field.n + k,
     )
     if cfg.adaptive_split_mode == "ranked_wave":
@@ -1398,7 +1447,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             loss = loss + float(cfg.lambda_rate) * rate_bpp
         opt.zero_grad(set_to_none=True)
         loss.backward()
-        if cfg.split_mode == "absgrad_wave" and field.means.grad is not None:
+        if cfg.refine_site == "absgrad" and field.means.grad is not None:
             with torch.no_grad():
                 absgrad_scores.mul_(cfg.absgrad_decay).add_(
                     field.means.grad.detach().abs().sum(dim=1)
@@ -1463,7 +1512,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             field, keep = _maybe_prune(field, cfg, H, W)
             if verbose and keep is not None:
                 print(f"  prune {int((~keep).sum())} -> {field.n} gaussians")
-            if keep is not None and cfg.split_mode == "absgrad_wave":
+            if keep is not None and cfg.refine_site == "absgrad":
                 absgrad_scores = absgrad_scores[keep]
         if cfg.relocate_count > 0 and (relocate_periodic_due or relocate_split_due):
             field, relocated, reset_idx, relocate_stats = _relocate_from_residual(
@@ -1486,60 +1535,67 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 hist["relocate_events"].append(event)
                 if verbose:
                     print(f"  relocate {relocated} gaussians")
-                if cfg.split_mode == "absgrad_wave" and reset_idx is not None:
+                if cfg.refine_site == "absgrad" and reset_idx is not None:
                     absgrad_scores[reset_idx] = 0
         if split_due:
             split_event = None
             absgrad_scores_carried = False
-            if cfg.split_mode in (
-                "duplicate", "fp_duplicate", "moment_preserving", "support_duplicate"
-            ):
+            mode_label = cfg.split_mode
+            if cfg.refine_site in ("none", "residual", "residual_tensor", "support"):
                 field, added = _split_from_residual(field, target, img, cfg)
-            elif cfg.split_mode == "ranked_wave":
+            elif cfg.refine_site == "ranked":
                 field, added, ranked_stats = _ranked_wave_from_residual(field, target, img, cfg)
                 split_event = {
                     "iter": it,
-                    "mode": cfg.split_mode,
+                    "mode": mode_label,
+                    "refine_site": cfg.refine_site,
+                    "refine_primitive": cfg.refine_primitive,
                     "added": added,
                     **ranked_stats,
                 }
-            elif cfg.split_mode == "absgrad_wave":
+            elif cfg.refine_site == "absgrad":
                 field, added, absgrad_stats, absgrad_scores = _absgrad_wave_from_scores(
-                    field, absgrad_scores, cfg, H, W
+                    field, target, img, absgrad_scores, cfg, H, W
                 )
                 absgrad_scores_carried = True
                 split_event = {
                     "iter": it,
-                    "mode": cfg.split_mode,
+                    "mode": mode_label,
+                    "refine_site": cfg.refine_site,
+                    "refine_primitive": cfg.refine_primitive,
                     "added": added,
                     **absgrad_stats,
                 }
-            elif cfg.split_mode == "freq_violation":
+            elif cfg.refine_site == "freq_violation":
                 field, added, freq_stats = _freq_violation_from_residual(
                     field, target, img, cfg
                 )
                 split_event = {
                     "iter": it,
-                    "mode": cfg.split_mode,
+                    "mode": mode_label,
+                    "refine_site": cfg.refine_site,
+                    "refine_primitive": cfg.refine_primitive,
                     "added": added,
                     **freq_stats,
                 }
-            elif cfg.split_mode in ("residual_add", "residual_tensor_add"):
-                field, added = _add_from_residual(
-                    field, target, img, cfg, tensor_aligned=cfg.split_mode == "residual_tensor_add"
-                )
             else:
                 raise ValueError(
-                    f"unknown split_mode {cfg.split_mode!r}; expected duplicate, "
-                    "fp_duplicate, moment_preserving, support_duplicate, residual_add, "
-                    "residual_tensor_add, ranked_wave, absgrad_wave, or freq_violation")
+                    f"unknown refine_site {cfg.refine_site!r}; expected one of "
+                    "none, residual, residual_tensor, support, ranked, absgrad, "
+                    "or freq_violation")
             if verbose and added > 0:
                 print(f"  split +{added} -> {field.n} gaussians")
             if added > 0:
                 hist["split_events"].append(
-                    split_event or {"iter": it, "mode": cfg.split_mode, "added": added}
+                    split_event or {
+                        "iter": it,
+                        "mode": mode_label,
+                        "refine_site": cfg.refine_site,
+                        "refine_primitive": cfg.refine_primitive,
+                        "added": added,
+                    }
                 )
-                if cfg.split_mode == "absgrad_wave" and not absgrad_scores_carried:
+                if cfg.refine_site == "absgrad" and not absgrad_scores_carried:
                     absgrad_scores = torch.cat(
                         [absgrad_scores, absgrad_scores.new_zeros(added)], dim=0
                     )
@@ -1605,7 +1661,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                     )
                     if verbose:
                         print(f"  adaptive grow +{adaptive_added} -> {field.n} gaussians")
-                    if cfg.split_mode == "absgrad_wave":
+                    if cfg.refine_site == "absgrad":
                         absgrad_scores = torch.cat(
                             [absgrad_scores, absgrad_scores.new_zeros(adaptive_added)], dim=0
                         )

@@ -40,7 +40,7 @@ structsplat fit photo.png --pyramid --num-gaussians 20000
 # the core experiment: init strategy x budget sweep (writes results/summary.md)
 structsplat ablation ./images --budgets 2000 5000 10000 20000 --iters 1500 --target-psnr 35
 
-# full stage-combination screening: tensor/density/sampling/color/scale-cap/renderer/loss/refinement/pyramid
+# full stage-combination screening, including factored refinement site/primitive/NMS axes
 structsplat stage-search ./images --budgets 1024 2048 --iters 300 --outdir results/stage_search
 
 # per-stage influence: one-factor-at-a-time deltas vs the baseline (writes influence.md with

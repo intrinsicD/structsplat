@@ -51,15 +51,19 @@ python -m benchmarks.abl004_confirmation analyze --outdir results/abl004_confirm
 ```
 
 `stage_search.py` runs `ABL-002`: factorial or influence-mode sweeps across tensor, density,
-sampling, orientation, color, affine color basis, scale-cap, renderer, loss, optimizer,
-refinement, and pyramid stages.
+sampling, orientation, color, affine color basis, scale-cap, renderer, loss, optimizer, factored
+refinement (`refine_site`, `refine_primitive`, `refine_nms` plus color/prune/relocate flags), and
+pyramid stages.
 Caveat: factorial marginals are observational when axes co-vary; use `--mode influence` for paired
 one-factor deltas around a baseline. Outputs include `stage_search.jsonl`, `stage_search.json`,
 `stage_search.csv`, `summary.md`, and a local scalar `index.html` overview.
 The sampling axis includes `floyd_steinberg` for the ABL-004 placement-control run.
-FIT-004 residual densification variants are exposed as refine arms such as `residual_add_nms`,
-`residual_tensor_add_nms`, `fp_duplicate`, `ranked_wave`, `relocate`, and
-`absgrad_wave`; stretch controls also include `optimizer=adan` and the `aa` stage from
+FIT-004/006/007 densification variants can still be requested with legacy `--refine-modes` aliases
+such as `residual_add_nms`, `residual_tensor_add_nms`, `fp_duplicate`, `ranked_wave`, `relocate`,
+and `absgrad_wave`, but new sweeps should prefer explicit axes like
+`--refine-sites residual residual_tensor --refine-primitives sampled_add moment_preserving`.
+FIT-009's difficult-four slice did not promote `residual_tensor x moment_preserving`; keep it as a
+searchable combination. Stretch controls also include `optimizer=adan` and the `aa` stage from
 `--aa-dilations`. CORE-006 affine colors are exposed as `--color-basis-modes affine`; keep
 `constant` as the baseline/default until larger sweeps justify promotion.
 FIT-008 adaptive count is a global controller rather than a stage axis: add `--adaptive-count`
