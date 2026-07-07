@@ -8,11 +8,12 @@ from __future__ import annotations
 import os
 
 from benchmarks.common import run_config as _run_config, write_csv, write_json
+from structsplat.config import DEFAULT_INIT_STRATEGY
 
 DEFAULT_BIT_MIXES = ((16, 8, 8, 8), (12, 8, 6, 8), (12, 6, 6, 6), (10, 5, 5, 5))
 
 
-def run_rd(images, budgets=(2000, 5000), strategy="aniso_flanking", seeds=(0,),
+def run_rd(images, budgets=(2000, 5000), strategy=DEFAULT_INIT_STRATEGY, seeds=(0,),
            iters=1500, bit_mixes=DEFAULT_BIT_MIXES, qat_iters=150,
            render_chunk=512, lr_means=None, lr_decay_every=None,
            outdir="results_rd", device=None):
@@ -120,7 +121,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser(description="StructSplat rate-distortion benchmark (COMP-001)")
     p.add_argument("images", nargs="+")
     p.add_argument("--budgets", type=int, nargs="+", default=[2000, 5000])
-    p.add_argument("--strategy", default="aniso_flanking")
+    p.add_argument("--strategy", default=DEFAULT_INIT_STRATEGY)
     p.add_argument("--seeds", type=int, nargs="+", default=[0])
     p.add_argument("--iters", type=int, default=1500)
     p.add_argument("--qat-iters", type=int, default=150)

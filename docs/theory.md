@@ -1,13 +1,13 @@
 # Theory notes
 
-## Why initialize ON corners/blobs and FLANKING edges (never away)
+## Why initialize on structure, with measured placement defaults
 - A Gaussian's position gradient comes only from render error inside its support. One dropped in a
   flat region far from structure sees ~zero gradient and never migrates — stranded capacity.
-- A Gaussian centered exactly on a step edge must average both sides → a baked-in blurred seam and
-  optimizer thrash (an RBF centered on a discontinuity has an ill-defined target).
-- Resolution: put density where structure is; orient by the structure tensor; for edges place two
-  flanking chains parallel to the edge (elongated along the tangent, narrow across), corners get one
-  compact Gaussian, flats get sparse large ones.
+- The original flanking hypothesis was that edge Gaussians should be pushed off the ridge to avoid
+  averaging both sides of a discontinuity. ABL-006 did not support that as a default.
+- Resolution: put density where structure is; orient by the structure tensor; use `quadtree_wse` as
+  the high-budget PSNR default, keep `aniso_onedge` for low-budget/MS-SSIM-sensitive runs, and keep
+  flanking as a control arm.
 
 ## Structure tensor
 `J = G_rho * (grad I grad I^T)`, eigenvalues `lam1 >= lam2`:
@@ -25,10 +25,12 @@ Progressive maximal blue-noise ordering: any prefix is a valid blue-noise set at
 free LOD stack. Finer levels driven by the residual structure tensor. Under a normalized renderer
 this is densification (add + re-fit), not additive residual summation (ADR-0003).
 
-## Open empirical question (what ABL-001 tests)
-The optimizer discovers anisotropy itself, so flanking/tensor init mainly buys convergence speed and
-low-budget quality. Hypothesis: `aniso_flanking` wins clearly at low budgets; the gap shrinks as the
-budget grows. If it never wins, prefer the simpler strategy and record that.
+## Empirical answer
+The optimizer discovers anisotropy itself, so the useful question became which structured placement
+policy is worth shipping. ABL-006 completed the Kodak-24 + COCO4 successive-halving confirmation:
+`quadtree_wse` is the significant 5000-Gaussian PSNR winner, has the best 10000-Gaussian mean PSNR,
+and `aniso_onedge` remains competitive at 2000 and stronger on 10000-Gaussian MS-SSIM. Flanking did
+not earn a default; see `ara/evidence/abl006-complete-2026-07-07/` and ADR-0013.
 
 ## References
 GaussianImage (ECCV 2024) · Image-GS (SIGGRAPH 2025) · AIR / Fast-2DGS (2025) · GaussianVision

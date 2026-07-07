@@ -12,7 +12,8 @@ so "max quality / max convergence / max speed" candidates could not be separated
 ## Decision
 
 `benchmarks/stage_search.py` gains an **influence mode**: one-factor-at-a-time around a fixed
-baseline (the first value of every stage axis; defaults = ADR-0009 production defaults). Every
+baseline (the first value of every stage axis; defaults = ADR-0009 production defaults, with
+ADR-0013 superseding the init strategy default). Every
 variant differs from the baseline in exactly one stage, and the summary (`influence.md`) reports
 **paired deltas** — per (image, budget, seed) cell — for quality (PSNR, MS-SSIM, LPIPS),
 convergence (iters-to-target, PSNR-AUC over the training trajectory), and speed (init/fit

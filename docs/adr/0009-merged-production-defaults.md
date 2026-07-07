@@ -1,5 +1,9 @@
 # ADR-0009: Production defaults for the merged (Claude + Codex) StructSplat
 
+> Update: ADR-0013 supersedes this ADR's initialization strategy default. The shipped init
+> strategy is now `quadtree_wse`; the other production defaults recorded here still stand unless
+> separately superseded.
+
 ## Context
 MERGE-001 combined two experimental branches into one codebase:
 - **Claude** optimized the core: a ragged tight-support renderer, a ~30x faster anisotropic WSE

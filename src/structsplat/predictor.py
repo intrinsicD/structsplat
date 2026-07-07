@@ -17,7 +17,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from .config import InitConfig, StructureTensorConfig
+from .config import DEFAULT_PREDICTOR_FALLBACK_STRATEGY, InitConfig, StructureTensorConfig
 from .gaussians import GaussianField
 from . import structure_tensor as st
 
@@ -310,7 +310,7 @@ class TensorPriorPredictor:
     learned checkpoint support is developed.
     """
 
-    def __init__(self, fallback_strategy: str = "aniso_flanking"):
+    def __init__(self, fallback_strategy: str = DEFAULT_PREDICTOR_FALLBACK_STRATEGY):
         if fallback_strategy == "feedforward":
             raise ValueError("fallback_strategy cannot be feedforward")
         self.fallback_strategy = fallback_strategy
@@ -340,7 +340,7 @@ class TensorPriorPredictor:
 class CheckpointWarmStartPredictor:
     """Warm-start from a saved `GaussianField`, padding with a tensor-prior fallback if needed."""
 
-    def __init__(self, checkpoint: str, fallback_strategy: str = "aniso_flanking"):
+    def __init__(self, checkpoint: str, fallback_strategy: str = DEFAULT_PREDICTOR_FALLBACK_STRATEGY):
         self.checkpoint = checkpoint
         self.fallback = TensorPriorPredictor(fallback_strategy)
 
@@ -372,7 +372,7 @@ class CheckpointWarmStartPredictor:
 class LearnedCheckpointPredictor:
     """Warm-start from a tiny learned FF-001 predictor checkpoint."""
 
-    def __init__(self, checkpoint: str, fallback_strategy: str = "aniso_flanking"):
+    def __init__(self, checkpoint: str, fallback_strategy: str = DEFAULT_PREDICTOR_FALLBACK_STRATEGY):
         self.checkpoint = checkpoint
         self.fallback = TensorPriorPredictor(fallback_strategy)
 

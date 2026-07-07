@@ -13,6 +13,7 @@ import numpy as np
 
 from benchmarks.ablation import _iter_images
 from benchmarks.common import load_image, run_config, target_tensor, write_config, write_csv, write_json
+from structsplat.config import DEFAULT_PREDICTOR_FALLBACK_STRATEGY
 
 
 DEFAULT_METHODS = ("learned", "tensor_prior", "scratch")
@@ -68,7 +69,7 @@ def evaluate_feedforward_predictor(
     render_chunk: int = 512,
     seed: int = 0,
     device: str | None = None,
-    prior_strategy: str = "aniso_flanking",
+    prior_strategy: str = DEFAULT_PREDICTOR_FALLBACK_STRATEGY,
     scratch_strategy: str = "random",
     methods=DEFAULT_METHODS,
     target_psnr: float | None = None,
@@ -205,7 +206,7 @@ def main() -> None:
     p.add_argument("--render-chunk", type=int, default=512)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--device", default=None)
-    p.add_argument("--prior-strategy", default="aniso_flanking")
+    p.add_argument("--prior-strategy", default=DEFAULT_PREDICTOR_FALLBACK_STRATEGY)
     p.add_argument("--scratch-strategy", default="random")
     p.add_argument("--methods", nargs="+", default=list(DEFAULT_METHODS),
                    choices=list(DEFAULT_METHODS))

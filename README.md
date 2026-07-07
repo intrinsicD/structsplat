@@ -103,9 +103,10 @@ at 10000 (+0.0357 dB, 95% CI [-0.0041, +0.0778]) while `aniso_onedge` has higher
 
 Operational status: prefer `quadtree_wse` for high-budget PSNR work and keep `aniso_onedge` as the
 low-budget/MS-SSIM alternative. `aniso_flanking`, `quadtree_hybrid`, `iso_blue_noise`, and
-Floyd-Steinberg were eliminated at stage 1 by the frozen CI rule. The shipped CLI default is still
-unchanged until INIT-007 lands the code/default flip with ADR-0013. The cross-repo caveat stands:
-these are matched policy analogues inside StructSplat's harness, not native external pipelines.
+Floyd-Steinberg were eliminated at stage 1 by the frozen CI rule. ADR-0013 updates the shipped init
+default to `quadtree_wse`; flanking stays available as an explicit control arm. The cross-repo
+caveat stands: these are matched policy analogues inside StructSplat's harness, not native external
+pipelines.
 
 ## Verification status
 Init-time math is validated numerically in this environment: structure-tensor orientation/labels,

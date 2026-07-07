@@ -44,8 +44,9 @@ scale mode, opacity, renderer, loss, optimizer, LR schedule, refinement, pyramid
 whose differing stage is provably inert are canonicalized and deduplicated. Every row records
 quality (PSNR/MS-SSIM/LPIPS), convergence (iters-to-target, PSNR-AUC), and speed (init/fit
 seconds) so max-quality, max-convergence-rate, and max-speed candidates can be read from the same
-run. The shipped defaults (ADR-0009) are one named cell in that space; everything else is a
-candidate the screening can promote. `benchmarks/ablation.py` (ABL-001) stays the focused
+run. The shipped defaults (ADR-0009 plus ADR-0013's init-default update) are one named cell in
+that space; everything else is a candidate the screening can promote. `benchmarks/ablation.py`
+(ABL-001) stays the focused
 init-strategy × budget sweep.
 
 ## Performance notes (reference is the oracle; these keep it usable at N~20k on CPU)

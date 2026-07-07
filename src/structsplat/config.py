@@ -3,6 +3,14 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 
+DEFAULT_INIT_STRATEGY = "quadtree_wse"
+DEFAULT_PREDICTOR_FALLBACK_STRATEGY = DEFAULT_INIT_STRATEGY
+
+
+def default_flank_offset_for_strategy(strategy: str) -> float:
+    return 0.5 if strategy == "aniso_flanking" else 0.0
+
+
 @dataclass
 class StructureTensorConfig:
     grad_sigma: float = 1.0          # pre-smoothing of the image before gradients
@@ -16,7 +24,7 @@ class StructureTensorConfig:
 
 @dataclass
 class InitConfig:
-    strategy: str = "aniso_flanking"  # see structsplat.init.STRATEGIES
+    strategy: str = DEFAULT_INIT_STRATEGY  # see structsplat.init.STRATEGIES
     num_gaussians: int = 20000
     candidate_oversample: float = 6.0  # WSE draws oversample*N candidates
     density_base: float = 0.05         # floor so flat regions still get some coverage
@@ -36,7 +44,7 @@ class InitConfig:
     scale_feature_sigma: float = 3.0   # feature mode: visible half-length ~= sigma*value
     scale_feature_min: float = 0.75    # minimum adaptive sigma cap
     scale_feature_energy_frac: float = 0.25  # stop edge run when energy drops below this local frac
-    flank_offset_frac: float = 0.5     # edge center offset in units of local minor spacing
+    flank_offset_frac: float | None = None  # strategy-aware default; override to ablate offset
     color_mode: str = "bilinear"       # bilinear, local_mean, two_sided, or aggregate (quadtree)
     color_radius: float = 1.5          # local mean radius or extra side-sample offset
     opacity_mode: str = "none"         # none or constant
@@ -45,10 +53,14 @@ class InitConfig:
     # predictor interface, optional saved-field warm starts, and a deterministic tensor-prior
     # fallback while learned predictors/training mature.
     predictor_checkpoint: str | None = None
-    predictor_fallback_strategy: str = "aniso_flanking"
+    predictor_fallback_strategy: str = DEFAULT_PREDICTOR_FALLBACK_STRATEGY
     seed: int = 0
 
     def __post_init__(self):
+        if self.flank_offset_frac is None:
+            self.flank_offset_frac = default_flank_offset_for_strategy(self.strategy)
+        if self.flank_offset_frac < 0.0:
+            raise ValueError(f"flank_offset_frac must be >= 0, got {self.flank_offset_frac}")
         # WSE draws candidate_oversample * N candidates then reduces to N; < 1 cannot supply N
         # candidates and silently breaks the exact-N contract (INIT-005).
         if self.candidate_oversample < 1.0:
@@ -247,7 +259,7 @@ class GenConfig:
     seed: int = 0
     dtype: str = "float16"             # float32, float16, bfloat16
     device: str | None = None
-    init_strategy: str = "aniso_flanking"
+    init_strategy: str = DEFAULT_INIT_STRATEGY
     init_opacity: float = 0.8
     renderer: str = "additive"
     render_chunk: int = 512

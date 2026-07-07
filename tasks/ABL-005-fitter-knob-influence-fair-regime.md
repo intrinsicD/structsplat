@@ -18,7 +18,8 @@ One-factor-at-a-time paired deltas for the seven promising fitter/config knobs a
 so promotion decisions (each via its own ADR) rest on isolated, regime-correct evidence.
 
 ## Protocol (fixed before running; BENCH-002 rules apply)
-- Mode: `structsplat stage-search --mode influence` around the shipped ADR-0009 baseline.
+- Mode: `structsplat stage-search --mode influence` around the shipped ADR-0009 + ADR-0013
+  baseline.
 - Variant axes (one non-baseline value each): `loss=charbonnier`, `density=variance`,
   `opacity=constant`, `refine=moment_preserving`, `lr_schedule=cosine`, `color_solve=every10`,
   `color_basis=affine`. 8 arms total including baseline.

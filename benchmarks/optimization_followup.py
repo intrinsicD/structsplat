@@ -20,7 +20,13 @@ import torch
 
 from benchmarks.common import add_seed_args, load_image as _load_image, psnr_auc
 from benchmarks.common import resolve_seeds, run_config, write_config, write_rows as _write_rows
-from structsplat.config import FitConfig, InitConfig, PyramidConfig, StructureTensorConfig
+from structsplat.config import (
+    DEFAULT_INIT_STRATEGY,
+    FitConfig,
+    InitConfig,
+    PyramidConfig,
+    StructureTensorConfig,
+)
 from structsplat.fit import fit
 from structsplat.gaussians import GaussianField
 from structsplat.init import build_field
@@ -44,7 +50,7 @@ PREVIOUS_FOUR = {
 @dataclass(frozen=True)
 class Candidate:
     label: str
-    strategy: str = "aniso_flanking"
+    strategy: str = DEFAULT_INIT_STRATEGY
     tensor: str = "central"
     tensor_color: str = "luma"
     density: str = "structure"

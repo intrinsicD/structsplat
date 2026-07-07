@@ -5,11 +5,11 @@ STRATEGIES:
   grid              uniform grid, isotropic                              (GaussianVision baseline)
   iso_blue_noise    density-adaptive isotropic blue noise                (feature-aware, no anisotropy)
   aniso_onedge      anisotropic blue noise, centers ON features          (tensor-oriented)
-  aniso_flanking    anisotropic blue noise, edge centers pushed to flanks (the proposed default)
+  aniso_flanking    anisotropic blue noise, edge centers pushed to flanks (control arm)
   feedforward       FF-001 predictor API: saved-field warm start or tensor-prior fallback
   quadtree_aggregate density-adaptive quadtree cells with aggregate color/features
   quadtree_hybrid   aggregate smooth cells, WSE/flanking samples for detailed cells
-  quadtree_wse      quadtree budget cells with local WSE/flanking samples
+  quadtree_wse      quadtree budget cells with local WSE samples (shipped default)
 
 The feature-aware strategies all share the structure tensor (orientation + density).
 `build_field` also accepts a precomputed density/tensor so the pyramid can drive placement from

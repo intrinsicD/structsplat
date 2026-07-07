@@ -8,7 +8,6 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 
 | ID | Title | Status | Depends on |
 |----|-------|--------|-----------|
-| INIT-004 | Flanking vs on-edge placement + threshold study | answered (negative) — retire via INIT-007 | INIT-003 |
 | HIER-001 | Progressive pyramid (residual-driven densification) | partial | INIT-002, FIT-001 |
 | ABL-001 | Init-strategy x budget sweep (the core experiment + fitness) | partial | INIT-003/004, BENCH-001 |
 | ABL-002 | Full stage-combination search | partial | CORE, INIT, FIT, HIER, BENCH |
@@ -25,7 +24,6 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | PORT-002 | GPU-native tile index + fused loss/backward | todo | PORT-001, FIT-003 |
 | PORT-003 | Avoid atomics in tiled backward | todo | PORT-001 |
 | GEN-003 | VSD / multi-particle distillation | todo | GEN-001 |
-| INIT-007 | Retire the flanking default (measured answer + ADR) | todo | INIT-004, ABL-006 |
 | INIT-008 | Feature-relative scale caps (fix the cap-scaling failure) | todo | ADR-0012, INIT-003 |
 | ABL-005 | Fitter-knob influence pass at the fair regime | blocked/partial — native CUDA affine or split protocol needed | ADR-0010, FIT-005/006/007, CORE-006 |
 | FIT-009 | Factor the refine axis into orthogonal sub-axes | todo | FIT-004, FIT-006, FIT-007 |
@@ -47,6 +45,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | INIT-001 | Structure tensor: energy, orientation, flat/edge/corner | `done/INIT-001-structure-tensor.md` |
 | INIT-002 | Density field (image + residual) | `done/INIT-002-density-field.md` |
 | INIT-003 | Anisotropic blue-noise sampling (WSE + metric) | `done/INIT-003-anisotropic-pds.md` |
+| INIT-004 | Flanking vs on-edge placement + threshold study | `done/INIT-004-flanking-vs-onedge.md` |
 | INIT-005 | Init-math robustness, flanking unification, WSE test coverage | `done/INIT-005-init-robustness.md` |
 | INIT-006 | Init-time performance (quadtree, spacing, run-lengths, pair discovery) | `done/INIT-006-init-performance.md` |
 | FIT-001 | Adam fitter (L1+SSIM), PSNR history, iters-to-target | `done/FIT-001-optimizer.md` |
@@ -64,6 +63,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | BENCH-004 | Sweep-cost controls (plateau exit, multi-target tables, proxy regime) | `done/BENCH-004-sweep-cost-controls.md` |
 | ABL-003 | Bisect the undiagnosed −0.794 dB flagship regression | `done/ABL-003-regression-bisect.md` |
 | ABL-006 | Successive-halving execution of the remaining confirmation | `done/ABL-006-successive-halving-confirmation.md` |
+| INIT-007 | Retire the flanking default (measured answer + ADR) | `done/INIT-007-retire-flanking-default.md` |
 | MERGE-001 | Integrate Claude core optimizations and Codex stage search into main | `done/MERGE-001-claude-codex-main.md` |
 | COMP-002 | Codec / metrics / CLI correctness and protocol fixes | `done/COMP-002-codec-correctness.md` |
 | DOCS-001 | Docs-sync backfill (stale status, missing ADRs, ara scaffold) | `done/DOCS-001-docs-sync-backfill.md` |
@@ -104,8 +104,8 @@ INIT-007) and shifted the frontier from init strategies to fitter knobs and swee
 2. ABL-005 fitter-knob influence pass — the +0.26 dB `charbonnier`/`variance`/`opacity` bundle
    and the FIT-005/006/007/CORE-006 candidates, isolated at the fair regime. Highest expected
    dB-per-GPU-hour in the queue.
-3. ABL-006 successive-halving confirmation — completed 2026-07-07; feeds INIT-007's default flip
-   (ADR-0013).
+3. ABL-006 successive-halving confirmation — completed 2026-07-07; fed INIT-007's default flip
+   (ADR-0013), also completed 2026-07-07.
 4. FIT-009 refine-axis factoring, then FIT-010/FIT-011 — convergence-rate work targeting the
    measured split dip; `residual_tensor x moment_preserving` is the first inexpressible
    combination to test.

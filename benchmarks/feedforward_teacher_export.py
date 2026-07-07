@@ -10,6 +10,7 @@ from pathlib import Path
 
 from benchmarks.common import load_image, run_config, target_tensor, write_config, write_csv, write_json
 from benchmarks.ablation import _iter_images
+from structsplat.config import DEFAULT_INIT_STRATEGY
 
 
 def export_teacher_fields(
@@ -17,7 +18,7 @@ def export_teacher_fields(
     *,
     outdir="results/feedforward_teacher_export",
     budget=512,
-    strategy="aniso_flanking",
+    strategy=DEFAULT_INIT_STRATEGY,
     seed=0,
     iters=80,
     max_side: int | None = 160,
@@ -104,7 +105,7 @@ def main():
     p.add_argument("images", nargs="+")
     p.add_argument("--outdir", default="results/feedforward_teacher_export")
     p.add_argument("--budget", type=int, default=512)
-    p.add_argument("--strategy", default="aniso_flanking")
+    p.add_argument("--strategy", default=DEFAULT_INIT_STRATEGY)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--iters", type=int, default=80)
     p.add_argument("--max-side", type=int, default=160)

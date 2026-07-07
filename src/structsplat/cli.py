@@ -230,18 +230,18 @@ def cmd_generate(args):
 
 
 def main():
-    from .config import GenConfig
+    from .config import GenConfig, DEFAULT_INIT_STRATEGY, DEFAULT_PREDICTOR_FALLBACK_STRATEGY
 
     p = argparse.ArgumentParser(prog="structsplat")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     f = sub.add_parser("fit", help="fit a single image")
     f.add_argument("image")
-    f.add_argument("--strategy", default="aniso_flanking")
+    f.add_argument("--strategy", default=DEFAULT_INIT_STRATEGY)
     f.add_argument("--num-gaussians", type=int, default=20000, dest="num_gaussians")
     f.add_argument("--predictor-checkpoint", default=None,
                    help="saved GaussianField or learned .pt checkpoint used by strategy=feedforward")
-    f.add_argument("--predictor-fallback-strategy", default="aniso_flanking",
+    f.add_argument("--predictor-fallback-strategy", default=DEFAULT_PREDICTOR_FALLBACK_STRATEGY,
                    help="tensor-prior strategy used by strategy=feedforward when no saved "
                         "checkpoint is provided or padding is needed")
     f.add_argument("--iters", type=int, default=2000)
@@ -313,7 +313,8 @@ def main():
     f.add_argument("--ssim-weight", type=float, default=0.3)
     f.add_argument("--ssim-backend", choices=["builtin", "fused", "auto"], default="builtin")
     f.add_argument("--lpips", action="store_true", help="compute LPIPS after fitting")
-    f.add_argument("--flank-offset", type=float, default=0.5)
+    f.add_argument("--flank-offset", type=float, default=None,
+                   help="edge-center offset fraction; default is strategy-aware")
     f.add_argument("--max-axis-ratio", type=float, default=6.0)
     f.add_argument("--coherence-power", type=float, default=1.0)
     f.add_argument("--lr-schedule", choices=["none", "step", "cosine"], default="none")

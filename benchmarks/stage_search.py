@@ -32,7 +32,13 @@ from benchmarks.common import HEADLINE_TARGET_PSNRS, headline_target_psnrs
 from benchmarks.common import psnr_auc as _psnr_auc
 from benchmarks.common import run_config, write_config, write_csv, write_json
 from benchmarks.common import target_hit_stats, target_iters, target_label
-from structsplat.config import FitConfig, InitConfig, PyramidConfig, StructureTensorConfig
+from structsplat.config import (
+    DEFAULT_INIT_STRATEGY,
+    FitConfig,
+    InitConfig,
+    PyramidConfig,
+    StructureTensorConfig,
+)
 
 # stage axes, in label order; values = the swappable options each stage exposes
 STAGE_KEYS = [
@@ -42,7 +48,7 @@ STAGE_KEYS = [
 ]
 
 FACTORIAL_DEFAULTS: dict[str, tuple[str, ...]] = {
-    "strategies": ("aniso_flanking",),
+    "strategies": (DEFAULT_INIT_STRATEGY,),
     "tensor_operators": ("central", "scharr"),
     "tensor_colors": ("luma",),
     "density_modes": ("structure", "hybrid"),
@@ -65,12 +71,12 @@ FACTORIAL_DEFAULTS: dict[str, tuple[str, ...]] = {
     "pyramid_modes": ("single",),
 }
 
-# influence mode: FIRST value per axis = the baseline (the shipped ADR-0009 defaults), rest = the
+# influence mode: FIRST value per axis = the baseline (the shipped ADR-0013 defaults), rest = the
 # variants. Every first value must equal config.py's default for that stage (BENCH-002).
 INFLUENCE_DEFAULTS: dict[str, tuple[str, ...]] = {
     "strategies": (
-        "aniso_flanking", "quadtree_wse", "quadtree_hybrid", "quadtree_aggregate",
-        "aniso_onedge", "iso_blue_noise", "grid", "random"
+        DEFAULT_INIT_STRATEGY, "aniso_onedge", "quadtree_hybrid", "quadtree_aggregate",
+        "aniso_flanking", "iso_blue_noise", "grid", "random"
     ),
     "tensor_operators": ("central", "sobel", "scharr"),
     "tensor_colors": ("luma", "rgb"),
@@ -556,7 +562,7 @@ def run_stage_search(
     render_chunk=512,
     ssim_weight=0.3,
     ssim_backend="builtin",
-    flank_offset=0.5,
+    flank_offset=None,
     max_axis_ratio=6.0,
     coherence_power=1.0,
     init_scale_mult=1.0,
