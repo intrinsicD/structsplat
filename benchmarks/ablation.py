@@ -9,10 +9,12 @@ from __future__ import annotations
 import os
 import glob
 import json
+import math
 import time
 from statistics import mean, pstdev
 
 from benchmarks.common import load_image as _load_image
+from benchmarks.common import psnr_auc
 from benchmarks.common import run_config, write_config, write_csv, write_json
 from structsplat.config import InitConfig, FitConfig, StructureTensorConfig
 from structsplat.init import STRATEGIES
@@ -46,6 +48,7 @@ _CELL_KEY_FIELDS = (
     "sampling_mode", "fit_control", "relocate_every", "relocate_count", "iters",
     "target_psnr", "target_psnrs", "render_chunk", "pixel_loss", "ssim_weight",
     "renderer", "color_solve_every", "color_solve_lambda", "color_solve_maxiter",
+    "early_exit", "early_exit_window", "early_exit_min_delta", "early_exit_min_iters",
     "compute_lpips",
 )
 
@@ -126,6 +129,8 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
                  pixel_loss="l1", ssim_weight=0.3, compute_lpips=False,
                  color_solve_every=None, color_solve_lambda=1e-4,
                  color_solve_maxiter=32,
+                 early_exit: bool = False, early_exit_window: int = 150,
+                 early_exit_min_delta: float = 0.02, early_exit_min_iters: int | None = None,
                  relocate_every=None, relocate_count=64,
                  max_side: int | None = None, resume: bool = False,
                  max_new_cells: int | None = None,
@@ -169,10 +174,23 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
         "render_chunk": render_chunk, "renderer": renderer, "pixel_loss": pixel_loss,
         "color_solve_every": color_solve_every, "color_solve_lambda": color_solve_lambda,
         "color_solve_maxiter": color_solve_maxiter,
+        "early_exit": early_exit, "early_exit_window": early_exit_window,
+        "early_exit_min_delta": early_exit_min_delta,
+        "early_exit_min_iters": early_exit_min_iters,
         "ssim_weight": ssim_weight, "compute_lpips": compute_lpips, "control_arms": CONTROL_ARMS,
         "relocate_every": relocate_every, "relocate_count": relocate_count,
         "max_side": max_side, "resume": resume, "max_new_cells": max_new_cells,
     }, device=device))
+
+    default_log_every = FitConfig().log_every
+    early_stop_patience = None
+    early_stop_min_iters_resolved = 0
+    if early_exit:
+        early_stop_patience = max(
+            1,
+            int(math.ceil(max(1, early_exit_window) / max(1, default_log_every))),
+        )
+        early_stop_min_iters_resolved = int(early_exit_min_iters or 0)
 
     new_cells = 0
     for path in files:
@@ -216,6 +234,16 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
                                             "color_solve_every": color_solve_every,
                                             "color_solve_lambda": color_solve_lambda,
                                             "color_solve_maxiter": color_solve_maxiter,
+                                            "early_exit": bool(early_exit),
+                                            "early_exit_window": int(early_exit_window),
+                                            "early_exit_min_delta": (
+                                                early_exit_min_delta
+                                                if early_stop_patience is not None else None
+                                            ),
+                                            "early_exit_min_iters": (
+                                                early_stop_min_iters_resolved
+                                                if early_stop_patience is not None else None
+                                            ),
                                             "pixel_loss": pixel_loss,
                                             "ssim_weight": ssim_weight,
                                             "compute_lpips": compute_lpips,
@@ -245,6 +273,9 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
                                             color_solve_every=color_solve_every,
                                             color_solve_lambda=color_solve_lambda,
                                             color_solve_maxiter=color_solve_maxiter,
+                                            early_stop_patience=early_stop_patience,
+                                            early_stop_min_delta=early_exit_min_delta,
+                                            early_stop_min_iters=early_stop_min_iters_resolved,
                                             pixel_loss=pixel_loss,
                                             ssim_weight=ssim_weight,
                                             compute_lpips=compute_lpips,
@@ -274,6 +305,16 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
                                             "color_solve_every": color_solve_every,
                                             "color_solve_lambda": color_solve_lambda,
                                             "color_solve_maxiter": color_solve_maxiter,
+                                            "early_exit": bool(early_exit),
+                                            "early_exit_window": int(early_exit_window),
+                                            "early_exit_min_delta": (
+                                                early_exit_min_delta
+                                                if early_stop_patience is not None else None
+                                            ),
+                                            "early_exit_min_iters": (
+                                                early_stop_min_iters_resolved
+                                                if early_stop_patience is not None else None
+                                            ),
                                             "pixel_loss": pixel_loss,
                                             "ssim_weight": ssim_weight,
                                             "compute_lpips": compute_lpips,
@@ -288,9 +329,21 @@ def run_ablation(images, budgets=(2000, 5000, 10000, 20000), strategies=None, se
                                             "ssim": round(out["ssim"], 5),
                                             "ms_ssim": round(out["ms_ssim"], 5),
                                             "lpips": out["lpips"],
+                                            "auc_psnr": psnr_auc(
+                                                out.get("history", {}),
+                                                nominal_iters=iters
+                                                if early_stop_patience is not None else None,
+                                            ),
+                                            "auc_psnr_horizon": (
+                                                "nominal_hold_last"
+                                                if early_stop_patience is not None else "observed"
+                                            ),
                                             "iters_to_target": out["iters_to_target"],
                                             "iters_to_targets": out.get("iters_to_targets", {}),
                                             "n_gaussians": out["n_gaussians"],
+                                            "iterations_run": out.get("iterations_run", iters),
+                                            "stopped_early": bool(out.get("stopped_early", False)),
+                                            "stopped_at": out.get("stopped_at"),
                                             "init_seconds": init_seconds,
                                             "fit_seconds": out.get("fit_seconds"),
                                             "history": out.get("history", {}),
@@ -484,6 +537,14 @@ if __name__ == "__main__":
     p.add_argument("--ssim-weight", type=float, default=0.3)
     p.add_argument("--relocate-every", type=int, default=None)
     p.add_argument("--relocate-count", type=int, default=64)
+    p.add_argument("--early-exit", action="store_true",
+                   help="opt-in plateau early exit; AUC holds last PSNR to the nominal horizon")
+    p.add_argument("--early-exit-window", type=int, default=150,
+                   help="plateau window in iterations; translated to logged PSNR samples")
+    p.add_argument("--early-exit-min-delta", type=float, default=0.02,
+                   help="minimum PSNR improvement over the window to keep running")
+    p.add_argument("--early-exit-min-iters", type=int, default=None,
+                   help="absolute iteration floor before early exit may trigger")
     p.add_argument("--max-side", type=int, default=None)
     p.add_argument("--resume", action="store_true")
     p.add_argument("--max-new-cells", type=int, default=None,
@@ -500,6 +561,9 @@ if __name__ == "__main__":
                  coherence_powers=a.coherence_powers, render_chunk=a.render_chunk,
                  renderer=a.renderer, pixel_loss=a.pixel_loss, ssim_weight=a.ssim_weight,
                  compute_lpips=a.lpips,
+                 early_exit=a.early_exit, early_exit_window=a.early_exit_window,
+                 early_exit_min_delta=a.early_exit_min_delta,
+                 early_exit_min_iters=a.early_exit_min_iters,
                  relocate_every=a.relocate_every, relocate_count=a.relocate_count,
                  max_side=a.max_side, resume=a.resume, max_new_cells=a.max_new_cells,
                  outdir=a.outdir, device=a.device, write_plots=not a.no_plots)

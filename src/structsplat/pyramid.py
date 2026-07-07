@@ -118,6 +118,7 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
     elapsed_offset = 0.0
     iterations_run_total = 0
     stopped_early_any = False
+    stopped_at_total = None
     # nominal planned span, so a cosine LR schedule covers the whole pyramid rather than
     # restarting each level (HIER-002); early stops do not change the schedule shape.
     sched_total = pcfg.levels * pcfg.iters_per_level
@@ -168,7 +169,10 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
         fit_seconds_total += float(out.get("fit_seconds", 0.0))
         level_iters = int(out.get("iterations_run", level_cfg.iters))
         iterations_run_total += level_iters
-        stopped_early_any = stopped_early_any or bool(out.get("stopped_early", False))
+        if bool(out.get("stopped_early", False)):
+            stopped_early_any = True
+            if stopped_at_total is None and out.get("stopped_at") is not None:
+                stopped_at_total = iter_offset + int(out["stopped_at"])
         # advance by iterations actually run, not the full level budget: an early-stopped level
         # would otherwise insert phantom iterations into the combined axis / iters-to-target.
         iter_offset += level_iters
@@ -191,6 +195,7 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
     # pyramid rows under-reported iterations by ~levels x (HIER-002).
     out["iterations_run"] = iterations_run_total
     out["stopped_early"] = stopped_early_any
+    out["stopped_at"] = stopped_at_total
     out["level_summaries"] = level_summaries
     out["level_counts"] = counts
     out["level_budgets"] = budgets   # placed per level; sums to num_gaussians

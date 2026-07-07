@@ -17,6 +17,12 @@ def _write_jsonl(path, rows):
 
 
 def _row(image, budget, seed, strategy, psnr, ms_ssim):
+    targets = {
+        "28.0": 1 if psnr >= 28.0 else None,
+        "30.0": 1 if psnr >= 30.0 else None,
+        "32.0": 1 if psnr >= 32.0 else None,
+        "35.0": None,
+    }
     return {
         "image": image,
         "source_path": f"{image}.png",
@@ -31,7 +37,7 @@ def _row(image, budget, seed, strategy, psnr, ms_ssim):
         "relocate_count": None,
         "iters": 2,
         "target_psnr": 35.0,
-        "target_psnrs": [35.0],
+        "target_psnrs": [28.0, 30.0, 32.0, 35.0],
         "render_chunk": 8,
         "renderer": "normalized",
         "pixel_loss": "l1",
@@ -49,7 +55,7 @@ def _row(image, budget, seed, strategy, psnr, ms_ssim):
         "ms_ssim": ms_ssim,
         "lpips": None,
         "iters_to_target": None,
-        "iters_to_targets": {"35.0": None},
+        "iters_to_targets": targets,
         "n_gaussians": budget,
         "init_seconds": 0.1,
         "fit_seconds": 0.2,
@@ -128,6 +134,9 @@ def test_confirmation_analysis_reports_pairs_missing_and_ranks(tmp_path):
     onedge = [r for r in leaderboard if r["strategy"] == "aniso_onedge"][0]
     assert onedge["runs"] == "4"
     assert onedge["rank_psnr"] == "1"
+    assert onedge["target_28_reached"] == "2"
+    assert onedge["target_30_reached"] == "2"
+    assert onedge["target_32_reached"] == "0"
 
     paired = _read_csv(tmp_path / "paired_deltas_vs_baseline.csv")
     flank = [r for r in paired if r["left"] == "aniso_flanking"][0]
@@ -140,7 +149,11 @@ def test_confirmation_analysis_reports_pairs_missing_and_ranks(tmp_path):
     assert {r["left"] for r in pairwise} == {"aniso_onedge", "aniso_flanking"}
     ranks = _read_csv(tmp_path / "rank_stability.csv")
     assert [r for r in ranks if r["strategy"] == "aniso_onedge"][0]["wins"] == "2"
-    assert (tmp_path / "confirmation_analysis.md").exists()
+    analysis = (tmp_path / "confirmation_analysis.md").read_text(encoding="utf-8")
+    assert "Hit 28" in analysis
+    assert "Iter 30" in analysis
+    assert "Target reached" not in analysis
+    assert "Hit 35" not in analysis
     index = (tmp_path / "index.html").read_text(encoding="utf-8")
     assert "ABL-004 Confirmation Overview" in index
     assert "confirmation_analysis.md" in index

@@ -29,6 +29,7 @@ import torch
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 from benchmarks.common import (
+    HEADLINE_TARGET_PSNRS,
     build_comparison_analogue,
     json_safe_rows,
     load_image,
@@ -37,6 +38,7 @@ from benchmarks.common import (
     run_config,
     save_image,
     target_tensor,
+    target_label,
     write_config,
     write_csv,
     write_json,
@@ -810,8 +812,13 @@ def _write_summary(rows: list[dict[str, Any]], outdir: Path, methods: list[str])
             f"{_fmt(_mean_or_none([r['total_seconds'] for r in vals]), 3)} |"
         )
 
-    targets = [t for t in _target_values(ok) if t in {22.0, 24.0, 26.0, 28.0, 30.0, 32.0}]
+    targets = [t for t in _target_values(ok) if t in set(HEADLINE_TARGET_PSNRS)]
     if targets:
+        target_header = "".join(
+            f" | Hit {target_label(t)} | Iter {target_label(t)}"
+            for t in targets
+        )
+        target_align = "|---:" * (2 * len(targets))
         lines += [
             "",
             "## Convergence",
@@ -837,14 +844,13 @@ def _write_summary(rows: list[dict[str, Any]], outdir: Path, methods: list[str])
             "",
             "Target-hit cells report hit rate across all image/budget cells and mean hit iteration among cells that reached the target.",
             "",
-            "| Method | Hit 24 | Iter 24 | Hit 28 | Iter 28 | Hit 30 | Iter 30 | Hit 32 | Iter 32 |",
-            "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+            f"| Method{target_header} |",
+            f"|---{target_align}|",
         ]
-        selected_targets = [24.0, 28.0, 30.0, 32.0]
         for method in methods:
             vals = [r for r in ok if r["method"] == method]
             cells: list[str] = []
-            for target in selected_targets:
+            for target in targets:
                 stats = _target_summary(vals, target)
                 cells.append(_fmt_pct(stats["hit_rate"]))
                 cells.append(_fmt(stats["mean_iter"], 1))

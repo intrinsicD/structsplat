@@ -1,0 +1,3 @@
+budget,metric,min_full_delta,compared_pairs,agreeing_pairs,skipped_small_delta_pairs,sign_agreement
+2000,psnr,0.1,49,45,6,0.9183673469387755
+5000,psnr,0.1,49,46,6,0.9387755102040817

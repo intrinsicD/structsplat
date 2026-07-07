@@ -1,6 +1,6 @@
 # BENCH-004: Sweep-cost controls (plateau exit, multi-target tables, proxy regime)
 
-**Status: todo.** Compute is the binding constraint on every open experiment; make each GPU-hour
+**Status: done.** Compute is the binding constraint on every open experiment; make each GPU-hour
 buy more decisions without weakening the protocol.
 
 ## Context
@@ -36,14 +36,32 @@ Three harness upgrades, each preserving BENCH-002 validity guarantees.
    stays mandatory for promotions.
 
 ## Acceptance criteria
-- [ ] Early exit implemented in `fit.py` history tracking + benchmark plumbing, off by default,
+- [x] Early exit implemented in `fit.py` history tracking + benchmark plumbing, off by default,
       with the validation rerun committed as evidence.
-- [ ] Multi-target tables land in `abl004_confirmation`, `stage_search`, and
+- [x] Multi-target tables land in `abl004_confirmation`, `stage_search`, and
       `fair_density_control_compare` summary writers; tests updated.
-- [ ] Proxy calibration evidence committed under `ara/evidence/bench004-*/` with the rank
+- [x] Proxy calibration evidence committed under `ara/evidence/bench004-*/` with the rank
       correlation table; `benchmark` skill updated with the proxy-regime contract (screen on
       proxy, decide on fair).
-- [ ] BENCH-002 checklist re-audited after the changes (no silent caps, one convention per row).
+- [x] BENCH-002 checklist re-audited after the changes (no silent caps, one convention per row).
+
+## Result
+Implemented 2026-07-07. The accepted cheap screen is max-side 512 / 750 iterations. Evidence:
+
+- `ara/evidence/bench004-proxy-calibration-2026-07-07/`: rejected 384/500 because the 5k budget
+  missed the acceptance gate (`rho=0.8636`, sign agreement 89.8%).
+- `ara/evidence/bench004-proxy-calibration-512-750-2026-07-07/`: accepted 512/750 against the
+  committed full 8-image screen (`rho=0.9364/0.9182`, sign agreement 91.8%/93.9% at 2k/5k).
+- `ara/evidence/bench004-early-exit-validation-512-750-5k-2026-07-07/`: opt-in early exit on the
+  5k 8-image slice kept the top AUC/PSNR arm and preserved all AUC paired signs above 0.1 dB;
+  final PSNR retained top-1 but swapped two close pairs, so early-exit rows are for convergence
+  screening and promotion still uses full-horizon fair runs. The slice saved 1.1% iterations and
+  1.7% fit seconds at `--early-exit-window 150 --early-exit-min-delta 0.02`.
+
+BENCH-002 re-audit: row-level `n_gaussians` remains capped to `budget`; early-exit is opt-in and
+records `iterations_run`/`stopped_at`; AUC rows state the convention via `auc_psnr_horizon`; configs
+record resolved targets, early-exit settings, device, renderer, and versions; raw 35 dB
+iters-to-target remains available but headline summaries use 28/30/32.
 
 ## Interfaces touched
 `src/structsplat/fit.py`, `benchmarks/common.py`, `benchmarks/stage_search.py`,

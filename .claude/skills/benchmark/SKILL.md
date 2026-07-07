@@ -10,11 +10,22 @@ answers turn-3's question empirically and is the **fitness signal** for a co-sci
 init/sampling variants.
 
 ## Protocol (keep fixed — this is the contract)
-- Metrics: **PSNR**, **MS-SSIM**, **LPIPS** (optional dep), and **iters-to-target** at a fixed
-  target PSNR. Report quality at fixed budget *and* convergence speed — they can disagree.
+- Metrics: **PSNR**, **MS-SSIM**, **LPIPS** (optional dep), PSNR AUC, and
+  **iters-to-target**. Headline convergence tables use target PSNRs **28 / 30 / 32**; keep the
+  legacy 35 dB target in raw rows when requested, but do not use it as the only headline target.
+  Report quality at fixed budget *and* convergence speed — they can disagree.
 - Same fitter config, same iteration count, same images for every cell in a comparison.
 - Seeds logged; multiple seeds per cell when claiming a difference is real (report mean ± std).
 - Output: a tidy JSON/CSV row per (image, strategy, budget, seed) + a markdown summary table.
+- Plateau early exit is opt-in only (`--early-exit`). Rows must record `iterations_run`,
+  `stopped_early`, `stopped_at`, and `auc_psnr_horizon`. When early exit is enabled, AUC holds the
+  last logged PSNR to the nominal horizon (`auc_psnr_horizon=nominal_hold_last`) so cells remain
+  comparable. Do not use early-exit rows to claim exact final-PSNR ordering among near ties; use
+  them for convergence/AUC screening, then confirm promoted decisions at the full horizon.
+- Cheap screen regime: use max-side **512** and **750** fit iterations for the 11-arm 8-image Kodak
+  screen before spending the full fair regime. BENCH-004 evidence rejects 384/500 at 5k
+  (`rho=0.8636`, sign agreement 89.8%) and accepts 512/750 (`rho=0.9364/0.9182`, sign agreement
+  91.8%/93.9% at 2k/5k). Promotion/default changes still require the full fair regime.
 
 ## Running
 `structsplat ablation <images-or-dir> --budgets 2000 5000 10000 20000 --iters 1500 --target-psnr 35`

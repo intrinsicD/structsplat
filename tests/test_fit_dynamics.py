@@ -478,6 +478,7 @@ def test_early_stop_is_opt_in_and_reports_iterations():
     )
     assert out["stopped_early"]
     assert out["iterations_run"] < 20
+    assert out["stopped_at"] == out["history"]["iter"][-1]
 
 
 def test_fit_respects_field_scale_caps():

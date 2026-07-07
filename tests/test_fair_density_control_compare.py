@@ -247,3 +247,35 @@ def test_write_convergence_tables_from_histories(tmp_path: Path):
     assert "target_psnr" in targets
     assert "gaussianimage_plus_residual" in targets
     assert ",24.0,1,0," in targets
+
+
+def test_summary_headline_targets_are_bench004_set(tmp_path: Path):
+    rows = [
+        {
+            "status": "ok",
+            "image": "toy",
+            "final_budget": 100,
+            "start_gaussians": 50,
+            "n_gaussians": 100,
+            "method": "gaussianimage_fixed_full",
+            "method_label": F.METHOD_LABELS["gaussianimage_fixed_full"],
+            "psnr": 30.0,
+            "ms_ssim": 0.9,
+            "auc_psnr": 28.0,
+            "lpips": None,
+            "init_seconds": 0.1,
+            "fit_seconds": 0.2,
+            "total_seconds": 0.3,
+            "history": {"iter": [0, 10], "psnr": [24.0, 30.0]},
+            "iters_to_targets": {"24.0": 1, "28.0": 5, "30.0": 10, "32.0": None, "35.0": None},
+        }
+    ]
+
+    F._write_summary(rows, tmp_path, ["gaussianimage_fixed_full"])
+
+    text = (tmp_path / "summary.md").read_text(encoding="utf-8")
+    assert "Hit 28" in text
+    assert "Iter 30" in text
+    assert "Hit 32" in text
+    assert "Hit 24" not in text
+    assert "Hit 35" not in text

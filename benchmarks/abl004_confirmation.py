@@ -25,6 +25,7 @@ import numpy as np
 
 from benchmarks._util import run_config, write_config
 from benchmarks.ablation import run_ablation
+from benchmarks.common import HEADLINE_TARGET_PSNRS, target_hit_stats, target_label
 from benchmarks.common import write_csv, write_json
 
 
@@ -236,8 +237,27 @@ def _iters_to_target(row: dict[str, Any], target: float | None) -> int | None:
     return row.get("iters_to_target")
 
 
+def _headline_targets(spec: ConfirmationSpec) -> list[float]:
+    spec_targets = {float(t) for t in spec.target_psnrs}
+    selected = [float(t) for t in HEADLINE_TARGET_PSNRS if not spec_targets or float(t) in spec_targets]
+    return selected or list(HEADLINE_TARGET_PSNRS)
+
+
+def _target_field(target: float, suffix: str) -> str:
+    return f"target_{target_label(target).replace('.', '_')}_{suffix}"
+
+
+def _target_fieldnames(targets: list[float]) -> list[str]:
+    out: list[str] = []
+    for target in targets:
+        out.append(_target_field(target, "reached"))
+        out.append(_target_field(target, "mean_iter"))
+    return out
+
+
 def leaderboard(rows_by_key: dict[tuple, dict[str, Any]], spec: ConfirmationSpec) -> list[dict[str, Any]]:
     rows = list(rows_by_key.values())
+    targets = _headline_targets(spec)
     out = []
     for budget in spec.budgets:
         scored = []
@@ -261,6 +281,10 @@ def leaderboard(rows_by_key: dict[tuple, dict[str, Any]], spec: ConfirmationSpec
                     1 for r in vals if _iters_to_target(r, spec.target_psnr) is not None
                 ),
             }
+            for target in targets:
+                stats = target_hit_stats(vals, target)
+                rec[_target_field(target, "reached")] = stats["hits"]
+                rec[_target_field(target, "mean_iter")] = stats["mean_iter"]
             scored.append(rec)
         ranked = sorted(
             scored,
@@ -406,6 +430,12 @@ def _write_summary(
     baseline_pairs: list[dict[str, Any]],
     ranks: list[dict[str, Any]],
 ) -> None:
+    targets = _headline_targets(spec)
+    target_header = "".join(
+        f" | Hit {target_label(t)} | Iter {target_label(t)}"
+        for t in targets
+    )
+    target_align = "|---:" * (2 * len(targets))
     lines = [
         "# ABL-004 Confirmation Analysis",
         "",
@@ -416,15 +446,21 @@ def _write_summary(
         "",
         "## Leaderboard",
         "",
-        "| Budget | Rank | Strategy | Runs | PSNR | PSNR std | MS-SSIM | Target reached | Mean total s |",
-        "|---:|---:|---|---:|---:|---:|---:|---:|---:|",
+        "| Budget | Rank | Strategy | Runs | PSNR | PSNR std | MS-SSIM"
+        f"{target_header} | Mean total s |",
+        "|---:|---:|---|---:|---:|---:|---:"
+        f"{target_align}|---:|",
     ]
     for row in sorted(board, key=lambda r: (r["budget"], r["rank_psnr"])):
+        target_cells = []
+        for target in targets:
+            target_cells.append(f"{row[_target_field(target, 'reached')]}/{row['runs']}")
+            target_cells.append(_fmt(row[_target_field(target, "mean_iter")], 1))
         lines.append(
             f"| {row['budget']} | {row['rank_psnr']} | {row['strategy']} | "
             f"{row['runs']}/{row['expected_runs']} | {_fmt(row['mean_psnr'])} | "
             f"{_fmt(row['std_psnr'])} | {_fmt(row['mean_ms_ssim'], 5)} | "
-            f"{row['reached_target']}/{row['runs']} | {_fmt(row['mean_total_seconds'], 2)} |"
+            f"{' | '.join(target_cells)} | {_fmt(row['mean_total_seconds'], 2)} |"
         )
 
     lines += [
@@ -551,12 +587,14 @@ def write_confirmation_analysis(
         bootstrap_seed=bootstrap_seed,
     )
     ranks = rank_stability(rows_by_key, spec)
+    target_fields = _target_fieldnames(_headline_targets(spec))
 
     cell_fields = list(expected_cells(spec)[0].keys()) if spec.images else []
     _write_rows(outdir / "missing_cells.csv", missing, cell_fields)
     _write_rows(outdir / "leaderboard.csv", board, [
         "budget", "strategy", "runs", "expected_runs", "mean_psnr", "std_psnr",
-        "mean_ms_ssim", "std_ms_ssim", "mean_total_seconds", "reached_target", "rank_psnr",
+        "mean_ms_ssim", "std_ms_ssim", *target_fields, "mean_total_seconds",
+        "reached_target", "rank_psnr",
     ])
     pair_fields = [
         "budget", "left", "right", "paired_units", "mean_delta_psnr", "ci95_low_psnr",
@@ -627,6 +665,10 @@ def run_confirmation(args: argparse.Namespace) -> dict[str, Any]:
         pixel_loss=args.pixel_loss,
         ssim_weight=args.ssim_weight,
         compute_lpips=args.lpips,
+        early_exit=args.early_exit,
+        early_exit_window=args.early_exit_window,
+        early_exit_min_delta=args.early_exit_min_delta,
+        early_exit_min_iters=args.early_exit_min_iters,
         max_side=spec.max_side,
         resume=args.resume,
         max_new_cells=args.max_new_cells,
@@ -676,6 +718,11 @@ def main() -> None:
     run_p.add_argument("--pixel-loss", choices=["l1", "l2", "charbonnier"], default="l1")
     run_p.add_argument("--ssim-weight", type=float, default=0.3)
     run_p.add_argument("--lpips", action="store_true")
+    run_p.add_argument("--early-exit", action="store_true",
+                       help="opt-in plateau early exit; raw rows record stopped_at")
+    run_p.add_argument("--early-exit-window", type=int, default=150)
+    run_p.add_argument("--early-exit-min-delta", type=float, default=0.02)
+    run_p.add_argument("--early-exit-min-iters", type=int, default=None)
     run_p.add_argument("--no-plots", action="store_true")
     run_p.add_argument("--no-analyze", action="store_true")
     run_p.add_argument("--bootstrap-samples", type=int, default=5000)

@@ -14,6 +14,7 @@ from benchmarks import coco_fit_compare as coco
 from benchmarks import common
 from benchmarks import cross_repo_matrix_compare as cross
 from benchmarks import optimization_followup as opt
+from benchmarks import proxy_calibration
 from benchmarks import quadtree_init_compare as qt
 from benchmarks import rate_distortion as rd
 from benchmarks import stage_search
@@ -37,11 +38,34 @@ def test_common_image_auc_and_row_writers(tmp_path):
     assert sampled.shape == (2, 3)
     assert np.allclose(sampled[0], img[0, 0])
     assert common.psnr_auc({"iter": [0, 2], "psnr": [10.0, 14.0]}) == pytest.approx(12.0)
+    assert common.psnr_auc(
+        {"iter": [0, 2], "psnr": [10.0, 14.0]},
+        nominal_iters=5,
+    ) == pytest.approx(13.0)
 
     rows = [{"b": 2, "a": 1}]
     common.write_rows(tmp_path / "rows", rows)
     assert json.loads((tmp_path / "rows.json").read_text()) == rows
     assert (tmp_path / "rows.csv").read_text().splitlines()[0] == "b,a"
+
+
+def test_proxy_calibration_reports_rank_and_sign_agreement():
+    full = [
+        {"budget": 100, "strategy": "a", "psnr": 30.0},
+        {"budget": 100, "strategy": "b", "psnr": 29.0},
+        {"budget": 100, "strategy": "c", "psnr": 28.0},
+    ]
+    proxy = [
+        {"budget": 100, "strategy": "a", "psnr": 20.0},
+        {"budget": 100, "strategy": "b", "psnr": 19.0},
+        {"budget": 100, "strategy": "c", "psnr": 18.5},
+    ]
+
+    result = proxy_calibration.calibrate(full, proxy, min_delta=0.1)
+
+    assert result["rank_correlation"][0]["spearman_rho"] == pytest.approx(1.0)
+    assert result["sign_agreement"][0]["compared_pairs"] == 3
+    assert result["sign_agreement"][0]["sign_agreement"] == pytest.approx(1.0)
 
 
 def test_rate_distortion_run_rd_tiny_smoke(tmp_path):

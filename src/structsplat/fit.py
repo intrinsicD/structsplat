@@ -1670,6 +1670,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             "fit_seconds": fit_seconds,
             "iterations_run": last_iter + 1,
             "stopped_early": stopped_early,
+            "stopped_at": last_iter if stopped_early else None,
             "adaptive_stop_reason": adaptive_stop if cfg.adaptive_count else None,
             "adaptive_selected_n": field.n if cfg.adaptive_count else None,
             "estimated_bpp": estimated_raw_bpp(field, H, W),

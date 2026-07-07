@@ -1,0 +1,3 @@
+budget,metric,strategies,spearman_rho,full_top1,proxy_top1
+2000,psnr,11,0.9363636363636365,aniso_onedge,quadtree_wse
+5000,psnr,11,0.9181818181818183,quadtree_wse,quadtree_hybrid

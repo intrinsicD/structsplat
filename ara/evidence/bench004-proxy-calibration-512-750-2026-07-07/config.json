@@ -1,0 +1,16 @@
+{
+  "resolved": {
+    "full": "ara/evidence/abl004-stage-screen-8img-cuda-2026-07-04/metrics.json",
+    "proxy": "results/bench004_proxy_512_750/ablation.json",
+    "metric": "psnr",
+    "min_delta": 0.1
+  },
+  "device": null,
+  "versions": {
+    "torch": "2.7.0+cu126",
+    "torch_cuda": "12.6",
+    "cuda_available": true,
+    "numpy": "2.2.4",
+    "structsplat": "0.1.0"
+  }
+}

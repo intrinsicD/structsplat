@@ -1,0 +1,3 @@
+metric,spearman_rho,base_top1,early_exit_top1,compared_pairs,agreeing_pairs,skipped_small_deltas,sign_agreement
+psnr,0.8636363636363636,quadtree_hybrid,quadtree_hybrid,43,41,12,0.9534883720930233
+auc_psnr,1.0,quadtree_hybrid,quadtree_hybrid,43,43,12,1.0

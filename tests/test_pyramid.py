@@ -74,6 +74,7 @@ def test_pyramid_early_stop_leaves_no_phantom_iteration_gap():
     out = fit_pyramid(img, target, icfg, fcfg, pcfg, verbose=False)
     assert out["stopped_early"] is True
     assert out["iterations_run"] == 2 * 2                      # each level stopped after 2 iters
+    assert out["stopped_at"] == 1
     h = out["history"]
     # the combined axis advances by actual iters, so no jump to the nominal per-level budget (6)
     assert max(h["iter"]) == out["iterations_run"] - 1

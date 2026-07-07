@@ -1,0 +1,308 @@
+{
+  "full_aggregate": [
+    {
+      "budget": 2000,
+      "strategy": "aniso_flanking",
+      "mean_psnr": 26.74365,
+      "runs": 8
+    },
+    {
+      "budget": 2000,
+      "strategy": "aniso_onedge",
+      "mean_psnr": 26.98615,
+      "runs": 8
+    },
+    {
+      "budget": 2000,
+      "strategy": "density_random",
+      "mean_psnr": 26.131887499999998,
+      "runs": 8
+    },
+    {
+      "budget": 2000,
+      "strategy": "floyd_steinberg",
+      "mean_psnr": 24.3337125,
+      "runs": 8
+    },
+    {
+      "budget": 2000,
+      "strategy": "grid",
+      "mean_psnr": 24.8297125,
+      "runs": 8
+    },
+    {
+      "budget": 2000,
+      "strategy": "iso_blue_noise",
+      "mean_psnr": 26.2164125,
+      "runs": 8
+    },
+    {
+      "budget": 2000,
+      "strategy": "quadtree_aggregate",
+      "mean_psnr": 26.4738,
+      "runs": 8
+    },
+    {
+      "budget": 2000,
+      "strategy": "quadtree_hybrid",
+      "mean_psnr": 26.5335,
+      "runs": 8
+    },
+    {
+      "budget": 2000,
+      "strategy": "quadtree_wse",
+      "mean_psnr": 26.5580125,
+      "runs": 8
+    },
+    {
+      "budget": 2000,
+      "strategy": "random",
+      "mean_psnr": 24.3466875,
+      "runs": 8
+    },
+    {
+      "budget": 2000,
+      "strategy": "random_relocate",
+      "mean_psnr": 24.8823875,
+      "runs": 8
+    },
+    {
+      "budget": 5000,
+      "strategy": "aniso_flanking",
+      "mean_psnr": 30.047024999999998,
+      "runs": 8
+    },
+    {
+      "budget": 5000,
+      "strategy": "aniso_onedge",
+      "mean_psnr": 30.1033625,
+      "runs": 8
+    },
+    {
+      "budget": 5000,
+      "strategy": "density_random",
+      "mean_psnr": 29.5744625,
+      "runs": 8
+    },
+    {
+      "budget": 5000,
+      "strategy": "floyd_steinberg",
+      "mean_psnr": 28.901875,
+      "runs": 8
+    },
+    {
+      "budget": 5000,
+      "strategy": "grid",
+      "mean_psnr": 28.2564,
+      "runs": 8
+    },
+    {
+      "budget": 5000,
+      "strategy": "iso_blue_noise",
+      "mean_psnr": 29.98915,
+      "runs": 8
+    },
+    {
+      "budget": 5000,
+      "strategy": "quadtree_aggregate",
+      "mean_psnr": 30.054325000000002,
+      "runs": 8
+    },
+    {
+      "budget": 5000,
+      "strategy": "quadtree_hybrid",
+      "mean_psnr": 30.209725,
+      "runs": 8
+    },
+    {
+      "budget": 5000,
+      "strategy": "quadtree_wse",
+      "mean_psnr": 30.2148,
+      "runs": 8
+    },
+    {
+      "budget": 5000,
+      "strategy": "random",
+      "mean_psnr": 27.5772,
+      "runs": 8
+    },
+    {
+      "budget": 5000,
+      "strategy": "random_relocate",
+      "mean_psnr": 28.029125,
+      "runs": 8
+    }
+  ],
+  "proxy_aggregate": [
+    {
+      "budget": 2000,
+      "strategy": "aniso_flanking",
+      "mean_psnr": 28.6504875,
+      "runs": 8
+    },
+    {
+      "budget": 2000,
+      "strategy": "aniso_onedge",
+      "mean_psnr": 28.6536125,
+      "runs": 8
+    },
+    {
+      "budget": 2000,
+      "strategy": "density_random",
+      "mean_psnr": 28.44955,
+      "runs": 8
+    },
+    {
+      "budget": 2000,
+      "strategy": "floyd_steinberg",
+      "mean_psnr": 26.44155,
+      "runs": 8
+    },
+    {
+      "budget": 2000,
+      "strategy": "grid",
+      "mean_psnr": 27.14795,
+      "runs": 8
+    },
+    {
+      "budget": 2000,
+      "strategy": "iso_blue_noise",
+      "mean_psnr": 28.50175,
+      "runs": 8
+    },
+    {
+      "budget": 2000,
+      "strategy": "quadtree_aggregate",
+      "mean_psnr": 28.4462625,
+      "runs": 8
+    },
+    {
+      "budget": 2000,
+      "strategy": "quadtree_hybrid",
+      "mean_psnr": 28.641962499999998,
+      "runs": 8
+    },
+    {
+      "budget": 2000,
+      "strategy": "quadtree_wse",
+      "mean_psnr": 28.7211,
+      "runs": 8
+    },
+    {
+      "budget": 2000,
+      "strategy": "random",
+      "mean_psnr": 26.7259625,
+      "runs": 8
+    },
+    {
+      "budget": 2000,
+      "strategy": "random_relocate",
+      "mean_psnr": 26.9734375,
+      "runs": 8
+    },
+    {
+      "budget": 5000,
+      "strategy": "aniso_flanking",
+      "mean_psnr": 32.1905375,
+      "runs": 8
+    },
+    {
+      "budget": 5000,
+      "strategy": "aniso_onedge",
+      "mean_psnr": 32.2941125,
+      "runs": 8
+    },
+    {
+      "budget": 5000,
+      "strategy": "density_random",
+      "mean_psnr": 32.0363125,
+      "runs": 8
+    },
+    {
+      "budget": 5000,
+      "strategy": "floyd_steinberg",
+      "mean_psnr": 32.2390125,
+      "runs": 8
+    },
+    {
+      "budget": 5000,
+      "strategy": "grid",
+      "mean_psnr": 31.044674999999998,
+      "runs": 8
+    },
+    {
+      "budget": 5000,
+      "strategy": "iso_blue_noise",
+      "mean_psnr": 32.2007125,
+      "runs": 8
+    },
+    {
+      "budget": 5000,
+      "strategy": "quadtree_aggregate",
+      "mean_psnr": 32.2988625,
+      "runs": 8
+    },
+    {
+      "budget": 5000,
+      "strategy": "quadtree_hybrid",
+      "mean_psnr": 32.4006125,
+      "runs": 8
+    },
+    {
+      "budget": 5000,
+      "strategy": "quadtree_wse",
+      "mean_psnr": 32.3661625,
+      "runs": 8
+    },
+    {
+      "budget": 5000,
+      "strategy": "random",
+      "mean_psnr": 30.6718375,
+      "runs": 8
+    },
+    {
+      "budget": 5000,
+      "strategy": "random_relocate",
+      "mean_psnr": 30.9932875,
+      "runs": 8
+    }
+  ],
+  "rank_correlation": [
+    {
+      "budget": 2000,
+      "metric": "psnr",
+      "strategies": 11,
+      "spearman_rho": 0.9363636363636365,
+      "full_top1": "aniso_onedge",
+      "proxy_top1": "quadtree_wse"
+    },
+    {
+      "budget": 5000,
+      "metric": "psnr",
+      "strategies": 11,
+      "spearman_rho": 0.9181818181818183,
+      "full_top1": "quadtree_wse",
+      "proxy_top1": "quadtree_hybrid"
+    }
+  ],
+  "sign_agreement": [
+    {
+      "budget": 2000,
+      "metric": "psnr",
+      "min_full_delta": 0.1,
+      "compared_pairs": 49,
+      "agreeing_pairs": 45,
+      "skipped_small_delta_pairs": 6,
+      "sign_agreement": 0.9183673469387755
+    },
+    {
+      "budget": 5000,
+      "metric": "psnr",
+      "min_full_delta": 0.1,
+      "compared_pairs": 49,
+      "agreeing_pairs": 46,
+      "skipped_small_delta_pairs": 6,
+      "sign_agreement": 0.9387755102040817
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "resolved": {
+    "images": [
+      "results/datasets/abl004/kodak24/kodim01.png",
+      "results/datasets/abl004/kodak24/kodim04.png",
+      "results/datasets/abl004/kodak24/kodim07.png",
+      "results/datasets/abl004/kodak24/kodim10.png",
+      "results/datasets/abl004/kodak24/kodim13.png",
+      "results/datasets/abl004/kodak24/kodim16.png",
+      "results/datasets/abl004/kodak24/kodim19.png",
+      "results/datasets/abl004/kodak24/kodim22.png"
+    ],
+    "budgets": [
+      2000,
+      5000
+    ],
+    "strategies": [
+      "random",
+      "grid",
+      "iso_blue_noise",
+      "aniso_onedge",
+      "aniso_flanking",
+      "quadtree_aggregate",
+      "quadtree_hybrid",
+      "quadtree_wse",
+      "floyd_steinberg",
+      "density_random",
+      "random_relocate"
+    ],
+    "seeds": [
+      0
+    ],
+    "iters": 750,
+    "target_psnr": 35.0,
+    "target_psnrs": [
+      28.0,
+      30.0,
+      32.0,
+      35.0
+    ],
+    "flank_offsets": [
+      0.5
+    ],
+    "flat_fracs": [
+      0.02
+    ],
+    "corner_fracs": [
+      0.15
+    ],
+    "max_axis_ratios": [
+      6.0
+    ],
+    "coherence_powers": [
+      1.0
+    ],
+    "render_chunk": 512,
+    "renderer": "cuda",
+    "pixel_loss": "l1",
+    "color_solve_every": null,
+    "color_solve_lambda": 0.0001,
+    "color_solve_maxiter": 32,
+    "early_exit": false,
+    "early_exit_window": 150,
+    "early_exit_min_delta": 0.02,
+    "early_exit_min_iters": null,
+    "ssim_weight": 0.3,
+    "compute_lpips": false,
+    "control_arms": {
+      "floyd_steinberg": {
+        "init_strategy": "aniso_flanking",
+        "sampling_mode": "floyd_steinberg",
+        "fit_control": "none"
+      },
+      "density_random": {
+        "init_strategy": "iso_blue_noise",
+        "sampling_mode": "density_random",
+        "fit_control": "none"
+      },
+      "random_relocate": {
+        "init_strategy": "random",
+        "sampling_mode": "wse",
+        "fit_control": "relocate"
+      }
+    },
+    "relocate_every": null,
+    "relocate_count": 64,
+    "max_side": 512,
+    "resume": false,
+    "max_new_cells": null
+  },
+  "device": "cuda",
+  "versions": {
+    "torch": "2.7.0+cu126",
+    "torch_cuda": "12.6",
+    "cuda_available": true,
+    "numpy": "2.2.4",
+    "structsplat": "0.1.0"
+  }
+}

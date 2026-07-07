@@ -17,6 +17,7 @@ import argparse
 import glob
 import itertools
 import json
+import math
 import os
 import time
 from html import escape
@@ -27,8 +28,10 @@ from typing import Any
 import numpy as np
 
 from benchmarks.common import load_image as _load_image
+from benchmarks.common import HEADLINE_TARGET_PSNRS, headline_target_psnrs
 from benchmarks.common import psnr_auc as _psnr_auc
 from benchmarks.common import run_config, write_config, write_csv, write_json
+from benchmarks.common import target_hit_stats, target_iters, target_label
 from structsplat.config import FitConfig, InitConfig, PyramidConfig, StructureTensorConfig
 
 # stage axes, in label order; values = the swappable options each stage exposes
@@ -342,7 +345,8 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
              pyramid_fractions, pyramid_iters_per_level, compute_lpips,
              target_psnr, target_psnrs, target_ms_ssim, target_bpp, adaptive_count,
              adaptive_growth_every, adaptive_growth_count, adaptive_split_mode,
-             adaptive_min_delta_psnr, adaptive_patience, log_every, verbose):
+             adaptive_min_delta_psnr, adaptive_patience, early_stop_patience,
+             early_stop_min_delta, early_stop_min_iters, log_every, verbose):
     from structsplat import init as _init
     from structsplat.fit import fit
     from structsplat.pyramid import fit_pyramid
@@ -404,6 +408,9 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         adaptive_split_mode=adaptive_split_mode,
         adaptive_min_delta_psnr=adaptive_min_delta_psnr,
         adaptive_patience=adaptive_patience,
+        early_stop_patience=early_stop_patience,
+        early_stop_min_delta=early_stop_min_delta,
+        early_stop_min_iters=early_stop_min_iters,
         log_every=log_every,
         **refine,
     )
@@ -449,11 +456,20 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         "ssim": round(float(out["ssim"]), 5),
         "ms_ssim": round(float(out["ms_ssim"]), 5),
         "lpips": out.get("lpips"),
-        "auc_psnr": _psnr_auc(history),
+        "auc_psnr": _psnr_auc(
+            history,
+            nominal_iters=iters if early_stop_patience is not None else None,
+        ),
+        "auc_psnr_horizon": (
+            "nominal_hold_last" if early_stop_patience is not None else "observed"
+        ),
         "iters_to_target": iters_to_target,
         "iters_to_targets": out.get("iters_to_targets", {}),
         "seconds_to_target": _seconds_to_target(history, iters_to_target),
         "n_gaussians": int(out["n_gaussians"]),
+        "iterations_run": int(out.get("iterations_run", iters)),
+        "stopped_early": bool(out.get("stopped_early", False)),
+        "stopped_at": out.get("stopped_at"),
         "init_seconds": init_seconds,
         "fit_seconds": fit_seconds,
         "total_seconds": elapsed,
@@ -552,6 +568,10 @@ def run_stage_search(
     adaptive_split_mode: str = "residual_tensor_add",
     adaptive_min_delta_psnr: float = 0.02,
     adaptive_patience: int = 2,
+    early_exit: bool = False,
+    early_exit_window: int = 150,
+    early_exit_min_delta: float = 0.02,
+    early_exit_min_iters: int | None = None,
     log_every: int | None = None,
     dedupe: bool = True,
     outdir="results/stage_search",
@@ -589,21 +609,6 @@ def run_stage_search(
     if not files:
         raise SystemExit("no images found")
 
-    write_config(str(out_path), run_config({
-        "images": files, "mode": mode, "budgets": list(budgets), "seeds": list(seeds),
-        "iters": iters, "max_side": max_side, "axes": {k: list(v) for k, v in axes.items()},
-        "render_chunk": render_chunk, "ssim_weight": ssim_weight, "split_every": split_every,
-        "ssim_backend": ssim_backend,
-        "split_count": split_count, "prune_every": prune_every,
-        "prune_min_activity": prune_min_activity, "max_gaussians": max_gaussians,
-        "target_psnr": target_psnr, "target_ms_ssim": target_ms_ssim,
-        "target_bpp": target_bpp, "adaptive_count": adaptive_count,
-        "adaptive_growth_every": adaptive_growth_every,
-        "adaptive_growth_count": adaptive_growth_count,
-        "adaptive_split_mode": adaptive_split_mode,
-        "adaptive_min_delta_psnr": adaptive_min_delta_psnr,
-        "adaptive_patience": adaptive_patience, "dedupe": dedupe,
-    }, device=device))
     if pyramid_iters_per_level is None:
         pyramid_iters_per_level = max(1, iters // max(1, pyramid_levels))
     if split_every is None:
@@ -621,6 +626,29 @@ def run_stage_search(
         lr_decay_every = max(1, iters // 3)
     if log_every is None:
         log_every = max(1, iters // 20)  # fine enough for a meaningful PSNR AUC
+
+    write_config(str(out_path), run_config({
+        "images": files, "mode": mode, "budgets": list(budgets), "seeds": list(seeds),
+        "iters": iters, "max_side": max_side, "axes": {k: list(v) for k, v in axes.items()},
+        "render_chunk": render_chunk, "ssim_weight": ssim_weight, "split_every": split_every,
+        "ssim_backend": ssim_backend,
+        "split_count": split_count, "prune_every": prune_every,
+        "prune_min_activity": prune_min_activity, "max_gaussians": max_gaussians,
+        "target_psnr": target_psnr, "target_psnrs": list(target_psnrs),
+        "target_ms_ssim": target_ms_ssim, "target_bpp": target_bpp,
+        "adaptive_count": adaptive_count,
+        "adaptive_growth_every": adaptive_growth_every,
+        "adaptive_growth_count": adaptive_growth_count,
+        "adaptive_split_mode": adaptive_split_mode,
+        "adaptive_min_delta_psnr": adaptive_min_delta_psnr,
+        "adaptive_patience": adaptive_patience,
+        "early_exit": early_exit,
+        "early_exit_window": early_exit_window,
+        "early_exit_min_delta": early_exit_min_delta,
+        "early_exit_min_iters": early_exit_min_iters,
+        "log_every": log_every,
+        "dedupe": dedupe,
+    }, device=device))
 
     canonical = {_AXIS_TO_KEY[a]: vals[0] for a, vals in axes.items()}
     raw = _influence_configs(axes) if mode == "influence" else _iter_configs(axes)
@@ -677,6 +705,33 @@ def run_stage_search(
                         "config_label": cfg["label"],
                         "is_baseline": cfg["label"] == baseline_label,
                     }
+                    early_stop_patience = None
+                    early_stop_min_iters_resolved = 0
+                    if early_exit:
+                        early_stop_patience = max(
+                            1,
+                            int(math.ceil(max(1, early_exit_window) / max(1, log_every))),
+                        )
+                        early_stop_min_iters_resolved = int(early_exit_min_iters or 0)
+                        if adds:
+                            early_stop_min_iters_resolved = max(
+                                early_stop_min_iters_resolved,
+                                int(split_every),
+                            )
+                        if adaptive_count:
+                            early_stop_min_iters_resolved = max(
+                                early_stop_min_iters_resolved,
+                                int(adaptive_growth_every),
+                            )
+                    base_row.update({
+                        "early_exit": bool(early_exit),
+                        "early_stop_patience": early_stop_patience,
+                        "early_stop_min_delta": (
+                            early_exit_min_delta if early_stop_patience is not None else None
+                        ),
+                        "early_stop_min_iters": early_stop_min_iters_resolved
+                        if early_stop_patience is not None else None,
+                    })
                     try:
                         metrics = _run_one(
                             img, target, cfg, budget=init_budget, seed=seed, iters=iters,
@@ -702,6 +757,9 @@ def run_stage_search(
                             adaptive_split_mode=adaptive_split_mode,
                             adaptive_min_delta_psnr=adaptive_min_delta_psnr,
                             adaptive_patience=adaptive_patience,
+                            early_stop_patience=early_stop_patience,
+                            early_stop_min_delta=early_exit_min_delta,
+                            early_stop_min_iters=early_stop_min_iters_resolved,
                             log_every=log_every, verbose=verbose,
                         )
                         row = {**base_row, "status": "ok", **metrics}
@@ -727,6 +785,42 @@ def _fmt(v, spec=".4f"):
     return format(v, spec) if v is not None else "-"
 
 
+def _target_table_columns(targets: list[float]) -> tuple[str, str]:
+    header = "".join(
+        f" | Hit {target_label(t)} | Iter {target_label(t)}"
+        for t in targets
+    )
+    align = "|---:" * (2 * len(targets))
+    return header, align
+
+
+def _target_cells(rows: list[dict[str, Any]], targets: list[float]) -> str:
+    cells = []
+    for target in targets:
+        stats = target_hit_stats(rows, target)
+        cells.append(f"{stats['hits']}/{stats['runs']}")
+        cells.append(_fmt(stats["mean_iter"], ".0f"))
+    return " | ".join(cells)
+
+
+def _target_delta_stat(pairs: list[dict], target: float) -> str:
+    ds = []
+    for p in pairs:
+        rv = target_iters(p["r"], target)
+        bv = target_iters(p["b"], target)
+        if rv is not None and bv is not None:
+            ds.append(rv - bv)
+    if not ds:
+        return "-"
+    return f"{mean(ds):+.1f} ± {pstdev(ds):.1f}"
+
+
+def _target_reach_stat(pairs: list[dict], target: float) -> str:
+    rv = sum(1 for p in pairs if target_iters(p["r"], target) is not None)
+    bv = sum(1 for p in pairs if target_iters(p["b"], target) is not None)
+    return f"{rv}/{bv}/{len(pairs)}"
+
+
 def summarize(rows, top_k: int = 20) -> str:
     rows = [r for r in rows if r.get("status") != "error"]  # broken cells never enter the ranking
     if not rows:
@@ -739,25 +833,28 @@ def summarize(rows, top_k: int = 20) -> str:
         psnrs = [v["psnr"] for v in vals]
         ranked.append((mean(psnrs), key, vals))
     ranked.sort(reverse=True, key=lambda x: x[0])
+    targets = headline_target_psnrs(rows, defaults=HEADLINE_TARGET_PSNRS)
+    target_header, target_align = _target_table_columns(targets)
 
     lines = [
         "# StructSplat Stage Search",
         "",
-        "| Rank | Budget | Mean PSNR | Std | Mean MS-SSIM | Mean AUC | Iters→target | Mean fit s | Config |",
-        "|---:|---:|---:|---:|---:|---:|---:|---:|---|",
+        "| Rank | Budget | Mean PSNR | Std | Mean MS-SSIM | Mean AUC"
+        f"{target_header} | Mean fit s | Config |",
+        "|---:|---:|---:|---:|---:|---:"
+        f"{target_align}|---:|---|",
     ]
     for rank, (_, _key, vals) in enumerate(ranked[:top_k], 1):
         psnrs = [v["psnr"] for v in vals]
         ms = [v["ms_ssim"] for v in vals]
         sec = [v["fit_seconds"] for v in vals]
         aucs = [v["auc_psnr"] for v in vals if v.get("auc_psnr") is not None]
-        itt = [v["iters_to_target"] for v in vals if v.get("iters_to_target") is not None]
         label = vals[0]["config_label"]
         budget = vals[0]["budget"]
         lines.append(
             f"| {rank} | {budget} | {mean(psnrs):.4f} | {pstdev(psnrs):.4f} | "
             f"{mean(ms):.5f} | {_fmt(mean(aucs) if aucs else None, '.3f')} | "
-            f"{_fmt(mean(itt) if itt else None, '.0f')} ({len(itt)}/{len(vals)}) | "
+            f"{_target_cells(vals, targets)} | "
             f"{mean(sec):.2f} | `{label}` |"
         )
     lines += ["", stage_effects(rows)]
@@ -772,11 +869,15 @@ def stage_effects(rows) -> str:
     reports paired deltas against the baseline instead.
     """
     rows = [r for r in rows if r.get("status") != "error"]
+    targets = headline_target_psnrs(rows, defaults=HEADLINE_TARGET_PSNRS)
+    target_header, target_align = _target_table_columns(targets)
     lines = [
         "## Per-stage marginal means",
         "",
-        "| Stage | Level | Runs | PSNR | MS-SSIM | AUC | Iters→target | Fit s |",
-        "|---|---|---:|---:|---:|---:|---:|---:|",
+        "| Stage | Level | Runs | PSNR | MS-SSIM | AUC"
+        f"{target_header} | Fit s |",
+        "|---|---|---:|---:|---:|---:"
+        f"{target_align}|---:|",
     ]
     for stage in STAGE_KEYS:
         levels = sorted({r[stage] for r in rows})
@@ -787,12 +888,11 @@ def stage_effects(rows) -> str:
             psnrs = [r["psnr"] for r in sub]
             ms = [r["ms_ssim"] for r in sub]
             aucs = [r["auc_psnr"] for r in sub if r.get("auc_psnr") is not None]
-            itt = [r["iters_to_target"] for r in sub if r.get("iters_to_target") is not None]
             sec = [r["fit_seconds"] for r in sub]
             lines.append(
                 f"| {stage} | {lv} | {len(sub)} | {mean(psnrs):.3f} ± {pstdev(psnrs):.3f} | "
                 f"{mean(ms):.5f} | {_fmt(mean(aucs) if aucs else None, '.3f')} | "
-                f"{_fmt(mean(itt) if itt else None, '.0f')} ({len(itt)}/{len(sub)}) | "
+                f"{_target_cells(sub, targets)} | "
                 f"{mean(sec):.2f} |"
             )
     return "\n".join(lines)
@@ -829,12 +929,13 @@ def summarize_influence(rows, baseline_label: str) -> str:
             return "-"
         return f"{mean(ds):+.3f} ± {pstdev(ds):.3f}"
 
-    def treach(pairs):
-        rv = sum(1 for p in pairs if p["r"].get("iters_to_target") is not None)
-        rb = sum(1 for p in pairs if p["b"].get("iters_to_target") is not None)
-        return f"{rv}/{rb}/{len(pairs)}"
-
     base_auc = [r["auc_psnr"] for r in base.values() if r.get("auc_psnr") is not None]
+    targets = headline_target_psnrs(rows, defaults=HEADLINE_TARGET_PSNRS)
+    target_delta_header = "".join(
+        f" | Δiter@{target_label(t)} | reach@{target_label(t)}"
+        for t in targets
+    )
+    target_delta_align = "|---:" * (2 * len(targets))
     lines = [
         "# Stage influence (paired deltas vs baseline)",
         "",
@@ -846,10 +947,12 @@ def summarize_influence(rows, baseline_label: str) -> str:
         f"fit {mean(r['fit_seconds'] for r in base.values()):.2f}s over {len(base)} cells.",
         "",
         "Positive ΔPSNR/ΔMS-SSIM/ΔAUC = variant better than baseline; negative Δiters/Δs = faster.",
-        "reached = target reached (variant/baseline/cells).",
+        "reach@target = target reached (variant/baseline/cells).",
         "",
-        "| Stage | Variant | Cells | ΔPSNR | ΔMS-SSIM | ΔAUC | Δiters→target | reached | Δinit s | Δfit s |",
-        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Stage | Variant | Cells | ΔPSNR | ΔMS-SSIM | ΔAUC"
+        f"{target_delta_header} | Δinit s | Δfit s |",
+        "|---|---|---:|---:|---:|---:"
+        f"{target_delta_align}|---:|---:|",
     ]
     order = {k: i for i, k in enumerate(STAGE_KEYS)}
     for (stage, label), pairs in sorted(variants.items(),
@@ -857,7 +960,11 @@ def summarize_influence(rows, baseline_label: str) -> str:
         lines.append(
             f"| {stage} | `{label}` | {len(pairs)} | {dstat(pairs, 'psnr')} | "
             f"{dstat(pairs, 'ms_ssim')} | {dstat(pairs, 'auc_psnr')} | "
-            f"{dstat(pairs, 'iters_to_target')} | {treach(pairs)} | "
+            + " | ".join(
+                f"{_target_delta_stat(pairs, t)} | {_target_reach_stat(pairs, t)}"
+                for t in targets
+            )
+            + " | "
             f"{dstat(pairs, 'init_seconds')} | {dstat(pairs, 'fit_seconds')} |"
         )
     return "\n".join(lines) + "\n"
@@ -1085,6 +1192,14 @@ def main():
                    default="residual_tensor_add")
     p.add_argument("--adaptive-min-delta-psnr", type=float, default=0.02)
     p.add_argument("--adaptive-patience", type=int, default=2)
+    p.add_argument("--early-exit", action="store_true",
+                   help="opt-in plateau early exit; AUC holds last PSNR to the nominal horizon")
+    p.add_argument("--early-exit-window", type=int, default=150,
+                   help="plateau window in iterations; translated to logged PSNR samples")
+    p.add_argument("--early-exit-min-delta", type=float, default=0.02,
+                   help="minimum PSNR improvement over the window to keep running")
+    p.add_argument("--early-exit-min-iters", type=int, default=None,
+                   help="absolute iteration floor before early exit may trigger")
     p.add_argument("--log-every", type=int, default=None)
     p.add_argument("--no-dedupe", action="store_true",
                    help="keep configs that are provably equivalent (not recommended)")
@@ -1130,6 +1245,10 @@ def main():
         adaptive_split_mode=a.adaptive_split_mode,
         adaptive_min_delta_psnr=a.adaptive_min_delta_psnr,
         adaptive_patience=a.adaptive_patience,
+        early_exit=a.early_exit,
+        early_exit_window=a.early_exit_window,
+        early_exit_min_delta=a.early_exit_min_delta,
+        early_exit_min_iters=a.early_exit_min_iters,
         log_every=a.log_every, dedupe=not a.no_dedupe,
         max_configs=a.max_configs, shuffle_configs=a.shuffle_configs,
         config_seed=a.config_seed, outdir=a.outdir, device=a.device, verbose=a.verbose,

@@ -1,0 +1,40 @@
+{
+  "baseline": "results/bench004_proxy_512_750/ablation.json",
+  "early_exit": "results/bench004_early_exit_512_750_5k/ablation.json",
+  "budget": 5000,
+  "metric_threshold_db": 0.1,
+  "early_exit_window": 150,
+  "early_exit_min_delta": 0.02,
+  "nominal_iters_per_cell": 750,
+  "cells": 88,
+  "stopped_rows": 13,
+  "nominal_total_iters": 66000,
+  "actual_total_iters": 65257,
+  "iteration_saving_fraction": 0.0112575757575758,
+  "baseline_fit_seconds": 138.6311411857605,
+  "early_exit_fit_seconds": 136.33786582946777,
+  "fit_seconds_saving_fraction": 0.016542281457669228,
+  "early_exit_wall_seconds": 180.99,
+  "metrics": [
+    {
+      "metric": "psnr",
+      "spearman_rho": 0.8636363636363636,
+      "base_top1": "quadtree_hybrid",
+      "early_exit_top1": "quadtree_hybrid",
+      "compared_pairs": 43,
+      "agreeing_pairs": 41,
+      "skipped_small_deltas": 12,
+      "sign_agreement": 0.9534883720930233
+    },
+    {
+      "metric": "auc_psnr",
+      "spearman_rho": 1.0,
+      "base_top1": "quadtree_hybrid",
+      "early_exit_top1": "quadtree_hybrid",
+      "compared_pairs": 43,
+      "agreeing_pairs": 43,
+      "skipped_small_deltas": 12,
+      "sign_agreement": 1.0
+    }
+  ]
+}

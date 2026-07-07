@@ -50,6 +50,12 @@ __all__ = [
     "save_image",
     "target_tensor",
     "bilinear_sample",
+    "HEADLINE_TARGET_PSNRS",
+    "target_key",
+    "target_label",
+    "target_iters",
+    "headline_target_psnrs",
+    "target_hit_stats",
     "psnr_auc",
     "json_safe_rows",
     "write_json",
@@ -83,6 +89,8 @@ ANALOGUE_NOTES = {
     "image_gs": "gradient-density init plus residual progressive additions",
     "instant_gi_quadtree": "Instant-GI quadtree/Delaunay fallback; no learned checkpoint",
 }
+
+HEADLINE_TARGET_PSNRS = (28.0, 30.0, 32.0)
 
 
 def load_image(path: str | Path, max_side: int | None = None) -> np.ndarray:
@@ -127,8 +135,77 @@ def bilinear_sample(img: np.ndarray, pts: np.ndarray) -> np.ndarray:
     ).astype(np.float32)
 
 
-def psnr_auc(history: dict[str, Any], round_digits: int | None = None) -> float | None:
-    """Mean PSNR over the logged fit trajectory."""
+def target_key(target: float) -> str:
+    return str(float(target))
+
+
+def target_label(target: float) -> str:
+    return f"{float(target):g}"
+
+
+def target_iters(row: dict[str, Any], target: float) -> int | None:
+    """Return the first iteration for a target PSNR from a benchmark row."""
+    targets = row.get("iters_to_targets") or {}
+    if isinstance(targets, dict):
+        raw = targets.get(target_key(target))
+        if raw is None:
+            raw = targets.get(target_label(target))
+        if raw is not None:
+            try:
+                return int(raw)
+            except (TypeError, ValueError):
+                return None
+    legacy = row.get("target_psnr")
+    if legacy is not None and float(legacy) == float(target):
+        raw = row.get("iters_to_target")
+        if raw is not None:
+            try:
+                return int(raw)
+            except (TypeError, ValueError):
+                return None
+    return None
+
+
+def headline_target_psnrs(
+    rows: Iterable[dict[str, Any]] | None = None,
+    *,
+    defaults: Iterable[float] = HEADLINE_TARGET_PSNRS,
+) -> list[float]:
+    """Headline convergence targets: BENCH-004 excludes the legacy unreachable 35 dB target."""
+    defaults = [float(t) for t in defaults]
+    present: set[float] = set()
+    for row in rows or []:
+        for key in (row.get("iters_to_targets") or {}).keys():
+            try:
+                present.add(float(key))
+            except (TypeError, ValueError):
+                continue
+    selected = [t for t in defaults if not present or t in present]
+    return selected or defaults
+
+
+def target_hit_stats(rows: Iterable[dict[str, Any]], target: float) -> dict[str, float | int | None]:
+    rows = list(rows)
+    vals = [target_iters(row, target) for row in rows]
+    reached = [v for v in vals if v is not None]
+    return {
+        "runs": len(rows),
+        "hits": len(reached),
+        "hit_rate": len(reached) / len(rows) if rows else None,
+        "mean_iter": mean_or_none(reached),
+    }
+
+
+def psnr_auc(
+    history: dict[str, Any],
+    round_digits: int | None = None,
+    nominal_iters: int | None = None,
+) -> float | None:
+    """Mean PSNR over the logged fit trajectory.
+
+    When ``nominal_iters`` is supplied, the last logged PSNR is held to the nominal final
+    iteration. This keeps early-exited cells comparable to full-budget cells.
+    """
     its = history.get("iter", [])
     ps = history.get("psnr", [])
     if not ps:
@@ -137,7 +214,14 @@ def psnr_auc(history: dict[str, Any], round_digits: int | None = None) -> float 
         value = float(ps[0])
     else:
         trapezoid = getattr(np, "trapezoid", None) or np.trapz
-        value = float(trapezoid(ps, its) / max(its[-1] - its[0], 1))
+        end = float(its[-1])
+        area = float(trapezoid(ps, its))
+        if nominal_iters is not None:
+            nominal_end = max(float(nominal_iters) - 1.0, float(its[0]))
+            if nominal_end > end:
+                area += (nominal_end - end) * float(ps[-1])
+            end = max(end, nominal_end)
+        value = float(area / max(end - float(its[0]), 1.0))
     return round(value, round_digits) if round_digits is not None else value
 
 

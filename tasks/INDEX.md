@@ -35,7 +35,6 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | FIT-012 | Edge-weighted pixel loss (structure-tensor loss weighting) | todo | FIT-001, INIT-001 |
 | HIER-003 | Pyramid equal-iteration diagnosis (fix or retire HIER-001) | todo | HIER-001, HIER-002 |
 | CORE-009 | DC / background layer under the detail Gaussians | todo | CORE-001, ADR-0003/0006 |
-| BENCH-004 | Sweep-cost controls (plateau exit, multi-target tables, proxy regime) | todo | BENCH-002, FIT-003 |
 
 ## Retired Done Tasks
 
@@ -63,6 +62,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | BENCH-001 | Metric protocol (PSNR/MS-SSIM/LPIPS + iters-to-target) | `done/BENCH-001-metrics.md` |
 | BENCH-002 | Benchmark harness experimental-validity fixes (equal budgets, resumable sweeps, seed-aware comparisons) | `done/BENCH-002-harness-validity.md` |
 | BENCH-003 | Benchmark script consolidation + documentation | `done/BENCH-003-benchmark-consolidation.md` |
+| BENCH-004 | Sweep-cost controls (plateau exit, multi-target tables, proxy regime) | `done/BENCH-004-sweep-cost-controls.md` |
 | ABL-003 | Bisect the undiagnosed −0.794 dB flagship regression | `done/ABL-003-regression-bisect.md` |
 | MERGE-001 | Integrate Claude core optimizations and Codex stage search into main | `done/MERGE-001-claude-codex-main.md` |
 | COMP-002 | Codec / metrics / CLI correctness and protocol fixes | `done/COMP-002-codec-correctness.md` |
@@ -99,8 +99,8 @@ review suggests the most pragmatic improvement order:
 The 2026-07-04..07 evidence answered the flanking question negatively (INIT-004; retirement is
 INIT-007) and shifted the frontier from init strategies to fitter knobs and sweep economics:
 
-1. BENCH-004 sweep-cost controls first — every task below buys more evidence per GPU-hour once
-   the plateau exit, multi-target tables, and calibrated proxy regime exist.
+1. BENCH-004 sweep-cost controls — completed 2026-07-07. Use the 512/750 proxy screen for cheap
+   screening, keep early exit opt-in, and promote only from full fair-regime evidence.
 2. ABL-005 fitter-knob influence pass — the +0.26 dB `charbonnier`/`variance`/`opacity` bundle
    and the FIT-005/006/007/CORE-006 candidates, isolated at the fair regime. Highest expected
    dB-per-GPU-hour in the queue.

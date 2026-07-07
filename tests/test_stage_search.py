@@ -11,6 +11,7 @@ from benchmarks.stage_search import (
     _canonicalize,
     _color_solve_kwargs,
     _refine_kwargs,
+    summarize,
 )
 
 
@@ -61,6 +62,90 @@ def test_stage_search_writes_ranked_outputs(tmp_path):
     assert "stage_search.csv" in index
     assert "summary.md" in index
     assert "Per-Stage Marginals" in index
+
+
+def test_stage_search_summary_uses_headline_target_columns():
+    base = {
+        "status": "ok",
+        "image": "toy",
+        "budget": 16,
+        "seed": 0,
+        "psnr": 30.0,
+        "ms_ssim": 0.9,
+        "auc_psnr": 29.0,
+        "fit_seconds": 0.1,
+        "iters_to_target": None,
+        "iters_to_targets": {"28.0": 2, "30.0": 5, "32.0": None, "35.0": None},
+    }
+    base.update({
+        "strategy": "aniso_flanking",
+        "tensor": "central",
+        "tensor_color": "luma",
+        "density": "structure",
+        "sampling": "wse",
+        "orientation": "tensor",
+        "color": "bilinear",
+        "scale": "spacing",
+        "scale_cap": "none",
+        "opacity": "none",
+        "renderer": "normalized",
+        "aa": 0.0,
+        "color_basis": "constant",
+        "color_solve": "none",
+        "loss": "l1",
+        "optimizer": "adam",
+        "lr_schedule": "none",
+        "refine": "none",
+        "pyramid": "single",
+    })
+    base["config_label"] = "baseline"
+
+    text = summarize([base])
+
+    assert "Hit 28" in text
+    assert "Iter 30" in text
+    assert "Iters→target" not in text
+    assert "Hit 35" not in text
+
+
+def test_stage_search_early_exit_is_opt_in_and_records_nominal_auc(tmp_path):
+    img_path = tmp_path / "toy.png"
+    _write_toy(img_path)
+    rows = run_stage_search(
+        [str(img_path)],
+        budgets=[16],
+        seeds=[0],
+        iters=20,
+        max_side=None,
+        strategies=["aniso_flanking"],
+        tensor_operators=["central"],
+        density_modes=["structure"],
+        sampling_modes=["density_random"],
+        color_modes=["bilinear"],
+        scale_modes=["spacing"],
+        scale_cap_modes=["none"],
+        opacity_modes=["none"],
+        renderers=["normalized"],
+        pixel_losses=["l1"],
+        optimizers=["adam"],
+        lr_schedules=["none"],
+        refine_modes=["none"],
+        pyramid_modes=["single"],
+        early_exit=True,
+        early_exit_window=1,
+        early_exit_min_delta=1e6,
+        log_every=1,
+        render_chunk=8,
+        outdir=str(tmp_path / "early"),
+        device="cpu",
+    )
+
+    assert len(rows) == 1
+    row = rows[0]
+    assert row["stopped_early"] is True
+    assert row["stopped_at"] is not None
+    assert row["iterations_run"] < 20
+    assert row["auc_psnr_horizon"] == "nominal_hold_last"
 
 
 def test_stage_search_dedupes_equivalent_configs(tmp_path):
