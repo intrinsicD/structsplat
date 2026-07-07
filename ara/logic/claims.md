@@ -66,10 +66,13 @@ HIER-003 overturned the stale claim that the image pyramid simply loses final qu
 an AUC loss for the old 750/750 two-level schedule. HIER-004 repaired that local tradeoff with
 explicit per-level iteration schedules: `level_iters=[150, 1350]` on the 0.35/0.65 budget split
 beats the 750/750 pyramid control by +0.0601 dB mean PSNR and is AUC-neutral versus single-stage
-(+0.0011 mean AUC) on the difficult-four 2k/5k slice. Keep `pyramid=single` as the shipped default
-until larger multi-seed confirmation; use 150/1350 as the pyramid quality candidate. See
-`ara/evidence/hier003-pyramid-diagnosis-2026-07-07/` and
-`ara/evidence/hier004-pyramid-convergence-repair-2026-07-07/`.
+(+0.0011 mean AUC) on the difficult-four 2k/5k slice. HIER-001's additive-renderer follow-up did
+not improve the story: on the 512-Gaussian Kodak4 slice, `cuda_additive pyramid` lost to
+`cuda_additive single` by -0.3743 dB and to `cuda pyramid` by -0.6075 dB. Keep `pyramid=single`
+as the shipped default until larger multi-seed confirmation; use normalized-renderer 150/1350 as
+the pyramid quality candidate. See `ara/evidence/hier003-pyramid-diagnosis-2026-07-07/`,
+`ara/evidence/hier004-pyramid-convergence-repair-2026-07-07/`, and
+`ara/evidence/hier001-additive-pyramid-2026-07-07/`.
 
 ## C08: The counted background layer is a low-budget candidate, not a default
 

@@ -8,7 +8,6 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 
 | ID | Title | Status | Depends on |
 |----|-------|--------|-----------|
-| HIER-001 | Progressive pyramid (residual-driven densification) | partial | INIT-002, FIT-001 |
 | ABL-001 | Init-strategy x budget sweep (the core experiment + fitness) | partial | INIT-003/004, BENCH-001 |
 | ABL-002 | Full stage-combination search | partial | CORE, INIT, FIT, HIER, BENCH |
 | GEN-001 | Generative 2D Gaussians via SDS distillation (no dataset) | todo | CORE-001, ADR-0006 |
@@ -53,6 +52,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | FIT-011 | Split-recovery micro-levers (moment seeding, warmup, scheduled fade) | `done/FIT-011-split-recovery-microlevers.md` |
 | FIT-012 | Edge-weighted pixel loss (structure-tensor loss weighting) | `done/FIT-012-edge-weighted-loss.md` |
 | FF-001 | Feed-forward init predictor (warm-start) | `done/FF-001-feedforward-predictor.md` |
+| HIER-001 | Progressive pyramid (residual-driven densification) | `done/HIER-001-progressive-pyramid.md` |
 | HIER-002 | Pyramid bookkeeping (iteration accounting, budgets, schedules) | `done/HIER-002-pyramid-bookkeeping.md` |
 | HIER-003 | Pyramid equal-iteration diagnosis (fix or retire HIER-001) | `done/HIER-003-pyramid-iteration-accounting.md` |
 | HIER-004 | Pyramid convergence repair and promotion decision | `done/HIER-004-pyramid-convergence-repair.md` |

@@ -82,6 +82,25 @@ def test_pyramid_accepts_explicit_level_iteration_schedule():
     assert max(out["history"]["iter"]) == 5
 
 
+def test_pyramid_runs_with_additive_renderer():
+    img = _toy()
+    target = torch.as_tensor(img)
+    icfg = InitConfig(strategy="iso_blue_noise", num_gaussians=24, seed=0)
+    fcfg = FitConfig(iters=999, log_every=1, renderer="additive", ssim_weight=0.0)
+    pcfg = PyramidConfig(
+        levels=2,
+        level_fractions=[0.35, 0.65],
+        level_iters=[2, 3],
+    )
+
+    out = fit_pyramid(img, target, icfg, fcfg, pcfg, verbose=False)
+
+    assert out["iterations_run"] == 5
+    assert out["level_budgets"] == [8, 16]
+    assert out["prefix_metrics"] is not None
+    assert np.isfinite(out["psnr"])
+
+
 def test_pyramid_rejects_incomplete_level_iteration_schedule():
     img = _toy()
     target = torch.as_tensor(img)
