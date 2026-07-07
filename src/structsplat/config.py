@@ -147,6 +147,10 @@ class FitConfig:
     log_every: int = 100
     sigma_cutoff: float = 3.0          # render support radius in std devs
     support_fade: bool = False         # C0 compact support: subtract Gaussian tail at cutoff
+    # None preserves support_fade as a static bool. A fraction enables fade only for the early
+    # part of the fit, then ramps it off over support_fade_crossfade_iters.
+    support_fade_until_frac: float | None = None
+    support_fade_crossfade_iters: int = 10
     aa_dilation: float = 0.0           # EWA-style low-pass: render with Sigma + d*I (px^2)
     render_chunk: int = 512            # reference renderer: max(render_chunk,64)*4096 elements
     renderer: str = "normalized"       # normalized/additive/cuda/cuda_tiled/gsplat variants
@@ -182,6 +186,9 @@ class FitConfig:
     split_oversample: float = 1.0       # residual_add candidate multiplier before spacing NMS
     split_min_spacing: float = 0.0      # residual_add NMS radius = this * base densify scale
     split_color_init: str = "target"    # target or residual; additive renderers force residual
+    seed_new_row_optimizer_state: bool = False  # seed split children from parent/median moments
+    new_row_temper_iters: int = 0        # post-insert update ramp length; 0 disables
+    new_row_temper_start: float = 0.25   # first-step update multiplier for young rows
     absgrad_decay: float = 1.0          # AbsGS-style |dL/dmu| accumulation decay
     relocate_every: int | None = None
     relocate_at_split: bool = False      # relocate on split/growth iterations without a separate timer
@@ -210,6 +217,16 @@ class FitConfig:
         # NaN renders (CORE-004). Reject it at construction rather than mid-fit.
         if self.aa_dilation < 0.0:
             raise ValueError(f"aa_dilation must be >= 0, got {self.aa_dilation}")
+        if self.support_fade_until_frac is not None and not (
+            0.0 <= self.support_fade_until_frac <= 1.0
+        ):
+            raise ValueError(
+                "support_fade_until_frac must be in [0, 1] when set, "
+                f"got {self.support_fade_until_frac}")
+        if self.support_fade_crossfade_iters < 0:
+            raise ValueError(
+                "support_fade_crossfade_iters must be >= 0, "
+                f"got {self.support_fade_crossfade_iters}")
         if self.color_solve_every is not None and self.color_solve_every < 0:
             raise ValueError(
                 f"color_solve_every must be >= 0 or None, got {self.color_solve_every}")
@@ -283,6 +300,13 @@ class FitConfig:
         if self.split_color_init not in ("target", "residual"):
             raise ValueError(
                 f"split_color_init must be target or residual, got {self.split_color_init!r}")
+        if self.new_row_temper_iters < 0:
+            raise ValueError(
+                f"new_row_temper_iters must be >= 0, got {self.new_row_temper_iters}")
+        if not 0.0 <= self.new_row_temper_start <= 1.0:
+            raise ValueError(
+                "new_row_temper_start must be in [0, 1], "
+                f"got {self.new_row_temper_start}")
         if not 0.0 <= self.absgrad_decay <= 1.0:
             raise ValueError(f"absgrad_decay must be in [0, 1], got {self.absgrad_decay}")
         if self.relocate_count < 0:

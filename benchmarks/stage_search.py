@@ -47,7 +47,8 @@ STAGE_KEYS = [
     "strategy", "tensor", "tensor_color", "density", "sampling", "orientation", "color",
     "scale", "scale_cap", "opacity", "renderer", "aa", "color_basis", "color_solve", "loss",
     "optimizer", "lr_schedule", "refine_site", "refine_primitive", "refine_nms",
-    "refine_color", "refine_prune", "refine_relocate", "pyramid",
+    "refine_color", "refine_prune", "refine_relocate", "state_seed", "row_temper",
+    "support_fade", "pyramid",
 ]
 
 FACTORIAL_DEFAULTS: dict[str, tuple[str, ...]] = {
@@ -76,6 +77,9 @@ FACTORIAL_DEFAULTS: dict[str, tuple[str, ...]] = {
     "refine_color_inits": ("target",),
     "refine_prune_modes": ("off",),
     "refine_relocate_modes": ("off",),
+    "state_seed_modes": ("off",),
+    "row_temper_modes": ("off",),
+    "support_fade_modes": ("off",),
     "pyramid_modes": ("single",),
 }
 
@@ -115,6 +119,9 @@ INFLUENCE_DEFAULTS: dict[str, tuple[str, ...]] = {
     "refine_color_inits": ("target", "residual"),
     "refine_prune_modes": ("off", "on"),
     "refine_relocate_modes": ("off", "on"),
+    "state_seed_modes": ("off", "on"),
+    "row_temper_modes": ("off", "warmup5"),
+    "support_fade_modes": ("off",),
     "pyramid_modes": ("single", "pyramid"),
 }
 
@@ -135,6 +142,8 @@ _AXIS_TO_KEY = {
     "refine_sites": "refine_site", "refine_primitives": "refine_primitive",
     "refine_nms_modes": "refine_nms", "refine_color_inits": "refine_color",
     "refine_prune_modes": "refine_prune", "refine_relocate_modes": "refine_relocate",
+    "state_seed_modes": "state_seed", "row_temper_modes": "row_temper",
+    "support_fade_modes": "support_fade",
     "pyramid_modes": "pyramid",
 }
 
@@ -222,6 +231,9 @@ def _canonicalize(cfg: dict[str, Any], canonical: dict[str, str]) -> dict[str, A
         # primitives ignore them, so pin them to avoid duplicate equivalent cells.
         c["refine_nms"] = canonical["refine_nms"]
         c["refine_color"] = canonical["refine_color"]
+    if c.get("refine_site") == "none" and c.get("refine_relocate") != "on":
+        c["state_seed"] = canonical["state_seed"]
+        c["row_temper"] = canonical["row_temper"]
     c = _normalize_refine_config(c)
     return c
 
@@ -322,6 +334,9 @@ def _normalize_refine_config(cfg: dict[str, Any]) -> dict[str, Any]:
         c.setdefault("refine_color", "target")
         c.setdefault("refine_prune", "off")
         c.setdefault("refine_relocate", "off")
+    c.setdefault("state_seed", "off")
+    c.setdefault("row_temper", "off")
+    c.setdefault("support_fade", "off")
     c["refine"] = _refine_label(c)
     return c
 
@@ -441,6 +456,80 @@ def _color_solve_kwargs(mode: str) -> dict[str, Any]:
     }
 
 
+def _state_seed_kwargs(mode: str) -> dict[str, Any]:
+    if mode in ("off", "none", "false", "0"):
+        return {"seed_new_row_optimizer_state": False}
+    if mode in ("on", "seed", "parent", "true", "1"):
+        return {"seed_new_row_optimizer_state": True}
+    raise ValueError(f"unknown state_seed mode {mode!r}; expected off or on")
+
+
+def _row_temper_kwargs(mode: str) -> dict[str, Any]:
+    if mode in ("off", "none", "false", "0"):
+        return {"new_row_temper_iters": 0}
+    for prefix in ("warmup", "ramp", "temper"):
+        if mode.startswith(prefix):
+            suffix = mode[len(prefix):].lstrip("_")
+            try:
+                iters = int(suffix)
+            except ValueError as exc:
+                raise ValueError(f"cannot parse row_temper mode {mode!r}") from exc
+            if iters <= 0:
+                raise ValueError(f"row_temper warmup must be positive, got {mode!r}")
+            return {"new_row_temper_iters": iters}
+    raise ValueError(f"unknown row_temper mode {mode!r}; expected off or warmup<N>")
+
+
+def _support_fade_kwargs(mode: str) -> dict[str, Any]:
+    if mode in ("off", "none", "false", "0"):
+        return {"support_fade": False, "support_fade_until_frac": None}
+    if mode in ("on", "full", "true", "1"):
+        return {"support_fade": True, "support_fade_until_frac": None}
+    for prefix in ("until", "early", "schedule"):
+        if mode.startswith(prefix):
+            suffix = mode[len(prefix):].lstrip("_")
+            try:
+                frac = float(suffix)
+            except ValueError as exc:
+                raise ValueError(f"cannot parse support_fade mode {mode!r}") from exc
+            if not 0.0 <= frac <= 1.0:
+                raise ValueError(f"support_fade schedule fraction must be in [0, 1], got {mode!r}")
+            return {"support_fade": False, "support_fade_until_frac": frac}
+    raise ValueError(f"unknown support_fade mode {mode!r}; expected off, on, or until<F>")
+
+
+def _split_recovery_stats(history: dict[str, Any]) -> dict[str, float | None]:
+    events = history.get("split_events", [])
+    its = history.get("iter", [])
+    psnrs = history.get("psnr", [])
+    if not events or not its or not psnrs:
+        return {"post_split_delta_mean": None, "split_recovery_iters_mean": None}
+    deltas: list[float] = []
+    recoveries: list[float] = []
+    for event in events:
+        eiter = event.get("iter")
+        if eiter is None:
+            continue
+        before = [(it, p) for it, p in zip(its, psnrs, strict=False) if it <= eiter]
+        after = [(it, p) for it, p in zip(its, psnrs, strict=False) if it > eiter]
+        if not before or not after:
+            continue
+        base_iter, base_psnr = before[-1]
+        post_iter, post_psnr = after[0]
+        deltas.append(float(post_psnr) - float(base_psnr))
+        recovered = next((it for it, p in after if p >= base_psnr), None)
+        if recovered is not None:
+            recoveries.append(float(recovered) - float(base_iter))
+        elif post_iter is not None:
+            recoveries.append(float(its[-1]) - float(base_iter))
+    return {
+        "post_split_delta_mean": None if not deltas else round(float(np.mean(deltas)), 6),
+        "split_recovery_iters_mean": (
+            None if not recoveries else round(float(np.mean(recoveries)), 6)
+        ),
+    }
+
+
 def _seconds_to_target(history: dict, iters_to_target) -> float | None:
     """Wall seconds at the iteration where the target PSNR was first reached (interpolated)."""
     if iters_to_target is None:
@@ -513,6 +602,9 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         aa_dilation=float(cfg["aa"]),
         color_basis=cfg["color_basis"],
         **_color_solve_kwargs(cfg["color_solve"]),
+        **_state_seed_kwargs(cfg["state_seed"]),
+        **_row_temper_kwargs(cfg["row_temper"]),
+        **_support_fade_kwargs(cfg["support_fade"]),
         max_gaussians=max_gaussians,
         target_psnr=target_psnr,
         target_psnrs=list(target_psnrs),
@@ -567,6 +659,7 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
     ]
     color_solve_events = history.get("color_solve_events", [])
     adaptive_events = history.get("adaptive_events", [])
+    split_recovery = _split_recovery_stats(history)
 
     def event_mean(events: list[dict], key: str) -> float | None:
         vals = [float(e[key]) for e in events if key in e]
@@ -619,6 +712,19 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
             color_solve_events, "relative_residual"
         ),
         "relocate_event_count": len(history.get("relocate_events", [])),
+        "seed_new_row_optimizer_state": bool(fcfg.seed_new_row_optimizer_state),
+        "new_row_temper_iters": int(fcfg.new_row_temper_iters),
+        "new_row_temper_start": float(fcfg.new_row_temper_start),
+        "tempered_new_rows_mean": event_mean(
+            [{"tempered": v} for v in history.get("tempered_new_rows", [])], "tempered"
+        ),
+        "support_fade_static": bool(fcfg.support_fade),
+        "support_fade_until_frac": fcfg.support_fade_until_frac,
+        "support_fade_crossfade_iters": int(fcfg.support_fade_crossfade_iters),
+        "support_fade_alpha_mean": event_mean(
+            [{"alpha": v} for v in history.get("support_fade_alpha", [])], "alpha"
+        ),
+        **split_recovery,
         "adaptive_count": bool(adaptive_count),
         "adaptive_event_count": len(adaptive_events),
         "adaptive_growth_count": sum(1 for e in adaptive_events if e.get("action") == "grow"),
@@ -663,6 +769,9 @@ def run_stage_search(
     refine_color_inits=None,
     refine_prune_modes=None,
     refine_relocate_modes=None,
+    state_seed_modes=None,
+    row_temper_modes=None,
+    support_fade_modes=None,
     pyramid_modes=None,
     render_chunk=512,
     ssim_weight=0.3,
@@ -738,6 +847,9 @@ def run_stage_search(
         "color_solve_modes": color_solve_modes,
         "pixel_losses": pixel_losses, "optimizers": optimizers,
         "lr_schedules": lr_schedules,
+        "state_seed_modes": state_seed_modes,
+        "row_temper_modes": row_temper_modes,
+        "support_fade_modes": support_fade_modes,
         "pyramid_modes": pyramid_modes,
     }
     if refine_modes is not None:
@@ -1359,6 +1471,12 @@ def main():
                    help="off or on")
     p.add_argument("--refine-relocate-modes", nargs="+", default=None,
                    help="off or on")
+    p.add_argument("--state-seed-modes", nargs="+", default=None,
+                   help="off or on; seed new-row optimizer moments from parent/median")
+    p.add_argument("--row-temper-modes", nargs="+", default=None,
+                   help="off or warmup<N>; post-insert update ramp")
+    p.add_argument("--support-fade-modes", nargs="+", default=None,
+                   help="off, on, or until<F>; scheduled compact-support fade")
     p.add_argument("--pyramid-modes", nargs="+", default=None)
     p.add_argument("--chunk", type=int, default=512)
     p.add_argument("--ssim-weight", type=float, default=0.3)
@@ -1430,6 +1548,9 @@ def main():
         refine_color_inits=a.refine_color_inits,
         refine_prune_modes=a.refine_prune_modes,
         refine_relocate_modes=a.refine_relocate_modes,
+        state_seed_modes=a.state_seed_modes,
+        row_temper_modes=a.row_temper_modes,
+        support_fade_modes=a.support_fade_modes,
         pyramid_modes=a.pyramid_modes, render_chunk=a.chunk,
         ssim_weight=a.ssim_weight, ssim_backend=a.ssim_backend,
         split_every=a.split_every, split_count=a.split_count,

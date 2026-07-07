@@ -14,6 +14,9 @@ from benchmarks.stage_search import (
     _legacy_refine_config,
     _refine_kwargs,
     _refine_kwargs_from_config,
+    _row_temper_kwargs,
+    _state_seed_kwargs,
+    _support_fade_kwargs,
     summarize,
 )
 
@@ -334,6 +337,55 @@ def test_color_solve_is_stage_axis(tmp_path):
     assert by_mode["every10"]["color_solve_every"] == 10
     assert by_mode["every10"]["color_solve_event_count"] == 1
     assert all("color_solve=" in r["config_label"] for r in rows)
+
+
+def test_split_recovery_stage_mode_parsers():
+    assert _state_seed_kwargs("off") == {"seed_new_row_optimizer_state": False}
+    assert _state_seed_kwargs("on") == {"seed_new_row_optimizer_state": True}
+    assert _row_temper_kwargs("off") == {"new_row_temper_iters": 0}
+    assert _row_temper_kwargs("warmup5") == {"new_row_temper_iters": 5}
+    assert _support_fade_kwargs("off") == {
+        "support_fade": False,
+        "support_fade_until_frac": None,
+    }
+    assert _support_fade_kwargs("on") == {
+        "support_fade": True,
+        "support_fade_until_frac": None,
+    }
+    assert _support_fade_kwargs("until0.5") == {
+        "support_fade": False,
+        "support_fade_until_frac": 0.5,
+    }
+
+
+def test_split_recovery_levers_are_stage_axes(tmp_path):
+    img_path = tmp_path / "toy.png"
+    _write_toy(img_path)
+    rows = run_stage_search(
+        [str(img_path)], budgets=[24], seeds=[0], iters=5, max_side=None,
+        strategies=["aniso_flanking"], tensor_operators=["central"], tensor_colors=["luma"],
+        density_modes=["structure"], sampling_modes=["density_random"],
+        orientation_modes=["tensor"], color_modes=["bilinear"], scale_modes=["spacing"],
+        scale_cap_modes=["none"], opacity_modes=["none"], renderers=["normalized"],
+        aa_dilations=[0.0], color_basis_modes=["constant"], color_solve_modes=["none"],
+        pixel_losses=["l1"], optimizers=["adam"], lr_schedules=["none"],
+        refine_modes=["duplicate"], state_seed_modes=["off", "on"],
+        row_temper_modes=["off", "warmup3"], support_fade_modes=["off", "until0.5"],
+        pyramid_modes=["single"], split_every=2, split_count=4, render_chunk=8,
+        outdir=str(tmp_path / "fit011_axes"), device="cpu",
+    )
+
+    assert len(rows) == 8
+    assert all(r["status"] == "ok" for r in rows)
+    assert {r["state_seed"] for r in rows} == {"off", "on"}
+    assert {r["row_temper"] for r in rows} == {"off", "warmup3"}
+    assert {r["support_fade"] for r in rows} == {"off", "until0.5"}
+    assert all("state_seed=" in r["config_label"] for r in rows)
+    assert all("row_temper=" in r["config_label"] for r in rows)
+    assert all("support_fade=" in r["config_label"] for r in rows)
+    warmup = [r for r in rows if r["row_temper"] == "warmup3"]
+    assert warmup and all(r["new_row_temper_iters"] == 3 for r in warmup)
+    assert any((r["post_split_delta_mean"] is not None) for r in rows)
 
 
 def test_new_stage_smoke_matrix_records_expected_events_and_html(tmp_path):

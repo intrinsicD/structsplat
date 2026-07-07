@@ -10,8 +10,11 @@ from structsplat import init as _init
 from structsplat.gaussians import GaussianField
 from structsplat.fit import (
     _add_from_residual,
+    _apply_young_row_temper_snapshot,
     _carry_adam_state,
+    _capture_young_row_temper_snapshots,
     _freq_violation_scores,
+    _fit_support_fade_alpha,
     _lr_factor,
     _make_optimizer,
     _maybe_prune,
@@ -63,6 +66,36 @@ def test_carry_adam_state_preserves_moments_across_prune_and_split():
     assert st["exp_avg"].shape[0] == 8
 
 
+def test_carry_adam_state_can_seed_new_rows_from_parent_or_median():
+    img = np.random.default_rng(0).random((16, 16, 3)).astype(np.float32)
+    field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=6, seed=0))
+    field.trainable()
+    cfg = FitConfig(seed_new_row_optimizer_state=True)
+    opt = _make_optimizer(field, cfg)
+    target = torch.as_tensor(img)
+    from structsplat.render import render
+    im = render(field.means, field.conics(), field.colors, field.radii(3.0), 16, 16)
+    (im - target).abs().mean().backward()
+    opt.step()
+    old = opt.state[field.means]["exp_avg"].clone()
+
+    grown = field.append(field.subset(slice(0, 3)))
+    grown.trainable()
+    opt2 = _carry_adam_state(
+        opt,
+        grown,
+        cfg,
+        keep=None,
+        n_new=3,
+        new_parent_idx=torch.tensor([1, -1, 4]),
+    )
+    seeded = opt2.state[grown.means]["exp_avg"]
+
+    assert torch.allclose(seeded[6], old[1])
+    assert torch.allclose(seeded[8], old[4])
+    assert torch.allclose(seeded[7], old.median(dim=0).values)
+
+
 def test_carry_adan_state_preserves_three_moments_across_split():
     img = np.random.default_rng(1).random((16, 16, 3)).astype(np.float32)
     field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=8, seed=0))
@@ -86,6 +119,37 @@ def test_carry_adan_state_preserves_three_moments_across_split():
         assert st[key].shape[0] == 10
         assert torch.allclose(st[key][:8], old[key])
         assert torch.all(st[key][8:] == 0)
+
+
+def test_young_row_tempering_scales_post_step_updates():
+    field = GaussianField(
+        torch.tensor([[0.0, 0.0], [2.0, 2.0]], requires_grad=True),
+        torch.log(torch.ones(2, 2)).requires_grad_(),
+        torch.zeros(2, requires_grad=True),
+        torch.zeros(2, 3, requires_grad=True),
+    )
+    birth = torch.tensor([-1, 0])
+    snap = _capture_young_row_temper_snapshots(
+        field, birth, 0, FitConfig(new_row_temper_iters=3, new_row_temper_start=0.25)
+    )
+
+    with torch.no_grad():
+        field.means[1] += torch.tensor([4.0, -4.0])
+        field.colors[1] += 2.0
+    tempered = _apply_young_row_temper_snapshot(snap)
+
+    assert tempered == 1
+    assert torch.allclose(field.means[0], torch.tensor([0.0, 0.0]))
+    assert torch.allclose(field.means[1], torch.tensor([3.0, 1.0]))
+    assert torch.allclose(field.colors[1], torch.full((3,), 0.5))
+
+
+def test_support_fade_schedule_alpha_ramps_down():
+    cfg = FitConfig(iters=6, support_fade_until_frac=0.5, support_fade_crossfade_iters=2)
+
+    assert [_fit_support_fade_alpha(cfg, i) for i in range(6)] == [
+        1.0, 1.0, 1.0, 1.0, 0.5, 0.0,
+    ]
 
 
 def test_fit_with_decay_prune_split_still_improves():
@@ -112,6 +176,54 @@ def test_no_restructure_on_final_iteration():
     out = fit(field, target, FitConfig(iters=10, log_every=5, split_every=5, split_count=4,
                                        split_mode="residual_add"), verbose=False)
     assert out["n_gaussians"] == 12  # one split at it=4, none at it=9
+
+
+def test_split_recovery_flags_default_to_no_behavior_change_and_log_schedule():
+    img = np.zeros((16, 16, 3), np.float32)
+    img[:, 8:] = 1.0
+    target = torch.as_tensor(img)
+    common = dict(
+        iters=5,
+        log_every=1,
+        split_every=2,
+        split_count=2,
+        split_mode="duplicate",
+        max_gaussians=12,
+        render_chunk=8,
+    )
+    field0 = _init.build_field(img, InitConfig(strategy="random", num_gaussians=8, seed=2))
+    field1 = _init.build_field(img, InitConfig(strategy="random", num_gaussians=8, seed=2))
+    default = fit(field0, target, FitConfig(**common), verbose=False)
+    explicit_off = fit(
+        field1,
+        target,
+        FitConfig(
+            seed_new_row_optimizer_state=False,
+            new_row_temper_iters=0,
+            support_fade_until_frac=None,
+            **common,
+        ),
+        verbose=False,
+    )
+
+    assert explicit_off["psnr"] == pytest.approx(default["psnr"], abs=1e-7)
+    assert torch.allclose(explicit_off["field"].means, default["field"].means, atol=0, rtol=0)
+    assert all(v == 0 for v in explicit_off["history"]["tempered_new_rows"])
+
+    scheduled_field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=8, seed=2))
+    scheduled = fit(
+        scheduled_field,
+        target,
+        FitConfig(
+            support_fade_until_frac=0.5,
+            support_fade_crossfade_iters=2,
+            **common,
+        ),
+        verbose=False,
+    )
+    alpha = scheduled["history"]["support_fade_alpha"]
+    assert alpha[:3] == [1.0, 1.0, 1.0]
+    assert alpha[-1] < 1.0
 
 
 @pytest.mark.parametrize("mode", [

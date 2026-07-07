@@ -24,6 +24,7 @@ import torch
 _EPS = 1e-8
 _ELEMENTS_PER_RENDER_CHUNK = 4096
 _NORMALIZED_CUDA_MODES = ("cuda", "cuda_normalized", "cuda_tiled", "cuda_tiled_normalized")
+_ADDITIVE_CUDA_MODES = ("cuda_additive", "cuda_tiled_additive")
 
 
 def _element_budget(chunk: int) -> int:
@@ -80,10 +81,19 @@ def _tile_coords(x0, y0, Tx, n, s, e, dev):
     return gid, px, py
 
 
-def _support_weight(q: torch.Tensor, sigma_cutoff: float, support_fade: bool) -> torch.Tensor:
+def _resolve_support_fade_alpha(support_fade: bool,
+                                support_fade_alpha: float | None = None) -> float:
+    if support_fade_alpha is None:
+        return 1.0 if support_fade else 0.0
+    return max(0.0, min(1.0, float(support_fade_alpha)))
+
+
+def _support_weight(q: torch.Tensor, sigma_cutoff: float, support_fade: bool,
+                    support_fade_alpha: float | None = None) -> torch.Tensor:
     w = torch.exp(-0.5 * q)
-    if support_fade:
-        w = torch.clamp(w - math.exp(-0.5 * float(sigma_cutoff) ** 2), min=0.0)
+    alpha = _resolve_support_fade_alpha(support_fade, support_fade_alpha)
+    if alpha > 0.0:
+        w = torch.clamp(w - alpha * math.exp(-0.5 * float(sigma_cutoff) ** 2), min=0.0)
     return w
 
 
@@ -105,7 +115,8 @@ def _pixel_colors(colors, color_grads, gid, dx, dy, scales, rotations):
 
 def _accumulate(means, conics, colors, radii, H, W, chunk, opacities, normalize: bool,
                 support_fade: bool = False, sigma_cutoff: float = 3.0,
-                color_grads=None, scales=None, rotations=None):
+                color_grads=None, scales=None, rotations=None,
+                support_fade_alpha: float | None = None):
     dev, dt = means.device, means.dtype
     num = torch.zeros(H * W, 3, device=dev, dtype=dt)
     den = torch.zeros(H * W, 1, device=dev, dtype=dt) if normalize else None
@@ -118,7 +129,7 @@ def _accumulate(means, conics, colors, radii, H, W, chunk, opacities, normalize:
         dy = py.to(dt) - means[gid, 1]
         a, b, c = conics[gid, 0], conics[gid, 1], conics[gid, 2]
         q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
-        w = _support_weight(q, sigma_cutoff, support_fade)
+        w = _support_weight(q, sigma_cutoff, support_fade, support_fade_alpha)
         if opacities is not None:
             w = w * opacities[gid]
         flat = py * W + px
@@ -134,23 +145,24 @@ def _accumulate(means, conics, colors, radii, H, W, chunk, opacities, normalize:
 
 def render(means, conics, colors, radii, H: int, W: int, chunk: int = 4096, opacities=None,
            support_fade: bool = False, sigma_cutoff: float = 3.0, color_grads=None,
-           scales=None, rotations=None):
+           scales=None, rotations=None, support_fade_alpha: float | None = None):
     """Normalized weighted-sum rasterizer (ADR-0003 default)."""
     return _accumulate(
         means, conics, colors, radii, H, W, chunk, opacities, normalize=True,
         support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
-        scales=scales, rotations=rotations,
+        scales=scales, rotations=rotations, support_fade_alpha=support_fade_alpha,
     )
 
 
 def render_additive(means, conics, colors, radii, H: int, W: int, chunk: int = 4096,
                     opacities=None, support_fade: bool = False, sigma_cutoff: float = 3.0,
-                    color_grads=None, scales=None, rotations=None):
+                    color_grads=None, scales=None, rotations=None,
+                    support_fade_alpha: float | None = None):
     """Additive / unnormalized accumulation (ADR-0006, opt-in)."""
     return _accumulate(
         means, conics, colors, radii, H, W, chunk, opacities, normalize=False,
         support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
-        scales=scales, rotations=rotations,
+        scales=scales, rotations=rotations, support_fade_alpha=support_fade_alpha,
     )
 
 
@@ -210,18 +222,36 @@ def render_cuda_sum(means, scales, rotations, colors, H: int, W: int,
 def render_field(means, conics, colors, radii, H: int, W: int,
                  chunk: int = 4096, mode: str = "normalized", opacities=None,
                  scales=None, rotations=None, support_fade: bool = False,
-                 sigma_cutoff: float = 3.0, color_grads=None):
+                 sigma_cutoff: float = 3.0, color_grads=None,
+                 support_fade_alpha: float | None = None):
+    fade_alpha = _resolve_support_fade_alpha(support_fade, support_fade_alpha)
     if mode == "normalized":
         return render(
             means, conics, colors, radii, H, W, chunk, opacities,
             support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
-            scales=scales, rotations=rotations,
+            scales=scales, rotations=rotations, support_fade_alpha=fade_alpha,
         )
     if mode == "additive":
         return render_additive(
             means, conics, colors, radii, H, W, chunk, opacities,
             support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
-            scales=scales, rotations=rotations,
+            scales=scales, rotations=rotations, support_fade_alpha=fade_alpha,
+        )
+    if fade_alpha not in (0.0, 1.0) and mode in _NORMALIZED_CUDA_MODES:
+        if not means.is_cuda:
+            raise RuntimeError("StructSplat CUDA renderer requires CUDA tensors; pass device='cuda'.")
+        return render(
+            means, conics, colors, radii, H, W, chunk, opacities,
+            support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
+            scales=scales, rotations=rotations, support_fade_alpha=fade_alpha,
+        )
+    if fade_alpha not in (0.0, 1.0) and mode in _ADDITIVE_CUDA_MODES:
+        if not means.is_cuda:
+            raise RuntimeError("StructSplat CUDA renderer requires CUDA tensors; pass device='cuda'.")
+        return render_additive(
+            means, conics, colors, radii, H, W, chunk, opacities,
+            support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
+            scales=scales, rotations=rotations, support_fade_alpha=fade_alpha,
         )
     if color_grads is not None and mode in _NORMALIZED_CUDA_MODES:
         if not means.is_cuda:
@@ -232,7 +262,7 @@ def render_field(means, conics, colors, radii, H: int, W: int,
         return render(
             means, conics, colors, radii, H, W, chunk, opacities,
             support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
-            scales=scales, rotations=rotations,
+            scales=scales, rotations=rotations, support_fade_alpha=fade_alpha,
         )
     if color_grads is not None:
         raise ValueError(
@@ -242,23 +272,23 @@ def render_field(means, conics, colors, radii, H: int, W: int,
     if mode in ("cuda", "cuda_normalized"):
         from .cuda_render import render_cuda_exact
         return render_cuda_exact(means, conics, colors, radii, H, W, opacities=opacities,
-                                 normalize=True, eps=_EPS, support_fade=support_fade,
+                                 normalize=True, eps=_EPS, support_fade=fade_alpha > 0.0,
                                  sigma_cutoff=sigma_cutoff)
     if mode == "cuda_additive":
         from .cuda_render import render_cuda_exact
         return render_cuda_exact(means, conics, colors, radii, H, W, opacities=opacities,
-                                 normalize=False, eps=_EPS, support_fade=support_fade,
+                                 normalize=False, eps=_EPS, support_fade=fade_alpha > 0.0,
                                  sigma_cutoff=sigma_cutoff)
     if mode in ("cuda_tiled", "cuda_tiled_normalized"):
         from .cuda_render import render_cuda_exact
         return render_cuda_exact(means, conics, colors, radii, H, W, opacities=opacities,
                                  normalize=True, eps=_EPS, tiled=True,
-                                 support_fade=support_fade, sigma_cutoff=sigma_cutoff)
+                                 support_fade=fade_alpha > 0.0, sigma_cutoff=sigma_cutoff)
     if mode == "cuda_tiled_additive":
         from .cuda_render import render_cuda_exact
         return render_cuda_exact(means, conics, colors, radii, H, W, opacities=opacities,
                                  normalize=False, eps=_EPS, tiled=True,
-                                 support_fade=support_fade, sigma_cutoff=sigma_cutoff)
+                                 support_fade=fade_alpha > 0.0, sigma_cutoff=sigma_cutoff)
     if mode in ("gsplat", "cuda_gsplat"):
         if scales is None or rotations is None:
             raise ValueError("renderer='gsplat' requires scales and rotations")
@@ -271,7 +301,8 @@ def render_field(means, conics, colors, radii, H: int, W: int,
 
 @torch.no_grad()
 def gaussian_activity(means, conics, radii, H: int, W: int, chunk: int = 4096,
-                      support_fade: bool = False, sigma_cutoff: float = 3.0):
+                      support_fade: bool = False, sigma_cutoff: float = 3.0,
+                      support_fade_alpha: float | None = None):
     """Return each Gaussian's summed unnormalized weight over the image.
 
     This is a diagnostic/pruning helper for the reference fitter. It intentionally mirrors the
@@ -290,5 +321,7 @@ def gaussian_activity(means, conics, radii, H: int, W: int, chunk: int = 4096,
         dy = py.to(dt) - means[gid, 1]
         a, b, c = conics[gid, 0], conics[gid, 1], conics[gid, 2]
         q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
-        activity.index_add_(0, gid, _support_weight(q, sigma_cutoff, support_fade))
+        activity.index_add_(
+            0, gid, _support_weight(q, sigma_cutoff, support_fade, support_fade_alpha)
+        )
     return activity

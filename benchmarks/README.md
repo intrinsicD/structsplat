@@ -69,7 +69,12 @@ searchable combination. Stretch controls also include `optimizer=adan` and the `
 FIT-010 adds event color-solve schedules to the `color_solve` axis: `every<N>` remains the
 promoted quality arm, while `init`, `final`, `on_split`, and compositions such as
 `init+on_split` are available for screening. The FIT-010 smoke did not meet the rule for replacing
-`every10`, though `on_split` helped split recovery. FIT-008 adaptive count is a global controller
+`every10`, though `on_split` helped split recovery. FIT-011 adds split-recovery micro-lever axes:
+`--state-seed-modes off on`, `--row-temper-modes off warmup<N>`, and
+`--support-fade-modes off on until<F>`. The FIT-011 smokes were negative for promotion: state
+seeding and young-row tempering did not improve split recovery, and scheduled fade missed
+fade-on AUC at 5k/10k despite preserving fade-off final PSNR. FIT-008 adaptive count is a global
+controller
 rather than a stage axis: add `--adaptive-count`
 with `--max-gaussians` and/or `--target-bpp` plus optional `--target-psnr`/`--target-ms-ssim`.
 Rows report selected N, raw-attribute bpp, adaptive event counts, and stop reason so fixed-N and

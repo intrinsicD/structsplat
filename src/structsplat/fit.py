@@ -19,6 +19,7 @@ from .render import (
     _EPS,
     _element_budget,
     _flat_tile_slices,
+    _resolve_support_fade_alpha,
     _support_weight,
     _tile_bounds,
     _tile_coords,
@@ -37,6 +38,11 @@ _NORMALIZED_COLOR_SOLVE_RENDERERS = (
 )
 # Shared lower bound on densified Gaussian scales (px); was duplicated as bare 0.35 literals.
 _MIN_DENSIFY_SCALE = 0.35
+
+
+def _mark_new_parent_idx(field: GaussianField, idx: torch.Tensor) -> GaussianField:
+    field._new_parent_idx = idx.detach().clone()  # type: ignore[attr-defined]
+    return field
 
 
 class _Adan(torch.optim.Optimizer):
@@ -134,16 +140,21 @@ def _lr_factor(cfg: FitConfig, it: int, sched_offset: int = 0,
 
 def _carry_adam_state(opt_old, field: GaussianField, cfg: FitConfig,
                       keep: torch.Tensor | None, n_new: int,
-                      reset_idx: torch.Tensor | None = None):
+                      reset_idx: torch.Tensor | None = None,
+                      new_parent_idx: torch.Tensor | None = None):
     """Fresh optimizer for a restructured field, carrying per-Gaussian optimizer buffers.
 
     Without this, every prune/split resets exp_avg/exp_avg_sq for ALL Gaussians and the
     loss spikes while Adam re-estimates curvature. Surviving rows keep their moments; new
-    rows start at zero and share the tensor's inherited `step` (Adam keeps one step per
-    parameter tensor), so their first updates behave like a normal warm Adam step. Handles
-    any number of parameter groups (4, or 5 with opacity), Adam/AdamW, and Adan.
+    rows start at zero by default and share the tensor's inherited `step` (Adam keeps one step
+    per parameter tensor), so their first updates behave like a normal warm Adam step. With
+    seed_new_row_optimizer_state enabled, split children inherit parent rows and sampled-add
+    children use the carried-row median. Handles any number of parameter groups (4, or 5 with
+    opacity), Adam/AdamW, and Adan.
     """
     opt_new = _make_optimizer(field, cfg)
+    if new_parent_idx is not None:
+        new_parent_idx = new_parent_idx.detach().to(dtype=torch.long)
     for g_old, g_new in zip(opt_old.param_groups, opt_new.param_groups):
         p_old, p_new = g_old["params"][0], g_new["params"][0]
         st = opt_old.state.get(p_old)
@@ -158,6 +169,14 @@ def _carry_adam_state(opt_old, field: GaussianField, cfg: FitConfig,
                         out = out[keep]
                     if n_new > 0:
                         pad = out.new_zeros((n_new,) + out.shape[1:])
+                        if cfg.seed_new_row_optimizer_state and out.shape[0] > 0:
+                            median = out.median(dim=0).values
+                            pad[:] = median
+                            if new_parent_idx is not None and new_parent_idx.numel() == n_new:
+                                src = new_parent_idx.to(device=out.device)
+                                valid = (src >= 0) & (src < out.shape[0])
+                                if bool(valid.any()):
+                                    pad[valid] = out[src[valid]]
                         out = torch.cat([out, pad], dim=0)
                     if reset_idx is not None and reset_idx.numel() > 0:
                         ridx = reset_idx.to(device=out.device, dtype=torch.long)
@@ -187,13 +206,33 @@ def _loss_kind(cfg: FitConfig, it: int) -> str:
     return cfg.pixel_loss
 
 
-def _render(field: GaussianField, cfg: FitConfig, H: int, W: int) -> torch.Tensor:
+def _fit_support_fade_alpha(cfg: FitConfig, it: int | None = None) -> float:
+    if cfg.support_fade_until_frac is None:
+        return _resolve_support_fade_alpha(cfg.support_fade)
+    if it is None:
+        it = cfg.iters
+    total = max(1, int(cfg.iters))
+    until = float(cfg.support_fade_until_frac) * float(total)
+    if float(it) <= until:
+        return 1.0
+    cross = int(cfg.support_fade_crossfade_iters)
+    if cross <= 0:
+        return 0.0
+    progress = float(it) - until
+    if progress >= float(cross):
+        return 0.0
+    return max(0.0, 1.0 - progress / float(cross))
+
+
+def _render(field: GaussianField, cfg: FitConfig, H: int, W: int,
+            support_fade_alpha: float | None = None) -> torch.Tensor:
     return render_field(field.means, field.conics(cfg.aa_dilation), field.colors,
                         field.radii(cfg.sigma_cutoff, cfg.aa_dilation),
                         H, W, cfg.render_chunk, cfg.renderer, field.opacity_values(),
                         scales=field.scales(), rotations=field.rotations,
                         support_fade=cfg.support_fade, sigma_cutoff=cfg.sigma_cutoff,
-                        color_grads=field.color_grads)
+                        color_grads=field.color_grads,
+                        support_fade_alpha=support_fade_alpha)
 
 
 def _qat_enabled(cfg: FitConfig) -> bool:
@@ -284,9 +323,10 @@ def _qat_field_view(field: GaussianField, cfg: FitConfig, H: int, W: int, ccfg):
     raise ValueError(f"unknown qat_mode {cfg.qat_mode!r}")
 
 
-def _render_loss_view(field: GaussianField, cfg: FitConfig, H: int, W: int, qat_ccfg=None):
+def _render_loss_view(field: GaussianField, cfg: FitConfig, H: int, W: int, qat_ccfg=None,
+                      support_fade_alpha: float | None = None):
     qf = _qat_field_view(field, cfg, H, W, qat_ccfg) if _qat_enabled(cfg) else field
-    return _render(qf, cfg, H, W)
+    return _render(qf, cfg, H, W, support_fade_alpha=support_fade_alpha)
 
 
 def differentiable_rate_bpp(field: GaussianField, H: int, W: int, cfg: FitConfig) -> torch.Tensor:
@@ -358,7 +398,8 @@ def _ensure_color_basis(field: GaussianField, cfg: FitConfig) -> GaussianField:
 
 @torch.no_grad()
 def _normalized_color_denominator(field: GaussianField, cfg: FitConfig,
-                                  H: int, W: int) -> torch.Tensor:
+                                  H: int, W: int,
+                                  support_fade_alpha: float | None = None) -> torch.Tensor:
     dev, dt = field.means.device, field.means.dtype
     den = torch.zeros(H * W, 1, device=dev, dtype=dt)
     means = field.means.detach()
@@ -375,7 +416,7 @@ def _normalized_color_denominator(field: GaussianField, cfg: FitConfig,
         dy = py.to(dt) - means[gid, 1]
         a, b, c = conics[gid, 0], conics[gid, 1], conics[gid, 2]
         q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
-        w = _support_weight(q, cfg.sigma_cutoff, cfg.support_fade)
+        w = _support_weight(q, cfg.sigma_cutoff, cfg.support_fade, support_fade_alpha)
         if opacities is not None:
             w = w * opacities[gid]
         den.index_add_(0, py * W + px, w[:, None])
@@ -384,7 +425,8 @@ def _normalized_color_denominator(field: GaussianField, cfg: FitConfig,
 
 @torch.no_grad()
 def _normalized_color_basis_apply(field: GaussianField, colors: torch.Tensor, cfg: FitConfig,
-                                  H: int, W: int, den: torch.Tensor) -> torch.Tensor:
+                                  H: int, W: int, den: torch.Tensor,
+                                  support_fade_alpha: float | None = None) -> torch.Tensor:
     dev, dt = field.means.device, field.means.dtype
     out = torch.zeros(H * W, colors.shape[1], device=dev, dtype=dt)
     means = field.means.detach()
@@ -401,7 +443,7 @@ def _normalized_color_basis_apply(field: GaussianField, colors: torch.Tensor, cf
         dy = py.to(dt) - means[gid, 1]
         a, b, c = conics[gid, 0], conics[gid, 1], conics[gid, 2]
         q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
-        w = _support_weight(q, cfg.sigma_cutoff, cfg.support_fade)
+        w = _support_weight(q, cfg.sigma_cutoff, cfg.support_fade, support_fade_alpha)
         if opacities is not None:
             w = w * opacities[gid]
         flat = py * W + px
@@ -413,7 +455,8 @@ def _normalized_color_basis_apply(field: GaussianField, colors: torch.Tensor, cf
 @torch.no_grad()
 def _normalized_color_basis_transpose(field: GaussianField, image: torch.Tensor,
                                       cfg: FitConfig, H: int, W: int,
-                                      den: torch.Tensor) -> torch.Tensor:
+                                      den: torch.Tensor,
+                                      support_fade_alpha: float | None = None) -> torch.Tensor:
     dev, dt = field.means.device, field.means.dtype
     out = torch.zeros(field.n, image.shape[-1], device=dev, dtype=dt)
     means = field.means.detach()
@@ -430,7 +473,7 @@ def _normalized_color_basis_transpose(field: GaussianField, image: torch.Tensor,
         dy = py.to(dt) - means[gid, 1]
         a, b, c = conics[gid, 0], conics[gid, 1], conics[gid, 2]
         q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
-        w = _support_weight(q, cfg.sigma_cutoff, cfg.support_fade)
+        w = _support_weight(q, cfg.sigma_cutoff, cfg.support_fade, support_fade_alpha)
         if opacities is not None:
             w = w * opacities[gid]
         flat = py * W + px
@@ -441,7 +484,8 @@ def _normalized_color_basis_transpose(field: GaussianField, image: torch.Tensor,
 
 @torch.no_grad()
 def _solve_colors_normalized(field: GaussianField, target: torch.Tensor, cfg: FitConfig,
-                             H: int, W: int) -> dict[str, float | int]:
+                             H: int, W: int,
+                             support_fade_alpha: float | None = None) -> dict[str, float | int]:
     """Solve fixed-geometry normalized-renderer RGB colors with implicit CG.
 
     The normalized renderer is linear in colors once means/scales/rotations/opacities are fixed:
@@ -461,16 +505,24 @@ def _solve_colors_normalized(field: GaussianField, target: torch.Tensor, cfg: Fi
     if field.n == 0:
         return {"iterations": 0, "relative_residual": 0.0}
 
-    den = _normalized_color_denominator(field, cfg, H, W)
+    den = _normalized_color_denominator(
+        field, cfg, H, W, support_fade_alpha=support_fade_alpha
+    )
     lam = float(cfg.color_solve_lambda)
     x0 = field.colors.detach().clone()
-    b = _normalized_color_basis_transpose(field, target, cfg, H, W, den)
+    b = _normalized_color_basis_transpose(
+        field, target, cfg, H, W, den, support_fade_alpha=support_fade_alpha
+    )
     if lam > 0.0:
         b = b + lam * x0
 
     def normal_matvec(x: torch.Tensor) -> torch.Tensor:
-        ax = _normalized_color_basis_apply(field, x, cfg, H, W, den)
-        atax = _normalized_color_basis_transpose(field, ax, cfg, H, W, den)
+        ax = _normalized_color_basis_apply(
+            field, x, cfg, H, W, den, support_fade_alpha=support_fade_alpha
+        )
+        atax = _normalized_color_basis_transpose(
+            field, ax, cfg, H, W, den, support_fade_alpha=support_fade_alpha
+        )
         if lam > 0.0:
             atax = atax + lam * x
         return atax
@@ -518,6 +570,68 @@ def _reset_optimizer_state_for_param(opt: torch.optim.Optimizer, param: torch.Te
     for value in state.values():
         if torch.is_tensor(value) and value.shape == param.shape:
             value.zero_()
+
+
+def _row_parameter_tensors(field: GaussianField) -> list[torch.Tensor]:
+    tensors = [field.means, field.log_scales, field.rotations, field.colors]
+    if field.opacities is not None:
+        tensors.append(field.opacities)
+    if field.color_grads is not None:
+        tensors.append(field.color_grads)
+    return tensors
+
+
+def _capture_young_row_temper_snapshots(
+    field: GaussianField,
+    row_birth_iter: torch.Tensor,
+    it: int,
+    cfg: FitConfig,
+) -> tuple[torch.Tensor, torch.Tensor, list[tuple[torch.Tensor, torch.Tensor]]] | None:
+    if cfg.new_row_temper_iters <= 0 or row_birth_iter.numel() == 0:
+        return None
+    age = it - row_birth_iter
+    active = (row_birth_iter >= 0) & (age >= 0) & (age < int(cfg.new_row_temper_iters))
+    if not bool(active.any()):
+        return None
+    idx = torch.nonzero(active, as_tuple=False).reshape(-1)
+    if cfg.new_row_temper_iters <= 1:
+        ramp = torch.ones(idx.shape[0], device=idx.device, dtype=field.means.dtype)
+    else:
+        max_age = max(1, int(cfg.new_row_temper_iters) - 1)
+        ramp = (
+            float(cfg.new_row_temper_start)
+            + (1.0 - float(cfg.new_row_temper_start)) * age[idx].to(torch.float32)
+            / float(max_age)
+        ).to(device=field.means.device, dtype=field.means.dtype)
+    if bool(torch.all(ramp >= 1.0)):
+        return None
+    snapshots = [(p, p.detach()[idx].clone()) for p in _row_parameter_tensors(field)]
+    return idx, ramp, snapshots
+
+
+@torch.no_grad()
+def _apply_young_row_temper_snapshot(
+    snapshot: tuple[torch.Tensor, torch.Tensor, list[tuple[torch.Tensor, torch.Tensor]]] | None,
+) -> int:
+    if snapshot is None:
+        return 0
+    idx, ramp, snapshots = snapshot
+    for param, before in snapshots:
+        shape = (ramp.shape[0],) + (1,) * (param[idx].ndim - 1)
+        param[idx] = before + (param[idx] - before) * ramp.reshape(shape)
+    return int(idx.numel())
+
+
+def _take_new_parent_idx(field: GaussianField, count: int, base_n: int,
+                         device: torch.device) -> torch.Tensor:
+    fallback = torch.full((count,), -1, device=device, dtype=torch.long)
+    parent = getattr(field, "_new_parent_idx", None)
+    if hasattr(field, "_new_parent_idx"):
+        delattr(field, "_new_parent_idx")
+    if parent is None or int(parent.numel()) != int(count):
+        return fallback
+    parent = parent.to(device=device, dtype=torch.long)
+    return torch.where((parent >= 0) & (parent < int(base_n)), parent, fallback)
 
 
 def _target_list(cfg: FitConfig) -> list[float]:
@@ -574,7 +688,8 @@ def _clamp_new_log_scales(log_scales: torch.Tensor, scale_max: torch.Tensor | No
 
 @torch.no_grad()
 def _support_residual_scores(field: GaussianField, residual: torch.Tensor,
-                             cfg: FitConfig) -> torch.Tensor:
+                             cfg: FitConfig,
+                             support_fade_alpha: float | None = None) -> torch.Tensor:
     H, W = residual.shape
     dev, dt = field.means.device, field.means.dtype
     means = field.means.detach()
@@ -590,9 +705,7 @@ def _support_residual_scores(field: GaussianField, residual: torch.Tensor,
         dy = py.to(dt) - means[gid, 1]
         a, b, c = conics[gid, 0], conics[gid, 1], conics[gid, 2]
         q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
-        w = torch.exp(-0.5 * q)
-        if cfg.support_fade:
-            w = torch.clamp(w - math.exp(-0.5 * cfg.sigma_cutoff ** 2), min=0.0)
+        w = _support_weight(q, cfg.sigma_cutoff, cfg.support_fade, support_fade_alpha)
         score.index_add_(0, gid, w * residual[py, px].to(dt))
         weight.index_add_(0, gid, w)
     return score / (weight + 1e-8)
@@ -797,14 +910,16 @@ def _freq_violation_scores(field: GaussianField, target: torch.Tensor,
 
 @torch.no_grad()
 def _maybe_prune(field: GaussianField, cfg: FitConfig, H: int,
-                 W: int) -> tuple[GaussianField, torch.Tensor | None]:
+                 W: int, support_fade_alpha: float | None = None
+                 ) -> tuple[GaussianField, torch.Tensor | None]:
     if cfg.prune_min_activity <= 0.0:
         return field, None
     if field.n <= max(1, cfg.prune_keep_min):
         return field, None
     activity = gaussian_activity(field.means, field.conics(cfg.aa_dilation),
                                  field.radii(cfg.sigma_cutoff, cfg.aa_dilation),
-                                 H, W, cfg.render_chunk, cfg.support_fade, cfg.sigma_cutoff)
+                                 H, W, cfg.render_chunk, cfg.support_fade, cfg.sigma_cutoff,
+                                 support_fade_alpha=support_fade_alpha)
     # gaussian_activity is opacity-free; without this a Gaussian the optimizer has driven fully
     # transparent keeps its geometric weight-sum and is never pruned at fixed N (FIT-002).
     opac = field.opacity_values()
@@ -896,9 +1011,10 @@ def _fp_duplicate_indices(field: GaussianField, idx: torch.Tensor, cfg: FitConfi
     child_color_grads = None if color_grads is None else color_grads[idx].clone()
     child = GaussianField(child_means, child_log_scales, child_rotations, child_colors,
                           child_opacities, child_scale_max, child_color_grads)
-    return GaussianField(
+    grown = GaussianField(
         means, log_scales, rotations, colors, opacities, scale_max, color_grads
-    ).append(child), k
+    ).append(child)
+    return _mark_new_parent_idx(grown, idx), k
 
 
 @torch.no_grad()
@@ -968,9 +1084,10 @@ def _moment_preserving_duplicate_indices(field: GaussianField, idx: torch.Tensor
     child_color_grads = None if color_grads is None else color_grads[idx].clone()
     child = GaussianField(child_means, child_log_scales, child_rotations, child_colors,
                           child_opacities, child_scale_max, child_color_grads)
-    return GaussianField(
+    grown = GaussianField(
         means, log_scales, rotations, colors, opacities, scale_max, color_grads
-    ).append(child), k
+    ).append(child)
+    return _mark_new_parent_idx(grown, idx), k
 
 
 @torch.no_grad()
@@ -1002,7 +1119,7 @@ def _simple_duplicate_indices(field: GaussianField, idx: torch.Tensor, target: t
     scale_max = None if field.scale_max is None else field.scale_max.detach()[idx].clone()
     log_scales = _clamp_new_log_scales(log_scales, scale_max)
     new = GaussianField(means, log_scales, rotations, colors, opacities, scale_max)
-    return field.append(new), k
+    return _mark_new_parent_idx(field.append(new), idx), k
 
 
 @torch.no_grad()
@@ -1024,13 +1141,17 @@ def _duplicate_primitive_indices(field: GaussianField, idx: torch.Tensor, target
 
 @torch.no_grad()
 def _ranked_wave_scores(field: GaussianField, residual: torch.Tensor,
-                        cfg: FitConfig) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
+                        cfg: FitConfig,
+                        support_fade_alpha: float | None = None
+                        ) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
     H, W = residual.shape
-    support = _support_residual_scores(field, residual, cfg)
+    support = _support_residual_scores(
+        field, residual, cfg, support_fade_alpha=support_fade_alpha
+    )
     activity = gaussian_activity(
         field.means, field.conics(cfg.aa_dilation),
         field.radii(cfg.sigma_cutoff, cfg.aa_dilation), H, W, cfg.render_chunk,
-        cfg.support_fade, cfg.sigma_cutoff,
+        cfg.support_fade, cfg.sigma_cutoff, support_fade_alpha=support_fade_alpha,
     )
     opac = field.opacity_values()
     if opac is not None:
@@ -1055,7 +1176,9 @@ def _ranked_wave_scores(field: GaussianField, residual: torch.Tensor,
 @torch.no_grad()
 def _ranked_wave_from_residual(field: GaussianField, target: torch.Tensor,
                                render_img: torch.Tensor,
-                               cfg: FitConfig) -> tuple[GaussianField, int, dict[str, float]]:
+                               cfg: FitConfig,
+                               support_fade_alpha: float | None = None
+                               ) -> tuple[GaussianField, int, dict[str, float]]:
     if cfg.split_count <= 0:
         return field, 0, {}
     if cfg.max_gaussians is not None and field.n >= cfg.max_gaussians:
@@ -1066,7 +1189,9 @@ def _ranked_wave_from_residual(field: GaussianField, target: torch.Tensor,
     k = min(cfg.split_count, field.n, room)
     if k <= 0:
         return field, 0, {}
-    score, components = _ranked_wave_scores(field, residual, cfg)
+    score, components = _ranked_wave_scores(
+        field, residual, cfg, support_fade_alpha=support_fade_alpha
+    )
     idx = torch.topk(score, k=k).indices
     grown, added = _duplicate_primitive_indices(field, idx, target, render_img, cfg, H, W)
     stats = {
@@ -1140,7 +1265,8 @@ def _absgrad_wave_from_scores(field: GaussianField, target: torch.Tensor,
 @torch.no_grad()
 def _relocate_from_residual(field: GaussianField, target: torch.Tensor,
                             render_img: torch.Tensor,
-                            cfg: FitConfig
+                            cfg: FitConfig,
+                            support_fade_alpha: float | None = None
                             ) -> tuple[GaussianField, int, torch.Tensor | None,
                                        dict[str, float | str]]:
     if cfg.relocate_count <= 0 or field.n <= 0:
@@ -1150,7 +1276,7 @@ def _relocate_from_residual(field: GaussianField, target: torch.Tensor,
     activity = gaussian_activity(
         field.means, field.conics(cfg.aa_dilation),
         field.radii(cfg.sigma_cutoff, cfg.aa_dilation), H, W, cfg.render_chunk,
-        cfg.support_fade, cfg.sigma_cutoff,
+        cfg.support_fade, cfg.sigma_cutoff, support_fade_alpha=support_fade_alpha,
     )
     opac = field.opacity_values()
     if opac is not None:
@@ -1211,7 +1337,9 @@ def _relocate_from_residual(field: GaussianField, target: torch.Tensor,
 
 @torch.no_grad()
 def _split_from_residual(field: GaussianField, target: torch.Tensor, render_img: torch.Tensor,
-                         cfg: FitConfig) -> tuple[GaussianField, int]:
+                         cfg: FitConfig,
+                         support_fade_alpha: float | None = None
+                         ) -> tuple[GaussianField, int]:
     if cfg.split_count <= 0:
         return field, 0
     if cfg.max_gaussians is not None and field.n >= cfg.max_gaussians:
@@ -1232,7 +1360,9 @@ def _split_from_residual(field: GaussianField, target: torch.Tensor, render_img:
     x = torch.clamp(torch.round(field.means[:, 0]).long(), 0, W - 1)
     y = torch.clamp(torch.round(field.means[:, 1]).long(), 0, H - 1)
     if cfg.refine_site == "support":
-        scores = _support_residual_scores(field, residual, cfg)
+        scores = _support_residual_scores(
+            field, residual, cfg, support_fade_alpha=support_fade_alpha
+        )
     elif cfg.refine_site == "residual_tensor":
         smoothed = F.avg_pool2d(residual[None, None], 3, stride=1, padding=1)[0, 0]
         scores = (0.7 * residual + 0.3 * smoothed)[y, x]
@@ -1352,7 +1482,9 @@ def _adaptive_stop_reason(cfg: FitConfig, field: GaussianField, H: int, W: int,
 @torch.no_grad()
 def _adaptive_growth_from_residual(field: GaussianField, target: torch.Tensor,
                                    render_img: torch.Tensor, cfg: FitConfig,
-                                   H: int, W: int) -> tuple[GaussianField, int, dict[str, float]]:
+                                   H: int, W: int,
+                                   support_fade_alpha: float | None = None
+                                   ) -> tuple[GaussianField, int, dict[str, float]]:
     cap = _adaptive_effective_max_gaussians(field, cfg, H, W)
     room = field.n if cap is None else max(0, cap - field.n)
     k = min(int(cfg.adaptive_growth_count), int(room))
@@ -1368,7 +1500,9 @@ def _adaptive_growth_from_residual(field: GaussianField, target: torch.Tensor,
         max_gaussians=field.n + k,
     )
     if cfg.adaptive_split_mode == "ranked_wave":
-        return _ranked_wave_from_residual(field, target, render_img, grow_cfg)
+        return _ranked_wave_from_residual(
+            field, target, render_img, grow_cfg, support_fade_alpha=support_fade_alpha
+        )
     if cfg.adaptive_split_mode == "freq_violation":
         return _freq_violation_from_residual(field, target, render_img, grow_cfg)
     if cfg.adaptive_split_mode in ("residual_add", "residual_tensor_add"):
@@ -1380,7 +1514,9 @@ def _adaptive_growth_from_residual(field: GaussianField, target: torch.Tensor,
             tensor_aligned=cfg.adaptive_split_mode == "residual_tensor_add",
         )
         return grown, added, {}
-    return (*_split_from_residual(field, target, render_img, grow_cfg), {})
+    return (*_split_from_residual(
+        field, target, render_img, grow_cfg, support_fade_alpha=support_fade_alpha
+    ), {})
 
 
 def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: bool = True,
@@ -1411,14 +1547,26 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         "iter": [], "psnr": [], "loss": [], "n_gaussians": [], "elapsed": [],
         "split_events": [], "relocate_events": [], "color_solve_events": [],
         "adaptive_events": [], "qat_rate_bpp": [], "rate_loss": [],
+        "support_fade_alpha": [], "tempered_new_rows": [],
     }
     color_solve_tokens = _color_solve_schedule_tokens(cfg)
     start_time = time.time()
+    row_birth_iter = torch.full((field.n,), -1, device=target.device, dtype=torch.long)
 
-    def run_color_solve_event(iter_idx: int, trigger: str) -> None:
-        stats = _solve_colors_normalized(field, target, cfg, H, W)
+    def run_color_solve_event(iter_idx: int, trigger: str,
+                              support_fade_alpha: float | None = None) -> None:
+        stats = _solve_colors_normalized(
+            field, target, cfg, H, W, support_fade_alpha=support_fade_alpha
+        )
         _reset_optimizer_state_for_param(opt, field.colors)
-        hist["color_solve_events"].append({"iter": iter_idx, "trigger": trigger, **stats})
+        hist["color_solve_events"].append({
+            "iter": iter_idx,
+            "trigger": trigger,
+            "support_fade_alpha": (
+                None if support_fade_alpha is None else float(support_fade_alpha)
+            ),
+            **stats,
+        })
         if verbose:
             print(
                 "  color solve "
@@ -1427,7 +1575,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             )
 
     if "init" in color_solve_tokens:
-        run_color_solve_event(0, "init")
+        run_color_solve_event(0, "init", _fit_support_fade_alpha(cfg, 0))
     absgrad_scores = torch.zeros(field.n, device=target.device, dtype=target.dtype)
     targets = _target_list(cfg)
     iters_to_targets = {str(t): None for t in targets}
@@ -1452,10 +1600,13 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
 
     for it in range(cfg.iters):
         last_iter = it
+        fade_alpha = _fit_support_fade_alpha(cfg, it)
         factor = _lr_factor(cfg, it, sched_offset, sched_total)
         for g, base in zip(opt.param_groups, base_lrs):
             g["lr"] = base * factor
-        img = _render_loss_view(field, cfg, H, W, qat_ccfg)
+        img = _render_loss_view(
+            field, cfg, H, W, qat_ccfg, support_fade_alpha=fade_alpha
+        )
         # count that produced this render/PSNR, before any prune/split restructures the field;
         # logging the post-restructure field.n would pair a pre-step PSNR with a post-step N.
         n_at_render = field.n
@@ -1478,7 +1629,9 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 absgrad_scores.mul_(cfg.absgrad_decay).add_(
                     field.means.grad.detach().abs().sum(dim=1)
                 )
+        temper_snapshot = _capture_young_row_temper_snapshots(field, row_birth_iter, it, cfg)
         opt.step()
+        tempered_count = _apply_young_row_temper_snapshot(temper_snapshot)
         last_it = it == cfg.iters - 1
         log_now = it % cfg.log_every == 0 or it == cfg.iters - 1
         adaptive_due = (
@@ -1496,8 +1649,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 and cfg.color_solve_every > 0
                 and (it + 1) % int(cfg.color_solve_every) == 0
             ):
-                run_color_solve_event(it, "every")
-                img = _render(field, cfg, H, W)
+                run_color_solve_event(it, "every", fade_alpha)
+                img = _render(field, cfg, H, W, support_fade_alpha=fade_alpha)
             mse_now = None
             if target_thresholds is not None and target_iters_device is not None:
                 mse_now = M.mse(img, target).detach().clamp_min(1e-12)
@@ -1520,6 +1673,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         added = 0
         relocated = 0
         reset_idx = None
+        state_seed_base_n = field.n
+        new_parent_idx_parts: list[torch.Tensor] = []
         # never restructure on the final iteration: the returned field/metrics would include
         # Gaussians that no optimizer step ever touched
         split_due = (not last_it and cfg.split_every is not None and cfg.split_every > 0
@@ -1531,14 +1686,17 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         relocate_split_due = bool(cfg.relocate_at_split and split_due)
         if (not last_it and cfg.prune_every is not None and cfg.prune_every > 0
                 and (it + 1) % cfg.prune_every == 0):
-            field, keep = _maybe_prune(field, cfg, H, W)
+            field, keep = _maybe_prune(field, cfg, H, W, support_fade_alpha=fade_alpha)
             if verbose and keep is not None:
                 print(f"  prune {int((~keep).sum())} -> {field.n} gaussians")
             if keep is not None and cfg.refine_site == "absgrad":
                 absgrad_scores = absgrad_scores[keep]
+            if keep is not None:
+                row_birth_iter = row_birth_iter[keep]
+                state_seed_base_n = field.n
         if cfg.relocate_count > 0 and (relocate_periodic_due or relocate_split_due):
             field, relocated, reset_idx, relocate_stats = _relocate_from_residual(
-                field, target, img, cfg
+                field, target, img, cfg, support_fade_alpha=fade_alpha
             )
             if relocated > 0:
                 if relocate_periodic_due and relocate_split_due:
@@ -1559,14 +1717,28 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                     print(f"  relocate {relocated} gaussians")
                 if cfg.refine_site == "absgrad" and reset_idx is not None:
                     absgrad_scores[reset_idx] = 0
+                if reset_idx is not None and cfg.new_row_temper_iters > 0:
+                    row_birth_iter[reset_idx.to(device=row_birth_iter.device)] = it + 1
         if split_due:
             split_event = None
             absgrad_scores_carried = False
             mode_label = cfg.split_mode
             if cfg.refine_site in ("none", "residual", "residual_tensor", "support"):
-                field, added = _split_from_residual(field, target, img, cfg)
+                field, added = _split_from_residual(
+                    field, target, img, cfg, support_fade_alpha=fade_alpha
+                )
+                if added > 0:
+                    new_parent_idx_parts.append(
+                        _take_new_parent_idx(field, added, state_seed_base_n, target.device)
+                    )
             elif cfg.refine_site == "ranked":
-                field, added, ranked_stats = _ranked_wave_from_residual(field, target, img, cfg)
+                field, added, ranked_stats = _ranked_wave_from_residual(
+                    field, target, img, cfg, support_fade_alpha=fade_alpha
+                )
+                if added > 0:
+                    new_parent_idx_parts.append(
+                        _take_new_parent_idx(field, added, state_seed_base_n, target.device)
+                    )
                 split_event = {
                     "iter": it,
                     "mode": mode_label,
@@ -1579,6 +1751,10 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 field, added, absgrad_stats, absgrad_scores = _absgrad_wave_from_scores(
                     field, target, img, absgrad_scores, cfg, H, W
                 )
+                if added > 0:
+                    new_parent_idx_parts.append(
+                        _take_new_parent_idx(field, added, state_seed_base_n, target.device)
+                    )
                 absgrad_scores_carried = True
                 split_event = {
                     "iter": it,
@@ -1592,6 +1768,10 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 field, added, freq_stats = _freq_violation_from_residual(
                     field, target, img, cfg
                 )
+                if added > 0:
+                    new_parent_idx_parts.append(
+                        _take_new_parent_idx(field, added, state_seed_base_n, target.device)
+                    )
                 split_event = {
                     "iter": it,
                     "mode": mode_label,
@@ -1654,7 +1834,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                     print(f"  adaptive stop {reason} at {field.n} gaussians")
             else:
                 field, adaptive_added, adaptive_stats = _adaptive_growth_from_residual(
-                    field, target, img, cfg, H, W
+                    field, target, img, cfg, H, W, support_fade_alpha=fade_alpha
                 )
                 if adaptive_added <= 0:
                     adaptive_stop = "no_growth"
@@ -1663,6 +1843,12 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                     )
                     adaptive_should_stop = True
                 else:
+                    if adaptive_added > 0:
+                        new_parent_idx_parts.append(
+                            _take_new_parent_idx(
+                                field, adaptive_added, state_seed_base_n, target.device
+                            )
+                        )
                     growth_event = {
                         **event,
                         "action": "grow",
@@ -1690,11 +1876,25 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                     added += adaptive_added
             adaptive_prev_psnr = p_now
         if keep is not None or added > 0 or relocated > 0:
+            if added > 0:
+                row_birth_iter = torch.cat([
+                    row_birth_iter,
+                    torch.full((added,), it + 1, device=row_birth_iter.device,
+                               dtype=row_birth_iter.dtype),
+                ])
+            new_parent_idx = None
+            if new_parent_idx_parts:
+                new_parent_idx = torch.cat(new_parent_idx_parts, dim=0)
+                if new_parent_idx.numel() != added:
+                    new_parent_idx = None
             field.trainable()
-            opt = _carry_adam_state(opt, field, cfg, keep, added, reset_idx=reset_idx)
+            opt = _carry_adam_state(
+                opt, field, cfg, keep, added, reset_idx=reset_idx,
+                new_parent_idx=new_parent_idx,
+            )
             base_lrs = [g["lr"] for g in opt.param_groups]
             if "on_split" in color_solve_tokens and (added > 0 or relocated > 0):
-                run_color_solve_event(it, "on_split")
+                run_color_solve_event(it, "on_split", fade_alpha)
 
         if log_now:
             hist["iter"].append(it)
@@ -1709,6 +1909,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 rb = float(rate_bpp.detach().cpu())
                 hist["qat_rate_bpp"].append(rb)
                 hist["rate_loss"].append(float(cfg.lambda_rate) * rb)
+            hist["support_fade_alpha"].append(float(fade_alpha))
+            hist["tempered_new_rows"].append(tempered_count)
             if verbose:
                 print(f"  iter {it:5d}  psnr {p_now:6.2f}  loss {loss.item():.5f}")
             if cfg.early_stop_patience is not None and it >= cfg.early_stop_min_iters:
@@ -1725,8 +1927,9 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             if adaptive_should_stop:
                 break
 
+    final_fade_alpha = _fit_support_fade_alpha(cfg, last_iter + 1)
     if "final" in color_solve_tokens:
-        run_color_solve_event(last_iter, "final")
+        run_color_solve_event(last_iter, "final", final_fade_alpha)
 
     fit_seconds = time.time() - start_time  # before the final eval: metrics (esp. LPIPS
     with torch.no_grad():                   # model construction) must not pollute the timing
@@ -1735,7 +1938,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             iters_to_targets = {
                 str(t): (None if int(v) < 0 else int(v)) for t, v in zip(targets, reached)
             }
-        img = _render(field, cfg, H, W)
+        img = _render(field, cfg, H, W, support_fade_alpha=final_fade_alpha)
         final_psnr = M.psnr(img, target)
         final_ms_ssim = M.ms_ssim(img, target)
         if cfg.adaptive_count and adaptive_stop is None:

@@ -67,6 +67,11 @@ promoted quality arm; `init`, `final`, `on_split`, and compositions such as `ini
 available for screening. The FIT-010 smoke did not justify replacing `every10`, though `on_split`
 is useful when measuring split-dip recovery.
 
+Split-recovery micro-levers are explicit axes (FIT-011): `--state-seed-modes off on`,
+`--row-temper-modes off warmup<N>`, and `--support-fade-modes off on until<F>`. The FIT-011 smokes
+did not promote any default: state seeding/tempering hurt PSNR/AUC without improving recovery, and
+scheduled fade missed fade-on AUC at 5k/10k despite preserving fade-off final PSNR.
+
 ## Experimental-validity rules (BENCH-002 — a sweep result is trustworthy by construction)
 - **Equal budgets.** Refine (adding) arms are capped at the cell budget and start below it so
   their planned additions land *at* budget — never compare a refine arm that carries +split_count

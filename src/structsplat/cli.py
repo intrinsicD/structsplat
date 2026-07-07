@@ -79,6 +79,8 @@ def cmd_fit(args):
                      qat_bits_colors=args.qat_bits_colors,
                      qat_bits_opacity=args.qat_bits_opacity,
                      support_fade=args.support_fade,
+                     support_fade_until_frac=args.support_fade_until_frac,
+                     support_fade_crossfade_iters=args.support_fade_crossfade_iters,
                      aa_dilation=args.aa_dilation,
                      lr_schedule=args.lr_schedule,
                      lr_decay_every=args.lr_decay_every, lr_decay_gamma=args.lr_decay_gamma,
@@ -90,6 +92,9 @@ def cmd_fit(args):
                      split_oversample=args.split_oversample,
                      split_min_spacing=args.split_min_spacing,
                      split_color_init=args.split_color_init,
+                     seed_new_row_optimizer_state=args.seed_new_row_optimizer_state,
+                     new_row_temper_iters=args.new_row_temper_iters,
+                     new_row_temper_start=args.new_row_temper_start,
                      absgrad_decay=args.absgrad_decay,
                      relocate_every=args.relocate_every,
                      relocate_at_split=args.relocate_at_split,
@@ -158,6 +163,9 @@ def cmd_stage_search(args):
         color_solve_modes=args.color_solve_modes,
         pixel_losses=args.pixel_losses, optimizers=args.optimizers,
         lr_schedules=args.lr_schedules, refine_modes=args.refine_modes,
+        state_seed_modes=args.state_seed_modes,
+        row_temper_modes=args.row_temper_modes,
+        support_fade_modes=args.support_fade_modes,
         pyramid_modes=args.pyramid_modes, render_chunk=args.chunk,
         ssim_weight=args.ssim_weight, ssim_backend=args.ssim_backend,
         split_every=args.split_every,
@@ -309,6 +317,10 @@ def main():
     f.add_argument("--aa-dilation", type=float, default=0.0)
     f.add_argument("--support-fade", action="store_true",
                    help="subtract the Gaussian tail at sigma_cutoff for C0 compact support")
+    f.add_argument("--support-fade-until-frac", type=float, default=None,
+                   help="enable support fade for the first fraction of fit iterations")
+    f.add_argument("--support-fade-crossfade-iters", type=int, default=10,
+                   help="iterations used to ramp scheduled support fade off")
     f.add_argument("--optimizer", choices=["adam", "adamw", "adan"], default="adam")
     f.add_argument("--pixel-loss", choices=["l1", "l2", "charbonnier"], default="l1")
     f.add_argument("--loss-warmup-iters", type=int, default=0)
@@ -342,6 +354,12 @@ def main():
                    help="residual-add spacing radius as a multiple of the densify base scale")
     f.add_argument("--split-color-init", choices=["target", "residual"], default="target",
                    help="color initialization for normalized residual-add children")
+    f.add_argument("--seed-new-row-optimizer-state", action="store_true",
+                   help="seed new-row optimizer moments from split parents or carried-row median")
+    f.add_argument("--new-row-temper-iters", type=int, default=0,
+                   help="post-insert update-ramp length for new/relocated rows")
+    f.add_argument("--new-row-temper-start", type=float, default=0.25,
+                   help="first-step update multiplier for --new-row-temper-iters")
     f.add_argument("--absgrad-decay", type=float, default=1.0)
     f.add_argument("--relocate-every", type=int, default=None)
     f.add_argument("--relocate-at-split", action="store_true",
@@ -418,6 +436,12 @@ def main():
     s.add_argument("--optimizers", nargs="+", default=None)
     s.add_argument("--lr-schedules", nargs="+", default=None)
     s.add_argument("--refine-modes", nargs="+", default=None)
+    s.add_argument("--state-seed-modes", nargs="+", default=None,
+                   help="off or on; seed new-row optimizer moments from parent/median")
+    s.add_argument("--row-temper-modes", nargs="+", default=None,
+                   help="off or warmup<N>; post-insert update ramp")
+    s.add_argument("--support-fade-modes", nargs="+", default=None,
+                   help="off, on, or until<F>; scheduled compact-support fade")
     s.add_argument("--pyramid-modes", nargs="+", default=None)
     s.add_argument("--chunk", type=int, default=512)
     s.add_argument("--ssim-weight", type=float, default=0.3)
