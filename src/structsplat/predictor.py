@@ -54,31 +54,85 @@ def _logit(x: torch.Tensor, eps: float = 1e-4) -> torch.Tensor:
     return torch.log(x) - torch.log1p(-x)
 
 
-def image_batch_tensor(
+def tensor_prior_channels(
+    img: np.ndarray,
+    scfg: StructureTensorConfig | None = None,
+    tensor: st.StructureTensor | None = None,
+) -> np.ndarray:
+    """Return HWC tensor-prior channels for predictor input ablations."""
+
+    if tensor is None:
+        tensor = st.compute(img, scfg)
+    energy = np.maximum(tensor.energy.astype(np.float32), 0.0)
+    ref_raw = getattr(tensor, "energy_ref", None)
+    ref = st.energy_reference(energy) if ref_raw is None else float(ref_raw)
+    energy_n = np.clip(energy / max(ref, 1e-8), 0.0, 1.0)
+    coherence = np.clip(tensor.coherence.astype(np.float32), 0.0, 1.0)
+    angle2 = 2.0 * tensor.along_edge_angle.astype(np.float32)
+    return np.stack(
+        [energy_n, coherence, np.cos(angle2).astype(np.float32),
+         np.sin(angle2).astype(np.float32)],
+        axis=2,
+    ).astype(np.float32)
+
+
+def predictor_input_tensor(
     images: list[np.ndarray] | np.ndarray,
     image_size: int,
     *,
+    input_mode: str = "image",
+    tensors: list[st.StructureTensor | None] | st.StructureTensor | None = None,
+    scfg: StructureTensorConfig | None = None,
     device: str | torch.device = "cpu",
 ) -> torch.Tensor:
-    """Convert one image or a list of HWC float images into resized BCHW tensors."""
+    """Convert images and optional tensor priors into resized BCHW predictor inputs."""
 
     if isinstance(images, np.ndarray):
         batch = [images]
     else:
         batch = images
-    tensors = []
-    for img in batch:
+    if tensors is None or isinstance(tensors, st.StructureTensor):
+        tensor_batch = [tensors] * len(batch)
+    else:
+        tensor_batch = tensors
+    if len(tensor_batch) != len(batch):
+        raise ValueError(
+            f"tensor batch length {len(tensor_batch)} does not match image batch {len(batch)}"
+        )
+
+    parts = []
+    for img, tensor in zip(batch, tensor_batch):
         arr = np.asarray(img, dtype=np.float32)
         if arr.ndim != 3 or arr.shape[2] != 3:
             raise ValueError(f"expected HxWx3 image, got shape {arr.shape}")
-        tensors.append(torch.as_tensor(arr, dtype=torch.float32, device=device).permute(2, 0, 1))
-    x = torch.stack(tensors, dim=0).clamp(0.0, 1.0)
+        arr = np.clip(arr, 0.0, 1.0)
+        if input_mode == "image":
+            feat = arr
+        elif input_mode == "image_tensor":
+            feat = np.concatenate([arr, tensor_prior_channels(arr, scfg, tensor)], axis=2)
+        else:
+            raise ValueError(
+                f"unknown predictor input_mode {input_mode!r}; expected image or image_tensor"
+            )
+        parts.append(torch.as_tensor(feat, dtype=torch.float32, device=device).permute(2, 0, 1))
+    x = torch.stack(parts, dim=0)
     return F.interpolate(
         x,
         size=(int(image_size), int(image_size)),
         mode="bilinear",
         align_corners=False,
     )
+
+
+def image_batch_tensor(
+    images: list[np.ndarray] | np.ndarray,
+    image_size: int,
+    *,
+    device: str | torch.device = "cpu",
+) -> torch.Tensor:
+    """Convert one image or a list of HWC float images into resized BCHW image tensors."""
+
+    return predictor_input_tensor(images, image_size, input_mode="image", device=device)
 
 
 class TinyGaussianPredictorNet(torch.nn.Module):
@@ -89,16 +143,19 @@ class TinyGaussianPredictorNet(torch.nn.Module):
     from a global image encoding.
     """
 
-    def __init__(self, num_gaussians: int, hidden: int = 64):
+    def __init__(self, num_gaussians: int, hidden: int = 64, in_channels: int = 3):
         super().__init__()
         self.num_gaussians = int(num_gaussians)
         self.hidden = int(hidden)
+        self.in_channels = int(in_channels)
         if self.num_gaussians <= 0:
             raise ValueError(f"num_gaussians must be positive, got {num_gaussians}")
         if self.hidden < 4:
             raise ValueError(f"hidden must be >= 4, got {hidden}")
+        if self.in_channels < 1:
+            raise ValueError(f"in_channels must be >= 1, got {in_channels}")
         self.encoder = torch.nn.Sequential(
-            torch.nn.Conv2d(3, hidden // 2, kernel_size=3, stride=2, padding=1),
+            torch.nn.Conv2d(self.in_channels, hidden // 2, kernel_size=3, stride=2, padding=1),
             torch.nn.ReLU(inplace=True),
             torch.nn.Conv2d(hidden // 2, hidden, kernel_size=3, stride=2, padding=1),
             torch.nn.ReLU(inplace=True),
@@ -272,11 +329,14 @@ def make_learned_checkpoint(
     *,
     image_size: int,
     max_scale_norm: float,
+    input_mode: str = "image",
     train_config: dict[str, Any] | None = None,
     loss_history: list[dict[str, float]] | None = None,
 ) -> dict[str, Any]:
     """Build a serializable checkpoint payload for learned feed-forward prediction."""
 
+    if input_mode not in ("image", "image_tensor"):
+        raise ValueError(f"unknown input_mode {input_mode!r}; expected image or image_tensor")
     safe_train_config = json.loads(json.dumps(train_config or {}, default=str))
     safe_loss_history = json.loads(json.dumps(loss_history or [], default=str))
     return {
@@ -285,6 +345,8 @@ def make_learned_checkpoint(
         "num_gaussians": int(model.num_gaussians),
         "image_size": int(image_size),
         "hidden": int(model.hidden),
+        "in_channels": int(model.in_channels),
+        "input_mode": input_mode,
         "max_scale_norm": float(max_scale_norm),
         "state_dict": model.state_dict(),
         "train_config": safe_train_config,
@@ -376,17 +438,32 @@ class LearnedCheckpointPredictor:
         self.checkpoint = checkpoint
         self.fallback = TensorPriorPredictor(fallback_strategy)
 
-    def _predict_base_field(self, img: np.ndarray, device: str) -> GaussianField:
+    def _predict_base_field(
+        self,
+        img: np.ndarray,
+        device: str,
+        scfg: StructureTensorConfig | None,
+        tensor: st.StructureTensor | None,
+    ) -> GaussianField:
         H, W = img.shape[:2]
         ckpt = load_learned_checkpoint(self.checkpoint, device=device)
+        input_mode = ckpt.get("input_mode", "image")
         model = TinyGaussianPredictorNet(
             int(ckpt["num_gaussians"]),
             hidden=int(ckpt.get("hidden", 64)),
+            in_channels=int(ckpt.get("in_channels", 3)),
         ).to(device)
         model.load_state_dict(ckpt["state_dict"])
         model.eval()
         with torch.no_grad():
-            x = image_batch_tensor(img, int(ckpt["image_size"]), device=device)
+            x = predictor_input_tensor(
+                img,
+                int(ckpt["image_size"]),
+                input_mode=input_mode,
+                tensors=tensor,
+                scfg=scfg,
+                device=device,
+            )
             raw = model(x)
             attrs = decode_normalized_predictions(
                 raw,
@@ -405,7 +482,7 @@ class LearnedCheckpointPredictor:
         device: str = "cpu",
     ) -> GaussianField:
         H, W = img.shape[:2]
-        field = _clamp_field_to_image(self._predict_base_field(img, device), H, W)
+        field = _clamp_field_to_image(self._predict_base_field(img, device, scfg, tensor), H, W)
         budget = int(icfg.num_gaussians)
         if field.n > budget:
             return field.subset(slice(0, budget))

@@ -17,6 +17,7 @@ from structsplat.config import DEFAULT_PREDICTOR_FALLBACK_STRATEGY
 
 
 DEFAULT_METHODS = ("learned", "tensor_prior", "scratch")
+VALID_METHODS = DEFAULT_METHODS + ("learned_tensor",)
 
 
 def _psnr_auc(history: dict) -> float | None:
@@ -34,7 +35,8 @@ def _method_init_config(
     method: str,
     *,
     budget: int,
-    checkpoint: str,
+    checkpoint: str | None,
+    tensor_checkpoint: str | None,
     prior_strategy: str,
     scratch_strategy: str,
     seed: int,
@@ -42,10 +44,22 @@ def _method_init_config(
     from structsplat.config import InitConfig
 
     if method == "learned":
+        if checkpoint is None:
+            raise ValueError("method='learned' requires checkpoint")
         return InitConfig(
             strategy="feedforward",
             num_gaussians=budget,
             predictor_checkpoint=checkpoint,
+            predictor_fallback_strategy=prior_strategy,
+            seed=seed,
+        )
+    if method == "learned_tensor":
+        if tensor_checkpoint is None:
+            raise ValueError("method='learned_tensor' requires tensor_checkpoint")
+        return InitConfig(
+            strategy="feedforward",
+            num_gaussians=budget,
+            predictor_checkpoint=tensor_checkpoint,
             predictor_fallback_strategy=prior_strategy,
             seed=seed,
         )
@@ -54,19 +68,21 @@ def _method_init_config(
     if method == "scratch":
         return InitConfig(strategy=scratch_strategy, num_gaussians=budget, seed=seed)
     raise ValueError(
-        f"unknown method {method!r}; expected one of {', '.join(DEFAULT_METHODS)}"
+        f"unknown method {method!r}; expected one of {', '.join(VALID_METHODS)}"
     )
 
 
 def evaluate_feedforward_predictor(
     images,
     *,
-    checkpoint: str,
+    checkpoint: str | None,
+    tensor_checkpoint: str | None = None,
     outdir: str | Path = "results/feedforward_eval",
     budget: int = 512,
     iters: int = 80,
     max_side: int | None = 160,
     render_chunk: int = 512,
+    renderer: str = "normalized",
     seed: int = 0,
     device: str | None = None,
     prior_strategy: str = DEFAULT_PREDICTOR_FALLBACK_STRATEGY,
@@ -87,7 +103,7 @@ def evaluate_feedforward_predictor(
     if not files:
         raise SystemExit("no images found")
     methods = tuple(methods)
-    unknown = set(methods) - set(DEFAULT_METHODS)
+    unknown = set(methods) - set(VALID_METHODS)
     if unknown:
         raise ValueError(f"unknown methods: {sorted(unknown)}")
 
@@ -96,10 +112,12 @@ def evaluate_feedforward_predictor(
     cfg = run_config({
         "images": files,
         "checkpoint": checkpoint,
+        "tensor_checkpoint": tensor_checkpoint,
         "budget": int(budget),
         "iters": int(iters),
         "max_side": max_side,
         "render_chunk": int(render_chunk),
+        "renderer": renderer,
         "seed": int(seed),
         "prior_strategy": prior_strategy,
         "scratch_strategy": scratch_strategy,
@@ -118,6 +136,7 @@ def evaluate_feedforward_predictor(
                 method,
                 budget=int(budget),
                 checkpoint=checkpoint,
+                tensor_checkpoint=tensor_checkpoint,
                 prior_strategy=prior_strategy,
                 scratch_strategy=scratch_strategy,
                 seed=int(seed),
@@ -128,10 +147,19 @@ def evaluate_feedforward_predictor(
             fcfg = FitConfig(
                 iters=int(iters),
                 render_chunk=int(render_chunk),
+                renderer=renderer,
                 log_every=max(1, int(iters) // 10) if int(iters) > 0 else 1,
                 target_psnr=target_psnr,
             )
             fit_out = fit(field, target, fcfg, verbose=False)
+            iterations_run = int(fit_out.get("iterations_run", 0))
+            fit_seconds = float(fit_out.get("fit_seconds", 0.0))
+            iters_to_target = fit_out.get("iters_to_target")
+            seconds_to_target = None
+            if iters_to_target is not None and iterations_run > 0:
+                seconds_to_target = init_seconds + fit_seconds * (
+                    float(iters_to_target) / float(iterations_run)
+                )
             row = {
                 "image": Path(path).stem,
                 "source_path": str(path),
@@ -139,15 +167,18 @@ def evaluate_feedforward_predictor(
                 "budget": int(budget),
                 "n_gaussians": int(fit_out["field"].n),
                 "iters": int(iters),
-                "iterations_run": int(fit_out.get("iterations_run", 0)),
+                "iterations_run": iterations_run,
                 "psnr": round(float(fit_out["psnr"]), 4),
                 "ms_ssim": round(float(fit_out["ms_ssim"]), 5),
                 "psnr_auc": None if _psnr_auc(fit_out["history"]) is None
                 else round(float(_psnr_auc(fit_out["history"])), 4),
                 "init_seconds": round(float(init_seconds), 6),
-                "fit_seconds": round(float(fit_out.get("fit_seconds", 0.0)), 6),
-                "total_seconds": round(float(init_seconds + fit_out.get("fit_seconds", 0.0)), 6),
-                "iters_to_target": fit_out.get("iters_to_target"),
+                "fit_seconds": round(fit_seconds, 6),
+                "total_seconds": round(float(init_seconds + fit_seconds), 6),
+                "iters_to_target": iters_to_target,
+                "seconds_to_target": (
+                    None if seconds_to_target is None else round(float(seconds_to_target), 6)
+                ),
                 "estimated_bpp": round(float(fit_out.get("estimated_bpp", 0.0)), 6),
             }
             rows.append(row)
@@ -171,8 +202,9 @@ def _write_summary(out: Path, rows: list[dict], *, target_psnr: float | None) ->
         "",
         f"Rows: {len(rows)}",
         "",
-        "| method | rows | mean PSNR | mean MS-SSIM | mean AUC | mean total s | target hits |",
-        "|---|---:|---:|---:|---:|---:|---:|",
+        "| method | rows | mean PSNR | mean MS-SSIM | mean AUC | mean total s | "
+        "target hits | mean target s |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for method in methods:
         subset = [r for r in rows if r["method"] == method]
@@ -182,6 +214,7 @@ def _write_summary(out: Path, rows: list[dict], *, target_psnr: float | None) ->
             f"{_mean(r['ms_ssim'] for r in subset):.5f} | "
             f"{_mean(r['psnr_auc'] for r in subset):.4f} | "
             f"{_mean(r['total_seconds'] for r in subset):.6f} | {hits} |"
+            f" {_mean(r['seconds_to_target'] for r in subset) or 0.0:.6f} |"
         )
     lines.extend([
         "",
@@ -198,28 +231,32 @@ def main() -> None:
 
     p = argparse.ArgumentParser(description="Evaluate FF-001 learned warm starts")
     p.add_argument("images", nargs="+")
-    p.add_argument("--checkpoint", required=True)
+    p.add_argument("--checkpoint", default=None)
+    p.add_argument("--tensor-checkpoint", default=None)
     p.add_argument("--outdir", default="results/feedforward_eval")
     p.add_argument("--budget", type=int, default=512)
     p.add_argument("--iters", type=int, default=80)
     p.add_argument("--max-side", type=int, default=160)
     p.add_argument("--render-chunk", type=int, default=512)
+    p.add_argument("--renderer", default="normalized")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--device", default=None)
     p.add_argument("--prior-strategy", default=DEFAULT_PREDICTOR_FALLBACK_STRATEGY)
     p.add_argument("--scratch-strategy", default="random")
     p.add_argument("--methods", nargs="+", default=list(DEFAULT_METHODS),
-                   choices=list(DEFAULT_METHODS))
+                   choices=list(VALID_METHODS))
     p.add_argument("--target-psnr", type=float, default=None)
     args = p.parse_args()
     evaluate_feedforward_predictor(
         args.images,
         checkpoint=args.checkpoint,
+        tensor_checkpoint=args.tensor_checkpoint,
         outdir=args.outdir,
         budget=args.budget,
         iters=args.iters,
         max_side=args.max_side,
         render_chunk=args.render_chunk,
+        renderer=args.renderer,
         seed=args.seed,
         device=args.device,
         prior_strategy=args.prior_strategy,

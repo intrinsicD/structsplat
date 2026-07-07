@@ -81,3 +81,15 @@ budget-dependent: +1.8768 dB at 1000 rows, +1.1183 dB at 2000 rows, and only +0.
 rows, where AUC lost in every pair. Keep the layer searchable and default off. Do not claim a true
 additive background/compositing layer until a new ADR and larger confirmation justify changing
 renderer semantics. See `ara/evidence/core009-background-layer-2026-07-07/`.
+
+## C09: Feed-forward warm starts need tensor priors and are not default-ready
+
+FF-001 established the learned warm-start path, but the current tiny CNN is not better than the
+hand tensor-prior initializer. On the 2026-07-07 held-out Kodak slice, the image-only learned
+checkpoint reached only 21.0514 dB (`kodim19`, 512 Gaussians, 200 refinement iterations), while the
+image+structure-tensor checkpoint beat random scratch on final PSNR (23.4686 vs 22.9056 dB) and
+reached 22 dB faster (69 iterations / 0.128815 s vs 108 iterations / 0.166847 s). The same
+tensor-prior checkpoint still lost clearly to `quadtree_wse` (25.3249 dB, AUC 24.1797). Keep
+`strategy=feedforward` as an experimental warm-start path; do not promote learned initialization
+without a larger architecture or predict-optimize-distill evidence. See
+`ara/evidence/ff001-multimage-tensor-ablation-2026-07-07/`.

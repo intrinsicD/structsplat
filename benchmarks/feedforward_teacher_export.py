@@ -23,6 +23,7 @@ def export_teacher_fields(
     iters=80,
     max_side: int | None = 160,
     render_chunk=512,
+    renderer="normalized",
     device=None,
 ):
     import torch
@@ -48,6 +49,7 @@ def export_teacher_fields(
         "iters": iters,
         "max_side": max_side,
         "render_chunk": render_chunk,
+        "renderer": renderer,
     }, device=device)
     write_config(str(out), cfg)
 
@@ -58,7 +60,12 @@ def export_teacher_fields(
         target = target_tensor(img, device)
         name = Path(path).stem
         icfg = InitConfig(strategy=strategy, num_gaussians=budget, seed=seed)
-        fcfg = FitConfig(iters=iters, render_chunk=render_chunk, log_every=max(1, iters // 10))
+        fcfg = FitConfig(
+            iters=iters,
+            render_chunk=render_chunk,
+            renderer=renderer,
+            log_every=max(1, iters // 10),
+        )
         field = _init.build_field(img, icfg, scfg, device=device)
         fit_out = fit(field, target, fcfg, verbose=False)
         field_path = field_dir / f"{name}_n{budget}_seed{seed}.npz"
@@ -110,6 +117,7 @@ def main():
     p.add_argument("--iters", type=int, default=80)
     p.add_argument("--max-side", type=int, default=160)
     p.add_argument("--render-chunk", type=int, default=512)
+    p.add_argument("--renderer", default="normalized")
     p.add_argument("--device", default=None)
     args = p.parse_args()
     export_teacher_fields(
@@ -121,6 +129,7 @@ def main():
         iters=args.iters,
         max_side=args.max_side,
         render_chunk=args.render_chunk,
+        renderer=args.renderer,
         device=args.device,
     )
 

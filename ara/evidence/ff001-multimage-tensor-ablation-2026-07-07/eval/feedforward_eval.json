@@ -1,0 +1,108 @@
+{
+  "config": {
+    "resolved": {
+      "images": [
+        "results/datasets/abl004/kodak24/kodim19.png"
+      ],
+      "checkpoint": "results/ff001_multimage_train_image_2026_07_07/predictor.pt",
+      "tensor_checkpoint": "results/ff001_multimage_train_tensor_2026_07_07/predictor.pt",
+      "budget": 512,
+      "iters": 200,
+      "max_side": 384,
+      "render_chunk": 512,
+      "renderer": "cuda",
+      "seed": 0,
+      "prior_strategy": "quadtree_wse",
+      "scratch_strategy": "random",
+      "methods": [
+        "learned",
+        "learned_tensor",
+        "tensor_prior",
+        "scratch"
+      ],
+      "target_psnr": 22.0
+    },
+    "device": "cuda",
+    "versions": {
+      "torch": "2.7.0+cu126",
+      "torch_cuda": "12.6",
+      "cuda_available": true,
+      "numpy": "2.2.4",
+      "structsplat": "0.1.0"
+    }
+  },
+  "rows": [
+    {
+      "image": "kodim19",
+      "source_path": "results/datasets/abl004/kodak24/kodim19.png",
+      "method": "learned",
+      "budget": 512,
+      "n_gaussians": 512,
+      "iters": 200,
+      "iterations_run": 200,
+      "psnr": 21.0514,
+      "ms_ssim": 0.85978,
+      "psnr_auc": 20.4061,
+      "init_seconds": 0.217673,
+      "fit_seconds": 0.73185,
+      "total_seconds": 0.949523,
+      "iters_to_target": null,
+      "seconds_to_target": null,
+      "estimated_bpp": 1.5
+    },
+    {
+      "image": "kodim19",
+      "source_path": "results/datasets/abl004/kodak24/kodim19.png",
+      "method": "learned_tensor",
+      "budget": 512,
+      "n_gaussians": 512,
+      "iters": 200,
+      "iterations_run": 200,
+      "psnr": 23.4686,
+      "ms_ssim": 0.90109,
+      "psnr_auc": 21.7372,
+      "init_seconds": 0.020868,
+      "fit_seconds": 0.312891,
+      "total_seconds": 0.333759,
+      "iters_to_target": 69,
+      "seconds_to_target": 0.128815,
+      "estimated_bpp": 1.5
+    },
+    {
+      "image": "kodim19",
+      "source_path": "results/datasets/abl004/kodak24/kodim19.png",
+      "method": "tensor_prior",
+      "budget": 512,
+      "n_gaussians": 512,
+      "iters": 200,
+      "iterations_run": 200,
+      "psnr": 25.3249,
+      "ms_ssim": 0.91512,
+      "psnr_auc": 24.1797,
+      "init_seconds": 0.152594,
+      "fit_seconds": 0.295911,
+      "total_seconds": 0.448505,
+      "iters_to_target": 15,
+      "seconds_to_target": 0.174787,
+      "estimated_bpp": 1.333333
+    },
+    {
+      "image": "kodim19",
+      "source_path": "results/datasets/abl004/kodak24/kodim19.png",
+      "method": "scratch",
+      "budget": 512,
+      "n_gaussians": 512,
+      "iters": 200,
+      "iterations_run": 200,
+      "psnr": 22.9056,
+      "ms_ssim": 0.90148,
+      "psnr_auc": 21.6377,
+      "init_seconds": 0.000624,
+      "fit_seconds": 0.307821,
+      "total_seconds": 0.308444,
+      "iters_to_target": 108,
+      "seconds_to_target": 0.166847,
+      "estimated_bpp": 1.333333
+    }
+  ]
+}

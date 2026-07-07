@@ -1,0 +1,24 @@
+{
+  "resolved": {
+    "images": [
+      "results/datasets/abl004/kodak24/kodim01.png",
+      "results/datasets/abl004/kodak24/kodim07.png",
+      "results/datasets/abl004/kodak24/kodim13.png"
+    ],
+    "budget": 512,
+    "strategy": "quadtree_wse",
+    "seed": 0,
+    "iters": 600,
+    "max_side": 384,
+    "render_chunk": 512,
+    "renderer": "cuda"
+  },
+  "device": "cuda",
+  "versions": {
+    "torch": "2.7.0+cu126",
+    "torch_cuda": "12.6",
+    "cuda_available": true,
+    "numpy": "2.2.4",
+    "structsplat": "0.1.0"
+  }
+}

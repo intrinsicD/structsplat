@@ -1,0 +1,5 @@
+image,source_path,method,budget,n_gaussians,iters,iterations_run,psnr,ms_ssim,psnr_auc,init_seconds,fit_seconds,total_seconds,iters_to_target,seconds_to_target,estimated_bpp
+kodim19,results/datasets/abl004/kodak24/kodim19.png,learned,512,512,200,200,21.0514,0.85978,20.4061,0.217673,0.73185,0.949523,,,1.5
+kodim19,results/datasets/abl004/kodak24/kodim19.png,learned_tensor,512,512,200,200,23.4686,0.90109,21.7372,0.020868,0.312891,0.333759,69,0.128815,1.5
+kodim19,results/datasets/abl004/kodak24/kodim19.png,tensor_prior,512,512,200,200,25.3249,0.91512,24.1797,0.152594,0.295911,0.448505,15,0.174787,1.333333
+kodim19,results/datasets/abl004/kodak24/kodim19.png,scratch,512,512,200,200,22.9056,0.90148,21.6377,0.000624,0.307821,0.308444,108,0.166847,1.333333

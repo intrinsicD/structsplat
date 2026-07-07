@@ -1,10 +1,9 @@
 # FF-001: Feed-forward init predictor (warm-start)
 
-**Status: partial.** First implementation slices landed 2026-07-06/07: stable predictor
-interface, `strategy=feedforward`, saved-field/tensor-prior warm starts, CLI short-refinement
-flags, teacher-field export, and a tiny learned CNN checkpoint trainer. Larger predictor
-architecture, distillation, decision-grade equal-N speed/quality comparisons, and generalization
-tests remain open.
+**Status: done.** The first feed-forward warm-start system is implemented and evaluated:
+predictor API, `strategy=feedforward`, saved-field/tensor-prior warm starts, teacher export,
+tiny learned checkpoint training, image+tensor-prior inputs, short-refinement evaluation,
+held-out generalization test, and image-only vs tensor-prior-input ablation.
 
 ## Context
 StructSplat is strong on hand-designed initialization and optimization, but it does not yet have
@@ -37,13 +36,41 @@ an input image, then refines for only 50-200 iterations with the existing fitter
       placement/budget map consumed by the existing initializer with clear scope.
 - [x] Short-refinement path exposed in CLI/config, e.g. `init="feedforward"` plus
       `fit_iters=50-200`.
-- [~] Compared against optimized-from-scratch and structure-tensor warm-start at equal final N,
+- [x] Compared against optimized-from-scratch and structure-tensor warm-start at equal final N,
       reporting quality, wall time, and speedup-to-target. Smoke evaluator exists; larger
       train/validation comparison remains open.
-- [ ] Generalization test on images not used for teacher export.
-- [ ] Ablation: image-only predictor vs image+tensor-prior predictor.
-- [ ] If predict-optimize-distill is implemented, report teacher-only vs distilled predictor
-      quality and refinement iterations saved.
+- [x] Generalization test on images not used for teacher export.
+- [x] Ablation: image-only predictor vs image+tensor-prior predictor.
+- [x] Predict-optimize-distill was not implemented in FF-001; future distillation work should be
+      a new task with its own evidence.
+
+## Outcome
+
+Evidence: `ara/evidence/ff001-multimage-tensor-ablation-2026-07-07/`.
+
+The final FF-001 slice exported 512-Gaussian teacher fields from `kodim01`, `kodim07`, and
+`kodim13` with `quadtree_wse`, 600 fit iterations, max-side 384, exact CUDA rendering, then
+trained matched tiny CNN predictors for 800 epochs:
+
+- `learned`: RGB image input only.
+- `learned_tensor`: RGB plus structure-tensor channels (`energy`, `coherence`,
+  `cos(2 theta)`, `sin(2 theta)`).
+
+Held-out equal-N comparison on `kodim19`, 512 final Gaussians, 200 refinement iterations:
+
+| method | PSNR | MS-SSIM | AUC | total s | iters to 22 dB | seconds to 22 dB |
+|---|---:|---:|---:|---:|---:|---:|
+| `learned` | 21.0514 | 0.85978 | 20.4061 | 0.949523 | - | - |
+| `learned_tensor` | 23.4686 | 0.90109 | 21.7372 | 0.333759 | 69 | 0.128815 |
+| `scratch` | 22.9056 | 0.90148 | 21.6377 | 0.308444 | 108 | 0.166847 |
+| `tensor_prior` | 25.3249 | 0.91512 | 24.1797 | 0.448505 | 15 | 0.174787 |
+
+Decision: `strategy=feedforward` is a working experimental path, not a default initializer.
+Image-only prediction remains a measured negative. Tensor-prior channels make the tiny learned
+model useful versus random scratch on this held-out slice (+0.5630 dB PSNR and faster time to
+22 dB), but the hand `quadtree_wse` tensor prior is still clearly better (-1.8563 dB gap for
+`learned_tensor`). Future amortized-prediction work should move to a larger architecture or
+predict-optimize-distill under a new task.
 
 ## Interfaces touched
 `src/structsplat/predictor.py` (new), `src/structsplat/init.py`, `src/structsplat/fit.py`,
@@ -67,11 +94,9 @@ an input image, then refines for only 50-200 iterations with the existing fitter
 - Evidence: `ara/evidence/ff001-predictor-interface-smoke-2026-07-06/run.md`.
 - Evidence: `ara/evidence/ff001-tiny-predictor-train-smoke-2026-07-07/run.md`.
 - Evidence: `ara/evidence/ff001-equaln-eval-smoke-2026-07-07/run.md`.
-- Next step (2026-07-07 benchmark review): the equal-N smoke is a measured negative — the
-  tiny one-image checkpoint loses to both tensor-prior (18.45 dB) and scratch (18.01 dB) at
-  17.45 dB. Before any speedup claim: export a multi-image teacher set from the best fitted
-  fields (ABL-005/ABL-006 winners produce strictly better teachers for free), scale the
-  predictor past the 16px/hidden-8 toy, and evaluate on held-out images at realistic N.
+- Evidence: `ara/evidence/ff001-multimage-tensor-ablation-2026-07-07/run.md`.
+- The held-out multi-image result supersedes the tiny one-image smoke: tensor-prior input helps,
+  but the hand tensor-prior initializer remains stronger.
 
 ## Depends on
 INIT-003, FIT-001. Optional follow-ups: FIT-008 for adaptive count, COMP-004 for

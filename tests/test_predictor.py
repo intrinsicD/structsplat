@@ -13,6 +13,7 @@ from benchmarks.feedforward_train import train_feedforward_predictor
 from structsplat import init as _init
 from structsplat.config import InitConfig
 from structsplat.gaussians import GaussianField
+from structsplat.predictor import load_learned_checkpoint, predictor_input_tensor
 
 
 def _toy(H=24, W=24):
@@ -25,6 +26,16 @@ def _toy(H=24, W=24):
 def _write_toy(path):
     img = _toy()
     Image.fromarray(np.rint(img * 255).astype(np.uint8)).save(path)
+
+
+def test_predictor_input_tensor_supports_tensor_prior_channels():
+    img = _toy()
+    image_only = predictor_input_tensor(img, 16, input_mode="image", device="cpu")
+    with_tensor = predictor_input_tensor(img, 16, input_mode="image_tensor", device="cpu")
+
+    assert image_only.shape == (1, 3, 16, 16)
+    assert with_tensor.shape == (1, 7, 16, 16)
+    assert torch.isfinite(with_tensor).all()
 
 
 def test_feedforward_fallback_matches_tensor_prior_strategy():
@@ -147,6 +158,9 @@ def test_tiny_learned_predictor_trains_and_loads(tmp_path):
     ckpt = train_dir / "predictor.pt"
     assert result["checkpoint_path"] == str(ckpt)
     assert ckpt.exists()
+    loaded = load_learned_checkpoint(ckpt, device="cpu")
+    assert loaded["input_mode"] == "image"
+    assert loaded["in_channels"] == 3
     assert (train_dir / "loss_history.csv").exists()
     assert (train_dir / "summary.md").exists()
 
@@ -193,6 +207,7 @@ def test_feedforward_eval_compares_equal_n_methods(tmp_path):
     img_path = tmp_path / "toy.png"
     teacher_dir = tmp_path / "teachers"
     train_dir = tmp_path / "train"
+    train_tensor_dir = tmp_path / "train_tensor"
     eval_dir = tmp_path / "eval"
     _write_toy(img_path)
 
@@ -217,9 +232,21 @@ def test_feedforward_eval_compares_equal_n_methods(tmp_path):
         seed=0,
         device="cpu",
     )
+    train_tensor = train_feedforward_predictor(
+        teacher_dir / "teacher_manifest.json",
+        outdir=train_tensor_dir,
+        image_size=16,
+        hidden=8,
+        input_mode="image_tensor",
+        epochs=2,
+        lr=1e-3,
+        seed=0,
+        device="cpu",
+    )
     rows = evaluate_feedforward_predictor(
         [str(img_path)],
         checkpoint=train["checkpoint_path"],
+        tensor_checkpoint=train_tensor["checkpoint_path"],
         outdir=eval_dir,
         budget=8,
         iters=1,
@@ -229,10 +256,13 @@ def test_feedforward_eval_compares_equal_n_methods(tmp_path):
         device="cpu",
         prior_strategy="grid",
         scratch_strategy="random",
+        methods=("learned", "learned_tensor", "tensor_prior", "scratch"),
     )
 
-    assert len(rows) == 3
-    assert {r["method"] for r in rows} == {"learned", "tensor_prior", "scratch"}
+    assert len(rows) == 4
+    assert {r["method"] for r in rows} == {
+        "learned", "learned_tensor", "tensor_prior", "scratch",
+    }
     assert all(r["budget"] == 8 for r in rows)
     assert all(r["n_gaussians"] == 8 for r in rows)
     assert all(r["iterations_run"] == 1 for r in rows)

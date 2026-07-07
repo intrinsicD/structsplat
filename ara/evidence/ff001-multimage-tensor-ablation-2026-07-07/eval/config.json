@@ -1,0 +1,32 @@
+{
+  "resolved": {
+    "images": [
+      "results/datasets/abl004/kodak24/kodim19.png"
+    ],
+    "checkpoint": "results/ff001_multimage_train_image_2026_07_07/predictor.pt",
+    "tensor_checkpoint": "results/ff001_multimage_train_tensor_2026_07_07/predictor.pt",
+    "budget": 512,
+    "iters": 200,
+    "max_side": 384,
+    "render_chunk": 512,
+    "renderer": "cuda",
+    "seed": 0,
+    "prior_strategy": "quadtree_wse",
+    "scratch_strategy": "random",
+    "methods": [
+      "learned",
+      "learned_tensor",
+      "tensor_prior",
+      "scratch"
+    ],
+    "target_psnr": 22.0
+  },
+  "device": "cuda",
+  "versions": {
+    "torch": "2.7.0+cu126",
+    "torch_cuda": "12.6",
+    "cuda_available": true,
+    "numpy": "2.2.4",
+    "structsplat": "0.1.0"
+  }
+}

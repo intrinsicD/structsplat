@@ -1,0 +1,4 @@
+image,source_path,field_path,budget,n_gaussians,strategy,seed,iters,psnr,ms_ssim,fit_seconds
+kodim01,results/datasets/abl004/kodak24/kodim01.png,results/ff001_multimage_teacher_2026_07_07/fields/kodim01_n512_seed0.npz,512,512,quadtree_wse,0,600,23.9236,0.88937,1.380427
+kodim07,results/datasets/abl004/kodak24/kodim07.png,results/ff001_multimage_teacher_2026_07_07/fields/kodim07_n512_seed0.npz,512,512,quadtree_wse,0,600,22.981,0.90355,0.872689
+kodim13,results/datasets/abl004/kodak24/kodim13.png,results/ff001_multimage_teacher_2026_07_07/fields/kodim13_n512_seed0.npz,512,512,quadtree_wse,0,600,21.245,0.84649,0.878282

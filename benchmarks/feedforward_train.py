@@ -34,6 +34,7 @@ def train_feedforward_predictor(
     outdir: str | Path = "results/feedforward_train",
     image_size: int = 64,
     hidden: int = 64,
+    input_mode: str = "image",
     epochs: int = 200,
     lr: float = 1e-3,
     seed: int = 0,
@@ -49,9 +50,9 @@ def train_feedforward_predictor(
     from structsplat.predictor import (
         TinyGaussianPredictorNet,
         field_to_normalized_targets,
-        image_batch_tensor,
         make_learned_checkpoint,
         prediction_loss,
+        predictor_input_tensor,
     )
 
     torch.manual_seed(seed)
@@ -91,9 +92,11 @@ def train_feedforward_predictor(
         for key, value in targets.items():
             target_rows[key].append(value)
 
-    x = image_batch_tensor(images, int(image_size), device=device)
+    x = predictor_input_tensor(images, int(image_size), input_mode=input_mode, device=device)
     targets_batched = {key: torch.stack(values, dim=0) for key, values in target_rows.items()}
-    model = TinyGaussianPredictorNet(int(num_gaussians), hidden=int(hidden)).to(device)
+    model = TinyGaussianPredictorNet(
+        int(num_gaussians), hidden=int(hidden), in_channels=int(x.shape[1])
+    ).to(device)
     opt = torch.optim.Adam(model.parameters(), lr=float(lr))
 
     history = []
@@ -110,6 +113,8 @@ def train_feedforward_predictor(
         "rows": len(rows),
         "image_size": int(image_size),
         "hidden": int(hidden),
+        "input_mode": input_mode,
+        "in_channels": int(x.shape[1]),
         "epochs": int(epochs),
         "lr": float(lr),
         "seed": int(seed),
@@ -123,6 +128,7 @@ def train_feedforward_predictor(
             model,
             image_size=int(image_size),
             max_scale_norm=float(max_scale_norm),
+            input_mode=input_mode,
             train_config=cfg,
             loss_history=history,
         ),
@@ -138,6 +144,7 @@ def train_feedforward_predictor(
         "",
         f"Rows: {len(rows)}",
         f"Gaussians: {int(num_gaussians)}",
+        f"Input mode: `{input_mode}`",
         f"Epochs: {int(epochs)}",
         f"Initial loss: {first:.6f}",
         f"Final loss: {final:.6f}",
@@ -166,6 +173,7 @@ def main() -> None:
     p.add_argument("--outdir", default="results/feedforward_train")
     p.add_argument("--image-size", type=int, default=64)
     p.add_argument("--hidden", type=int, default=64)
+    p.add_argument("--input-mode", choices=["image", "image_tensor"], default="image")
     p.add_argument("--epochs", type=int, default=200)
     p.add_argument("--lr", type=float, default=1e-3)
     p.add_argument("--seed", type=int, default=0)
@@ -178,6 +186,7 @@ def main() -> None:
         outdir=args.outdir,
         image_size=args.image_size,
         hidden=args.hidden,
+        input_mode=args.input_mode,
         epochs=args.epochs,
         lr=args.lr,
         seed=args.seed,

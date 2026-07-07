@@ -1,0 +1,67 @@
+{
+  "config": {
+    "resolved": {
+      "images": [
+        "results/datasets/abl004/kodak24/kodim01.png",
+        "results/datasets/abl004/kodak24/kodim07.png",
+        "results/datasets/abl004/kodak24/kodim13.png"
+      ],
+      "budget": 512,
+      "strategy": "quadtree_wse",
+      "seed": 0,
+      "iters": 600,
+      "max_side": 384,
+      "render_chunk": 512,
+      "renderer": "cuda"
+    },
+    "device": "cuda",
+    "versions": {
+      "torch": "2.7.0+cu126",
+      "torch_cuda": "12.6",
+      "cuda_available": true,
+      "numpy": "2.2.4",
+      "structsplat": "0.1.0"
+    }
+  },
+  "rows": [
+    {
+      "image": "kodim01",
+      "source_path": "results/datasets/abl004/kodak24/kodim01.png",
+      "field_path": "results/ff001_multimage_teacher_2026_07_07/fields/kodim01_n512_seed0.npz",
+      "budget": 512,
+      "n_gaussians": 512,
+      "strategy": "quadtree_wse",
+      "seed": 0,
+      "iters": 600,
+      "psnr": 23.9236,
+      "ms_ssim": 0.88937,
+      "fit_seconds": 1.380427
+    },
+    {
+      "image": "kodim07",
+      "source_path": "results/datasets/abl004/kodak24/kodim07.png",
+      "field_path": "results/ff001_multimage_teacher_2026_07_07/fields/kodim07_n512_seed0.npz",
+      "budget": 512,
+      "n_gaussians": 512,
+      "strategy": "quadtree_wse",
+      "seed": 0,
+      "iters": 600,
+      "psnr": 22.981,
+      "ms_ssim": 0.90355,
+      "fit_seconds": 0.872689
+    },
+    {
+      "image": "kodim13",
+      "source_path": "results/datasets/abl004/kodak24/kodim13.png",
+      "field_path": "results/ff001_multimage_teacher_2026_07_07/fields/kodim13_n512_seed0.npz",
+      "budget": 512,
+      "n_gaussians": 512,
+      "strategy": "quadtree_wse",
+      "seed": 0,
+      "iters": 600,
+      "psnr": 21.245,
+      "ms_ssim": 0.84649,
+      "fit_seconds": 0.878282
+    }
+  ]
+}
