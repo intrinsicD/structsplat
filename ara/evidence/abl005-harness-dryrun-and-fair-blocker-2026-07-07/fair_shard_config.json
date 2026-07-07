@@ -1,0 +1,130 @@
+{
+  "resolved": {
+    "images": [
+      "results/datasets/abl004/kodak24/kodim01.png",
+      "results/datasets/abl004/kodak24/kodim04.png",
+      "results/datasets/abl004/kodak24/kodim07.png",
+      "results/datasets/abl004/kodak24/kodim10.png",
+      "results/datasets/abl004/kodak24/kodim13.png",
+      "results/datasets/abl004/kodak24/kodim16.png",
+      "results/datasets/abl004/kodak24/kodim19.png",
+      "results/datasets/abl004/kodak24/kodim22.png"
+    ],
+    "mode": "influence",
+    "budgets": [
+      2000,
+      5000,
+      10000
+    ],
+    "seeds": [
+      0,
+      1
+    ],
+    "iters": 1500,
+    "max_side": 768,
+    "axes": {
+      "strategies": [
+        "aniso_flanking"
+      ],
+      "tensor_operators": [
+        "central"
+      ],
+      "tensor_colors": [
+        "luma"
+      ],
+      "density_modes": [
+        "structure",
+        "variance"
+      ],
+      "sampling_modes": [
+        "wse"
+      ],
+      "orientation_modes": [
+        "tensor"
+      ],
+      "color_modes": [
+        "bilinear"
+      ],
+      "scale_modes": [
+        "spacing"
+      ],
+      "scale_cap_modes": [
+        "none"
+      ],
+      "opacity_modes": [
+        "none",
+        "constant"
+      ],
+      "renderers": [
+        "cuda"
+      ],
+      "aa_dilations": [
+        0.0
+      ],
+      "color_basis_modes": [
+        "constant",
+        "affine"
+      ],
+      "color_solve_modes": [
+        "none",
+        "every10"
+      ],
+      "pixel_losses": [
+        "l1",
+        "charbonnier"
+      ],
+      "optimizers": [
+        "adam"
+      ],
+      "lr_schedules": [
+        "none",
+        "cosine"
+      ],
+      "refine_modes": [
+        "none",
+        "moment_preserving"
+      ],
+      "pyramid_modes": [
+        "single"
+      ]
+    },
+    "render_chunk": 512,
+    "ssim_weight": 0.3,
+    "split_every": 750,
+    "ssim_backend": "builtin",
+    "split_count": 64,
+    "prune_every": 750,
+    "prune_min_activity": 0.01,
+    "max_gaussians": null,
+    "target_psnr": null,
+    "target_psnrs": [
+      28.0,
+      30.0,
+      32.0
+    ],
+    "target_ms_ssim": null,
+    "target_bpp": null,
+    "adaptive_count": false,
+    "adaptive_growth_every": 50,
+    "adaptive_growth_count": 64,
+    "adaptive_split_mode": "residual_tensor_add",
+    "adaptive_min_delta_psnr": 0.02,
+    "adaptive_patience": 2,
+    "early_exit": false,
+    "early_exit_window": 150,
+    "early_exit_min_delta": 0.02,
+    "early_exit_min_iters": null,
+    "log_every": 75,
+    "resume": true,
+    "max_new_cells": 16,
+    "dedupe": true
+  },
+  "device": "cuda",
+  "versions": {
+    "torch": "2.7.0+cu126",
+    "torch_cuda": "12.6",
+    "cuda_available": true,
+    "numpy": "2.2.4",
+    "structsplat": "0.1.0"
+  }
+}

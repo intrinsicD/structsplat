@@ -32,6 +32,9 @@ from . import metrics as M
 _ADDITIVE_RENDERERS = (
     "additive", "cuda_additive", "cuda_tiled_additive", "gsplat", "cuda_gsplat",
 )
+_NORMALIZED_COLOR_SOLVE_RENDERERS = (
+    "normalized", "cuda", "cuda_normalized", "cuda_tiled", "cuda_tiled_normalized",
+)
 # Shared lower bound on densified Gaussian scales (px); was duplicated as bare 0.35 literals.
 _MIN_DENSIFY_SCALE = 0.35
 
@@ -332,6 +335,10 @@ def _color_solve_enabled(cfg: FitConfig) -> bool:
     return cfg.color_solve_every is not None and cfg.color_solve_every > 0
 
 
+def _color_solve_renderer_supported(renderer: str) -> bool:
+    return renderer in _NORMALIZED_COLOR_SOLVE_RENDERERS
+
+
 def _ensure_color_basis(field: GaussianField, cfg: FitConfig) -> GaussianField:
     if cfg.color_basis == "affine":
         return field.with_affine_colors()
@@ -430,9 +437,9 @@ def _solve_colors_normalized(field: GaussianField, target: torch.Tensor, cfg: Fi
     render = A c. We solve `(A.T A + lambda I)c = A.T target + lambda c_prev` for the three RGB
     channels simultaneously, without materializing the dense pixel-by-Gaussian matrix.
     """
-    if cfg.renderer != "normalized":
+    if not _color_solve_renderer_supported(cfg.renderer):
         raise ValueError(
-            "color_solve_every currently supports renderer='normalized' only; "
+            "color_solve_every currently supports normalized renderers only; "
             f"got {cfg.renderer!r}"
         )
     if field.color_grads is not None:
@@ -1326,9 +1333,9 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             "codec v1 cannot encode affine color fields"
         )
     qat_ccfg = _make_qat_codec_config(field, cfg) if _qat_enabled(cfg) else None
-    if _color_solve_enabled(cfg) and cfg.renderer != "normalized":
+    if _color_solve_enabled(cfg) and not _color_solve_renderer_supported(cfg.renderer):
         raise ValueError(
-            "color_solve_every currently supports renderer='normalized' only; "
+            "color_solve_every currently supports normalized renderers only; "
             f"got {cfg.renderer!r}"
         )
     if _color_solve_enabled(cfg) and field.color_grads is not None:

@@ -23,6 +23,7 @@ import torch
 
 _EPS = 1e-8
 _ELEMENTS_PER_RENDER_CHUNK = 4096
+_NORMALIZED_CUDA_MODES = ("cuda", "cuda_normalized", "cuda_tiled", "cuda_tiled_normalized")
 
 
 def _element_budget(chunk: int) -> int:
@@ -218,6 +219,17 @@ def render_field(means, conics, colors, radii, H: int, W: int,
         )
     if mode == "additive":
         return render_additive(
+            means, conics, colors, radii, H, W, chunk, opacities,
+            support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
+            scales=scales, rotations=rotations,
+        )
+    if color_grads is not None and mode in _NORMALIZED_CUDA_MODES:
+        if not means.is_cuda:
+            raise RuntimeError("StructSplat CUDA renderer requires CUDA tensors; pass device='cuda'.")
+        # The custom CUDA extension has no affine-color backward kernel yet. Use the exact
+        # normalized reference equation on CUDA so ABL/fair-regime quality cells can run without
+        # changing renderer semantics; timing for this arm must be interpreted as a fallback.
+        return render(
             means, conics, colors, radii, H, W, chunk, opacities,
             support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
             scales=scales, rotations=rotations,

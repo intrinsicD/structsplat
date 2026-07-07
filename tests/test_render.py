@@ -120,7 +120,7 @@ def test_cuda_renderer_is_explicit_about_requirements():
                 mode="cuda_additive",
             )
     affine = g.with_affine_colors()
-    with pytest.raises(ValueError, match="affine color rendering"):
+    with pytest.raises(RuntimeError, match="requires CUDA tensors"):
         render_field(
             affine.means, affine.conics(), affine.colors, affine.radii(3.0), 10, 10,
             mode="cuda", scales=affine.scales(), rotations=affine.rotations,
@@ -160,6 +160,38 @@ def test_cuda_exact_matches_reference_when_available():
         pytest.skip(str(exc))
     assert torch.allclose(cu, ref, atol=2e-5, rtol=2e-5)
     assert torch.allclose(add_cu, add_ref, atol=2e-5, rtol=2e-5)
+
+
+def test_cuda_affine_color_falls_back_to_reference_when_available():
+    if not torch.cuda.is_available():
+        pytest.skip("CUDA not available")
+    rng = np.random.default_rng(4)
+    N, H, W = 12, 16, 17
+    means = np.stack([rng.uniform(-2, W + 2, N), rng.uniform(-2, H + 2, N)], 1)
+    scales = np.exp(rng.uniform(np.log(0.8), np.log(3.0), (N, 2)))
+    angles = rng.uniform(0, np.pi, N)
+    colors = rng.random((N, 3))
+    color_grads = rng.normal(0.0, 0.05, (N, 2, 3))
+    g = GaussianField.from_numpy(
+        means, scales, angles, colors, device="cuda", color_grads=color_grads
+    ).trainable()
+
+    ref = render_field(
+        g.means, g.conics(), g.colors, g.radii(3.0), H, W,
+        mode="normalized", scales=g.scales(), rotations=g.rotations,
+        color_grads=g.color_grads,
+    )
+    cu = render_field(
+        g.means, g.conics(), g.colors, g.radii(3.0), H, W,
+        mode="cuda", scales=g.scales(), rotations=g.rotations,
+        color_grads=g.color_grads,
+    )
+    assert torch.allclose(cu, ref, atol=1e-6, rtol=1e-6)
+
+    cu.square().mean().backward()
+    assert g.means.grad is not None and torch.isfinite(g.means.grad).all()
+    assert g.color_grads is not None
+    assert g.color_grads.grad is not None and torch.isfinite(g.color_grads.grad).all()
 
 
 def test_cuda_tiled_exact_matches_reference_when_available():

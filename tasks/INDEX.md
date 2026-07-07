@@ -27,7 +27,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | GEN-003 | VSD / multi-particle distillation | todo | GEN-001 |
 | INIT-007 | Retire the flanking default (measured answer + ADR) | todo | INIT-004, ABL-006 |
 | INIT-008 | Feature-relative scale caps (fix the cap-scaling failure) | todo | ADR-0012, INIT-003 |
-| ABL-005 | Fitter-knob influence pass at the fair regime | todo | ADR-0010, FIT-005/006/007, CORE-006 |
+| ABL-005 | Fitter-knob influence pass at the fair regime | blocked/partial — native CUDA affine or split protocol needed | ADR-0010, FIT-005/006/007, CORE-006 |
 | ABL-006 | Successive-halving execution of the remaining confirmation | todo | ABL-004, BENCH-002 |
 | FIT-009 | Factor the refine axis into orthogonal sub-axes | todo | FIT-004, FIT-006, FIT-007 |
 | FIT-010 | Cheap color-solve schedules (init / final / on-split) | todo | FIT-005 |

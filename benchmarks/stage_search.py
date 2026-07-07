@@ -132,6 +132,27 @@ def _iter_images(images):
     return sorted(files)
 
 
+def _load_jsonl(path: Path) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    rows = []
+    with path.open(encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                rows.append(json.loads(line))
+    return rows
+
+
+def _cell_key(row: dict[str, Any]) -> tuple[Any, ...]:
+    return (
+        row.get("image"),
+        int(row.get("budget")),
+        int(row.get("seed")),
+        row.get("config_label"),
+    )
+
+
 def _one(x):
     return tuple(x) if isinstance(x, (list, tuple)) else (x,)
 
@@ -577,6 +598,8 @@ def run_stage_search(
     outdir="results/stage_search",
     device=None,
     max_configs: int | None = None,
+    resume: bool = False,
+    max_new_cells: int | None = None,
     shuffle_configs=False,
     config_seed=0,
     verbose=False,
@@ -647,6 +670,8 @@ def run_stage_search(
         "early_exit_min_delta": early_exit_min_delta,
         "early_exit_min_iters": early_exit_min_iters,
         "log_every": log_every,
+        "resume": resume,
+        "max_new_cells": max_new_cells,
         "dedupe": dedupe,
     }, device=device))
 
@@ -676,21 +701,29 @@ def run_stage_search(
         baseline_label = _config_label(base)
 
     jsonl_path = out_path / "stage_search.jsonl"
-    jsonl_path.unlink(missing_ok=True)   # fresh incremental log for this run
+    rows = _load_jsonl(jsonl_path) if resume else []
+    if not resume:
+        jsonl_path.unlink(missing_ok=True)   # fresh incremental log for this run
+    done = {_cell_key(row) for row in rows}
 
-    rows = []
+    new_cells = 0
+    stop_requested = False
     for image_path in files:
+        if stop_requested:
+            break
         img = _load_image(image_path, max_side)
         target = torch.as_tensor(img, device=device)
         image_name = Path(image_path).stem
         for budget in budgets:
+            if stop_requested:
+                break
             for seed in seeds:
+                if stop_requested:
+                    break
                 for config_idx, cfg in enumerate(configs):
-                    print(
-                        f"[{image_name}] budget={budget} seed={seed} "
-                        f"config={config_idx + 1}/{len(configs)} {cfg['label']}",
-                        flush=True,
-                    )
+                    if max_new_cells is not None and new_cells >= max_new_cells:
+                        stop_requested = True
+                        break
                     # equal-budget arms (BENCH-002): cap at the cell budget, and let adding-refine
                     # arms START below budget so their planned additions land AT budget — otherwise
                     # they ran with up to +split_count more capacity than the baselines they rank
@@ -705,6 +738,13 @@ def run_stage_search(
                         "config_label": cfg["label"],
                         "is_baseline": cfg["label"] == baseline_label,
                     }
+                    if _cell_key(base_row) in done:
+                        continue
+                    print(
+                        f"[{image_name}] budget={budget} seed={seed} "
+                        f"config={config_idx + 1}/{len(configs)} {cfg['label']}",
+                        flush=True,
+                    )
                     early_stop_patience = None
                     early_stop_min_iters_resolved = 0
                     if early_exit:
@@ -767,6 +807,8 @@ def run_stage_search(
                         row = {**base_row, "status": "error", "error": repr(exc)}
                         print(f"  ERROR in cell: {exc!r}", flush=True)
                     rows.append(row)
+                    done.add(_cell_key(row))
+                    new_cells += 1
                     with jsonl_path.open("a", encoding="utf-8") as jf:  # crash-recoverable
                         jf.write(json.dumps({k: v for k, v in row.items()
                                              if k not in {"history", "prefix_metrics"}}) + "\n")
@@ -1213,6 +1255,10 @@ def main():
     p.add_argument("--pyramid-iters-per-level", type=int, default=None)
     p.add_argument("--lpips", action="store_true")
     p.add_argument("--max-configs", type=int, default=None)
+    p.add_argument("--resume", action="store_true",
+                   help="resume from stage_search.jsonl in --outdir and skip completed cells")
+    p.add_argument("--max-new-cells", type=int, default=None,
+                   help="stop after this many newly executed cells; useful for GPU shards")
     p.add_argument("--shuffle-configs", action="store_true")
     p.add_argument("--config-seed", type=int, default=0)
     p.add_argument("--outdir", default="results/stage_search")
@@ -1250,7 +1296,8 @@ def main():
         early_exit_min_delta=a.early_exit_min_delta,
         early_exit_min_iters=a.early_exit_min_iters,
         log_every=a.log_every, dedupe=not a.no_dedupe,
-        max_configs=a.max_configs, shuffle_configs=a.shuffle_configs,
+        max_configs=a.max_configs, resume=a.resume, max_new_cells=a.max_new_cells,
+        shuffle_configs=a.shuffle_configs,
         config_seed=a.config_seed, outdir=a.outdir, device=a.device, verbose=a.verbose,
     )
 

@@ -148,6 +148,55 @@ def test_stage_search_early_exit_is_opt_in_and_records_nominal_auc(tmp_path):
     assert row["auc_psnr_horizon"] == "nominal_hold_last"
 
 
+def test_stage_search_resume_skips_completed_cells_and_limits_new_cells(tmp_path):
+    img_path = tmp_path / "toy.png"
+    outdir = tmp_path / "resume"
+    _write_toy(img_path)
+    common = {
+        "images": [str(img_path)],
+        "budgets": [16],
+        "seeds": [0],
+        "iters": 2,
+        "max_side": None,
+        "mode": "influence",
+        "strategies": ["aniso_flanking"],
+        "tensor_operators": ["central"],
+        "tensor_colors": ["luma"],
+        "density_modes": ["structure"],
+        "sampling_modes": ["density_random"],
+        "orientation_modes": ["tensor"],
+        "color_modes": ["bilinear"],
+        "scale_modes": ["spacing"],
+        "scale_cap_modes": ["none"],
+        "opacity_modes": ["none"],
+        "renderers": ["normalized"],
+        "aa_dilations": [0.0],
+        "color_basis_modes": ["constant"],
+        "color_solve_modes": ["none"],
+        "pixel_losses": ["l1", "charbonnier"],
+        "optimizers": ["adam"],
+        "lr_schedules": ["none"],
+        "refine_modes": ["none"],
+        "pyramid_modes": ["single"],
+        "render_chunk": 8,
+        "outdir": str(outdir),
+        "device": "cpu",
+    }
+
+    first = run_stage_search(**common, max_new_cells=1)
+    assert len(first) == 1
+    assert len((outdir / "stage_search.jsonl").read_text(encoding="utf-8").splitlines()) == 1
+
+    second = run_stage_search(**common, resume=True, max_new_cells=10)
+    assert len(second) == 2
+    assert {row["loss"] for row in second} == {"l1", "charbonnier"}
+    assert len((outdir / "stage_search.jsonl").read_text(encoding="utf-8").splitlines()) == 2
+
+    third = run_stage_search(**common, resume=True, max_new_cells=10)
+    assert len(third) == 2
+    assert len((outdir / "stage_search.jsonl").read_text(encoding="utf-8").splitlines()) == 2
+
+
 def test_stage_search_dedupes_equivalent_configs(tmp_path):
     img_path = tmp_path / "toy.png"
     _write_toy(img_path)

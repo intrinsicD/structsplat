@@ -1,7 +1,7 @@
 # ABL-005: Fitter-knob influence pass at the fair regime
 
-**Status: todo.** The largest unclaimed deltas in the 2026-07 evidence are fitter knobs, not init
-strategies — but none has been isolated at a decision-grade regime.
+**Status: blocked/partial.** The largest unclaimed deltas in the 2026-07 evidence are fitter knobs,
+not init strategies — but none has been isolated at a decision-grade regime.
 
 ## Context
 `codex_stage_top1` beat the shipped default by +0.26 dB with 108/120 paired wins on the MERGE-001
@@ -36,6 +36,21 @@ so promotion decisions (each via its own ADR) rest on isolated, regime-correct e
 - [ ] Each knob promoted to default gets its own ADR citing this run; knobs that lose are recorded
       as parked in `ara/logic/claims.md`.
 - [ ] `tasks/INDEX.md` and README updated in the same commit as any default change.
+
+## Notes
+
+- 2026-07-07: Added the missing harness support needed to attempt the run: `stage-search --resume`
+  / `--max-new-cells`, CUDA-compatible color solve for normalized renderer modes, and an affine
+  color fallback to the exact PyTorch reference on CUDA. Evidence:
+  `ara/evidence/abl005-harness-dryrun-and-fair-blocker-2026-07-07/`.
+- The exact 8-arm command dry-runs successfully at tiny scale, but the fair-regime all-seven run is
+  not decision-grade yet: the `color_basis=affine` arm falls back to the reference renderer because
+  the custom CUDA extension has no affine-color backward kernel. In the first fair shard, three
+  normal CUDA 2k cells finished at ~5 fit seconds each; the affine 2k cell was interrupted after
+  ~3 minutes without finishing. This makes the affine speed delta implementation-confounded.
+- Next action: either implement native CUDA affine-color forward/backward, or split ABL-005 into
+  six CUDA-native knobs plus a separate affine quality-only run that explicitly excludes speed
+  claims until native CUDA affine exists.
 
 ## Interfaces touched
 `benchmarks/stage_search.py` (no new code expected — protocol only), `ara/evidence/`,

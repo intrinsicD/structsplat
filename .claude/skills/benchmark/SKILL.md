@@ -26,6 +26,10 @@ init/sampling variants.
   screen before spending the full fair regime. BENCH-004 evidence rejects 384/500 at 5k
   (`rho=0.8636`, sign agreement 89.8%) and accepts 512/750 (`rho=0.9364/0.9182`, sign agreement
   91.8%/93.9% at 2k/5k). Promotion/default changes still require the full fair regime.
+- `color_basis=affine` under `renderer=cuda` currently falls back to the exact PyTorch reference on
+  CUDA because the custom CUDA extension lacks an affine-color backward kernel. Quality/AUC rows are
+  valid, but fit-time deltas for that arm are implementation-confounded until native CUDA affine
+  exists.
 
 ## Running
 `structsplat ablation <images-or-dir> --budgets 2000 5000 10000 20000 --iters 1500 --target-psnr 35`

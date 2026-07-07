@@ -210,6 +210,18 @@ def _color_solve_fixture():
     return field, true_colors, target, cfg, H, W
 
 
+def _field_to(field: GaussianField, device: str) -> GaussianField:
+    return GaussianField(
+        field.means.to(device),
+        field.log_scales.to(device),
+        field.rotations.to(device),
+        field.colors.to(device),
+        None if field.opacities is None else field.opacities.to(device),
+        None if field.scale_max is None else field.scale_max.to(device),
+        None if field.color_grads is None else field.color_grads.to(device),
+    )
+
+
 def test_color_solve_recovers_fixed_geometry_colors():
     field, true_colors, target, cfg, H, W = _color_solve_fixture()
 
@@ -319,8 +331,31 @@ def test_fit_color_solve_runs_in_loop_and_fails_closed_for_other_renderers():
     assert np.isfinite(out["psnr"])
     assert out["psnr"] > 70.0
 
+    if torch.cuda.is_available():
+        cuda_field, _true_colors, cuda_target, cuda_cfg, _H, _W = _color_solve_fixture()
+        cuda_out = fit(
+            _field_to(cuda_field, "cuda"),
+            cuda_target.to("cuda"),
+            FitConfig(
+                **{
+                    **cuda_cfg.__dict__,
+                    "renderer": "cuda",
+                    "iters": 1,
+                    "log_every": 1,
+                    "color_solve_every": 1,
+                    "lr_means": 0.0,
+                    "lr_scales": 0.0,
+                    "lr_rot": 0.0,
+                    "lr_color": 0.0,
+                }
+            ),
+            verbose=False,
+        )
+        assert len(cuda_out["history"]["color_solve_events"]) == 1
+        assert np.isfinite(cuda_out["psnr"])
+
     bad_field, _true_colors, bad_target, _cfg, _H, _W = _color_solve_fixture()
-    with pytest.raises(ValueError, match="renderer='normalized'"):
+    with pytest.raises(ValueError, match="normalized renderers"):
         fit(
             bad_field,
             bad_target,
