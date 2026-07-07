@@ -1,0 +1,93 @@
+{
+  "protocol": "ABL-006 successive halving",
+  "version": 1,
+  "rule": {
+    "metric": "psnr",
+    "ci_method": "bootstrap_mean_ci",
+    "confidence": 0.95,
+    "pairing_key": [
+      "image",
+      "seed",
+      "budget"
+    ],
+    "leader": "highest mean PSNR among complete paired units in the stage",
+    "survivor": "CI for arm-minus-leader overlaps zero",
+    "elimination": "CI for arm-minus-leader is strictly below zero",
+    "frozen_before_stage1_complete": true
+  },
+  "stages": {
+    "stage1": {
+      "budget": 2000,
+      "seeds": [
+        0,
+        1
+      ],
+      "leader": "quadtree_wse",
+      "survivors": [
+        "quadtree_wse",
+        "aniso_onedge"
+      ],
+      "eliminated": [
+        {
+          "strategy": "aniso_flanking",
+          "reason": "arm-minus-leader PSNR CI strictly below zero",
+          "mean_delta_psnr": -0.17955714285714297,
+          "ci95_low_psnr": -0.29774767857142853,
+          "ci95_high_psnr": -0.06957642857142848,
+          "paired_units": 56,
+          "wins_psnr": 20,
+          "losses_psnr": 36
+        },
+        {
+          "strategy": "quadtree_hybrid",
+          "reason": "arm-minus-leader PSNR CI strictly below zero",
+          "mean_delta_psnr": -0.1295214285714285,
+          "ci95_low_psnr": -0.24833879464285713,
+          "ci95_high_psnr": -0.010229017857142616,
+          "paired_units": 56,
+          "wins_psnr": 16,
+          "losses_psnr": 40
+        },
+        {
+          "strategy": "iso_blue_noise",
+          "reason": "arm-minus-leader PSNR CI strictly below zero",
+          "mean_delta_psnr": -0.4721589285714286,
+          "ci95_low_psnr": -0.6334754910714288,
+          "ci95_high_psnr": -0.3138231696428571,
+          "paired_units": 56,
+          "wins_psnr": 8,
+          "losses_psnr": 48
+        },
+        {
+          "strategy": "floyd_steinberg",
+          "reason": "arm-minus-leader PSNR CI strictly below zero",
+          "mean_delta_psnr": -2.9436714285714283,
+          "ci95_low_psnr": -3.7910283482142844,
+          "ci95_high_psnr": -2.154331785714285,
+          "paired_units": 56,
+          "wins_psnr": 6,
+          "losses_psnr": 50
+        }
+      ]
+    },
+    "stage2": {
+      "budget": 5000,
+      "seeds": [
+        0,
+        1
+      ],
+      "survivors": null,
+      "eliminated": []
+    },
+    "stage3": {
+      "budget": 10000,
+      "seeds": [
+        0,
+        1
+      ],
+      "extra_seed": 2,
+      "finalists": null,
+      "eliminated": []
+    }
+  }
+}

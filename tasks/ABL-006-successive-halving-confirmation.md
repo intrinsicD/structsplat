@@ -1,8 +1,8 @@
 # ABL-006: Successive-halving execution of the remaining confirmation
 
-**Status: partial.** Harness and frozen-rule plan artifacts are implemented; the staged GPU run,
-stage decisions, and README winner update remain open. Supersedes the flat execution plan of the
-ABL-004 confirmation manifest (the
+**Status: partial.** Harness and stage-1 decision are complete; stage 2/3 GPU runs and README
+winner update remain open. Supersedes the flat execution plan of the ABL-004 confirmation manifest
+(the
 protocol and arms are unchanged; only the run order and stopping rule change).
 
 ## Context
@@ -46,11 +46,18 @@ The staged plan writes `abl006_plan.csv`, `abl006_config.json`,
 arms are not counted as missing high-budget cells. Harness evidence is committed under
 `ara/evidence/abl006-halving-harness-2026-07-07/`.
 
-Ran two bounded stage-1 shards after preparing the full Kodak-24 + COCO4 image set:
-`kodim01` and `kodim02`, budget 2000, seeds {0,1}, all six arms. The shards completed 24/24
-requested cells and the staged analysis is now 24/336 complete. Evidence is under
+Ran two bounded stage-1 warm-up shards after preparing the full Kodak-24 + COCO4 image set:
+`kodim01` and `kodim02`, budget 2000, seeds {0,1}, all six arms. Evidence is under
 `ara/evidence/abl006-stage1-shard1-2026-07-07/` and
-`ara/evidence/abl006-stage1-shard2-2026-07-07/`. This is not enough for elimination decisions.
+`ara/evidence/abl006-stage1-shard2-2026-07-07/`.
+
+Then completed the remaining stage-1 cells in one resumable shard. Stage 1 is 336/336 complete.
+The leader is `quadtree_wse` at 26.5477 dB mean PSNR, statistically tied with `aniso_onedge`
+(-0.0004 dB, 95% CI [-0.1453, 0.1351]). Stage-2 survivors are `quadtree_wse` and
+`aniso_onedge`; `aniso_flanking`, `quadtree_hybrid`, `iso_blue_noise`, and `floyd_steinberg` are
+eliminated by the frozen CI rule. Evidence is under
+`ara/evidence/abl006-stage1-complete-2026-07-07/`. The staged analysis is now 336/448 complete
+with 112 stage-2 cells pending.
 
 ## Interfaces touched
 `benchmarks/abl004_confirmation.py`, `ara/evidence/`, `tasks/ABL-004-controls-and-full-run.md`,

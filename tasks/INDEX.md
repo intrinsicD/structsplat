@@ -28,7 +28,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | INIT-007 | Retire the flanking default (measured answer + ADR) | todo | INIT-004, ABL-006 |
 | INIT-008 | Feature-relative scale caps (fix the cap-scaling failure) | todo | ADR-0012, INIT-003 |
 | ABL-005 | Fitter-knob influence pass at the fair regime | blocked/partial — native CUDA affine or split protocol needed | ADR-0010, FIT-005/006/007, CORE-006 |
-| ABL-006 | Successive-halving execution of the remaining confirmation | partial — harness done, stage 1 at 24/336 cells | ABL-004, BENCH-002 |
+| ABL-006 | Successive-halving execution of the remaining confirmation | partial — stage 1 complete, stage 2 pending 112 cells | ABL-004, BENCH-002 |
 | FIT-009 | Factor the refine axis into orthogonal sub-axes | todo | FIT-004, FIT-006, FIT-007 |
 | FIT-010 | Cheap color-solve schedules (init / final / on-split) | todo | FIT-005 |
 | FIT-011 | Split-recovery micro-levers (moment seeding, warmup, scheduled fade) | todo | FIT-004, FIT-007, CORE-005 |

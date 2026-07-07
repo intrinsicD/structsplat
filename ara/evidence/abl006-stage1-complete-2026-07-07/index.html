@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>ABL-006 Successive-Halving Overview</title>
+<style>
+body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:24px;line-height:1.45;color:#1f2328;background:#fff}
+h1{margin-bottom:0.25rem} .note{color:#57606a;max-width:80ch}
+ul{padding-left:1.25rem} a{color:#0969da;text-decoration:none} a:hover{text-decoration:underline}
+.plots{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-top:18px}
+figure{margin:0} img{max-width:100%;border:1px solid #d0d7de;border-radius:6px;background:#fff}
+figcaption{font-size:0.9rem;color:#57606a;margin-top:4px}
+</style></head><body>
+<h1>ABL-006 Successive-Halving Overview</h1>
+<p class="note">Successive-halving confirmation artifacts. Missing cells are measured against the staged plan only; dropped arms are listed in the elimination trail instead of being counted as unrun high-budget cells.</p>
+<h2>Files</h2>
+<ul>
+<li><a href="confirmation_analysis.md">Confirmation analysis</a></li>
+<li><a href="summary.md">Ablation summary</a></li>
+<li><a href="abl006_config.json">Confirmation config</a></li>
+<li><a href="abl006_plan.csv">Confirmation plan</a></li>
+<li><a href="missing_cells.csv">Missing cells</a></li>
+<li><a href="leaderboard.csv">Leaderboard</a></li>
+<li><a href="paired_deltas_vs_baseline.csv">Paired deltas vs baseline</a></li>
+<li><a href="pairwise_deltas.csv">All pairwise deltas</a></li>
+<li><a href="paired_units_vs_baseline.csv">Paired units vs baseline</a></li>
+<li><a href="rank_stability.csv">Rank stability</a></li>
+<li><a href="ablation.jsonl">Raw JSONL rows</a></li>
+<li><a href="abl006_elimination_decisions.json">ABL-006 decisions</a></li>
+<li><a href="abl006_run_groups.json">ABL-006 run groups</a></li>
+<li><a href="abl006_elimination_trail.csv">ABL-006 elimination trail</a></li>
+</ul>
+<h2>Plots</h2>
+<div class="plots">
+<figure><a href="psnr_vs_budget.png"><img src="psnr_vs_budget.png" alt="psnr_vs_budget.png"></a><figcaption>psnr_vs_budget.png</figcaption></figure>
+<figure><a href="psnr_vs_iters.png"><img src="psnr_vs_iters.png" alt="psnr_vs_iters.png"></a><figcaption>psnr_vs_iters.png</figcaption></figure>
+</div>
+</body></html>

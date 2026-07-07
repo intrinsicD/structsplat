@@ -1,0 +1,24 @@
+{
+  "expected_cells": 448,
+  "completed_cells": 336,
+  "missing_cells": 112,
+  "baseline": "aniso_onedge",
+  "budgets": [
+    2000,
+    5000,
+    10000
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "strategies": [
+    "aniso_onedge",
+    "aniso_flanking",
+    "quadtree_wse",
+    "quadtree_hybrid",
+    "iso_blue_noise",
+    "floyd_steinberg"
+  ]
+}
