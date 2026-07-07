@@ -106,3 +106,13 @@ the existing post-fit QAT control overall. Post-fit QAT averaged +0.6580 dB over
 while the best fit-time lambda averaged +0.6539 dB and barely changed actual bpp. Keep
 `qat_mode` / `lambda_rate` searchable for future codec experiments; do not promote them as the
 default compression path yet. See `ara/evidence/comp004-lambda-sweep-2026-07-07/`.
+
+## C11: Renderer memory and support-continuity fixes are opt-in controls
+
+CORE-005 added the compact-support fade equation and opt-in reference-renderer checkpointing.
+Support fade is not a default candidate from current evidence: the fair-density difficult-four
+slice improved AUC but lost final PSNR overall (-0.1389 dB). Reference render checkpointing is a
+memory control, not a quality change; on a 256x256 CUDA reference-render smoke with 3000 Gaussians,
+it reduced peak allocated memory delta from 203.55 MB to 29.65 MB at identical loss. Keep
+`support_fade=False` and `render_checkpoint=False` by default; enable checkpointing when the Python
+reference renderer is memory-bound. See `ara/evidence/core005-render-checkpoint-2026-07-07/`.

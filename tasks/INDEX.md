@@ -13,7 +13,6 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | GEN-001 | Generative 2D Gaussians via SDS distillation (no dataset) | todo | CORE-001, ADR-0006 |
 | COMP-001 | Quantization + entropy/VQ codec (rate-distortion) | partial | FIT-001 |
 | PORT-001 | CUDA tile rasterizer → IntrinsicEngine RHI pass | partial | CORE-001 |
-| CORE-005 | Reference renderer memory bound + C0-continuous support cutoff | partial | CORE-003, CORE-004 |
 | ABL-004 | Killer controls + full ABL-001 run + committed evidence | partial | BENCH-002, ABL-003, FIT-004 |
 | COMP-003 | Compression-ratio ladder (scale ranges → planes → LSQ → VQ → entropy) | partial | COMP-002, BENCH-002 |
 | CORE-007 | Boundary-gated Gaussians | todo | INIT-004, CORE-001 |
@@ -31,6 +30,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | CORE-002 | RS Gaussian parameterization + conics | `done/CORE-002-rs-gaussian-params.md` |
 | CORE-003 | Edge-aware render support window (off-image support + tile waste) | `done/CORE-003-render-support-clamp.md` |
 | CORE-004 | Renderer + GaussianField correctness fixes (CUDA N=0, int-cast UB, aliasing, dilation) | `done/CORE-004-renderer-field-correctness.md` |
+| CORE-005 | Reference renderer memory bound + C0-continuous support cutoff | `done/CORE-005-renderer-memory-continuity.md` |
 | CORE-006 | Linear color basis per Gaussian | `done/CORE-006-affine-color-basis.md` |
 | CORE-009 | DC / background layer under the detail Gaussians | `done/CORE-009-dc-background-layer.md` |
 | INIT-001 | Structure tensor: energy, orientation, flat/edge/corner | `done/INIT-001-structure-tensor.md` |
@@ -127,7 +127,7 @@ INIT-007) and shifted the frontier from init strategies to fitter knobs and swee
    `quadtree_wse` and loses AUC on average; keep it searchable and default off.
 9. HIER-003 pyramid diagnosis — completed 2026-07-07. The current two-level pyramid is a
    final-quality positive (+1.0000 dB mean PSNR over the difficult-four 2k/5k slice), but it loses
-   AUC in every pair (-1.3540 mean), so HIER-001 stays open and HIER-004 owns convergence repair.
+   AUC in every pair (-1.3540 mean), so HIER-004 owns convergence repair.
 10. HIER-004 pyramid convergence repair — completed 2026-07-07. Explicit per-level schedules are
    available; 150/1350 repairs the AUC loss while preserving final PSNR on the difficult-four
    slice (+0.0601 dB vs the 750/750 pyramid control and +0.0011 AUC vs single). Keep `single` as

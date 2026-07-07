@@ -60,6 +60,7 @@ def cmd_fit(args):
     fcfg = FitConfig(iters=args.iters, target_psnr=args.target_psnr,
                      target_ms_ssim=args.target_ms_ssim, target_bpp=args.target_bpp,
                      render_chunk=args.chunk,
+                     render_checkpoint=args.render_checkpoint,
                      optimizer=args.optimizer,
                      pixel_loss=args.pixel_loss, ssim_weight=args.ssim_weight,
                      loss_weighting=args.loss_weighting,
@@ -276,6 +277,8 @@ def main():
     f.add_argument("--target-bpp", type=float, default=None, dest="target_bpp",
                    help="adaptive-count raw-attribute bpp cap/target")
     f.add_argument("--chunk", type=int, default=512)
+    f.add_argument("--render-checkpoint", action="store_true",
+                   help="checkpoint reference-renderer chunks to reduce backward memory")
     f.add_argument("--tensor-operator", choices=["central", "sobel", "scharr"], default="central")
     f.add_argument("--tensor-color", choices=["luma", "rgb"], default="luma")
     f.add_argument("--grad-sigma", type=float, default=1.0)

@@ -113,30 +113,111 @@ def _pixel_colors(colors, color_grads, gid, dx, dy, scales, rotations):
     return base + grads[:, 0, :] * local_x[:, None] + grads[:, 1, :] * local_y[:, None]
 
 
+def _slice_contribution(means, conics, colors, x0, y0, Tx, n, H, W, opacities, normalize: bool,
+                        s: int, e: int, support_fade: bool, sigma_cutoff: float,
+                        color_grads=None, scales=None, rotations=None,
+                        support_fade_alpha: float | None = None):
+    dev, dt = means.device, means.dtype
+    gid, px, py = _tile_coords(x0, y0, Tx, n, s, e, dev)
+    dx = px.to(dt) - means[gid, 0]
+    dy = py.to(dt) - means[gid, 1]
+    a, b, c = conics[gid, 0], conics[gid, 1], conics[gid, 2]
+    q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
+    w = _support_weight(q, sigma_cutoff, support_fade, support_fade_alpha)
+    if opacities is not None:
+        w = w * opacities[gid]
+    flat = py * W + px
+    pix_colors = _pixel_colors(colors, color_grads, gid, dx, dy, scales, rotations)
+    num = torch.zeros(H * W, 3, device=dev, dtype=dt)
+    num = num.index_add(0, flat, w[:, None] * pix_colors)
+    if not normalize:
+        return num
+    den = torch.zeros(H * W, 1, device=dev, dtype=dt)
+    den = den.index_add(0, flat, w[:, None])
+    return num, den
+
+
+def _checkpoint_inputs(means, conics, colors, opacities, color_grads, scales, rotations):
+    inputs = [means, conics, colors]
+    has = []
+    for value in (opacities, color_grads, scales, rotations):
+        has.append(value is not None)
+        if value is not None:
+            inputs.append(value)
+    return inputs, tuple(has)
+
+
+def _unpack_checkpoint_extras(extras, has):
+    idx = 0
+    out = []
+    for present in has:
+        if present:
+            out.append(extras[idx])
+            idx += 1
+        else:
+            out.append(None)
+    return out
+
+
+def _should_checkpoint(checkpoint_chunks: bool, inputs: list[torch.Tensor]) -> bool:
+    return (
+        checkpoint_chunks
+        and torch.is_grad_enabled()
+        and any(t.requires_grad for t in inputs)
+    )
+
+
 def _accumulate(means, conics, colors, radii, H, W, chunk, opacities, normalize: bool,
                 support_fade: bool = False, sigma_cutoff: float = 3.0,
                 color_grads=None, scales=None, rotations=None,
-                support_fade_alpha: float | None = None):
+                support_fade_alpha: float | None = None,
+                checkpoint_chunks: bool = False):
     dev, dt = means.device, means.dtype
     num = torch.zeros(H * W, 3, device=dev, dtype=dt)
     den = torch.zeros(H * W, 1, device=dev, dtype=dt) if normalize else None
 
     x0, y0, Tx, n = _tile_bounds(means, radii, H, W)
     budget = _element_budget(chunk)
+    checkpoint_inputs, checkpoint_has = _checkpoint_inputs(
+        means, conics, colors, opacities, color_grads, scales, rotations
+    )
+    use_checkpoint = _should_checkpoint(checkpoint_chunks, checkpoint_inputs)
+    if use_checkpoint:
+        from torch.utils.checkpoint import checkpoint
     for s, e in _flat_tile_slices(n, budget):
-        gid, px, py = _tile_coords(x0, y0, Tx, n, s, e, dev)
-        dx = px.to(dt) - means[gid, 0]
-        dy = py.to(dt) - means[gid, 1]
-        a, b, c = conics[gid, 0], conics[gid, 1], conics[gid, 2]
-        q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
-        w = _support_weight(q, sigma_cutoff, support_fade, support_fade_alpha)
-        if opacities is not None:
-            w = w * opacities[gid]
-        flat = py * W + px
-        pix_colors = _pixel_colors(colors, color_grads, gid, dx, dy, scales, rotations)
-        num = num.index_add(0, flat, w[:, None] * pix_colors)
-        if normalize:
-            den = den.index_add(0, flat, w[:, None])
+        if use_checkpoint:
+            def chunk_fn(means_, conics_, colors_, *extras, _s=s, _e=e):
+                opacities_, color_grads_, scales_, rotations_ = _unpack_checkpoint_extras(
+                    extras, checkpoint_has
+                )
+                return _slice_contribution(
+                    means_, conics_, colors_, x0, y0, Tx, n, H, W, opacities_, normalize,
+                    _s, _e, support_fade, sigma_cutoff, color_grads=color_grads_,
+                    scales=scales_, rotations=rotations_,
+                    support_fade_alpha=support_fade_alpha,
+                )
+
+            contrib = checkpoint(chunk_fn, *checkpoint_inputs, use_reentrant=False)
+            if normalize:
+                n_part, d_part = contrib
+                num = num + n_part
+                den = den + d_part
+            else:
+                num = num + contrib
+        else:
+            gid, px, py = _tile_coords(x0, y0, Tx, n, s, e, dev)
+            dx = px.to(dt) - means[gid, 0]
+            dy = py.to(dt) - means[gid, 1]
+            a, b, c = conics[gid, 0], conics[gid, 1], conics[gid, 2]
+            q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
+            w = _support_weight(q, sigma_cutoff, support_fade, support_fade_alpha)
+            if opacities is not None:
+                w = w * opacities[gid]
+            flat = py * W + px
+            pix_colors = _pixel_colors(colors, color_grads, gid, dx, dy, scales, rotations)
+            num = num.index_add(0, flat, w[:, None] * pix_colors)
+            if normalize:
+                den = den.index_add(0, flat, w[:, None])
 
     if normalize:
         return (num / (den + _EPS)).view(H, W, 3)
@@ -145,24 +226,28 @@ def _accumulate(means, conics, colors, radii, H, W, chunk, opacities, normalize:
 
 def render(means, conics, colors, radii, H: int, W: int, chunk: int = 4096, opacities=None,
            support_fade: bool = False, sigma_cutoff: float = 3.0, color_grads=None,
-           scales=None, rotations=None, support_fade_alpha: float | None = None):
+           scales=None, rotations=None, support_fade_alpha: float | None = None,
+           checkpoint_chunks: bool = False):
     """Normalized weighted-sum rasterizer (ADR-0003 default)."""
     return _accumulate(
         means, conics, colors, radii, H, W, chunk, opacities, normalize=True,
         support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
         scales=scales, rotations=rotations, support_fade_alpha=support_fade_alpha,
+        checkpoint_chunks=checkpoint_chunks,
     )
 
 
 def render_additive(means, conics, colors, radii, H: int, W: int, chunk: int = 4096,
                     opacities=None, support_fade: bool = False, sigma_cutoff: float = 3.0,
                     color_grads=None, scales=None, rotations=None,
-                    support_fade_alpha: float | None = None):
+                    support_fade_alpha: float | None = None,
+                    checkpoint_chunks: bool = False):
     """Additive / unnormalized accumulation (ADR-0006, opt-in)."""
     return _accumulate(
         means, conics, colors, radii, H, W, chunk, opacities, normalize=False,
         support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
         scales=scales, rotations=rotations, support_fade_alpha=support_fade_alpha,
+        checkpoint_chunks=checkpoint_chunks,
     )
 
 
@@ -223,19 +308,22 @@ def render_field(means, conics, colors, radii, H: int, W: int,
                  chunk: int = 4096, mode: str = "normalized", opacities=None,
                  scales=None, rotations=None, support_fade: bool = False,
                  sigma_cutoff: float = 3.0, color_grads=None,
-                 support_fade_alpha: float | None = None):
+                 support_fade_alpha: float | None = None,
+                 checkpoint_chunks: bool = False):
     fade_alpha = _resolve_support_fade_alpha(support_fade, support_fade_alpha)
     if mode == "normalized":
         return render(
             means, conics, colors, radii, H, W, chunk, opacities,
             support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
             scales=scales, rotations=rotations, support_fade_alpha=fade_alpha,
+            checkpoint_chunks=checkpoint_chunks,
         )
     if mode == "additive":
         return render_additive(
             means, conics, colors, radii, H, W, chunk, opacities,
             support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
             scales=scales, rotations=rotations, support_fade_alpha=fade_alpha,
+            checkpoint_chunks=checkpoint_chunks,
         )
     if fade_alpha not in (0.0, 1.0) and mode in _NORMALIZED_CUDA_MODES:
         if not means.is_cuda:
@@ -244,6 +332,7 @@ def render_field(means, conics, colors, radii, H: int, W: int,
             means, conics, colors, radii, H, W, chunk, opacities,
             support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
             scales=scales, rotations=rotations, support_fade_alpha=fade_alpha,
+            checkpoint_chunks=checkpoint_chunks,
         )
     if fade_alpha not in (0.0, 1.0) and mode in _ADDITIVE_CUDA_MODES:
         if not means.is_cuda:
@@ -252,6 +341,7 @@ def render_field(means, conics, colors, radii, H: int, W: int,
             means, conics, colors, radii, H, W, chunk, opacities,
             support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
             scales=scales, rotations=rotations, support_fade_alpha=fade_alpha,
+            checkpoint_chunks=checkpoint_chunks,
         )
     if color_grads is not None and mode in _NORMALIZED_CUDA_MODES:
         if not means.is_cuda:
@@ -263,6 +353,7 @@ def render_field(means, conics, colors, radii, H: int, W: int,
             means, conics, colors, radii, H, W, chunk, opacities,
             support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
             scales=scales, rotations=rotations, support_fade_alpha=fade_alpha,
+            checkpoint_chunks=checkpoint_chunks,
         )
     if color_grads is not None:
         raise ValueError(

@@ -201,6 +201,7 @@ class FitConfig:
     support_fade_crossfade_iters: int = 10
     aa_dilation: float = 0.0           # EWA-style low-pass: render with Sigma + d*I (px^2)
     render_chunk: int = 512            # reference renderer: max(render_chunk,64)*4096 elements
+    render_checkpoint: bool = False    # checkpoint reference-render slices to reduce backward memory
     renderer: str = "normalized"       # normalized/additive/cuda/cuda_tiled/gsplat variants
     color_basis: str = "constant"      # constant or affine local color model
     color_grad_l2: float = 1e-4        # affine coefficient L2 regularization

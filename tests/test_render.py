@@ -50,6 +50,37 @@ def test_additive_renderer_runs_and_differs():
     assert add[3, 3, 0] > norm[3, 3, 0]
 
 
+def test_checkpointed_reference_render_matches_pixels_and_gradients():
+    rng = np.random.default_rng(13)
+    means = np.stack([rng.uniform(2, 14, 6), rng.uniform(2, 14, 6)], 1)
+    scales = np.exp(rng.uniform(np.log(0.8), np.log(2.5), (6, 2)))
+    angles = rng.uniform(0, np.pi, 6)
+    colors = rng.random((6, 3))
+    g = GaussianField.from_numpy(means, scales, angles, colors).trainable()
+    g_ckpt = GaussianField.from_numpy(means, scales, angles, colors).trainable()
+
+    ref = render_field(
+        g.means, g.conics(), g.colors, g.radii(3.0), 18, 17,
+        mode="normalized", chunk=1,
+    )
+    ckpt = render_field(
+        g_ckpt.means, g_ckpt.conics(), g_ckpt.colors, g_ckpt.radii(3.0), 18, 17,
+        mode="normalized", chunk=1, checkpoint_chunks=True,
+    )
+
+    assert torch.allclose(ckpt, ref, atol=1e-6, rtol=1e-6)
+    ref.square().mean().backward()
+    ckpt.square().mean().backward()
+    for a, b in (
+        (g.means.grad, g_ckpt.means.grad),
+        (g.log_scales.grad, g_ckpt.log_scales.grad),
+        (g.rotations.grad, g_ckpt.rotations.grad),
+        (g.colors.grad, g_ckpt.colors.grad),
+    ):
+        assert a is not None and b is not None
+        assert torch.allclose(b, a, atol=1e-6, rtol=1e-6)
+
+
 def test_affine_color_basis_uses_local_coordinates_and_gradients():
     means = np.array([[5.0, 5.0]])
     scales = np.array([[1.0, 1.0]])

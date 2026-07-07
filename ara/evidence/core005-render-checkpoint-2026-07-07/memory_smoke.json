@@ -1,0 +1,27 @@
+{
+  "date": "2026-07-07",
+  "device": "cuda",
+  "renderer": "normalized",
+  "image_shape": [256, 256, 3],
+  "num_gaussians": 3000,
+  "chunk": 64,
+  "scale_range_px": [3.0, 8.0],
+  "target": "zeros",
+  "metric": "torch.cuda.max_memory_allocated around one render + square-loss backward",
+  "rows": [
+    {
+      "render_checkpoint": false,
+      "start_mb": 0.84,
+      "peak_mb": 204.4,
+      "delta_mb": 203.55,
+      "loss": 0.261176
+    },
+    {
+      "render_checkpoint": true,
+      "start_mb": 0.84,
+      "peak_mb": 30.5,
+      "delta_mb": 29.65,
+      "loss": 0.261176
+    }
+  ]
+}

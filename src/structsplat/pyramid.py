@@ -94,7 +94,8 @@ def prefix_metrics(field: GaussianField, counts: list[int], target: torch.Tensor
                            sub.radii(cfg.sigma_cutoff, cfg.aa_dilation),
                            H, W, cfg.render_chunk, cfg.renderer, sub.opacity_values(),
                            scales=sub.scales(), rotations=sub.rotations,
-                           support_fade=cfg.support_fade, sigma_cutoff=cfg.sigma_cutoff)
+                           support_fade=cfg.support_fade, sigma_cutoff=cfg.sigma_cutoff,
+                           checkpoint_chunks=cfg.render_checkpoint)
         rows.append({
             "level": lvl,
             "n_gaussians": n,
@@ -159,7 +160,8 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
                                    fcfg.render_chunk, fcfg.renderer, field.opacity_values(),
                                    scales=field.scales(), rotations=field.rotations,
                                    support_fade=fcfg.support_fade,
-                                   sigma_cutoff=fcfg.sigma_cutoff)
+                                   sigma_cutoff=fcfg.sigma_cutoff,
+                                   checkpoint_chunks=fcfg.render_checkpoint)
                 residual = (target - cur).abs().cpu().numpy()
             # one tensor drives both density and orientation, under the full level config
             # (previously the density tensor silently used default operator/sigma/thresholds)

@@ -74,6 +74,7 @@ def test_fit_cli_accepts_qat_rate_flags(tmp_path, monkeypatch, capsys):
             "1",
             "--chunk",
             "8",
+            "--render-checkpoint",
             "--qat-mode",
             "ste",
             "--lambda-rate",

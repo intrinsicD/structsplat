@@ -1,6 +1,7 @@
 # CORE-005: Reference renderer memory bound + C0-continuous support cutoff
 
-**Status: partial.** From the 2026-07-03 repo review.
+**Status: done.** Completed 2026-07-07. Support fade, render-chunk budget hygiene, and opt-in
+reference-renderer checkpointing are implemented and measured.
 
 ## Context
 1. **Chunking does not bound real peak memory.** Each flat-tile slice's autograd graph retains
@@ -19,7 +20,7 @@ Peak memory truly O(budget) when requested; C0-continuous compact support in bot
 CUDA renderers; one budget helper with documented semantics.
 
 ## Acceptance criteria
-- [ ] Opt-in gradient checkpointing per slice (`torch.utils.checkpoint`) making backward peak
+- [x] Opt-in gradient checkpointing per slice (`torch.utils.checkpoint`) making backward peak
       memory O(budget); measured before/after peak on a large-N fit recorded in the task notes.
 - [x] Support fade `w = max(exp(-q/2) - exp(-sigma_cutoff^2/2), 0)` implemented in
       `_accumulate`, `gaussian_activity`, `_support_residual_scores`, and the CUDA kernels,
@@ -52,6 +53,12 @@ CUDA renderers; one budget helper with documented semantics.
   only at 2k (+0.4209 dB mean, 9/16 wins) and improved AUC in 38/48 cells (+0.1073 mean), but
   lost final PSNR overall (-0.1389 dB mean, 9/48 wins) and added +1.67 s mean fit time. Keep the
   flag opt-in; do not flip the default or add an ADR default-change note from this slice.
+- 2026-07-07 final implementation: Added opt-in `FitConfig.render_checkpoint` and
+  `structsplat fit --render-checkpoint`. This wraps reference-renderer slice contributions in
+  `torch.utils.checkpoint` while preserving the old direct `index_add` accumulation when disabled.
+  A CUDA reference-render smoke at 256x256, 3000 Gaussians, `chunk=64` reduced peak allocated
+  memory delta from 203.55 MB to 29.65 MB with identical loss. Evidence:
+  `ara/evidence/core005-render-checkpoint-2026-07-07/`.
 
 ## Interfaces touched
 `src/structsplat/render.py`, `src/structsplat/cuda_render.py`,

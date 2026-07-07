@@ -316,7 +316,8 @@ def _render(field: GaussianField, cfg: FitConfig, H: int, W: int,
                         scales=field.scales(), rotations=field.rotations,
                         support_fade=cfg.support_fade, sigma_cutoff=cfg.sigma_cutoff,
                         color_grads=field.color_grads,
-                        support_fade_alpha=support_fade_alpha)
+                        support_fade_alpha=support_fade_alpha,
+                        checkpoint_chunks=cfg.render_checkpoint)
 
 
 def _qat_enabled(cfg: FitConfig) -> bool:

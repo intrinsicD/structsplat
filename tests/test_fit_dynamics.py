@@ -255,6 +255,27 @@ def test_fit_with_decay_prune_split_still_improves():
     assert out["history"]["psnr"][-1] >= out["history"]["psnr"][0] - 0.5
 
 
+def test_fit_runs_with_reference_render_checkpointing():
+    img = np.zeros((16, 16, 3), np.float32)
+    img[:, 8:] = 1.0
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=12, seed=0))
+    out = fit(
+        field,
+        target,
+        FitConfig(
+            iters=3,
+            log_every=1,
+            ssim_weight=0.0,
+            render_chunk=8,
+            render_checkpoint=True,
+        ),
+        verbose=False,
+    )
+    assert np.isfinite(out["psnr"])
+    assert out["history"]["psnr"]
+
+
 def test_no_restructure_on_final_iteration():
     # iters divisible by split_every: the last split window must be skipped, otherwise the
     # returned field contains Gaussians no optimizer step ever touched
