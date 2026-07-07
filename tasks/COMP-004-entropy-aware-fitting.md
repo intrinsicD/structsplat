@@ -46,6 +46,9 @@ final encoding.
 - Fit-time QAT currently fails closed for `color_basis="affine"` because codec v1 cannot encode
   affine color coefficients.
 - Evidence: `ara/evidence/comp004-fit-time-qat-smoke-2026-07-07/run.md`.
+- Next step (2026-07-07 benchmark review): the plumbing is validated; the missing piece is
+  the lambda_rate sweep at 2-3 bit-depth ladders on the fair regime, reported as RD curves
+  against post-hoc quantization of the same fitted fields (the honest control).
 
 ## Depends on
 COMP-001, COMP-003, FIT-001.

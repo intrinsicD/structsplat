@@ -84,19 +84,29 @@ docs/              adr/ · architecture.md · theory.md
 tasks/             INDEX.md + task files
 ```
 
-## The open question this repo is built to answer
+## The question this repo was built to answer — and the measured answer
 The optimizer discovers anisotropy on its own, so flanking/tensor init mainly buys **convergence
 speed** and **low-budget quality**. Hypothesis (ABL-001): `aniso_flanking ≥ aniso_onedge >
 iso_blue_noise > grid > random` at low budgets, with the gap shrinking as the budget grows. If
 flanking never wins, the honest move is to prefer the simpler strategy — the benchmark is designed
 to tell you either way.
 
-Status: ABL-004 is in progress, not settled. The missing Floyd-Steinberg and relocation controls
-are now expressible, and the full ablation is resumable, but the first full-resolution shard took
-about 13 minutes for one cell on the local RTX 3050. A small held-out Kodak cross-repo matrix
-currently supports only a narrower statement: the best-searched StructSplat policy and shipped
-defaults beat local repo-inspired GaussianImage/Image-GS analogue rows at one low-resolution
-operating point, not native external pipelines.
+**Measured answer (2026-07-04..06): the flanking half of the hypothesis is dead; the
+structured-placement half stands.** `aniso_flanking` never leads a decision-grade slice:
+`aniso_onedge` wins at budget 2000 (+0.24 dB paired, 7/8 image wins) and
+`quadtree_wse`/`quadtree_hybrid` lead at ≥5000
+(`ara/evidence/abl004-stage-screen-8img-cuda-2026-07-04/`), and flanking is the weakest
+StructSplat row in the fair density-control comparison
+(`ara/evidence/fair-density-control-difficult4-2026-07-05/`). What survives — strongly — is
+structure-tensor-driven, density-aware placement itself: StructSplat structured rows beat matched
+GaussianImage++/Image-GS-style residual-growth analogues in all 12 fair PSNR slices (best row
++1.03 dB / +0.31 dB paired). See `ara/logic/claims.md` C05.
+
+Status: the shipped default is still `aniso_flanking` until INIT-007 lands the flip with
+ADR-0013, citing the remaining confirmation (ABL-006 runs it as successive halving; the flat
+ABL-004 manifest is 108/1,512 cells complete). Flanking stays available as a control arm. The
+cross-repo caveat stands: these are matched policy analogues inside StructSplat's harness, not
+native external pipelines.
 
 ## Verification status
 Init-time math is validated numerically in this environment: structure-tensor orientation/labels,

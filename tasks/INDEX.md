@@ -8,7 +8,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 
 | ID | Title | Status | Depends on |
 |----|-------|--------|-----------|
-| INIT-004 | Flanking vs on-edge placement + threshold study | partial | INIT-003 |
+| INIT-004 | Flanking vs on-edge placement + threshold study | answered (negative) — retire via INIT-007 | INIT-003 |
 | HIER-001 | Progressive pyramid (residual-driven densification) | partial | INIT-002, FIT-001 |
 | ABL-001 | Init-strategy x budget sweep (the core experiment + fitness) | partial | INIT-003/004, BENCH-001 |
 | ABL-002 | Full stage-combination search | partial | CORE, INIT, FIT, HIER, BENCH |
@@ -25,6 +25,17 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | PORT-002 | GPU-native tile index + fused loss/backward | todo | PORT-001, FIT-003 |
 | PORT-003 | Avoid atomics in tiled backward | todo | PORT-001 |
 | GEN-003 | VSD / multi-particle distillation | todo | GEN-001 |
+| INIT-007 | Retire the flanking default (measured answer + ADR) | todo | INIT-004, ABL-006 |
+| INIT-008 | Feature-relative scale caps (fix the cap-scaling failure) | todo | ADR-0012, INIT-003 |
+| ABL-005 | Fitter-knob influence pass at the fair regime | todo | ADR-0010, FIT-005/006/007, CORE-006 |
+| ABL-006 | Successive-halving execution of the remaining confirmation | todo | ABL-004, BENCH-002 |
+| FIT-009 | Factor the refine axis into orthogonal sub-axes | todo | FIT-004, FIT-006, FIT-007 |
+| FIT-010 | Cheap color-solve schedules (init / final / on-split) | todo | FIT-005 |
+| FIT-011 | Split-recovery micro-levers (moment seeding, warmup, scheduled fade) | todo | FIT-004, FIT-007, CORE-005 |
+| FIT-012 | Edge-weighted pixel loss (structure-tensor loss weighting) | todo | FIT-001, INIT-001 |
+| HIER-003 | Pyramid equal-iteration diagnosis (fix or retire HIER-001) | todo | HIER-001, HIER-002 |
+| CORE-009 | DC / background layer under the detail Gaussians | todo | CORE-001, ADR-0003/0006 |
+| BENCH-004 | Sweep-cost controls (plateau exit, multi-target tables, proxy regime) | todo | BENCH-002, FIT-003 |
 
 ## Retired Done Tasks
 
@@ -82,3 +93,25 @@ review suggests the most pragmatic improvement order:
 7. COMP-004 for compression-aware fitting once RD baselines are stable.
 8. PORT-002/PORT-003 if tiled CUDA remains strategically important after quality work.
 9. GEN-003 after GEN-001 has a debuggable SDS baseline.
+
+## Suggested order (from the 2026-07-07 benchmark review)
+
+The 2026-07-04..07 evidence answered the flanking question negatively (INIT-004; retirement is
+INIT-007) and shifted the frontier from init strategies to fitter knobs and sweep economics:
+
+1. BENCH-004 sweep-cost controls first — every task below buys more evidence per GPU-hour once
+   the plateau exit, multi-target tables, and calibrated proxy regime exist.
+2. ABL-005 fitter-knob influence pass — the +0.26 dB `charbonnier`/`variance`/`opacity` bundle
+   and the FIT-005/006/007/CORE-006 candidates, isolated at the fair regime. Highest expected
+   dB-per-GPU-hour in the queue.
+3. ABL-006 successive-halving confirmation — finishes ABL-004's remaining cells at half to
+   two-thirds cost; feeds INIT-007's default flip (ADR-0013).
+4. FIT-009 refine-axis factoring, then FIT-010/FIT-011 — convergence-rate work targeting the
+   measured split dip; `residual_tensor x moment_preserving` is the first inexpressible
+   combination to test.
+5. INIT-008 feature-relative caps and FIT-012 edge-weighted loss — quality levers with clear
+   accept/park criteria.
+6. HIER-003 pyramid diagnosis and CORE-009 background layer — the two low-frequency-coverage
+   investigations; either may produce a default or an honest retirement.
+7. FF-001 (multi-image teacher training; the 2026-07-07 equal-N smoke is a measured negative for
+   the tiny checkpoint) and COMP-004 (lambda sweep) continue in their existing task files.
