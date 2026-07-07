@@ -1,8 +1,8 @@
 # ABL-006: Successive-halving execution of the remaining confirmation
 
-**Status: partial.** Harness and stage-1 decision are complete; stage 2/3 GPU runs and README
-winner update remain open. Supersedes the flat execution plan of the ABL-004 confirmation manifest
-(the
+**Status: partial.** Harness, stage-1 decision, and stage-2 decision are complete; stage 3 GPU
+runs and README winner update remain open. Supersedes the flat execution plan of the ABL-004
+confirmation manifest (the
 protocol and arms are unchanged; only the run order and stopping rule change).
 
 ## Context
@@ -58,6 +58,14 @@ The leader is `quadtree_wse` at 26.5477 dB mean PSNR, statistically tied with `a
 eliminated by the frozen CI rule. Evidence is under
 `ara/evidence/abl006-stage1-complete-2026-07-07/`. The staged analysis is now 336/448 complete
 with 112 stage-2 cells pending.
+
+Completed the stage-2 cells for budget 5000, seeds {0,1}, and both survivors. Stage 2 is 448/448
+complete for the current plan. `quadtree_wse` leads at 29.7977 dB mean PSNR versus
+`aniso_onedge` at 29.7097 dB, but the paired delta CI still crosses zero (+0.0881 dB, 95% CI
+[-0.0169, +0.1946]), so both arms remain finalists under the frozen rule. Evidence is under
+`ara/evidence/abl006-stage2-complete-2026-07-07/`. The regenerated staged analysis is 448/728
+complete with 280 cells pending: budget-10000 stage 3 for both finalists plus seed 2 for both
+finalists at all three budgets.
 
 ## Interfaces touched
 `benchmarks/abl004_confirmation.py`, `ara/evidence/`, `tasks/ABL-004-controls-and-full-run.md`,
