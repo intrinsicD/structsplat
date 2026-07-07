@@ -67,6 +67,11 @@ an input image, then refines for only 50-200 iterations with the existing fitter
 - Evidence: `ara/evidence/ff001-predictor-interface-smoke-2026-07-06/run.md`.
 - Evidence: `ara/evidence/ff001-tiny-predictor-train-smoke-2026-07-07/run.md`.
 - Evidence: `ara/evidence/ff001-equaln-eval-smoke-2026-07-07/run.md`.
+- Next step (2026-07-07 benchmark review): the equal-N smoke is a measured negative — the
+  tiny one-image checkpoint loses to both tensor-prior (18.45 dB) and scratch (18.01 dB) at
+  17.45 dB. Before any speedup claim: export a multi-image teacher set from the best fitted
+  fields (ABL-005/ABL-006 winners produce strictly better teachers for free), scale the
+  predictor past the 16px/hidden-8 toy, and evaluate on held-out images at realistic N.
 
 ## Depends on
 INIT-003, FIT-001. Optional follow-ups: FIT-008 for adaptive count, COMP-004 for

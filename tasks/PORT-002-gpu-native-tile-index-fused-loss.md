@@ -13,7 +13,11 @@ Make the tiled path a real acceleration path by removing Python-side indexing ov
 memory traffic during training.
 
 ## Approach
-1. Implement GPU binning of Gaussian support rectangles into tile lists.
+1. Implement GPU binning of Gaussian support rectangles into tile lists, with a tighter
+   ellipse-tile intersection test than the current AABB overlap — the loose bound is worst for
+   exactly the elongated Gaussians this method produces, and the 2026-07-05 cuda_tiled test
+   (`ara/evidence/fair-density-control-cuda-tiled-difficult4-2026-07-05/`) named tighter bounds
+   a prerequisite (with PORT-003's backward reductions) for tiled ever beating exact CUDA.
 2. Use prefix-sum/compaction kernels and preallocated work buffers sized from worst-case or cached
    capacity.
 3. Add optional fused render + L1/SSIM partial accumulation for training loops.
