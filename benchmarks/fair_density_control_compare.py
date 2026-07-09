@@ -1059,6 +1059,33 @@ def _write_convergence_tables(rows: list[dict[str, Any]], outdir: Path, methods:
 
 def _write_summary(rows: list[dict[str, Any]], outdir: Path, methods: list[str]) -> None:
     ok = [r for r in rows if r.get("status") == "ok"]
+
+    # Convergence sampling adapts to the iteration budget actually logged in this run
+    # (the fitter logs up to iters-1). Hardcoded sample points silently degrade to the
+    # final-iter value when a run uses fewer iters than the template assumed, producing
+    # duplicate columns and a misstated budget in the caption.
+    last_iters = [pairs[-1][0] for r in ok if (pairs := _history_pairs(r))]
+    budget_iter = max(last_iters) if last_iters else 0
+    conv_points = sorted({0, *(int(round(budget_iter * f)) for f in (0.25, 0.5, 0.75))})
+
+    # Methods whose achieved Gaussian count exceeds the shared final cap are not
+    # rate-matched to the equal-budget rows (e.g. adaptive extra-capacity variants),
+    # so their quality numbers are not directly comparable. Flag them with a dagger and
+    # keep them out of the per-cell winners. Empty for a standard equal-budget run.
+    over_budget: set[str] = set()
+    for method in methods:
+        for r in ok:
+            if r["method"] != method:
+                continue
+            cap = r.get("final_budget")
+            achieved = r.get("n_gaussians")
+            if cap and achieved and float(achieved) > float(cap) * 1.02:
+                over_budget.add(method)
+                break
+
+    def _label(method: str) -> str:
+        return METHOD_LABELS[method] + (" †" if method in over_budget else "")
+
     lines = [
         "# Fair Density-Control Comparison",
         "",
@@ -1085,7 +1112,7 @@ def _write_summary(rows: list[dict[str, Any]], outdir: Path, methods: list[str])
     for method in methods:
         vals = [r for r in ok if r["method"] == method]
         lines.append(
-            f"| {METHOD_LABELS[method]} | {len(vals)} | "
+            f"| {_label(method)} | {len(vals)} | "
             f"{_fmt(_mean_or_none([r['psnr'] for r in vals]), 4)} | "
             f"{_fmt(_std_or_none([r['psnr'] for r in vals]), 4)} | "
             f"{_fmt(_mean_or_none([r['ms_ssim'] for r in vals]), 5)} | "
@@ -1097,6 +1124,15 @@ def _write_summary(rows: list[dict[str, Any]], outdir: Path, methods: list[str])
             f"{_fmt(_mean_or_none([r['total_seconds'] for r in vals]), 3)} |"
         )
 
+    if over_budget:
+        lines += [
+            "",
+            "† Not budget-matched: mean final Gaussian count exceeds the shared final cap "
+            "(adaptive extra capacity). These rows spend more primitives — more rate for an "
+            "image codec — so their PSNR/MS-SSIM is not directly comparable to the equal-budget "
+            "rows, and they are excluded from the per-cell winners below.",
+        ]
+
     targets = [t for t in _target_values(ok) if t in set(HEADLINE_TARGET_PSNRS)]
     if targets:
         target_header = "".join(
@@ -1104,24 +1140,28 @@ def _write_summary(rows: list[dict[str, Any]], outdir: Path, methods: list[str])
             for t in targets
         )
         target_align = "|---:" * (2 * len(targets))
+        conv_header = " | ".join(f"PSNR@{pt}" for pt in conv_points)
+        conv_align = "|---:" * (len(conv_points) + 2)  # AUC + sample points + Final
         lines += [
             "",
             "## Convergence",
             "",
-            "AUC is the area under the logged PSNR-over-iteration curve; higher means better quality earlier in the same 1500-iteration budget.",
+            "AUC is the area under the logged PSNR-over-iteration curve; higher means better "
+            f"quality earlier in the same {budget_iter}-iteration budget.",
             "",
-            "| Method | AUC | PSNR@0 | PSNR@375 | PSNR@750 | PSNR@1125 | Final PSNR |",
-            "|---|---:|---:|---:|---:|---:|---:|",
+            f"| Method | AUC | {conv_header} | Final PSNR |",
+            f"|---{conv_align}|",
         ]
         for method in methods:
             vals = [r for r in ok if r["method"] == method]
+            cols = " | ".join(
+                _fmt(_mean_or_none([_psnr_at_or_after(r, pt) for r in vals]), 3)
+                for pt in conv_points
+            )
             lines.append(
-                f"| {METHOD_LABELS[method]} | "
+                f"| {_label(method)} | "
                 f"{_fmt(_mean_or_none([r.get('auc_psnr') for r in vals]), 3)} | "
-                f"{_fmt(_mean_or_none([_psnr_at_or_after(r, 0) for r in vals]), 3)} | "
-                f"{_fmt(_mean_or_none([_psnr_at_or_after(r, 375) for r in vals]), 3)} | "
-                f"{_fmt(_mean_or_none([_psnr_at_or_after(r, 750) for r in vals]), 3)} | "
-                f"{_fmt(_mean_or_none([_psnr_at_or_after(r, 1125) for r in vals]), 3)} | "
+                f"{cols} | "
                 f"{_fmt(_mean_or_none([r.get('psnr') for r in vals]), 3)} |"
             )
 
@@ -1139,7 +1179,7 @@ def _write_summary(rows: list[dict[str, Any]], outdir: Path, methods: list[str])
                 stats = _target_summary(vals, target)
                 cells.append(_fmt_pct(stats["hit_rate"]))
                 cells.append(_fmt(stats["mean_iter"], 1))
-            lines.append(f"| {METHOD_LABELS[method]} | " + " | ".join(cells) + " |")
+            lines.append(f"| {_label(method)} | " + " | ".join(cells) + " |")
 
     lines += [
         "",
@@ -1150,7 +1190,7 @@ def _write_summary(rows: list[dict[str, Any]], outdir: Path, methods: list[str])
     ]
     for (budget, method), vals in sorted(_groups(ok, ("final_budget", "method")).items()):
         lines.append(
-            f"| {int(budget)} | {METHOD_LABELS[method]} | "
+            f"| {int(budget)} | {_label(method)} | "
             f"{int(round(mean(r['start_gaussians'] for r in vals)))} | "
             f"{int(round(mean(r['n_gaussians'] for r in vals)))} | "
             f"{mean(r['psnr'] for r in vals):.4f} | {_fmt(_std_or_none([r['psnr'] for r in vals]), 4)} | "
@@ -1163,15 +1203,23 @@ def _write_summary(rows: list[dict[str, Any]], outdir: Path, methods: list[str])
         "",
         "## Winners By Image/Budget",
         "",
+    ]
+    if over_budget:
+        lines += [
+            "Winners are taken among budget-matched methods only; † rows (over the shared cap) are excluded.",
+            "",
+        ]
+    lines += [
         "| Image | Budget | Best PSNR | Best MS-SSIM |",
         "|---|---:|---|---|",
     ]
     for (image, budget), vals in sorted(_groups(ok, ("image", "final_budget")).items()):
-        best_p = max(vals, key=lambda r: r["psnr"])
-        best_m = max(vals, key=lambda r: r["ms_ssim"])
+        matched = [r for r in vals if r["method"] not in over_budget] or vals
+        best_p = max(matched, key=lambda r: r["psnr"])
+        best_m = max(matched, key=lambda r: r["ms_ssim"])
         lines.append(
-            f"| {image} | {int(budget)} | {METHOD_LABELS[best_p['method']]} ({best_p['psnr']:.3f}) | "
-            f"{METHOD_LABELS[best_m['method']]} ({best_m['ms_ssim']:.5f}) |"
+            f"| {image} | {int(budget)} | {_label(best_p['method'])} ({best_p['psnr']:.3f}) | "
+            f"{_label(best_m['method'])} ({best_m['ms_ssim']:.5f}) |"
         )
 
     errors = [r for r in rows if r.get("status") != "ok"]
