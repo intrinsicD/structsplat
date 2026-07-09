@@ -1,0 +1,144 @@
+{
+  "resolved": {
+    "images": [
+      "tests/test_images/COCO_train2014_000000000009.jpg",
+      "tests/test_images/COCO_train2014_000000000025.jpg"
+    ],
+    "mode": "influence",
+    "budgets": [
+      64
+    ],
+    "seeds": [
+      0
+    ],
+    "iters": 12,
+    "max_side": 48,
+    "axes": {
+      "strategies": [
+        "quadtree_wse"
+      ],
+      "tensor_operators": [
+        "central"
+      ],
+      "tensor_colors": [
+        "luma"
+      ],
+      "density_modes": [
+        "structure",
+        "variance"
+      ],
+      "sampling_modes": [
+        "wse"
+      ],
+      "orientation_modes": [
+        "tensor"
+      ],
+      "color_modes": [
+        "bilinear"
+      ],
+      "scale_modes": [
+        "spacing"
+      ],
+      "scale_cap_modes": [
+        "none"
+      ],
+      "background_modes": [
+        "off"
+      ],
+      "opacity_modes": [
+        "none",
+        "constant"
+      ],
+      "renderers": [
+        "normalized"
+      ],
+      "aa_dilations": [
+        0.0
+      ],
+      "color_basis_modes": [
+        "constant"
+      ],
+      "color_solve_modes": [
+        "none",
+        "every10"
+      ],
+      "pixel_losses": [
+        "l1",
+        "charbonnier"
+      ],
+      "loss_weight_modes": [
+        "none"
+      ],
+      "optimizers": [
+        "adam"
+      ],
+      "lr_schedules": [
+        "none",
+        "cosine"
+      ],
+      "state_seed_modes": [
+        "off",
+        "on"
+      ],
+      "row_temper_modes": [
+        "off",
+        "warmup5"
+      ],
+      "support_fade_modes": [
+        "off"
+      ],
+      "pyramid_modes": [
+        "single"
+      ],
+      "refine_modes": [
+        "none",
+        "moment_preserving"
+      ]
+    },
+    "render_chunk": 8,
+    "ssim_weight": 0.3,
+    "split_every": 6,
+    "ssim_backend": "builtin",
+    "split_count": 8,
+    "prune_every": 6,
+    "prune_min_activity": 0.01,
+    "max_gaussians": null,
+    "pyramid_levels": 2,
+    "pyramid_fractions": [
+      0.35,
+      0.65
+    ],
+    "pyramid_iters_per_level": 6,
+    "pyramid_level_iters": null,
+    "target_psnr": 28.0,
+    "target_psnrs": [
+      28.0,
+      30.0,
+      32.0
+    ],
+    "target_ms_ssim": null,
+    "target_bpp": null,
+    "adaptive_count": false,
+    "adaptive_growth_every": 50,
+    "adaptive_growth_count": 64,
+    "adaptive_split_mode": "residual_tensor_add",
+    "adaptive_min_delta_psnr": 0.02,
+    "adaptive_patience": 2,
+    "early_exit": false,
+    "early_exit_window": 150,
+    "early_exit_min_delta": 0.02,
+    "early_exit_min_iters": null,
+    "log_every": 1,
+    "resume": false,
+    "max_new_cells": null,
+    "dedupe": true
+  },
+  "device": "cpu",
+  "versions": {
+    "torch": "2.7.0+cu126",
+    "torch_cuda": "12.6",
+    "cuda_available": true,
+    "numpy": "2.2.4",
+    "structsplat": "0.1.0"
+  }
+}

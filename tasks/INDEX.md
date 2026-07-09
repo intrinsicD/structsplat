@@ -20,7 +20,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | PORT-002 | GPU-native tile index + fused loss/backward | todo | PORT-001, FIT-003 |
 | PORT-003 | Avoid atomics in tiled backward | todo | PORT-001 |
 | GEN-003 | VSD / multi-particle distillation | todo | GEN-001 |
-| ABL-005 | Fitter-knob influence pass at the fair regime | blocked/partial — native CUDA affine or split protocol needed | ADR-0010, FIT-005/006/007, CORE-006 |
+| ABL-005 | Fitter-knob influence pass at the fair regime | partial — public CLI shard path unblocked; native CUDA affine or split protocol needed | ADR-0010, FIT-005/006/007, CORE-006 |
 
 ## Retired Done Tasks
 

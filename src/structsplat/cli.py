@@ -4,8 +4,31 @@ Torch is imported lazily inside the commands so `--help` and the NumPy modules w
 """
 from __future__ import annotations
 import argparse
+import importlib
 import os
+from pathlib import Path
+import sys
 import numpy as np
+
+
+def _benchmark_symbol(module_name: str, symbol: str):
+    """Import a repo-level benchmark module from the console-script entry point."""
+    try:
+        module = importlib.import_module(module_name)
+    except ModuleNotFoundError as exc:
+        top_level = module_name.partition(".")[0]
+        if exc.name != top_level:
+            raise
+        repo_root = Path(__file__).resolve().parents[2]
+        if (repo_root / top_level).is_dir() and str(repo_root) not in sys.path:
+            sys.path.insert(0, str(repo_root))
+            module = importlib.import_module(module_name)
+        else:
+            raise ModuleNotFoundError(
+                f"{module_name!r} is required for this command. Run from an editable "
+                "StructSplat checkout, or install the repository with benchmark modules."
+            ) from exc
+    return getattr(module, symbol)
 
 
 def load_image(path: str) -> np.ndarray:
@@ -141,7 +164,7 @@ def cmd_fit(args):
 
 
 def cmd_ablation(args):
-    from benchmarks.ablation import run_ablation
+    run_ablation = _benchmark_symbol("benchmarks.ablation", "run_ablation")
     run_ablation(args.images, budgets=args.budgets, strategies=args.strategies,
                  seeds=args.seeds, iters=args.iters, target_psnr=args.target_psnr,
                  target_psnrs=args.target_psnrs, flank_offsets=args.flank_offsets,
@@ -154,7 +177,7 @@ def cmd_ablation(args):
 
 
 def cmd_stage_search(args):
-    from benchmarks.stage_search import run_stage_search
+    run_stage_search = _benchmark_symbol("benchmarks.stage_search", "run_stage_search")
     run_stage_search(
         args.images, budgets=args.budgets, seeds=args.seeds, iters=args.iters, mode=args.mode,
         max_side=args.max_side, strategies=args.strategies,
@@ -171,6 +194,12 @@ def cmd_stage_search(args):
         pixel_losses=args.pixel_losses, loss_weight_modes=args.loss_weight_modes,
         optimizers=args.optimizers,
         lr_schedules=args.lr_schedules, refine_modes=args.refine_modes,
+        refine_sites=args.refine_sites,
+        refine_primitives=args.refine_primitives,
+        refine_nms_modes=args.refine_nms_modes,
+        refine_color_inits=args.refine_color_inits,
+        refine_prune_modes=args.refine_prune_modes,
+        refine_relocate_modes=args.refine_relocate_modes,
         state_seed_modes=args.state_seed_modes,
         row_temper_modes=args.row_temper_modes,
         support_fade_modes=args.support_fade_modes,
@@ -191,8 +220,13 @@ def cmd_stage_search(args):
         adaptive_split_mode=args.adaptive_split_mode,
         adaptive_min_delta_psnr=args.adaptive_min_delta_psnr,
         adaptive_patience=args.adaptive_patience,
+        early_exit=args.early_exit,
+        early_exit_window=args.early_exit_window,
+        early_exit_min_delta=args.early_exit_min_delta,
+        early_exit_min_iters=args.early_exit_min_iters,
         log_every=args.log_every, dedupe=not args.no_dedupe,
-        max_configs=args.max_configs, shuffle_configs=args.shuffle_configs,
+        max_configs=args.max_configs, resume=args.resume, max_new_cells=args.max_new_cells,
+        shuffle_configs=args.shuffle_configs,
         config_seed=args.config_seed, outdir=args.outdir, device=args.device, verbose=args.verbose,
     )
 
@@ -460,6 +494,18 @@ def main():
     s.add_argument("--optimizers", nargs="+", default=None)
     s.add_argument("--lr-schedules", nargs="+", default=None)
     s.add_argument("--refine-modes", nargs="+", default=None)
+    s.add_argument("--refine-sites", nargs="+", default=None,
+                   help="none, residual, residual_tensor, support, ranked, absgrad, freq_violation")
+    s.add_argument("--refine-primitives", nargs="+", default=None,
+                   help="duplicate, fp, moment_preserving, sampled_add")
+    s.add_argument("--refine-nms-modes", nargs="+", default=None,
+                   help="off or on")
+    s.add_argument("--refine-color-inits", nargs="+", default=None,
+                   help="target or residual")
+    s.add_argument("--refine-prune-modes", nargs="+", default=None,
+                   help="off or on")
+    s.add_argument("--refine-relocate-modes", nargs="+", default=None,
+                   help="off or on")
     s.add_argument("--state-seed-modes", nargs="+", default=None,
                    help="off or on; seed new-row optimizer moments from parent/median")
     s.add_argument("--row-temper-modes", nargs="+", default=None,
@@ -476,6 +522,11 @@ def main():
     s.add_argument("--target-ms-ssim", type=float, default=None, dest="target_ms_ssim")
     s.add_argument("--target-bpp", type=float, default=None, dest="target_bpp")
     s.add_argument("--log-every", type=int, default=None)
+    s.add_argument("--early-exit", action="store_true",
+                   help="opt-in plateau early exit; AUC holds last PSNR to the nominal horizon")
+    s.add_argument("--early-exit-window", type=int, default=150)
+    s.add_argument("--early-exit-min-delta", type=float, default=0.02)
+    s.add_argument("--early-exit-min-iters", type=int, default=None)
     s.add_argument("--no-dedupe", action="store_true")
     s.add_argument("--split-every", type=int, default=None)
     s.add_argument("--split-count", type=int, default=64)
@@ -501,6 +552,10 @@ def main():
     s.add_argument("--pyramid-level-iters", type=int, nargs="+", default=None)
     s.add_argument("--lpips", action="store_true")
     s.add_argument("--max-configs", type=int, default=None)
+    s.add_argument("--resume", action="store_true",
+                   help="resume from stage_search.jsonl in --outdir and skip completed cells")
+    s.add_argument("--max-new-cells", type=int, default=None,
+                   help="stop after this many newly executed cells; useful for GPU shards")
     s.add_argument("--shuffle-configs", action="store_true")
     s.add_argument("--config-seed", type=int, default=0)
     s.add_argument("--outdir", default="results/stage_search")

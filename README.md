@@ -48,6 +48,10 @@ structsplat stage-search ./images --budgets 1024 2048 --iters 300 --outdir resul
 structsplat stage-search ./images --mode influence --budgets 2048 --seeds 0 1 2 \
     --iters 500 --target-psnr 30 --outdir results/stage_influence
 
+# long stage-search runs are resumable/shardable and write an HTML overview at <outdir>/index.html
+structsplat stage-search ./images --mode influence --resume --max-new-cells 64 \
+    --outdir results/stage_influence
+
 # text-to-Gaussian MVP: sample raster -> fit -> latent SDS refine -> save .npz + PNGs
 structsplat generate "flat red calendar app icon" --n 5000 --steps 200 --outdir runs/icon
 ```

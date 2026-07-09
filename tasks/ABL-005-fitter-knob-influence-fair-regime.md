@@ -49,6 +49,12 @@ so promotion decisions (each via its own ADR) rest on isolated, regime-correct e
   the custom CUDA extension has no affine-color backward kernel. In the first fair shard, three
   normal CUDA 2k cells finished at ~5 fit seconds each; the affine 2k cell was interrupted after
   ~3 minutes without finishing. This makes the affine speed delta implementation-confounded.
+- 2026-07-09: Unblocked the public `structsplat stage-search` workflow for the six CUDA-native
+  ABL-005 knobs by exposing the benchmark module's resume/shard flags, factored refine axes, and
+  early-exit controls in `src/structsplat/cli.py`, and by making console-script benchmark imports
+  find the repo-level `benchmarks` package. A tiny CPU influence smoke through the public command
+  completed 14/14 cells and wrote `index.html`; evidence:
+  `ara/evidence/abl005-cli-unblock-2026-07-09/`. This does not resolve the affine-speed blocker.
 - Next action: either implement native CUDA affine-color forward/backward, or split ABL-005 into
   six CUDA-native knobs plus a separate affine quality-only run that explicitly excludes speed
   claims until native CUDA affine exists.
