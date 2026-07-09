@@ -1404,6 +1404,69 @@ def summarize_influence(rows, baseline_label: str) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _influence_variant_summaries(rows: list[dict[str, Any]],
+                                 baseline_label: str | None) -> list[dict[str, Any]]:
+    if baseline_label is None:
+        bases = {r.get("config_label") for r in rows if r.get("is_baseline")}
+        if len(bases) == 1:
+            baseline_label = next(iter(bases))
+    if baseline_label is None:
+        return []
+    ok = [_normalize_refine_config(r) for r in rows if r.get("status") != "error"]
+    base = {
+        (r["image"], r["budget"], r["seed"]): r
+        for r in ok
+        if r["config_label"] == baseline_label
+    }
+    variants: dict[tuple[str, str], list[dict[str, dict]]] = {}
+    for r in ok:
+        if r["config_label"] == baseline_label:
+            continue
+        b = base.get((r["image"], r["budget"], r["seed"]))
+        if b is None:
+            continue
+        diff = [k for k in STAGE_KEYS if r[k] != b[k]]
+        stage = diff[0] if len(diff) == 1 else "+".join(diff)
+        label = "|".join(f"{k}={r[k]}" for k in diff)
+        variants.setdefault((stage, label), []).append({"r": r, "b": b})
+
+    def delta(pairs: list[dict[str, dict]], key: str) -> tuple[float | None, float | None]:
+        ds = [
+            p["r"][key] - p["b"][key]
+            for p in pairs
+            if p["r"].get(key) is not None and p["b"].get(key) is not None
+        ]
+        if not ds:
+            return None, None
+        return float(mean(ds)), float(pstdev(ds))
+
+    out = []
+    for (stage, label), pairs in variants.items():
+        dpsnr, spsnr = delta(pairs, "psnr")
+        dms, sms = delta(pairs, "ms_ssim")
+        dauc, sauc = delta(pairs, "auc_psnr")
+        dinit, sinit = delta(pairs, "init_seconds")
+        dfit, sfit = delta(pairs, "fit_seconds")
+        out.append({
+            "stage": stage,
+            "variant": label,
+            "cells": len(pairs),
+            "dpsnr": dpsnr,
+            "dpsnr_std": spsnr,
+            "dms_ssim": dms,
+            "dms_ssim_std": sms,
+            "dauc": dauc,
+            "dauc_std": sauc,
+            "dinit_seconds": dinit,
+            "dinit_seconds_std": sinit,
+            "dfit_seconds": dfit,
+            "dfit_seconds_std": sfit,
+        })
+    order = {k: i for i, k in enumerate(STAGE_KEYS)}
+    out.sort(key=lambda r: (order.get(r["stage"], 99), str(r["variant"])))
+    return out
+
+
 def _write(rows, outdir: Path, mode: str = "factorial", baseline_label: str | None = None):
     write_json(outdir / "stage_search.json", rows)
     if rows:
@@ -1419,12 +1482,13 @@ def _write(rows, outdir: Path, mode: str = "factorial", baseline_label: str | No
         (outdir / "influence.md").write_text(summarize_influence(rows, baseline_label),
                                              encoding="utf-8")
         wrote += " / influence.md"
-    _write_index_html(rows, outdir, mode=mode)
+    _write_index_html(rows, outdir, mode=mode, baseline_label=baseline_label)
     wrote += " / index.html"
     print(f"\nwrote {wrote} to {outdir}")
 
 
-def _write_index_html(rows: list[dict[str, Any]], outdir: Path, *, mode: str) -> None:
+def _write_index_html(rows: list[dict[str, Any]], outdir: Path, *, mode: str,
+                      baseline_label: str | None = None) -> None:
     rows = [_normalize_refine_config(r) for r in rows]
     ok_rows = [r for r in rows if r.get("status") != "error"]
     error_rows = [r for r in rows if r.get("status") == "error"]
@@ -1465,6 +1529,14 @@ def _write_index_html(rows: list[dict[str, Any]], outdir: Path, *, mode: str) ->
             return format(float(value), spec)
         return escape(str(value))
 
+    def fmt_delta(value: float | None, std: float | None = None, spec: str = ".3f") -> str:
+        if value is None:
+            return "-"
+        text = format(float(value), f"+{spec}")
+        if std is not None:
+            text += f" +/- {float(std):.3f}"
+        return text
+
     html = [
         "<!doctype html>",
         '<html lang="en">',
@@ -1486,6 +1558,10 @@ def _write_index_html(rows: list[dict[str, Any]], outdir: Path, *, mode: str) ->
         "code{font-size:12px;word-break:break-word}",
         ".links a{margin-right:14px}",
         ".note{color:#525252}",
+        ".best-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:10px 0 22px}",
+        ".badge{display:inline-block;border:1px solid #a3a3a3;background:#f5f5f5;border-radius:999px;padding:2px 7px;margin:1px 3px 1px 0;font-size:12px}",
+        ".badge.best{border-color:#047857;background:#ecfdf5;color:#064e3b;font-weight:650}",
+        "tr.best-row{background:#f0fdf4}",
         "</style>",
         "</head>",
         "<body>",
@@ -1523,6 +1599,95 @@ def _write_index_html(rows: list[dict[str, Any]], outdir: Path, *, mode: str) ->
     if not ranked:
         html.append('<tr><td colspan="7">(no successful cells)</td></tr>')
     html.append("</tbody></table>")
+
+    influence_summaries = (
+        _influence_variant_summaries(ok_rows, baseline_label)
+        if mode == "influence" else []
+    )
+    if influence_summaries:
+        winners: dict[str, tuple[str, str]] = {}
+
+        def best_max(key: str) -> dict[str, Any] | None:
+            vals = [r for r in influence_summaries if r.get(key) is not None]
+            return max(vals, key=lambda r: r[key]) if vals else None
+
+        def best_min(key: str) -> dict[str, Any] | None:
+            vals = [r for r in influence_summaries if r.get(key) is not None]
+            return min(vals, key=lambda r: r[key]) if vals else None
+
+        best_cards = [
+            ("Best PSNR", best_max("dpsnr"), "dpsnr", ".3f"),
+            ("Best MS-SSIM", best_max("dms_ssim"), "dms_ssim", ".5f"),
+            ("Best AUC", best_max("dauc"), "dauc", ".3f"),
+            ("Fastest fit", best_min("dfit_seconds"), "dfit_seconds", ".3f"),
+        ]
+        for label, summary, _key, _spec in best_cards:
+            if summary is not None:
+                winners[label] = (summary["stage"], summary["variant"])
+        html += [
+            "<h2>Best Influence Variants</h2>",
+            '<p class="note">Influence-mode leaders are paired deltas against the baseline. '
+            "They identify the best variant inside this run; they are not default-promotion "
+            "claims by themselves.</p>",
+            '<div class="best-grid">',
+        ]
+        for label, summary, key, spec in best_cards:
+            if summary is None:
+                continue
+            value = fmt_delta(summary.get(key), None, spec)
+            html.append(
+                '<div class="card">'
+                f'<div class="label">{escape(label)}</div>'
+                f'<div class="value">{escape(value)}</div>'
+                f'<div><span class="badge best">{escape(str(summary["variant"]))}</span></div>'
+                f'<div class="note">stage {escape(str(summary["stage"]))}, '
+                f'{int(summary["cells"])} paired cells</div>'
+                "</div>"
+            )
+        html.append("</div>")
+
+        html += [
+            "<h2>Influence Paired Deltas</h2>",
+            "<table><thead><tr><th>Rank</th><th>Best</th><th>Stage</th><th>Variant</th><th>Cells</th>"
+            "<th>ΔPSNR</th><th>ΔMS-SSIM</th><th>ΔAUC</th><th>Δinit s</th>"
+            "<th>Δfit s</th></tr></thead><tbody>",
+        ]
+        ranked_influence = sorted(
+            influence_summaries,
+            key=lambda r: (
+                -float("-inf") if r["dpsnr"] is None else -r["dpsnr"],
+                -float("-inf") if r["dms_ssim"] is None else -r["dms_ssim"],
+                -float("-inf") if r["dauc"] is None else -r["dauc"],
+                str(r["stage"]),
+                str(r["variant"]),
+            ),
+        )
+        for rank, summary in enumerate(ranked_influence, 1):
+            marks = [
+                name for name, ident in winners.items()
+                if ident == (summary["stage"], summary["variant"])
+            ]
+            row_class = ' class="best-row"' if marks else ""
+            mark_html = " ".join(
+                f'<span class="badge best">{escape(name)}</span>' for name in marks
+            )
+            if not mark_html:
+                mark_html = "-"
+            html.append(
+                f"<tr{row_class}>"
+                f'<td class="num">{rank}</td>'
+                f"<td>{mark_html}</td>"
+                f"<td>{escape(str(summary['stage']))}</td>"
+                f"<td><code>{escape(str(summary['variant']))}</code></td>"
+                f'<td class="num">{int(summary["cells"])}</td>'
+                f'<td class="num">{fmt_delta(summary["dpsnr"], summary["dpsnr_std"])}</td>'
+                f'<td class="num">{fmt_delta(summary["dms_ssim"], summary["dms_ssim_std"], ".5f")}</td>'
+                f'<td class="num">{fmt_delta(summary["dauc"], summary["dauc_std"])}</td>'
+                f'<td class="num">{fmt_delta(summary["dinit_seconds"], summary["dinit_seconds_std"])}</td>'
+                f'<td class="num">{fmt_delta(summary["dfit_seconds"], summary["dfit_seconds_std"])}</td>'
+                "</tr>"
+            )
+        html.append("</tbody></table>")
 
     stage_rows = []
     for stage in STAGE_KEYS:

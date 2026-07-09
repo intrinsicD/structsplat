@@ -54,7 +54,8 @@ so promotion decisions (each via its own ADR) rest on isolated, regime-correct e
   early-exit controls in `src/structsplat/cli.py`, and by making console-script benchmark imports
   find the repo-level `benchmarks` package. A tiny CPU influence smoke through the public command
   completed 14/14 cells and wrote `index.html`; evidence:
-  `ara/evidence/abl005-cli-unblock-2026-07-09/`. This does not resolve the affine-speed blocker.
+  `ara/evidence/abl005-cli-unblock-2026-07-09/`. The HTML report now marks the best paired-delta
+  variants for PSNR, MS-SSIM, AUC, and fit time. This does not resolve the affine-speed blocker.
 - Next action: either implement native CUDA affine-color forward/backward, or split ABL-005 into
   six CUDA-native knobs plus a separate affine quality-only run that explicitly excludes speed
   claims until native CUDA affine exists.

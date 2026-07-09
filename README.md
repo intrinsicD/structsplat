@@ -48,7 +48,7 @@ structsplat stage-search ./images --budgets 1024 2048 --iters 300 --outdir resul
 structsplat stage-search ./images --mode influence --budgets 2048 --seeds 0 1 2 \
     --iters 500 --target-psnr 30 --outdir results/stage_influence
 
-# long stage-search runs are resumable/shardable and write an HTML overview at <outdir>/index.html
+# long stage-search runs are resumable/shardable; influence HTML marks best paired-delta variants
 structsplat stage-search ./images --mode influence --resume --max-new-cells 64 \
     --outdir results/stage_influence
 

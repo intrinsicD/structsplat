@@ -9,6 +9,7 @@ from PIL import Image
 from benchmarks.stage_search import (
     INFLUENCE_DEFAULTS,
     LEGACY_REFINE_MODES,
+    STAGE_KEYS,
     run_stage_search,
     _background_kwargs,
     _canonicalize,
@@ -21,6 +22,7 @@ from benchmarks.stage_search import (
     _scale_cap_kwargs,
     _state_seed_kwargs,
     _support_fade_kwargs,
+    _write_index_html,
     summarize,
 )
 
@@ -74,6 +76,7 @@ def test_stage_search_writes_ranked_outputs(tmp_path):
     assert "stage_search.csv" in index
     assert "summary.md" in index
     assert "Per-Stage Marginals" in index
+    assert "Best Influence Variants" not in index
 
 
 def test_stage_search_summary_uses_headline_target_columns():
@@ -759,3 +762,92 @@ def test_stage_influence_writes_paired_deltas(tmp_path):
     text = (outdir / "influence.md").read_text()
     assert "tensor_color=rgb" in text and "sampling=density_random" in text
     assert "ΔPSNR" in text
+    html = (outdir / "index.html").read_text(encoding="utf-8")
+    assert "Best Influence Variants" in html
+    assert "Influence Paired Deltas" in html
+    assert "Best PSNR" in html
+    assert "Best AUC" in html
+    assert "Fastest fit" in html
+    assert "tensor_color=rgb" in html and "sampling=density_random" in html
+
+
+def test_stage_influence_index_ranks_best_delta_first(tmp_path):
+    def row(label, *, psnr, ms_ssim, auc_psnr, fit_seconds, **overrides):
+        data = {
+            "strategy": "quadtree_wse",
+            "tensor": "central",
+            "tensor_color": "luma",
+            "density": "structure",
+            "sampling": "wse",
+            "orientation": "tensor",
+            "color": "bilinear",
+            "scale": "spacing",
+            "scale_cap": "none",
+            "background": "off",
+            "opacity": "none",
+            "renderer": "normalized",
+            "aa": 0.0,
+            "color_basis": "constant",
+            "color_solve": "none",
+            "loss": "l1",
+            "loss_weight": "none",
+            "optimizer": "adam",
+            "lr_schedule": "none",
+            "refine_site": "none",
+            "refine_primitive": "duplicate",
+            "refine_nms": "off",
+            "refine_color": "target",
+            "refine_prune": "off",
+            "refine_relocate": "off",
+            "state_seed": "off",
+            "row_temper": "off",
+            "support_fade": "off",
+            "pyramid": "single",
+        }
+        data.update(overrides)
+        data.update({
+            "status": "ok",
+            "image": "toy",
+            "budget": 16,
+            "seed": 0,
+            "config_label": label,
+            "is_baseline": label == "baseline",
+            "psnr": psnr,
+            "ms_ssim": ms_ssim,
+            "auc_psnr": auc_psnr,
+            "init_seconds": 0.1,
+            "fit_seconds": fit_seconds,
+        })
+        assert set(STAGE_KEYS).issubset(data)
+        return data
+
+    rows = [
+        row("baseline", psnr=10.0, ms_ssim=0.70, auc_psnr=9.0, fit_seconds=1.0),
+        row(
+            "strong",
+            psnr=12.0,
+            ms_ssim=0.74,
+            auc_psnr=9.8,
+            fit_seconds=1.2,
+            color_solve="every10",
+        ),
+        row(
+            "weak",
+            psnr=10.2,
+            ms_ssim=0.71,
+            auc_psnr=9.1,
+            fit_seconds=0.8,
+            loss="charbonnier",
+        ),
+    ]
+
+    _write_index_html(rows, tmp_path, mode="influence", baseline_label="baseline")
+
+    html = (tmp_path / "index.html").read_text(encoding="utf-8")
+    paired = html.split("Influence Paired Deltas", 1)[1]
+    assert "Best Influence Variants" in html
+    assert "Best PSNR" in html
+    assert "Best MS-SSIM" in html
+    assert "Best AUC" in html
+    assert "Fastest fit" in html
+    assert paired.index("color_solve=every10") < paired.index("loss=charbonnier")

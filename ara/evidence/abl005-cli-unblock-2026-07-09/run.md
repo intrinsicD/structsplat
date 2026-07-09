@@ -4,7 +4,8 @@ Date: 2026-07-09.
 
 Purpose: verify that the public `structsplat stage-search` console script can run a sharded
 ABL-005-style influence pass and write the normal benchmark artifact set, including `index.html`.
-This is a tiny CPU workflow smoke, not decision-grade fair-regime evidence.
+The generated `index.html` marks the best paired-delta variants directly. This is a tiny CPU
+workflow smoke, not decision-grade fair-regime evidence.
 
 Command:
 
@@ -52,8 +53,9 @@ Result:
 - 14/14 cells completed successfully: 2 images x 1 budget x 1 seed x 7 influence configs.
 - Wrote `config.json`, `stage_search.jsonl`, `stage_search.json`, `stage_search.csv`,
   `summary.md`, `influence.md`, and `index.html`.
+- `index.html` marks best paired-delta variants for PSNR, MS-SSIM, AUC, and fit time.
 - Baseline mean over the smoke cells: PSNR 17.874, MS-SSIM 0.80550, AUC 17.240.
-- Largest smoke delta was `color_solve=every10` at +1.033 dB PSNR and +0.275 AUC, with +0.090 s
+- Largest smoke delta was `color_solve=every10` at +1.034 dB PSNR and +0.275 AUC, with +0.077 s
   fit time. Treat this only as a workflow sanity check; the task still requires exact CUDA,
   max-side 768, 1500 iterations, budgets {2000, 5000, 10000}, seeds {0, 1}.
 
