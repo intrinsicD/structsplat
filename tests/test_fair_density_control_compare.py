@@ -19,6 +19,92 @@ def test_growth_fit_cfg_reaches_final_cap_with_shared_schedule():
     assert cfg.split_count == 125
 
 
+def test_best_default_is_first_default_and_pinned(tmp_path: Path):
+    assert F.DEFAULT_METHODS[0] == F.BEST_DEFAULT_METHOD
+    assert F.METHOD_LABELS[F.BEST_DEFAULT_METHOD] == "SS best default"
+
+    img = np.full((24, 24, 3), 0.5, dtype=np.float32)
+    image_path = tmp_path / "target.png"
+    Image.fromarray((img * 255).astype(np.uint8), mode="RGB").save(image_path)
+    base = FitConfig(iters=20, pixel_loss="l2", ssim_weight=0.9)
+
+    field, cfg, _seconds, actual_start, meta = F._build_method(
+        method=F.BEST_DEFAULT_METHOD,
+        img=img,
+        image_path=image_path,
+        final_budget=200,
+        start_budget=100,
+        seed=3,
+        base_fit=base,
+        scfg=StructureTensorConfig(),
+        growth_waves=4,
+        device="cpu",
+        feature_cap=99.0,
+        feature_cap_reference_side=24.0,
+    )
+
+    assert field.n == 100
+    assert actual_start == 100
+    assert cfg.pixel_loss == "l1"
+    assert cfg.ssim_weight == 0.3
+    assert cfg.split_mode == "residual_tensor_add"
+    assert cfg.split_count == 20
+    assert cfg.split_every == 3
+    assert meta["configured_growth_waves"] == F.BEST_DEFAULT_GROWTH_WAVES
+    assert meta["variant_base"] == F.BEST_DEFAULT_BASE_METHOD
+    assert meta["variant_overrides"]["pinned_best_default"] is True
+    assert meta["scale_cap_input"] == F.BEST_DEFAULT_FEATURE_CAP
+    assert meta["scale_cap_reference_side"] == F.DEFAULT_FEATURE_CAP_REFERENCE_SIDE
+    assert abs(meta["feature_cap_px"] - 1.8) < 1e-6
+
+
+def test_best_diff_reduction_variants_apply_fit_overrides(tmp_path: Path):
+    img = np.full((24, 24, 3), 0.5, dtype=np.float32)
+    image_path = tmp_path / "target.png"
+    Image.fromarray((img * 255).astype(np.uint8), mode="RGB").save(image_path)
+    base = FitConfig(iters=50, pixel_loss="l1", ssim_weight=0.3)
+
+    expected = {
+        "structsplat_best_ssim010": ("ssim_weight", 0.1),
+        "structsplat_best_l1_only": ("ssim_weight", 0.0),
+        "structsplat_best_charbonnier": ("pixel_loss", "charbonnier"),
+        "structsplat_best_tensor_loss": ("loss_weighting", "tensor"),
+        "structsplat_best_color_final": ("color_solve_schedule", "final"),
+    }
+    for method, (attr, value) in expected.items():
+        _field, cfg, _seconds, _actual_start, meta = F._build_method(
+            method=method,
+            img=img,
+            image_path=image_path,
+            final_budget=200,
+            start_budget=100,
+            seed=3,
+            base_fit=base,
+            scfg=StructureTensorConfig(),
+            growth_waves=4,
+            device="cpu",
+        )
+        assert getattr(cfg, attr) == value
+        assert meta["configured_growth_waves"] == F.BEST_DEFAULT_GROWTH_WAVES
+        assert meta["scale_cap_input"] == F.BEST_DEFAULT_FEATURE_CAP
+
+    _field, cfg, _seconds, _actual_start, meta = F._build_method(
+        method="structsplat_best_adaptive_1p5x",
+        img=img,
+        image_path=image_path,
+        final_budget=200,
+        start_budget=100,
+        seed=3,
+        base_fit=base,
+        scfg=StructureTensorConfig(),
+        growth_waves=4,
+        device="cpu",
+    )
+    assert cfg.adaptive_count is True
+    assert cfg.max_gaussians == 304
+    assert meta["variant_overrides"]["adaptive_cap_multiplier"] == F.ADAPTIVE_EXTRA_CAP_MULT
+
+
 def test_method_tracks_keep_growth_methods_at_same_start_budget(tmp_path):
     args = SimpleNamespace(
         iters=10,
@@ -67,6 +153,8 @@ def test_base_fit_and_cell_key_include_support_fade_axis():
     )
     cfg = F._base_fit(args)
     assert cfg.support_fade is True
+    assert cfg.color_solve_every is None
+    assert cfg.color_solve_schedule == "none"
 
     row = {
         "image": "x",

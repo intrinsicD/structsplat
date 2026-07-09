@@ -59,7 +59,21 @@ DEFAULT_IMAGES = [
     "results/datasets/abl004/kodak24/kodim19.png",
 ]
 
+BEST_DEFAULT_METHOD = "structsplat_best_default"
+BEST_DEFAULT_BASE_METHOD = "structsplat_onedge_tensor_featurecap"
+BEST_DEFAULT_FEATURE_CAP = 12.0
+BEST_DEFAULT_GROWTH_WAVES = 5
+ADAPTIVE_EXTRA_CAP_MULT = 1.5
+
 DEFAULT_METHODS = [
+    BEST_DEFAULT_METHOD,
+    "structsplat_best_ssim010",
+    "structsplat_best_l1_only",
+    "structsplat_best_charbonnier",
+    "structsplat_best_tensor_loss",
+    "structsplat_best_color_final",
+    "structsplat_best_relocate",
+    "structsplat_best_adaptive_1p5x",
     "gaussianimage_fixed_full",
     "gaussianimage_plus_residual",
     "image_gs_residual",
@@ -84,6 +98,14 @@ DEFAULT_METHODS = [
 ]
 
 METHOD_LABELS = {
+    BEST_DEFAULT_METHOD: "SS best default",
+    "structsplat_best_ssim010": "SS best + SSIM 0.10",
+    "structsplat_best_l1_only": "SS best + L1 only",
+    "structsplat_best_charbonnier": "SS best + Charbonnier",
+    "structsplat_best_tensor_loss": "SS best + tensor loss",
+    "structsplat_best_color_final": "SS best + final color solve",
+    "structsplat_best_relocate": "SS best + split relocate",
+    "structsplat_best_adaptive_1p5x": "SS best + adaptive 1.5x cap",
     "gaussianimage_fixed_full": "GaussianImage fixed",
     "gaussianimage_plus_residual": "GaussianImage++ residual",
     "image_gs_residual": "Image-GS residual",
@@ -108,6 +130,31 @@ METHOD_LABELS = {
 }
 
 METHOD_NOTES = {
+    BEST_DEFAULT_METHOD: (
+        "Pinned current Gaussian-image winner: aniso_onedge + WSE, feature cap 12@160, "
+        "tensor-aware residual growth, 5 growth waves, L1 + 0.3 SSIM."
+    ),
+    "structsplat_best_ssim010": (
+        "Best default geometry/growth with SSIM weight lowered to 0.10 for lower pixel diff."
+    ),
+    "structsplat_best_l1_only": (
+        "Best default geometry/growth with pure L1 pixel loss and no SSIM term."
+    ),
+    "structsplat_best_charbonnier": (
+        "Best default geometry/growth with Charbonnier pixel loss and SSIM weight 0.10."
+    ),
+    "structsplat_best_tensor_loss": (
+        "Best default geometry/growth with tensor-weighted pixel loss to emphasize edges."
+    ),
+    "structsplat_best_color_final": (
+        "Best default geometry/growth with a final fixed-geometry RGB least-squares color solve."
+    ),
+    "structsplat_best_relocate": (
+        "Best default geometry/growth plus split-scheduled residual relocation."
+    ),
+    "structsplat_best_adaptive_1p5x": (
+        "Best default warm start with adaptive residual growth allowed up to 1.5x the requested cap."
+    ),
     "gaussianimage_fixed_full": (
         "GaussianImage-style random fixed-count control; starts at the final cap and does not grow."
     ),
@@ -174,6 +221,14 @@ METHOD_NOTES = {
 }
 
 METHOD_TRACKS = {
+    BEST_DEFAULT_METHOD: "best-default",
+    "structsplat_best_ssim010": "best-loss-sweep",
+    "structsplat_best_l1_only": "best-loss-sweep",
+    "structsplat_best_charbonnier": "best-loss-sweep",
+    "structsplat_best_tensor_loss": "best-edge-loss",
+    "structsplat_best_color_final": "best-color-polish",
+    "structsplat_best_relocate": "best-relocate",
+    "structsplat_best_adaptive_1p5x": "best-adaptive-capacity",
     "gaussianimage_fixed_full": "fixed-full",
     "gaussianimage_plus_residual": "repo-growth",
     "image_gs_residual": "repo-growth",
@@ -198,6 +253,14 @@ METHOD_TRACKS = {
 }
 
 STRUCTSPLAT_INIT = {
+    BEST_DEFAULT_METHOD: ("aniso_onedge", "wse", 0.0),
+    "structsplat_best_ssim010": ("aniso_onedge", "wse", 0.0),
+    "structsplat_best_l1_only": ("aniso_onedge", "wse", 0.0),
+    "structsplat_best_charbonnier": ("aniso_onedge", "wse", 0.0),
+    "structsplat_best_tensor_loss": ("aniso_onedge", "wse", 0.0),
+    "structsplat_best_color_final": ("aniso_onedge", "wse", 0.0),
+    "structsplat_best_relocate": ("aniso_onedge", "wse", 0.0),
+    "structsplat_best_adaptive_1p5x": ("aniso_onedge", "wse", 0.0),
     "structsplat_onedge_residual": ("aniso_onedge", "wse", 0.0),
     "structsplat_onedge_residual_relocate": ("aniso_onedge", "wse", 0.0),
     "structsplat_onedge_residual_featurecap": ("aniso_onedge", "wse", 0.0),
@@ -218,6 +281,14 @@ STRUCTSPLAT_INIT = {
 }
 
 STRUCTSPLAT_SPLIT_MODE = {
+    BEST_DEFAULT_METHOD: "residual_tensor_add",
+    "structsplat_best_ssim010": "residual_tensor_add",
+    "structsplat_best_l1_only": "residual_tensor_add",
+    "structsplat_best_charbonnier": "residual_tensor_add",
+    "structsplat_best_tensor_loss": "residual_tensor_add",
+    "structsplat_best_color_final": "residual_tensor_add",
+    "structsplat_best_relocate": "residual_tensor_add",
+    "structsplat_best_adaptive_1p5x": "residual_tensor_add",
     "structsplat_onedge_residual": "residual_add",
     "structsplat_onedge_residual_relocate": "residual_add",
     "structsplat_onedge_residual_featurecap": "residual_add",
@@ -238,11 +309,20 @@ STRUCTSPLAT_SPLIT_MODE = {
 }
 
 RELOCATION_METHODS = {
+    "structsplat_best_relocate",
     "structsplat_onedge_residual_relocate",
     "structsplat_quadtree_wse_residual_relocate",
 }
 
 FEATURE_CAP_METHODS = {
+    BEST_DEFAULT_METHOD,
+    "structsplat_best_ssim010",
+    "structsplat_best_l1_only",
+    "structsplat_best_charbonnier",
+    "structsplat_best_tensor_loss",
+    "structsplat_best_color_final",
+    "structsplat_best_relocate",
+    "structsplat_best_adaptive_1p5x",
     "structsplat_onedge_residual_featurecap",
     "structsplat_onedge_tensor_featurecap",
     "structsplat_quadtree_wse_residual_featurecap",
@@ -257,6 +337,23 @@ FEATURE_REL_METHODS = {
 }
 
 DEFAULT_FEATURE_CAP_REFERENCE_SIDE = 160.0
+BEST_VARIANT_METHODS = {
+    BEST_DEFAULT_METHOD,
+    "structsplat_best_ssim010",
+    "structsplat_best_l1_only",
+    "structsplat_best_charbonnier",
+    "structsplat_best_tensor_loss",
+    "structsplat_best_color_final",
+    "structsplat_best_relocate",
+    "structsplat_best_adaptive_1p5x",
+}
+BEST_PINNED_METHODS = {BEST_DEFAULT_METHOD}
+BEST_SSIM010_METHODS = {"structsplat_best_ssim010"}
+BEST_L1_ONLY_METHODS = {"structsplat_best_l1_only"}
+BEST_CHARBONNIER_METHODS = {"structsplat_best_charbonnier"}
+BEST_TENSOR_LOSS_METHODS = {"structsplat_best_tensor_loss"}
+BEST_COLOR_FINAL_METHODS = {"structsplat_best_color_final"}
+BEST_ADAPTIVE_METHODS = {"structsplat_best_adaptive_1p5x"}
 
 
 def _one(x):
@@ -289,6 +386,102 @@ def _growth_fit_cfg(
         refine_nms=None,
         max_gaussians=int(final_budget),
     )
+
+
+def _round_budget(value: float) -> int:
+    return max(16, int(round(float(value) / 16.0)) * 16)
+
+
+def _method_growth_waves(method: str, growth_waves: int) -> int:
+    return BEST_DEFAULT_GROWTH_WAVES if method in BEST_VARIANT_METHODS else growth_waves
+
+
+def _method_feature_cap(method: str, feature_cap: float) -> float:
+    return BEST_DEFAULT_FEATURE_CAP if method in BEST_VARIANT_METHODS else feature_cap
+
+
+def _method_feature_cap_reference_side(method: str, reference_side: float) -> float:
+    return (
+        DEFAULT_FEATURE_CAP_REFERENCE_SIDE
+        if method in BEST_VARIANT_METHODS
+        else reference_side
+    )
+
+
+def _apply_method_fit_overrides(
+    method: str,
+    cfg: FitConfig,
+    final_budget: int,
+) -> tuple[FitConfig, dict[str, Any]]:
+    """Apply explicit candidate-variant overrides after the shared growth schedule."""
+    overrides: dict[str, Any] = {}
+    if method in BEST_PINNED_METHODS:
+        cfg = replace(
+            cfg,
+            pixel_loss="l1",
+            ssim_weight=0.3,
+            loss_weighting="none",
+            loss_weight_beta=1.0,
+            color_basis="constant",
+            color_solve_every=None,
+            color_solve_schedule="none",
+            lr_schedule="none",
+        )
+        overrides.update({
+            "pinned_best_default": True,
+            "pixel_loss": "l1",
+            "ssim_weight": 0.3,
+            "growth_waves": BEST_DEFAULT_GROWTH_WAVES,
+        })
+    if method in BEST_SSIM010_METHODS:
+        cfg = replace(cfg, ssim_weight=0.1)
+        overrides["ssim_weight"] = 0.1
+    if method in BEST_L1_ONLY_METHODS:
+        cfg = replace(cfg, ssim_weight=0.0)
+        overrides["ssim_weight"] = 0.0
+    if method in BEST_CHARBONNIER_METHODS:
+        cfg = replace(cfg, pixel_loss="charbonnier", ssim_weight=0.1)
+        overrides.update({"pixel_loss": "charbonnier", "ssim_weight": 0.1})
+    if method in BEST_TENSOR_LOSS_METHODS:
+        cfg = replace(cfg, loss_weighting="tensor", loss_weight_beta=1.0)
+        overrides.update({"loss_weighting": "tensor", "loss_weight_beta": 1.0})
+    if method in BEST_COLOR_FINAL_METHODS:
+        cfg = replace(cfg, color_solve_every=None, color_solve_schedule="final")
+        overrides.update({"color_solve_every": None, "color_solve_schedule": "final"})
+    if method in BEST_ADAPTIVE_METHODS:
+        adaptive_cap = _round_budget(final_budget * ADAPTIVE_EXTRA_CAP_MULT)
+        cfg = replace(
+            cfg,
+            adaptive_count=True,
+            max_gaussians=adaptive_cap,
+            adaptive_growth_every=max(25, cfg.iters // 10),
+            adaptive_growth_count=_round_budget(final_budget * 0.10),
+            adaptive_split_mode="residual_tensor_add",
+        )
+        overrides.update({
+            "adaptive_count": True,
+            "adaptive_cap_multiplier": ADAPTIVE_EXTRA_CAP_MULT,
+            "variant_max_gaussians": adaptive_cap,
+            "adaptive_growth_every": cfg.adaptive_growth_every,
+            "adaptive_growth_count": cfg.adaptive_growth_count,
+        })
+    return cfg, overrides
+
+
+def _method_fit_signature(
+    method: str,
+    base_fit: FitConfig,
+    final_budget: int,
+    start_budget: int,
+    growth_waves: int,
+) -> FitConfig:
+    if method in STRUCTSPLAT_INIT:
+        split_mode = STRUCTSPLAT_SPLIT_MODE[method]
+        resolved_growth_waves = _method_growth_waves(method, growth_waves)
+        cfg = _growth_fit_cfg(base_fit, final_budget, start_budget, split_mode, resolved_growth_waves)
+        cfg, _overrides = _apply_method_fit_overrides(method, cfg, final_budget)
+        return cfg
+    return base_fit
 
 
 def _feature_cap_pixels(img: np.ndarray, feature_cap: float,
@@ -341,6 +534,8 @@ def _base_fit(args: argparse.Namespace) -> FitConfig:
         support_fade=bool(getattr(args, "support_fade", False)),
         pixel_loss=args.pixel_loss,
         ssim_weight=args.ssim_weight,
+        color_solve_every=None,
+        color_solve_schedule="none",
         compute_lpips=False,
         log_every=max(1, args.iters // 20),
     )
@@ -438,8 +633,17 @@ def _build_method(
         }
 
     if method in STRUCTSPLAT_INIT:
+        resolved_growth_waves = _method_growth_waves(method, growth_waves)
+        resolved_feature_cap = _method_feature_cap(method, feature_cap)
+        resolved_feature_cap_reference_side = _method_feature_cap_reference_side(
+            method, feature_cap_reference_side
+        )
         feature_cap_px = (
-            _feature_cap_pixels(img, feature_cap, feature_cap_reference_side)
+            _feature_cap_pixels(
+                img,
+                resolved_feature_cap,
+                resolved_feature_cap_reference_side,
+            )
             if method in FEATURE_CAP_METHODS else None
         )
         field, icfg, init_seconds = _structsplat_field(
@@ -459,28 +663,50 @@ def _build_method(
                 final_budget,
                 start_budget,
                 split_mode,
-                growth_waves,
+                resolved_growth_waves,
                 relocate_fraction,
                 relocate_downsample,
             )
-            return field, fcfg, init_seconds, start_budget, {
+            fcfg, variant_overrides = _apply_method_fit_overrides(method, fcfg, final_budget)
+            extra = {
                 "init_config": asdict(icfg),
                 "growth_rule": f"{split_mode}+relocate",
+                "configured_growth_waves": resolved_growth_waves,
                 "relocate_rule": "at_split",
                 "relocate_count_per_event": fcfg.relocate_count,
                 "relocate_fraction": relocate_fraction,
                 "relocate_residual_downsample": fcfg.relocate_residual_downsample,
+                "variant_base": BEST_DEFAULT_BASE_METHOD if method in BEST_VARIANT_METHODS else None,
+                "variant_overrides": variant_overrides,
             }
-        fcfg = _growth_fit_cfg(base_fit, final_budget, start_budget, split_mode, growth_waves)
+            if method in FEATURE_CAP_METHODS:
+                extra.update({
+                    "scale_cap_rule": "feature",
+                    "scale_cap_input": resolved_feature_cap,
+                    "scale_cap_reference_side": resolved_feature_cap_reference_side,
+                    "scale_cap_max": feature_cap_px,
+                    "feature_cap_px": feature_cap_px,
+                })
+            return field, fcfg, init_seconds, start_budget, extra
+        fcfg = _growth_fit_cfg(
+            base_fit, final_budget, start_budget, split_mode, resolved_growth_waves
+        )
+        fcfg, variant_overrides = _apply_method_fit_overrides(method, fcfg, final_budget)
         extra = {
             "init_config": asdict(icfg),
             "growth_rule": split_mode,
+            "configured_growth_waves": resolved_growth_waves,
         }
+        if method in BEST_VARIANT_METHODS:
+            extra.update({
+                "variant_base": BEST_DEFAULT_BASE_METHOD,
+                "variant_overrides": variant_overrides,
+            })
         if method in FEATURE_CAP_METHODS:
             extra.update({
                 "scale_cap_rule": "feature",
-                "scale_cap_input": feature_cap,
-                "scale_cap_reference_side": feature_cap_reference_side,
+                "scale_cap_input": resolved_feature_cap,
+                "scale_cap_reference_side": resolved_feature_cap_reference_side,
                 "scale_cap_max": feature_cap_px,
                 "feature_cap_px": feature_cap_px,
             })
@@ -548,7 +774,11 @@ def _cell_key(row: dict[str, Any]) -> tuple[Any, ...]:
         bool(row.get("support_fade", False)),
         row.get("pixel_loss"),
         float(row.get("ssim_weight")),
-        row.get("feature_cap_px") if str(row.get("method", "")).endswith("_featurecap") else None,
+        row.get("feature_cap_px") if row.get("method") in FEATURE_CAP_METHODS else None,
+        row.get("loss_weighting", "none"),
+        row.get("color_solve_schedule", "none"),
+        bool(row.get("adaptive_count", False)),
+        row.get("variant_max_gaussians"),
     )
 
 
@@ -1356,6 +1586,20 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
             start_budget = _start_budget(final_budget, args.start_fraction)
             for seed in seeds:
                 for method in methods:
+                    resolved_growth_waves = _method_growth_waves(method, args.growth_waves)
+                    fit_sig = _method_fit_signature(
+                        method, base_fit, final_budget, start_budget, args.growth_waves
+                    )
+                    feature_cap_px = (
+                        _feature_cap_pixels(
+                            img,
+                            _method_feature_cap(method, args.feature_cap),
+                            _method_feature_cap_reference_side(
+                                method, args.feature_cap_reference_side
+                            ),
+                        )
+                        if method in FEATURE_CAP_METHODS else None
+                    )
                     cell_idx += 1
                     key_row = {
                         "image": image,
@@ -1364,18 +1608,20 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
                         "final_budget": final_budget,
                         "start_budget": start_budget,
                         "start_fraction": args.start_fraction,
-                        "growth_waves": args.growth_waves,
+                        "growth_waves": resolved_growth_waves,
                         "seed": seed,
                         "method": method,
                         "iters": args.iters,
                         "renderer": args.renderer,
                         "support_fade": args.support_fade,
-                        "pixel_loss": args.pixel_loss,
-                        "ssim_weight": args.ssim_weight,
-                        "feature_cap_px": (
-                            _feature_cap_pixels(img, args.feature_cap, args.feature_cap_reference_side)
-                            if method in FEATURE_CAP_METHODS else None
-                        ),
+                        "pixel_loss": fit_sig.pixel_loss,
+                        "ssim_weight": fit_sig.ssim_weight,
+                        "loss_weighting": fit_sig.loss_weighting,
+                        "color_solve_schedule": fit_sig.color_solve_schedule,
+                        "adaptive_count": fit_sig.adaptive_count,
+                        "variant_max_gaussians": fit_sig.max_gaussians
+                        if fit_sig.adaptive_count else None,
+                        "feature_cap_px": feature_cap_px,
                     }
                     if _cell_key(key_row) in done:
                         print(f"[{cell_idx}/{total}] skip existing {image} {final_budget} {method}", flush=True)
@@ -1393,6 +1639,12 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
                         "method_label": METHOD_LABELS[method],
                         "method_note": METHOD_NOTES[method],
                         "method_track": METHOD_TRACKS[method],
+                        "variant_max_gaussians": key_row["variant_max_gaussians"],
+                        "loss_weighting": fit_sig.loss_weighting,
+                        "loss_weight_beta": fit_sig.loss_weight_beta,
+                        "color_solve_every": fit_sig.color_solve_every,
+                        "color_solve_schedule": fit_sig.color_solve_schedule,
+                        "adaptive_count": fit_sig.adaptive_count,
                     }
                     try:
                         row, render_np = _fit_one(

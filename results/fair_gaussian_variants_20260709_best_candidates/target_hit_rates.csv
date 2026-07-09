@@ -1,0 +1,349 @@
+budget,method,method_label,target_psnr,runs,hits,hit_rate,mean_iter,mean_seconds
+all,structsplat_best_default,SS best default,22.0,8,8,1.0,92.375,0.23704737424850464
+all,structsplat_best_default,SS best default,24.0,8,8,1.0,229.125,0.4716671109199524
+all,structsplat_best_default,SS best default,26.0,8,4,0.5,199.25,0.5306881666183472
+all,structsplat_best_default,SS best default,28.0,8,2,0.25,107.5,0.20040547847747803
+all,structsplat_best_default,SS best default,30.0,8,2,0.25,197.5,0.31891727447509766
+all,structsplat_best_default,SS best default,32.0,8,2,0.25,323,0.5335519313812256
+all,structsplat_best_ssim010,SS best + SSIM 0.10,22.0,8,8,1.0,92.875,0.17251139879226685
+all,structsplat_best_ssim010,SS best + SSIM 0.10,24.0,8,8,1.0,232.25,0.3927496373653412
+all,structsplat_best_ssim010,SS best + SSIM 0.10,26.0,8,4,0.5,200.5,0.3438151478767395
+all,structsplat_best_ssim010,SS best + SSIM 0.10,28.0,8,2,0.25,108,0.19743573665618896
+all,structsplat_best_ssim010,SS best + SSIM 0.10,30.0,8,2,0.25,202,0.33379948139190674
+all,structsplat_best_ssim010,SS best + SSIM 0.10,32.0,8,2,0.25,344,0.5683040618896484
+all,structsplat_best_l1_only,SS best + L1 only,22.0,8,8,1.0,114.5,0.14475175738334656
+all,structsplat_best_l1_only,SS best + L1 only,24.0,8,6,0.75,196.83333333333334,0.23576168219248453
+all,structsplat_best_l1_only,SS best + L1 only,26.0,8,4,0.5,237.25,0.28896552324295044
+all,structsplat_best_l1_only,SS best + L1 only,28.0,8,2,0.25,126.5,0.155836820602417
+all,structsplat_best_l1_only,SS best + L1 only,30.0,8,2,0.25,246,0.29150354862213135
+all,structsplat_best_l1_only,SS best + L1 only,32.0,8,2,0.25,399,0.4791673421859741
+all,structsplat_best_charbonnier,SS best + Charbonnier,22.0,8,8,1.0,92,0.17706838250160217
+all,structsplat_best_charbonnier,SS best + Charbonnier,24.0,8,8,1.0,230.875,0.39807406067848206
+all,structsplat_best_charbonnier,SS best + Charbonnier,26.0,8,4,0.5,193,0.3513140082359314
+all,structsplat_best_charbonnier,SS best + Charbonnier,28.0,8,2,0.25,107,0.19975030422210693
+all,structsplat_best_charbonnier,SS best + Charbonnier,30.0,8,2,0.25,197,0.31863725185394287
+all,structsplat_best_charbonnier,SS best + Charbonnier,32.0,8,2,0.25,341,0.5566608905792236
+all,structsplat_best_tensor_loss,SS best + tensor loss,22.0,8,8,1.0,92.625,0.17728948593139648
+all,structsplat_best_tensor_loss,SS best + tensor loss,24.0,8,8,1.0,228.875,0.39590057730674744
+all,structsplat_best_tensor_loss,SS best + tensor loss,26.0,8,4,0.5,191.25,0.34134018421173096
+all,structsplat_best_tensor_loss,SS best + tensor loss,28.0,8,2,0.25,106,0.20299577713012695
+all,structsplat_best_tensor_loss,SS best + tensor loss,30.0,8,2,0.25,198.5,0.3431771993637085
+all,structsplat_best_tensor_loss,SS best + tensor loss,32.0,8,2,0.25,339.5,0.5658115148544312
+all,structsplat_best_color_final,SS best + final color solve,22.0,8,8,1.0,92.125,0.17035549879074097
+all,structsplat_best_color_final,SS best + final color solve,24.0,8,7,0.875,197.28571428571428,0.34052627427237375
+all,structsplat_best_color_final,SS best + final color solve,26.0,8,4,0.5,198.75,0.35283809900283813
+all,structsplat_best_color_final,SS best + final color solve,28.0,8,2,0.25,107.5,0.1969982385635376
+all,structsplat_best_color_final,SS best + final color solve,30.0,8,2,0.25,197,0.3336007595062256
+all,structsplat_best_color_final,SS best + final color solve,32.0,8,2,0.25,323.5,0.5288879871368408
+all,structsplat_best_relocate,SS best + split relocate,22.0,8,8,1.0,99.875,0.18848279118537903
+all,structsplat_best_relocate,SS best + split relocate,24.0,8,7,0.875,208.14285714285714,0.37665622574942453
+all,structsplat_best_relocate,SS best + split relocate,26.0,8,4,0.5,201.25,0.3725079894065857
+all,structsplat_best_relocate,SS best + split relocate,28.0,8,2,0.25,114.5,0.21020770072937012
+all,structsplat_best_relocate,SS best + split relocate,30.0,8,2,0.25,207.5,0.3781172037124634
+all,structsplat_best_relocate,SS best + split relocate,32.0,8,2,0.25,364,0.6326072216033936
+all,structsplat_best_adaptive_1p5x,SS best + adaptive 1.5x cap,22.0,8,8,1.0,84.625,0.17016589641571045
+all,structsplat_best_adaptive_1p5x,SS best + adaptive 1.5x cap,24.0,8,8,1.0,159.375,0.28186652064323425
+all,structsplat_best_adaptive_1p5x,SS best + adaptive 1.5x cap,26.0,8,6,0.75,205,0.3737577597300212
+all,structsplat_best_adaptive_1p5x,SS best + adaptive 1.5x cap,28.0,8,4,0.5,227.25,0.4039754271507263
+all,structsplat_best_adaptive_1p5x,SS best + adaptive 1.5x cap,30.0,8,2,0.25,162.5,0.28806591033935547
+all,structsplat_best_adaptive_1p5x,SS best + adaptive 1.5x cap,32.0,8,2,0.25,239.5,0.41332507133483887
+all,gaussianimage_fixed_full,GaussianImage fixed,22.0,8,7,0.875,85.85714285714286,0.1583660330091204
+all,gaussianimage_fixed_full,GaussianImage fixed,24.0,8,6,0.75,115,0.20549158255259195
+all,gaussianimage_fixed_full,GaussianImage fixed,26.0,8,3,0.375,194.33333333333334,0.3385416666666667
+all,gaussianimage_fixed_full,GaussianImage fixed,28.0,8,2,0.25,93,0.1584380865097046
+all,gaussianimage_fixed_full,GaussianImage fixed,30.0,8,2,0.25,214,0.34876954555511475
+all,gaussianimage_fixed_full,GaussianImage fixed,32.0,8,0,0.0,,
+all,gaussianimage_plus_residual,GaussianImage++ residual,22.0,8,8,1.0,152.125,0.26782339811325073
+all,gaussianimage_plus_residual,GaussianImage++ residual,24.0,8,6,0.75,214.66666666666666,0.3588496446609497
+all,gaussianimage_plus_residual,GaussianImage++ residual,26.0,8,4,0.5,279.75,0.47137439250946045
+all,gaussianimage_plus_residual,GaussianImage++ residual,28.0,8,2,0.25,193,0.31291699409484863
+all,gaussianimage_plus_residual,GaussianImage++ residual,30.0,8,2,0.25,287,0.4706258773803711
+all,gaussianimage_plus_residual,GaussianImage++ residual,32.0,8,2,0.25,444.5,0.7040948867797852
+all,image_gs_residual,Image-GS residual,22.0,8,8,1.0,143,0.24089202284812927
+all,image_gs_residual,Image-GS residual,24.0,8,7,0.875,243.71428571428572,0.40776470729282926
+all,image_gs_residual,Image-GS residual,26.0,8,4,0.5,242,0.4041762351989746
+all,image_gs_residual,Image-GS residual,28.0,8,2,0.25,147.5,0.24010825157165527
+all,image_gs_residual,Image-GS residual,30.0,8,2,0.25,272.5,0.45508813858032227
+all,image_gs_residual,Image-GS residual,32.0,8,2,0.25,388,0.6570698022842407
+all,instant_gi_quadtree_fixed,Instant-GI quadtree,22.0,0,0,,,
+all,instant_gi_quadtree_fixed,Instant-GI quadtree,24.0,0,0,,,
+all,instant_gi_quadtree_fixed,Instant-GI quadtree,26.0,0,0,,,
+all,instant_gi_quadtree_fixed,Instant-GI quadtree,28.0,0,0,,,
+all,instant_gi_quadtree_fixed,Instant-GI quadtree,30.0,0,0,,,
+all,instant_gi_quadtree_fixed,Instant-GI quadtree,32.0,0,0,,,
+all,structsplat_onedge_residual,SS on-edge + residual,22.0,8,8,1.0,106.75,0.20064067840576172
+all,structsplat_onedge_residual,SS on-edge + residual,24.0,8,8,1.0,252.875,0.4279155135154724
+all,structsplat_onedge_residual,SS on-edge + residual,26.0,8,4,0.5,210.5,0.37397515773773193
+all,structsplat_onedge_residual,SS on-edge + residual,28.0,8,2,0.25,120.5,0.20616424083709717
+all,structsplat_onedge_residual,SS on-edge + residual,30.0,8,2,0.25,249.5,0.4257538318634033
+all,structsplat_onedge_residual,SS on-edge + residual,32.0,8,2,0.25,392.5,0.6390559673309326
+all,structsplat_onedge_residual_relocate,SS on-edge + residual relocate,22.0,8,8,1.0,114.375,0.2140834927558899
+all,structsplat_onedge_residual_relocate,SS on-edge + residual relocate,24.0,8,7,0.875,233.71428571428572,0.4293593338557652
+all,structsplat_onedge_residual_relocate,SS on-edge + residual relocate,26.0,8,4,0.5,221.75,0.4232403635978699
+all,structsplat_onedge_residual_relocate,SS on-edge + residual relocate,28.0,8,2,0.25,134.5,0.2416527271270752
+all,structsplat_onedge_residual_relocate,SS on-edge + residual relocate,30.0,8,2,0.25,281,0.4857451915740967
+all,structsplat_onedge_residual_relocate,SS on-edge + residual relocate,32.0,8,2,0.25,425.5,0.7106789350509644
+all,structsplat_onedge_residual_featurecap,SS on-edge + residual feature cap,22.0,8,8,1.0,102.875,0.193832129240036
+all,structsplat_onedge_residual_featurecap,SS on-edge + residual feature cap,24.0,8,8,1.0,242.625,0.4107269048690796
+all,structsplat_onedge_residual_featurecap,SS on-edge + residual feature cap,26.0,8,4,0.5,203,0.36132675409317017
+all,structsplat_onedge_residual_featurecap,SS on-edge + residual feature cap,28.0,8,2,0.25,117,0.2036815881729126
+all,structsplat_onedge_residual_featurecap,SS on-edge + residual feature cap,30.0,8,2,0.25,219,0.3608623743057251
+all,structsplat_onedge_residual_featurecap,SS on-edge + residual feature cap,32.0,8,2,0.25,372.5,0.6178444623947144
+all,structsplat_onedge_residual_feature_rel,SS on-edge + residual feature-rel cap,22.0,8,8,1.0,105.75,0.19083231687545776
+all,structsplat_onedge_residual_feature_rel,SS on-edge + residual feature-rel cap,24.0,8,8,1.0,244.5,0.40589502453804016
+all,structsplat_onedge_residual_feature_rel,SS on-edge + residual feature-rel cap,26.0,8,4,0.5,206.75,0.34178870916366577
+all,structsplat_onedge_residual_feature_rel,SS on-edge + residual feature-rel cap,28.0,8,2,0.25,115,0.19901227951049805
+all,structsplat_onedge_residual_feature_rel,SS on-edge + residual feature-rel cap,30.0,8,2,0.25,216.5,0.35635364055633545
+all,structsplat_onedge_residual_feature_rel,SS on-edge + residual feature-rel cap,32.0,8,2,0.25,367,0.5999948978424072
+all,structsplat_onedge_tensor,SS on-edge + tensor,22.0,8,8,1.0,98.125,0.18315032124519348
+all,structsplat_onedge_tensor,SS on-edge + tensor,24.0,8,8,1.0,248.5,0.4148624539375305
+all,structsplat_onedge_tensor,SS on-edge + tensor,26.0,8,4,0.5,213.75,0.35661017894744873
+all,structsplat_onedge_tensor,SS on-edge + tensor,28.0,8,2,0.25,113.5,0.19923460483551025
+all,structsplat_onedge_tensor,SS on-edge + tensor,30.0,8,2,0.25,235.5,0.38843250274658203
+all,structsplat_onedge_tensor,SS on-edge + tensor,32.0,8,2,0.25,421,0.6898078918457031
+all,structsplat_onedge_tensor_featurecap,SS on-edge + tensor feature cap,22.0,8,8,1.0,92.625,0.17412757873535156
+all,structsplat_onedge_tensor_featurecap,SS on-edge + tensor feature cap,24.0,8,8,1.0,230.5,0.38825684785842896
+all,structsplat_onedge_tensor_featurecap,SS on-edge + tensor feature cap,26.0,8,4,0.5,199,0.3436112403869629
+all,structsplat_onedge_tensor_featurecap,SS on-edge + tensor feature cap,28.0,8,2,0.25,108,0.19942796230316162
+all,structsplat_onedge_tensor_featurecap,SS on-edge + tensor feature cap,30.0,8,2,0.25,198,0.3147084712982178
+all,structsplat_onedge_tensor_featurecap,SS on-edge + tensor feature cap,32.0,8,2,0.25,340.5,0.5606706142425537
+all,structsplat_onedge_tensor_feature_rel,SS on-edge + tensor feature-rel cap,22.0,8,8,1.0,98.625,0.18199044466018677
+all,structsplat_onedge_tensor_feature_rel,SS on-edge + tensor feature-rel cap,24.0,8,8,1.0,241,0.40417543053627014
+all,structsplat_onedge_tensor_feature_rel,SS on-edge + tensor feature-rel cap,26.0,8,4,0.5,212,0.3562459349632263
+all,structsplat_onedge_tensor_feature_rel,SS on-edge + tensor feature-rel cap,28.0,8,2,0.25,111.5,0.21929848194122314
+all,structsplat_onedge_tensor_feature_rel,SS on-edge + tensor feature-rel cap,30.0,8,2,0.25,226.5,0.41593992710113525
+all,structsplat_onedge_tensor_feature_rel,SS on-edge + tensor feature-rel cap,32.0,8,2,0.25,382.5,0.7015508413314819
+all,structsplat_flanking_tensor,SS flanking + tensor,22.0,8,8,1.0,100.125,0.18771272897720337
+all,structsplat_flanking_tensor,SS flanking + tensor,24.0,8,8,1.0,255.125,0.42349162697792053
+all,structsplat_flanking_tensor,SS flanking + tensor,26.0,8,4,0.5,210,0.36758947372436523
+all,structsplat_flanking_tensor,SS flanking + tensor,28.0,8,2,0.25,122,0.22359001636505127
+all,structsplat_flanking_tensor,SS flanking + tensor,30.0,8,2,0.25,251,0.4527243375778198
+all,structsplat_flanking_tensor,SS flanking + tensor,32.0,8,2,0.25,441.5,0.7810318470001221
+all,structsplat_quadtree_wse_residual,SS qt-WSE + residual,22.0,8,8,1.0,111.25,0.20027512311935425
+all,structsplat_quadtree_wse_residual,SS qt-WSE + residual,24.0,8,8,1.0,255.375,0.4234214127063751
+all,structsplat_quadtree_wse_residual,SS qt-WSE + residual,26.0,8,4,0.5,212.75,0.3547394275665283
+all,structsplat_quadtree_wse_residual,SS qt-WSE + residual,28.0,8,2,0.25,123.5,0.2405492067337036
+all,structsplat_quadtree_wse_residual,SS qt-WSE + residual,30.0,8,2,0.25,238,0.4369281530380249
+all,structsplat_quadtree_wse_residual,SS qt-WSE + residual,32.0,8,2,0.25,413,0.7310750484466553
+all,structsplat_quadtree_wse_residual_relocate,SS qt-WSE + residual relocate,22.0,8,8,1.0,119,0.22019782662391663
+all,structsplat_quadtree_wse_residual_relocate,SS qt-WSE + residual relocate,24.0,8,8,1.0,266.375,0.4639568030834198
+all,structsplat_quadtree_wse_residual_relocate,SS qt-WSE + residual relocate,26.0,8,4,0.5,219.75,0.3726810812950134
+all,structsplat_quadtree_wse_residual_relocate,SS qt-WSE + residual relocate,28.0,8,2,0.25,133,0.26879215240478516
+all,structsplat_quadtree_wse_residual_relocate,SS qt-WSE + residual relocate,30.0,8,2,0.25,261.5,0.507780909538269
+all,structsplat_quadtree_wse_residual_relocate,SS qt-WSE + residual relocate,32.0,8,2,0.25,442,0.8231079578399658
+all,structsplat_quadtree_wse_residual_featurecap,SS qt-WSE + residual feature cap,22.0,8,8,1.0,103.25,0.1954531967639923
+all,structsplat_quadtree_wse_residual_featurecap,SS qt-WSE + residual feature cap,24.0,8,8,1.0,246.75,0.42206448316574097
+all,structsplat_quadtree_wse_residual_featurecap,SS qt-WSE + residual feature cap,26.0,8,4,0.5,204,0.3625238537788391
+all,structsplat_quadtree_wse_residual_featurecap,SS qt-WSE + residual feature cap,28.0,8,2,0.25,116.5,0.221732497215271
+all,structsplat_quadtree_wse_residual_featurecap,SS qt-WSE + residual feature cap,30.0,8,2,0.25,220,0.41359710693359375
+all,structsplat_quadtree_wse_residual_featurecap,SS qt-WSE + residual feature cap,32.0,8,2,0.25,376,0.6722820997238159
+all,structsplat_quadtree_wse_residual_feature_rel,SS qt-WSE + residual feature-rel cap,22.0,8,8,1.0,106.875,0.19212734699249268
+all,structsplat_quadtree_wse_residual_feature_rel,SS qt-WSE + residual feature-rel cap,24.0,8,8,1.0,243.5,0.41267266869544983
+all,structsplat_quadtree_wse_residual_feature_rel,SS qt-WSE + residual feature-rel cap,26.0,8,4,0.5,207.25,0.3664354085922241
+all,structsplat_quadtree_wse_residual_feature_rel,SS qt-WSE + residual feature-rel cap,28.0,8,2,0.25,120,0.21823716163635254
+all,structsplat_quadtree_wse_residual_feature_rel,SS qt-WSE + residual feature-rel cap,30.0,8,2,0.25,222,0.41112756729125977
+all,structsplat_quadtree_wse_residual_feature_rel,SS qt-WSE + residual feature-rel cap,32.0,8,2,0.25,377.5,0.6778206825256348
+all,structsplat_quadtree_wse_tensor,SS qt-WSE + tensor,22.0,8,8,1.0,102.875,0.19213497638702393
+all,structsplat_quadtree_wse_tensor,SS qt-WSE + tensor,24.0,8,8,1.0,252.625,0.42230263352394104
+all,structsplat_quadtree_wse_tensor,SS qt-WSE + tensor,26.0,8,4,0.5,210.25,0.3672950863838196
+all,structsplat_quadtree_wse_tensor,SS qt-WSE + tensor,28.0,8,2,0.25,119,0.22208642959594727
+all,structsplat_quadtree_wse_tensor,SS qt-WSE + tensor,30.0,8,2,0.25,252.5,0.5037963390350342
+all,structsplat_quadtree_wse_tensor,SS qt-WSE + tensor,32.0,8,2,0.25,437,0.873612642288208
+all,structsplat_quadtree_wse_tensor_featurecap,SS qt-WSE + tensor feature cap,22.0,8,8,1.0,94.625,0.18488070368766785
+all,structsplat_quadtree_wse_tensor_featurecap,SS qt-WSE + tensor feature cap,24.0,8,7,0.875,207.42857142857142,0.3650944232940674
+all,structsplat_quadtree_wse_tensor_featurecap,SS qt-WSE + tensor feature cap,26.0,8,4,0.5,200.75,0.3878498077392578
+all,structsplat_quadtree_wse_tensor_featurecap,SS qt-WSE + tensor feature cap,28.0,8,2,0.25,109.5,0.24450957775115967
+all,structsplat_quadtree_wse_tensor_featurecap,SS qt-WSE + tensor feature cap,30.0,8,2,0.25,203.5,0.42772376537323
+all,structsplat_quadtree_wse_tensor_featurecap,SS qt-WSE + tensor feature cap,32.0,8,2,0.25,363,0.6884154081344604
+all,structsplat_quadtree_wse_tensor_feature_rel,SS qt-WSE + tensor feature-rel cap,22.0,8,8,1.0,102.375,0.19635730981826782
+all,structsplat_quadtree_wse_tensor_feature_rel,SS qt-WSE + tensor feature-rel cap,24.0,8,8,1.0,249.625,0.4275759160518646
+all,structsplat_quadtree_wse_tensor_feature_rel,SS qt-WSE + tensor feature-rel cap,26.0,8,4,0.5,211.5,0.3969554305076599
+all,structsplat_quadtree_wse_tensor_feature_rel,SS qt-WSE + tensor feature-rel cap,28.0,8,2,0.25,119,0.21661579608917236
+all,structsplat_quadtree_wse_tensor_feature_rel,SS qt-WSE + tensor feature-rel cap,30.0,8,2,0.25,231.5,0.415350079536438
+all,structsplat_quadtree_wse_tensor_feature_rel,SS qt-WSE + tensor feature-rel cap,32.0,8,2,0.25,425.5,0.7606112957000732
+all,structsplat_quadtree_hybrid_tensor,SS qt-hybrid + tensor,22.0,8,8,1.0,97.375,0.18368172645568848
+all,structsplat_quadtree_hybrid_tensor,SS qt-hybrid + tensor,24.0,8,8,1.0,244.875,0.41495272517204285
+all,structsplat_quadtree_hybrid_tensor,SS qt-hybrid + tensor,26.0,8,4,0.5,211.75,0.4037902355194092
+all,structsplat_quadtree_hybrid_tensor,SS qt-hybrid + tensor,28.0,8,2,0.25,124.5,0.2477813959121704
+all,structsplat_quadtree_hybrid_tensor,SS qt-hybrid + tensor,30.0,8,2,0.25,253.5,0.469363808631897
+all,structsplat_quadtree_hybrid_tensor,SS qt-hybrid + tensor,32.0,8,2,0.25,421,0.7662132978439331
+all,floyd_steinberg_tensor,Floyd + tensor,22.0,8,8,1.0,130,0.22898706793785095
+all,floyd_steinberg_tensor,Floyd + tensor,24.0,8,6,0.75,202.33333333333334,0.3487298885981242
+all,floyd_steinberg_tensor,Floyd + tensor,26.0,8,4,0.5,255.25,0.4482612609863281
+all,floyd_steinberg_tensor,Floyd + tensor,28.0,8,2,0.25,172.5,0.3266277313232422
+all,floyd_steinberg_tensor,Floyd + tensor,30.0,8,2,0.25,295,0.5038613080978394
+all,floyd_steinberg_tensor,Floyd + tensor,32.0,8,2,0.25,479.5,0.7899587154388428
+640,structsplat_best_default,SS best default,22.0,8,8,1.0,92.375,0.23704737424850464
+640,structsplat_best_default,SS best default,24.0,8,8,1.0,229.125,0.4716671109199524
+640,structsplat_best_default,SS best default,26.0,8,4,0.5,199.25,0.5306881666183472
+640,structsplat_best_default,SS best default,28.0,8,2,0.25,107.5,0.20040547847747803
+640,structsplat_best_default,SS best default,30.0,8,2,0.25,197.5,0.31891727447509766
+640,structsplat_best_default,SS best default,32.0,8,2,0.25,323,0.5335519313812256
+640,structsplat_best_ssim010,SS best + SSIM 0.10,22.0,8,8,1.0,92.875,0.17251139879226685
+640,structsplat_best_ssim010,SS best + SSIM 0.10,24.0,8,8,1.0,232.25,0.3927496373653412
+640,structsplat_best_ssim010,SS best + SSIM 0.10,26.0,8,4,0.5,200.5,0.3438151478767395
+640,structsplat_best_ssim010,SS best + SSIM 0.10,28.0,8,2,0.25,108,0.19743573665618896
+640,structsplat_best_ssim010,SS best + SSIM 0.10,30.0,8,2,0.25,202,0.33379948139190674
+640,structsplat_best_ssim010,SS best + SSIM 0.10,32.0,8,2,0.25,344,0.5683040618896484
+640,structsplat_best_l1_only,SS best + L1 only,22.0,8,8,1.0,114.5,0.14475175738334656
+640,structsplat_best_l1_only,SS best + L1 only,24.0,8,6,0.75,196.83333333333334,0.23576168219248453
+640,structsplat_best_l1_only,SS best + L1 only,26.0,8,4,0.5,237.25,0.28896552324295044
+640,structsplat_best_l1_only,SS best + L1 only,28.0,8,2,0.25,126.5,0.155836820602417
+640,structsplat_best_l1_only,SS best + L1 only,30.0,8,2,0.25,246,0.29150354862213135
+640,structsplat_best_l1_only,SS best + L1 only,32.0,8,2,0.25,399,0.4791673421859741
+640,structsplat_best_charbonnier,SS best + Charbonnier,22.0,8,8,1.0,92,0.17706838250160217
+640,structsplat_best_charbonnier,SS best + Charbonnier,24.0,8,8,1.0,230.875,0.39807406067848206
+640,structsplat_best_charbonnier,SS best + Charbonnier,26.0,8,4,0.5,193,0.3513140082359314
+640,structsplat_best_charbonnier,SS best + Charbonnier,28.0,8,2,0.25,107,0.19975030422210693
+640,structsplat_best_charbonnier,SS best + Charbonnier,30.0,8,2,0.25,197,0.31863725185394287
+640,structsplat_best_charbonnier,SS best + Charbonnier,32.0,8,2,0.25,341,0.5566608905792236
+640,structsplat_best_tensor_loss,SS best + tensor loss,22.0,8,8,1.0,92.625,0.17728948593139648
+640,structsplat_best_tensor_loss,SS best + tensor loss,24.0,8,8,1.0,228.875,0.39590057730674744
+640,structsplat_best_tensor_loss,SS best + tensor loss,26.0,8,4,0.5,191.25,0.34134018421173096
+640,structsplat_best_tensor_loss,SS best + tensor loss,28.0,8,2,0.25,106,0.20299577713012695
+640,structsplat_best_tensor_loss,SS best + tensor loss,30.0,8,2,0.25,198.5,0.3431771993637085
+640,structsplat_best_tensor_loss,SS best + tensor loss,32.0,8,2,0.25,339.5,0.5658115148544312
+640,structsplat_best_color_final,SS best + final color solve,22.0,8,8,1.0,92.125,0.17035549879074097
+640,structsplat_best_color_final,SS best + final color solve,24.0,8,7,0.875,197.28571428571428,0.34052627427237375
+640,structsplat_best_color_final,SS best + final color solve,26.0,8,4,0.5,198.75,0.35283809900283813
+640,structsplat_best_color_final,SS best + final color solve,28.0,8,2,0.25,107.5,0.1969982385635376
+640,structsplat_best_color_final,SS best + final color solve,30.0,8,2,0.25,197,0.3336007595062256
+640,structsplat_best_color_final,SS best + final color solve,32.0,8,2,0.25,323.5,0.5288879871368408
+640,structsplat_best_relocate,SS best + split relocate,22.0,8,8,1.0,99.875,0.18848279118537903
+640,structsplat_best_relocate,SS best + split relocate,24.0,8,7,0.875,208.14285714285714,0.37665622574942453
+640,structsplat_best_relocate,SS best + split relocate,26.0,8,4,0.5,201.25,0.3725079894065857
+640,structsplat_best_relocate,SS best + split relocate,28.0,8,2,0.25,114.5,0.21020770072937012
+640,structsplat_best_relocate,SS best + split relocate,30.0,8,2,0.25,207.5,0.3781172037124634
+640,structsplat_best_relocate,SS best + split relocate,32.0,8,2,0.25,364,0.6326072216033936
+640,structsplat_best_adaptive_1p5x,SS best + adaptive 1.5x cap,22.0,8,8,1.0,84.625,0.17016589641571045
+640,structsplat_best_adaptive_1p5x,SS best + adaptive 1.5x cap,24.0,8,8,1.0,159.375,0.28186652064323425
+640,structsplat_best_adaptive_1p5x,SS best + adaptive 1.5x cap,26.0,8,6,0.75,205,0.3737577597300212
+640,structsplat_best_adaptive_1p5x,SS best + adaptive 1.5x cap,28.0,8,4,0.5,227.25,0.4039754271507263
+640,structsplat_best_adaptive_1p5x,SS best + adaptive 1.5x cap,30.0,8,2,0.25,162.5,0.28806591033935547
+640,structsplat_best_adaptive_1p5x,SS best + adaptive 1.5x cap,32.0,8,2,0.25,239.5,0.41332507133483887
+640,gaussianimage_fixed_full,GaussianImage fixed,22.0,8,7,0.875,85.85714285714286,0.1583660330091204
+640,gaussianimage_fixed_full,GaussianImage fixed,24.0,8,6,0.75,115,0.20549158255259195
+640,gaussianimage_fixed_full,GaussianImage fixed,26.0,8,3,0.375,194.33333333333334,0.3385416666666667
+640,gaussianimage_fixed_full,GaussianImage fixed,28.0,8,2,0.25,93,0.1584380865097046
+640,gaussianimage_fixed_full,GaussianImage fixed,30.0,8,2,0.25,214,0.34876954555511475
+640,gaussianimage_fixed_full,GaussianImage fixed,32.0,8,0,0.0,,
+640,gaussianimage_plus_residual,GaussianImage++ residual,22.0,8,8,1.0,152.125,0.26782339811325073
+640,gaussianimage_plus_residual,GaussianImage++ residual,24.0,8,6,0.75,214.66666666666666,0.3588496446609497
+640,gaussianimage_plus_residual,GaussianImage++ residual,26.0,8,4,0.5,279.75,0.47137439250946045
+640,gaussianimage_plus_residual,GaussianImage++ residual,28.0,8,2,0.25,193,0.31291699409484863
+640,gaussianimage_plus_residual,GaussianImage++ residual,30.0,8,2,0.25,287,0.4706258773803711
+640,gaussianimage_plus_residual,GaussianImage++ residual,32.0,8,2,0.25,444.5,0.7040948867797852
+640,image_gs_residual,Image-GS residual,22.0,8,8,1.0,143,0.24089202284812927
+640,image_gs_residual,Image-GS residual,24.0,8,7,0.875,243.71428571428572,0.40776470729282926
+640,image_gs_residual,Image-GS residual,26.0,8,4,0.5,242,0.4041762351989746
+640,image_gs_residual,Image-GS residual,28.0,8,2,0.25,147.5,0.24010825157165527
+640,image_gs_residual,Image-GS residual,30.0,8,2,0.25,272.5,0.45508813858032227
+640,image_gs_residual,Image-GS residual,32.0,8,2,0.25,388,0.6570698022842407
+640,instant_gi_quadtree_fixed,Instant-GI quadtree,22.0,0,0,,,
+640,instant_gi_quadtree_fixed,Instant-GI quadtree,24.0,0,0,,,
+640,instant_gi_quadtree_fixed,Instant-GI quadtree,26.0,0,0,,,
+640,instant_gi_quadtree_fixed,Instant-GI quadtree,28.0,0,0,,,
+640,instant_gi_quadtree_fixed,Instant-GI quadtree,30.0,0,0,,,
+640,instant_gi_quadtree_fixed,Instant-GI quadtree,32.0,0,0,,,
+640,structsplat_onedge_residual,SS on-edge + residual,22.0,8,8,1.0,106.75,0.20064067840576172
+640,structsplat_onedge_residual,SS on-edge + residual,24.0,8,8,1.0,252.875,0.4279155135154724
+640,structsplat_onedge_residual,SS on-edge + residual,26.0,8,4,0.5,210.5,0.37397515773773193
+640,structsplat_onedge_residual,SS on-edge + residual,28.0,8,2,0.25,120.5,0.20616424083709717
+640,structsplat_onedge_residual,SS on-edge + residual,30.0,8,2,0.25,249.5,0.4257538318634033
+640,structsplat_onedge_residual,SS on-edge + residual,32.0,8,2,0.25,392.5,0.6390559673309326
+640,structsplat_onedge_residual_relocate,SS on-edge + residual relocate,22.0,8,8,1.0,114.375,0.2140834927558899
+640,structsplat_onedge_residual_relocate,SS on-edge + residual relocate,24.0,8,7,0.875,233.71428571428572,0.4293593338557652
+640,structsplat_onedge_residual_relocate,SS on-edge + residual relocate,26.0,8,4,0.5,221.75,0.4232403635978699
+640,structsplat_onedge_residual_relocate,SS on-edge + residual relocate,28.0,8,2,0.25,134.5,0.2416527271270752
+640,structsplat_onedge_residual_relocate,SS on-edge + residual relocate,30.0,8,2,0.25,281,0.4857451915740967
+640,structsplat_onedge_residual_relocate,SS on-edge + residual relocate,32.0,8,2,0.25,425.5,0.7106789350509644
+640,structsplat_onedge_residual_featurecap,SS on-edge + residual feature cap,22.0,8,8,1.0,102.875,0.193832129240036
+640,structsplat_onedge_residual_featurecap,SS on-edge + residual feature cap,24.0,8,8,1.0,242.625,0.4107269048690796
+640,structsplat_onedge_residual_featurecap,SS on-edge + residual feature cap,26.0,8,4,0.5,203,0.36132675409317017
+640,structsplat_onedge_residual_featurecap,SS on-edge + residual feature cap,28.0,8,2,0.25,117,0.2036815881729126
+640,structsplat_onedge_residual_featurecap,SS on-edge + residual feature cap,30.0,8,2,0.25,219,0.3608623743057251
+640,structsplat_onedge_residual_featurecap,SS on-edge + residual feature cap,32.0,8,2,0.25,372.5,0.6178444623947144
+640,structsplat_onedge_residual_feature_rel,SS on-edge + residual feature-rel cap,22.0,8,8,1.0,105.75,0.19083231687545776
+640,structsplat_onedge_residual_feature_rel,SS on-edge + residual feature-rel cap,24.0,8,8,1.0,244.5,0.40589502453804016
+640,structsplat_onedge_residual_feature_rel,SS on-edge + residual feature-rel cap,26.0,8,4,0.5,206.75,0.34178870916366577
+640,structsplat_onedge_residual_feature_rel,SS on-edge + residual feature-rel cap,28.0,8,2,0.25,115,0.19901227951049805
+640,structsplat_onedge_residual_feature_rel,SS on-edge + residual feature-rel cap,30.0,8,2,0.25,216.5,0.35635364055633545
+640,structsplat_onedge_residual_feature_rel,SS on-edge + residual feature-rel cap,32.0,8,2,0.25,367,0.5999948978424072
+640,structsplat_onedge_tensor,SS on-edge + tensor,22.0,8,8,1.0,98.125,0.18315032124519348
+640,structsplat_onedge_tensor,SS on-edge + tensor,24.0,8,8,1.0,248.5,0.4148624539375305
+640,structsplat_onedge_tensor,SS on-edge + tensor,26.0,8,4,0.5,213.75,0.35661017894744873
+640,structsplat_onedge_tensor,SS on-edge + tensor,28.0,8,2,0.25,113.5,0.19923460483551025
+640,structsplat_onedge_tensor,SS on-edge + tensor,30.0,8,2,0.25,235.5,0.38843250274658203
+640,structsplat_onedge_tensor,SS on-edge + tensor,32.0,8,2,0.25,421,0.6898078918457031
+640,structsplat_onedge_tensor_featurecap,SS on-edge + tensor feature cap,22.0,8,8,1.0,92.625,0.17412757873535156
+640,structsplat_onedge_tensor_featurecap,SS on-edge + tensor feature cap,24.0,8,8,1.0,230.5,0.38825684785842896
+640,structsplat_onedge_tensor_featurecap,SS on-edge + tensor feature cap,26.0,8,4,0.5,199,0.3436112403869629
+640,structsplat_onedge_tensor_featurecap,SS on-edge + tensor feature cap,28.0,8,2,0.25,108,0.19942796230316162
+640,structsplat_onedge_tensor_featurecap,SS on-edge + tensor feature cap,30.0,8,2,0.25,198,0.3147084712982178
+640,structsplat_onedge_tensor_featurecap,SS on-edge + tensor feature cap,32.0,8,2,0.25,340.5,0.5606706142425537
+640,structsplat_onedge_tensor_feature_rel,SS on-edge + tensor feature-rel cap,22.0,8,8,1.0,98.625,0.18199044466018677
+640,structsplat_onedge_tensor_feature_rel,SS on-edge + tensor feature-rel cap,24.0,8,8,1.0,241,0.40417543053627014
+640,structsplat_onedge_tensor_feature_rel,SS on-edge + tensor feature-rel cap,26.0,8,4,0.5,212,0.3562459349632263
+640,structsplat_onedge_tensor_feature_rel,SS on-edge + tensor feature-rel cap,28.0,8,2,0.25,111.5,0.21929848194122314
+640,structsplat_onedge_tensor_feature_rel,SS on-edge + tensor feature-rel cap,30.0,8,2,0.25,226.5,0.41593992710113525
+640,structsplat_onedge_tensor_feature_rel,SS on-edge + tensor feature-rel cap,32.0,8,2,0.25,382.5,0.7015508413314819
+640,structsplat_flanking_tensor,SS flanking + tensor,22.0,8,8,1.0,100.125,0.18771272897720337
+640,structsplat_flanking_tensor,SS flanking + tensor,24.0,8,8,1.0,255.125,0.42349162697792053
+640,structsplat_flanking_tensor,SS flanking + tensor,26.0,8,4,0.5,210,0.36758947372436523
+640,structsplat_flanking_tensor,SS flanking + tensor,28.0,8,2,0.25,122,0.22359001636505127
+640,structsplat_flanking_tensor,SS flanking + tensor,30.0,8,2,0.25,251,0.4527243375778198
+640,structsplat_flanking_tensor,SS flanking + tensor,32.0,8,2,0.25,441.5,0.7810318470001221
+640,structsplat_quadtree_wse_residual,SS qt-WSE + residual,22.0,8,8,1.0,111.25,0.20027512311935425
+640,structsplat_quadtree_wse_residual,SS qt-WSE + residual,24.0,8,8,1.0,255.375,0.4234214127063751
+640,structsplat_quadtree_wse_residual,SS qt-WSE + residual,26.0,8,4,0.5,212.75,0.3547394275665283
+640,structsplat_quadtree_wse_residual,SS qt-WSE + residual,28.0,8,2,0.25,123.5,0.2405492067337036
+640,structsplat_quadtree_wse_residual,SS qt-WSE + residual,30.0,8,2,0.25,238,0.4369281530380249
+640,structsplat_quadtree_wse_residual,SS qt-WSE + residual,32.0,8,2,0.25,413,0.7310750484466553
+640,structsplat_quadtree_wse_residual_relocate,SS qt-WSE + residual relocate,22.0,8,8,1.0,119,0.22019782662391663
+640,structsplat_quadtree_wse_residual_relocate,SS qt-WSE + residual relocate,24.0,8,8,1.0,266.375,0.4639568030834198
+640,structsplat_quadtree_wse_residual_relocate,SS qt-WSE + residual relocate,26.0,8,4,0.5,219.75,0.3726810812950134
+640,structsplat_quadtree_wse_residual_relocate,SS qt-WSE + residual relocate,28.0,8,2,0.25,133,0.26879215240478516
+640,structsplat_quadtree_wse_residual_relocate,SS qt-WSE + residual relocate,30.0,8,2,0.25,261.5,0.507780909538269
+640,structsplat_quadtree_wse_residual_relocate,SS qt-WSE + residual relocate,32.0,8,2,0.25,442,0.8231079578399658
+640,structsplat_quadtree_wse_residual_featurecap,SS qt-WSE + residual feature cap,22.0,8,8,1.0,103.25,0.1954531967639923
+640,structsplat_quadtree_wse_residual_featurecap,SS qt-WSE + residual feature cap,24.0,8,8,1.0,246.75,0.42206448316574097
+640,structsplat_quadtree_wse_residual_featurecap,SS qt-WSE + residual feature cap,26.0,8,4,0.5,204,0.3625238537788391
+640,structsplat_quadtree_wse_residual_featurecap,SS qt-WSE + residual feature cap,28.0,8,2,0.25,116.5,0.221732497215271
+640,structsplat_quadtree_wse_residual_featurecap,SS qt-WSE + residual feature cap,30.0,8,2,0.25,220,0.41359710693359375
+640,structsplat_quadtree_wse_residual_featurecap,SS qt-WSE + residual feature cap,32.0,8,2,0.25,376,0.6722820997238159
+640,structsplat_quadtree_wse_residual_feature_rel,SS qt-WSE + residual feature-rel cap,22.0,8,8,1.0,106.875,0.19212734699249268
+640,structsplat_quadtree_wse_residual_feature_rel,SS qt-WSE + residual feature-rel cap,24.0,8,8,1.0,243.5,0.41267266869544983
+640,structsplat_quadtree_wse_residual_feature_rel,SS qt-WSE + residual feature-rel cap,26.0,8,4,0.5,207.25,0.3664354085922241
+640,structsplat_quadtree_wse_residual_feature_rel,SS qt-WSE + residual feature-rel cap,28.0,8,2,0.25,120,0.21823716163635254
+640,structsplat_quadtree_wse_residual_feature_rel,SS qt-WSE + residual feature-rel cap,30.0,8,2,0.25,222,0.41112756729125977
+640,structsplat_quadtree_wse_residual_feature_rel,SS qt-WSE + residual feature-rel cap,32.0,8,2,0.25,377.5,0.6778206825256348
+640,structsplat_quadtree_wse_tensor,SS qt-WSE + tensor,22.0,8,8,1.0,102.875,0.19213497638702393
+640,structsplat_quadtree_wse_tensor,SS qt-WSE + tensor,24.0,8,8,1.0,252.625,0.42230263352394104
+640,structsplat_quadtree_wse_tensor,SS qt-WSE + tensor,26.0,8,4,0.5,210.25,0.3672950863838196
+640,structsplat_quadtree_wse_tensor,SS qt-WSE + tensor,28.0,8,2,0.25,119,0.22208642959594727
+640,structsplat_quadtree_wse_tensor,SS qt-WSE + tensor,30.0,8,2,0.25,252.5,0.5037963390350342
+640,structsplat_quadtree_wse_tensor,SS qt-WSE + tensor,32.0,8,2,0.25,437,0.873612642288208
+640,structsplat_quadtree_wse_tensor_featurecap,SS qt-WSE + tensor feature cap,22.0,8,8,1.0,94.625,0.18488070368766785
+640,structsplat_quadtree_wse_tensor_featurecap,SS qt-WSE + tensor feature cap,24.0,8,7,0.875,207.42857142857142,0.3650944232940674
+640,structsplat_quadtree_wse_tensor_featurecap,SS qt-WSE + tensor feature cap,26.0,8,4,0.5,200.75,0.3878498077392578
+640,structsplat_quadtree_wse_tensor_featurecap,SS qt-WSE + tensor feature cap,28.0,8,2,0.25,109.5,0.24450957775115967
+640,structsplat_quadtree_wse_tensor_featurecap,SS qt-WSE + tensor feature cap,30.0,8,2,0.25,203.5,0.42772376537323
+640,structsplat_quadtree_wse_tensor_featurecap,SS qt-WSE + tensor feature cap,32.0,8,2,0.25,363,0.6884154081344604
+640,structsplat_quadtree_wse_tensor_feature_rel,SS qt-WSE + tensor feature-rel cap,22.0,8,8,1.0,102.375,0.19635730981826782
+640,structsplat_quadtree_wse_tensor_feature_rel,SS qt-WSE + tensor feature-rel cap,24.0,8,8,1.0,249.625,0.4275759160518646
+640,structsplat_quadtree_wse_tensor_feature_rel,SS qt-WSE + tensor feature-rel cap,26.0,8,4,0.5,211.5,0.3969554305076599
+640,structsplat_quadtree_wse_tensor_feature_rel,SS qt-WSE + tensor feature-rel cap,28.0,8,2,0.25,119,0.21661579608917236
+640,structsplat_quadtree_wse_tensor_feature_rel,SS qt-WSE + tensor feature-rel cap,30.0,8,2,0.25,231.5,0.415350079536438
+640,structsplat_quadtree_wse_tensor_feature_rel,SS qt-WSE + tensor feature-rel cap,32.0,8,2,0.25,425.5,0.7606112957000732
+640,structsplat_quadtree_hybrid_tensor,SS qt-hybrid + tensor,22.0,8,8,1.0,97.375,0.18368172645568848
+640,structsplat_quadtree_hybrid_tensor,SS qt-hybrid + tensor,24.0,8,8,1.0,244.875,0.41495272517204285
+640,structsplat_quadtree_hybrid_tensor,SS qt-hybrid + tensor,26.0,8,4,0.5,211.75,0.4037902355194092
+640,structsplat_quadtree_hybrid_tensor,SS qt-hybrid + tensor,28.0,8,2,0.25,124.5,0.2477813959121704
+640,structsplat_quadtree_hybrid_tensor,SS qt-hybrid + tensor,30.0,8,2,0.25,253.5,0.469363808631897
+640,structsplat_quadtree_hybrid_tensor,SS qt-hybrid + tensor,32.0,8,2,0.25,421,0.7662132978439331
+640,floyd_steinberg_tensor,Floyd + tensor,22.0,8,8,1.0,130,0.22898706793785095
+640,floyd_steinberg_tensor,Floyd + tensor,24.0,8,6,0.75,202.33333333333334,0.3487298885981242
+640,floyd_steinberg_tensor,Floyd + tensor,26.0,8,4,0.5,255.25,0.4482612609863281
+640,floyd_steinberg_tensor,Floyd + tensor,28.0,8,2,0.25,172.5,0.3266277313232422
+640,floyd_steinberg_tensor,Floyd + tensor,30.0,8,2,0.25,295,0.5038613080978394
+640,floyd_steinberg_tensor,Floyd + tensor,32.0,8,2,0.25,479.5,0.7899587154388428

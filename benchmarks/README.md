@@ -124,6 +124,12 @@ rows share the same initial Gaussian count, final cap, growth-wave schedule, ren
 loss, and target tracking, then vary repo-inspired or StructSplat placement/growth policies. It
 always writes a local `index.html` overview. Caveat: this still does not run native external repo
 pipelines; it isolates policy differences under one executable fitter.
+The default method list starts with `structsplat_best_default`, a pinned Gaussian-image recipe
+from the 2026-07-09 matched run: `aniso_onedge` + WSE, feature cap `12@160`, tensor-aware residual
+growth, 5 growth waves, and `L1 + 0.3 SSIM`. Keep this row in default comparisons so every run has
+the current best-known StructSplat reference even when global CLI loss or growth options change.
+Additional default candidate rows explore lower/no SSIM, Charbonnier, tensor-weighted loss, final
+color solve, split relocation, and adaptive extra capacity (`1.5x` cap) for reducing absolute diff.
 
 ```
 LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 \
