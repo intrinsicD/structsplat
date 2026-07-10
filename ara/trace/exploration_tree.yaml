@@ -1463,3 +1463,29 @@ tree:
       - "commit 028a818"
     also_depends_on: [N54]
     status: resolved
+  - id: N68
+    type: experiment
+    title: "ABL-005 split influence protocol runners"
+    provenance: ai-executed
+    timestamp: "2026-07-10T11:56+0200"
+    result: >
+      Split the blocked ABL-005 fair-regime protocol into two reproducible shard
+      scripts: `scripts/run_abl005_cuda_native_influence.sh` for six CUDA-native
+      knobs whose paired deltas can support speed claims, and
+      `scripts/run_abl005_affine_quality_influence.sh` for a separate
+      `color_basis=affine` quality/convergence-only shard until native CUDA
+      affine backward exists. Fixed the standalone `benchmarks.stage_search`
+      parser so `--background-modes` matches the public CLI wrapper. A tiny
+      two-image smoke completed 14/14 CUDA-native cells and 4/4 affine cells,
+      writing local `index.html` and `influence.md` artifacts for both shards.
+      Focused stage-search/CLI tests passed 34 tests, Ruff passed, and the full
+      suite passed 312 tests with the libstdc++ preload workaround.
+    evidence:
+      - "ara/evidence/abl005-split-protocol-smoke-2026-07-10/run.md"
+      - "scripts/run_abl005_cuda_native_influence.sh"
+      - "scripts/run_abl005_affine_quality_influence.sh"
+      - "results/abl005_cuda_native_influence_smoke/index.html"
+      - "results/abl005_affine_quality_influence_smoke/index.html"
+      - "commit 2d3f353"
+    also_depends_on: [N67]
+    status: resolved

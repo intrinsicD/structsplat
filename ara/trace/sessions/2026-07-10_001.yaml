@@ -2,9 +2,9 @@ session:
   id: "2026-07-10_001"
   date: "2026-07-10"
   started: "2026-07-10T11:14+0200"
-  last_turn: "2026-07-10T11:14+0200"
-  turn_count: 1
-  summary: "Added a fair-density default-promotion audit, recomputed the supplied HTML benchmark artifact, and kept the pinned best default unchanged because no candidate beat quality, convergence, and speed together."
+  last_turn: "2026-07-10T11:56+0200"
+  turn_count: 2
+  summary: "Added a fair-density default-promotion audit, recomputed the supplied HTML benchmark artifact, kept the pinned best default unchanged, then split ABL-005 into CUDA-native and affine quality-only influence shard runners with smoke evidence."
 
 events_logged:
   - turn: 1
@@ -13,6 +13,12 @@ events_logged:
     routing: direct
     provenance: ai-executed
     summary: "Added paired default-promotion audit and recomputed the supplied fair benchmark; no candidate passed all promotion gates."
+  - turn: 2
+    type: experiment
+    id: "N68"
+    routing: direct
+    provenance: ai-executed
+    summary: "Added ABL-005 CUDA-native and affine quality-only influence shard runners, fixed standalone background-mode parsing, and smoke-tested both scripts."
 
 ai_actions:
   - turn: 1
@@ -24,16 +30,32 @@ ai_actions:
       - "benchmarks/README.md"
       - "tasks/ABL-004-controls-and-full-run.md"
       - "results/fair_gaussian_variants_20260709_best_candidates/"
+  - turn: 2
+    action: "Implemented ABL-005 split-protocol shell runners, fixed `benchmarks.stage_search --background-modes`, added regression coverage, updated benchmark/task docs, ran two tiny index.html smokes, validated, and committed."
+    provenance: ai-executed
+    files_changed:
+      - "scripts/run_abl005_cuda_native_influence.sh"
+      - "scripts/run_abl005_affine_quality_influence.sh"
+      - "benchmarks/stage_search.py"
+      - "tests/test_stage_search.py"
+      - "benchmarks/README.md"
+      - "tasks/ABL-005-fitter-knob-influence-fair-regime.md"
+      - "tasks/INDEX.md"
+      - "ara/evidence/abl005-split-protocol-smoke-2026-07-10/run.md"
 
 claims_touched: []
 
 key_context:
   - turn: 1
     excerpt: "User asked to follow the agentic workflow, recompute the linked `index.html` benchmark after relevant changes, update the best default only if it beats current default on convergence, performance, and quality, and commit."
+  - turn: 2
+    excerpt: "User repeated the agentic workflow request; the selected next bounded task was ABL-005 split-protocol execution hygiene because native CUDA affine remains a known timing blocker."
 
 open_threads:
   - "Continue iterating active tasks after this bounded ABL-004 benchmark-audit slice."
   - "Do not promote `structsplat_best_default` from this run; future candidates must pass the paired quality/convergence/speed promotion gate."
+  - "Run/resume the ABL-005 CUDA-native shard on the fixed 8-image Kodak fair regime before any fitter-knob promotion."
+  - "Run affine color-basis as quality/convergence-only evidence until native CUDA affine backward removes the timing confound."
   - "Existing `.idea` changes are user/workspace state and remain outside the task commit."
 
 ai_suggestions_pending: []

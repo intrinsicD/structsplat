@@ -272,3 +272,8 @@ entries:
       - "Routed the fair benchmark promotion audit as N67 because it produced committed code, a full recomputed artifact, and a bounded default-selection result."
       - "Did not stage or crystallize a global tensor-loss/default claim because this local proxy slice explicitly failed the promotion gate and FIT-012 already keeps public tensor loss default off."
       - "Left ABL-004 active because this turn improved benchmark decision hygiene but did not complete the original full ABL-001/20k/control matrix."
+  - turn: "2026-07-10_001#2"
+    notes:
+      - "Routed the ABL-005 split-protocol work as N68 because it produced committed benchmark runners, a parser fix, regression tests, and two local index.html smoke artifacts."
+      - "Did not stage a fitter-knob quality claim from the smoke because it used two 32px COCO crops, one seed, budget 16, and four iterations; it validates protocol plumbing only."
+      - "Kept ABL-005 partial because the decision-grade Kodak fair-regime shards and follow-up combo run remain open."
