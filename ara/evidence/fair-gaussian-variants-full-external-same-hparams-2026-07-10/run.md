@@ -41,6 +41,7 @@ python -m benchmarks.fair_density_control_compare \
 - Iterations/resolution/seeds: 500 iterations, max-side 160, seeds 0 and 1.
 - Renderer/loss: exact CUDA, `pixel_loss=l1`, `ssim_weight=0.3`, target PSNRs 22/24/26/28/30/32.
 - External comparison handling: GaussianImage/GaussianImage++/Image-GS rows are the existing matched-policy analogue rows; Instant-GI uses the local `/home/alex/Documents/Instant-GI/quard_image.py` hook.
+- Native external repo probe: see `native_repo_probe.md`.
 
 ## Result
 
@@ -54,3 +55,4 @@ python -m benchmarks.fair_density_control_compare \
 
 - Curated committed overview: `ara/evidence/fair-gaussian-variants-full-external-same-hparams-2026-07-10/index.html`.
 - Full ignored visual-grid overview: `results/fair_gaussian_variants_20260710_full_external_same_hparams/index.html`.
+- Native external repo probe: `ara/evidence/fair-gaussian-variants-full-external-same-hparams-2026-07-10/native_repo_probe.md`.
