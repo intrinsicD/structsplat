@@ -1565,3 +1565,30 @@ tree:
       - "commit 2c2b3ef"
     also_depends_on: [N70]
     status: resolved
+  - id: N72
+    type: experiment
+    title: "ABL-005 CUDA-native fair shard four pairs"
+    provenance: ai-executed
+    timestamp: "2026-07-10T12:55+0200"
+    result: >
+      Resumed the ABL-005 CUDA-native fair shard with `BUDGETS=2000`,
+      `SEEDS=0 1`, and `COLOR_SOLVE_MODES=none`, skipping completed rows
+      and completing six fast-axis rows for `kodim04`/budget-2000/seed 1.
+      The shard now contains 24 full fair-regime CUDA rows: `kodim01` and
+      `kodim04`, budget 2000, seeds 0 and 1, for baseline,
+      `density=variance`, `opacity=constant`, `loss=charbonnier`,
+      `lr_schedule=cosine`, and `refine=moment_preserving`. Refreshed local
+      `results/abl005_cuda_native_influence/index.html` and copied the HTML,
+      influence table, summary, CSV, and config into committed ARA evidence.
+      Four-pair deltas remain non-promotional: opacity and cosine still improve
+      PSNR/MS-SSIM/AUC on this partial slice, density is PSNR/MS-SSIM positive
+      but AUC-neutral/slightly negative, while Charbonnier and
+      moment-preserving improve final quality but lose AUC.
+    evidence:
+      - "ara/evidence/abl005-cuda-native-fair-shard-2026-07-10/run.md"
+      - "ara/evidence/abl005-cuda-native-fair-shard-2026-07-10/index.html"
+      - "ara/evidence/abl005-cuda-native-fair-shard-2026-07-10/influence.md"
+      - "results/abl005_cuda_native_influence/index.html"
+      - "commit 1f95233"
+    also_depends_on: [N71]
+    status: resolved
