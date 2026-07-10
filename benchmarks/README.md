@@ -94,7 +94,10 @@ ABL-005 uses two fixed shard scripts to avoid mixing implementation-confounded t
 decision-grade fitter deltas: `scripts/run_abl005_cuda_native_influence.sh` covers the six
 CUDA-native knobs and can support quality/convergence/speed claims, while
 `scripts/run_abl005_affine_quality_influence.sh` isolates `color_basis=affine` as
-quality/convergence-only until native CUDA affine backward exists.
+quality/convergence-only until native CUDA affine backward exists. The CUDA-native runner accepts
+per-axis env overrides (`DENSITY_MODES`, `OPACITY_MODES`, `COLOR_SOLVE_MODES`, `PIXEL_LOSSES`,
+`LR_SCHEDULES`, `REFINE_MODES`) so slow arms such as `color_solve=every10` can be run as separate
+resumable shards without hand-writing the long stage-search command.
 
 ```
 python -m benchmarks.stage_search path/to/images --mode influence --budgets 2048 --iters 500

@@ -69,6 +69,21 @@ so promotion decisions (each via its own ADR) rest on isolated, regime-correct e
   `results/abl005_cuda_native_influence_smoke/index.html` plus
   `results/abl005_affine_quality_influence_smoke/index.html`; committed smoke note:
   `ara/evidence/abl005-split-protocol-smoke-2026-07-10/run.md`.
+- 2026-07-10: Started the full fair-regime CUDA-native run on the Kodak screen. The first shard
+  completed three `kodim01`/2k/seed0 cells (baseline, `density=variance`, `opacity=constant`) and
+  wrote a partial `results/abl005_cuda_native_influence/index.html`; the next cell
+  (`color_solve=every10`) was interrupted after proving too slow for a broad 21-cell shard. The
+  CUDA-native runner now supports per-axis env overrides (`DENSITY_MODES`, `OPACITY_MODES`,
+  `COLOR_SOLVE_MODES`, `PIXEL_LOSSES`, `LR_SCHEDULES`, `REFINE_MODES`) so the remaining fair run
+  can be resumed by knob group rather than blocking all progress on the slow color-solve arm.
+  A fast-axis resume then completed `loss=charbonnier`, `lr_schedule=cosine`, and
+  `refine=moment_preserving` for the same cell, bringing the shard to 6/336 CUDA-native fair
+  cells. Evidence: `ara/evidence/abl005-cuda-native-fair-shard-2026-07-10/`. Single-cell deltas
+  are not promotion evidence, but they show the shard is producing paired metrics:
+  `opacity=constant` (+1.5168 dB PSNR, +0.3783 AUC, +1.411 s fit),
+  `lr_schedule=cosine` (+0.9614 dB, +0.0778 AUC, +0.245 s fit), `loss=charbonnier`
+  (+0.3367 dB, -0.0910 AUC), `moment_preserving` (+0.4769 dB, -0.0019 AUC), and
+  `density=variance` (-0.0203 dB, -0.2181 AUC).
 - Next action: run/resume the CUDA-native shard on the 8-image Kodak screen at the fixed fair
   regime, then run the affine quality-only shard separately and promote knobs only from paired
   metrics with no quality/convergence/performance regression.

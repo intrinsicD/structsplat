@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StructSplat Stage Search</title>
+<style>
+body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:24px;line-height:1.35;color:#171717;background:#fafafa}
+h1,h2{margin:0.9rem 0 0.55rem}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:16px 0}
+.card{border:1px solid #d4d4d4;background:#fff;padding:10px;border-radius:6px}
+.label{font-size:12px;color:#525252;text-transform:uppercase;letter-spacing:.03em}
+.value{font-size:20px;font-weight:650}
+table{border-collapse:collapse;width:100%;background:#fff;margin:10px 0 22px}
+th,td{border:1px solid #d4d4d4;padding:6px 8px;text-align:left;vertical-align:top}
+th{background:#f0f0f0}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+code{font-size:12px;word-break:break-word}
+.links a{margin-right:14px}
+.note{color:#525252}
+.best-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:10px 0 22px}
+.badge{display:inline-block;border:1px solid #a3a3a3;background:#f5f5f5;border-radius:999px;padding:2px 7px;margin:1px 3px 1px 0;font-size:12px}
+.badge.best{border-color:#047857;background:#ecfdf5;color:#064e3b;font-weight:650}
+tr.best-row{background:#f0fdf4}
+</style>
+</head>
+<body>
+<h1>StructSplat Stage Search</h1>
+<p class="note">Mode: <code>influence</code>. Scalar benchmark overview; this harness does not emit reconstructions or plots.</p>
+<p class="links"><a href="summary.md">summary.md</a> <a href="influence.md">influence.md</a> <a href="stage_search.csv">stage_search.csv</a> <a href="stage_search.json">stage_search.json</a> <a href="stage_search.jsonl">stage_search.jsonl</a> <a href="config.json">config.json</a></p>
+<div class="meta">
+<div class="card"><div class="label">Cells</div><div class="value">6</div></div>
+<div class="card"><div class="label">OK</div><div class="value">6</div></div>
+<div class="card"><div class="label">Errors</div><div class="value">0</div></div>
+<div class="card"><div class="label">Configs</div><div class="value">6</div></div>
+<div class="card"><div class="label">Images</div><div class="value">1</div></div>
+<div class="card"><div class="label">Budgets</div><div class="value">1</div></div>
+<div class="card"><div class="label">Seeds</div><div class="value">1</div></div>
+</div>
+<h2>Top Configs</h2>
+<table><thead><tr><th>Rank</th><th>Budget</th><th>Mean PSNR</th><th>Mean MS-SSIM</th><th>Mean AUC</th><th>Mean fit s</th><th>Config</th></tr></thead><tbody>
+<tr><td class="num">1</td><td class="num">2000</td><td class="num">24.1820</td><td class="num">0.88375</td><td class="num">23.832</td><td class="num">23.222</td><td><code>strategy=quadtree_wse|tensor=central|tensor_color=luma|density=structure|sampling=wse|orientation=tensor|color=bilinear|scale=spacing|scale_cap=none|background=off|opacity=constant|renderer=cuda|aa=0.0|color_basis=constant|color_solve=none|loss=l1|loss_weight=none|optimizer=adam|lr_schedule=none|refine_site=none|refine_primitive=duplicate|refine_nms=off|refine_color=target|refine_prune=off|refine_relocate=off|state_seed=off|row_temper=off|support_fade=off|pyramid=single</code></td></tr>
+<tr><td class="num">2</td><td class="num">2000</td><td class="num">23.6266</td><td class="num">0.87263</td><td class="num">23.531</td><td class="num">22.056</td><td><code>strategy=quadtree_wse|tensor=central|tensor_color=luma|density=structure|sampling=wse|orientation=tensor|color=bilinear|scale=spacing|scale_cap=none|background=off|opacity=none|renderer=cuda|aa=0.0|color_basis=constant|color_solve=none|loss=l1|loss_weight=none|optimizer=adam|lr_schedule=cosine|refine_site=none|refine_primitive=duplicate|refine_nms=off|refine_color=target|refine_prune=off|refine_relocate=off|state_seed=off|row_temper=off|support_fade=off|pyramid=single</code></td></tr>
+<tr><td class="num">3</td><td class="num">2000</td><td class="num">23.1421</td><td class="num">0.86431</td><td class="num">23.451</td><td class="num">21.573</td><td><code>strategy=quadtree_wse|tensor=central|tensor_color=luma|density=structure|sampling=wse|orientation=tensor|color=bilinear|scale=spacing|scale_cap=none|background=off|opacity=none|renderer=cuda|aa=0.0|color_basis=constant|color_solve=none|loss=l1|loss_weight=none|optimizer=adam|lr_schedule=none|refine_site=residual|refine_primitive=moment_preserving|refine_nms=off|refine_color=target|refine_prune=off|refine_relocate=off|state_seed=off|row_temper=off|support_fade=off|pyramid=single</code></td></tr>
+<tr><td class="num">4</td><td class="num">2000</td><td class="num">23.0019</td><td class="num">0.85897</td><td class="num">23.362</td><td class="num">22.832</td><td><code>strategy=quadtree_wse|tensor=central|tensor_color=luma|density=structure|sampling=wse|orientation=tensor|color=bilinear|scale=spacing|scale_cap=none|background=off|opacity=none|renderer=cuda|aa=0.0|color_basis=constant|color_solve=none|loss=charbonnier|loss_weight=none|optimizer=adam|lr_schedule=none|refine_site=none|refine_primitive=duplicate|refine_nms=off|refine_color=target|refine_prune=off|refine_relocate=off|state_seed=off|row_temper=off|support_fade=off|pyramid=single</code></td></tr>
+<tr><td class="num">5</td><td class="num">2000</td><td class="num">22.6652</td><td class="num">0.85619</td><td class="num">23.453</td><td class="num">21.811</td><td><code>strategy=quadtree_wse|tensor=central|tensor_color=luma|density=structure|sampling=wse|orientation=tensor|color=bilinear|scale=spacing|scale_cap=none|background=off|opacity=none|renderer=cuda|aa=0.0|color_basis=constant|color_solve=none|loss=l1|loss_weight=none|optimizer=adam|lr_schedule=none|refine_site=none|refine_primitive=duplicate|refine_nms=off|refine_color=target|refine_prune=off|refine_relocate=off|state_seed=off|row_temper=off|support_fade=off|pyramid=single</code></td></tr>
+<tr><td class="num">6</td><td class="num">2000</td><td class="num">22.6449</td><td class="num">0.86259</td><td class="num">23.235</td><td class="num">21.034</td><td><code>strategy=quadtree_wse|tensor=central|tensor_color=luma|density=variance|sampling=wse|orientation=tensor|color=bilinear|scale=spacing|scale_cap=none|background=off|opacity=none|renderer=cuda|aa=0.0|color_basis=constant|color_solve=none|loss=l1|loss_weight=none|optimizer=adam|lr_schedule=none|refine_site=none|refine_primitive=duplicate|refine_nms=off|refine_color=target|refine_prune=off|refine_relocate=off|state_seed=off|row_temper=off|support_fade=off|pyramid=single</code></td></tr>
+</tbody></table>
+<h2>Best Influence Variants</h2>
+<p class="note">Influence-mode leaders are paired deltas against the baseline. They identify the best variant inside this run; they are not default-promotion claims by themselves.</p>
+<div class="best-grid">
+<div class="card"><div class="label">Best PSNR</div><div class="value">+1.517</div><div><span class="badge best">opacity=constant</span></div><div class="note">stage opacity, 1 paired cells</div></div>
+<div class="card"><div class="label">Best MS-SSIM</div><div class="value">+0.02756</div><div><span class="badge best">opacity=constant</span></div><div class="note">stage opacity, 1 paired cells</div></div>
+<div class="card"><div class="label">Best AUC</div><div class="value">+0.378</div><div><span class="badge best">opacity=constant</span></div><div class="note">stage opacity, 1 paired cells</div></div>
+<div class="card"><div class="label">Fastest fit</div><div class="value">-0.777</div><div><span class="badge best">density=variance</span></div><div class="note">stage density, 1 paired cells</div></div>
+</div>
+<h2>Influence Paired Deltas</h2>
+<table><thead><tr><th>Rank</th><th>Best</th><th>Stage</th><th>Variant</th><th>Cells</th><th>ΔPSNR</th><th>ΔMS-SSIM</th><th>ΔAUC</th><th>Δinit s</th><th>Δfit s</th></tr></thead><tbody>
+<tr class="best-row"><td class="num">1</td><td><span class="badge best">Best PSNR</span> <span class="badge best">Best MS-SSIM</span> <span class="badge best">Best AUC</span></td><td>opacity</td><td><code>opacity=constant</code></td><td class="num">1</td><td class="num">+1.517 +/- 0.000</td><td class="num">+0.02756 +/- 0.000</td><td class="num">+0.378 +/- 0.000</td><td class="num">-0.017 +/- 0.000</td><td class="num">+1.411 +/- 0.000</td></tr>
+<tr><td class="num">2</td><td>-</td><td>lr_schedule</td><td><code>lr_schedule=cosine</code></td><td class="num">1</td><td class="num">+0.961 +/- 0.000</td><td class="num">+0.01644 +/- 0.000</td><td class="num">+0.078 +/- 0.000</td><td class="num">+1.511 +/- 0.000</td><td class="num">+0.245 +/- 0.000</td></tr>
+<tr><td class="num">3</td><td>-</td><td>refine_site+refine_primitive</td><td><code>refine_site=residual|refine_primitive=moment_preserving</code></td><td class="num">1</td><td class="num">+0.477 +/- 0.000</td><td class="num">+0.00812 +/- 0.000</td><td class="num">-0.002 +/- 0.000</td><td class="num">+1.183 +/- 0.000</td><td class="num">-0.238 +/- 0.000</td></tr>
+<tr><td class="num">4</td><td>-</td><td>loss</td><td><code>loss=charbonnier</code></td><td class="num">1</td><td class="num">+0.337 +/- 0.000</td><td class="num">+0.00278 +/- 0.000</td><td class="num">-0.091 +/- 0.000</td><td class="num">-0.017 +/- 0.000</td><td class="num">+1.021 +/- 0.000</td></tr>
+<tr class="best-row"><td class="num">5</td><td><span class="badge best">Fastest fit</span></td><td>density</td><td><code>density=variance</code></td><td class="num">1</td><td class="num">-0.020 +/- 0.000</td><td class="num">+0.00640 +/- 0.000</td><td class="num">-0.218 +/- 0.000</td><td class="num">+0.009 +/- 0.000</td><td class="num">-0.777 +/- 0.000</td></tr>
+</tbody></table>
+<h2>Per-Stage Marginals</h2>
+<table><thead><tr><th>Stage</th><th>Level</th><th>Runs</th><th>PSNR</th><th>MS-SSIM</th><th>AUC</th><th>Fit s</th></tr></thead><tbody>
+<tr><td>density</td><td><code>structure</code></td><td class="num">5</td><td class="num">23.324 +/- 0.529</td><td class="num">0.86717</td><td class="num">23.526</td><td class="num">22.299</td></tr>
+<tr><td>density</td><td><code>variance</code></td><td class="num">1</td><td class="num">22.645 +/- 0.000</td><td class="num">0.86259</td><td class="num">23.235</td><td class="num">21.034</td></tr>
+<tr><td>opacity</td><td><code>constant</code></td><td class="num">1</td><td class="num">24.182 +/- 0.000</td><td class="num">0.88375</td><td class="num">23.832</td><td class="num">23.222</td></tr>
+<tr><td>opacity</td><td><code>none</code></td><td class="num">5</td><td class="num">23.016 +/- 0.360</td><td class="num">0.86294</td><td class="num">23.407</td><td class="num">21.861</td></tr>
+<tr><td>loss</td><td><code>charbonnier</code></td><td class="num">1</td><td class="num">23.002 +/- 0.000</td><td class="num">0.85897</td><td class="num">23.362</td><td class="num">22.832</td></tr>
+<tr><td>loss</td><td><code>l1</code></td><td class="num">5</td><td class="num">23.252 +/- 0.588</td><td class="num">0.86789</td><td class="num">23.500</td><td class="num">21.939</td></tr>
+<tr><td>lr_schedule</td><td><code>cosine</code></td><td class="num">1</td><td class="num">23.627 +/- 0.000</td><td class="num">0.87263</td><td class="num">23.531</td><td class="num">22.056</td></tr>
+<tr><td>lr_schedule</td><td><code>none</code></td><td class="num">5</td><td class="num">23.127 +/- 0.561</td><td class="num">0.86516</td><td class="num">23.467</td><td class="num">22.094</td></tr>
+<tr><td>refine_site</td><td><code>none</code></td><td class="num">5</td><td class="num">23.224 +/- 0.596</td><td class="num">0.86683</td><td class="num">23.483</td><td class="num">22.191</td></tr>
+<tr><td>refine_site</td><td><code>residual</code></td><td class="num">1</td><td class="num">23.142 +/- 0.000</td><td class="num">0.86431</td><td class="num">23.451</td><td class="num">21.573</td></tr>
+<tr><td>refine_primitive</td><td><code>duplicate</code></td><td class="num">5</td><td class="num">23.224 +/- 0.596</td><td class="num">0.86683</td><td class="num">23.483</td><td class="num">22.191</td></tr>
+<tr><td>refine_primitive</td><td><code>moment_preserving</code></td><td class="num">1</td><td class="num">23.142 +/- 0.000</td><td class="num">0.86431</td><td class="num">23.451</td><td class="num">21.573</td></tr>
+</tbody></table>
+</body>
+</html>

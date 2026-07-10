@@ -22,10 +22,12 @@ ITERS="${ITERS:-1500}"
 BUDGETS="${BUDGETS:-2000 5000 10000}"
 SEEDS="${SEEDS:-0 1}"
 TARGET_PSNRS="${TARGET_PSNRS:-28 30 32}"
+COLOR_BASIS_MODES="${COLOR_BASIS_MODES:-constant affine}"
 
 read -r -a BUDGET_ARGS <<< "$BUDGETS"
 read -r -a SEED_ARGS <<< "$SEEDS"
 read -r -a TARGET_ARGS <<< "$TARGET_PSNRS"
+read -r -a COLOR_BASIS_ARGS <<< "$COLOR_BASIS_MODES"
 
 EXTRA_ARGS=()
 if [[ -n "${MAX_NEW_CELLS:-}" ]]; then
@@ -52,7 +54,7 @@ python -m benchmarks.stage_search "$@" \
   --opacity-modes none \
   --renderers "$RENDERER" \
   --aa-dilations 0.0 \
-  --color-basis-modes constant affine \
+  --color-basis-modes "${COLOR_BASIS_ARGS[@]}" \
   --color-solve-modes none \
   --pixel-losses l1 \
   --loss-weight-modes none \
