@@ -127,6 +127,7 @@ BEST_DEFAULT_METHOD = "structsplat_best_default"
 BEST_COSINE_METHOD = "structsplat_best_cosine"
 BEST_COSINE_TAIL_METHOD = "structsplat_best_cosine_tail"
 BEST_CHECKPOINT_METHOD = "structsplat_best_checkpoint"
+BEST_CHECKPOINT_LOWPASS_METHOD = "structsplat_best_checkpoint_lowpass2x_f10"
 BEST_CAF_METHOD = "structsplat_best_generation_filter"
 BEST_CAF_WEAK_METHOD = "structsplat_best_generation_filter_a18pi"
 BEST_CAF_MILD_METHOD = "structsplat_best_generation_filter_a36pi"
@@ -152,6 +153,7 @@ DEFAULT_METHODS = [
     BEST_COSINE_METHOD,
     BEST_COSINE_TAIL_METHOD,
     BEST_CHECKPOINT_METHOD,
+    BEST_CHECKPOINT_LOWPASS_METHOD,
     BEST_CAF_METHOD,
     BEST_CAF_WEAK_METHOD,
     BEST_CAF_MILD_METHOD,
@@ -195,6 +197,7 @@ METHOD_LABELS = {
     BEST_COSINE_METHOD: "SS best + cosine LR",
     BEST_COSINE_TAIL_METHOD: "SS best + post-growth cosine LR",
     BEST_CHECKPOINT_METHOD: "SS best + full-count checkpoint",
+    BEST_CHECKPOINT_LOWPASS_METHOD: "SS checkpoint + 2x low-pass warmup",
     BEST_CAF_METHOD: "SS best + generation CAF",
     BEST_CAF_WEAK_METHOD: "SS best + generation CAF 18pi",
     BEST_CAF_MILD_METHOD: "SS best + generation CAF 36pi",
@@ -248,6 +251,10 @@ METHOD_NOTES = {
     BEST_CHECKPOINT_METHOD: (
         "Best default with post-transition PSNR checkpoint selection restricted to states "
         "at the terminal Gaussian count."
+    ),
+    BEST_CHECKPOINT_LOWPASS_METHOD: (
+        "Full-count checkpoint control plus a 2x area-lowpass loss target cosine-blended "
+        "to the full image by 10% of the global fit horizon."
     ),
     BEST_CAF_METHOD: (
         "Best default plus GaussianImage++-style birth-cohort covariance filtering with "
@@ -367,6 +374,7 @@ METHOD_TRACKS = {
     BEST_COSINE_METHOD: "best-long-horizon",
     BEST_COSINE_TAIL_METHOD: "best-long-horizon",
     BEST_CHECKPOINT_METHOD: "best-long-horizon",
+    BEST_CHECKPOINT_LOWPASS_METHOD: "best-multiscale-loss",
     BEST_CAF_METHOD: "best-covariance-filter",
     BEST_CAF_WEAK_METHOD: "best-covariance-filter",
     BEST_CAF_MILD_METHOD: "best-covariance-filter",
@@ -410,6 +418,7 @@ STRUCTSPLAT_INIT = {
     BEST_COSINE_METHOD: ("aniso_onedge", "wse", 0.0),
     BEST_COSINE_TAIL_METHOD: ("aniso_onedge", "wse", 0.0),
     BEST_CHECKPOINT_METHOD: ("aniso_onedge", "wse", 0.0),
+    BEST_CHECKPOINT_LOWPASS_METHOD: ("aniso_onedge", "wse", 0.0),
     BEST_CAF_METHOD: ("aniso_onedge", "wse", 0.0),
     BEST_CAF_WEAK_METHOD: ("aniso_onedge", "wse", 0.0),
     BEST_CAF_MILD_METHOD: ("aniso_onedge", "wse", 0.0),
@@ -449,6 +458,7 @@ STRUCTSPLAT_SPLIT_MODE = {
     BEST_COSINE_METHOD: "residual_tensor_add",
     BEST_COSINE_TAIL_METHOD: "residual_tensor_add",
     BEST_CHECKPOINT_METHOD: "residual_tensor_add",
+    BEST_CHECKPOINT_LOWPASS_METHOD: "residual_tensor_add",
     BEST_CAF_METHOD: "residual_tensor_add",
     BEST_CAF_WEAK_METHOD: "residual_tensor_add",
     BEST_CAF_MILD_METHOD: "residual_tensor_add",
@@ -494,6 +504,7 @@ FEATURE_CAP_METHODS = {
     BEST_COSINE_METHOD,
     BEST_COSINE_TAIL_METHOD,
     BEST_CHECKPOINT_METHOD,
+    BEST_CHECKPOINT_LOWPASS_METHOD,
     BEST_CAF_METHOD,
     BEST_CAF_WEAK_METHOD,
     BEST_CAF_MILD_METHOD,
@@ -528,6 +539,7 @@ BEST_VARIANT_METHODS = {
     BEST_COSINE_METHOD,
     BEST_COSINE_TAIL_METHOD,
     BEST_CHECKPOINT_METHOD,
+    BEST_CHECKPOINT_LOWPASS_METHOD,
     BEST_CAF_METHOD,
     BEST_CAF_WEAK_METHOD,
     BEST_CAF_MILD_METHOD,
@@ -557,7 +569,10 @@ BEST_GCR_METHODS = {
 }
 BEST_COLOR_FINAL_METHODS = {"structsplat_best_color_final"}
 BEST_ADAPTIVE_METHODS = {"structsplat_best_adaptive_1p5x"}
-BEST_CHECKPOINT_METHODS = {BEST_CHECKPOINT_METHOD}
+BEST_CHECKPOINT_METHODS = {BEST_CHECKPOINT_METHOD, BEST_CHECKPOINT_LOWPASS_METHOD}
+BEST_LOWPASS_TARGET_METHODS = {
+    BEST_CHECKPOINT_LOWPASS_METHOD: (2, 0.10),
+}
 BEST_COSINE_METHODS = {
     BEST_COSINE_METHOD: 0.0,
     BEST_COSINE_TAIL_METHOD: BEST_DEFAULT_GROWTH_WAVES / (BEST_DEFAULT_GROWTH_WAVES + 1),
@@ -641,6 +656,8 @@ def _apply_method_fit_overrides(
             color_solve_every=None,
             color_solve_schedule="none",
             lr_schedule="none",
+            loss_target_downsample=1,
+            loss_target_full_frac=0.0,
         )
         overrides.update({
             "pinned_best_default": True,
@@ -675,6 +692,17 @@ def _apply_method_fit_overrides(
     if method in BEST_CHECKPOINT_METHODS:
         cfg = replace(cfg, checkpoint_policy="best_psnr_final_count")
         overrides["checkpoint_policy"] = "best_psnr_final_count"
+    if method in BEST_LOWPASS_TARGET_METHODS:
+        downsample, full_frac = BEST_LOWPASS_TARGET_METHODS[method]
+        cfg = replace(
+            cfg,
+            loss_target_downsample=downsample,
+            loss_target_full_frac=full_frac,
+        )
+        overrides.update({
+            "loss_target_downsample": downsample,
+            "loss_target_full_frac": full_frac,
+        })
     if method in BEST_GCR_METHODS:
         weight, every = BEST_GCR_METHODS[method]
         cfg = replace(
@@ -1022,6 +1050,15 @@ def _cell_key(row: dict[str, Any]) -> tuple[Any, ...]:
     geometry_loss_every = row.get(
         "geometry_loss_every", fit_config.get("geometry_loss_every", 1)
     )
+    checkpoint_policy = row.get(
+        "checkpoint_policy", fit_config.get("checkpoint_policy", "terminal")
+    )
+    loss_target_downsample = row.get(
+        "loss_target_downsample", fit_config.get("loss_target_downsample", 1)
+    )
+    loss_target_full_frac = row.get(
+        "loss_target_full_frac", fit_config.get("loss_target_full_frac", 0.0)
+    )
     return (
         row.get("image"),
         row.get("source_path"),
@@ -1042,6 +1079,9 @@ def _cell_key(row: dict[str, Any]) -> tuple[Any, ...]:
         float(geometry_loss_weight),
         int(geometry_loss_every),
         row.get("color_solve_schedule", "none"),
+        checkpoint_policy,
+        int(loss_target_downsample),
+        float(loss_target_full_frac),
         bool(row.get("adaptive_count", False)),
         row.get("variant_max_gaussians"),
         row.get("source_sha256"),
@@ -1215,6 +1255,8 @@ def _write_outputs(rows: list[dict[str, Any]], outdir: Path, methods: list[str])
     if json_rows:
         fieldnames = sorted({k for r in json_rows for k in r.keys() if k not in {"fit_config", "init_config", "iters_to_targets"}})
         write_csv(outdir / "metrics.csv", json_rows, fieldnames=fieldnames, extrasaction="ignore")
+    else:
+        (outdir / "metrics.csv").unlink(missing_ok=True)
     _write_default_dominance(rows, outdir, methods)
     checkpoint_audit = _checkpoint_selection_audit(rows)
     if checkpoint_audit:
@@ -1223,6 +1265,29 @@ def _write_outputs(rows: list[dict[str, Any]], outdir: Path, methods: list[str])
             checkpoint_audit,
             fieldnames=list(checkpoint_audit[0]),
         )
+    else:
+        (outdir / "checkpoint_selection.csv").unlink(missing_ok=True)
+    lowpass_pairs, lowpass_summary = _paired_method_audit(
+        rows,
+        baseline_method=BEST_CHECKPOINT_METHOD,
+        candidate_method=BEST_CHECKPOINT_LOWPASS_METHOD,
+    )
+    if lowpass_pairs:
+        write_csv(
+            outdir / "lowpass_vs_checkpoint.csv",
+            lowpass_pairs,
+            fieldnames=list(lowpass_pairs[0]),
+        )
+    else:
+        (outdir / "lowpass_vs_checkpoint.csv").unlink(missing_ok=True)
+    if lowpass_summary is not None:
+        write_csv(
+            outdir / "lowpass_vs_checkpoint_summary.csv",
+            [lowpass_summary],
+            fieldnames=list(lowpass_summary),
+        )
+    else:
+        (outdir / "lowpass_vs_checkpoint_summary.csv").unlink(missing_ok=True)
     _write_convergence_tables(rows, outdir, methods)
     _write_summary(rows, outdir, methods)
     _write_plots(rows, outdir, methods)
@@ -1391,6 +1456,8 @@ def _clustered_gain_ci(
     *,
     seed: int,
     alpha: float = 0.05,
+    baseline_field: str | None = None,
+    candidate_field: str | None = None,
 ) -> tuple[float | None, float | None, float | None, int, int]:
     """Return an image-clustered paired gain and bootstrap CI.
 
@@ -1400,9 +1467,11 @@ def _clustered_gain_ci(
     """
     by_image: dict[str, list[float]] = {}
     pair_count = 0
+    baseline_field = baseline_field or metric
+    candidate_field = candidate_field or metric
     for base, candidate in pairs:
-        base_value = base.get(metric)
-        candidate_value = candidate.get(metric)
+        base_value = base.get(baseline_field)
+        candidate_value = candidate.get(candidate_field)
         if base_value is None or candidate_value is None:
             continue
         try:
@@ -1546,6 +1615,7 @@ def _write_default_dominance(
 ) -> None:
     audit = _default_dominance_audit(rows, methods)
     if not audit:
+        (outdir / "default_dominance.csv").unlink(missing_ok=True)
         return
     metric_fields = []
     for metric in [*DOMINANCE_METRICS, "lpips"]:
@@ -1681,6 +1751,215 @@ def _checkpoint_selection_audit(rows: list[dict[str, Any]]) -> list[dict[str, An
     return audit
 
 
+def _paired_method_audit(
+    rows: list[dict[str, Any]],
+    *,
+    baseline_method: str,
+    candidate_method: str,
+) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+    """Direct paired gains for one candidate over its causal method control."""
+    baseline_by_key = {
+        _promotion_pair_key(row): row
+        for row in rows
+        if row.get("status") == "ok" and row.get("method") == baseline_method
+    }
+    pairs: list[tuple[dict[str, Any], dict[str, Any]]] = []
+    records: list[dict[str, Any]] = []
+    metric_directions = {**DOMINANCE_METRICS, "lpips": -1.0}
+    terminal_metrics = {
+        "terminal_psnr": ("trajectory_terminal_psnr", 1.0),
+        "terminal_ssim": ("trajectory_terminal_ssim", 1.0),
+        "terminal_ms_ssim": ("trajectory_terminal_ms_ssim", 1.0),
+        "terminal_lpips": ("trajectory_terminal_lpips", -1.0),
+    }
+
+    def causal_invariant_errors(
+        baseline: dict[str, Any], candidate: dict[str, Any]
+    ) -> list[str]:
+        errors = []
+        for label, row in (("baseline", baseline), ("candidate", candidate)):
+            if row.get("checkpoint_policy") != "best_psnr_final_count":
+                errors.append(f"{label} checkpoint policy is not best_psnr_final_count")
+            requested_start = row.get("start_budget")
+            actual_start = row.get("start_gaussians")
+            requested_final = row.get("final_budget")
+            actual_final = row.get("n_gaussians")
+            terminal_n = row.get("trajectory_terminal_n_gaussians")
+            selected_n = row.get("selected_n_gaussians")
+            if requested_start is None or actual_start is None or int(actual_start) != int(
+                requested_start
+            ):
+                errors.append(f"{label} actual start count does not match the request")
+            if requested_final is None or actual_final is None or int(actual_final) != int(
+                requested_final
+            ):
+                errors.append(f"{label} actual final count does not match the cap")
+            if (
+                requested_final is None
+                or terminal_n is None
+                or selected_n is None
+                or int(terminal_n) != int(requested_final)
+                or int(selected_n) != int(requested_final)
+            ):
+                errors.append(f"{label} terminal/selected counts do not match the cap")
+
+        baseline_cfg = baseline.get("fit_config")
+        candidate_cfg = candidate.get("fit_config")
+        if not isinstance(baseline_cfg, dict) or not isinstance(candidate_cfg, dict):
+            errors.append("both rows must carry resolved fit_config dictionaries")
+        else:
+            baseline_treatment = (
+                baseline_cfg.get("loss_target_downsample", 1),
+                baseline_cfg.get("loss_target_full_frac", 0.0),
+            )
+            candidate_treatment = (
+                candidate_cfg.get("loss_target_downsample", 1),
+                candidate_cfg.get("loss_target_full_frac", 0.0),
+            )
+            expected_candidate = BEST_LOWPASS_TARGET_METHODS.get(candidate_method)
+            if baseline_treatment != (1, 0.0):
+                errors.append(f"baseline treatment fields are {baseline_treatment!r}, not neutral")
+            if expected_candidate is None or not (
+                int(candidate_treatment[0]) == int(expected_candidate[0])
+                and math.isclose(
+                    float(candidate_treatment[1]),
+                    float(expected_candidate[1]),
+                    rel_tol=0.0,
+                    abs_tol=1e-12,
+                )
+            ):
+                errors.append(
+                    f"candidate treatment fields are {candidate_treatment!r}, not "
+                    f"{expected_candidate!r}"
+                )
+            baseline_control = dict(baseline_cfg)
+            candidate_control = dict(candidate_cfg)
+            for name in ("loss_target_downsample", "loss_target_full_frac"):
+                baseline_control.pop(name, None)
+                candidate_control.pop(name, None)
+            if json.dumps(baseline_control, sort_keys=True, default=str) != json.dumps(
+                candidate_control, sort_keys=True, default=str
+            ):
+                errors.append("resolved fit configs differ outside the two treatment fields")
+        return errors
+
+    for candidate in rows:
+        if candidate.get("status") != "ok" or candidate.get("method") != candidate_method:
+            continue
+        baseline = baseline_by_key.get(_promotion_pair_key(candidate))
+        if baseline is None:
+            continue
+        invariant_errors = causal_invariant_errors(baseline, candidate)
+        if invariant_errors:
+            raise ValueError(
+                "invalid causal low-pass/checkpoint pair for "
+                f"{candidate.get('source_path')} seed={candidate.get('seed')}: "
+                + "; ".join(invariant_errors)
+            )
+        pairs.append((baseline, candidate))
+        record: dict[str, Any] = {
+            "image": candidate.get("image"),
+            "source_path": candidate.get("source_path"),
+            "target_pixel_sha256": candidate.get("target_pixel_sha256"),
+            "max_side": candidate.get("max_side"),
+            "height": candidate.get("height"),
+            "width": candidate.get("width"),
+            "final_budget": candidate.get("final_budget"),
+            "start_budget": candidate.get("start_budget"),
+            "seed": candidate.get("seed"),
+            "iters": candidate.get("iters"),
+            "baseline_method": baseline_method,
+            "candidate_method": candidate_method,
+            "causal_invariants_verified": True,
+            "baseline_selected_iter": baseline.get("selected_iter"),
+            "candidate_selected_iter": candidate.get("selected_iter"),
+        }
+        for metric, direction in metric_directions.items():
+            baseline_value = baseline.get(metric)
+            candidate_value = candidate.get(metric)
+            record[f"baseline_{metric}"] = baseline_value
+            record[f"candidate_{metric}"] = candidate_value
+            try:
+                gain = (
+                    None
+                    if baseline_value is None or candidate_value is None
+                    else direction * (float(candidate_value) - float(baseline_value))
+                )
+            except (TypeError, ValueError):
+                gain = None
+            record[f"gain_{metric}"] = gain
+        for output_name, (row_name, direction) in terminal_metrics.items():
+            baseline_value = baseline.get(row_name)
+            candidate_value = candidate.get(row_name)
+            record[f"baseline_{output_name}"] = baseline_value
+            record[f"candidate_{output_name}"] = candidate_value
+            try:
+                gain = (
+                    None
+                    if baseline_value is None or candidate_value is None
+                    else direction * (float(candidate_value) - float(baseline_value))
+                )
+            except (TypeError, ValueError):
+                gain = None
+            record[f"gain_{output_name}"] = gain
+        records.append(record)
+    if not pairs:
+        return [], None
+
+    complete_pairs = []
+    for baseline, candidate in pairs:
+        values = [baseline.get(metric) for metric in DOMINANCE_METRICS]
+        values += [candidate.get(metric) for metric in DOMINANCE_METRICS]
+        try:
+            complete = all(
+                value is not None and math.isfinite(float(value)) for value in values
+            )
+        except (TypeError, ValueError):
+            complete = False
+        if complete:
+            complete_pairs.append((baseline, candidate))
+
+    summary: dict[str, Any] = {
+        "baseline_method": baseline_method,
+        "candidate_method": candidate_method,
+        "pairs": len(complete_pairs),
+    }
+    core_images: list[int] = []
+    for metric_idx, (metric, direction) in enumerate(metric_directions.items()):
+        metric_pairs = pairs if metric == "lpips" else complete_pairs
+        center, low, high, count, images = _clustered_gain_ci(
+            metric_pairs,
+            metric,
+            direction,
+            seed=DOMINANCE_BOOTSTRAP_SEED + 700 + metric_idx,
+        )
+        summary[f"gain_{metric}"] = center
+        summary[f"ci_low_{metric}"] = low
+        summary[f"ci_high_{metric}"] = high
+        summary[f"pairs_{metric}"] = count
+        summary[f"images_{metric}"] = images
+        if metric != "lpips":
+            core_images.append(images)
+    for metric_idx, (output_name, (row_name, direction)) in enumerate(
+        terminal_metrics.items()
+    ):
+        center, low, high, count, images = _clustered_gain_ci(
+            pairs,
+            output_name,
+            direction,
+            seed=DOMINANCE_BOOTSTRAP_SEED + 800 + metric_idx,
+            baseline_field=row_name,
+            candidate_field=row_name,
+        )
+        summary[f"gain_{output_name}"] = center
+        summary[f"ci_low_{output_name}"] = low
+        summary[f"ci_high_{output_name}"] = high
+        summary[f"pairs_{output_name}"] = count
+        summary[f"images_{output_name}"] = images
+    summary["paired_images"] = min(core_images) if core_images else 0
+    return records, summary
+
+
 def _write_convergence_tables(rows: list[dict[str, Any]], outdir: Path, methods: list[str]) -> None:
     ok = [r for r in rows if r.get("status") == "ok"]
     if not ok:
@@ -1707,6 +1986,8 @@ def _write_convergence_tables(rows: list[dict[str, Any]], outdir: Path, methods:
             curve_rows,
             fieldnames=["final_budget", "method", "method_label", "iter", "mean_psnr", "std_psnr", "runs"],
         )
+    else:
+        (outdir / "convergence_curves.csv").unlink(missing_ok=True)
 
     targets = _target_values(ok)
     target_rows = []
@@ -1740,6 +2021,8 @@ def _write_convergence_tables(rows: list[dict[str, Any]], outdir: Path, methods:
                 "mean_seconds",
             ],
         )
+    else:
+        (outdir / "target_hit_rates.csv").unlink(missing_ok=True)
 
 
 def _write_summary(rows: list[dict[str, Any]], outdir: Path, methods: list[str]) -> None:
@@ -1811,7 +2094,6 @@ def _write_summary(rows: list[dict[str, Any]], outdir: Path, methods: list[str])
 
     checkpoint_audit = _checkpoint_selection_audit(ok)
     if checkpoint_audit:
-        selected = sum(bool(row["selected_from_checkpoint"]) for row in checkpoint_audit)
         lines += [
             "",
             "## Within-Trajectory Checkpoint Audit",
@@ -1822,13 +2104,55 @@ def _write_summary(rows: list[dict[str, Any]], outdir: Path, methods: list[str])
             "trajectory divergence to checkpoint selection. Per-cell values are in "
             "`checkpoint_selection.csv`.",
             "",
-            "| Runs | Earlier states selected | PSNR gain | SSIM gain | MS-SSIM gain | LPIPS gain |",
-            "|---:|---:|---:|---:|---:|---:|",
-            f"| {len(checkpoint_audit)} | {selected} | "
-            f"{_fmt(_mean_or_none([r['gain_psnr'] for r in checkpoint_audit]), 4)} | "
-            f"{_fmt(_mean_or_none([r['gain_ssim'] for r in checkpoint_audit]), 5)} | "
-            f"{_fmt(_mean_or_none([r['gain_ms_ssim'] for r in checkpoint_audit]), 5)} | "
-            f"{_fmt(_mean_or_none([r['gain_lpips'] for r in checkpoint_audit]), 4)} |",
+            "| Method | Runs | Earlier states selected | PSNR gain | SSIM gain | MS-SSIM gain | LPIPS gain |",
+            "|---|---:|---:|---:|---:|---:|---:|",
+        ]
+        for method in sorted({str(row["method"]) for row in checkpoint_audit}):
+            method_rows = [row for row in checkpoint_audit if row["method"] == method]
+            selected = sum(bool(row["selected_from_checkpoint"]) for row in method_rows)
+            lines.append(
+                f"| {_label(method)} | {len(method_rows)} | {selected} | "
+                f"{_fmt(_mean_or_none([r['gain_psnr'] for r in method_rows]), 4)} | "
+                f"{_fmt(_mean_or_none([r['gain_ssim'] for r in method_rows]), 5)} | "
+                f"{_fmt(_mean_or_none([r['gain_ms_ssim'] for r in method_rows]), 5)} | "
+                f"{_fmt(_mean_or_none([r['gain_lpips'] for r in method_rows]), 4)} |"
+            )
+
+    _lowpass_pairs, lowpass_summary = _paired_method_audit(
+        ok,
+        baseline_method=BEST_CHECKPOINT_METHOD,
+        candidate_method=BEST_CHECKPOINT_LOWPASS_METHOD,
+    )
+    if lowpass_summary is not None:
+        lines += [
+            "",
+            "## Low-Pass Curriculum vs Checkpoint Control",
+            "",
+            "This is the causal method comparison: both arms use terminal-count checkpoint "
+            "selection and differ only in the two loss-target curriculum fields. Positive gains "
+            "favor the low-pass candidate; positive time gains mean faster and positive LPIPS "
+            "gain means lower. Intervals bootstrap source images after averaging their correlated "
+            "seeds/budgets. Per-cell and aggregate values are in `lowpass_vs_checkpoint.csv` "
+            "and `lowpass_vs_checkpoint_summary.csv`.",
+            "",
+            "| Pairs / images | PSNR gain [95% CI] | MS-SSIM gain [95% CI] | AUC gain [95% CI] | Fit gain s [95% CI] | Total gain s [95% CI] | LPIPS gain [95% CI] |",
+            "|---:|---:|---:|---:|---:|---:|---:|",
+            f"| {lowpass_summary['pairs']} / {lowpass_summary['paired_images']} | "
+            f"{_fmt_gain_ci(lowpass_summary, 'psnr', 4)} | "
+            f"{_fmt_gain_ci(lowpass_summary, 'ms_ssim', 5)} | "
+            f"{_fmt_gain_ci(lowpass_summary, 'auc_psnr', 4)} | "
+            f"{_fmt_gain_ci(lowpass_summary, 'fit_seconds', 4)} | "
+            f"{_fmt_gain_ci(lowpass_summary, 'total_seconds', 4)} | "
+            f"{_fmt_gain_ci(lowpass_summary, 'lpips', 4)} |",
+            "",
+            "Terminal (unselected) endpoint deltas from the same paired trajectories:",
+            "",
+            "| Terminal PSNR gain [95% CI] | Terminal SSIM gain [95% CI] | Terminal MS-SSIM gain [95% CI] | Terminal LPIPS gain [95% CI] |",
+            "|---:|---:|---:|---:|",
+            f"| {_fmt_gain_ci(lowpass_summary, 'terminal_psnr', 4)} | "
+            f"{_fmt_gain_ci(lowpass_summary, 'terminal_ssim', 5)} | "
+            f"{_fmt_gain_ci(lowpass_summary, 'terminal_ms_ssim', 5)} | "
+            f"{_fmt_gain_ci(lowpass_summary, 'terminal_lpips', 4)} |",
         ]
 
     dominance_rows = _default_dominance_audit(ok, methods, over_budget)
@@ -2298,6 +2622,22 @@ def _write_index(outdir: Path, methods: list[str]) -> None:
     ]
     image_grids = sorted((outdir / "grids" / "by_image").glob("*.png"))
     budget_grids = sorted((outdir / "grids" / "by_budget").glob("*.png"))
+    file_links = [
+        '<a href="summary.md">summary.md</a>',
+        '<a href="metrics.csv">metrics.csv</a>',
+        '<a href="metrics.json">metrics.json</a>',
+    ]
+    for name in ("default_dominance.csv", "convergence_curves.csv", "target_hit_rates.csv"):
+        if (outdir / name).exists():
+            file_links.append(f'<a href="{name}">{name}</a>')
+    if (outdir / "checkpoint_selection.csv").exists():
+        file_links.append('<a href="checkpoint_selection.csv">checkpoint_selection.csv</a>')
+    if (outdir / "lowpass_vs_checkpoint.csv").exists():
+        file_links += [
+            '<a href="lowpass_vs_checkpoint.csv">lowpass_vs_checkpoint.csv</a>',
+            '<a href="lowpass_vs_checkpoint_summary.csv">lowpass_vs_checkpoint_summary.csv</a>',
+        ]
+    file_links.append('<a href="config.json">config.json</a>')
     html = [
         "<!doctype html>",
         '<html lang="en"><head><meta charset="utf-8">',
@@ -2314,7 +2654,7 @@ def _write_index(outdir: Path, methods: list[str]) -> None:
         '<p class="note">Matched-policy benchmark: growth rows share the same initial count, final cap, growth waves, fitter, renderer, loss, target tracking, and iteration budget. External repos are represented by local analogues here; this is not a native external-pipeline benchmark.</p>',
         f'<p class="note">Visual grids show each reconstruction row followed by an amplified absolute difference row: |target - reconstruction| x{DIFF_GAIN:g}, clipped for display.</p>',
         "<h2>Files</h2>",
-        '<p><a href="summary.md">summary.md</a> · <a href="metrics.csv">metrics.csv</a> · <a href="metrics.json">metrics.json</a> · <a href="default_dominance.csv">default_dominance.csv</a> · <a href="convergence_curves.csv">convergence_curves.csv</a> · <a href="target_hit_rates.csv">target_hit_rates.csv</a> · <a href="config.json">config.json</a></p>',
+        f"<p>{' · '.join(file_links)}</p>",
         "<h2>Methods</h2><table><tr><th>Method</th><th>Track</th></tr>",
     ]
     for method in methods:
@@ -2489,6 +2829,9 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
                         "geometry_loss_weight": fit_sig.geometry_loss_weight,
                         "geometry_loss_every": fit_sig.geometry_loss_every,
                         "color_solve_schedule": fit_sig.color_solve_schedule,
+                        "checkpoint_policy": fit_sig.checkpoint_policy,
+                        "loss_target_downsample": fit_sig.loss_target_downsample,
+                        "loss_target_full_frac": fit_sig.loss_target_full_frac,
                         "adaptive_count": fit_sig.adaptive_count,
                         "variant_max_gaussians": fit_sig.max_gaussians
                         if fit_sig.adaptive_count else None,

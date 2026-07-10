@@ -82,6 +82,49 @@ def test_pyramid_accepts_explicit_level_iteration_schedule():
     assert max(out["history"]["iter"]) == 5
 
 
+def test_pyramid_loss_target_curriculum_uses_global_schedule_without_restart():
+    img = _toy()
+    target = torch.as_tensor(img)
+    icfg = InitConfig(strategy="iso_blue_noise", num_gaussians=24, seed=0)
+    fcfg = FitConfig(
+        iters=999,
+        log_every=1,
+        loss_target_downsample=2,
+        loss_target_full_frac=0.5,
+    )
+    pcfg = PyramidConfig(
+        levels=2,
+        level_fractions=[0.5, 0.5],
+        level_iters=[2, 2],
+    )
+
+    out = fit_pyramid(img, target, icfg, fcfg, pcfg, verbose=False)
+
+    assert out["history"]["loss_target_full_weight"] == pytest.approx(
+        [0.0, 0.5, 1.0, 1.0]
+    )
+
+
+def test_pyramid_rejects_level_growth_before_full_loss_target():
+    img = _toy()
+    target = torch.as_tensor(img)
+    icfg = InitConfig(strategy="iso_blue_noise", num_gaussians=24, seed=0)
+    fcfg = FitConfig(
+        iters=999,
+        log_every=1,
+        loss_target_downsample=2,
+        loss_target_full_frac=0.5,
+    )
+    pcfg = PyramidConfig(
+        levels=2,
+        level_fractions=[0.5, 0.5],
+        level_iters=[2, 8],
+    )
+
+    with pytest.raises(ValueError, match="pyramid level 1 adds"):
+        fit_pyramid(img, target, icfg, fcfg, pcfg, verbose=False)
+
+
 def test_pyramid_runs_with_additive_renderer():
     img = _toy()
     target = torch.as_tensor(img)

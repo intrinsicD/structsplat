@@ -16,12 +16,14 @@ from structsplat.fit import (
     _freq_violation_scores,
     _fit_support_fade_alpha,
     _geometry_consistent_loss,
+    _loss_target_full_weight,
     _lr_factor,
     _make_optimizer,
     _maybe_prune,
     _moment_preserving_duplicate_indices,
     _pixel_loss,
     _prepare_loss_weight_map,
+    _prepare_loss_target,
     _residual_candidate_pixels,
     _relocate_from_residual,
     _solve_colors_normalized,
@@ -71,6 +73,74 @@ def test_best_checkpoint_policy_rejects_ambiguous_render_policies():
             checkpoint_policy="best_psnr_final_count",
             support_fade_until_frac=0.5,
         )
+
+
+@pytest.mark.parametrize(
+    ("downsample", "full_frac"),
+    [(0, 0.0), (1.5, 0.0), (True, 0.0), (1, 0.1), (2, 0.0), (2, 1.1), (2, float("nan"))],
+)
+def test_loss_target_curriculum_config_is_validated(downsample, full_frac):
+    with pytest.raises(ValueError, match="loss_target"):
+        FitConfig(
+            loss_target_downsample=downsample,
+            loss_target_full_frac=full_frac,
+        )
+
+
+def test_loss_target_curriculum_rejects_undefined_auxiliary_target_semantics():
+    with pytest.raises(ValueError, match="prune_min_activity"):
+        FitConfig(prune_min_activity=float("nan"))
+    with pytest.raises(ValueError, match="geometry_loss"):
+        FitConfig(
+            loss_target_downsample=2,
+            loss_target_full_frac=0.1,
+            geometry_loss_weight=0.1,
+        )
+    with pytest.raises(ValueError, match="color solving"):
+        FitConfig(
+            loss_target_downsample=2,
+            loss_target_full_frac=0.1,
+            color_solve_every=2,
+        )
+    with pytest.raises(ValueError, match="color solving"):
+        FitConfig(
+            loss_target_downsample=2,
+            loss_target_full_frac=0.1,
+            color_solve_schedule="final",
+        )
+
+
+def test_lowpass_loss_target_preserves_shape_dtype_range_and_constants():
+    yy, xx = torch.meshgrid(torch.arange(7), torch.arange(9), indexing="ij")
+    checker = ((xx + yy) % 2).to(torch.float32)[..., None].expand(-1, -1, 3)
+    lowpass = _prepare_loss_target(checker, 2)
+
+    assert lowpass.shape == checker.shape
+    assert lowpass.dtype == checker.dtype
+    assert lowpass.device == checker.device
+    assert float(lowpass.min()) >= 0.0
+    assert float(lowpass.max()) <= 1.0
+    assert float(lowpass.std()) < float(checker.std())
+    assert _prepare_loss_target(checker, 1) is checker
+
+    constant = torch.full((1, 9, 3), 0.375, dtype=torch.float64)
+    assert torch.equal(_prepare_loss_target(constant, 2), constant)
+
+
+def test_loss_target_weight_uses_global_cosine_schedule_without_restart():
+    cfg = FitConfig(
+        iters=100,
+        loss_target_downsample=2,
+        loss_target_full_frac=0.1,
+    )
+    weights = [_loss_target_full_weight(cfg, it) for it in range(12)]
+
+    assert weights[0] == 0.0
+    assert weights[5] == pytest.approx(0.5)
+    assert weights[10:] == [1.0, 1.0]
+    assert weights == sorted(weights)
+    assert _loss_target_full_weight(cfg, 0, sched_offset=10, sched_total=100) == 1.0
+    assert _loss_target_full_weight(FitConfig(), 0) == 1.0
     with pytest.raises(ValueError, match="final-only color solve"):
         FitConfig(
             checkpoint_policy="best_psnr_final_count",
@@ -1004,6 +1074,130 @@ def test_early_stop_is_opt_in_and_reports_iterations():
     assert out["stopped_early"]
     assert out["iterations_run"] < 20
     assert out["stopped_at"] == out["history"]["iter"][-1]
+
+
+def test_default_loss_target_fields_preserve_exact_fit_behavior():
+    img = np.zeros((12, 12, 3), np.float32)
+    img[:, 6:] = 1.0
+    target = torch.as_tensor(img)
+    initial = _init.build_field(img, InitConfig(strategy="random", num_gaussians=8, seed=7))
+    common = dict(iters=3, log_every=1, ssim_weight=0.0, render_chunk=8)
+
+    default = fit(initial.detached(), target, FitConfig(**common), verbose=False)
+    explicit = fit(
+        initial.detached(),
+        target,
+        FitConfig(
+            **common,
+            loss_target_downsample=1,
+            loss_target_full_frac=0.0,
+        ),
+        verbose=False,
+    )
+
+    for name in ("means", "log_scales", "rotations", "colors"):
+        assert torch.equal(
+            getattr(default["field"], name).detach(),
+            getattr(explicit["field"], name).detach(),
+        )
+    for key in ("iter", "psnr", "loss", "n_gaussians", "loss_target_full_weight"):
+        assert default["history"][key] == explicit["history"][key]
+    assert default["history"]["loss_target_full_weight"] == [1.0, 1.0, 1.0]
+
+
+def test_loss_target_curriculum_changes_only_objective_target(monkeypatch):
+    img = np.zeros((12, 12, 3), np.float32)
+    img[:, ::2] = 1.0
+    target = torch.as_tensor(img)
+    initial = _init.build_field(img, InitConfig(strategy="random", num_gaussians=8, seed=3))
+    objective_targets = []
+    metric_targets = []
+    residual_targets = []
+
+    def capture_pixel_loss(pred, objective_target, kind, eps, weight):
+        objective_targets.append(objective_target.detach().clone())
+        return _weighted_pixel_loss(pred, objective_target, kind, eps, weight)
+
+    def capture_mse(pred, metric_target):
+        metric_targets.append(metric_target)
+        return torch.mean((pred - metric_target) ** 2)
+
+    def capture_split(field, residual_target, render_img, cfg, support_fade_alpha=None):
+        residual_targets.append(residual_target)
+        return _split_from_residual(
+            field,
+            residual_target,
+            render_img,
+            cfg,
+            support_fade_alpha=support_fade_alpha,
+        )
+
+    monkeypatch.setattr("structsplat.fit._weighted_pixel_loss", capture_pixel_loss)
+    monkeypatch.setattr(M, "mse", capture_mse)
+    monkeypatch.setattr("structsplat.fit._split_from_residual", capture_split)
+    out = fit(
+        initial,
+        target,
+        FitConfig(
+            iters=4,
+            log_every=1,
+            ssim_weight=0.0,
+            checkpoint_policy="best_psnr_final_count",
+            loss_target_downsample=2,
+            loss_target_full_frac=0.5,
+            split_every=3,
+            split_count=1,
+            split_mode="residual_add",
+            max_gaussians=9,
+            render_chunk=8,
+        ),
+        verbose=False,
+    )
+
+    assert out["history"]["loss_target_full_weight"] == pytest.approx(
+        [0.0, 0.5, 1.0, 1.0]
+    )
+    assert not torch.equal(objective_targets[0], target)
+    assert torch.equal(objective_targets[-1], target)
+    assert metric_targets and all(metric_target is target for metric_target in metric_targets)
+    assert residual_targets == [target]
+    assert out["loss_target_downsample"] == 2
+    assert out["loss_target_full_frac"] == pytest.approx(0.5)
+    assert all(count == out["trajectory_terminal_n_gaussians"] for count in (
+        out["selected_n_gaussians"], out["n_gaussians"]
+    ))
+
+
+@pytest.mark.parametrize(
+    ("extra", "message"),
+    [
+        ({"split_every": 2, "split_count": 1}, "split event"),
+        ({"prune_every": 2, "prune_min_activity": 0.1}, "prune event"),
+        ({"relocate_every": 2, "relocate_count": 1}, "relocate event"),
+        (
+            {
+                "adaptive_count": True,
+                "adaptive_growth_every": 2,
+                "max_gaussians": 16,
+            },
+            "adaptive growth event",
+        ),
+        ({"early_stop_patience": 1, "early_stop_min_iters": 0}, "early stopping"),
+    ],
+)
+def test_loss_target_curriculum_rejects_events_before_full_target(extra, message):
+    img = np.zeros((8, 8, 3), np.float32)
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=4, seed=0))
+    cfg = FitConfig(
+        iters=10,
+        loss_target_downsample=2,
+        loss_target_full_frac=0.5,
+        **extra,
+    )
+
+    with pytest.raises(ValueError, match=message):
+        fit(field, target, cfg, verbose=False)
 
 
 def test_terminal_checkpoint_policy_adds_no_selection_evaluations(monkeypatch):

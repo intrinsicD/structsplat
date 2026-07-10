@@ -99,6 +99,7 @@ def test_best_diff_reduction_variants_apply_fit_overrides(tmp_path: Path):
         F.BEST_COSINE_METHOD: ("lr_schedule", "cosine"),
         F.BEST_COSINE_TAIL_METHOD: ("lr_schedule", "cosine"),
         F.BEST_CHECKPOINT_METHOD: ("checkpoint_policy", "best_psnr_final_count"),
+        F.BEST_CHECKPOINT_LOWPASS_METHOD: ("loss_target_downsample", 2),
         "structsplat_best_gcr015": ("geometry_loss_weight", 0.015),
         "structsplat_best_gcr015_e2": ("geometry_loss_weight", 0.015),
         "structsplat_best_gcr015_e4": ("geometry_loss_weight", 0.015),
@@ -203,6 +204,59 @@ def test_best_diff_reduction_variants_apply_fit_overrides(tmp_path: Path):
     assert meta["variant_overrides"]["adaptive_cap_multiplier"] == F.ADAPTIVE_EXTRA_CAP_MULT
 
 
+def test_lowpass_candidate_differs_from_checkpoint_control_in_exactly_two_fields(tmp_path):
+    img = np.full((24, 24, 3), 0.5, dtype=np.float32)
+    image_path = tmp_path / "target.png"
+    Image.fromarray((img * 255).astype(np.uint8), mode="RGB").save(image_path)
+    base = FitConfig(iters=50, pixel_loss="l2", ssim_weight=0.9)
+
+    built = {}
+    metadata = {}
+    for method in (F.BEST_CHECKPOINT_METHOD, F.BEST_CHECKPOINT_LOWPASS_METHOD):
+        _field, cfg, _seconds, _actual_start, meta = F._build_method(
+            method=method,
+            img=img,
+            image_path=image_path,
+            final_budget=200,
+            start_budget=100,
+            seed=3,
+            base_fit=base,
+            scfg=StructureTensorConfig(),
+            growth_waves=4,
+            device="cpu",
+        )
+        built[method] = cfg
+        metadata[method] = meta
+
+    control = built[F.BEST_CHECKPOINT_METHOD]
+    candidate = built[F.BEST_CHECKPOINT_LOWPASS_METHOD]
+    differences = {
+        name: (getattr(control, name), getattr(candidate, name))
+        for name in control.__dict__
+        if getattr(control, name) != getattr(candidate, name)
+    }
+    assert differences == {
+        "loss_target_downsample": (1, 2),
+        "loss_target_full_frac": (0.0, 0.1),
+    }
+    assert candidate.checkpoint_policy == "best_psnr_final_count"
+    assert metadata[F.BEST_CHECKPOINT_LOWPASS_METHOD]["variant_overrides"][
+        "loss_target_downsample"
+    ] == 2
+    assert metadata[F.BEST_CHECKPOINT_LOWPASS_METHOD]["variant_overrides"][
+        "loss_target_full_frac"
+    ] == pytest.approx(0.1)
+
+
+def test_fair_method_registry_metadata_is_complete():
+    registered = set(F.DEFAULT_METHODS)
+    assert set(F.METHOD_LABELS) == registered
+    assert set(F.METHOD_NOTES) == registered
+    assert set(F.METHOD_TRACKS) == registered
+    assert F.BEST_CHECKPOINT_LOWPASS_METHOD in F.STRUCTSPLAT_INIT
+    assert F.BEST_CHECKPOINT_LOWPASS_METHOD in F.STRUCTSPLAT_SPLIT_MODE
+
+
 def test_method_tracks_keep_growth_methods_at_same_start_budget(tmp_path):
     args = SimpleNamespace(
         iters=10,
@@ -271,6 +325,111 @@ def test_checkpoint_audit_is_same_trajectory_and_same_count():
     assert F._checkpoint_selection_audit([row]) == []
 
 
+def test_lowpass_audit_pairs_candidate_with_checkpoint_control():
+    rows = []
+    control_cfg = FitConfig(
+        iters=500,
+        checkpoint_policy="best_psnr_final_count",
+        color_solve_schedule="none",
+    )
+    candidate_cfg = FitConfig(**{
+        **control_cfg.__dict__,
+        "loss_target_downsample": 2,
+        "loss_target_full_frac": 0.1,
+    })
+    for image in ("a", "b"):
+        for seed in (0, 1):
+            common = {
+                "status": "ok",
+                "image": image,
+                "source_path": f"/{image}.png",
+                "target_pixel_sha256": f"pixels-{image}",
+                "max_side": 160,
+                "height": 120,
+                "width": 160,
+                "final_budget": 640,
+                "start_budget": 320,
+                "start_gaussians": 320,
+                "start_fraction": 0.5,
+                "growth_waves": 5,
+                "seed": seed,
+                "iters": 500,
+                "renderer": "cuda",
+                "support_fade": False,
+                "run_protocol_sha256": "same-protocol",
+                "selected_iter": 450,
+                "checkpoint_policy": "best_psnr_final_count",
+                "n_gaussians": 640,
+                "trajectory_terminal_n_gaussians": 640,
+                "selected_n_gaussians": 640,
+            }
+            rows.append({
+                **common,
+                "method": F.BEST_CHECKPOINT_METHOD,
+                "fit_config": dict(control_cfg.__dict__),
+                "psnr": 30.0,
+                "ms_ssim": 0.90,
+                "auc_psnr": 24.0,
+                "fit_seconds": 2.0,
+                "total_seconds": 2.1,
+                "lpips": 0.20,
+                "trajectory_terminal_psnr": 29.0,
+                "trajectory_terminal_ssim": 0.88,
+                "trajectory_terminal_ms_ssim": 0.89,
+                "trajectory_terminal_lpips": 0.21,
+            })
+            rows.append({
+                **common,
+                "method": F.BEST_CHECKPOINT_LOWPASS_METHOD,
+                "fit_config": dict(candidate_cfg.__dict__),
+                "psnr": 31.0,
+                "ms_ssim": 0.91,
+                "auc_psnr": 24.5,
+                "fit_seconds": 2.1,
+                "total_seconds": 2.2,
+                "lpips": 0.18,
+                "trajectory_terminal_psnr": 29.5,
+                "trajectory_terminal_ssim": 0.89,
+                "trajectory_terminal_ms_ssim": 0.90,
+                "trajectory_terminal_lpips": 0.19,
+            })
+
+    pairs, summary = F._paired_method_audit(
+        rows,
+        baseline_method=F.BEST_CHECKPOINT_METHOD,
+        candidate_method=F.BEST_CHECKPOINT_LOWPASS_METHOD,
+    )
+
+    assert len(pairs) == 4
+    assert all(row["gain_psnr"] == 1.0 for row in pairs)
+    assert all(row["gain_lpips"] == pytest.approx(0.02) for row in pairs)
+    assert summary is not None
+    assert summary["pairs"] == 4
+    assert summary["paired_images"] == 2
+    assert summary["gain_psnr"] == 1.0
+    assert summary["gain_ms_ssim"] == pytest.approx(0.01)
+    assert summary["gain_fit_seconds"] == pytest.approx(-0.1)
+    assert summary["gain_lpips"] == pytest.approx(0.02)
+    assert summary["gain_terminal_psnr"] == pytest.approx(0.5)
+    assert summary["gain_terminal_ms_ssim"] == pytest.approx(0.01)
+    assert summary["gain_terminal_lpips"] == pytest.approx(0.02)
+
+    bad_rows = [dict(row) for row in rows]
+    bad_candidate = next(
+        row for row in bad_rows if row["method"] == F.BEST_CHECKPOINT_LOWPASS_METHOD
+    )
+    bad_candidate["fit_config"] = {
+        **bad_candidate["fit_config"],
+        "ssim_weight": 0.2,
+    }
+    with pytest.raises(ValueError, match="fit configs differ outside"):
+        F._paired_method_audit(
+            bad_rows,
+            baseline_method=F.BEST_CHECKPOINT_METHOD,
+            candidate_method=F.BEST_CHECKPOINT_LOWPASS_METHOD,
+        )
+
+
 def test_base_fit_and_cell_key_include_support_fade_axis():
     args = SimpleNamespace(
         iters=10,
@@ -307,6 +466,20 @@ def test_base_fit_and_cell_key_include_support_fade_axis():
     assert fade_off != fade_on
     assert fade_off[11] is False
     assert fade_on[11] is True
+    assert F._cell_key(row) != F._cell_key({
+        **row,
+        "loss_target_downsample": 2,
+        "loss_target_full_frac": 0.1,
+    })
+    assert F._cell_key({
+        **row,
+        "loss_target_downsample": 2,
+        "loss_target_full_frac": 0.1,
+    }) != F._cell_key({
+        **row,
+        "loss_target_downsample": 2,
+        "loss_target_full_frac": 0.2,
+    })
 
 
 def test_promotion_pair_key_requires_identical_input_provenance_and_protocol_axes():
@@ -376,6 +549,13 @@ def test_write_outputs_compacts_resume_journal_to_selected_rows(tmp_path: Path, 
         json.dumps(stale) + "\n" + json.dumps(current) + "\n",
         encoding="utf-8",
     )
+    optional_outputs = (
+        "checkpoint_selection.csv",
+        "lowpass_vs_checkpoint.csv",
+        "lowpass_vs_checkpoint_summary.csv",
+    )
+    for name in optional_outputs:
+        (tmp_path / name).write_text("stale\n", encoding="utf-8")
     for name in (
         "write_json",
         "write_csv",
@@ -395,6 +575,7 @@ def test_write_outputs_compacts_resume_journal_to_selected_rows(tmp_path: Path, 
         for line in (tmp_path / "metrics.jsonl").read_text(encoding="utf-8").splitlines()
     ]
     assert compacted == [current]
+    assert all(not (tmp_path / name).exists() for name in optional_outputs)
 
 
 def test_repo_growth_methods_honor_non_half_start_budget(tmp_path: Path):
@@ -529,6 +710,8 @@ def test_write_index_links_summary_metrics_and_images(tmp_path: Path):
     (tmp_path / "plots").mkdir()
     (tmp_path / "grids" / "by_image").mkdir(parents=True)
     (tmp_path / "grids" / "by_budget").mkdir(parents=True)
+    (tmp_path / "convergence_curves.csv").write_text("iter\n", encoding="utf-8")
+    (tmp_path / "target_hit_rates.csv").write_text("target\n", encoding="utf-8")
     Image.new("RGB", (8, 8), "white").save(tmp_path / "plots" / "mean_psnr_by_budget.png")
     Image.new("RGB", (8, 8), "white").save(tmp_path / "grids" / "by_image" / "example.png")
     F._write_index(tmp_path, ["gaussianimage_fixed_full", "gaussianimage_plus_residual"])
@@ -537,6 +720,7 @@ def test_write_index_links_summary_metrics_and_images(tmp_path: Path):
     assert "metrics.csv" in text
     assert "convergence_curves.csv" in text
     assert "target_hit_rates.csv" in text
+    assert "lowpass_vs_checkpoint.csv" not in text
     assert "absolute difference row" in text
     assert "mean_psnr_by_budget.png" in text
     assert "example.png" in text

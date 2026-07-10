@@ -8,32 +8,77 @@ method with zero ok rows yields ``None`` rather than raising ``StatisticsError``
 from __future__ import annotations
 
 import hashlib
+import importlib.metadata
 import json
 import math
 import os
 from pathlib import Path
 from statistics import mean, pstdev
 import subprocess
+import sys
 
 
 def package_versions() -> dict:
-    """Versions that move the numbers: torch (+CUDA), numpy, and structsplat itself."""
-    out = {}
+    """Runtime, metric, and hardware identity that can move benchmark numbers."""
+    out = {
+        "python": sys.version,
+        "python_executable": str(Path(sys.executable).resolve()),
+    }
     try:
         import torch
         out["torch"] = torch.__version__
         out["torch_cuda"] = getattr(torch.version, "cuda", None)
+        out["cudnn"] = torch.backends.cudnn.version()
         out["cuda_available"] = bool(torch.cuda.is_available())
+        out["cuda_devices"] = [
+            {
+                "index": index,
+                "name": props.name,
+                "uuid": str(getattr(props, "uuid", "")) or None,
+                "total_memory": int(props.total_memory),
+                "compute_capability": [int(props.major), int(props.minor)],
+                "multi_processor_count": int(props.multi_processor_count),
+            }
+            for index in range(torch.cuda.device_count())
+            for props in [torch.cuda.get_device_properties(index)]
+        ]
+        out["cuda_current_device"] = (
+            int(torch.cuda.current_device()) if torch.cuda.is_available() else None
+        )
     except Exception:
         out["torch"] = None
+        out["cuda_devices"] = []
+        out["cuda_current_device"] = None
+    try:
+        driver_lines = subprocess.check_output(
+            [
+                "nvidia-smi",
+                "--query-gpu=driver_version",
+                "--format=csv,noheader,nounits",
+            ],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).splitlines()
+        out["nvidia_driver_versions"] = sorted({line.strip() for line in driver_lines if line})
+    except (OSError, subprocess.CalledProcessError):
+        out["nvidia_driver_versions"] = None
     try:
         import numpy as np
         out["numpy"] = np.__version__
     except Exception:
         out["numpy"] = None
+    for key, distribution in (
+        ("lpips", "lpips"),
+        ("pillow", "pillow"),
+        ("pytorch_msssim", "pytorch-msssim"),
+        ("torchvision", "torchvision"),
+    ):
+        try:
+            out[key] = importlib.metadata.version(distribution)
+        except importlib.metadata.PackageNotFoundError:
+            out[key] = None
     try:
-        import importlib.metadata as _m
-        out["structsplat"] = _m.version("structsplat")
+        out["structsplat"] = importlib.metadata.version("structsplat")
     except Exception:
         try:
             import structsplat

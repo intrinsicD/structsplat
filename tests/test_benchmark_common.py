@@ -52,6 +52,19 @@ def test_common_image_auc_and_row_writers(tmp_path):
     assert config["repository"]["commit"]
     assert len(config["repository"]["tracked_diff_sha256"]) == 64
     assert isinstance(config["repository"]["untracked_files"], list)
+    for name in (
+        "python",
+        "python_executable",
+        "torch",
+        "torch_cuda",
+        "cudnn",
+        "cuda_devices",
+        "nvidia_driver_versions",
+        "lpips",
+        "torchvision",
+        "pytorch_msssim",
+    ):
+        assert name in config["versions"]
 
 
 def test_proxy_calibration_reports_rank_and_sign_agreement():

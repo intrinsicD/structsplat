@@ -188,6 +188,11 @@ class FitConfig:
     loss_weight_beta: float = 1.0      # tensor mode: w = 1 + beta * normalized tensor energy
     loss_warmup_iters: int = 0
     loss_warmup_pixel_loss: str = "l2"
+    # Optional frequency-ordering curriculum. A factor >1 first supervises against an
+    # area-downsampled/bilinear-upsampled target, then cosine-blends to the full target over
+    # this fraction of the global schedule. Defaults preserve the exact legacy objective.
+    loss_target_downsample: int = 1
+    loss_target_full_frac: float = 0.0
     ssim_weight: float = 0.3           # loss = (1-w)*L1 + w*(1-SSIM); Instant-GI/AIR default
     geometry_loss_weight: float = 0.0  # Sobel gradient-consistency regularizer; 0 disables
     geometry_loss_every: int = 1       # apply GCR every N steps; active weight scales by N
@@ -360,6 +365,30 @@ class FitConfig:
                 f"loss_weighting must be none or tensor, got {self.loss_weighting!r}")
         if self.loss_weight_beta < 0.0:
             raise ValueError(f"loss_weight_beta must be >= 0, got {self.loss_weight_beta}")
+        if (
+            isinstance(self.loss_target_downsample, bool)
+            or not isinstance(self.loss_target_downsample, int)
+            or self.loss_target_downsample < 1
+        ):
+            raise ValueError(
+                "loss_target_downsample must be an integer >= 1, "
+                f"got {self.loss_target_downsample!r}"
+            )
+        if not math.isfinite(self.loss_target_full_frac):
+            raise ValueError(
+                "loss_target_full_frac must be finite, "
+                f"got {self.loss_target_full_frac}"
+            )
+        if self.loss_target_downsample == 1:
+            if self.loss_target_full_frac != 0.0:
+                raise ValueError(
+                    "loss_target_full_frac must be 0 when loss_target_downsample=1"
+                )
+        elif not 0.0 < self.loss_target_full_frac <= 1.0:
+            raise ValueError(
+                "loss_target_full_frac must be in (0, 1] when "
+                f"loss_target_downsample>1, got {self.loss_target_full_frac}"
+            )
         if not math.isfinite(self.geometry_loss_weight) or self.geometry_loss_weight < 0.0:
             raise ValueError(
                 "geometry_loss_weight must be finite and >= 0, "
@@ -369,6 +398,20 @@ class FitConfig:
             raise ValueError(
                 "geometry_loss_every must be > 0, "
                 f"got {self.geometry_loss_every}"
+            )
+        if self.loss_target_downsample > 1 and self.geometry_loss_weight > 0.0:
+            raise ValueError(
+                "loss-target curriculum does not yet support geometry_loss_weight>0; "
+                "the scheduled gradient-target semantics must be defined first"
+            )
+        effective_color_solve_tokens = set(color_solve_tokens)
+        effective_color_solve_tokens.discard("none")
+        if self.color_solve_every is None or self.color_solve_every <= 0:
+            effective_color_solve_tokens.discard("every")
+        if self.loss_target_downsample > 1 and effective_color_solve_tokens:
+            raise ValueError(
+                "loss-target curriculum does not yet support color solving; "
+                "the scheduled solve-target semantics must be defined first"
             )
         if self.lambda_rate < 0.0:
             raise ValueError(f"lambda_rate must be >= 0, got {self.lambda_rate}")
@@ -386,6 +429,11 @@ class FitConfig:
         if self.ssim_backend not in ("builtin", "fused", "auto"):
             raise ValueError(
                 f"ssim_backend must be builtin, fused, or auto, got {self.ssim_backend!r}")
+        if not math.isfinite(self.prune_min_activity) or self.prune_min_activity < 0.0:
+            raise ValueError(
+                "prune_min_activity must be finite and >= 0, "
+                f"got {self.prune_min_activity}"
+            )
         has_factored_refine = (
             self.refine_site is not None
             or self.refine_primitive is not None

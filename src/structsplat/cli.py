@@ -93,6 +93,8 @@ def cmd_fit(args):
                      ssim_backend=args.ssim_backend,
                      loss_warmup_iters=args.loss_warmup_iters,
                      loss_warmup_pixel_loss=args.loss_warmup_pixel_loss,
+                     loss_target_downsample=args.loss_target_downsample,
+                     loss_target_full_frac=args.loss_target_full_frac,
                      compute_lpips=args.lpips,
                      renderer=args.renderer,
                      color_basis=args.color_basis,
@@ -422,6 +424,18 @@ def main():
     )
     f.add_argument("--loss-warmup-iters", type=int, default=0)
     f.add_argument("--loss-warmup-pixel-loss", choices=["l1", "l2", "charbonnier"], default="l2")
+    f.add_argument(
+        "--loss-target-downsample",
+        type=int,
+        default=1,
+        help="area-downsample factor for optional coarse-to-full loss-target curriculum",
+    )
+    f.add_argument(
+        "--loss-target-full-frac",
+        type=float,
+        default=0.0,
+        help="global fit fraction by which the loss target becomes the full image",
+    )
     f.add_argument("--ssim-weight", type=float, default=0.3)
     f.add_argument("--ssim-backend", choices=["builtin", "fused", "auto"], default="builtin")
     f.add_argument("--lpips", action="store_true", help="compute LPIPS after fitting")

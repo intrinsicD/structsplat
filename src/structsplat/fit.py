@@ -316,6 +316,88 @@ def _weighted_pixel_loss(pred: torch.Tensor, target: torch.Tensor, kind: str,
     return (loss_map * w).sum() / w.sum().clamp_min(1e-12)
 
 
+def _prepare_loss_target(target: torch.Tensor, downsample: int) -> torch.Tensor:
+    """Build one area-lowpass target at the original shape for loss supervision."""
+    if downsample == 1:
+        return target
+    height, width = target.shape[:2]
+    low_size = (max(1, height // downsample), max(1, width // downsample))
+    with torch.no_grad():
+        bchw = target.permute(2, 0, 1).unsqueeze(0)
+        low = F.interpolate(bchw, size=low_size, mode="area")
+        restored = F.interpolate(
+            low,
+            size=(height, width),
+            mode="bilinear",
+            align_corners=False,
+        )
+    return restored.squeeze(0).permute(1, 2, 0)
+
+
+def _loss_target_full_weight(
+    cfg: FitConfig,
+    it: int,
+    sched_offset: int = 0,
+    sched_total: int | None = None,
+) -> float:
+    """Cosine blend weight for the full target on the global fit schedule."""
+    if cfg.loss_target_downsample == 1:
+        return 1.0
+    total = max(1, sched_total if sched_total is not None else cfg.iters)
+    transition = float(cfg.loss_target_full_frac) * total
+    progress = min(1.0, max(0.0, (sched_offset + it) / transition))
+    return 0.5 * (1.0 - math.cos(math.pi * progress))
+
+
+def _validate_loss_target_schedule(
+    cfg: FitConfig,
+    *,
+    sched_offset: int,
+    sched_total: int | None,
+) -> None:
+    """Reject state-changing/stop events that can precede full-target supervision."""
+    if cfg.loss_target_downsample == 1:
+        return
+    total = max(1, sched_total if sched_total is not None else cfg.iters)
+    full_at = float(cfg.loss_target_full_frac) * total
+
+    early_events: list[tuple[str, int]] = []
+    if (
+        cfg.prune_every is not None
+        and 0 < cfg.prune_every <= cfg.iters
+        and cfg.prune_min_activity > 0.0
+    ):
+        early_events.append(("prune", int(cfg.prune_every)))
+    if (
+        cfg.split_every is not None
+        and 0 < cfg.split_every <= cfg.iters
+        and cfg.split_count > 0
+    ):
+        early_events.append(("split", int(cfg.split_every)))
+    if (
+        cfg.relocate_every is not None
+        and 0 < cfg.relocate_every <= cfg.iters
+        and cfg.relocate_count > 0
+    ):
+        early_events.append(("relocate", int(cfg.relocate_every)))
+    if cfg.adaptive_count and cfg.adaptive_growth_every <= cfg.iters:
+        early_events.append(("adaptive growth", int(cfg.adaptive_growth_every)))
+    for name, period in early_events:
+        first_event_iter = sched_offset + period - 1
+        if first_event_iter < full_at:
+            raise ValueError(
+                f"{name} event at global iteration {first_event_iter} occurs before the "
+                f"loss-target curriculum reaches the full target at {full_at:g}"
+            )
+    if cfg.early_stop_patience is not None:
+        first_permitted = sched_offset + int(cfg.early_stop_min_iters)
+        if first_permitted < full_at:
+            raise ValueError(
+                f"early stopping is permitted at global iteration {first_permitted} before "
+                f"the loss-target curriculum reaches the full target at {full_at:g}"
+            )
+
+
 _SOBEL_KERNEL_CACHE: dict[tuple[str, int, str, int], tuple[torch.Tensor, torch.Tensor]] = {}
 
 
@@ -1805,9 +1887,15 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             "checkpoint_policy='best_psnr_final_count' currently supports single-stage fits "
             "only; global schedule offsets would make selected-iteration metadata ambiguous"
         )
+    _validate_loss_target_schedule(
+        cfg,
+        sched_offset=sched_offset,
+        sched_total=sched_total,
+    )
     H, W = target.shape[0], target.shape[1]
     field = _ensure_generation_density_filter(field, cfg, H, W)
     pixel_weight = _prepare_loss_weight_map(target, cfg, loss_weight_map)
+    lowpass_loss_target = _prepare_loss_target(target, cfg.loss_target_downsample)
     target_geometry_gradients = (
         tuple(gradient.detach() for gradient in _sobel_gradients(target))
         if cfg.geometry_loss_weight > 0.0
@@ -1839,6 +1927,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         "split_events": [], "relocate_events": [], "color_solve_events": [],
         "adaptive_events": [], "qat_rate_bpp": [], "rate_loss": [],
         "support_fade_alpha": [], "tempered_new_rows": [], "geometry_loss": [],
+        "loss_target_full_weight": [],
     }
     checkpoint_history = (
         {"iter": [], "psnr": [], "n_gaussians": [], "terminal": []}
@@ -1964,13 +2053,33 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         # count that produced this render/PSNR, before any prune/split restructures the field;
         # logging the post-restructure field.n would pair a pre-step PSNR with a post-step N.
         n_at_render = field.n
+        loss_target_full_weight = _loss_target_full_weight(
+            cfg,
+            it,
+            sched_offset=sched_offset,
+            sched_total=sched_total,
+        )
+        if loss_target_full_weight <= 0.0:
+            objective_target = lowpass_loss_target
+        elif loss_target_full_weight >= 1.0:
+            objective_target = target
+        else:
+            objective_target = torch.lerp(
+                lowpass_loss_target,
+                target,
+                loss_target_full_weight,
+            )
         pix = _weighted_pixel_loss(
-            img, target, _loss_kind(cfg, it), cfg.charbonnier_eps, pixel_weight
+            img,
+            objective_target,
+            _loss_kind(cfg, it),
+            cfg.charbonnier_eps,
+            pixel_weight,
         )
         if cfg.ssim_weight == 0.0:
             loss = pix
         else:
-            s = M.ssim(img, target, backend=cfg.ssim_backend)
+            s = M.ssim(img, objective_target, backend=cfg.ssim_backend)
             loss = (1 - cfg.ssim_weight) * pix + cfg.ssim_weight * (1 - s)
         geometry_loss = None
         if (
@@ -2290,6 +2399,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             hist["geometry_loss"].append(
                 None if geometry_loss is None else float(geometry_loss.detach().cpu())
             )
+            hist["loss_target_full_weight"].append(float(loss_target_full_weight))
             if verbose:
                 print(f"  iter {it:5d}  psnr {p_now:6.2f}  loss {loss.item():.5f}")
             if cfg.early_stop_patience is not None and it >= cfg.early_stop_min_iters:
@@ -2406,6 +2516,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             "qat_codec_config": qat_ccfg,
             "loss_weighting": cfg.loss_weighting,
             "loss_weight_beta": float(cfg.loss_weight_beta),
+            "loss_target_downsample": int(cfg.loss_target_downsample),
+            "loss_target_full_frac": float(cfg.loss_target_full_frac),
             "geometry_loss_weight": float(cfg.geometry_loss_weight),
             "geometry_loss_every": int(cfg.geometry_loss_every),
             "lr_schedule": cfg.lr_schedule,

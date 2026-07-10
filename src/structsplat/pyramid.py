@@ -130,7 +130,14 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
     level_summaries = []
     # global (across-level) trajectory so convergence metrics cover the WHOLE pyramid run,
     # not just the final level's re-fit
-    combined = {"iter": [], "psnr": [], "loss": [], "n_gaussians": [], "elapsed": []}
+    combined = {
+        "iter": [],
+        "psnr": [],
+        "loss": [],
+        "n_gaussians": [],
+        "elapsed": [],
+        "loss_target_full_weight": [],
+    }
     combined_itt: dict[str, int | None] = {}
     fit_seconds_total = 0.0
     iter_offset = 0            # actual iterations run so far (history axis)
@@ -143,6 +150,16 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
     level_iters = _level_iters(pcfg)
     sched_total = sum(level_iters)
     budgets = _allocate_budget(total, fracs)   # sums exactly to `total`
+    if fcfg.loss_target_downsample > 1:
+        full_target_at = float(fcfg.loss_target_full_frac) * sched_total
+        for lvl in range(1, len(budgets)):
+            boundary = sum(level_iters[:lvl])
+            if budgets[lvl] > 0 and boundary < full_target_at:
+                raise ValueError(
+                    f"pyramid level {lvl} adds {budgets[lvl]} Gaussians at global iteration "
+                    f"{boundary} before the loss-target curriculum reaches the full target "
+                    f"at {full_target_at:g}"
+                )
     for lvl, frac in enumerate(fracs):
         level_it = level_iters[lvl]
         level_offset = sum(level_iters[:lvl])
@@ -187,7 +204,7 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
         h = out["history"]
         combined["iter"] += [iter_offset + i for i in h["iter"]]
         combined["elapsed"] += [elapsed_offset + e for e in h["elapsed"]]
-        for k in ("psnr", "loss", "n_gaussians"):
+        for k in ("psnr", "loss", "n_gaussians", "loss_target_full_weight"):
             combined[k] += h[k]
         for key, v in out.get("iters_to_targets", {}).items():
             combined_itt.setdefault(key, None)

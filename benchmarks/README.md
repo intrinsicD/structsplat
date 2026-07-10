@@ -138,7 +138,10 @@ growth, 5 growth waves, and `L1 + 0.3 SSIM`. Keep this row in default comparison
 the current best-known StructSplat reference even when global CLI loss or growth options change.
 Additional default candidate rows explore lower/no SSIM, Charbonnier, tensor-weighted loss, final
 color solve, split relocation, LR stabilization, same-final-count checkpoint selection, and
-adaptive extra capacity (`1.5x` cap) for reducing absolute diff.
+adaptive extra capacity (`1.5x` cap) for reducing absolute diff. The experimental
+`structsplat_best_checkpoint_lowpass2x_f10` arm adds frequency-ordered supervision to the
+checkpoint control: it trains against a 2x area-lowpass target initially and cosine-blends to the
+full target by 10% of the global horizon.
 The summary includes a default-promotion check: a candidate must beat the pinned row on paired mean
 PSNR, MS-SSIM, AUC, fit seconds, and total seconds before the benchmark default should be updated.
 It also writes `default_dominance.csv` and a compact strict-dominance table. Deltas are expressed as
@@ -166,6 +169,17 @@ policy selected earlier states in 7/8 runs and gained +0.7702 dB PSNR, +0.00892 
 +0.0076 LPIPS on average. At 500 steps it selected an earlier state only once, for a negligible
 +0.0066 dB mean PSNR gain with small SSIM/LPIPS tradeoffs. It is therefore a long-horizon quality
 option, not the pinned general default.
+
+FIT-016 keeps the low-pass image strictly inside the differentiable pixel/SSIM objective. All
+reported metrics, target hits, early stopping, checkpoint scores, and residual/tensor growth use
+the original full target. `history.loss_target_full_weight` makes the changing objective explicit,
+and stage offsets preserve one global schedule. Ambiguous combinations (geometry loss, color
+solve, or count-changing/stop events before the full-target boundary) fail closed. When the
+checkpoint control and low-pass arm are requested together, the harness writes
+`lowpass_vs_checkpoint.csv` and `lowpass_vs_checkpoint_summary.csv`; these isolate the incremental
+curriculum effect, while `default_dominance.csv` necessarily includes both checkpoint and
+curriculum changes. This candidate approximates LIG's frequency ordering; it does not claim LIG's
+separate residual fields or memory behavior.
 
 FIT-013 adds opt-in geometry-consistency rows (`structsplat_best_gcr015`, `gcr030`, `gcr060`, and
 intermittent variants). These apply target-gradient-weighted Sobel supervision on top of the pinned

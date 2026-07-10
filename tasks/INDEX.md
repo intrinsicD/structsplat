@@ -25,6 +25,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | FIT-013 | Geometry-consistent Sobel regularization | partial — quality candidate validated on COCO proxy and Kodak4; speed blocks promotion | FIT-005/006/007, ABL-004 |
 | FIT-014 | Generation-density covariance filtering | implemented/screened — exact and weaker cohort filters lose the COCO4 proxy; default off | FIT-004, CORE-002, COMP-002, BENCH-002 |
 | FIT-015 | Same-final-count best-PSNR checkpoint selection | implemented/screened — strong 5k endpoint gains, neutral 500-step guard; opt-in pending broader promotion | FIT-001/002, ABL-004, BENCH-005 |
+| FIT-016 | Coarse-to-full loss-target curriculum | implemented/unit-tested — 2x low-pass to full target by 10%; bounded proxy pending | FIT-015, HIER-003/004, ABL-004, BENCH-002 |
 
 ## Retired Done Tasks
 
