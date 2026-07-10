@@ -124,10 +124,12 @@ FIT-015 adds opt-in `checkpoint_policy=best_psnr_final_count`. It selects only p
 states with the terminal Gaussian count and writes a same-trajectory audit. On COCO4 x seeds 0/1,
 640 Gaussians, and 5k steps, 7/8 runs selected an earlier full-count state and improved their own
 terminal means by +0.7702 dB PSNR, +0.00892 MS-SSIM, and +0.0076 LPIPS gain. At 500 steps it kept
-the terminal state in 7/8 runs and was effectively neutral. Keep the pinned default unchanged
-until broader budget/resolution evidence resolves AUC, speed, and metric tradeoffs; use the
-checkpoint policy for long-horizon quality runs. FIT-013's Sobel loss and FIT-014's covariance
-filter remain experimental and default-off.
+the terminal state in 7/8 runs and was effectively neutral. A 72-trajectory Kodak4 confirmation
+across max-side {160,240,320} and N={1280,2560,5120} gained +0.4884 dB pooled PSNR, but the gain
+fell from +1.0380 dB at N=1280 to +0.0458 dB at N=5120. Keep the compute-minimal terminal policy
+as the universal default; use checkpoint selection for sparse/moderate-density long-horizon
+quality runs. FIT-013's Sobel loss and FIT-014's covariance filter remain experimental and
+default-off.
 
 ## Verification status
 Init-time math is validated numerically in this environment: structure-tensor orientation/labels,

@@ -43,8 +43,8 @@ sessions:
     open_threads: 6
   - id: "2026-07-10_001"
     date: "2026-07-10"
-    summary: "Hardened fair/native auditing; added same-final-count checkpoint selection; rebuilt official Image-GS and GaussianImage environments; completed bounded 500/5k native lanes; and kept the balanced terminal default unchanged."
-    turn_count: 12
-    events_count: 40
-    claims_touched: [C12, C13, C14, C15, C16, C17, C18, C19, C20]
-    open_threads: 15
+    summary: "Hardened fair/native auditing; confirmed density-dependent checkpoint protection; rejected the low-pass curriculum; audited GaussianImage release/QAT rate semantics; and kept the compute-minimal terminal default."
+    turn_count: 13
+    events_count: 49
+    claims_touched: [C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23]
+    open_threads: 16

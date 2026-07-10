@@ -472,3 +472,36 @@ observations:
     promoted_to: "logic/claims.md:C20"
     crystallized_via: artifact-commitment
     stale: false
+  - id: O44
+    timestamp: "2026-07-10T18:29+0200"
+    provenance: ai-suggested
+    content: "A 2x low-pass loss-target warmup over the first 10% of the pinned checkpoint recipe is not default-worthy: its exact 500-step checkpoint-controlled screen loses selected PSNR, MS-SSIM, and AUC, and therefore fails the preregistered guard for long-horizon confirmation."
+    context: "FIT-016 implemented the curriculum with full-target reporting/growth/scoring invariants, ran COCO4 x two seeds, stopped before 5k after a -0.1645 dB selected-PSNR gain with wholly negative CI, and committed the default-off decision."
+    potential_type: claim
+    bound_to: [N92, N93, N94]
+    promoted: true
+    promoted_to: "logic/claims.md:C21"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O45
+    timestamp: "2026-07-10T18:29+0200"
+    provenance: ai-suggested
+    content: "Same-final-count checkpoint selection is a confirmed sparse/moderate-density long-fit safeguard rather than a universal default: its 72-trajectory Kodak4 result is strongly positive pooled, but the gain falls from +1.0380 dB at N=1280 to +0.0458 dB at N=5120 and misses the every-stratum promotion rule."
+    context: "FIT-015 broadened its causal within-trajectory audit across three resolutions, three final counts, two seeds, and four images; tasks/docs now recommend the policy by density while retaining terminal as compute-minimal default."
+    potential_type: claim
+    bound_to: [N95, N96]
+    promoted: true
+    promoted_to: "logic/claims.md:C22"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O46
+    timestamp: "2026-07-10T18:29+0200"
+    provenance: ai-suggested
+    content: "The released GaussianImage Cholesky no-EC lane is a 50k representation plus 50k QAT protocol whose fixed-width analytical rate is 56N+1728 bits; its in-memory dictionary omits live decoder state and therefore cannot support non-null actual serialized bytes or bpp."
+    context: "A source-hash-bound audit of the official Kodak scripts, quantizers, compress/decompress functions, and analysis function narrowed the next BENCH-005 slice and corrected the release/RD claim boundary in benchmark/task docs."
+    potential_type: claim
+    bound_to: [N97]
+    promoted: true
+    promoted_to: "logic/claims.md:C23"
+    crystallized_via: artifact-commitment
+    stale: false

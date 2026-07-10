@@ -333,3 +333,11 @@ entries:
       - "Staged then crystallized O40->H06 and O41->H07 via artifact commitment because final-count correctness and same-trajectory causal attribution are now enforced in implementation and benchmark reporting."
       - "Found no contradiction with C12, C15, or C16: official environments refine prior algorithm-profile values, while every result remains bounded by horizon, metric, resolution, seed, and timing protocol; no dominance or default-promotion criterion was jointly satisfied."
       - "Kept `structsplat_best_default` and terminal checkpointing pinned, exposed checkpoint selection only as a long-horizon opt-in, and left BENCH-005 partial pending broader native-resolution, multi-budget, 50k/QAT-RD, and Instant-GI evidence."
+  - turn: "2026-07-10_001#13"
+    notes:
+      - "Routed FIT-016 as N92-N94 because implementation, exact-treatment evidence, a preregistered guard failure, and the stop/default-off decision form an empirically closed experiment/dead-end/decision chain."
+      - "Routed the 72-trajectory FIT-015 confirmation as N95-N96 because it resolves the prior broader-resolution/count thread while preserving a density-bounded opt-in rather than universal promotion."
+      - "Routed the GaussianImage release/RD source audit as N97 because it commits the next native lane and prevents analytical no-EC tensors from being mislabeled as actual serialized bytes."
+      - "Staged then crystallized O44->C21, O45->C22, and O46->C23 via artifact commitment because tasks, benchmark docs, default choices, and newly curated evidence now depend on these bounded conclusions."
+      - "Found no contradiction with C18 or C20: C22 confirms and narrows the checkpoint recommendation by density, while C23 narrows the still-open GaussianImage codec/RD scope without changing the earlier 5k representation tradeoff."
+      - "Preserved user/workspace `.idea` state outside every task commit and closed the recovered continuation only after full-suite and independent audit evidence."

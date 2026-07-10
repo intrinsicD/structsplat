@@ -2014,3 +2014,122 @@ tree:
       - "tasks/BENCH-005-native-reference-pipelines.md"
     also_depends_on: [N84, N88, N89, N90]
     status: resolved
+  - id: N92
+    type: experiment
+    title: "FIT-016 low-pass loss-target curriculum screen"
+    provenance: ai-executed
+    timestamp: "2026-07-10T18:29+0200"
+    result: >
+      Implemented a globally offset-safe 2x area-low-pass target that cosine-blends to the full
+      image over the first 10% of training, while keeping reporting, target hits, early stopping,
+      checkpoint scoring, residual growth, and export on the full target. Added fail-closed
+      interaction validation, CLI/stage-search exposure, an exact-treatment paired audit, expanded
+      runtime provenance, and regression coverage. On COCO4 x seeds0/1, cap640/start320, 500 steps,
+      the candidate lost 0.1645 dB selected PSNR (95% image-bootstrap CI
+      [-0.2856,-0.0677]), 0.00068 MS-SSIM, 0.0716 AUC, and 0.0030 LPIPS gain versus its checkpoint
+      control. The full repository suite passed 389 tests.
+    evidence:
+      - "ara/evidence/fit016-lowpass-curriculum-2026-07-10/run.md"
+      - "ara/evidence/fit016-lowpass-curriculum-2026-07-10/lowpass_vs_checkpoint_summary.csv"
+      - "tasks/FIT-016-low-pass-loss-target-curriculum.md"
+      - "src/structsplat/fit.py"
+    also_depends_on: [N87, N88]
+    status: resolved
+  - id: N93
+    type: dead_end
+    title: "Two-times low-pass warmup on the pinned checkpoint recipe"
+    provenance: ai-executed
+    timestamp: "2026-07-10T18:29+0200"
+    hypothesis: >
+      Frequency-ordered supervision transferred from multilevel Gaussian-image work would improve
+      early coverage and convergence without harming the selected full-resolution endpoint.
+    failure_mode: >
+      The exact checkpoint-controlled 500-step guard significantly lost selected PSNR, MS-SSIM,
+      and AUC; its unselected terminal endpoint lost 0.8949 dB PSNR. The small apparent time gain
+      and LPIPS delta both had intervals crossing zero.
+    lesson: >
+      Do not extend or retune this exact warmup on the same guard. StructSplat's structured
+      initialization and growth already supply a coarse-to-fine bias, and blurring the objective
+      delays useful high-frequency fitting at this horizon.
+    evidence:
+      - "N92"
+      - "ara/evidence/fit016-lowpass-curriculum-2026-07-10/"
+    also_depends_on: [N92]
+    status: resolved
+  - id: N94
+    type: decision
+    title: "Reject FIT-016 before long-horizon confirmation"
+    provenance: ai-executed
+    timestamp: "2026-07-10T18:29+0200"
+    choice: >
+      Stop before the planned 5,000-step run, leave `loss_target_downsample=1` as the default, and
+      retain the implemented curriculum only as an explicit research axis.
+    alternatives:
+      - "Run the 5k confirmation despite failing the preregistered short guard."
+      - "Tune the blend fraction or downsample factor on the same guard."
+      - "Promote the candidate from its inconclusive timing result."
+    evidence:
+      - "N92"
+      - "N93"
+      - "tasks/FIT-016-low-pass-loss-target-curriculum.md"
+    also_depends_on: [N92, N93]
+    status: resolved
+  - id: N95
+    type: experiment
+    title: "FIT-015 checkpoint confirmation across resolution and density"
+    provenance: ai-executed
+    timestamp: "2026-07-10T18:29+0200"
+    result: >
+      Ran 72 same-trajectory checkpoint audits on Kodak4 across max-side 160/240/320,
+      N=1280/2560/5120, seeds0/1, and 5,000 steps. Forty trajectories selected an earlier
+      same-final-count state. Image-clustered pooled gains were +0.4884 dB PSNR (95% CI
+      [+0.4167,+0.5304]), +0.00316 SSIM, +0.00433 MS-SSIM, and +0.00736 LPIPS. PSNR gain fell
+      monotonically by count from +1.0380 dB at N=1280 to +0.3812 at N=2560 and +0.0458 at
+      N=5120; the max-side-240/N=5120 stratum selected terminal in all eight runs. Added pooled
+      and per-budget image-clustered summary output to the harness.
+    evidence:
+      - "ara/evidence/fit015-checkpoint-broad-2026-07-10/run.md"
+      - "ara/evidence/fit015-checkpoint-broad-2026-07-10/checkpoint_selection_summary.csv"
+      - "ara/evidence/fit015-checkpoint-broad-2026-07-10/checkpoint_selection_matrix.csv"
+      - "tasks/FIT-015-full-count-checkpoint-selection.md"
+    also_depends_on: [N87, N88]
+    status: resolved
+  - id: N96
+    type: decision
+    title: "Recommend checkpoint selection by long-fit density"
+    provenance: ai-executed
+    timestamp: "2026-07-10T18:29+0200"
+    choice: >
+      Recommend `best_psnr_final_count` for sparse/moderate-density long-horizon quality runs when
+      its evaluation/snapshot overhead is acceptable, but retain `terminal` as the compute-minimal
+      universal default. The universal-promotion gate failed because not every
+      resolution-by-count stratum gained at least 0.10 dB.
+    alternatives:
+      - "Promote checkpoint selection universally from its positive pooled interval."
+      - "Discard checkpoint selection because saturated cells often keep terminal."
+      - "Choose a global density cutoff from only four images."
+    evidence:
+      - "N95"
+      - "tasks/FIT-015-full-count-checkpoint-selection.md"
+    also_depends_on: [N88, N95]
+    status: resolved
+  - id: N97
+    type: decision
+    title: "Scope the next GaussianImage lane to released Cholesky QAT semantics"
+    provenance: ai-executed
+    timestamp: "2026-07-10T18:29+0200"
+    choice: >
+      Treat the current base-GaussianImage adapter as representation-only. Implement the smallest
+      next native-authentic slice as `release_kodak_cholesky_qat_woec` on native-orientation
+      kodim01, N=800, seed1, 50k representation plus 50k QAT, with cold/in-memory decode checks,
+      central metrics, corrected `56N+1728` analytical bits, and null actual byte fields.
+    alternatives:
+      - "Call the existing release-labeled representation rows native-authentic RD evidence."
+      - "Treat the in-memory no-EC tensor dictionary as a serialized bitstream."
+      - "Start the full Kodak24 x six-count grid before validating one cold-reload cell."
+    evidence:
+      - "ara/evidence/bench005-gaussianimage-release-rd-audit-2026-07-10/run.md"
+      - "tasks/BENCH-005-native-reference-pipelines.md"
+      - "benchmarks/README.md"
+    also_depends_on: [N90, N91]
+    status: resolved

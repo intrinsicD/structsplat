@@ -2,9 +2,9 @@ session:
   id: "2026-07-10_001"
   date: "2026-07-10"
   started: "2026-07-10T11:14+0200"
-  last_turn: "2026-07-10T16:29+0200"
-  turn_count: 12
-  summary: "Hardened fair/native auditing; added correctness-safe same-final-count checkpoint selection; rebuilt official Image-GS and GaussianImage environments; completed bounded 500/5k native lanes; kept the balanced terminal default unchanged; and preserved horizon- and metric-specific claim boundaries."
+  last_turn: "2026-07-10T18:29+0200"
+  turn_count: 13
+  summary: "Hardened fair/native auditing; confirmed checkpoint selection as density-dependent long-fit protection; rejected the low-pass loss curriculum; audited GaussianImage release/QAT rate semantics; kept the compute-minimal terminal default; and preserved native claim boundaries."
 
 events_logged:
   - turn: 1
@@ -247,6 +247,60 @@ events_logged:
     routing: crystallized
     provenance: ai-suggested
     summary: "Crystallized the official base-GaussianImage horizon tradeoff as C20 via artifact commitment."
+  - turn: 13
+    type: experiment
+    id: "N92"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented and screened FIT-016's exact checkpoint-controlled low-pass loss-target curriculum; it failed the 500-step quality/convergence guard."
+  - turn: 13
+    type: dead_end
+    id: "N93"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rejected the 2x low-pass warmup after significant selected-PSNR/MS-SSIM/AUC losses and a larger terminal regression."
+  - turn: 13
+    type: decision
+    id: "N94"
+    routing: direct
+    provenance: ai-executed
+    summary: "Stopped FIT-016 before 5k confirmation, kept the curriculum default-off, and declined same-guard retuning."
+  - turn: 13
+    type: experiment
+    id: "N95"
+    routing: direct
+    provenance: ai-executed
+    summary: "Confirmed FIT-015 on 72 Kodak4 trajectories across three resolutions, three counts, and two seeds; pooled checkpoint gains were positive but shrank with density."
+  - turn: 13
+    type: decision
+    id: "N96"
+    routing: direct
+    provenance: ai-executed
+    summary: "Recommended same-final-count checkpoints for sparse/moderate-density long fits while retaining terminal as the universal compute-minimal default."
+  - turn: 13
+    type: decision
+    id: "N97"
+    routing: direct
+    provenance: ai-executed
+    summary: "Scoped the next GaussianImage lane to native Kodak Cholesky 50k+50k QAT with corrected analytical rate and null actual bytes."
+  - turn: 13
+    type: claim
+    id: "O44"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the rejected 2x low-pass checkpoint-controlled guard result as C21 via artifact commitment."
+  - turn: 13
+    type: claim
+    id: "O45"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized checkpoint selection's density-dependent long-fit benefit as C22 via artifact commitment."
+  - turn: 13
+    type: claim
+    id: "O46"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized GaussianImage's no-EC analytical-rate and live-decoder-state boundary as C23 via artifact commitment."
 
 ai_actions:
   - turn: 1
@@ -382,6 +436,26 @@ ai_actions:
       - "tasks/FIT-015-full-count-checkpoint-selection.md"
       - "ara/evidence/fit015-full-count-checkpoint-2026-07-10/"
       - "ara/evidence/bench005-official-native-references-2026-07-10/"
+  - turn: 13
+    action: "Recovered and adversarially reviewed the interrupted implementation; hardened native fingerprints/resume/artifact identity; implemented and rejected FIT-016; added direct-treatment and checkpoint-summary audits; completed 72-trajectory FIT-015 confirmation; audited GaussianImage release/QAT accounting; updated tasks/docs/ARA evidence; and passed the full 389-test suite plus focused audit, Ruff, and diff checks."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/config.py"
+      - "src/structsplat/fit.py"
+      - "src/structsplat/cli.py"
+      - "benchmarks/_util.py"
+      - "benchmarks/fair_density_control_compare.py"
+      - "benchmarks/native_gaussianimage_compare.py"
+      - "benchmarks/native_image_gs_compare.py"
+      - "benchmarks/native_reference_compare.py"
+      - "benchmarks/native_runners/"
+      - "tests/"
+      - "tasks/FIT-015-full-count-checkpoint-selection.md"
+      - "tasks/FIT-016-low-pass-loss-target-curriculum.md"
+      - "tasks/BENCH-005-native-reference-pipelines.md"
+      - "ara/evidence/fit015-checkpoint-broad-2026-07-10/"
+      - "ara/evidence/fit016-lowpass-curriculum-2026-07-10/"
+      - "ara/evidence/bench005-gaussianimage-release-rd-audit-2026-07-10/"
 
 claims_touched:
   - id: C12
@@ -411,6 +485,15 @@ claims_touched:
   - id: C20
     action: crystallized
     turn: 12
+  - id: C21
+    action: crystallized
+    turn: 13
+  - id: C22
+    action: crystallized
+    turn: 13
+  - id: C23
+    action: crystallized
+    turn: 13
 
 key_context:
   - turn: 1
@@ -437,6 +520,8 @@ key_context:
     excerpt: "The supplied review's two open gaps—native reference pipelines and stronger metrics/convergence evidence—were addressed with isolated Image-GS fixed/5k lanes; a separate upstream covariance-filter idea was implemented and empirically rejected rather than promoted."
   - turn: 12
     excerpt: "The supplied review motivated a correctness-safe long-horizon endpoint policy and official-environment Image-GS/GaussianImage reruns while preserving the conclusion that no method is universally dominant."
+  - turn: 13
+    excerpt: "After the prior Codex session was terminated, the user asked to continue the recovered objective: improve StructSplat, test ideas thoroughly, and adapt reference-repository benchmarks without losing the existing workspace state."
 
 open_threads:
   - "Continue iterating active tasks after this bounded ABL-004 benchmark-audit slice."
@@ -453,7 +538,7 @@ open_threads:
   - "For paper-grade external evidence, expand official Image-GS/GaussianImage/GaussianImage++ seeds, budgets, and native resolutions; add packed-stream bpp/RD and shared trajectory/timing protocols."
   - "Confirm dense GCR 0.015 on randomized all-Kodak, multi-seed, matched-Gaussians-per-pixel budgets with synchronized setup/train/eval timing and gradient-domain metrics before promotion."
   - "Do not promote persistent generation-density covariance filtering; only revisit a released/materialized coarse-to-fine schedule if a new proxy hypothesis justifies it."
-  - "Broaden FIT-015 across budgets and resolutions and decide whether checkpoint selection should optimize PSNR alone or a preregistered perceptual composite before any default promotion."
+  - "Use FIT-015 checkpoint selection for sparse/moderate-density long fits; only reconsider universal promotion after broader image coverage or a preregistered density/perceptual rule clears every stratum."
+  - "Implement the one-cell `release_kodak_cholesky_qat_woec` cold-reload/decode/rate validation before expanding GaussianImage to Kodak24 x six counts."
 
-ai_suggestions_pending:
-  - "Confirm or revise O30: N73 supports keeping `structsplat_best_default` unchanged; tensor loss and final color solve are specialist candidates, not defaults."
+ai_suggestions_pending: []

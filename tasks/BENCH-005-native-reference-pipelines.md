@@ -150,6 +150,16 @@ StructSplat matched-policy default-promotion gate.
   MS-SSIM, while StructSplat is +0.1207 dB PSNR, +0.0253 LPIPS gain, and +1.5337 AUC. The 5k
   result is a tradeoff. Artifacts: `results/native_gaussianimage_matched_500_official_two_seed/`
   and `results/native_gaussianimage_matched_5000_official_seed0/`.
+- Audited the released GaussianImage Kodak/RD path. The current adapter is representation-only:
+  `release_cholesky`/`release_rs` do not enforce native Kodak orientation (768x512 or 512x768),
+  the released count set, ordered seed-1 process semantics, or the second 50k QAT trajectory.
+  Released Kodak uses N={800,1000,3000,5000,7000,9000}, 50k representation + 50k QAT steps, and
+  best-training-PSNR QAT selection. Its `compress_wo_ec` output is not a self-contained stream;
+  the corrected fixed-width analytical rate is `56*N+1728` bits and actual codec bytes/bpp must
+  stay null. The
+  smallest faithful next slice is Cholesky-only `kodim01`, N=800, seed1, native resolution,
+  including cold checkpoint reload and in-memory quantized-decode equality before expanding to
+  Kodak24 x six counts.
 
 ## Next actions
 
@@ -162,8 +172,10 @@ StructSplat matched-policy default-promotion gate.
    proxy separate because it disables native growth.
 4. Add a real Image-GS packed-stream path before making codec-bpp/RD claims; do not reinterpret
    `analytical_bpp` as actual rate.
-5. Expand base GaussianImage to its published 50k/full-resolution profile and add its two-stage
-   QAT/RD ladder. Keep analytical rate separate from actual serialized bytes.
+5. Add `release_kodak_cholesky_qat_woec`: enforce native resolution/counts/order, run 50k
+   representation + 50k QAT, preserve upstream best-QAT selection, validate cold/in-memory decode,
+   and report both upstream and corrected `56*N+1728` analytical rates. Keep actual bytes/bpp null;
+   no released self-contained bitstream exists.
 6. Provision Instant-GI's `torch_kdtree`, native extensions, and learned checkpoint; report its
    adaptive N rather than truncating it into a fixed-N claim.
 

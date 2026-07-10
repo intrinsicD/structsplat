@@ -274,3 +274,57 @@ reference renderer is memory-bound. See `ara/evidence/core005-render-checkpoint-
 - **Dependencies**: [C13, C18, C19]
 - **Tags**: native-reference, GaussianImage, official-environment, convergence-horizon, metric-tradeoff
 - **From staging**: O43
+
+## C21: The 2x low-pass loss-target warmup fails the checkpoint-controlled guard
+
+- **Statement**: On COCO4 x seeds 0/1 at max-side 160, cap/start 640/320, and 500 steps, the
+  FIT-016 2x low-pass-to-full loss curriculum loses 0.1645 dB selected PSNR (95% image-bootstrap
+  CI [-0.2856,-0.0677]), 0.00068 MS-SSIM, and 0.0716 AUC versus the otherwise identical
+  same-final-count checkpoint control. It is not default-worthy and does not pass the
+  preregistered guard for a 5k confirmation.
+- **Status**: supported
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: A provenance-valid rerun of the same exact-treatment cells reverses
+  the selected-PSNR interval and quality/convergence direction, or a materially different
+  multiscale mechanism is incorrectly treated as evidence for this exact warmup.
+- **Proof**: [`ara/evidence/fit016-lowpass-curriculum-2026-07-10/run.md`, `ara/evidence/fit016-lowpass-curriculum-2026-07-10/lowpass_vs_checkpoint_summary.csv`]
+- **Dependencies**: [C12, C18]
+- **Tags**: loss-curriculum, low-pass, convergence, dead-end, default-selection
+- **From staging**: O44
+
+## C22: Checkpoint selection is density-dependent long-fit protection
+
+- **Statement**: Across 72 Kodak4 same-trajectory audits spanning max-side {160,240,320},
+  N={1280,2560,5120}, seeds 0/1, and 5,000 steps, same-final-count checkpoint selection gains
+  +0.4884 dB pooled PSNR (95% image-bootstrap CI [+0.4167,+0.5304]), +0.00433 MS-SSIM, and
+  +0.00736 LPIPS. The PSNR gain falls from +1.0380 dB at N=1280 to +0.0458 dB at N=5120, so
+  the policy is a confirmed sparse/moderate-density long-fit option but not the universal default.
+- **Status**: supported
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: A provenance-valid multi-image rerun removes the positive pooled
+  interval or density trend, selected/terminal endpoints violate equal-final-count semantics, or
+  broader evidence supports the preregistered >=+0.10 dB gain in every resolution/count stratum.
+- **Proof**: [`ara/evidence/fit015-checkpoint-broad-2026-07-10/run.md`, `ara/evidence/fit015-checkpoint-broad-2026-07-10/checkpoint_selection_summary.csv`, `ara/evidence/fit015-checkpoint-broad-2026-07-10/checkpoint_selection_matrix.csv`]
+- **Dependencies**: [C18]
+- **Tags**: checkpoint-selection, long-horizon, density, terminal-regression, default-selection
+- **From staging**: O45
+
+## C23: GaussianImage no-EC rate is analytical and depends on live decoder state
+
+- **Statement**: The released GaussianImage Cholesky Kodak path uses native-orientation images,
+  N={800,1000,3000,5000,7000,9000}, seed 1, 50k representation steps, and 50k QAT steps. Its
+  fixed-width no-entropy representation is `56N+1728` bits, but `compress_wo_ec()` omits live
+  quantizer decoder state; therefore this lane has analytical rate only and must report null
+  actual serialized bytes/bpp.
+- **Status**: supported
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: The hash-pinned official source is shown to serialize every required
+  codebook/scale/offset and payload byte, or a later upstream release adds a self-contained stream
+  whose exact bytes are measured and explicitly distinguished from this audited commit.
+- **Proof**: [`ara/evidence/bench005-gaussianimage-release-rd-audit-2026-07-10/run.md`, `tasks/BENCH-005-native-reference-pipelines.md`, `benchmarks/README.md`]
+- **Dependencies**: [C20]
+- **Tags**: native-reference, GaussianImage, QAT, analytical-rate, codec-boundary
+- **From staging**: O46

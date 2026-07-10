@@ -315,6 +315,19 @@ central metrics are recomputed, and stale journal rows are compacted away before
 `scripts/setup_native_gaussianimage_env.sh` provisions the isolated Python 3.10,
 Torch 2.0.0+cu118 build and records exact dependency/linkage provenance.
 
+The current base-GaussianImage adapter is representation-only. Its `release_cholesky` and
+`release_rs` names select covariance form but do not yet enforce the released Kodak protocol, so
+they must not be described as native-authentic release/RD runs. Upstream Kodak uses each image's
+native 768x512 or 512x768 orientation (393,216 pixels), N={800,1000,3000,5000,7000,9000}, one
+ordered seed-1 process per count, 50k representation steps, then another 50k QAT steps; final QAT
+evaluation selects the best training-PSNR state. `compress_wo_ec` returns an in-memory dictionary
+whose decoder metadata remains in the live model/checkpoint, not a self-contained serialized
+stream. The corrected fixed-width no-EC
+rate is `56*N + 1728` bits (for N=800: 46,528 bits, 5,816 ideal bytes, 0.118326823 bpp on Kodak),
+while `actual_codec_bytes`/`actual_bpp` must remain null. A native QAT profile must preserve these
+semantics, export representation and QAT trajectories separately, round-trip the in-memory decode,
+and report upstream versus corrected analytical rate without inventing a bitstream.
+
 ```
 LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 PYTHONPATH=src:. \
   python -m benchmarks.native_gaussianimage_compare \
