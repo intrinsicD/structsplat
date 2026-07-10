@@ -277,3 +277,8 @@ entries:
       - "Routed the ABL-005 split-protocol work as N68 because it produced committed benchmark runners, a parser fix, regression tests, and two local index.html smoke artifacts."
       - "Did not stage a fitter-knob quality claim from the smoke because it used two 32px COCO crops, one seed, budget 16, and four iterations; it validates protocol plumbing only."
       - "Kept ABL-005 partial because the decision-grade Kodak fair-regime shards and follow-up combo run remain open."
+  - turn: "2026-07-10_001#3"
+    notes:
+      - "Routed the ABL-005 CUDA-native fair shard start as N69 because it produced fair-regime rows, a local index.html benchmark artifact, committed copied evidence, runner changes, and validation output."
+      - "Did not stage or crystallize a default-promotion claim because the evidence is one image/budget/seed, lacks the color-solve arm, and is explicitly a partial shard."
+      - "Recorded the color-solve slowdown as execution context rather than a dead end: the arm remains valid but needs separate small shards or native acceleration."

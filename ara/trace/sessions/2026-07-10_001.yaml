@@ -2,9 +2,9 @@ session:
   id: "2026-07-10_001"
   date: "2026-07-10"
   started: "2026-07-10T11:14+0200"
-  last_turn: "2026-07-10T11:56+0200"
-  turn_count: 2
-  summary: "Added a fair-density default-promotion audit, recomputed the supplied HTML benchmark artifact, kept the pinned best default unchanged, then split ABL-005 into CUDA-native and affine quality-only influence shard runners with smoke evidence."
+  last_turn: "2026-07-10T12:11+0200"
+  turn_count: 3
+  summary: "Added a fair-density default-promotion audit, recomputed the supplied HTML benchmark artifact, kept the pinned best default unchanged, split ABL-005 into CUDA-native and affine quality-only influence shard runners, then started the CUDA-native fair shard with committed partial evidence."
 
 events_logged:
   - turn: 1
@@ -19,6 +19,12 @@ events_logged:
     routing: direct
     provenance: ai-executed
     summary: "Added ABL-005 CUDA-native and affine quality-only influence shard runners, fixed standalone background-mode parsing, and smoke-tested both scripts."
+  - turn: 3
+    type: experiment
+    id: "N69"
+    routing: direct
+    provenance: ai-executed
+    summary: "Started the ABL-005 CUDA-native fair shard, added axis overrides after the slow color-solve arm blocked mixed sharding, and committed partial fair-regime evidence."
 
 ai_actions:
   - turn: 1
@@ -42,6 +48,16 @@ ai_actions:
       - "tasks/ABL-005-fitter-knob-influence-fair-regime.md"
       - "tasks/INDEX.md"
       - "ara/evidence/abl005-split-protocol-smoke-2026-07-10/run.md"
+  - turn: 3
+    action: "Ran a bounded ABL-005 full-fair CUDA-native shard, interrupted the slow color-solve arm, added per-axis runner overrides, resumed fast arms, copied the index.html benchmark artifact into ARA evidence, validated, and committed."
+    provenance: ai-executed
+    files_changed:
+      - "scripts/run_abl005_cuda_native_influence.sh"
+      - "scripts/run_abl005_affine_quality_influence.sh"
+      - "benchmarks/README.md"
+      - "tasks/ABL-005-fitter-knob-influence-fair-regime.md"
+      - "tasks/INDEX.md"
+      - "ara/evidence/abl005-cuda-native-fair-shard-2026-07-10/"
 
 claims_touched: []
 
@@ -50,12 +66,16 @@ key_context:
     excerpt: "User asked to follow the agentic workflow, recompute the linked `index.html` benchmark after relevant changes, update the best default only if it beats current default on convergence, performance, and quality, and commit."
   - turn: 2
     excerpt: "User repeated the agentic workflow request; the selected next bounded task was ABL-005 split-protocol execution hygiene because native CUDA affine remains a known timing blocker."
+  - turn: 3
+    excerpt: "User repeated the agentic workflow request; the selected next bounded task was to start the ABL-005 CUDA-native fair shard and keep index.html evidence committed."
 
 open_threads:
   - "Continue iterating active tasks after this bounded ABL-004 benchmark-audit slice."
   - "Do not promote `structsplat_best_default` from this run; future candidates must pass the paired quality/convergence/speed promotion gate."
   - "Run/resume the ABL-005 CUDA-native shard on the fixed 8-image Kodak fair regime before any fitter-knob promotion."
   - "Run affine color-basis as quality/convergence-only evidence until native CUDA affine backward removes the timing confound."
+  - "Run `color_solve=every10` as its own small ABL-005 shard; broad mixed shards block on this slow arm."
+  - "Expand ABL-005 fast CUDA-native rows beyond the first `kodim01`/2k/seed0 cell before interpreting any deltas."
   - "Existing `.idea` changes are user/workspace state and remain outside the task commit."
 
 ai_suggestions_pending: []

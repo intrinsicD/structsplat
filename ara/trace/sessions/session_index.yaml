@@ -43,8 +43,8 @@ sessions:
     open_threads: 6
   - id: "2026-07-10_001"
     date: "2026-07-10"
-    summary: "Added fair-density default-promotion audit, recomputed supplied HTML benchmark artifact, left pinned default unchanged, and split ABL-005 into CUDA-native plus affine quality-only influence shard runners."
-    turn_count: 2
-    events_count: 2
+    summary: "Added fair-density default-promotion audit, recomputed supplied HTML benchmark artifact, left pinned default unchanged, split ABL-005 into CUDA-native plus affine quality-only influence shard runners, and started the CUDA-native fair shard with committed partial evidence."
+    turn_count: 3
+    events_count: 3
     claims_touched: []
-    open_threads: 5
+    open_threads: 7

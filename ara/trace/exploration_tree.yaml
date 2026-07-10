@@ -1489,3 +1489,31 @@ tree:
       - "commit 2d3f353"
     also_depends_on: [N67]
     status: resolved
+  - id: N69
+    type: experiment
+    title: "ABL-005 CUDA-native fair shard start"
+    provenance: ai-executed
+    timestamp: "2026-07-10T12:11+0200"
+    result: >
+      Started the decision-grade ABL-005 CUDA-native influence run on the fixed
+      Kodak fair regime. A broad 21-cell shard completed the first three
+      `kodim01`/budget-2000/seed-0 rows (baseline, `density=variance`, and
+      `opacity=constant`) and was interrupted when the next
+      `color_solve=every10` row proved too slow for a mixed shard. Added
+      per-axis environment overrides to the ABL-005 runners, then resumed the
+      same outdir with `COLOR_SOLVE_MODES=none` to complete
+      `loss=charbonnier`, `lr_schedule=cosine`, and
+      `refine=moment_preserving` for that cell. The run wrote local
+      `results/abl005_cuda_native_influence/index.html`; committed copied
+      evidence contains the HTML, config, CSV, summary, and influence table.
+      Single-cell deltas show positive PSNR for opacity, cosine, Charbonnier,
+      and moment-preserving, but this is not promotion evidence because it is
+      only one image/budget/seed and excludes the slow color-solve arm.
+    evidence:
+      - "ara/evidence/abl005-cuda-native-fair-shard-2026-07-10/run.md"
+      - "ara/evidence/abl005-cuda-native-fair-shard-2026-07-10/index.html"
+      - "ara/evidence/abl005-cuda-native-fair-shard-2026-07-10/influence.md"
+      - "results/abl005_cuda_native_influence/index.html"
+      - "commit 76e1412"
+    also_depends_on: [N68]
+    status: resolved
