@@ -996,6 +996,74 @@ def _target_summary(vals: list[dict[str, Any]], target: float) -> dict[str, floa
     }
 
 
+def _promotion_pair_key(row: dict[str, Any]) -> tuple[Any, ...]:
+    return (
+        row.get("source_path") or row.get("image"),
+        int(row.get("max_side", 0) or 0),
+        int(row.get("final_budget", 0) or 0),
+        int(row.get("start_budget", 0) or 0),
+        int(row.get("seed", 0) or 0),
+        int(row.get("iters", 0) or 0),
+        row.get("renderer"),
+    )
+
+
+def _promotion_checks(
+    rows: list[dict[str, Any]],
+    methods: list[str],
+    over_budget: set[str],
+) -> list[dict[str, Any]]:
+    default_rows = [r for r in rows if r.get("method") == BEST_DEFAULT_METHOD]
+    default_by_key = {_promotion_pair_key(r): r for r in default_rows}
+    out: list[dict[str, Any]] = []
+    for method in methods:
+        if (
+            method == BEST_DEFAULT_METHOD
+            or method not in BEST_VARIANT_METHODS
+            or method in over_budget
+        ):
+            continue
+        pairs: list[tuple[dict[str, Any], dict[str, Any]]] = []
+        for row in rows:
+            if row.get("method") != method:
+                continue
+            base = default_by_key.get(_promotion_pair_key(row))
+            if base is not None:
+                pairs.append((base, row))
+        if not pairs:
+            continue
+        d_psnr = [float(row["psnr"]) - float(base["psnr"]) for base, row in pairs]
+        d_ms = [float(row["ms_ssim"]) - float(base["ms_ssim"]) for base, row in pairs]
+        d_auc = [float(row["auc_psnr"]) - float(base["auc_psnr"]) for base, row in pairs]
+        d_fit = [float(row["fit_seconds"]) - float(base["fit_seconds"]) for base, row in pairs]
+        d_total = [
+            float(row["total_seconds"]) - float(base["total_seconds"])
+            for base, row in pairs
+        ]
+        promote = (
+            mean(d_psnr) > 0.0
+            and mean(d_ms) > 0.0
+            and mean(d_auc) > 0.0
+            and mean(d_fit) < 0.0
+            and mean(d_total) < 0.0
+        )
+        out.append({
+            "method": method,
+            "pairs": len(pairs),
+            "d_psnr": mean(d_psnr),
+            "d_ms_ssim": mean(d_ms),
+            "d_auc": mean(d_auc),
+            "d_fit_seconds": mean(d_fit),
+            "d_total_seconds": mean(d_total),
+            "psnr_wins": sum(1 for v in d_psnr if v > 0.0),
+            "ms_ssim_wins": sum(1 for v in d_ms if v > 0.0),
+            "auc_wins": sum(1 for v in d_auc if v > 0.0),
+            "faster_fit": sum(1 for v in d_fit if v < 0.0),
+            "promote": promote,
+        })
+    return out
+
+
 def _write_convergence_tables(rows: list[dict[str, Any]], outdir: Path, methods: list[str]) -> None:
     ok = [r for r in rows if r.get("status") == "ok"]
     if not ok:
@@ -1132,6 +1200,35 @@ def _write_summary(rows: list[dict[str, Any]], outdir: Path, methods: list[str])
             "image codec — so their PSNR/MS-SSIM is not directly comparable to the equal-budget "
             "rows, and they are excluded from the per-cell winners below.",
         ]
+
+    promotion_rows = _promotion_checks(ok, methods, over_budget)
+    if promotion_rows:
+        lines += [
+            "",
+            "## Default Promotion Check",
+            "",
+            "A best-default candidate is promotable only when its paired mean deltas beat "
+            "`SS best default` on quality (PSNR and MS-SSIM), convergence (AUC), and "
+            "performance (fit and total seconds). Over-budget rows are excluded.",
+            "",
+            "| Candidate | Pairs | ΔPSNR | ΔMS-SSIM | ΔAUC | ΔFit s | ΔTotal s | PSNR wins | MS wins | AUC wins | Faster fit | Promote |",
+            "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|",
+        ]
+        for row in promotion_rows:
+            pairs = int(row["pairs"])
+            lines.append(
+                f"| {METHOD_LABELS[row['method']]} | {pairs} | "
+                f"{row['d_psnr']:+.4f} | "
+                f"{row['d_ms_ssim']:+.5f} | "
+                f"{row['d_auc']:+.4f} | "
+                f"{row['d_fit_seconds']:+.4f} | "
+                f"{row['d_total_seconds']:+.4f} | "
+                f"{row['psnr_wins']}/{pairs} | "
+                f"{row['ms_ssim_wins']}/{pairs} | "
+                f"{row['auc_wins']}/{pairs} | "
+                f"{row['faster_fit']}/{pairs} | "
+                f"{'yes' if row['promote'] else 'no'} |"
+            )
 
     targets = [t for t in _target_values(ok) if t in set(HEADLINE_TARGET_PSNRS)]
     if targets:

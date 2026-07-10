@@ -130,6 +130,8 @@ growth, 5 growth waves, and `L1 + 0.3 SSIM`. Keep this row in default comparison
 the current best-known StructSplat reference even when global CLI loss or growth options change.
 Additional default candidate rows explore lower/no SSIM, Charbonnier, tensor-weighted loss, final
 color solve, split relocation, and adaptive extra capacity (`1.5x` cap) for reducing absolute diff.
+The summary includes a default-promotion check: a candidate must beat the pinned row on paired mean
+PSNR, MS-SSIM, AUC, fit seconds, and total seconds before the benchmark default should be updated.
 
 ```
 LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 \

@@ -43,37 +43,50 @@ This is not a native external-repo benchmark; it isolates placement/growth polic
 
 | Method | Runs | PSNR | PSNR Std | MS-SSIM | MS-SSIM Std | AUC | LPIPS | Init s | Fit s | Total s |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| SS best default | 8 | 27.6759 | 3.8063 | 0.97042 | 0.01861 | 24.816 | - | 0.046 | 0.892 | 0.938 |
-| SS best + SSIM 0.10 | 8 | 27.5461 | 3.6757 | 0.96815 | 0.02008 | 24.780 | - | 0.045 | 0.801 | 0.846 |
-| SS best + L1 only | 8 | 27.0070 | 3.6136 | 0.96018 | 0.02364 | 24.370 | - | 0.043 | 0.573 | 0.615 |
-| SS best + Charbonnier | 8 | 27.6053 | 3.7377 | 0.96865 | 0.01994 | 24.813 | - | 0.043 | 0.816 | 0.859 |
-| SS best + tensor loss | 8 | 27.7054 | 3.7921 | 0.97055 | 0.01877 | 24.841 | - | 0.043 | 0.815 | 0.858 |
-| SS best + final color solve | 8 | 27.7674 | 3.7278 | 0.97114 | 0.01791 | 24.813 | - | 0.044 | 0.877 | 0.920 |
-| SS best + split relocate | 8 | 27.3461 | 3.7196 | 0.96809 | 0.02144 | 24.613 | - | 0.043 | 0.856 | 0.899 |
-| SS best + adaptive 1.5x cap † | 8 | 28.7259 | 3.1343 | 0.97766 | 0.01480 | 25.480 | - | 0.045 | 0.828 | 0.873 |
-| GaussianImage fixed | 8 | 25.8233 | 3.2009 | 0.97232 | 0.01625 | 24.402 | - | 0.001 | 0.781 | 0.782 |
-| GaussianImage++ residual | 8 | 27.1687 | 3.4844 | 0.97248 | 0.01680 | 23.486 | - | 0.001 | 0.790 | 0.790 |
-| Image-GS residual | 8 | 27.3259 | 3.6116 | 0.97159 | 0.01793 | 23.874 | - | 0.003 | 0.799 | 0.801 |
+| SS best default | 8 | 27.7024 | 3.7896 | 0.97090 | 0.01807 | 24.842 | - | 0.061 | 1.345 | 1.407 |
+| SS best + SSIM 0.10 | 8 | 27.5905 | 3.6661 | 0.96918 | 0.01876 | 24.811 | - | 0.062 | 1.254 | 1.316 |
+| SS best + L1 only | 8 | 26.9477 | 3.5592 | 0.96069 | 0.02274 | 24.355 | - | 0.059 | 0.887 | 0.946 |
+| SS best + Charbonnier | 8 | 27.5779 | 3.6796 | 0.96857 | 0.01893 | 24.826 | - | 0.060 | 1.295 | 1.355 |
+| SS best + tensor loss | 8 | 27.6823 | 3.7361 | 0.97006 | 0.01872 | 24.845 | - | 0.060 | 1.308 | 1.369 |
+| SS best + final color solve | 8 | 27.8578 | 3.7304 | 0.97173 | 0.01697 | 24.839 | - | 0.060 | 1.453 | 1.514 |
+| SS best + split relocate | 8 | 27.3380 | 3.7485 | 0.96751 | 0.02099 | 24.656 | - | 0.058 | 1.390 | 1.448 |
+| SS best + adaptive 1.5x cap † | 8 | 28.6732 | 3.1744 | 0.97825 | 0.01420 | 25.540 | - | 0.059 | 1.270 | 1.330 |
+| GaussianImage fixed | 8 | 25.8653 | 3.1475 | 0.97258 | 0.01597 | 24.394 | - | 0.001 | 1.271 | 1.272 |
+| GaussianImage++ residual | 8 | 27.2948 | 3.6005 | 0.97260 | 0.01725 | 22.954 | - | 0.001 | 1.289 | 1.290 |
+| Image-GS residual | 8 | 27.4526 | 3.6310 | 0.97218 | 0.01809 | 23.437 | - | 0.005 | 1.287 | 1.291 |
 | Instant-GI quadtree | 0 | - | - | - | - | - | - | - | - | - |
-| SS on-edge + residual | 8 | 27.4448 | 3.5569 | 0.97143 | 0.01805 | 24.517 | - | 0.045 | 0.820 | 0.865 |
-| SS on-edge + residual relocate | 8 | 27.2111 | 3.5213 | 0.96997 | 0.01863 | 24.315 | - | 0.043 | 0.853 | 0.896 |
-| SS on-edge + residual feature cap | 8 | 27.5286 | 3.6329 | 0.97002 | 0.01931 | 24.597 | - | 0.044 | 0.816 | 0.861 |
-| SS on-edge + residual feature-rel cap | 8 | 27.5624 | 3.6762 | 0.97073 | 0.01892 | 24.664 | - | 0.044 | 0.799 | 0.843 |
-| SS on-edge + tensor | 8 | 27.2634 | 3.3623 | 0.97138 | 0.01718 | 24.569 | - | 0.043 | 0.797 | 0.840 |
-| SS on-edge + tensor feature cap | 8 | 27.6963 | 3.7071 | 0.97069 | 0.01814 | 24.817 | - | 0.043 | 0.808 | 0.851 |
-| SS on-edge + tensor feature-rel cap | 8 | 27.3693 | 3.5285 | 0.97081 | 0.01772 | 24.635 | - | 0.043 | 0.820 | 0.863 |
-| SS flanking + tensor | 8 | 27.2330 | 3.3089 | 0.97072 | 0.01843 | 24.519 | - | 0.045 | 0.809 | 0.854 |
-| SS qt-WSE + residual | 8 | 27.4091 | 3.5262 | 0.97138 | 0.01815 | 24.474 | - | 0.099 | 0.812 | 0.911 |
-| SS qt-WSE + residual relocate | 8 | 27.1367 | 3.4309 | 0.96977 | 0.01915 | 24.294 | - | 0.100 | 0.850 | 0.950 |
-| SS qt-WSE + residual feature cap | 8 | 27.4875 | 3.5784 | 0.97037 | 0.01859 | 24.549 | - | 0.101 | 0.823 | 0.924 |
-| SS qt-WSE + residual feature-rel cap | 8 | 27.5396 | 3.5597 | 0.97097 | 0.01848 | 24.611 | - | 0.102 | 0.826 | 0.928 |
-| SS qt-WSE + tensor | 8 | 27.2927 | 3.3812 | 0.97113 | 0.01783 | 24.539 | - | 0.100 | 0.842 | 0.943 |
-| SS qt-WSE + tensor feature cap | 8 | 27.5079 | 3.7553 | 0.96881 | 0.02076 | 24.710 | - | 0.104 | 0.855 | 0.959 |
-| SS qt-WSE + tensor feature-rel cap | 8 | 27.2874 | 3.3834 | 0.97133 | 0.01720 | 24.544 | - | 0.103 | 0.832 | 0.935 |
-| SS qt-hybrid + tensor | 8 | 27.3717 | 3.4000 | 0.97212 | 0.01701 | 24.563 | - | 0.068 | 0.833 | 0.901 |
-| Floyd + tensor | 8 | 26.8515 | 3.2155 | 0.96699 | 0.02026 | 24.015 | - | 0.019 | 0.811 | 0.831 |
+| SS on-edge + residual | 8 | 27.5488 | 3.5853 | 0.97207 | 0.01764 | 24.182 | - | 0.063 | 1.250 | 1.314 |
+| SS on-edge + residual relocate | 8 | 27.4064 | 3.4469 | 0.97173 | 0.01751 | 23.903 | - | 0.060 | 1.325 | 1.385 |
+| SS on-edge + residual feature cap | 8 | 27.5723 | 3.6345 | 0.96993 | 0.02022 | 24.055 | - | 0.061 | 1.303 | 1.364 |
+| SS on-edge + residual feature-rel cap | 8 | 27.6934 | 3.6624 | 0.97208 | 0.01782 | 24.331 | - | 0.061 | 1.302 | 1.363 |
+| SS on-edge + tensor | 8 | 27.4135 | 3.5028 | 0.97169 | 0.01776 | 24.199 | - | 0.060 | 1.275 | 1.335 |
+| SS on-edge + tensor feature cap | 8 | 27.7692 | 3.7436 | 0.97121 | 0.01831 | 24.293 | - | 0.061 | 1.290 | 1.351 |
+| SS on-edge + tensor feature-rel cap | 8 | 27.4597 | 3.5228 | 0.97158 | 0.01769 | 24.232 | - | 0.060 | 1.265 | 1.326 |
+| SS flanking + tensor | 8 | 27.4070 | 3.3689 | 0.97198 | 0.01713 | 24.190 | - | 0.057 | 1.207 | 1.265 |
+| SS qt-WSE + residual | 8 | 27.5051 | 3.5554 | 0.97209 | 0.01783 | 24.108 | - | 0.148 | 1.235 | 1.382 |
+| SS qt-WSE + residual relocate | 8 | 27.3085 | 3.4393 | 0.97149 | 0.01787 | 23.870 | - | 0.148 | 1.315 | 1.463 |
+| SS qt-WSE + residual feature cap | 8 | 27.3660 | 3.5114 | 0.96998 | 0.01982 | 23.975 | - | 0.150 | 1.253 | 1.404 |
+| SS qt-WSE + residual feature-rel cap | 8 | 27.6512 | 3.6577 | 0.97178 | 0.01824 | 24.245 | - | 0.152 | 1.217 | 1.369 |
+| SS qt-WSE + tensor | 8 | 27.3956 | 3.4300 | 0.97196 | 0.01736 | 24.143 | - | 0.147 | 1.220 | 1.367 |
+| SS qt-WSE + tensor feature cap | 8 | 27.6668 | 3.7503 | 0.97103 | 0.01834 | 24.143 | - | 0.149 | 1.210 | 1.359 |
+| SS qt-WSE + tensor feature-rel cap | 8 | 27.4034 | 3.5175 | 0.97126 | 0.01779 | 24.167 | - | 0.156 | 1.226 | 1.382 |
+| SS qt-hybrid + tensor | 8 | 27.3507 | 3.4207 | 0.97211 | 0.01710 | 24.112 | - | 0.076 | 1.220 | 1.296 |
+| Floyd + tensor | 8 | 26.9466 | 3.2437 | 0.96773 | 0.01998 | 23.556 | - | 0.027 | 1.198 | 1.226 |
 
 † Not budget-matched: mean final Gaussian count exceeds the shared final cap (adaptive extra capacity). These rows spend more primitives — more rate for an image codec — so their PSNR/MS-SSIM is not directly comparable to the equal-budget rows, and they are excluded from the per-cell winners below.
+
+## Default Promotion Check
+
+A best-default candidate is promotable only when its paired mean deltas beat `SS best default` on quality (PSNR and MS-SSIM), convergence (AUC), and performance (fit and total seconds). Over-budget rows are excluded.
+
+| Candidate | Pairs | ΔPSNR | ΔMS-SSIM | ΔAUC | ΔFit s | ΔTotal s | PSNR wins | MS wins | AUC wins | Faster fit | Promote |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| SS best + SSIM 0.10 | 8 | -0.1119 | -0.00171 | -0.0304 | -0.0911 | -0.0908 | 1/8 | 0/8 | 3/8 | 5/8 | no |
+| SS best + L1 only | 8 | -0.7547 | -0.01021 | -0.4869 | -0.4588 | -0.4609 | 0/8 | 0/8 | 0/8 | 8/8 | no |
+| SS best + Charbonnier | 8 | -0.1245 | -0.00233 | -0.0154 | -0.0506 | -0.0517 | 1/8 | 0/8 | 4/8 | 3/8 | no |
+| SS best + tensor loss | 8 | -0.0201 | -0.00084 | +0.0028 | -0.0371 | -0.0378 | 4/8 | 4/8 | 4/8 | 2/8 | no |
+| SS best + final color solve | 8 | +0.1555 | +0.00084 | -0.0030 | +0.1079 | +0.1070 | 7/8 | 4/8 | 3/8 | 1/8 | no |
+| SS best + split relocate | 8 | -0.3644 | -0.00338 | -0.1858 | +0.0445 | +0.0418 | 0/8 | 0/8 | 0/8 | 1/8 | no |
 
 ## Convergence
 
@@ -81,102 +94,102 @@ AUC is the area under the logged PSNR-over-iteration curve; higher means better 
 
 | Method | AUC | PSNR@0 | PSNR@125 | PSNR@250 | PSNR@374 | Final PSNR |
 |---|---:|---:|---:|---:|---:|---:|
-| SS best default | 24.816 | 17.072 | 23.893 | 23.084 | 26.738 | 27.676 |
-| SS best + SSIM 0.10 | 24.780 | 17.072 | 23.841 | 23.152 | 26.660 | 27.546 |
-| SS best + L1 only | 24.370 | 17.072 | 23.434 | 23.211 | 26.127 | 27.007 |
-| SS best + Charbonnier | 24.813 | 17.072 | 23.873 | 23.232 | 26.692 | 27.605 |
-| SS best + tensor loss | 24.841 | 17.072 | 23.909 | 23.193 | 26.781 | 27.705 |
-| SS best + final color solve | 24.813 | 17.072 | 23.910 | 23.131 | 26.717 | 27.767 |
-| SS best + split relocate | 24.613 | 17.072 | 23.689 | 22.554 | 26.567 | 27.346 |
-| SS best + adaptive 1.5x cap † | 25.480 | 17.072 | 24.255 | 23.785 | 28.469 | 28.726 |
-| GaussianImage fixed | 24.402 | 16.921 | 23.975 | 25.350 | 25.727 | 25.823 |
-| GaussianImage++ residual | 23.486 | 16.084 | 21.925 | 21.974 | 26.018 | 27.169 |
-| Image-GS residual | 23.874 | 16.011 | 22.324 | 22.976 | 26.234 | 27.326 |
+| SS best default | 24.842 | 17.090 | 23.910 | 23.280 | 26.785 | 27.702 |
+| SS best + SSIM 0.10 | 24.811 | 17.090 | 23.867 | 23.159 | 26.708 | 27.590 |
+| SS best + L1 only | 24.355 | 17.090 | 23.434 | 23.100 | 26.082 | 26.948 |
+| SS best + Charbonnier | 24.826 | 17.090 | 23.879 | 23.254 | 26.702 | 27.578 |
+| SS best + tensor loss | 24.845 | 17.090 | 23.931 | 23.316 | 26.743 | 27.682 |
+| SS best + final color solve | 24.839 | 17.090 | 23.910 | 23.295 | 26.774 | 27.858 |
+| SS best + split relocate | 24.656 | 17.090 | 23.688 | 22.527 | 26.617 | 27.338 |
+| SS best + adaptive 1.5x cap † | 25.540 | 17.090 | 24.262 | 23.828 | 28.582 | 28.673 |
+| GaussianImage fixed | 24.394 | 16.921 | 23.979 | 25.359 | 25.631 | 25.865 |
+| GaussianImage++ residual | 22.954 | 16.084 | 21.657 | 24.495 | 26.138 | 27.295 |
+| Image-GS residual | 23.437 | 16.012 | 22.103 | 24.667 | 26.297 | 27.453 |
 | Instant-GI quadtree | - | - | - | - | - | - |
-| SS on-edge + residual | 24.517 | 16.551 | 23.467 | 23.515 | 26.389 | 27.445 |
-| SS on-edge + residual relocate | 24.315 | 16.551 | 23.213 | 23.273 | 26.151 | 27.211 |
-| SS on-edge + residual feature cap | 24.597 | 17.072 | 23.588 | 22.834 | 26.520 | 27.529 |
-| SS on-edge + residual feature-rel cap | 24.664 | 16.570 | 23.580 | 23.972 | 26.527 | 27.562 |
-| SS on-edge + tensor | 24.569 | 16.551 | 23.658 | 23.804 | 26.351 | 27.263 |
-| SS on-edge + tensor feature cap | 24.817 | 17.072 | 23.883 | 23.067 | 26.769 | 27.696 |
-| SS on-edge + tensor feature-rel cap | 24.635 | 16.570 | 23.703 | 23.778 | 26.457 | 27.369 |
-| SS flanking + tensor | 24.519 | 16.626 | 23.557 | 23.619 | 26.337 | 27.233 |
-| SS qt-WSE + residual | 24.474 | 16.681 | 23.425 | 23.715 | 26.310 | 27.409 |
-| SS qt-WSE + residual relocate | 24.294 | 16.681 | 23.192 | 23.330 | 26.131 | 27.137 |
-| SS qt-WSE + residual feature cap | 24.549 | 17.171 | 23.614 | 22.718 | 26.465 | 27.488 |
-| SS qt-WSE + residual feature-rel cap | 24.611 | 16.699 | 23.488 | 23.922 | 26.513 | 27.540 |
-| SS qt-WSE + tensor | 24.539 | 16.681 | 23.543 | 23.989 | 26.366 | 27.293 |
-| SS qt-WSE + tensor feature cap | 24.710 | 17.171 | 23.821 | 22.907 | 26.597 | 27.508 |
-| SS qt-WSE + tensor feature-rel cap | 24.544 | 16.699 | 23.589 | 23.785 | 26.351 | 27.287 |
-| SS qt-hybrid + tensor | 24.563 | 16.900 | 23.543 | 23.789 | 26.404 | 27.372 |
-| Floyd + tensor | 24.015 | 15.293 | 22.963 | 23.376 | 25.943 | 26.852 |
+| SS on-edge + residual | 24.182 | 16.576 | 23.319 | 25.227 | 26.524 | 27.549 |
+| SS on-edge + residual relocate | 23.903 | 16.576 | 22.923 | 24.928 | 26.352 | 27.406 |
+| SS on-edge + residual feature cap | 24.055 | 17.090 | 23.403 | 25.374 | 26.658 | 27.572 |
+| SS on-edge + residual feature-rel cap | 24.331 | 16.595 | 23.439 | 25.334 | 26.646 | 27.693 |
+| SS on-edge + tensor | 24.199 | 16.576 | 23.465 | 25.310 | 26.475 | 27.414 |
+| SS on-edge + tensor feature cap | 24.293 | 17.090 | 23.676 | 25.709 | 26.870 | 27.769 |
+| SS on-edge + tensor feature-rel cap | 24.232 | 16.595 | 23.506 | 25.346 | 26.458 | 27.460 |
+| SS flanking + tensor | 24.190 | 16.655 | 23.372 | 25.307 | 26.425 | 27.407 |
+| SS qt-WSE + residual | 24.108 | 16.655 | 23.254 | 25.089 | 26.437 | 27.505 |
+| SS qt-WSE + residual relocate | 23.870 | 16.655 | 22.935 | 24.873 | 26.238 | 27.309 |
+| SS qt-WSE + residual feature cap | 23.975 | 17.159 | 23.376 | 25.221 | 26.466 | 27.366 |
+| SS qt-WSE + residual feature-rel cap | 24.245 | 16.672 | 23.345 | 25.257 | 26.596 | 27.651 |
+| SS qt-WSE + tensor | 24.143 | 16.655 | 23.424 | 25.245 | 26.418 | 27.396 |
+| SS qt-WSE + tensor feature cap | 24.143 | 17.159 | 23.605 | 25.514 | 26.651 | 27.667 |
+| SS qt-WSE + tensor feature-rel cap | 24.167 | 16.672 | 23.424 | 25.300 | 26.445 | 27.403 |
+| SS qt-hybrid + tensor | 24.112 | 16.857 | 23.347 | 25.265 | 26.425 | 27.351 |
+| Floyd + tensor | 23.556 | 15.288 | 22.739 | 24.701 | 25.976 | 26.947 |
 
 Target-hit cells report hit rate across all image/budget cells and mean hit iteration among cells that reached the target.
 
 | Method | Hit 28 | Iter 28 | Hit 30 | Iter 30 | Hit 32 | Iter 32 |
 |---|---:|---:|---:|---:|---:|---:|
-| SS best default | 25% | 107.5 | 25% | 197.5 | 25% | 323.0 |
-| SS best + SSIM 0.10 | 25% | 108.0 | 25% | 202.0 | 25% | 344.0 |
-| SS best + L1 only | 25% | 126.5 | 25% | 246.0 | 25% | 399.0 |
-| SS best + Charbonnier | 25% | 107.0 | 25% | 197.0 | 25% | 341.0 |
-| SS best + tensor loss | 25% | 106.0 | 25% | 198.5 | 25% | 339.5 |
-| SS best + final color solve | 25% | 107.5 | 25% | 197.0 | 25% | 323.5 |
-| SS best + split relocate | 25% | 114.5 | 25% | 207.5 | 25% | 364.0 |
-| SS best + adaptive 1.5x cap † | 50% | 227.2 | 25% | 162.5 | 25% | 239.5 |
-| GaussianImage fixed | 25% | 93.0 | 25% | 214.0 | 0% | - |
-| GaussianImage++ residual | 25% | 193.0 | 25% | 287.0 | 25% | 444.5 |
-| Image-GS residual | 25% | 147.5 | 25% | 272.5 | 25% | 388.0 |
+| SS best default | 25% | 107.5 | 25% | 198.5 | 25% | 331.5 |
+| SS best + SSIM 0.10 | 25% | 108.0 | 25% | 201.5 | 25% | 360.5 |
+| SS best + L1 only | 25% | 128.0 | 25% | 250.5 | 25% | 415.0 |
+| SS best + Charbonnier | 25% | 107.0 | 25% | 197.0 | 25% | 338.5 |
+| SS best + tensor loss | 25% | 105.5 | 25% | 195.0 | 25% | 323.5 |
+| SS best + final color solve | 25% | 107.5 | 25% | 196.5 | 25% | 320.0 |
+| SS best + split relocate | 25% | 115.0 | 25% | 208.0 | 25% | 367.5 |
+| SS best + adaptive 1.5x cap † | 50% | 226.0 | 25% | 162.0 | 25% | 241.5 |
+| GaussianImage fixed | 25% | 92.5 | 25% | 217.0 | 0% | - |
+| GaussianImage++ residual | 25% | 171.0 | 25% | 272.5 | 25% | 430.5 |
+| Image-GS residual | 25% | 151.0 | 25% | 261.5 | 25% | 390.0 |
 | Instant-GI quadtree | - | - | - | - | - | - |
-| SS on-edge + residual | 25% | 120.5 | 25% | 249.5 | 25% | 392.5 |
-| SS on-edge + residual relocate | 25% | 134.5 | 25% | 281.0 | 25% | 425.5 |
-| SS on-edge + residual feature cap | 25% | 117.0 | 25% | 219.0 | 25% | 372.5 |
-| SS on-edge + residual feature-rel cap | 25% | 115.0 | 25% | 216.5 | 25% | 367.0 |
-| SS on-edge + tensor | 25% | 113.5 | 25% | 235.5 | 25% | 421.0 |
-| SS on-edge + tensor feature cap | 25% | 108.0 | 25% | 198.0 | 25% | 340.5 |
-| SS on-edge + tensor feature-rel cap | 25% | 111.5 | 25% | 226.5 | 25% | 382.5 |
-| SS flanking + tensor | 25% | 122.0 | 25% | 251.0 | 25% | 441.5 |
-| SS qt-WSE + residual | 25% | 123.5 | 25% | 238.0 | 25% | 413.0 |
-| SS qt-WSE + residual relocate | 25% | 133.0 | 25% | 261.5 | 25% | 442.0 |
-| SS qt-WSE + residual feature cap | 25% | 116.5 | 25% | 220.0 | 25% | 376.0 |
-| SS qt-WSE + residual feature-rel cap | 25% | 120.0 | 25% | 222.0 | 25% | 377.5 |
-| SS qt-WSE + tensor | 25% | 119.0 | 25% | 252.5 | 25% | 437.0 |
-| SS qt-WSE + tensor feature cap | 25% | 109.5 | 25% | 203.5 | 25% | 363.0 |
-| SS qt-WSE + tensor feature-rel cap | 25% | 119.0 | 25% | 231.5 | 25% | 425.5 |
-| SS qt-hybrid + tensor | 25% | 124.5 | 25% | 253.5 | 25% | 421.0 |
-| Floyd + tensor | 25% | 172.5 | 25% | 295.0 | 25% | 479.5 |
+| SS on-edge + residual | 25% | 129.0 | 25% | 239.0 | 25% | 376.0 |
+| SS on-edge + residual relocate | 25% | 144.0 | 25% | 262.0 | 25% | 418.0 |
+| SS on-edge + residual feature cap | 25% | 127.5 | 25% | 232.0 | 25% | 363.0 |
+| SS on-edge + residual feature-rel cap | 25% | 124.0 | 25% | 230.0 | 25% | 355.5 |
+| SS on-edge + tensor | 25% | 123.5 | 25% | 236.0 | 25% | 381.5 |
+| SS on-edge + tensor feature cap | 25% | 118.5 | 25% | 206.0 | 25% | 333.0 |
+| SS on-edge + tensor feature-rel cap | 25% | 123.0 | 25% | 229.5 | 25% | 402.5 |
+| SS flanking + tensor | 25% | 128.5 | 25% | 240.0 | 25% | 427.5 |
+| SS qt-WSE + residual | 25% | 132.5 | 25% | 248.0 | 25% | 387.0 |
+| SS qt-WSE + residual relocate | 25% | 144.5 | 25% | 265.5 | 25% | 434.0 |
+| SS qt-WSE + residual feature cap | 25% | 126.0 | 25% | 234.0 | 25% | 380.0 |
+| SS qt-WSE + residual feature-rel cap | 25% | 127.5 | 25% | 233.0 | 25% | 357.5 |
+| SS qt-WSE + tensor | 25% | 127.0 | 25% | 246.5 | 25% | 406.0 |
+| SS qt-WSE + tensor feature cap | 25% | 119.5 | 25% | 226.0 | 25% | 353.5 |
+| SS qt-WSE + tensor feature-rel cap | 25% | 126.5 | 25% | 234.0 | 25% | 401.0 |
+| SS qt-hybrid + tensor | 25% | 130.0 | 25% | 243.5 | 25% | 423.5 |
+| Floyd + tensor | 25% | 157.0 | 25% | 321.0 | 25% | 460.5 |
 
 ## Means By Budget
 
 | Final budget | Method | Start G | Final G | PSNR | PSNR Std | MS-SSIM | AUC | Fit s |
 |---:|---|---:|---:|---:|---:|---:|---:|---:|
-| 640 | Floyd + tensor | 320 | 640 | 26.8515 | 3.2155 | 0.96699 | 24.015 | 0.811 |
-| 640 | GaussianImage fixed | 640 | 640 | 25.8233 | 3.2009 | 0.97232 | 24.402 | 0.781 |
-| 640 | GaussianImage++ residual | 320 | 640 | 27.1687 | 3.4844 | 0.97248 | 23.486 | 0.790 |
-| 640 | Image-GS residual | 320 | 640 | 27.3259 | 3.6116 | 0.97159 | 23.874 | 0.799 |
-| 640 | SS best + adaptive 1.5x cap † | 320 | 952 | 28.7259 | 3.1343 | 0.97766 | 25.480 | 0.828 |
-| 640 | SS best + Charbonnier | 320 | 640 | 27.6053 | 3.7377 | 0.96865 | 24.813 | 0.816 |
-| 640 | SS best + final color solve | 320 | 640 | 27.7674 | 3.7278 | 0.97114 | 24.813 | 0.877 |
-| 640 | SS best default | 320 | 640 | 27.6759 | 3.8063 | 0.97042 | 24.816 | 0.892 |
-| 640 | SS best + L1 only | 320 | 640 | 27.0070 | 3.6136 | 0.96018 | 24.370 | 0.573 |
-| 640 | SS best + split relocate | 320 | 640 | 27.3461 | 3.7196 | 0.96809 | 24.613 | 0.856 |
-| 640 | SS best + SSIM 0.10 | 320 | 640 | 27.5461 | 3.6757 | 0.96815 | 24.780 | 0.801 |
-| 640 | SS best + tensor loss | 320 | 640 | 27.7054 | 3.7921 | 0.97055 | 24.841 | 0.815 |
-| 640 | SS flanking + tensor | 320 | 640 | 27.2330 | 3.3089 | 0.97072 | 24.519 | 0.809 |
-| 640 | SS on-edge + residual | 320 | 640 | 27.4448 | 3.5569 | 0.97143 | 24.517 | 0.820 |
-| 640 | SS on-edge + residual feature-rel cap | 320 | 640 | 27.5624 | 3.6762 | 0.97073 | 24.664 | 0.799 |
-| 640 | SS on-edge + residual feature cap | 320 | 640 | 27.5286 | 3.6329 | 0.97002 | 24.597 | 0.816 |
-| 640 | SS on-edge + residual relocate | 320 | 640 | 27.2111 | 3.5213 | 0.96997 | 24.315 | 0.853 |
-| 640 | SS on-edge + tensor | 320 | 640 | 27.2634 | 3.3623 | 0.97138 | 24.569 | 0.797 |
-| 640 | SS on-edge + tensor feature-rel cap | 320 | 640 | 27.3693 | 3.5285 | 0.97081 | 24.635 | 0.820 |
-| 640 | SS on-edge + tensor feature cap | 320 | 640 | 27.6963 | 3.7071 | 0.97069 | 24.817 | 0.808 |
-| 640 | SS qt-hybrid + tensor | 320 | 640 | 27.3717 | 3.4000 | 0.97212 | 24.563 | 0.833 |
-| 640 | SS qt-WSE + residual | 320 | 640 | 27.4091 | 3.5262 | 0.97138 | 24.474 | 0.812 |
-| 640 | SS qt-WSE + residual feature-rel cap | 320 | 640 | 27.5396 | 3.5597 | 0.97097 | 24.611 | 0.826 |
-| 640 | SS qt-WSE + residual feature cap | 320 | 640 | 27.4875 | 3.5784 | 0.97037 | 24.549 | 0.823 |
-| 640 | SS qt-WSE + residual relocate | 320 | 640 | 27.1367 | 3.4309 | 0.96977 | 24.294 | 0.850 |
-| 640 | SS qt-WSE + tensor | 320 | 640 | 27.2927 | 3.3812 | 0.97113 | 24.539 | 0.842 |
-| 640 | SS qt-WSE + tensor feature-rel cap | 320 | 640 | 27.2874 | 3.3834 | 0.97133 | 24.544 | 0.832 |
-| 640 | SS qt-WSE + tensor feature cap | 320 | 640 | 27.5079 | 3.7553 | 0.96881 | 24.710 | 0.855 |
+| 640 | Floyd + tensor | 320 | 640 | 26.9466 | 3.2437 | 0.96773 | 23.556 | 1.198 |
+| 640 | GaussianImage fixed | 640 | 640 | 25.8653 | 3.1475 | 0.97258 | 24.394 | 1.271 |
+| 640 | GaussianImage++ residual | 320 | 640 | 27.2948 | 3.6005 | 0.97260 | 22.954 | 1.289 |
+| 640 | Image-GS residual | 320 | 640 | 27.4526 | 3.6310 | 0.97218 | 23.437 | 1.287 |
+| 640 | SS best + adaptive 1.5x cap † | 320 | 952 | 28.6732 | 3.1744 | 0.97825 | 25.540 | 1.270 |
+| 640 | SS best + Charbonnier | 320 | 640 | 27.5779 | 3.6796 | 0.96857 | 24.826 | 1.295 |
+| 640 | SS best + final color solve | 320 | 640 | 27.8578 | 3.7304 | 0.97173 | 24.839 | 1.453 |
+| 640 | SS best default | 320 | 640 | 27.7024 | 3.7896 | 0.97090 | 24.842 | 1.345 |
+| 640 | SS best + L1 only | 320 | 640 | 26.9477 | 3.5592 | 0.96069 | 24.355 | 0.887 |
+| 640 | SS best + split relocate | 320 | 640 | 27.3380 | 3.7485 | 0.96751 | 24.656 | 1.390 |
+| 640 | SS best + SSIM 0.10 | 320 | 640 | 27.5905 | 3.6661 | 0.96918 | 24.811 | 1.254 |
+| 640 | SS best + tensor loss | 320 | 640 | 27.6823 | 3.7361 | 0.97006 | 24.845 | 1.308 |
+| 640 | SS flanking + tensor | 320 | 640 | 27.4070 | 3.3689 | 0.97198 | 24.190 | 1.207 |
+| 640 | SS on-edge + residual | 320 | 640 | 27.5488 | 3.5853 | 0.97207 | 24.182 | 1.250 |
+| 640 | SS on-edge + residual feature-rel cap | 320 | 640 | 27.6934 | 3.6624 | 0.97208 | 24.331 | 1.302 |
+| 640 | SS on-edge + residual feature cap | 320 | 640 | 27.5723 | 3.6345 | 0.96993 | 24.055 | 1.303 |
+| 640 | SS on-edge + residual relocate | 320 | 640 | 27.4064 | 3.4469 | 0.97173 | 23.903 | 1.325 |
+| 640 | SS on-edge + tensor | 320 | 640 | 27.4135 | 3.5028 | 0.97169 | 24.199 | 1.275 |
+| 640 | SS on-edge + tensor feature-rel cap | 320 | 640 | 27.4597 | 3.5228 | 0.97158 | 24.232 | 1.265 |
+| 640 | SS on-edge + tensor feature cap | 320 | 640 | 27.7692 | 3.7436 | 0.97121 | 24.293 | 1.290 |
+| 640 | SS qt-hybrid + tensor | 320 | 640 | 27.3507 | 3.4207 | 0.97211 | 24.112 | 1.220 |
+| 640 | SS qt-WSE + residual | 320 | 640 | 27.5051 | 3.5554 | 0.97209 | 24.108 | 1.235 |
+| 640 | SS qt-WSE + residual feature-rel cap | 320 | 640 | 27.6512 | 3.6577 | 0.97178 | 24.245 | 1.217 |
+| 640 | SS qt-WSE + residual feature cap | 320 | 640 | 27.3660 | 3.5114 | 0.96998 | 23.975 | 1.253 |
+| 640 | SS qt-WSE + residual relocate | 320 | 640 | 27.3085 | 3.4393 | 0.97149 | 23.870 | 1.315 |
+| 640 | SS qt-WSE + tensor | 320 | 640 | 27.3956 | 3.4300 | 0.97196 | 24.143 | 1.220 |
+| 640 | SS qt-WSE + tensor feature-rel cap | 320 | 640 | 27.4034 | 3.5175 | 0.97126 | 24.167 | 1.226 |
+| 640 | SS qt-WSE + tensor feature cap | 320 | 640 | 27.6668 | 3.7503 | 0.97103 | 24.143 | 1.210 |
 
 ## Winners By Image/Budget
 
@@ -184,10 +197,10 @@ Winners are taken among budget-matched methods only; † rows (over the shared c
 
 | Image | Budget | Best PSNR | Best MS-SSIM |
 |---|---:|---|---|
-| COCO_train2014_000000000009 | 640 | SS best + final color solve (27.594) | SS qt-WSE + tensor feature cap (0.98393) |
-| COCO_train2014_000000000025 | 640 | SS best + tensor loss (25.466) | GaussianImage fixed (0.96870) |
-| COCO_train2014_000000000030 | 640 | SS best + tensor loss (34.114) | GaussianImage fixed (0.99404) |
-| COCO_train2014_000000000034 | 640 | SS best + final color solve (24.682) | GaussianImage fixed (0.95506) |
+| COCO_train2014_000000000009 | 640 | SS on-edge + tensor feature cap (27.756) | SS on-edge + tensor feature cap (0.98416) |
+| COCO_train2014_000000000025 | 640 | SS on-edge + residual feature-rel cap (25.484) | GaussianImage++ residual (0.96954) |
+| COCO_train2014_000000000030 | 640 | SS best + final color solve (34.186) | GaussianImage fixed (0.99402) |
+| COCO_train2014_000000000034 | 640 | SS best + final color solve (24.535) | GaussianImage fixed (0.95265) |
 
 ## Errors
 

@@ -403,3 +403,73 @@ def test_summary_headline_targets_are_bench004_set(tmp_path: Path):
     assert "Hit 32" in text
     assert "Hit 24" not in text
     assert "Hit 35" not in text
+
+
+def test_summary_reports_default_promotion_check(tmp_path: Path):
+    base = {
+        "status": "ok",
+        "image": "toy",
+        "source_path": "toy.png",
+        "max_side": 16,
+        "final_budget": 100,
+        "start_budget": 50,
+        "seed": 0,
+        "iters": 10,
+        "renderer": "normalized",
+        "start_gaussians": 50,
+        "n_gaussians": 100,
+        "lpips": None,
+        "init_seconds": 0.1,
+        "history": {"iter": [0, 10], "psnr": [20.0, 30.0]},
+        "iters_to_targets": {},
+    }
+    rows = [
+        {
+            **base,
+            "method": F.BEST_DEFAULT_METHOD,
+            "method_label": F.METHOD_LABELS[F.BEST_DEFAULT_METHOD],
+            "psnr": 30.0,
+            "ms_ssim": 0.900,
+            "auc_psnr": 24.0,
+            "fit_seconds": 1.0,
+            "total_seconds": 1.1,
+        },
+        {
+            **base,
+            "method": "structsplat_best_tensor_loss",
+            "method_label": F.METHOD_LABELS["structsplat_best_tensor_loss"],
+            "psnr": 30.2,
+            "ms_ssim": 0.901,
+            "auc_psnr": 24.1,
+            "fit_seconds": 0.9,
+            "total_seconds": 1.0,
+        },
+        {
+            **base,
+            "method": "structsplat_best_color_final",
+            "method_label": F.METHOD_LABELS["structsplat_best_color_final"],
+            "psnr": 30.3,
+            "ms_ssim": 0.902,
+            "auc_psnr": 24.2,
+            "fit_seconds": 1.2,
+            "total_seconds": 1.3,
+        },
+    ]
+
+    F._write_summary(
+        rows,
+        tmp_path,
+        [F.BEST_DEFAULT_METHOD, "structsplat_best_tensor_loss", "structsplat_best_color_final"],
+    )
+
+    text = (tmp_path / "summary.md").read_text(encoding="utf-8")
+    assert "## Default Promotion Check" in text
+    assert "SS best + tensor loss" in text
+    assert (
+        "| SS best + tensor loss | 1 | +0.2000 | +0.00100 | +0.1000 | "
+        "-0.1000 | -0.1000 | 1/1 | 1/1 | 1/1 | 1/1 | yes |"
+    ) in text
+    assert (
+        "| SS best + final color solve | 1 | +0.3000 | +0.00200 | +0.2000 | "
+        "+0.2000 | +0.2000 | 1/1 | 1/1 | 1/1 | 0/1 | no |"
+    ) in text

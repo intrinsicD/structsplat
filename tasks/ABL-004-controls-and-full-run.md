@@ -165,6 +165,13 @@ conditions and honest controls?
   budget-10000 PSNR lead; `aniso_onedge` remains the low-budget/MS-SSIM alternative. README and
   `ara/logic/claims.md` now cite this measured answer. ABL-004 remains partial only because its
   broader original scope still includes the flat full ABL-001/20k/control matrix.
+- 2026-07-10: Added an explicit default-promotion check to the fair-density harness summary and
+  recomputed `results/fair_gaussian_variants_20260709_best_candidates/` with its local
+  `index.html` overview. No candidate passed the predeclared gate of paired mean improvements on
+  PSNR, MS-SSIM, AUC, fit seconds, and total seconds. `loss_weight=tensor` improved AUC only
+  (+0.0028) while losing PSNR (-0.0201 dB) and MS-SSIM (-0.00084); final color solve improved
+  quality (+0.1555 dB PSNR, +0.00084 MS-SSIM) but lost AUC (-0.0030) and speed (+0.1079 s fit).
+  Keep `structsplat_best_default` unchanged.
 
 ## Decision-grade staged protocol
 
