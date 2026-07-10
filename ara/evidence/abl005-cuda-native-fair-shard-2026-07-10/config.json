@@ -12,9 +12,7 @@
     ],
     "mode": "influence",
     "budgets": [
-      2000,
-      5000,
-      10000
+      2000
     ],
     "seeds": [
       0,
