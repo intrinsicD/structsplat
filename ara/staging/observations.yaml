@@ -318,3 +318,14 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O30
+    timestamp: "2026-07-10T13:16+0200"
+    provenance: ai-suggested
+    content: "The N73 same-hyperparameter full fair benchmark is evidence for keeping `structsplat_best_default` unchanged, not for promoting a new default: tensor loss is a near-tie/specialist candidate with better PSNR/AUC/speed but lower MS-SSIM, final color solve is a quality-polish candidate with better PSNR/MS-SSIM but worse AUC/speed, adaptive 1.5x is over-budget, and native external-pipeline comparison remains unresolved except that the local Instant-GI quadtree hook underperformed in this proxy."
+    context: "User asked for the conclusion from `results/fair_gaussian_variants_20260710_full_external_same_hparams/index.html`. The benchmark completed 232/232 same-hyperparameter cells with Instant-GI enabled; no equal-budget best-default candidate passed all predeclared quality/convergence/performance gates."
+    potential_type: claim
+    bound_to: [N73]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

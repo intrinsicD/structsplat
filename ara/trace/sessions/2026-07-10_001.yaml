@@ -2,9 +2,9 @@ session:
   id: "2026-07-10_001"
   date: "2026-07-10"
   started: "2026-07-10T11:14+0200"
-  last_turn: "2026-07-10T13:12+0200"
-  turn_count: 7
-  summary: "Added a fair-density default-promotion audit, recomputed the supplied HTML benchmark artifact, kept the pinned best default unchanged, completed the same-hyperparameter fair run with the local Instant-GI hook, split ABL-005 into CUDA-native and affine quality-only influence shard runners, then extended the CUDA-native fair shard to four paired cells across two Kodak images with committed evidence."
+  last_turn: "2026-07-10T13:16+0200"
+  turn_count: 8
+  summary: "Added a fair-density default-promotion audit, recomputed the supplied HTML benchmark artifact, kept the pinned best default unchanged, completed and interpreted the same-hyperparameter fair run with the local Instant-GI hook, split ABL-005 into CUDA-native and affine quality-only influence shard runners, then extended the CUDA-native fair shard to four paired cells across two Kodak images with committed evidence."
 
 events_logged:
   - turn: 1
@@ -49,6 +49,12 @@ events_logged:
     routing: direct
     provenance: ai-executed
     summary: "Recomputed the same-hyperparameter fair benchmark with the local Instant-GI hook enabled and kept the pinned best default unchanged."
+  - turn: 8
+    type: observation
+    id: "O30"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged the conclusion that N73 supports keeping `structsplat_best_default` unchanged while treating tensor loss and final color solve as non-default specialist candidates."
 
 ai_actions:
   - turn: 1
@@ -106,6 +112,14 @@ ai_actions:
     files_changed:
       - "tasks/ABL-004-controls-and-full-run.md"
       - "ara/evidence/fair-gaussian-variants-full-external-same-hparams-2026-07-10/"
+  - turn: 8
+    action: "Read the N73 benchmark summary/probe evidence and staged an interpretation of the default-selection outcome."
+    provenance: ai-executed
+    files_changed:
+      - "ara/staging/observations.yaml"
+      - "ara/trace/sessions/2026-07-10_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
 
 claims_touched: []
 
@@ -124,6 +138,8 @@ key_context:
     excerpt: "User repeated the agentic workflow request; the selected next bounded task was to complete the second seed for the second Kodak image in the ABL-005 CUDA-native fair shard."
   - turn: 7
     excerpt: "User asked to compute a full benchmark using the linked `index.html` hyperparameters and include local GaussianImage/similar repository comparisons."
+  - turn: 8
+    excerpt: "User asked for the conclusion from `results/fair_gaussian_variants_20260710_full_external_same_hparams/index.html`."
 
 open_threads:
   - "Continue iterating active tasks after this bounded ABL-004 benchmark-audit slice."
@@ -137,4 +153,5 @@ open_threads:
   - "Native GaussianImage/GaussianImage++/Image-GS pipelines still require a separate dependency/submodule-compatible benchmark; current fair evidence uses matched-policy analogue rows plus the local Instant-GI hook."
   - "Existing `.idea` changes are user/workspace state and remain outside the task commit."
 
-ai_suggestions_pending: []
+ai_suggestions_pending:
+  - "Confirm or revise O30: N73 supports keeping `structsplat_best_default` unchanged; tensor loss and final color solve are specialist candidates, not defaults."

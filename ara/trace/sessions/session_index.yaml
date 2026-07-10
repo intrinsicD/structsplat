@@ -43,8 +43,8 @@ sessions:
     open_threads: 6
   - id: "2026-07-10_001"
     date: "2026-07-10"
-    summary: "Added fair-density default-promotion audit, recomputed supplied HTML benchmark artifact, completed the same-hyperparameter fair run with local Instant-GI rows, left pinned default unchanged, split ABL-005 into CUDA-native plus affine quality-only influence shard runners, and extended the CUDA-native fair shard to four paired cells across two Kodak images."
-    turn_count: 7
-    events_count: 7
+    summary: "Added fair-density default-promotion audit, recomputed supplied HTML benchmark artifact, completed and interpreted the same-hyperparameter fair run with local Instant-GI rows, left pinned default unchanged, split ABL-005 into CUDA-native plus affine quality-only influence shard runners, and extended the CUDA-native fair shard to four paired cells across two Kodak images."
+    turn_count: 8
+    events_count: 8
     claims_touched: []
     open_threads: 10
