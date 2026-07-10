@@ -1541,3 +1541,27 @@ tree:
       - "commit 05d4ec9"
     also_depends_on: [N69]
     status: resolved
+  - id: N71
+    type: experiment
+    title: "ABL-005 CUDA-native fair shard second image"
+    provenance: ai-executed
+    timestamp: "2026-07-10T12:47+0200"
+    result: >
+      Resumed the ABL-005 CUDA-native fair shard with `BUDGETS=2000`,
+      `SEEDS=0 1`, and `COLOR_SOLVE_MODES=none`, skipping already completed
+      `kodim01` rows and completing six fast-axis rows for `kodim04`/budget
+      2000/seed 0. The shard now contains 18 full fair-regime CUDA rows: three
+      paired cells across two Kodak images at budget 2000. The refreshed local
+      `index.html`, `influence.md`, summary, config, and CSV were copied into
+      committed ARA evidence. Three-pair deltas remain non-promotional but now
+      show `density=variance`, `opacity=constant`, and `lr_schedule=cosine`
+      improving PSNR/MS-SSIM/AUC on the partial slice; Charbonnier and
+      moment-preserving improve final quality but lose AUC.
+    evidence:
+      - "ara/evidence/abl005-cuda-native-fair-shard-2026-07-10/run.md"
+      - "ara/evidence/abl005-cuda-native-fair-shard-2026-07-10/index.html"
+      - "ara/evidence/abl005-cuda-native-fair-shard-2026-07-10/influence.md"
+      - "results/abl005_cuda_native_influence/index.html"
+      - "commit 2c2b3ef"
+    also_depends_on: [N70]
+    status: resolved

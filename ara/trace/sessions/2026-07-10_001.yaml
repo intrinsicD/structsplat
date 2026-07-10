@@ -2,9 +2,9 @@ session:
   id: "2026-07-10_001"
   date: "2026-07-10"
   started: "2026-07-10T11:14+0200"
-  last_turn: "2026-07-10T12:34+0200"
-  turn_count: 4
-  summary: "Added a fair-density default-promotion audit, recomputed the supplied HTML benchmark artifact, kept the pinned best default unchanged, split ABL-005 into CUDA-native and affine quality-only influence shard runners, then extended the CUDA-native fair shard to two seeds for the first Kodak cell with committed evidence."
+  last_turn: "2026-07-10T12:47+0200"
+  turn_count: 5
+  summary: "Added a fair-density default-promotion audit, recomputed the supplied HTML benchmark artifact, kept the pinned best default unchanged, split ABL-005 into CUDA-native and affine quality-only influence shard runners, then extended the CUDA-native fair shard to three paired cells across two Kodak images with committed evidence."
 
 events_logged:
   - turn: 1
@@ -31,6 +31,12 @@ events_logged:
     routing: direct
     provenance: ai-executed
     summary: "Resumed the ABL-005 CUDA-native fair shard for the second seed of the first Kodak cell and refreshed committed index.html evidence."
+  - turn: 5
+    type: experiment
+    id: "N71"
+    routing: direct
+    provenance: ai-executed
+    summary: "Resumed the ABL-005 CUDA-native fair shard for the next Kodak image and refreshed committed index.html evidence."
 
 ai_actions:
   - turn: 1
@@ -70,6 +76,12 @@ ai_actions:
     files_changed:
       - "tasks/ABL-005-fitter-knob-influence-fair-regime.md"
       - "ara/evidence/abl005-cuda-native-fair-shard-2026-07-10/"
+  - turn: 5
+    action: "Ran the next ABL-005 fast-axis fair shard for `kodim04`/2k/seed0, refreshed copied index.html/CSV/summary/config evidence, validated artifact contents, updated the task note, and committed."
+    provenance: ai-executed
+    files_changed:
+      - "tasks/ABL-005-fitter-knob-influence-fair-regime.md"
+      - "ara/evidence/abl005-cuda-native-fair-shard-2026-07-10/"
 
 claims_touched: []
 
@@ -82,6 +94,8 @@ key_context:
     excerpt: "User repeated the agentic workflow request; the selected next bounded task was to start the ABL-005 CUDA-native fair shard and keep index.html evidence committed."
   - turn: 4
     excerpt: "User repeated the agentic workflow request; the selected next bounded task was to continue the ABL-005 CUDA-native fair shard with the next fast-axis rows."
+  - turn: 5
+    excerpt: "User repeated the agentic workflow request; the selected next bounded task was to broaden ABL-005 CUDA-native fair evidence to the next Kodak image."
 
 open_threads:
   - "Continue iterating active tasks after this bounded ABL-004 benchmark-audit slice."
@@ -91,6 +105,7 @@ open_threads:
   - "Run `color_solve=every10` as its own small ABL-005 shard; broad mixed shards block on this slow arm."
   - "Expand ABL-005 fast CUDA-native rows beyond the first `kodim01`/2k/seed0 cell before interpreting any deltas."
   - "Continue expanding ABL-005 beyond `kodim01`/2k seeds 0/1 before considering any fitter-knob default changes."
+  - "Continue expanding ABL-005 beyond `kodim01` and `kodim04` budget-2000 partial coverage before considering any fitter-knob default changes."
   - "Existing `.idea` changes are user/workspace state and remain outside the task commit."
 
 ai_suggestions_pending: []
