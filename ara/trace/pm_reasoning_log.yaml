@@ -347,3 +347,10 @@ entries:
       - "Staged O47 as a constraint rather than crystallizing it: the fragmented/missing master-index state is verified, but no reporting artifact has yet committed to the unified remedy."
       - "Kept intentionally gated FIT-016 5k/Kodak work distinct from missing work; its absence is a valid preregistered stop, whereas BENCH-005 native-authentic multi-budget/RD coverage remains genuinely open."
       - "Added a master results index as an open thread so later work cannot answer the user's visibility question from scattered per-run pages alone."
+  - turn: "2026-07-11_001#1"
+    notes:
+      - "Routed the fixed-storage contract, validation, stopped full run, and user stop pivot as N99-N102 because they respectively record a committed choice, reproducible validation, an executed partial experiment, and an explicit direction change."
+      - "Staged then crystallized O48->H08 via artifact commitment because c1b09aa and BENCH-006 now enforce distinct storage semantics, scored-output convergence endpoints, hold-last AUC, and visible censoring/capacity mismatch."
+      - "Did not crystallize O47: a root-index generator is committed, but the canonical complete report remains absent after the user stopped the run at 1/328 cells."
+      - "Recorded the single completed cell only as execution/accounting evidence and explicitly rejected any all-method ranking from 1/328 coverage."
+      - "Preserved `.idea` as pre-existing user/workspace state and kept it outside both task commits."

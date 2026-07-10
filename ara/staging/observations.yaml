@@ -516,3 +516,14 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O48
+    timestamp: "2026-07-11T01:15+0200"
+    provenance: ai-suggested
+    content: "Equal-storage Gaussian benchmarks must name and separate analytical frozen payload, actual codec stream, source/target/reconstruction containers, and decoded memory; convergence curves/AUC must end at the scored reconstruction, carry early endpoints to a shared horizon, and expose max-horizon censoring and capacity mismatch."
+    context: "BENCH-006 implemented a 168 KiB/5,376-Gaussian lane, portable explicit-input dashboards, strict coverage/error reporting, and output-aligned convergence semantics; commit c1b09aa depends on this rule."
+    potential_type: heuristic
+    bound_to: [N99, N100]
+    promoted: true
+    promoted_to: "logic/solution/heuristics.md:H08"
+    crystallized_via: artifact-commitment
+    stale: false

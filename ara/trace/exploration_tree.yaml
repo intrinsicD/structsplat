@@ -2157,3 +2157,74 @@ tree:
       - "tasks/BENCH-005-native-reference-pipelines.md"
     also_depends_on: [N73, N89, N90, N92, N95]
     status: resolved
+  - id: N99
+    type: decision
+    title: "Define the 168 KiB equal-capacity convergence contract"
+    provenance: ai-executed
+    timestamp: "2026-07-11T01:15+0200"
+    choice: >
+      Interpret the requested 168kb lane as 168 KiB = 172,032 bytes and compare the frozen
+      constant-RGB RS representation at eight float32 scalars per Gaussian (32 B/G), yielding an
+      exact 5,376-Gaussian cap. Keep analytical payload, source/target/reconstruction containers,
+      decoded arrays, and actual SSPL1 streams distinct; align convergence with the scored output
+      and mark max-horizon cells right-censored.
+    alternatives:
+      - "Interpret 168kb as SI 168,000 bytes without disambiguation."
+      - "Use each method's native codec/checkpoint layout and call unequal counts comparable."
+      - "Expose one generic bytes field that mixes containers, decoded memory, and representation rate."
+    evidence:
+      - "c1b09aa"
+      - "benchmarks/storage_budget.py"
+      - "benchmarks/storage_budget_compare.py"
+      - "tasks/BENCH-006-fixed-storage-convergence.md"
+    also_depends_on: [N98]
+    status: resolved
+  - id: N100
+    type: experiment
+    title: "Validate fixed-storage accounting, convergence, and reporting"
+    provenance: ai-executed
+    timestamp: "2026-07-11T01:15+0200"
+    result: >
+      Added storage/harness/dashboard regressions, strict artifact hashes, output-aligned AUC,
+      exact-cap Instant-GI fill, adaptive post-stop optimization, and cap-terminated relocation
+      schedules. Ruff passed and the full suite passed 419/419 with the system libstdc++ preload.
+      Five one-image CUDA calibration cells all used exactly 5,376 Gaussians, produced LPIPS and
+      cold-decode SSPL1 metrics, and reached the declared PSNR-plateau condition; observed fit
+      times were about 21.8-28.0 seconds per cell.
+    evidence:
+      - "tests/test_storage_budget.py"
+      - "tests/test_storage_budget_compare.py"
+      - "tests/test_results_index.py"
+      - "tests/test_fair_density_control_compare.py"
+      - "tests/test_fit_dynamics.py"
+      - "results/_cal_storage_budget/metrics.json"
+      - "results/_cal_storage_methods/metrics.json"
+    also_depends_on: [N99]
+    status: resolved
+  - id: N101
+    type: experiment
+    title: "Start and stop the 328-cell fixed-storage benchmark"
+    provenance: ai-executed
+    timestamp: "2026-07-11T01:15+0200"
+    result: >
+      Launched the committed COCO4 x 41 methods x seeds{0,1} run, then terminated it on the user's
+      explicit stop request while cell 2 was running. One cell completed: best-default on
+      COCO000009/seed0 reached the plateau at 8,201 iterations with exactly 5,376 Gaussians,
+      49.9428 dB PSNR, 0.999787 MS-SSIM, 0.0000606 LPIPS, 45.4467 AUC, and a 48,542-byte SSPL1
+      stream. Coverage is 1/328, so no all-method conclusion or canonical result index exists.
+    evidence:
+      - "ara/evidence/bench006-storage-stopped-2026-07-11/run.md"
+      - "results/storage_budget_168k_all_methods/metrics.jsonl"
+      - "results/storage_budget_168k_all_methods/config.json"
+    also_depends_on: [N99, N100]
+    status: resolved
+  - id: N102
+    type: pivot
+    title: "Stop benchmark execution and commit the implementation"
+    provenance: user
+    timestamp: "2026-07-11T01:15+0200"
+    from: "Complete the 328-cell BENCH-006 run and generate the canonical lane/root dashboards."
+    to: "Terminate execution after the first cell, preserve the resumable journal, and commit all task-scoped changes."
+    trigger: "User instruction: please stop and commit all changes."
+    also_depends_on: [N101]
+    status: resolved

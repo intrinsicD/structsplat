@@ -1,0 +1,78 @@
+session:
+  id: "2026-07-11_001"
+  date: "2026-07-11"
+  started: "2026-07-11T00:43+0200"
+  last_turn: "2026-07-11T01:15+0200"
+  turn_count: 1
+  summary: "Implemented and committed the 168 KiB/5,376-Gaussian all-method convergence lane, passed 419 tests, calibrated CUDA execution, then stopped the 328-cell run at the user's request after 1 completed cell."
+
+events_logged:
+  - turn: 1
+    type: decision
+    id: "N99"
+    routing: direct
+    provenance: ai-executed
+    summary: "Fixed 168 KiB as 172,032 analytical bytes = 5,376 constant-RGB float32 RS Gaussians with separate container/codec/memory fields."
+  - turn: 1
+    type: experiment
+    id: "N100"
+    routing: direct
+    provenance: ai-executed
+    summary: "Validated accounting, convergence, artifact integrity, dashboards, and cap-stable fit behavior with 419 tests and five CUDA calibration cells."
+  - turn: 1
+    type: experiment
+    id: "N101"
+    routing: direct
+    provenance: ai-executed
+    summary: "Started the 328-cell run and stopped after 1 completed cell; recorded exact-cap plateau metrics without drawing a full-run conclusion."
+  - turn: 1
+    type: pivot
+    id: "N102"
+    routing: direct
+    provenance: user
+    summary: "Pivoted from completing the full benchmark to terminating it and committing all task-scoped changes."
+  - turn: 1
+    type: heuristic
+    id: "O48"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized storage-semantics separation and scored-endpoint convergence alignment as H08 via artifact commitment."
+
+ai_actions:
+  - turn: 1
+    action: "Recovered the interrupted session; implemented exact storage accounting, a frozen 41-method convergence wrapper, per-image byte/quality/codec reports, a portable explicit-input results dashboard, cap-stable adaptive/relocation behavior, strict cache/error coverage, tests, docs, and runner; committed c1b09aa."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/storage_budget.py"
+      - "benchmarks/storage_budget_compare.py"
+      - "benchmarks/results_index.py"
+      - "benchmarks/fair_density_control_compare.py"
+      - "src/structsplat/config.py"
+      - "src/structsplat/fit.py"
+      - "scripts/run_storage_budget_168k.sh"
+      - "tests/"
+      - "tasks/BENCH-006-fixed-storage-convergence.md"
+      - "README.md"
+      - "benchmarks/README.md"
+  - turn: 1
+    action: "Ran Ruff, 419/419 tests, storage smoke/calibration cells, started the full 328-cell CUDA benchmark, terminated its process tree on request, and recorded the 1/328 stopped-run evidence."
+    provenance: ai-executed
+    files_changed:
+      - "ara/evidence/bench006-storage-stopped-2026-07-11/run.md"
+      - "tasks/BENCH-006-fixed-storage-convergence.md"
+      - "tasks/INDEX.md"
+
+claims_touched: []
+
+key_context:
+  - turn: 1
+    excerpt: "User requested per-image byte sizes plus an all-method 168kb equal-Gaussian convergence run with the remaining metrics visible in index.html, then explicitly said: please stop and commit all changes."
+
+open_threads:
+  - "BENCH-006 is resumable at 1/328 cells; do not resume until the user requests it."
+  - "Generate the canonical storage-lane and root results/index.html only after a complete or explicitly accepted partial run."
+  - "O47 remains only partly resolved: the generator is committed, but the complete unified user-facing benchmark report was not produced because execution stopped."
+  - "Existing `.idea` changes remain user/workspace state outside task commits."
+
+ai_suggestions_pending:
+  - "If resumed later, use scripts/run_storage_budget_168k.sh; resume validation will reuse the one hash-verified completed cell."

@@ -26,7 +26,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | FIT-014 | Generation-density covariance filtering | implemented/screened — exact and weaker cohort filters lose the COCO4 proxy; default off | FIT-004, CORE-002, COMP-002, BENCH-002 |
 | FIT-015 | Same-final-count best-PSNR checkpoint selection | implemented/confirmed — +0.4884 dB pooled across 72 Kodak trajectories; opt-in for sparse/moderate-density long fits | FIT-001/002, ABL-004, BENCH-005 |
 | FIT-016 | Coarse-to-full loss-target curriculum | implemented/screened — rejected by 500-step guard (−0.1645 dB selected PSNR); default off | FIT-015, HIER-003/004, ABL-004, BENCH-002 |
-| BENCH-006 | Fixed-storage all-method convergence lane | implementation validated — 168 KiB/5,376G accounting and dashboards complete; 328-cell run pending | BENCH-001/002/003/004, COMP-002, ABL-004 |
+| BENCH-006 | Fixed-storage all-method convergence lane | implementation validated — run stopped by user after 1/328 cells; resumable, no full conclusion | BENCH-001/002/003/004, COMP-002, ABL-004 |
 
 ## Retired Done Tasks
 

@@ -32,7 +32,9 @@ payload until a declared plateau criterion or a visible maximum horizon.
 
 ## Status
 
-Implementation and focused validation complete. Full 328-cell run pending.
+Implementation and focused/full-suite validation complete. The 328-cell run was launched and then
+stopped at the user's request after 1 completed cell; the journal is resumable. Evidence:
+`ara/evidence/bench006-storage-stopped-2026-07-11/run.md`. No full-run conclusion is claimed.
 
 ## Depends on
 

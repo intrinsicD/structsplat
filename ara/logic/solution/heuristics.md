@@ -66,3 +66,16 @@
 - **Sensitivity**: high
 - **Code ref**: [`src/structsplat/fit.py`, `benchmarks/fair_density_control_compare.py`, `tasks/FIT-015-full-count-checkpoint-selection.md`]
 - **From staging**: O41
+
+## H08: Separate Storage Semantics and Align Convergence Endpoints
+- **Rationale**: Equal-storage comparisons are only auditable when analytical representation
+  payload, actual codec stream, source/target/reconstruction containers, and decoded memory have
+  distinct fields. A convergence curve must end at the reconstruction that is actually scored
+  (including checkpoint restoration or final solves), use an explicit hold-last rule for early
+  exits, and expose capacity mismatches and max-horizon censoring rather than silently ranking
+  them as equal-rate converged cells.
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Sensitivity**: high
+- **Code ref**: [`benchmarks/storage_budget.py`, `benchmarks/storage_budget_compare.py`, `benchmarks/fair_density_control_compare.py`, `benchmarks/results_index.py`, `tasks/BENCH-006-fixed-storage-convergence.md`]
+- **From staging**: O48
