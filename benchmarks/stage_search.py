@@ -1759,6 +1759,8 @@ def main():
     p.add_argument("--scale-modes", nargs="+", default=None)
     p.add_argument("--scale-cap-modes", nargs="+", default=None,
                    help="none, hard8/hard12, feature8/feature12, feature_cap<N>, or feature_rel")
+    p.add_argument("--background-modes", nargs="+", default=None,
+                   help="off or frac<F>_grid<N>, e.g. frac0.10_grid16")
     p.add_argument("--opacity-modes", nargs="+", default=None)
     p.add_argument("--renderers", nargs="+", default=None)
     p.add_argument("--aa-dilations", type=float, nargs="+", default=None)
@@ -1852,7 +1854,8 @@ def main():
         tensor_colors=a.tensor_colors, density_modes=a.density_modes,
         sampling_modes=a.sampling_modes, orientation_modes=a.orientation_modes,
         color_modes=a.color_modes, scale_modes=a.scale_modes,
-        scale_cap_modes=a.scale_cap_modes, opacity_modes=a.opacity_modes,
+        scale_cap_modes=a.scale_cap_modes, background_modes=a.background_modes,
+        opacity_modes=a.opacity_modes,
         renderers=a.renderers, aa_dilations=a.aa_dilations,
         color_basis_modes=a.color_basis_modes,
         color_solve_modes=a.color_solve_modes,

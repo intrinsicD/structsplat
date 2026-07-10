@@ -20,6 +20,7 @@ from benchmarks.stage_search import (
     _refine_kwargs_from_config,
     _row_temper_kwargs,
     _scale_cap_kwargs,
+    main,
     _state_seed_kwargs,
     _support_fade_kwargs,
     _write_index_html,
@@ -851,3 +852,34 @@ def test_stage_influence_index_ranks_best_delta_first(tmp_path):
     assert "Best AUC" in html
     assert "Fastest fit" in html
     assert paired.index("color_solve=every10") < paired.index("loss=charbonnier")
+
+
+def test_stage_search_module_cli_forwards_background_modes(monkeypatch):
+    import benchmarks.stage_search as stage_search
+
+    captured = {}
+
+    def fake_run_stage_search(images, **kwargs):
+        captured["images"] = images
+        captured.update(kwargs)
+        return []
+
+    monkeypatch.setattr(stage_search, "run_stage_search", fake_run_stage_search)
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "benchmarks.stage_search",
+            "images",
+            "--mode",
+            "influence",
+            "--background-modes",
+            "off",
+            "frac0.05_grid8",
+        ],
+    )
+
+    main()
+
+    assert captured["images"] == ["images"]
+    assert captured["mode"] == "influence"
+    assert captured["background_modes"] == ["off", "frac0.05_grid8"]

@@ -1,7 +1,9 @@
 # ABL-005: Fitter-knob influence pass at the fair regime
 
-**Status: blocked/partial.** The largest unclaimed deltas in the 2026-07 evidence are fitter knobs,
-not init strategies — but none has been isolated at a decision-grade regime.
+**Status: partial.** The largest unclaimed deltas in the 2026-07 evidence are fitter knobs,
+not init strategies — but none has been isolated at a decision-grade regime. The fair protocol is
+now split into CUDA-native knobs and an affine quality-only shard so the known affine renderer
+fallback cannot contaminate speed claims.
 
 ## Context
 `codex_stage_top1` beat the shipped default by +0.26 dB with 108/120 paired wins on the MERGE-001
@@ -56,13 +58,24 @@ so promotion decisions (each via its own ADR) rest on isolated, regime-correct e
   completed 14/14 cells and wrote `index.html`; evidence:
   `ara/evidence/abl005-cli-unblock-2026-07-09/`. The HTML report now marks the best paired-delta
   variants for PSNR, MS-SSIM, AUC, and fit time. This does not resolve the affine-speed blocker.
-- Next action: either implement native CUDA affine-color forward/backward, or split ABL-005 into
-  six CUDA-native knobs plus a separate affine quality-only run that explicitly excludes speed
-  claims until native CUDA affine exists.
+- 2026-07-10: Split the blocked protocol into two reproducible shard scripts. Use
+  `scripts/run_abl005_cuda_native_influence.sh` for the six CUDA-native knobs
+  (`loss=charbonnier`, `density=variance`, `opacity=constant`, `refine=moment_preserving`,
+  `lr_schedule=cosine`, `color_solve=every10`) under `renderer=cuda`; it writes `index.html` and
+  paired `influence.md` and is valid for quality, convergence, and fit-time deltas. Use
+  `scripts/run_abl005_affine_quality_influence.sh` for `color_basis=affine`; it pins the exact
+  reference renderer by default and is quality/convergence evidence only until native CUDA affine
+  backward exists. A tiny two-image smoke completed both scripts and wrote
+  `results/abl005_cuda_native_influence_smoke/index.html` plus
+  `results/abl005_affine_quality_influence_smoke/index.html`; committed smoke note:
+  `ara/evidence/abl005-split-protocol-smoke-2026-07-10/run.md`.
+- Next action: run/resume the CUDA-native shard on the 8-image Kodak screen at the fixed fair
+  regime, then run the affine quality-only shard separately and promote knobs only from paired
+  metrics with no quality/convergence/performance regression.
 
 ## Interfaces touched
-`benchmarks/stage_search.py` (no new code expected — protocol only), `ara/evidence/`,
-`docs/adr/` for promotions.
+`benchmarks/stage_search.py` (protocol runner), `scripts/run_abl005_*_influence.sh`,
+`ara/evidence/`, `docs/adr/` for promotions.
 
 ## Depends on
 ADR-0010, FIT-005/006/007 (axes exist), CORE-006, BENCH-002. Pairs with ABL-006 (shares GPU

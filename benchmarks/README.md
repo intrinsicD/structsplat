@@ -90,6 +90,11 @@ explicit per-level schedules are available as `--pyramid-level-iters`. On the di
 slice, `--pyramid-level-iters 150 1350` repaired the old 750/750 AUC loss while preserving final
 quality (+0.0601 dB vs 750/750 pyramid, +0.0011 AUC vs single). Keep `pyramid=single` as shipped
 default until larger confirmation; use 150/1350 as the pyramid quality candidate.
+ABL-005 uses two fixed shard scripts to avoid mixing implementation-confounded timing with
+decision-grade fitter deltas: `scripts/run_abl005_cuda_native_influence.sh` covers the six
+CUDA-native knobs and can support quality/convergence/speed claims, while
+`scripts/run_abl005_affine_quality_influence.sh` isolates `color_basis=affine` as
+quality/convergence-only until native CUDA affine backward exists.
 
 ```
 python -m benchmarks.stage_search path/to/images --mode influence --budgets 2048 --iters 500
