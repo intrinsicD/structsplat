@@ -1621,3 +1621,396 @@ tree:
       - "commit 95f69b7"
     also_depends_on: [N67]
     status: resolved
+  - id: N74
+    type: experiment
+    title: "Dominance, resume, and provenance audit hardening"
+    provenance: ai-executed
+    timestamp: "2026-07-10T14:34+0200"
+    result: >
+      Converted the fair/default and native pair reports into complete-pair,
+      image-clustered multi-objective audits. Displayed intervals remain
+      marginal 95% bootstrap intervals, while same-direction dominance now
+      requires Bonferroni-adjusted 95% familywise bounds across PSNR,
+      MS-SSIM, AUC, fit time, and total time. Positive deltas always mean
+      better, and over-budget arms are explicitly non-comparable. Hardened
+      native resume identity with schema/adapter/metric revisions, extension
+      hash, growth/timing/LPIPS settings, and device; shared benchmark configs
+      now record StructSplat commit, dirty state, tracked-diff SHA-256, and
+      untracked files. Review-driven tests cover familywise-vs-marginal
+      behavior and incompatible resume keys. Final focused validation passed
+      102 tests, changed-file Ruff passed, and the full suite passed 326 tests.
+    evidence:
+      - "benchmarks/fair_density_control_compare.py"
+      - "benchmarks/native_reference_compare.py"
+      - "benchmarks/_util.py"
+      - "tests/test_fair_density_control_compare.py"
+      - "tests/test_native_reference_compare.py"
+      - "ara/evidence/fair-gaussian-variants-full-external-same-hparams-2026-07-10/default_dominance.csv"
+    also_depends_on: [N67, N73]
+    status: resolved
+  - id: N75
+    type: experiment
+    title: "Native GaussianImage++ matched-axis proxy"
+    provenance: ai-executed
+    timestamp: "2026-07-10T14:34+0200"
+    result: >
+      Implemented and reran an isolated native GaussianImage++ adapter-v2 on
+      four COCO images x seeds 0/1 at max-side 160, cap 640, and 500 requested
+      steps, paired with an LPIPS-enabled StructSplat-default rerun on the same
+      axes. All 8/8 native cells validated repository commit
+      549cfaab2b400248f685c12782a180f3cfc038b0, exact bundled-extension path
+      and SHA-256, requested axes, finite float reconstruction, complete
+      per-step trajectory, selected checkpoint, and synchronized renderer
+      timing. Native-minus-StructSplat means were -5.0678 dB PSNR, -0.05142
+      proxy MS-SSIM, -0.1886 LPIPS gain, -7.1638 AUC, and +0.4284 s fit-time
+      gain: a short-horizon time-quality tradeoff. Upstream GI++ restores its
+      best training-PSNR checkpoint; all eight cells selected step 500/500,
+      so that native selection asymmetry did not alter these endpoints.
+    evidence:
+      - "ara/evidence/bench005-native-gi-plus-proxy-2026-07-10/config.json"
+      - "ara/evidence/bench005-native-gi-plus-proxy-2026-07-10/metrics.csv"
+      - "ara/evidence/bench005-native-gi-plus-proxy-2026-07-10/paired_native_vs_structsplat_summary.csv"
+      - "ara/evidence/bench005-native-gi-plus-proxy-2026-07-10/summary.md"
+      - "tasks/BENCH-005-native-reference-pipelines.md"
+    also_depends_on: [N73, N74]
+    status: resolved
+  - id: N76
+    type: experiment
+    title: "FIT-013 geometry-consistent Sobel regularization"
+    provenance: ai-executed
+    timestamp: "2026-07-10T14:34+0200"
+    result: >
+      Implemented cached channel-wise Sobel gradients and the
+      target-gradient-weighted discrepancy from arXiv:2512.24018, with
+      config/CLI/history metadata and dense/intermittent fair-harness arms.
+      On COCO4 x seeds 0/1 at cap 640/500 steps, dense weight 0.015 gained
+      +0.1887 dB PSNR, +0.00086 MS-SSIM, +0.1132 AUC, and +0.0047 LPIPS gain
+      versus the paired default, with -0.0888 s mean fit-time gain. On held-out
+      Kodak4 at native 768x512, cap 2000, 1500 steps, seed 0, it gained
+      +0.1998 dB PSNR, +0.01016 MS-SSIM, +0.1756 AUC, and +0.01533 LPIPS gain
+      but cost 2.189 s fit time. Every-two recovered 1.939 s versus default on
+      Kodak but was quality-neutral overall; every-four was weaker. The dense
+      arm remains opt-in and the pinned default is unchanged.
+    evidence:
+      - "ara/evidence/fit013-geometry-consistency-2026-07-10/proxy/default_dominance.csv"
+      - "ara/evidence/fit013-geometry-consistency-2026-07-10/schedule/default_dominance.csv"
+      - "ara/evidence/fit013-geometry-consistency-2026-07-10/kodak4/default_dominance.csv"
+      - "tasks/FIT-013-geometry-consistent-regularization.md"
+      - "src/structsplat/fit.py"
+    also_depends_on: [N54, N74]
+    status: resolved
+  - id: N77
+    type: dead_end
+    title: "Manual sliced Sobel stencil optimization"
+    provenance: ai-executed
+    timestamp: "2026-07-10T14:34+0200"
+    hypothesis: >
+      Replacing two cached grouped 3x3 convolutions with explicit tensor
+      slicing and arithmetic would remove enough GCR overhead to make the
+      quality candidate speed-neutral.
+    failure_mode: >
+      The sliced implementation launched many elementwise CUDA kernels and
+      was substantially slower than the cached grouped-convolution version
+      on the same COCO proxy. It was reverted before final validation.
+    lesson: >
+      Retain grouped convolutions; pursue a single fused/compiled Sobel kernel
+      or late-phase objective schedule rather than decomposing the stencil
+      into Python-level tensor operations.
+    also_depends_on: [N76]
+    status: resolved
+  - id: N78
+    type: decision
+    title: "Keep the balanced default; retain dense GCR as opt-in"
+    provenance: ai-executed
+    timestamp: "2026-07-10T14:34+0200"
+    choice: >
+      Keep `structsplat_best_default` and shipped
+      `geometry_loss_weight=0`. Retain `structsplat_best_gcr015` as an explicit
+      quality/convergence candidate, reject every-four, and require broader
+      randomized multi-density confirmation plus synchronized timing before
+      any promotion.
+    alternatives:
+      - "Promote dense GCR 0.015 from its quality gains despite its speed cost."
+      - "Promote every-two as a speed compromise despite unstable quality."
+      - "Remove the GCR feature after it failed the balanced gate."
+    evidence:
+      - "N76"
+      - "N77"
+      - "ara/evidence/fit013-geometry-consistency-2026-07-10/"
+      - "tasks/FIT-013-geometry-consistent-regularization.md"
+    also_depends_on: [N73, N76, N77]
+    status: resolved
+  - id: N79
+    type: experiment
+    title: "Native Image-GS v2 fixed-N matched-axis proxy"
+    provenance: ai-executed
+    timestamp: "2026-07-10T15:36+0200"
+    result: >
+      Built an isolated native Image-GS adapter/harness around official commit
+      03088368d42684fb54225c981cfd94b58cc0393a, its bundled gsplat build, and
+      release-era fused-ssim commit b4fd8324e81c48c9b2b9f62e1b9c6431fece6ab3.
+      Hardened repository/build/dependency/device/source provenance, decoded-target
+      hashing, cached-manifest validation, terminal float reconstruction, analytical-vs-
+      actual-rate separation, synchronized render timing, and explicit algorithm profiles.
+      On COCO4 x seeds 0/1 at max-side 160, cap/start 640, and 500 steps, 8/8 cells
+      succeeded. Native-minus-StructSplat gains were -3.6011 dB PSNR, -0.01879 proxy
+      MS-SSIM, and -0.1842 LPIPS; the familywise final-quality relation supports
+      StructSplat on this fixed-N ablation. Timing/AUC remain diagnostic and the active
+      Python/Torch/CUDA environment differs from the official environment.
+    evidence:
+      - "ara/evidence/bench005-native-image-gs-2026-07-10/fixed_config.json"
+      - "ara/evidence/bench005-native-image-gs-2026-07-10/fixed_paired_summary.csv"
+      - "ara/evidence/bench005-native-image-gs-2026-07-10/fixed_summary.md"
+      - "benchmarks/native_image_gs_compare.py"
+      - "benchmarks/native_runners/image_gs.py"
+      - "tasks/BENCH-005-native-reference-pipelines.md"
+    also_depends_on: [N73, N74, N75]
+    status: resolved
+  - id: N80
+    type: experiment
+    title: "Image-GS SIGGRAPH25 5k algorithm-profile proxy"
+    provenance: ai-executed
+    timestamp: "2026-07-10T15:36+0200"
+    result: >
+      Ran the paper-aligned Image-GS 5,000-step constant-LR, 16-bit analytical-payload
+      algorithm profile with native progressive allocation on the same four decoded COCO
+      targets, cap 640/start 320, seed 0, paired to a fresh 5,000-step StructSplat-default
+      rerun. All 4/4 cells succeeded. Image-GS-minus-StructSplat gains were -0.3840 dB
+      PSNR (95% CI [-2.3698,+1.1997]), +0.01608 proxy MS-SSIM
+      [+0.00074,+0.03142], and -0.0443 LPIPS gain [-0.0652,-0.0243]. The result is a
+      heterogeneous one-seed tradeoff, not an official-environment, full-resolution,
+      byte-matched RD, or global dominance result.
+    evidence:
+      - "ara/evidence/bench005-native-image-gs-2026-07-10/siggraph25_config.json"
+      - "ara/evidence/bench005-native-image-gs-2026-07-10/siggraph25_paired_summary.csv"
+      - "ara/evidence/bench005-native-image-gs-2026-07-10/siggraph25_summary.md"
+      - "tasks/BENCH-005-native-reference-pipelines.md"
+    also_depends_on: [N79]
+    status: resolved
+  - id: N81
+    type: experiment
+    title: "FIT-014 generation-density covariance filter"
+    provenance: ai-executed
+    timestamp: "2026-07-10T15:36+0200"
+    result: >
+      Implemented the GaussianImage++ birth-cohort covariance rule
+      s=min(300,HW/(alpha*N_after)) across GaussianField lifecycle, normalized/custom-CUDA/
+      gsplat render paths, sampled-add/duplicate/relocation/pruning, NPZ, codec
+      materialization, QAT/rate, pyramid/generation, config, and CLI. Default mode allocates
+      no filter state. Focused lifecycle/renderer/codec tests and the full suite passed.
+      Screened alpha={9*pi,18*pi,36*pi} against the pinned default on COCO4 x seeds 0/1,
+      max-side 160, cap 640/start 320, 500 steps. Candidate PSNR gains were respectively
+      -2.3587, -1.0799, and -0.4362 dB; every arm also lost proxy MS-SSIM, AUC, and LPIPS.
+    evidence:
+      - "ara/evidence/fit014-generation-caf-2026-07-10/default_dominance.csv"
+      - "ara/evidence/fit014-generation-caf-2026-07-10/summary.md"
+      - "tasks/FIT-014-generation-density-covariance-filter.md"
+      - "src/structsplat/gaussians.py"
+      - "src/structsplat/fit.py"
+      - "tests/test_covariance_filter.py"
+    also_depends_on: [N74]
+    status: resolved
+  - id: N82
+    type: dead_end
+    title: "Persistent native cohort covariance filtering in normalized StructSplat"
+    provenance: ai-executed
+    timestamp: "2026-07-10T15:36+0200"
+    hypothesis: >
+      A faithful GaussianImage++ generation-density covariance floor would improve sparse
+      coverage and perceptual/convergence quality when transferred to the pinned StructSplat
+      default.
+    failure_mode: >
+      The native 9*pi strength lost 2.3587 dB PSNR and all other aggregate quality/
+      convergence metrics. Half- and quarter-variance controls remained negative on every
+      aggregate and approached the unfiltered baseline monotonically rather than revealing a
+      positive operating point.
+    lesson: >
+      Persistent additive-renderer covariance dilation does not transfer directly to the
+      normalized compositor plus strong WSE/feature-cap initialization. Keep the primitive
+      available for research/codec compatibility, but do not fund broader confirmation of the
+      persistent form; any revisit should test a released/materialized coarse-to-fine schedule.
+    also_depends_on: [N81]
+    status: resolved
+  - id: N83
+    type: decision
+    title: "Keep generation-density covariance filtering default-off"
+    provenance: ai-executed
+    timestamp: "2026-07-10T15:36+0200"
+    choice: >
+      Keep `covariance_filter_mode=none`, retain generation-density filtering as an explicit
+      research axis, and close the exact persistent mechanism after the bounded strength sweep.
+    alternatives:
+      - "Promote the faithful 9*pi rule from upstream provenance alone."
+      - "Promote the mild 36*pi variant because it is closest to baseline."
+      - "Delete the implementation despite its utility for controlled research and codec materialization."
+    evidence:
+      - "N81"
+      - "N82"
+      - "ara/evidence/fit014-generation-caf-2026-07-10/default_dominance.csv"
+      - "tasks/FIT-014-generation-density-covariance-filter.md"
+    also_depends_on: [N81, N82]
+    status: resolved
+  - id: N84
+    type: decision
+    title: "Treat native Image-GS as horizon-dependent tradeoff evidence"
+    provenance: ai-executed
+    timestamp: "2026-07-10T15:36+0200"
+    choice: >
+      Keep the fixed-N 500-step and SIGGRAPH25 5k lanes separate, make no strict speed/AUC/
+      codec or global-dominance claim, and leave BENCH-005 partial pending official-environment,
+      multi-seed/multi-budget, full-resolution, packed-stream, and time-matched evidence.
+    alternatives:
+      - "Rank Image-GS globally from the short fixed-N loss."
+      - "Promote Image-GS or StructSplat globally from the one-seed 5k tradeoff."
+      - "Collapse analytical bpp and actual codec rate into one comparison."
+    evidence:
+      - "N79"
+      - "N80"
+      - "ara/evidence/bench005-native-image-gs-2026-07-10/"
+      - "tasks/BENCH-005-native-reference-pipelines.md"
+    also_depends_on: [N79, N80]
+    status: resolved
+  - id: N85
+    type: experiment
+    title: "Long-horizon cosine and delayed-cosine screens"
+    provenance: ai-executed
+    timestamp: "2026-07-10T16:29+0200"
+    result: >
+      Added a globally offset-safe delayed-cosine LR start fraction and fair-harness arms, then
+      screened COCO4 at cap 640/start 320. At 5k/seed0, horizon-wide cosine gained +0.2875 dB
+      mean PSNR and +0.01762 MS-SSIM versus independent default cells but lost 3.444 dB on image
+      030. Delaying cosine until after the fifth growth wave removed that catastrophic loss and
+      showed +0.5268 dB mean PSNR in the independent screen. The required 500-step/two-seed guard
+      then lost 0.1532 dB PSNR, 0.00071 MS-SSIM, and 0.0119 LPIPS. Moreover, default and delayed
+      schedules were mathematically identical before the decay point but CUDA histories diverged
+      much earlier, exposing independent-trajectory nondeterminism as a causal confound.
+    evidence:
+      - "results/structsplat_long_horizon_5000_seed0/default_dominance.csv"
+      - "results/structsplat_cosine_tail_500_guard/default_dominance.csv"
+      - "src/structsplat/fit.py"
+      - "tests/test_fit_dynamics.py"
+    also_depends_on: [N73, N74]
+    status: resolved
+  - id: N86
+    type: dead_end
+    title: "Delayed cosine as a general default"
+    provenance: ai-executed
+    timestamp: "2026-07-10T16:29+0200"
+    hypothesis: >
+      Holding full learning rate through the final growth event and cosine-decaying only over the
+      last sixth would stabilize 5k fits without harming the 500-step proxy.
+    failure_mode: >
+      The two-seed 500-step guard significantly lost PSNR/MS-SSIM/LPIPS, and independent CUDA
+      trajectories diverged before the schedule activated, so the apparent 5k paired delta could
+      not be attributed cleanly to the schedule.
+    lesson: >
+      Keep delayed cosine as an experimental axis only. Diagnose endpoint regression with
+      same-trajectory state selection or branch from an identical optimizer/field state; do not
+      infer optimizer-policy causality from independently rerun atomic-CUDA trajectories.
+    also_depends_on: [N85]
+    status: resolved
+  - id: N87
+    type: experiment
+    title: "FIT-015 same-final-count checkpoint selection"
+    provenance: ai-executed
+    timestamp: "2026-07-10T16:29+0200"
+    result: >
+      Implemented `checkpoint_policy=best_psnr_final_count` with a post-transition evaluation
+      stream, best snapshot per count, terminal-state inclusion, and restoration restricted to
+      terminal N. Legacy pre-step history/AUC/target hits/timing remain unchanged; terminal and
+      selected PSNR/SSIM/MS-SSIM/LPIPS are reported separately. On COCO4 x seeds0/1, N=640, 5k,
+      7/8 runs selected an earlier full-count state and gained +0.7702 dB PSNR, +0.00669 SSIM,
+      +0.00892 MS-SSIM, and +0.0076 LPIPS over their own terminal states. At 500 steps, 7/8 kept
+      terminal and mean PSNR gain was +0.0066 dB with tiny metric tradeoffs. Full validation
+      passed 353 repository tests plus Ruff, bash syntax, and diff checks.
+    evidence:
+      - "ara/evidence/fit015-full-count-checkpoint-2026-07-10/run.md"
+      - "ara/evidence/fit015-full-count-checkpoint-2026-07-10/long_checkpoint_selection.csv"
+      - "ara/evidence/fit015-full-count-checkpoint-2026-07-10/short_checkpoint_selection.csv"
+      - "tasks/FIT-015-full-count-checkpoint-selection.md"
+      - "src/structsplat/fit.py"
+    also_depends_on: [N85, N86]
+    status: resolved
+  - id: N88
+    type: decision
+    title: "Keep terminal default; expose checkpoint policy for long fits"
+    provenance: ai-executed
+    timestamp: "2026-07-10T16:29+0200"
+    choice: >
+      Keep shipped `checkpoint_policy=terminal` and `structsplat_best_default` unchanged. Retain
+      `structsplat_best_checkpoint` as the recommended long-horizon quality arm until multiple
+      budgets/resolutions resolve AUC, timing, and per-image PSNR-vs-perceptual tradeoffs.
+    alternatives:
+      - "Promote checkpoint selection globally from the strong 5k endpoint gains."
+      - "Discard checkpoint selection because it does not change AUC."
+      - "Promote delayed cosine instead of selecting a valid full-count endpoint."
+    evidence:
+      - "N85"
+      - "N86"
+      - "N87"
+      - "ara/evidence/fit015-full-count-checkpoint-2026-07-10/"
+    also_depends_on: [N73, N87]
+    status: resolved
+  - id: N89
+    type: experiment
+    title: "Official-environment Image-GS 500/5k lanes"
+    provenance: ai-executed
+    timestamp: "2026-07-10T16:29+0200"
+    result: >
+      Provisioned and verified Image-GS's official Python3.11.10/Torch2.4.1/CUDA12.4 stack,
+      including pinned fused-SSIM and bundled gsplat binaries, then reran hash-verified COCO
+      lanes. At fixed-N 500 steps x seeds0/1, Image-GS minus terminal StructSplat was -3.6639 dB
+      PSNR, -0.01907 proxy MS-SSIM, -0.1773 LPIPS, and -2.7060 diagnostic AUC; familywise final
+      quality supports StructSplat on this bounded ablation. At SIGGRAPH25 5k/seed0, Image-GS
+      versus terminal default was +0.2201 dB PSNR, +0.01959 MS-SSIM, -0.0369 LPIPS; versus the
+      checkpoint candidate it was -0.3601 dB PSNR, +0.01038 MS-SSIM, -0.0566 LPIPS. Both 5k
+      comparisons are tradeoffs, not dominance.
+    evidence:
+      - "ara/evidence/bench005-official-native-references-2026-07-10/run.md"
+      - "ara/evidence/bench005-official-native-references-2026-07-10/image_gs_500_vs_default.csv"
+      - "ara/evidence/bench005-official-native-references-2026-07-10/image_gs_5000_vs_checkpoint.csv"
+      - "results/native_envs/image_gs_official/"
+    also_depends_on: [N79, N80, N87]
+    status: resolved
+  - id: N90
+    type: experiment
+    title: "Official base-GaussianImage native 500/5k lanes"
+    provenance: ai-executed
+    timestamp: "2026-07-10T16:29+0200"
+    result: >
+      Added a clean official GaussianImage checkout/environment, isolated native runner, and
+      provenance-valid central-metric harness at commits d53393bee7c9fbb24e3510614e3ff2c85b8fbbc1
+      / bcca3ecae966a052e3bf8dd1ff9910cf7b8f851d. At fixed-N 500 steps x seeds0/1,
+      GaussianImage was 0.2825 s faster than terminal StructSplat but lost 13.7463 dB PSNR,
+      0.25929 MS-SSIM, 0.5037 LPIPS, and 14.6578 AUC. At 5k/seed0 versus the checkpoint
+      candidate, GaussianImage was 6.4448 s faster and +0.01298 MS-SSIM, while StructSplat was
+      +0.1207 dB PSNR, +0.0253 LPIPS gain, and +1.5337 AUC: a horizon-dependent tradeoff.
+    evidence:
+      - "ara/evidence/bench005-official-native-references-2026-07-10/run.md"
+      - "ara/evidence/bench005-official-native-references-2026-07-10/gaussianimage_500_vs_default.csv"
+      - "ara/evidence/bench005-official-native-references-2026-07-10/gaussianimage_5000_vs_checkpoint.csv"
+      - "benchmarks/native_gaussianimage_compare.py"
+      - "results/native_envs/gaussianimage_official/provenance/verify.json"
+    also_depends_on: [N75, N87, N89]
+    status: resolved
+  - id: N91
+    type: decision
+    title: "Preserve horizon- and metric-specific native claim boundaries"
+    provenance: ai-executed
+    timestamp: "2026-07-10T16:29+0200"
+    choice: >
+      Report 500-step and 5k native lanes separately; pair both terminal and checkpoint
+      StructSplat endpoints; make no universal, strict timing/AUC, packed-codec, or full-resolution
+      dominance claim. Keep BENCH-005 partial pending broader seeds/budgets/native resolutions,
+      published 50k/QAT-RD tracks, and learned Instant-GI provisioning.
+    alternatives:
+      - "Use the short proxy to rank GaussianImage globally."
+      - "Declare StructSplat dominant from checkpoint PSNR/LPIPS alone."
+      - "Declare Image-GS/GaussianImage dominant from MS-SSIM or speed alone."
+    evidence:
+      - "N89"
+      - "N90"
+      - "ara/evidence/bench005-official-native-references-2026-07-10/"
+      - "tasks/BENCH-005-native-reference-pipelines.md"
+    also_depends_on: [N84, N88, N89, N90]
+    status: resolved

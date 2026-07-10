@@ -174,7 +174,10 @@ def _decode_stream(payload: bytes, codec: str, raw_len: int | None) -> bytes:
 
 def _params(field: GaussianField):
     means = field.means.detach().cpu().numpy().astype(np.float64)
-    log_scales = field.log_scales.detach().cpu().numpy().astype(np.float64)
+    # Codec v1 has no per-row covariance-filter stream. Fold the fixed isotropic variance into
+    # the two RS scales; this preserves the exact rendered covariance without spending bits on
+    # derivable birth-cohort metadata.
+    log_scales = field.effective_log_scales().detach().cpu().numpy().astype(np.float64)
     theta = np.mod(field.rotations.detach().cpu().numpy().astype(np.float64), np.pi)
     colors = field.colors.detach().cpu().numpy().astype(np.float64)
     opacity_p = None
@@ -189,7 +192,7 @@ def color_ranges(field: GaussianField) -> tuple[list[float], list[float]]:
 
 
 def scale_ranges(field: GaussianField) -> tuple[list[float], list[float]]:
-    s = field.log_scales.detach().cpu().numpy()
+    s = field.effective_log_scales().detach().cpu().numpy()
     return s.min(axis=0).tolist(), s.max(axis=0).tolist()
 
 
@@ -266,7 +269,7 @@ def encode(field: GaussianField, H: int, W: int, cfg: CodecConfig | None = None,
     ]
     if opacity_p is not None:
         streams.append(_pack(_quant(opacity_p, 0.0, 1.0, cfg.bits_opacity), cfg.bits_opacity))
-    header = json.dumps({
+    header_data = {
         "n": int(n), "H": int(H), "W": int(W),
         "bits": [cfg.bits_means, cfg.bits_scales, cfg.bits_rot, cfg.bits_colors],
         "morton": bool(cfg.morton_reorder),
@@ -288,7 +291,12 @@ def encode(field: GaussianField, H: int, W: int, cfg: CodecConfig | None = None,
         "sigma_cutoff": float(fcfg.sigma_cutoff),
         "support_fade": bool(fcfg.support_fade),
         "render_chunk": int(fcfg.render_chunk),
-    }).encode()
+    }
+    # Keep default-off codec bytes exactly backward-compatible; the marker is diagnostic only
+    # and is needed only when materialization actually occurred.
+    if field.filter_variance is not None:
+        header_data["covariance_filter_materialized"] = True
+    header = json.dumps(header_data).encode()
     blob = _MAGIC + struct.pack("<I", len(header)) + header
     for s in streams:
         payload = _encode_stream(s, cfg)
@@ -416,7 +424,7 @@ def quantized_view(field: GaussianField, H: int, W: int, cfg: CodecConfig) -> Ga
     chi = torch.as_tensor(chi, dtype=field.colors.dtype, device=field.colors.device)
     means = torch.stack([_ste(field.means[:, 0], 0.0, W - 1.0, cfg.bits_means),
                          _ste(field.means[:, 1], 0.0, H - 1.0, cfg.bits_means)], dim=1)
-    log_scales = _ste(field.log_scales, slo, shi, cfg.bits_scales)
+    log_scales = _ste(field.effective_log_scales(), slo, shi, cfg.bits_scales)
     theta = (
         _ste_circular(field.rotations, float(np.pi), cfg.bits_rot)
         if cfg.rot_circular
@@ -472,8 +480,21 @@ def qat_finetune(field: GaussianField, target: torch.Tensor, fcfg: FitConfig,
         loss.backward()
         opt.step()
         with torch.no_grad():
-            field.log_scales.copy_(torch.maximum(torch.minimum(field.log_scales, scale_hi),
-                                                 scale_lo))
+            if field.filter_variance is None:
+                base_lo, base_hi = scale_lo, scale_hi
+            else:
+                variance = field.filter_variance.to(
+                    device=field.log_scales.device, dtype=field.log_scales.dtype
+                ).reshape(-1, 1)
+                base_lo = 0.5 * torch.log(
+                    (torch.exp(2.0 * scale_lo) - variance).clamp_min(1e-6)
+                )
+                base_hi = 0.5 * torch.log(
+                    (torch.exp(2.0 * scale_hi) - variance).clamp_min(1e-6)
+                )
+            field.log_scales.copy_(
+                torch.maximum(torch.minimum(field.log_scales, base_hi), base_lo)
+            )
         if verbose and it % 50 == 0:
             print(f"  qat iter {it:4d} loss {loss.item():.5f}")
     return ccfg

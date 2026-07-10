@@ -7,10 +7,13 @@ method with zero ok rows yields ``None`` rather than raising ``StatisticsError``
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import os
+from pathlib import Path
 from statistics import mean, pstdev
+import subprocess
 
 
 def package_versions() -> dict:
@@ -40,6 +43,43 @@ def package_versions() -> dict:
     return out
 
 
+def repository_state() -> dict:
+    """Record source provenance without embedding the potentially large working diff."""
+    root = Path(__file__).resolve().parents[1]
+    try:
+        commit = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=root, text=True, stderr=subprocess.DEVNULL
+        ).strip()
+        status = subprocess.check_output(
+            ["git", "status", "--porcelain", "--untracked-files=normal"],
+            cwd=root,
+            text=True,
+            stderr=subprocess.DEVNULL,
+        )
+        tracked_diff = subprocess.check_output(
+            ["git", "diff", "--binary", "HEAD"], cwd=root, stderr=subprocess.DEVNULL
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return {
+            "root": str(root),
+            "commit": None,
+            "dirty": None,
+            "tracked_diff_sha256": None,
+            "untracked_files": [],
+        }
+    untracked = [
+        line[3:] for line in status.splitlines()
+        if line.startswith("?? ")
+    ]
+    return {
+        "root": str(root),
+        "commit": commit,
+        "dirty": bool(status.strip()),
+        "tracked_diff_sha256": hashlib.sha256(tracked_diff).hexdigest(),
+        "untracked_files": untracked,
+    }
+
+
 def run_config(resolved: dict, device: str | None = None, extra: dict | None = None) -> dict:
     """Assemble a self-contained run record: resolved args + device + versions.
 
@@ -47,7 +87,12 @@ def run_config(resolved: dict, device: str | None = None, extra: dict | None = N
     renderer travel with the results and reproducibility is bit-exact only on CPU (documented in
     the benchmark skill / README).
     """
-    cfg = {"resolved": _jsonable(resolved), "device": device, "versions": package_versions()}
+    cfg = {
+        "resolved": _jsonable(resolved),
+        "device": device,
+        "versions": package_versions(),
+        "repository": repository_state(),
+    }
     if extra:
         cfg.update(_jsonable(extra))
     return cfg

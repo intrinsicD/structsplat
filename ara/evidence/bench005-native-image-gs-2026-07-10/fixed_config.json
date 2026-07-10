@@ -1,0 +1,146 @@
+{
+  "resolved": {
+    "protocol": "matched_steps_fixed_n",
+    "profile": "matched_steps_fixed_n",
+    "profile_description": "Common final N and requested steps; Image-GS progressive allocation is disabled, so it starts at full N while StructSplat retains its pinned growth policy.",
+    "method": "image_gs_native",
+    "schema_version": 1,
+    "adapter_revision": "image_gs_v2",
+    "metric_protocol_revision": 2,
+    "repo_root": "/home/alex/Documents/image-gs",
+    "expected_image_gs_commit": "03088368d42684fb54225c981cfd94b58cc0393a",
+    "repo_commit": "03088368d42684fb54225c981cfd94b58cc0393a",
+    "repo_tree": "12d509beeabd8908d41e4cb51549832f4bd5ccc6",
+    "repo_dirty": false,
+    "repo_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "repo_status": [],
+    "repo_origin_url": "https://github.com/NYU-ICL/image-gs.git",
+    "python_executable": "/home/alex/Documents/structsplat/results/native_envs/image_gs/bin/python",
+    "python_version": "3.12.9 | packaged by Anaconda, Inc. | (main, Feb  6 2025, 18:56:27) [GCC 11.2.0]",
+    "environment_root": "/home/alex/Documents/structsplat/results/native_envs/image_gs",
+    "torch_version": "2.9.0+cu128",
+    "torch_cuda_version": "12.8",
+    "cuda_available": true,
+    "cuda_device_count": 1,
+    "cuda_devices": [
+      {
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 3050",
+        "total_memory": 8199143424,
+        "compute_capability": [
+          8,
+          6
+        ]
+      }
+    ],
+    "gsplat_module": "/home/alex/Documents/structsplat/results/native_envs/image_gs/lib/python3.12/site-packages/gsplat/__init__.py",
+    "gsplat_csrc": "/home/alex/Documents/structsplat/results/native_envs/image_gs/lib/python3.12/site-packages/gsplat/csrc.so",
+    "gsplat_csrc_sha256": "945926d4ab3b117506536604b12abb9b626383f5438d7c3d79ad83d262d66de5",
+    "gsplat_python_source_sha256": "6af77aef229ae61e64e5db1cafb34136e4d3bac87941150e68ac4b192afa01b7",
+    "gsplat_direct_url_path": "/home/alex/Documents/structsplat/results/native_envs/image_gs/lib/python3.12/site-packages/gsplat-1.4.0.dist-info/direct_url.json",
+    "gsplat_direct_url": {
+      "dir_info": {},
+      "url": "file:///home/alex/Documents/image-gs/gsplat"
+    },
+    "fused_ssim_module": "/home/alex/Documents/structsplat/results/native_envs/image_gs/lib/python3.12/site-packages/fused_ssim/__init__.py",
+    "fused_ssim_csrc": "/home/alex/Documents/structsplat/results/native_envs/image_gs/lib/python3.12/site-packages/fused_ssim_cuda.cpython-312-x86_64-linux-gnu.so",
+    "fused_ssim_csrc_sha256": "39c2f2b8680e3404baf182b785cd6cdc40773d9ca5ce2f6732829013dcbd6e52",
+    "fused_ssim_python_sha256": "44b6312d82c71a1c4370d716ab308188253df7e4eb1e0d0387e36edc12607acc",
+    "native_dependency_versions": {
+      "numpy": "2.1.3",
+      "scipy": "1.17.0",
+      "opencv-python": "4.13.0.92",
+      "scikit-image": "0.26.0",
+      "torchvision": "0.24.0",
+      "pillow": "12.0.0",
+      "lpips": "0.1.4",
+      "pytorch-msssim": "1.0.0",
+      "torchmetrics": "1.9.0"
+    },
+    "fused_ssim_direct_url_path": "/home/alex/Documents/structsplat/results/native_envs/image_gs/lib/python3.12/site-packages/fused_ssim-0.0.0.dist-info/direct_url.json",
+    "fused_ssim_direct_url": {
+      "url": "https://github.com/rahul-goel/fused-ssim/",
+      "vcs_info": {
+        "commit_id": "b4fd8324e81c48c9b2b9f62e1b9c6431fece6ab3",
+        "requested_revision": "b4fd8324e81c48c9b2b9f62e1b9c6431fece6ab3",
+        "vcs": "git"
+      }
+    },
+    "repo_gsplat_python_source_sha256": "6af77aef229ae61e64e5db1cafb34136e4d3bac87941150e68ac4b192afa01b7",
+    "fused_ssim_commit": "b4fd8324e81c48c9b2b9f62e1b9c6431fece6ab3",
+    "libstdcxx_preload": "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33",
+    "libstdcxx_sha256": "1fd75fe70354a416d75aef22bcae68c47bd25d20e2d0568c30b1a9838cf62f11",
+    "official_environment_expected": {
+      "python": "3.11.10",
+      "torch": "2.4.1",
+      "cuda": "12.4"
+    },
+    "official_environment_match": false,
+    "native_adapter_source_sha256": "8dfd44d21afff9b5378fcf2304286a24340ad2cdfc757642355a82ee4c373b38",
+    "native_harness_source_sha256": "fbde8240105aa29f8ffe36e3ad638442834854eae81454bd28c2fed7448e2dc3",
+    "shared_compare_source_sha256": "54aaece936e369ce36d91b0c52a178c233b1c1b9e976ade6c1522fea6bae6321",
+    "structsplat_metrics_source_sha256": "8d9963efa6d3e7b687e349398079ff058326653eeaac47fdf5d1b4778ce8a8b7",
+    "metric_python_version": "3.12.9 | packaged by Anaconda, Inc. | (main, Feb  6 2025, 18:56:27) [GCC 11.2.0]",
+    "metric_torch_version": "2.9.0+cu128",
+    "metric_numpy_version": "2.1.3",
+    "metric_lpips_version": "0.1.4",
+    "metric_torchvision_version": "0.24.0",
+    "image_gs_python": "/home/alex/Documents/structsplat/results/native_envs/image_gs/bin/python",
+    "native_device": "cuda:0",
+    "metric_device": "cuda",
+    "images": [
+      "tests/test_images/COCO_train2014_000000000009.jpg",
+      "tests/test_images/COCO_train2014_000000000025.jpg",
+      "tests/test_images/COCO_train2014_000000000030.jpg",
+      "tests/test_images/COCO_train2014_000000000034.jpg"
+    ],
+    "max_sides": [
+      160
+    ],
+    "budgets": [
+      640
+    ],
+    "start_fraction": 0.5,
+    "iters": 500,
+    "seeds": [
+      0,
+      1
+    ],
+    "growth_waves": 4,
+    "render_warmup": 10,
+    "render_repeats": 50,
+    "lpips": true,
+    "structsplat_metrics": "results/structsplat_default_matched_proxy_v2/metrics.json",
+    "resume": true,
+    "max_new_cells": null
+  },
+  "device": "cuda",
+  "versions": {
+    "torch": "2.9.0+cu128",
+    "torch_cuda": "12.8",
+    "cuda_available": true,
+    "numpy": "2.1.3",
+    "structsplat": "0.1.0"
+  },
+  "repository": {
+    "root": "/home/alex/Documents/structsplat",
+    "commit": "9c13583d68acdb75751f81d458ae9b576171e21d",
+    "dirty": true,
+    "tracked_diff_sha256": "280ac3cf2274739806e37bef89aa8d159c83fac498458ef61bd3d5df25bc1436",
+    "untracked_files": [
+      "ara/evidence/bench005-native-gi-plus-proxy-2026-07-10/",
+      "ara/evidence/fair-gaussian-variants-full-external-same-hparams-2026-07-10/default_dominance.csv",
+      "ara/evidence/fit013-geometry-consistency-2026-07-10/",
+      "benchmarks/native_image_gs_compare.py",
+      "benchmarks/native_reference_compare.py",
+      "benchmarks/native_runners/",
+      "scripts/setup_native_image_gs_env.sh",
+      "tasks/BENCH-005-native-reference-pipelines.md",
+      "tasks/FIT-013-geometry-consistent-regularization.md",
+      "tasks/FIT-014-generation-density-covariance-filter.md",
+      "tests/test_covariance_filter.py",
+      "tests/test_native_image_gs_compare.py",
+      "tests/test_native_reference_compare.py"
+    ]
+  }
+}

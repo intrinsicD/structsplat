@@ -163,7 +163,7 @@ observations:
     promoted: false
     promoted_to: null
     crystallized_via: null
-    stale: false
+    stale: true
   - id: O16
     timestamp: "2026-07-04T13:52+0200"
     provenance: ai-suggested
@@ -229,7 +229,7 @@ observations:
     promoted: false
     promoted_to: null
     crystallized_via: null
-    stale: false
+    stale: true
   - id: O22
     timestamp: "2026-07-05T20:05+0200"
     provenance: ai-suggested
@@ -240,7 +240,7 @@ observations:
     promoted: false
     promoted_to: null
     crystallized_via: null
-    stale: false
+    stale: true
   - id: O23
     timestamp: "2026-07-05T21:22+0200"
     provenance: ai-suggested
@@ -251,7 +251,7 @@ observations:
     promoted: false
     promoted_to: null
     crystallized_via: null
-    stale: false
+    stale: true
   - id: O24
     timestamp: "2026-07-05T21:37+0200"
     provenance: ai-suggested
@@ -262,7 +262,7 @@ observations:
     promoted: false
     promoted_to: null
     crystallized_via: null
-    stale: false
+    stale: true
   - id: O25
     timestamp: "2026-07-05T23:59+0200"
     provenance: ai-suggested
@@ -295,7 +295,7 @@ observations:
     promoted: false
     promoted_to: null
     crystallized_via: null
-    stale: false
+    stale: true
   - id: O28
     timestamp: "2026-07-05T23:59+0200"
     provenance: ai-suggested
@@ -306,7 +306,7 @@ observations:
     promoted: false
     promoted_to: null
     crystallized_via: null
-    stale: false
+    stale: true
   - id: O29
     timestamp: "2026-07-06T08:10+0200"
     provenance: user
@@ -328,4 +328,147 @@ observations:
     promoted: false
     promoted_to: null
     crystallized_via: null
+    stale: false
+  - id: O31
+    timestamp: "2026-07-10T13:36+0200"
+    provenance: user
+    content: "The N73 result supports `structsplat_best_default` as the best balanced equal-budget default under this proxy gate, not as a strictly dominant method: it trades MS-SSIM and speed against stronger PSNR/AUC, no candidate wins PSNR/MS-SSIM/AUC/speed jointly, and the fixed four-image 640-Gaussian max-side-160 analogue benchmark is insufficient for native external, codec, or paper-grade convergence claims."
+    context: "User supplied an external review of the same-hyperparameter fair benchmark. The review calls for broader images and budgets, native GaussianImage/GaussianImage++/Image-GS pipelines, and LPIPS, bpp/RD, render-FPS, and native-pipeline metrics before making external superiority claims; the user did not explicitly endorse or reject the review."
+    potential_type: claim
+    bound_to: [N73]
+    promoted: true
+    promoted_to: "logic/claims.md:C12"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O32
+    timestamp: "2026-07-10T14:34+0200"
+    provenance: ai-suggested
+    content: "At the COCO4 x seeds{0,1}, max-side-160, cap-640, 500-step matched-axis proxy, native GaussianImage++ is faster than StructSplat default but loses central PSNR, proxy MS-SSIM, LPIPS, and convergence AUC; this is a time-quality tradeoff, not a global method ranking."
+    context: "BENCH-005 adapter-v2 rerun executed upstream GaussianImage++ code in isolated subprocesses, validated commit/extension/axis/history provenance, centrally recomputed metrics, and paired eight cells against an LPIPS-enabled StructSplat-default rerun."
+    potential_type: claim
+    bound_to: [N75]
+    promoted: true
+    promoted_to: "logic/claims.md:C13"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O33
+    timestamp: "2026-07-10T14:34+0200"
+    provenance: ai-suggested
+    content: "Dense geometry-consistent Sobel regularization at weight 0.015 is an opt-in StructSplat quality/convergence candidate, not a balanced default: it improves paired COCO-proxy and Kodak4 quality/AUC means but incurs a clear larger-resolution fit-time cost, while intermittent schedules return most quality gains."
+    context: "FIT-013 implemented the paper-derived loss, swept weights/cadence on COCO4 x two seeds, confirmed the dense candidate on four held-out Kodak images at 2000 Gaussians, and documented timing/replication limits."
+    potential_type: claim
+    bound_to: [N76, N77, N78]
+    promoted: true
+    promoted_to: "logic/claims.md:C14"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O34
+    timestamp: "2026-07-10T14:34+0200"
+    provenance: ai-suggested
+    content: "Multi-objective dominance audits should use the same complete paired cells for every core metric, cluster resampling by source image, orient every delta so positive is better, exclude over-budget arms, and require simultaneous rather than separate marginal support before reporting dominance."
+    context: "Review-driven hardening of the fair and native comparison harnesses replaced ambiguous marginal-CI dominance language with complete-pair, image-clustered, Bonferroni-familywise relations and regression coverage."
+    potential_type: heuristic
+    bound_to: [N74]
+    promoted: true
+    promoted_to: "logic/solution/heuristics.md:H04"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O35
+    timestamp: "2026-07-10T15:36+0200"
+    provenance: ai-suggested
+    content: "At COCO4 x seeds{0,1}, max-side 160, cap/start 640, and 500 steps, provenance-valid native Image-GS fixed-N loses central PSNR, proxy MS-SSIM, and LPIPS to StructSplat default; this is a bounded final-quality result, not strict implementation dominance because initialization, timing, and trajectory semantics differ."
+    context: "BENCH-005 Image-GS adapter-v2 executed 8/8 official-commit native cells, paired only run-recorded decoded-pixel hashes, centrally recomputed final metrics, and excluded non-comparable timing/AUC from the familywise final-quality relation."
+    potential_type: claim
+    bound_to: [N79, N84]
+    promoted: true
+    promoted_to: "logic/claims.md:C15"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O36
+    timestamp: "2026-07-10T15:36+0200"
+    provenance: ai-suggested
+    content: "At the one-seed COCO4 max-side-160 cap-640 5,000-step algorithm-profile lane, native Image-GS and StructSplat form a metric tradeoff: Image-GS is roughly tied in mean PSNR, higher in proxy MS-SSIM, and worse in LPIPS; the lane cannot establish a global winner."
+    context: "Image-GS SIGGRAPH25 constant-LR/16-bit progressive profile was paired to a fresh 5,000-step StructSplat-default rerun on identical decoded targets; official environment, full resolution, additional seeds/budgets, and packed-stream RD remain open."
+    potential_type: claim
+    bound_to: [N80, N84]
+    promoted: true
+    promoted_to: "logic/claims.md:C16"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O37
+    timestamp: "2026-07-10T15:36+0200"
+    provenance: ai-suggested
+    content: "Persistent generation-density birth-cohort covariance filtering is not default-worthy for the current normalized StructSplat recipe: alpha={9*pi,18*pi,36*pi} all lose PSNR, proxy MS-SSIM, AUC, and LPIPS, with weaker filters only approaching the unfiltered baseline."
+    context: "FIT-014 implemented the upstream GaussianImage++ covariance rule across render/lifecycle/codec paths and ran 32 successful COCO4 x two-seed paired cells at cap 640/500 steps. The task and default config commit to leaving the mechanism off."
+    potential_type: claim
+    bound_to: [N81, N82, N83]
+    promoted: true
+    promoted_to: "logic/claims.md:C17"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O38
+    timestamp: "2026-07-10T15:36+0200"
+    provenance: ai-suggested
+    content: "Decision-grade native external comparisons should isolate incompatible repositories, fingerprint repository/dependency/source/binary/device state, separate algorithm profiles and official-environment claims, export float reconstructions, pair run-recorded decoded-pixel hashes, recompute shared final metrics, and keep analytical rate, actual codec bytes, native trajectories, and non-comparable timings distinct."
+    context: "Adversarial review of the new Image-GS harness exposed cache, device, dependency, target-pairing, metric, timing, profile, and rate-provenance failure modes; adapter v2 code/tests/tasks now enforce these boundaries."
+    potential_type: heuristic
+    bound_to: [N74, N79, N80, N84]
+    promoted: true
+    promoted_to: "logic/solution/heuristics.md:H05"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O39
+    timestamp: "2026-07-10T16:29+0200"
+    provenance: ai-suggested
+    content: "Same-final-count best-PSNR checkpoint selection repairs the current pinned recipe's 5k terminal regression (+0.7702 dB PSNR, +0.00892 MS-SSIM, +0.0076 LPIPS within trajectory over eight runs) while being effectively neutral at 500 steps; it is a long-horizon quality candidate, not yet the general default."
+    context: "FIT-015 implemented post-transition state selection, added a causal same-trajectory audit, completed COCO4 x two-seed 500/5k screens, and committed the default-off decision in config/tasks/docs."
+    potential_type: claim
+    bound_to: [N87, N88]
+    promoted: true
+    promoted_to: "logic/claims.md:C18"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O40
+    timestamp: "2026-07-10T16:29+0200"
+    provenance: ai-suggested
+    content: "Checkpoint selection for dynamic-count Gaussian fitting must score post-transition fields, retain the best state per count, include terminal, and restore only a state whose N equals terminal N; otherwise pre-step history/count mismatches can create an invalid equal-budget endpoint."
+    context: "The fitter's legacy history is intentionally pre-step, so FIT-015 added a separate stream after optimizer/count/color transitions and explicit terminal/selected metadata."
+    potential_type: heuristic
+    bound_to: [N87, N88]
+    promoted: true
+    promoted_to: "logic/solution/heuristics.md:H06"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O41
+    timestamp: "2026-07-10T16:29+0200"
+    provenance: ai-suggested
+    content: "When atomic-CUDA optimization trajectories diverge before a candidate policy activates, independent candidate/default deltas cannot establish policy causality; use a same-trajectory endpoint audit or branch from an identical field/optimizer checkpoint."
+    context: "Default and delayed-cosine schedules were identical through the final growth point but their 5k histories diverged much earlier; the 500-step guard also rejected delayed cosine as a general default. FIT-015 adopted within-trajectory selection evidence."
+    potential_type: heuristic
+    bound_to: [N85, N86, N87]
+    promoted: true
+    promoted_to: "logic/solution/heuristics.md:H07"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O42
+    timestamp: "2026-07-10T16:29+0200"
+    provenance: ai-suggested
+    content: "Official-environment Image-GS evidence remains horizon- and metric-dependent: StructSplat wins the bounded fixed-N 500-step final-quality relation, while at 5k the checkpoint candidate has higher PSNR/LPIPS and Image-GS has higher proxy MS-SSIM; neither lane establishes strict implementation or global dominance."
+    context: "BENCH-005 rebuilt Image-GS's official Python/Torch/CUDA stack, reran 500/5k COCO lanes, and paired native rows separately to terminal and checkpoint StructSplat endpoints with decoded-pixel hashes."
+    potential_type: claim
+    bound_to: [N89, N91]
+    promoted: true
+    promoted_to: "logic/claims.md:C19"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O43
+    timestamp: "2026-07-10T16:29+0200"
+    provenance: ai-suggested
+    content: "Native base GaussianImage is not meaningfully judged at the 500-step review proxy and becomes a tradeoff at 5k: it is much faster and slightly higher in proxy MS-SSIM, while the StructSplat checkpoint candidate is higher in PSNR, LPIPS, and AUC."
+    context: "BENCH-005 added a clean official GaussianImage/gsplat environment and native terminal-state harness, then ran COCO4 at fixed N=640 for 500 steps x two seeds and 5k x one seed."
+    potential_type: claim
+    bound_to: [N90, N91]
+    promoted: true
+    promoted_to: "logic/claims.md:C20"
+    crystallized_via: artifact-commitment
     stale: false

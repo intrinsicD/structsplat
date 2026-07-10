@@ -1,6 +1,7 @@
 """Typed configuration objects. Pure-Python (no torch), safe to import anywhere."""
 from __future__ import annotations
 from dataclasses import dataclass, field
+import math
 
 
 DEFAULT_INIT_STRATEGY = "quadtree_wse"
@@ -188,11 +189,16 @@ class FitConfig:
     loss_warmup_iters: int = 0
     loss_warmup_pixel_loss: str = "l2"
     ssim_weight: float = 0.3           # loss = (1-w)*L1 + w*(1-SSIM); Instant-GI/AIR default
+    geometry_loss_weight: float = 0.0  # Sobel gradient-consistency regularizer; 0 disables
+    geometry_loss_every: int = 1       # apply GCR every N steps; active weight scales by N
     ssim_backend: str = "builtin"      # builtin, fused (optional), or auto
     compute_lpips: bool = False        # opt-in: loads a separate AlexNet LPIPS model
     target_psnr: float | None = None   # record iters-to-target if set
     target_psnrs: list[float] = field(default_factory=list)
     log_every: int = 100
+    # Opt-in model selection. The best-PSNR policy evaluates the post-transition field at the
+    # logging cadence and may restore only a checkpoint with the terminal Gaussian count.
+    checkpoint_policy: str = "terminal"  # terminal or best_psnr_final_count
     sigma_cutoff: float = 3.0          # render support radius in std devs
     support_fade: bool = False         # C0 compact support: subtract Gaussian tail at cutoff
     # None preserves support_fade as a static bool. A fraction enables fade only for the early
@@ -200,6 +206,11 @@ class FitConfig:
     support_fade_until_frac: float | None = None
     support_fade_crossfade_iters: int = 10
     aa_dilation: float = 0.0           # EWA-style low-pass: render with Sigma + d*I (px^2)
+    # GaussianImage++-style birth-cohort covariance filtering. Each cohort receives
+    # min(max_variance, H*W/(alpha*N_after)) px^2 of fixed isotropic variance.
+    covariance_filter_mode: str = "none"  # none or generation_density
+    covariance_filter_alpha: float = 9.0 * math.pi
+    covariance_filter_max_variance: float = 300.0
     render_chunk: int = 512            # reference renderer: max(render_chunk,64)*4096 elements
     render_checkpoint: bool = False    # checkpoint reference-render slices to reduce backward memory
     renderer: str = "normalized"       # normalized/additive/cuda/cuda_tiled/gsplat variants
@@ -217,6 +228,9 @@ class FitConfig:
     qat_bits_colors: int = 8
     qat_bits_opacity: int = 8
     lr_schedule: str = "none"          # none, step, or cosine
+    # Fraction of a cosine schedule held at full LR before decay. Zero preserves the
+    # horizon-wide cosine; values near one reserve decay for a final stabilization tail.
+    lr_cosine_start_frac: float = 0.0
     lr_decay_every: int | None = None
     lr_decay_gamma: float = 0.5
     prune_every: int | None = None
@@ -266,6 +280,44 @@ class FitConfig:
         # NaN renders (CORE-004). Reject it at construction rather than mid-fit.
         if self.aa_dilation < 0.0:
             raise ValueError(f"aa_dilation must be >= 0, got {self.aa_dilation}")
+        if not math.isfinite(self.lr_cosine_start_frac) or not (
+            0.0 <= self.lr_cosine_start_frac < 1.0
+        ):
+            raise ValueError(
+                "lr_cosine_start_frac must be finite and in [0, 1), "
+                f"got {self.lr_cosine_start_frac}"
+            )
+        if self.checkpoint_policy not in ("terminal", "best_psnr_final_count"):
+            raise ValueError(
+                "checkpoint_policy must be terminal or best_psnr_final_count, "
+                f"got {self.checkpoint_policy!r}"
+            )
+        if (
+            self.checkpoint_policy == "best_psnr_final_count"
+            and self.support_fade_until_frac is not None
+        ):
+            raise ValueError(
+                "checkpoint_policy='best_psnr_final_count' does not support scheduled "
+                "support fade; checkpoint scores would use different render policies"
+            )
+        if self.covariance_filter_mode not in ("none", "generation_density"):
+            raise ValueError(
+                "covariance_filter_mode must be none or generation_density, "
+                f"got {self.covariance_filter_mode!r}"
+            )
+        if not math.isfinite(self.covariance_filter_alpha) or self.covariance_filter_alpha <= 0.0:
+            raise ValueError(
+                "covariance_filter_alpha must be > 0, "
+                f"got {self.covariance_filter_alpha}"
+            )
+        if (
+            not math.isfinite(self.covariance_filter_max_variance)
+            or self.covariance_filter_max_variance < 0.0
+        ):
+            raise ValueError(
+                "covariance_filter_max_variance must be >= 0, "
+                f"got {self.covariance_filter_max_variance}"
+            )
         if self.support_fade_until_frac is not None and not (
             0.0 <= self.support_fade_until_frac <= 1.0
         ):
@@ -287,6 +339,14 @@ class FitConfig:
             raise ValueError(
                 "color_solve_schedule must be none, every, init, final, on_split, "
                 f"or a + composition, got {self.color_solve_schedule!r}")
+        if (
+            self.checkpoint_policy == "best_psnr_final_count"
+            and "final" in color_solve_tokens
+        ):
+            raise ValueError(
+                "checkpoint_policy='best_psnr_final_count' does not support a final-only "
+                "color solve; restoring an earlier checkpoint would bypass that solve"
+            )
         if self.color_solve_lambda < 0.0:
             raise ValueError(
                 f"color_solve_lambda must be >= 0, got {self.color_solve_lambda}")
@@ -300,6 +360,16 @@ class FitConfig:
                 f"loss_weighting must be none or tensor, got {self.loss_weighting!r}")
         if self.loss_weight_beta < 0.0:
             raise ValueError(f"loss_weight_beta must be >= 0, got {self.loss_weight_beta}")
+        if not math.isfinite(self.geometry_loss_weight) or self.geometry_loss_weight < 0.0:
+            raise ValueError(
+                "geometry_loss_weight must be finite and >= 0, "
+                f"got {self.geometry_loss_weight}"
+            )
+        if self.geometry_loss_every <= 0:
+            raise ValueError(
+                "geometry_loss_every must be > 0, "
+                f"got {self.geometry_loss_every}"
+            )
         if self.lambda_rate < 0.0:
             raise ValueError(f"lambda_rate must be >= 0, got {self.lambda_rate}")
         for name in (

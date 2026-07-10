@@ -110,7 +110,9 @@ def render_gaussian_field(
         cfg.render_chunk,
         cfg.renderer,
         field.opacity_values(),
-        scales=field.scales(),
+        scales=field.effective_scales(
+            cfg.aa_dilation if cfg.renderer in ("gsplat", "cuda_gsplat") else 0.0
+        ),
         rotations=field.rotations,
         support_fade=cfg.support_fade,
         sigma_cutoff=cfg.sigma_cutoff,
@@ -122,6 +124,7 @@ def _bchw_unit(img_hwc: torch.Tensor) -> torch.Tensor:
     return img_hwc.clamp(0.0, 1.0).permute(2, 0, 1).unsqueeze(0).contiguous()
 
 
+@torch.no_grad()
 def rescale_field(
     field: GaussianField,
     src_h: int,
@@ -134,19 +137,73 @@ def rescale_field(
     sy = float(dst_h) / float(src_h)
     dev, dt = field.means.device, field.means.dtype
     scale = torch.tensor([sx, sy], device=dev, dtype=dt)
-    log_scale = torch.log(scale)
     means = field.means.detach().clone() * scale
-    log_scales = field.log_scales.detach().clone() + log_scale
-    scale_max = None
-    if field.scale_max is not None:
-        scale_max = field.scale_max.detach().clone() * scale
+
+    # Pixel-coordinate resizing transforms covariance as D Sigma D, not by independently
+    # multiplying the Gaussian's *local* RS axes.  Those operations agree only for uniform
+    # scaling or axis-aligned Gaussians.  Re-diagonalize the transformed 2x2 covariance so a
+    # rotated anisotropic (and covariance-filtered) field remains exact after a nonuniform resize.
+    # CPU/CUDA linalg kernels do not consistently support float16/bfloat16 eigendecomposition,
+    # while generation defaults to float16.  Do covariance algebra in float32 (float64 stays
+    # float64) and cast the resulting RS parameters back to the field dtype.
+    work_dtype = torch.float64 if dt == torch.float64 else torch.float32
+    # Build the variance after upcasting. ``effective_scales`` squares the base scale in
+    # the field dtype, so a perfectly representable float16 scale above sqrt(65504) would
+    # overflow before the later float32 conversion.
+    log_scales_work = field.log_scales.detach().to(work_dtype)
+    effective_variance = torch.exp(2.0 * log_scales_work)
+    if field.filter_variance is not None:
+        effective_variance = effective_variance + field.filter_variance.detach().to(
+            work_dtype
+        ).reshape(-1, 1)
+    if math.isclose(sx, sy, rel_tol=1e-12, abs_tol=1e-12):
+        log_scales = (
+            0.5 * torch.log(effective_variance.clamp_min(1e-12)) + math.log(sx)
+        ).to(dt)
+        rotations = field.rotations.detach().clone()
+        scale_max = (
+            None if field.scale_max is None
+            else field.scale_max.detach().clone() * sx
+        )
+    else:
+        rotations_work = field.rotations.detach().to(work_dtype)
+        c = torch.cos(rotations_work)
+        s = torch.sin(rotations_work)
+        var_x = c.square() * effective_variance[:, 0] + s.square() * effective_variance[:, 1]
+        var_y = s.square() * effective_variance[:, 0] + c.square() * effective_variance[:, 1]
+        cov_xy = c * s * (effective_variance[:, 0] - effective_variance[:, 1])
+        covariance = torch.stack(
+            [
+                torch.stack([var_x * (sx * sx), cov_xy * (sx * sy)], dim=1),
+                torch.stack([cov_xy * (sx * sy), var_y * (sy * sy)], dim=1),
+            ],
+            dim=1,
+        )
+        eigenvalues, eigenvectors = torch.linalg.eigh(covariance)
+        # eigh is ascending.  Store the major eigenpair as the first RS axis; eigenvector sign
+        # is immaterial because Gaussian rotations are pi-periodic.
+        eigenvalues = eigenvalues.flip(dims=(1,)).clamp_min(1e-12)
+        major = eigenvectors[:, :, 1]
+        log_scales = (0.5 * torch.log(eigenvalues)).to(dt)
+        rotations = torch.atan2(major[:, 1], major[:, 0]).to(dt)
+        if field.scale_max is None:
+            scale_max = None
+        else:
+            # A per-local-axis optimizer cap has no exact representation after D rotates the
+            # covariance eigensystem.  Preserve a conservative isotropic upper bound instead of
+            # silently applying the old axes to the new rotation.
+            cap = field.scale_max.detach().amax(dim=1) * max(sx, sy)
+            scale_max = cap[:, None].expand(-1, 2).clone()
     return GaussianField(
         means,
         log_scales,
-        field.rotations.detach().clone(),
+        rotations,
         field.colors.detach().clone(),
         None if field.opacities is None else field.opacities.detach().clone(),
         scale_max,
+        None if field.color_grads is None else field.color_grads.detach().clone(),
+        None if field.background_mask is None else field.background_mask.detach().clone(),
+        None,
     )
 
 

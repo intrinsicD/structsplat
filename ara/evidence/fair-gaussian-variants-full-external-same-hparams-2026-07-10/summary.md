@@ -75,6 +75,26 @@ This is not a native external-repo benchmark; it isolates placement/growth polic
 
 † Not budget-matched: mean final Gaussian count exceeds the shared final cap (adaptive extra capacity). These rows spend more primitives — more rate for an image codec — so their PSNR/MS-SSIM is not directly comparable to the equal-budget rows, and they are excluded from the per-cell winners below.
 
+## Paired Strict-Dominance Audit
+
+Every delta is a candidate gain over `SS best default`; positive is better, including fit/total-time gains (positive means faster) and LPIPS gain (positive means lower LPIPS). Confidence intervals bootstrap source images after averaging correlated seeds/budgets within each image. A tradeoff is not a dominance result, and over-budget rows are not comparable. Displayed intervals are marginal 95% image-bootstrap intervals; the relation column uses Bonferroni-adjusted bounds for 95% familywise coverage across the five core metrics. Full rows are in `default_dominance.csv`.
+
+| Candidate | Pairs / images | PSNR gain [95% CI] | MS-SSIM gain [95% CI] | AUC gain [95% CI] | Fit gain s [95% CI] | Total gain s [95% CI] | LPIPS gain [95% CI] | Sample relation | Familywise 95% relation |
+|---|---:|---:|---:|---:|---:|---:|---:|---|---|
+| SS best + SSIM 0.10 | 8 / 4 | -0.1355 [-0.2375, -0.0335] | -0.00174 [-0.00340, -0.00040] | -0.0365 [-0.1075, +0.0426] | +0.1104 [+0.0100, +0.2810] | +0.1119 [+0.0100, +0.2848] | - | tradeoff | tradeoff |
+| SS best + L1 only | 8 / 4 | -0.7760 [-0.9523, -0.5997] | -0.01106 [-0.01792, -0.00538] | -0.4904 [-0.6144, -0.3853] | +0.4311 [+0.3399, +0.5936] | +0.4325 [+0.3393, +0.5976] | - | tradeoff | tradeoff |
+| SS best + Charbonnier | 8 / 4 | -0.1775 [-0.2487, -0.1193] | -0.00271 [-0.00590, -0.00087] | -0.0277 [-0.0920, +0.0369] | +0.1016 [-0.0045, +0.2746] | +0.1028 [-0.0064, +0.2803] | - | tradeoff | tradeoff |
+| SS best + tensor loss | 8 / 4 | +0.0119 [-0.1069, +0.0748] | -0.00024 [-0.00207, +0.00106] | +0.0121 [-0.0463, +0.0481] | +0.0668 [-0.0091, +0.2085] | +0.0679 [-0.0104, +0.2130] | - | tradeoff | tradeoff |
+| SS best + final color solve | 8 / 4 | +0.1935 [+0.0971, +0.2899] | +0.00161 [-0.00015, +0.00337] | -0.0179 [-0.0470, +0.0142] | -0.0132 [-0.1126, +0.1699] | -0.0131 [-0.1173, +0.1736] | - | tradeoff | tradeoff |
+| SS best + split relocate | 8 / 4 | -0.4876 [-0.5720, -0.3640] | -0.00356 [-0.00680, -0.00093] | -0.2113 [-0.2802, -0.1709] | +0.0193 [-0.0708, +0.1672] | +0.0199 [-0.0714, +0.1700] | - | tradeoff | tradeoff |
+| SS best + adaptive 1.5x cap † | 8 / 4 | +1.0278 [+0.1205, +1.7484] | +0.00755 [+0.00249, +0.01217] | +0.6900 [+0.5495, +0.8292] | +0.0976 [+0.0115, +0.2484] | +0.0989 [+0.0116, +0.2529] | - | over budget | not comparable |
+| GaussianImage fixed | 8 / 4 | -1.9608 [-2.6924, -1.0164] | +0.00163 [-0.00372, +0.00523] | -0.4242 [-1.0151, +0.1668] | +0.1081 [+0.0019, +0.2758] | +0.1607 [+0.0516, +0.3313] | - | tradeoff | tradeoff |
+| GaussianImage++ residual | 8 / 4 | -0.3683 [-0.5755, -0.1611] | +0.00232 [+0.00007, +0.00391] | -1.8586 [-2.4057, -1.2480] | +0.1105 [+0.0236, +0.2588] | +0.1632 [+0.0750, +0.3138] | - | tradeoff | tradeoff |
+| Image-GS residual | 8 / 4 | -0.3394 [-0.5164, -0.1673] | +0.00098 [-0.00091, +0.00298] | -1.4256 [-1.7129, -1.0036] | +0.1253 [+0.0328, +0.2797] | +0.1755 [+0.0826, +0.3327] | - | tradeoff | tradeoff |
+| Instant-GI quadtree | 8 / 4 | -5.0723 [-5.3891, -4.7555] | -0.03600 [-0.05819, -0.01381] | -3.7487 [-3.9798, -3.4712] | +0.1325 [+0.0356, +0.3002] | +0.0138 [-0.0317, +0.0690] | - | tradeoff | tradeoff |
+
+The strict-dominance core uses PSNR, MS-SSIM, AUC, fit seconds, and total seconds. LPIPS is reported when enabled but is not silently imputed or added to the gate. These rows compare policies under StructSplat's harness; analogue labels do not make them native external-repository results.
+
 ## Default Promotion Check
 
 A best-default candidate is promotable only when its paired mean deltas beat `SS best default` on quality (PSNR and MS-SSIM), convergence (AUC), and performance (fit and total seconds). Over-budget rows are excluded.

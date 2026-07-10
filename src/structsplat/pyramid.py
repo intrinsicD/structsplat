@@ -93,7 +93,10 @@ def prefix_metrics(field: GaussianField, counts: list[int], target: torch.Tensor
         img = render_field(sub.means, sub.conics(cfg.aa_dilation), sub.colors,
                            sub.radii(cfg.sigma_cutoff, cfg.aa_dilation),
                            H, W, cfg.render_chunk, cfg.renderer, sub.opacity_values(),
-                           scales=sub.scales(), rotations=sub.rotations,
+                           scales=sub.effective_scales(
+                               cfg.aa_dilation
+                               if cfg.renderer in ("gsplat", "cuda_gsplat") else 0.0
+                           ), rotations=sub.rotations,
                            support_fade=cfg.support_fade, sigma_cutoff=cfg.sigma_cutoff,
                            checkpoint_chunks=cfg.render_checkpoint)
         rows.append({
@@ -158,7 +161,10 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
                 cur = render_field(field.means, field.conics(fcfg.aa_dilation), field.colors,
                                    field.radii(fcfg.sigma_cutoff, fcfg.aa_dilation), H, W,
                                    fcfg.render_chunk, fcfg.renderer, field.opacity_values(),
-                                   scales=field.scales(), rotations=field.rotations,
+                                   scales=field.effective_scales(
+                                       fcfg.aa_dilation
+                                       if fcfg.renderer in ("gsplat", "cuda_gsplat") else 0.0
+                                   ), rotations=field.rotations,
                                    support_fade=fcfg.support_fade,
                                    sigma_cutoff=fcfg.sigma_cutoff,
                                    checkpoint_chunks=fcfg.render_checkpoint)

@@ -1,0 +1,69 @@
+{
+  "resolved": {
+    "images": [
+      "tests/test_images/COCO_train2014_000000000009.jpg",
+      "tests/test_images/COCO_train2014_000000000025.jpg",
+      "tests/test_images/COCO_train2014_000000000030.jpg",
+      "tests/test_images/COCO_train2014_000000000034.jpg"
+    ],
+    "budgets": [
+      640
+    ],
+    "methods": [
+      "structsplat_best_default",
+      "structsplat_best_gcr015",
+      "structsplat_best_gcr030",
+      "structsplat_best_gcr060"
+    ],
+    "seeds": [
+      0,
+      1
+    ],
+    "start_fraction": 0.5,
+    "growth_waves": 4,
+    "max_side": 160,
+    "iters": 500,
+    "target_psnr": 30.0,
+    "target_psnrs": [
+      22.0,
+      24.0,
+      26.0,
+      28.0,
+      30.0,
+      32.0
+    ],
+    "renderer": "cuda",
+    "support_fade": false,
+    "render_chunk": 4096,
+    "pixel_loss": "l1",
+    "ssim_weight": 0.3,
+    "lpips": true,
+    "relocate_fraction": 0.25,
+    "relocate_downsample": 4,
+    "feature_cap": 12.0,
+    "feature_cap_reference_side": 160.0,
+    "resume": true,
+    "max_new_cells": null
+  },
+  "device": "cuda",
+  "versions": {
+    "torch": "2.9.0+cu128",
+    "torch_cuda": "12.8",
+    "cuda_available": true,
+    "numpy": "2.1.3",
+    "structsplat": "0.1.0"
+  },
+  "repository": {
+    "root": "/home/alex/Documents/structsplat",
+    "commit": "9c13583d68acdb75751f81d458ae9b576171e21d",
+    "dirty": true,
+    "tracked_diff_sha256": "94dae5da1b41ad33cc0213157934135b7e88f57d40d3b1a6b77747725380d99a",
+    "untracked_files": [
+      "benchmarks/native_reference_compare.py",
+      "benchmarks/native_runners/",
+      "tasks/BENCH-005-native-reference-pipelines.md",
+      "tasks/FIT-013-geometry-consistent-regularization.md",
+      "tests/test_native_reference_compare.py"
+    ]
+  }
+}

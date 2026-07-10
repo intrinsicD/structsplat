@@ -137,15 +137,176 @@ from the 2026-07-09 matched run: `aniso_onedge` + WSE, feature cap `12@160`, ten
 growth, 5 growth waves, and `L1 + 0.3 SSIM`. Keep this row in default comparisons so every run has
 the current best-known StructSplat reference even when global CLI loss or growth options change.
 Additional default candidate rows explore lower/no SSIM, Charbonnier, tensor-weighted loss, final
-color solve, split relocation, and adaptive extra capacity (`1.5x` cap) for reducing absolute diff.
+color solve, split relocation, LR stabilization, same-final-count checkpoint selection, and
+adaptive extra capacity (`1.5x` cap) for reducing absolute diff.
 The summary includes a default-promotion check: a candidate must beat the pinned row on paired mean
 PSNR, MS-SSIM, AUC, fit seconds, and total seconds before the benchmark default should be updated.
+It also writes `default_dominance.csv` and a compact strict-dominance table. Deltas are expressed as
+candidate gains over the pinned default (positive is always better), and 95% confidence intervals
+bootstrap source images after averaging correlated seeds/budgets within image. The audit labels
+candidate dominance, default dominance, tradeoffs, inconclusive evidence, and over-budget rows;
+it does not turn repository-inspired analogue rows into native results. Displayed metric intervals
+are marginal; a reported dominance relation uses Bonferroni-adjusted bounds for 95% familywise
+coverage across the five core metrics and only complete paired cells.
+Every fair row also carries the source/decoded-pixel hashes, repository commit/tracked-diff hash,
+and hashes of the harness plus critical fit/config/render/metric/init sources. On `--resume`, only
+successful rows whose complete cell key and canonical scientific-protocol hash match the current
+request. That hash covers every experiment axis, metric request, device/environment version, and
+source fingerprint while excluding execution-only sharding controls. Summaries and `metrics.jsonl`
+are compacted to current rows so stale reruns cannot be cross-paired or attributed to the newly
+written `config.json`.
+
+`structsplat_best_checkpoint` sets `checkpoint_policy=best_psnr_final_count`. Checkpoint scoring is
+post-transition (after the optimizer step and any prune/grow/relocate/on-split solve), and only a
+state with the terminal Gaussian count may be restored. The legacy pre-step convergence history,
+AUC, iteration count, and fit timing remain intact. `checkpoint_selection.csv` is the causal audit:
+it compares selected and terminal states from the same trajectory/count, avoiding false
+attribution from nondeterministic CUDA trajectories. On COCO4 x seeds 0/1, N=640, 5k steps, this
+policy selected earlier states in 7/8 runs and gained +0.7702 dB PSNR, +0.00892 MS-SSIM, and
++0.0076 LPIPS on average. At 500 steps it selected an earlier state only once, for a negligible
++0.0066 dB mean PSNR gain with small SSIM/LPIPS tradeoffs. It is therefore a long-horizon quality
+option, not the pinned general default.
+
+FIT-013 adds opt-in geometry-consistency rows (`structsplat_best_gcr015`, `gcr030`, `gcr060`, and
+intermittent variants). These apply target-gradient-weighted Sobel supervision on top of the pinned
+default. They are experimental candidates: dense 0.015 improves quality/convergence in the current
+COCO proxy and Kodak4 slice, but its larger-resolution timing cost blocks default promotion.
+
+FIT-014 adds generation-cohort covariance-filter rows at `alpha={9*pi,18*pi,36*pi}`. They implement
+the GaussianImage++ inverse-density variance rule faithfully, but all three lose PSNR, proxy
+MS-SSIM, LPIPS, and AUC against the pinned default on the COCO4 640/500 proxy. Keep
+`covariance_filter_mode=none`; the artifact is
+`results/structsplat_generation_caf_proxy/index.html`.
 
 ```
 LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 \
   STRUCTSPLAT_INSTANT_GI=/path/to/Instant-GI/quard_image.py \
   python -m benchmarks.fair_density_control_compare --resume
 ```
+
+`native_reference_compare.py` is the separate BENCH-005 path for real external repository code.
+Each repository runs in an isolated subprocess because several ship incompatible packages named
+`gsplat`. The initial adapter instantiates GaussianImage++'s upstream `SimpleTrainer2d` on one
+arbitrary image, verifies that the compiled extension belongs to that checkout, records its hash
+and commit, exports a float reconstruction, and centrally recomputes shared metrics. The current
+`matched_axes` protocol aligns image, resolution, count cap, requested steps, and seed only; native
+renderer/loss/optimizer/growth behavior remains native and must not be described as same
+hyperparameters. Actual codec bpp stays blank until a native encoded stream is produced.
+GaussianImage++ restores its upstream best-training-PSNR checkpoint before export; the native
+artifact records the selected iteration and explicitly notes that StructSplat exports its terminal
+field. The harness requires clean tracked upstream Python, fingerprints repo/gsplat trees and
+Python sources, and keys resume on source/target bytes, decoded target pixels, harness/adapter/
+metric sources, extension build, growth/timing/LPIPS settings, and the exact Python/Torch/CUDA/
+NumPy/metric environment. Cached manifests are revalidated and central metrics recomputed before
+reuse; the journal is compacted to the requested keys. Target, cell, and reconstruction paths use
+canonical-path-and-content-qualified source IDs, so same-named inputs cannot overwrite evidence.
+Pairing requires identical decoded target hashes and, for this matched-start protocol, identical
+initial Gaussian counts.
+
+```
+LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 PYTHONPATH=src:. \
+  python -m benchmarks.native_reference_compare \
+    --images tests/test_images/COCO_train2014_000000000009.jpg \
+    --gaussianimage-plus-repo /path/to/GaussianImage_plus \
+    --max-sides 160 --budgets 640 --iters 500 --seeds 0 --lpips
+```
+
+`native_image_gs_compare.py` is the dedicated Image-GS native harness. Its v2 adapter runs the
+clean official checkout at commit `03088368d42684fb54225c981cfd94b58cc0393a` in a separate Python
+environment, requires `gsplat` to have been built from that checkout's bundled source, and pins
+`fused-ssim` to commit `b4fd8324e81c48c9b2b9f62e1b9c6431fece6ab3`. Preflight and every cell
+record and cross-check the repository tree/diff, package `direct_url.json` provenance, installed
+Python-source hashes, compiled-extension hashes, Python/Torch/CUDA versions, GPU, and optional
+`libstdc++` preload. `scripts/setup_native_image_gs_env.sh` now creates and verifies the official
+Python 3.11.10, Torch 2.4.1, CUDA 12.4 environment. It constrains `mkl=2023.1.0` to avoid the
+`iJIT_NotifyEvent` loader failure and `cuda-version=12.4` to prevent solver drift, then builds the
+pinned fused-SSIM and bundled gsplat extensions. Exact environment exports and binary hashes live
+under `results/native_envs/image_gs_official/`.
+
+The four profiles are intentionally non-interchangeable:
+
+- `matched_steps_fixed_n`: arbitrary requested horizon, float32, constant LR, and no progressive
+  allocation; Image-GS starts at the full final N.
+- `siggraph25`: paper-aligned 5k-step, constant-LR, 16-bit analytical-payload profile with native
+  progressive allocation, applied at the requested benchmark resolution/count.
+- `release_quickstart`: current 10k-step release behavior plus `--quantize`, progressive allocation,
+  and the current LR-decay/early-stop schedule.
+- `release_default_float`: the current bare-config 10k-step float32 behavior with progressive
+  allocation and the current LR-decay/early-stop schedule.
+
+The latter three are algorithm profiles; they are not native-authentic/full-resolution evidence
+unless the requested image, resolution, count, and horizon also match the intended protocol. The
+harness exports the terminal float reconstruction and centrally computes shared PSNR, SSIM,
+small-image proxy MS-SSIM, and optional LPIPS. It retains upstream metrics separately. Native AUC
+and target hits use Image-GS's sparse evaluation cadence and are diagnostic across implementations.
+Likewise, `analytical_bpp` is only Image-GS's attribute-bit formula and omits a packed stream and
+codec metadata; `actual_codec_bytes` and `actual_bpp` therefore remain blank.
+
+Resume keys cover the target/source hashes, requested axes, adapter/metric/source revisions,
+external repository and dependency builds, Python/Torch/CUDA/GPU state, timing settings, and LPIPS
+state. A cached cell is revalidated against its manifest and reconstruction hash before reuse.
+Paired analysis additionally requires identical run-recorded decoded-pixel hashes, preventing
+same-name, stale-target, or different-resize rows from being joined. Progressive profiles also
+require the recorded native and StructSplat start counts to match; the fixed-N profile deliberately
+allows and reports its full-N versus half-N initialization mismatch.
+
+```
+LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 PYTHONPATH=src:. \
+  python -m benchmarks.native_image_gs_compare \
+    --images tests/test_images/COCO_train2014_000000000009.jpg \
+    --image-gs-repo /path/to/image-gs \
+    --image-gs-python results/native_envs/image_gs_official/bin/python \
+    --profile matched_steps_fixed_n --max-sides 160 --budgets 640 \
+    --iters 500 --seeds 0 1 --lpips --resume
+```
+
+The official-environment COCO4 x seeds 0/1, max-side 160, cap 640, 500-step fixed-N artifact is at
+`results/native_image_gs_fixedn_500_official_two_seed/index.html`. Relative to the pinned
+StructSplat default, Image-GS gains are -3.6639 dB PSNR (95% CI [-4.3839, -2.7583]), -0.01907
+proxy MS-SSIM [-0.02937, -0.00812], -0.1773 LPIPS [-0.2592, -0.1099], and diagnostic AUC
+-2.7060 [-3.2294, -1.9944], where positive always favors Image-GS. The familywise final-quality
+test supports StructSplat on this bounded slice. It remains non-strict implementation evidence:
+Image-GS starts at all 640 Gaussians, while StructSplat starts at half N and grows, and timing/AUC
+accounting differs.
+
+The official-environment `siggraph25` proxy at the same target pixels/cap and 5,000 requested
+steps completed for COCO4 seed 0 at
+`results/native_image_gs_siggraph25_official_seed0/index.html`. Against the terminal StructSplat
+default, Image-GS gains +0.2201 dB PSNR, +0.01959 proxy MS-SSIM, and -0.0369 LPIPS. Against
+`structsplat_best_checkpoint`, Image-GS gains -0.3601 dB PSNR, +0.01038 proxy MS-SSIM, and
+-0.0566 LPIPS. Confidence intervals do not support a uniform winner; both comparisons are
+tradeoffs. This remains a single-seed, small-image algorithm-profile result—not full-resolution
+or rate-distortion evidence.
+
+`native_gaussianimage_compare.py` and `native_runners/gaussianimage.py` execute the base ECCV
+GaussianImage repository at commit `d53393bee7c9fbb24e3510614e3ff2c85b8fbbc1` with pinned gsplat
+`bcca3ecae966a052e3bf8dd1ff9910cf7b8f851d`. The runner preserves fixed random count, native
+Cholesky/RS parameterization, L2, Adan, the 20k-step LR schedule, and terminal selection. The
+harness hashes clean source trees, the retained build wheel, loaded extension, adapter/metric
+sources, input pixels, environment, and checkpoint; shared metrics come from exported float
+pixels. Resume keys include the shared comparison-source revision; cached manifests are revalidated,
+central metrics are recomputed, and stale journal rows are compacted away before evidence output.
+`scripts/setup_native_gaussianimage_env.sh` provisions the isolated Python 3.10,
+Torch 2.0.0+cu118 build and records exact dependency/linkage provenance.
+
+```
+LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 PYTHONPATH=src:. \
+  python -m benchmarks.native_gaussianimage_compare \
+    --images tests/test_images/COCO_train2014_000000000009.jpg \
+    --gaussianimage-repo results/native_envs/gaussianimage_official/repo \
+    --native-python results/native_envs/gaussianimage_official/env/bin/python \
+    --profile matched_steps_fixed_n --max-sides 160 --budgets 640 \
+    --iters 5000 --seeds 0 --lpips
+```
+
+The 500-step/two-seed artifact
+`results/native_gaussianimage_matched_500_official_two_seed/` shows why horizons must be explicit:
+GaussianImage is about 0.28 s faster than the terminal default but loses 13.75 dB PSNR, 0.2593
+MS-SSIM, 0.5037 LPIPS, and 14.66 AUC because its native optimizer is designed for much longer
+fits. At 5k/seed0 (`results/native_gaussianimage_matched_5000_official_seed0/`), GaussianImage is
+about 6.4 s faster than the StructSplat checkpoint candidate and +0.01298 MS-SSIM, while
+StructSplat is +0.1207 dB PSNR, +0.0253 LPIPS gain, and +1.53 AUC. This is a tradeoff, not a
+dominance result; the published 50k/full-resolution and QAT/RD tracks remain open.
 
 `coco_fit_compare.py` is the legacy four-image matched comparison harness (`BENCH-003` back-compat
 only). Caveat: it is superseded by `cross_repo_matrix_compare.py`; keep it for reproducing older

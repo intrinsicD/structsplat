@@ -14,7 +14,7 @@ import torch
 
 class GaussianField:
     def __init__(self, means, log_scales, rotations, colors, opacities=None, scale_max=None,
-                 color_grads=None, background_mask=None):
+                 color_grads=None, background_mask=None, filter_variance=None):
         self.means = means            # (N,2) float
         self.log_scales = log_scales  # (N,2)
         self.rotations = rotations    # (N,)
@@ -23,11 +23,15 @@ class GaussianField:
         self.scale_max = scale_max    # optional per-Gaussian optimization cap, (N,2)
         self.color_grads = color_grads  # optional local affine color coeffs, (N,2,3)
         self.background_mask = background_mask  # optional bool mask: frozen-geometry bg rows
+        # Optional non-trainable isotropic covariance variance (px^2), one value per row.
+        # A generation-density filter is stored separately from the trainable RS scales so each
+        # birth cohort keeps the footprint assigned when it was inserted.
+        self.filter_variance = filter_variance
 
     @classmethod
     def from_numpy(cls, means, scales, angles, colors, opacities=None, scale_max=None,
                    device="cpu", dtype=torch.float32, color_grads=None,
-                   background_mask=None):
+                   background_mask=None, filter_variance=None):
         def t(a):
             # Always copy: torch.as_tensor is zero-copy for float32 CPU ndarrays, so without
             # the clone an optimizer step would mutate the caller's init arrays in place
@@ -43,8 +47,12 @@ class GaussianField:
             background_mask_t = torch.as_tensor(
                 np.asarray(background_mask), device=device, dtype=torch.bool
             ).reshape(-1).clone()
+        filter_variance_t = (
+            None if filter_variance is None else t(filter_variance).reshape(-1)
+        )
         return cls(t(means), torch.log(t(scales)), t(angles).reshape(-1), t(colors),
-                   opacity_t, scale_max_t, color_grads_t, background_mask_t)
+                   opacity_t, scale_max_t, color_grads_t, background_mask_t,
+                   filter_variance_t)
 
     @property
     def n(self) -> int:
@@ -67,6 +75,7 @@ class GaussianField:
             None if self.scale_max is None else self.scale_max.detach().clone(),
             None if self.color_grads is None else self.color_grads.detach().clone(),
             None if self.background_mask is None else self.background_mask.detach().clone(),
+            None if self.filter_variance is None else self.filter_variance.detach().clone(),
         )
 
     def subset(self, idx) -> "GaussianField":
@@ -79,6 +88,7 @@ class GaussianField:
             None if self.scale_max is None else self.scale_max.detach()[idx].clone(),
             None if self.color_grads is None else self.color_grads.detach()[idx].clone(),
             None if self.background_mask is None else self.background_mask.detach()[idx].clone(),
+            None if self.filter_variance is None else self.filter_variance.detach()[idx].clone(),
         )
 
     def append(self, other: "GaussianField") -> "GaussianField":
@@ -127,6 +137,18 @@ class GaussianField:
                 dim=0,
             ).clone()
 
+        def cat_filter_variance(a, b):
+            if a is None and b is None:
+                return None
+            # Missing covariance filtering means exactly zero added variance. This also makes
+            # pyramid/appended fields safe: generation-density mode fills zero rows at the next
+            # fit entry, while default-off rendering remains unchanged.
+            if a is None:
+                a = torch.zeros(self.n, device=b.device, dtype=b.dtype)
+            if b is None:
+                b = torch.zeros(other.n, device=a.device, dtype=a.dtype)
+            return cat(a, b)
+
         return GaussianField(
             cat(self.means, other.means),
             cat(self.log_scales, other.log_scales),
@@ -136,6 +158,7 @@ class GaussianField:
             cat_scale_max(self.scale_max, other.scale_max),
             cat_color_grads(self.color_grads, other.color_grads),
             cat_background_mask(self.background_mask, other.background_mask),
+            cat_filter_variance(self.filter_variance, other.filter_variance),
         )
 
     def trainable(self) -> "GaussianField":
@@ -173,10 +196,47 @@ class GaussianField:
             self.scale_max,
             torch.zeros(self.n, 2, 3, device=self.colors.device, dtype=self.colors.dtype),
             self.background_mask,
+            self.filter_variance,
         )
 
     def scales(self):
         return torch.exp(self.log_scales)
+
+    def effective_scales(self, dilation: float = 0.0):
+        """Return RS scales after isotropic covariance filtering and optional AA dilation."""
+        if dilation < 0.0:
+            raise ValueError(f"dilation must be >= 0, got {dilation}")
+        scales = self.scales()
+        if self.filter_variance is None and dilation == 0.0:
+            return scales
+        variance = scales.square() + float(dilation)
+        if self.filter_variance is not None:
+            variance = variance + self.filter_variance.to(
+                device=scales.device, dtype=scales.dtype
+            ).reshape(-1, 1)
+        return torch.sqrt(variance.clamp_min(1e-12))
+
+    def effective_log_scales(self, dilation: float = 0.0):
+        """Differentiable log of :meth:`effective_scales`, used for codec materialization."""
+        if self.filter_variance is None and dilation == 0.0:
+            return self.log_scales
+        return torch.log(self.effective_scales(dilation))
+
+    def materialize_covariance_filter(self) -> "GaussianField":
+        """Fold filter variance into RS scales for consumers that cannot encode it separately."""
+        if self.filter_variance is None:
+            return self
+        return GaussianField(
+            self.means,
+            self.effective_log_scales(),
+            self.rotations,
+            self.colors,
+            self.opacities,
+            self.scale_max,
+            self.color_grads,
+            self.background_mask,
+            None,
+        )
 
     def opacity_values(self):
         if self.opacities is None:
@@ -195,8 +255,14 @@ class GaussianField:
             # here rather than silently emitting NaN images mid-fit (CORE-004).
             raise ValueError(f"dilation must be >= 0, got {dilation}")
         s = self.scales()
-        inv_sx2 = 1.0 / (s[:, 0] ** 2 + dilation)
-        inv_sy2 = 1.0 / (s[:, 1] ** 2 + dilation)
+        sx2 = s[:, 0] ** 2
+        sy2 = s[:, 1] ** 2
+        if self.filter_variance is not None:
+            variance = self.filter_variance.to(device=s.device, dtype=s.dtype).reshape(-1)
+            sx2 = sx2 + variance
+            sy2 = sy2 + variance
+        inv_sx2 = 1.0 / (sx2 + dilation)
+        inv_sy2 = 1.0 / (sy2 + dilation)
         c = torch.cos(self.rotations)
         sn = torch.sin(self.rotations)
         a = c * c * inv_sx2 + sn * sn * inv_sy2
@@ -212,7 +278,12 @@ class GaussianField:
         if dilation < 0.0:
             raise ValueError(f"dilation must be >= 0, got {dilation}")
         with torch.no_grad():
-            s2 = self.scales() ** 2 + dilation
+            s2 = self.scales() ** 2
+            if self.filter_variance is not None:
+                s2 = s2 + self.filter_variance.to(
+                    device=s2.device, dtype=s2.dtype
+                ).reshape(-1, 1)
+            s2 = s2 + dilation
             c = torch.cos(self.rotations)
             sn = torch.sin(self.rotations)
             var_x = c * c * s2[:, 0] + sn * sn * s2[:, 1]
@@ -236,6 +307,8 @@ class GaussianField:
             data["color_grads"] = self.color_grads.detach().cpu().numpy()
         if self.background_mask is not None:
             data["background_mask"] = self.background_mask.detach().cpu().numpy()
+        if self.filter_variance is not None:
+            data["filter_variance"] = self.filter_variance.detach().cpu().numpy()
         np.savez(path, **data)
 
     @classmethod
@@ -252,5 +325,6 @@ class GaussianField:
             torch.as_tensor(z["background_mask"], device=device, dtype=torch.bool)
             if "background_mask" in z.files else None
         )
+        filter_variance = t("filter_variance") if "filter_variance" in z.files else None
         return cls(t("means"), t("log_scales"), t("rotations"), t("colors"),
-                   opacities, scale_max, color_grads, background_mask)
+                   opacities, scale_max, color_grads, background_mask, filter_variance)

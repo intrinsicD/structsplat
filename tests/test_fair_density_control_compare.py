@@ -1,13 +1,34 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
+import pytest
 from PIL import Image
 
 from benchmarks import fair_density_control_compare as F
 from structsplat.config import FitConfig, StructureTensorConfig
+
+
+def test_artifact_source_id_binds_canonical_path_and_content(tmp_path: Path):
+    left_path = tmp_path / "left" / "foo.png"
+    right_path = tmp_path / "right" / "foo.png"
+    left_path.parent.mkdir()
+    right_path.parent.mkdir()
+    left_path.write_bytes(b"same bytes")
+    right_path.write_bytes(b"same bytes")
+    alias = tmp_path / "foo-alias.png"
+    alias.symlink_to(left_path)
+    content_hash = "a" * 64
+    left = F._artifact_source_id(left_path, content_hash)
+    right = F._artifact_source_id(right_path, content_hash)
+
+    assert left.startswith("foo_")
+    assert right.startswith("foo_")
+    assert left != right
+    assert F._artifact_source_id(alias, content_hash) == left
 
 
 def test_growth_fit_cfg_reaches_final_cap_with_shared_schedule():
@@ -62,13 +83,28 @@ def test_best_diff_reduction_variants_apply_fit_overrides(tmp_path: Path):
     img = np.full((24, 24, 3), 0.5, dtype=np.float32)
     image_path = tmp_path / "target.png"
     Image.fromarray((img * 255).astype(np.uint8), mode="RGB").save(image_path)
-    base = FitConfig(iters=50, pixel_loss="l1", ssim_weight=0.3)
+    base = FitConfig(
+        iters=50,
+        pixel_loss="l2",
+        ssim_weight=0.9,
+        loss_weighting="tensor",
+        geometry_loss_weight=0.9,
+    )
 
     expected = {
         "structsplat_best_ssim010": ("ssim_weight", 0.1),
         "structsplat_best_l1_only": ("ssim_weight", 0.0),
         "structsplat_best_charbonnier": ("pixel_loss", "charbonnier"),
         "structsplat_best_tensor_loss": ("loss_weighting", "tensor"),
+        F.BEST_COSINE_METHOD: ("lr_schedule", "cosine"),
+        F.BEST_COSINE_TAIL_METHOD: ("lr_schedule", "cosine"),
+        F.BEST_CHECKPOINT_METHOD: ("checkpoint_policy", "best_psnr_final_count"),
+        "structsplat_best_gcr015": ("geometry_loss_weight", 0.015),
+        "structsplat_best_gcr015_e2": ("geometry_loss_weight", 0.015),
+        "structsplat_best_gcr015_e4": ("geometry_loss_weight", 0.015),
+        "structsplat_best_gcr030": ("geometry_loss_weight", 0.030),
+        "structsplat_best_gcr060": ("geometry_loss_weight", 0.060),
+        F.BEST_CAF_METHOD: ("covariance_filter_mode", "generation_density"),
         "structsplat_best_color_final": ("color_solve_schedule", "final"),
     }
     for method, (attr, value) in expected.items():
@@ -85,8 +121,70 @@ def test_best_diff_reduction_variants_apply_fit_overrides(tmp_path: Path):
             device="cpu",
         )
         assert getattr(cfg, attr) == value
+        if method != "structsplat_best_charbonnier":
+            assert cfg.pixel_loss == "l1"
+        if method not in {
+            "structsplat_best_ssim010",
+            "structsplat_best_l1_only",
+            "structsplat_best_charbonnier",
+        }:
+            assert cfg.ssim_weight == 0.3
+        if method != "structsplat_best_tensor_loss":
+            assert cfg.loss_weighting == "none"
         assert meta["configured_growth_waves"] == F.BEST_DEFAULT_GROWTH_WAVES
         assert meta["scale_cap_input"] == F.BEST_DEFAULT_FEATURE_CAP
+
+    _field, cfg, _seconds, _actual_start, meta = F._build_method(
+        method=F.BEST_COSINE_TAIL_METHOD,
+        img=img,
+        image_path=image_path,
+        final_budget=200,
+        start_budget=100,
+        seed=3,
+        base_fit=base,
+        scfg=StructureTensorConfig(),
+        growth_waves=4,
+        device="cpu",
+    )
+    expected_start = F.BEST_DEFAULT_GROWTH_WAVES / (F.BEST_DEFAULT_GROWTH_WAVES + 1)
+    assert cfg.lr_cosine_start_frac == expected_start
+    assert meta["variant_overrides"]["lr_cosine_start_frac"] == expected_start
+
+    for method, every in (
+        ("structsplat_best_gcr015_e2", 2),
+        ("structsplat_best_gcr015_e4", 4),
+    ):
+        _field, cfg, _seconds, _actual_start, meta = F._build_method(
+            method=method,
+            img=img,
+            image_path=image_path,
+            final_budget=200,
+            start_budget=100,
+            seed=3,
+            base_fit=base,
+            scfg=StructureTensorConfig(),
+            growth_waves=4,
+            device="cpu",
+        )
+        assert cfg.geometry_loss_every == every
+        assert meta["variant_overrides"]["geometry_loss_every"] == every
+
+    for method, alpha in F.BEST_CAF_METHODS.items():
+        _field, cfg, _seconds, _actual_start, meta = F._build_method(
+            method=method,
+            img=img,
+            image_path=image_path,
+            final_budget=200,
+            start_budget=100,
+            seed=3,
+            base_fit=base,
+            scfg=StructureTensorConfig(),
+            growth_waves=4,
+            device="cpu",
+        )
+        assert cfg.covariance_filter_mode == "generation_density"
+        assert cfg.covariance_filter_alpha == alpha
+        assert meta["variant_overrides"]["covariance_filter_alpha"] == alpha
 
     _field, cfg, _seconds, _actual_start, meta = F._build_method(
         method="structsplat_best_adaptive_1p5x",
@@ -140,6 +238,39 @@ def test_method_tracks_keep_growth_methods_at_same_start_budget(tmp_path):
         assert cfg.split_count == 250
 
 
+def test_checkpoint_audit_is_same_trajectory_and_same_count():
+    row = {
+        "status": "ok",
+        "checkpoint_policy": "best_psnr_final_count",
+        "image": "x",
+        "source_path": "x.png",
+        "final_budget": 640,
+        "seed": 0,
+        "method": F.BEST_CHECKPOINT_METHOD,
+        "trajectory_terminal_iter": 5000,
+        "selected_iter": 4251,
+        "trajectory_terminal_n_gaussians": 640,
+        "selected_n_gaussians": 640,
+        "selected_from_checkpoint": True,
+        "trajectory_terminal_psnr": 24.0,
+        "selected_fit_psnr": 25.0,
+        "trajectory_terminal_ssim": 0.90,
+        "selected_fit_ssim": 0.91,
+        "trajectory_terminal_ms_ssim": 0.92,
+        "selected_fit_ms_ssim": 0.94,
+        "trajectory_terminal_lpips": 0.2,
+        "selected_fit_lpips": 0.15,
+    }
+    audit = F._checkpoint_selection_audit([row])
+    assert len(audit) == 1
+    assert audit[0]["gain_psnr"] == 1.0
+    assert audit[0]["gain_ms_ssim"] == pytest.approx(0.02)
+    assert audit[0]["gain_lpips"] == pytest.approx(0.05)
+
+    row["selected_n_gaussians"] = 639
+    assert F._checkpoint_selection_audit([row]) == []
+
+
 def test_base_fit_and_cell_key_include_support_fade_axis():
     args = SimpleNamespace(
         iters=10,
@@ -176,6 +307,94 @@ def test_base_fit_and_cell_key_include_support_fade_axis():
     assert fade_off != fade_on
     assert fade_off[11] is False
     assert fade_on[11] is True
+
+
+def test_promotion_pair_key_requires_identical_input_provenance_and_protocol_axes():
+    base = {
+        "source_path": "x.png",
+        "source_sha256": "source-a",
+        "target_pixel_sha256": "pixels-a",
+        "max_side": 64,
+        "final_budget": 100,
+        "start_budget": 50,
+        "start_fraction": 0.5,
+        "growth_waves": 5,
+        "seed": 0,
+        "iters": 10,
+        "renderer": "normalized",
+        "support_fade": False,
+    }
+    key = F._promotion_pair_key(base)
+    for name, value in (
+        ("source_sha256", "source-b"),
+        ("target_pixel_sha256", "pixels-b"),
+        ("start_fraction", 0.25),
+        ("growth_waves", 4),
+        ("support_fade", True),
+    ):
+        assert F._promotion_pair_key({**base, name: value}) != key
+
+
+def test_run_protocol_fingerprint_covers_scientific_axes_and_environment():
+    protocol = {
+        "flat_frac": 0.02,
+        "corner_frac": 0.15,
+        "render_chunk": 512,
+        "target_psnrs": [22.0, 24.0],
+        "lpips": False,
+        "relocate_fraction": 0.25,
+        "relocate_downsample": 4,
+    }
+    kwargs = {
+        "device": "cuda",
+        "versions": {"torch": "1"},
+        "repo_state": {"commit": "a", "tracked_diff_sha256": "diff-a"},
+        "source_fingerprint": {"fit_source_sha256": "fit-a"},
+    }
+    fingerprint = F._run_protocol_sha256(protocol, **kwargs)
+    for name, value in (
+        ("flat_frac", 0.03),
+        ("corner_frac", 0.20),
+        ("render_chunk", 256),
+        ("target_psnrs", [22.0, 26.0]),
+        ("lpips", True),
+        ("relocate_fraction", 0.5),
+        ("relocate_downsample", 2),
+    ):
+        assert F._run_protocol_sha256({**protocol, name: value}, **kwargs) != fingerprint
+    assert F._run_protocol_sha256(protocol, **{**kwargs, "device": "cpu"}) != fingerprint
+    assert F._run_protocol_sha256(
+        protocol,
+        **{**kwargs, "versions": {"torch": "2"}},
+    ) != fingerprint
+
+
+def test_write_outputs_compacts_resume_journal_to_selected_rows(tmp_path: Path, monkeypatch):
+    stale = {"status": "ok", "method": "stale", "source_sha256": "old"}
+    current = {"status": "ok", "method": "current", "source_sha256": "new"}
+    (tmp_path / "metrics.jsonl").write_text(
+        json.dumps(stale) + "\n" + json.dumps(current) + "\n",
+        encoding="utf-8",
+    )
+    for name in (
+        "write_json",
+        "write_csv",
+        "_write_default_dominance",
+        "_write_convergence_tables",
+        "_write_summary",
+        "_write_plots",
+        "_write_grids",
+        "_write_index",
+    ):
+        monkeypatch.setattr(F, name, lambda *args, **kwargs: None)
+
+    F._write_outputs([current], tmp_path, [F.BEST_DEFAULT_METHOD])
+
+    compacted = [
+        json.loads(line)
+        for line in (tmp_path / "metrics.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    assert compacted == [current]
 
 
 def test_repo_growth_methods_honor_non_half_start_budget(tmp_path: Path):
@@ -473,3 +692,154 @@ def test_summary_reports_default_promotion_check(tmp_path: Path):
         "| SS best + final color solve | 1 | +0.3000 | +0.00200 | +0.2000 | "
         "+0.2000 | +0.2000 | 1/1 | 1/1 | 1/1 | 0/1 | no |"
     ) in text
+
+
+def test_default_dominance_audit_clusters_images_and_marks_tradeoffs(tmp_path: Path):
+    rows = []
+    methods = [
+        F.BEST_DEFAULT_METHOD,
+        "structsplat_best_tensor_loss",
+        "structsplat_best_color_final",
+        "gaussianimage_fixed_full",
+        "structsplat_best_adaptive_1p5x",
+    ]
+    for image in ("a", "b"):
+        for seed in (0, 1):
+            common = {
+                "status": "ok",
+                "image": image,
+                "source_path": f"{image}.png",
+                "max_side": 16,
+                "final_budget": 100,
+                "start_budget": 50,
+                "seed": seed,
+                "iters": 10,
+                "renderer": "normalized",
+                "init_seconds": 0.1,
+            }
+            rows.append({
+                **common,
+                "method": F.BEST_DEFAULT_METHOD,
+                "n_gaussians": 100,
+                "psnr": 30.0,
+                "ms_ssim": 0.900,
+                "auc_psnr": 24.0,
+                "fit_seconds": 1.0,
+                "total_seconds": 1.1,
+                "lpips": 0.20,
+            })
+            rows.append({
+                **common,
+                "method": "structsplat_best_tensor_loss",
+                "n_gaussians": 100,
+                "psnr": 30.2,
+                "ms_ssim": 0.901,
+                "auc_psnr": 24.1,
+                "fit_seconds": 0.9,
+                "total_seconds": 1.0,
+                "lpips": 0.18,
+            })
+            rows.append({
+                **common,
+                "method": "structsplat_best_color_final",
+                "n_gaussians": 100,
+                "psnr": 30.3,
+                "ms_ssim": 0.902,
+                "auc_psnr": 23.9,
+                "fit_seconds": 1.2,
+                "total_seconds": 1.3,
+                "lpips": 0.19,
+            })
+            rows.append({
+                **common,
+                "method": "gaussianimage_fixed_full",
+                "n_gaussians": 100,
+                "psnr": 29.8,
+                "ms_ssim": 0.899,
+                "auc_psnr": 23.9,
+                "fit_seconds": 1.1,
+                "total_seconds": 1.2,
+                "lpips": 0.22,
+            })
+            rows.append({
+                **common,
+                "method": "structsplat_best_adaptive_1p5x",
+                "n_gaussians": 150,
+                "psnr": 31.0,
+                "ms_ssim": 0.910,
+                "auc_psnr": 25.0,
+                "fit_seconds": 0.8,
+                "total_seconds": 0.9,
+                "lpips": 0.15,
+            })
+
+    audit = {row["method"]: row for row in F._default_dominance_audit(rows, methods)}
+    tensor = audit["structsplat_best_tensor_loss"]
+    assert tensor["pairs"] == 4
+    assert tensor["paired_images"] == 2
+    assert tensor["sample_relation"] == "candidate_dominates"
+    assert tensor["supported_relation_95ci"] == "candidate_dominates"
+    assert tensor["gain_fit_seconds"] > 0.0
+    assert tensor["gain_lpips"] > 0.0
+
+    color = audit["structsplat_best_color_final"]
+    assert color["sample_relation"] == "tradeoff"
+    assert color["supported_relation_95ci"] == "tradeoff"
+
+    fixed = audit["gaussianimage_fixed_full"]
+    assert fixed["sample_relation"] == "default_dominates"
+    assert fixed["supported_relation_95ci"] == "default_dominates"
+
+    adaptive = audit["structsplat_best_adaptive_1p5x"]
+    assert adaptive["budget_matched"] is False
+    assert adaptive["sample_relation"] == "over_budget"
+    assert adaptive["supported_relation_95ci"] == "not_comparable"
+
+    F._write_default_dominance(rows, tmp_path, methods)
+    csv_text = (tmp_path / "default_dominance.csv").read_text(encoding="utf-8")
+    assert "supported_relation_95ci" in csv_text
+    assert "candidate_dominates" in csv_text
+    assert "over_budget" in csv_text
+
+
+def test_default_dominance_relation_uses_familywise_not_marginal_bounds():
+    rows = []
+    methods = [F.BEST_DEFAULT_METHOD, "structsplat_best_tensor_loss"]
+    gains = [0.01] * 7 + [-0.012]
+    for image_index, gain in enumerate(gains):
+        common = {
+            "status": "ok",
+            "image": f"image{image_index}",
+            "source_path": f"image{image_index}.png",
+            "max_side": 16,
+            "final_budget": 100,
+            "start_budget": 50,
+            "seed": 0,
+            "iters": 10,
+            "renderer": "normalized",
+            "n_gaussians": 100,
+        }
+        rows.append({
+            **common,
+            "method": F.BEST_DEFAULT_METHOD,
+            "psnr": 30.0,
+            "ms_ssim": 0.9,
+            "auc_psnr": 24.0,
+            "fit_seconds": 1.0,
+            "total_seconds": 1.1,
+        })
+        rows.append({
+            **common,
+            "method": "structsplat_best_tensor_loss",
+            "psnr": 30.0 + gain,
+            "ms_ssim": 0.9 + gain,
+            "auc_psnr": 24.0 + gain,
+            "fit_seconds": 1.0 - gain,
+            "total_seconds": 1.1 - gain,
+        })
+
+    result = F._default_dominance_audit(rows, methods)[0]
+
+    assert result["ci_low_psnr"] > 0.0
+    assert result["sample_relation"] == "candidate_dominates"
+    assert result["supported_relation_95ci"] == "inconclusive"

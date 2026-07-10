@@ -1,0 +1,59 @@
+{
+  "resolved": {
+    "protocol": "matched_axes",
+    "method": "gaussianimage_plus_native",
+    "schema_version": 2,
+    "adapter_revision": "gaussianimage_plus_v2",
+    "metric_protocol_revision": 2,
+    "repo_root": "/home/alex/Documents/GaussianImage_plus",
+    "repo_commit": "549cfaab2b400248f685c12782a180f3cfc038b0",
+    "gsplat_csrc": "/home/alex/Documents/GaussianImage_plus/gsplat/gsplat/csrc.so",
+    "gsplat_csrc_sha256": "9b57b7e0531a50d87c529d3541fbf370f9d85455836ac0cf5414c01ce48ac222",
+    "images": [
+      "tests/test_images/COCO_train2014_000000000009.jpg",
+      "tests/test_images/COCO_train2014_000000000025.jpg",
+      "tests/test_images/COCO_train2014_000000000030.jpg",
+      "tests/test_images/COCO_train2014_000000000034.jpg"
+    ],
+    "max_sides": [
+      160
+    ],
+    "budgets": [
+      640
+    ],
+    "start_fraction": 0.5,
+    "iters": 500,
+    "seeds": [
+      0,
+      1
+    ],
+    "growth_waves": 4,
+    "render_warmup": 10,
+    "render_repeats": 50,
+    "lpips": true,
+    "structsplat_metrics": "results/structsplat_default_matched_proxy_lpips/metrics.json",
+    "resume": true,
+    "max_new_cells": null
+  },
+  "device": "cuda",
+  "versions": {
+    "torch": "2.9.0+cu128",
+    "torch_cuda": "12.8",
+    "cuda_available": true,
+    "numpy": "2.1.3",
+    "structsplat": "0.1.0"
+  },
+  "repository": {
+    "root": "/home/alex/Documents/structsplat",
+    "commit": "9c13583d68acdb75751f81d458ae9b576171e21d",
+    "dirty": true,
+    "tracked_diff_sha256": "94dae5da1b41ad33cc0213157934135b7e88f57d40d3b1a6b77747725380d99a",
+    "untracked_files": [
+      "benchmarks/native_reference_compare.py",
+      "benchmarks/native_runners/",
+      "tasks/BENCH-005-native-reference-pipelines.md",
+      "tasks/FIT-013-geometry-consistent-regularization.md",
+      "tests/test_native_reference_compare.py"
+    ]
+  }
+}

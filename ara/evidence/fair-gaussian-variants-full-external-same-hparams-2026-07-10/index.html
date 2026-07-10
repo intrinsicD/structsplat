@@ -1,14 +1,52 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
-<title>Fair Gaussian Variants Full Same-Hyperparameter Comparison</title>
-<style>body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:24px;color:#111}h1{font-size:26px}h2{margin-top:28px}.note{background:#f5f5f5;border-left:4px solid #555;padding:10px 12px;max-width:1080px}img{max-width:100%;border:1px solid #ddd}figure{margin:18px 0 28px}figcaption{font-weight:650;margin-bottom:8px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:20px}pre{white-space:pre-wrap;background:#fafafa;border:1px solid #ddd;padding:10px;overflow:auto}table{border-collapse:collapse;font-size:13px}td,th{border:1px solid #ccc;padding:4px 7px;text-align:left}</style>
-</head><body>
-<h1>Fair Gaussian Variants Full Same-Hyperparameter Comparison</h1>
-<p class="note">Same hyperparameters as <code>results/fair_gaussian_variants_20260709_best_candidates/index.html</code>: four pinned COCO images, budget 640, max-side 160, 500 iterations, seeds 0/1, exact CUDA, L1 + 0.3 SSIM. This rerun enables the local Instant-GI hook at <code>/home/alex/Documents/Instant-GI/quard_image.py</code>, so all 232 cells complete successfully.</p>
-<p class="note">GaussianImage, GaussianImage++, and Image-GS rows remain the repo-inspired matched-policy analogue rows from the fair harness; native external pipeline claims are intentionally not mixed into this artifact. The full ignored visual-grid artifact is at <code>results/fair_gaussian_variants_20260710_full_external_same_hparams/index.html</code>.</p>
+<title>Fair Density-Control Comparison</title>
+<style>
+body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;margin:24px;color:#111}
+h1{font-size:26px;margin:0 0 8px} h2{font-size:20px;margin:28px 0 10px}
+p{max-width:980px;line-height:1.45}.note{background:#f5f5f5;border-left:4px solid #666;padding:10px 12px;max-width:1040px}
+img{max-width:100%;height:auto;border:1px solid #ddd} figure{margin:18px 0 28px} figcaption{font-weight:650;margin-bottom:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:20px;align-items:start}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:4px 7px;text-align:left}
+</style></head><body>
+<h1>Fair Density-Control Comparison</h1>
+<p class="note">Matched-policy benchmark: growth rows share the same initial count, final cap, growth waves, fitter, renderer, loss, target tracking, and iteration budget. External repos are represented by local analogues here; this is not a native external-pipeline benchmark.</p>
+<p class="note">Visual grids show each reconstruction row followed by an amplified absolute difference row: |target - reconstruction| x6, clipped for display.</p>
 <h2>Files</h2>
-<p><a href="summary.md">summary.md</a> · <a href="metrics.csv">metrics.csv</a> · <a href="convergence_curves.csv">convergence_curves.csv</a> · <a href="target_hit_rates.csv">target_hit_rates.csv</a> · <a href="config.json">config.json</a> · <a href="run_command.sh">run_command.sh</a></p>
-<h2>Metric Diagrams</h2><div class="grid">
+<p><a href="summary.md">summary.md</a> · <a href="metrics.csv">metrics.csv</a> · <a href="metrics.json">metrics.json</a> · <a href="default_dominance.csv">default_dominance.csv</a> · <a href="convergence_curves.csv">convergence_curves.csv</a> · <a href="target_hit_rates.csv">target_hit_rates.csv</a> · <a href="config.json">config.json</a></p>
+<h2>Methods</h2><table><tr><th>Method</th><th>Track</th></tr>
+<tr><td>SS best default</td><td>best-default</td></tr>
+<tr><td>SS best + SSIM 0.10</td><td>best-loss-sweep</td></tr>
+<tr><td>SS best + L1 only</td><td>best-loss-sweep</td></tr>
+<tr><td>SS best + Charbonnier</td><td>best-loss-sweep</td></tr>
+<tr><td>SS best + tensor loss</td><td>best-edge-loss</td></tr>
+<tr><td>SS best + final color solve</td><td>best-color-polish</td></tr>
+<tr><td>SS best + split relocate</td><td>best-relocate</td></tr>
+<tr><td>SS best + adaptive 1.5x cap</td><td>best-adaptive-capacity</td></tr>
+<tr><td>GaussianImage fixed</td><td>fixed-full</td></tr>
+<tr><td>GaussianImage++ residual</td><td>repo-growth</td></tr>
+<tr><td>Image-GS residual</td><td>repo-growth</td></tr>
+<tr><td>Instant-GI quadtree</td><td>fixed-full</td></tr>
+<tr><td>SS on-edge + residual</td><td>same-growth</td></tr>
+<tr><td>SS on-edge + residual relocate</td><td>same-growth+relocate</td></tr>
+<tr><td>SS on-edge + residual feature cap</td><td>same-growth+feature-cap</td></tr>
+<tr><td>SS on-edge + residual feature-rel cap</td><td>same-growth+feature-rel-cap</td></tr>
+<tr><td>SS on-edge + tensor</td><td>tensor-growth</td></tr>
+<tr><td>SS on-edge + tensor feature cap</td><td>tensor-growth+feature-cap</td></tr>
+<tr><td>SS on-edge + tensor feature-rel cap</td><td>tensor-growth+feature-rel-cap</td></tr>
+<tr><td>SS flanking + tensor</td><td>tensor-growth</td></tr>
+<tr><td>SS qt-WSE + residual</td><td>same-growth</td></tr>
+<tr><td>SS qt-WSE + residual relocate</td><td>same-growth+relocate</td></tr>
+<tr><td>SS qt-WSE + residual feature cap</td><td>same-growth+feature-cap</td></tr>
+<tr><td>SS qt-WSE + residual feature-rel cap</td><td>same-growth+feature-rel-cap</td></tr>
+<tr><td>SS qt-WSE + tensor</td><td>tensor-growth</td></tr>
+<tr><td>SS qt-WSE + tensor feature cap</td><td>tensor-growth+feature-cap</td></tr>
+<tr><td>SS qt-WSE + tensor feature-rel cap</td><td>tensor-growth+feature-rel-cap</td></tr>
+<tr><td>SS qt-hybrid + tensor</td><td>tensor-growth</td></tr>
+<tr><td>Floyd + tensor</td><td>tensor-growth-control</td></tr>
+</table>
+<h2>Metric Diagrams</h2>
+<div class="grid">
 <figure><figcaption>Mean PSNR by budget</figcaption><a href="plots/mean_psnr_by_budget.png"><img src="plots/mean_psnr_by_budget.png" alt="Mean PSNR by budget"></a></figure>
 <figure><figcaption>Mean MS-SSIM by budget</figcaption><a href="plots/mean_ms_ssim_by_budget.png"><img src="plots/mean_ms_ssim_by_budget.png" alt="Mean MS-SSIM by budget"></a></figure>
 <figure><figcaption>Mean AUC PSNR by budget</figcaption><a href="plots/mean_auc_psnr_by_budget.png"><img src="plots/mean_auc_psnr_by_budget.png" alt="Mean AUC PSNR by budget"></a></figure>
@@ -16,121 +54,16 @@
 <figure><figcaption>Target-hit rates</figcaption><a href="plots/target_hit_rate_heatmap.png"><img src="plots/target_hit_rate_heatmap.png" alt="Target-hit rates"></a></figure>
 <figure><figcaption>Mean fit seconds by budget</figcaption><a href="plots/mean_fit_seconds_by_budget.png"><img src="plots/mean_fit_seconds_by_budget.png" alt="Mean fit seconds by budget"></a></figure>
 <figure><figcaption>Paired delta vs GaussianImage++</figcaption><a href="plots/paired_delta_vs_gaussianimage_plus.png"><img src="plots/paired_delta_vs_gaussianimage_plus.png" alt="Paired delta vs GaussianImage++"></a></figure>
-</div>
-<pre>## Overall Means
-
-| Method | Runs | PSNR | PSNR Std | MS-SSIM | MS-SSIM Std | AUC | LPIPS | Init s | Fit s | Total s |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| SS best default | 8 | 27.7524 | 3.7639 | 0.97092 | 0.01775 | 24.850 | - | 0.053 | 1.218 | 1.271 |
-| SS best + SSIM 0.10 | 8 | 27.6170 | 3.6756 | 0.96918 | 0.01872 | 24.814 | - | 0.052 | 1.108 | 1.159 |
-| SS best + L1 only | 8 | 26.9764 | 3.6336 | 0.95986 | 0.02374 | 24.360 | - | 0.052 | 0.787 | 0.839 |
-| SS best + Charbonnier | 8 | 27.5749 | 3.7005 | 0.96821 | 0.02002 | 24.823 | - | 0.052 | 1.116 | 1.168 |
-| SS best + tensor loss | 8 | 27.7643 | 3.8187 | 0.97069 | 0.01888 | 24.863 | - | 0.052 | 1.151 | 1.203 |
-| SS best + final color solve | 8 | 27.9459 | 3.6969 | 0.97253 | 0.01596 | 24.833 | - | 0.053 | 1.231 | 1.284 |
-| SS best + split relocate | 8 | 27.2648 | 3.7256 | 0.96736 | 0.01935 | 24.639 | - | 0.052 | 1.199 | 1.251 |
-| SS best + adaptive 1.5x cap † | 8 | 28.7802 | 3.1722 | 0.97847 | 0.01363 | 25.540 | - | 0.052 | 1.120 | 1.172 |
-| GaussianImage fixed | 8 | 25.7916 | 3.2335 | 0.97255 | 0.01547 | 24.426 | - | 0.001 | 1.110 | 1.110 |
-| GaussianImage++ residual | 8 | 27.3841 | 3.6179 | 0.97324 | 0.01660 | 22.992 | - | 0.000 | 1.107 | 1.108 |
-| Image-GS residual | 8 | 27.4130 | 3.5892 | 0.97190 | 0.01862 | 23.425 | - | 0.003 | 1.093 | 1.096 |
-| Instant-GI quadtree | 8 | 22.6801 | 4.0139 | 0.93493 | 0.04180 | 21.102 | - | 0.172 | 1.085 | 1.257 |
-| SS on-edge + residual | 8 | 27.5694 | 3.5397 | 0.97247 | 0.01741 | 24.189 | - | 0.051 | 1.116 | 1.167 |
-| SS on-edge + residual relocate | 8 | 27.3976 | 3.4991 | 0.97151 | 0.01777 | 23.888 | - | 0.051 | 1.167 | 1.218 |
-| SS on-edge + residual feature cap | 8 | 27.6148 | 3.6547 | 0.97039 | 0.01946 | 24.053 | - | 0.051 | 1.115 | 1.166 |
-| SS on-edge + residual feature-rel cap | 8 | 27.6212 | 3.6132 | 0.97123 | 0.01801 | 24.303 | - | 0.051 | 1.117 | 1.168 |
-| SS on-edge + tensor | 8 | 27.3742 | 3.4446 | 0.97139 | 0.01812 | 24.180 | - | 0.051 | 1.106 | 1.157 |
-| SS on-edge + tensor feature cap | 8 | 27.7242 | 3.8179 | 0.97052 | 0.01914 | 24.298 | - | 0.054 | 1.146 | 1.200 |
-| SS on-edge + tensor feature-rel cap | 8 | 27.4450 | 3.5522 | 0.97104 | 0.01840 | 24.235 | - | 0.051 | 1.128 | 1.179 |
-| SS flanking + tensor | 8 | 27.3706 | 3.4506 | 0.97158 | 0.01767 | 24.177 | - | 0.051 | 1.114 | 1.166 |
-| SS qt-WSE + residual | 8 | 27.5364 | 3.5854 | 0.97178 | 0.01830 | 24.117 | - | 0.137 | 1.114 | 1.251 |
-| SS qt-WSE + residual relocate | 8 | 27.4066 | 3.4985 | 0.97188 | 0.01793 | 23.887 | - | 0.136 | 1.173 | 1.309 |
-| SS qt-WSE + residual feature cap | 8 | 27.4521 | 3.6391 | 0.96991 | 0.01985 | 23.976 | - | 0.137 | 1.112 | 1.249 |
-| SS qt-WSE + residual feature-rel cap | 8 | 27.6942 | 3.7116 | 0.97194 | 0.01834 | 24.282 | - | 0.135 | 1.119 | 1.253 |
-| SS qt-WSE + tensor | 8 | 27.4045 | 3.4146 | 0.97187 | 0.01721 | 24.154 | - | 0.136 | 1.122 | 1.258 |
-| SS qt-WSE + tensor feature cap | 8 | 27.5586 | 3.7886 | 0.97028 | 0.01888 | 24.154 | - | 0.136 | 1.131 | 1.267 |
-| SS qt-WSE + tensor feature-rel cap | 8 | 27.4130 | 3.4636 | 0.97150 | 0.01778 | 24.171 | - | 0.138 | 1.115 | 1.252 |
-| SS qt-hybrid + tensor | 8 | 27.3779 | 3.4449 | 0.97196 | 0.01772 | 24.113 | - | 0.068 | 1.105 | 1.173 |
-| Floyd + tensor | 8 | 26.9373 | 3.2126 | 0.96777 | 0.01965 | 23.577 | - | 0.022 | 1.108 | 1.130 |
-
-† Not budget-matched: mean final Gaussian count exceeds the shared final cap (adaptive extra capacity). These rows spend more primitives — more rate for an image codec — so their PSNR/MS-SSIM is not directly comparable to the equal-budget rows, and they are excluded from the per-cell winners below.</pre>
-<pre>## Default Promotion Check
-
-A best-default candidate is promotable only when its paired mean deltas beat `SS best default` on quality (PSNR and MS-SSIM), convergence (AUC), and performance (fit and total seconds). Over-budget rows are excluded.
-
-| Candidate | Pairs | ΔPSNR | ΔMS-SSIM | ΔAUC | ΔFit s | ΔTotal s | PSNR wins | MS wins | AUC wins | Faster fit | Promote |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| SS best + SSIM 0.10 | 8 | -0.1355 | -0.00174 | -0.0365 | -0.1104 | -0.1119 | 2/8 | 1/8 | 3/8 | 5/8 | no |
-| SS best + L1 only | 8 | -0.7760 | -0.01106 | -0.4904 | -0.4311 | -0.4325 | 0/8 | 0/8 | 0/8 | 8/8 | no |
-| SS best + Charbonnier | 8 | -0.1775 | -0.00271 | -0.0277 | -0.1016 | -0.1028 | 0/8 | 0/8 | 3/8 | 5/8 | no |
-| SS best + tensor loss | 8 | +0.0119 | -0.00024 | +0.0121 | -0.0668 | -0.0679 | 6/8 | 6/8 | 6/8 | 4/8 | no |
-| SS best + final color solve | 8 | +0.1935 | +0.00161 | -0.0179 | +0.0132 | +0.0131 | 7/8 | 5/8 | 4/8 | 2/8 | no |
-| SS best + split relocate | 8 | -0.4876 | -0.00356 | -0.2113 | -0.0193 | -0.0199 | 0/8 | 0/8 | 0/8 | 3/8 | no |</pre>
-<pre>## Convergence
-
-AUC is the area under the logged PSNR-over-iteration curve; higher means better quality earlier in the same 499-iteration budget.
-
-| Method | AUC | PSNR@0 | PSNR@125 | PSNR@250 | PSNR@374 | Final PSNR |
-|---|---:|---:|---:|---:|---:|---:|
-| SS best default | 24.850 | 17.090 | 23.897 | 23.259 | 26.809 | 27.752 |
-| SS best + SSIM 0.10 | 24.814 | 17.090 | 23.861 | 23.223 | 26.715 | 27.617 |
-| SS best + L1 only | 24.360 | 17.090 | 23.442 | 23.127 | 26.115 | 26.976 |
-| SS best + Charbonnier | 24.823 | 17.090 | 23.878 | 23.213 | 26.691 | 27.575 |
-| SS best + tensor loss | 24.863 | 17.090 | 23.912 | 23.270 | 26.842 | 27.764 |
-| SS best + final color solve | 24.833 | 17.090 | 23.899 | 23.179 | 26.780 | 27.946 |
-| SS best + split relocate | 24.639 | 17.090 | 23.717 | 22.780 | 26.512 | 27.265 |
-| SS best + adaptive 1.5x cap † | 25.540 | 17.090 | 24.244 | 23.822 | 28.569 | 28.780 |
-| GaussianImage fixed | 24.426 | 16.921 | 23.986 | 25.399 | 25.762 | 25.792 |
-| GaussianImage++ residual | 22.992 | 16.084 | 21.624 | 24.498 | 26.166 | 27.384 |
-| Image-GS residual | 23.425 | 16.012 | 22.102 | 24.706 | 26.245 | 27.413 |
-| Instant-GI quadtree | 21.102 | 12.944 | 20.592 | 22.168 | 22.502 | 22.680 |
-| SS on-edge + residual | 24.189 | 16.576 | 23.320 | 25.242 | 26.534 | 27.569 |
-| SS on-edge + residual relocate | 23.888 | 16.576 | 22.921 | 24.924 | 26.347 | 27.398 |
-| SS on-edge + residual feature cap | 24.053 | 17.090 | 23.409 | 25.360 | 26.608 | 27.615 |
-| SS on-edge + residual feature-rel cap | 24.303 | 16.595 | 23.446 | 25.324 | 26.621 | 27.621 |
-| SS on-edge + tensor | 24.180 | 16.576 | 23.472 | 25.296 | 26.424 | 27.374 |
-| SS on-edge + tensor feature cap | 24.298 | 17.090 | 23.682 | 25.683 | 26.878 | 27.724 |
-| SS on-edge + tensor feature-rel cap | 24.235 | 16.595 | 23.515 | 25.365 | 26.483 | 27.445 |
-| SS flanking + tensor | 24.177 | 16.655 | 23.389 | 25.302 | 26.428 | 27.371 |
-| SS qt-WSE + residual | 24.117 | 16.655 | 23.255 | 25.128 | 26.484 | 27.536 |
-| SS qt-WSE + residual relocate | 23.887 | 16.655 | 22.932 | 24.853 | 26.282 | 27.407 |
-| SS qt-WSE + residual feature cap | 23.976 | 17.159 | 23.370 | 25.204 | 26.428 | 27.452 |
-| SS qt-WSE + residual feature-rel cap | 24.282 | 16.672 | 23.349 | 25.278 | 26.656 | 27.694 |
-| SS qt-WSE + tensor | 24.154 | 16.655 | 23.424 | 25.235 | 26.408 | 27.404 |
-| SS qt-WSE + tensor feature cap | 24.154 | 17.159 | 23.603 | 25.485 | 26.687 | 27.559 |
-| SS qt-WSE + tensor feature-rel cap | 24.171 | 16.672 | 23.422 | 25.322 | 26.442 | 27.413 |
-| SS qt-hybrid + tensor | 24.113 | 16.857 | 23.344 | 25.259 | 26.423 | 27.378 |
-| Floyd + tensor | 23.577 | 15.288 | 22.744 | 24.713 | 25.992 | 26.937 |
-
-Target-hit cells report hit rate across all image/budget cells and mean hit iteration among cells that reached the target.
-
-| Method | Hit 28 | Iter 28 | Hit 30 | Iter 30 | Hit 32 | Iter 32 |
-|---|---:|---:|---:|---:|---:|---:|
-| SS best default | 25% | 107.5 | 25% | 196.5 | 25% | 315.0 |
-| SS best + SSIM 0.10 | 25% | 108.0 | 25% | 202.5 | 25% | 359.0 |
-| SS best + L1 only | 25% | 126.5 | 25% | 248.0 | 25% | 394.5 |
-| SS best + Charbonnier | 25% | 107.0 | 25% | 197.0 | 25% | 336.5 |
-| SS best + tensor loss | 25% | 105.5 | 25% | 195.5 | 25% | 316.0 |
-| SS best + final color solve | 25% | 107.5 | 25% | 197.5 | 25% | 342.5 |
-| SS best + split relocate | 25% | 115.0 | 25% | 209.5 | 25% | 365.0 |
-| SS best + adaptive 1.5x cap † | 50% | 222.5 | 25% | 162.5 | 25% | 240.0 |
-| GaussianImage fixed | 25% | 93.0 | 25% | 210.5 | 0% | - |
-| GaussianImage++ residual | 25% | 171.0 | 25% | 267.5 | 25% | 414.5 |
-| Image-GS residual | 25% | 151.0 | 25% | 255.0 | 25% | 387.5 |
-| Instant-GI quadtree | 25% | 201.5 | 12% | 396.0 | 0% | - |
-| SS on-edge + residual | 25% | 129.0 | 25% | 237.5 | 25% | 376.0 |
-| SS on-edge + residual relocate | 25% | 145.0 | 25% | 266.0 | 25% | 410.5 |
-| SS on-edge + residual feature cap | 25% | 127.5 | 25% | 233.0 | 25% | 365.5 |
-| SS on-edge + residual feature-rel cap | 25% | 124.0 | 25% | 230.0 | 25% | 356.5 |
-| SS on-edge + tensor | 25% | 123.0 | 25% | 234.5 | 25% | 408.0 |
-| SS on-edge + tensor feature cap | 25% | 118.5 | 25% | 208.0 | 25% | 334.0 |
-| SS on-edge + tensor feature-rel cap | 25% | 122.5 | 25% | 229.0 | 25% | 380.0 |
-| SS flanking + tensor | 25% | 128.5 | 25% | 240.5 | 25% | 420.5 |
-| SS qt-WSE + residual | 25% | 132.5 | 25% | 245.0 | 25% | 379.5 |
-| SS qt-WSE + residual relocate | 25% | 144.5 | 25% | 266.0 | 25% | 430.0 |
-| SS qt-WSE + residual feature cap | 25% | 126.0 | 25% | 232.0 | 25% | 390.5 |
-| SS qt-WSE + residual feature-rel cap | 25% | 127.0 | 25% | 233.5 | 25% | 352.0 |
-| SS qt-WSE + tensor | 25% | 126.5 | 25% | 250.0 | 25% | 423.0 |
-| SS qt-WSE + tensor feature cap | 25% | 119.5 | 25% | 223.0 | 25% | 339.0 |
-| SS qt-WSE + tensor feature-rel cap | 25% | 126.5 | 25% | 232.5 | 25% | 398.5 |
-| SS qt-hybrid + tensor | 25% | 130.5 | 25% | 244.0 | 25% | 410.0 |
-| Floyd + tensor | 25% | 154.5 | 25% | 310.0 | 25% | 470.5 |</pre>
+</div><h2>Visual Grids By Image</h2>
+<figure><figcaption>COCO_train2014_000000000009_seed0_budgets_methods</figcaption><a href="grids/by_image/COCO_train2014_000000000009_seed0_budgets_methods.png"><img src="grids/by_image/COCO_train2014_000000000009_seed0_budgets_methods.png" alt="COCO_train2014_000000000009_seed0_budgets_methods"></a></figure>
+<figure><figcaption>COCO_train2014_000000000009_seed1_budgets_methods</figcaption><a href="grids/by_image/COCO_train2014_000000000009_seed1_budgets_methods.png"><img src="grids/by_image/COCO_train2014_000000000009_seed1_budgets_methods.png" alt="COCO_train2014_000000000009_seed1_budgets_methods"></a></figure>
+<figure><figcaption>COCO_train2014_000000000025_seed0_budgets_methods</figcaption><a href="grids/by_image/COCO_train2014_000000000025_seed0_budgets_methods.png"><img src="grids/by_image/COCO_train2014_000000000025_seed0_budgets_methods.png" alt="COCO_train2014_000000000025_seed0_budgets_methods"></a></figure>
+<figure><figcaption>COCO_train2014_000000000025_seed1_budgets_methods</figcaption><a href="grids/by_image/COCO_train2014_000000000025_seed1_budgets_methods.png"><img src="grids/by_image/COCO_train2014_000000000025_seed1_budgets_methods.png" alt="COCO_train2014_000000000025_seed1_budgets_methods"></a></figure>
+<figure><figcaption>COCO_train2014_000000000030_seed0_budgets_methods</figcaption><a href="grids/by_image/COCO_train2014_000000000030_seed0_budgets_methods.png"><img src="grids/by_image/COCO_train2014_000000000030_seed0_budgets_methods.png" alt="COCO_train2014_000000000030_seed0_budgets_methods"></a></figure>
+<figure><figcaption>COCO_train2014_000000000030_seed1_budgets_methods</figcaption><a href="grids/by_image/COCO_train2014_000000000030_seed1_budgets_methods.png"><img src="grids/by_image/COCO_train2014_000000000030_seed1_budgets_methods.png" alt="COCO_train2014_000000000030_seed1_budgets_methods"></a></figure>
+<figure><figcaption>COCO_train2014_000000000034_seed0_budgets_methods</figcaption><a href="grids/by_image/COCO_train2014_000000000034_seed0_budgets_methods.png"><img src="grids/by_image/COCO_train2014_000000000034_seed0_budgets_methods.png" alt="COCO_train2014_000000000034_seed0_budgets_methods"></a></figure>
+<figure><figcaption>COCO_train2014_000000000034_seed1_budgets_methods</figcaption><a href="grids/by_image/COCO_train2014_000000000034_seed1_budgets_methods.png"><img src="grids/by_image/COCO_train2014_000000000034_seed1_budgets_methods.png" alt="COCO_train2014_000000000034_seed1_budgets_methods"></a></figure>
+<h2>Visual Grids By Budget</h2>
+<figure><figcaption>budget_640_seed0_images_methods</figcaption><a href="grids/by_budget/budget_640_seed0_images_methods.png"><img src="grids/by_budget/budget_640_seed0_images_methods.png" alt="budget_640_seed0_images_methods"></a></figure>
+<figure><figcaption>budget_640_seed1_images_methods</figcaption><a href="grids/by_budget/budget_640_seed1_images_methods.png"><img src="grids/by_budget/budget_640_seed1_images_methods.png" alt="budget_640_seed1_images_methods"></a></figure>
 </body></html>

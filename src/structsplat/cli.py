@@ -88,6 +88,8 @@ def cmd_fit(args):
                      pixel_loss=args.pixel_loss, ssim_weight=args.ssim_weight,
                      loss_weighting=args.loss_weighting,
                      loss_weight_beta=args.loss_weight_beta,
+                     geometry_loss_weight=args.geometry_loss_weight,
+                     geometry_loss_every=args.geometry_loss_every,
                      ssim_backend=args.ssim_backend,
                      loss_warmup_iters=args.loss_warmup_iters,
                      loss_warmup_pixel_loss=args.loss_warmup_pixel_loss,
@@ -110,7 +112,12 @@ def cmd_fit(args):
                      support_fade_until_frac=args.support_fade_until_frac,
                      support_fade_crossfade_iters=args.support_fade_crossfade_iters,
                      aa_dilation=args.aa_dilation,
+                     covariance_filter_mode=args.covariance_filter_mode,
+                     covariance_filter_alpha=args.covariance_filter_alpha,
+                     covariance_filter_max_variance=args.covariance_filter_max_variance,
+                     checkpoint_policy=args.checkpoint_policy,
                      lr_schedule=args.lr_schedule,
+                     lr_cosine_start_frac=args.lr_cosine_start_frac,
                      lr_decay_every=args.lr_decay_every, lr_decay_gamma=args.lr_decay_gamma,
                      prune_every=args.prune_every, prune_min_activity=args.prune_min_activity,
                      prune_keep_min=args.prune_keep_min,
@@ -283,7 +290,12 @@ def cmd_generate(args):
 
 
 def main():
-    from .config import GenConfig, DEFAULT_INIT_STRATEGY, DEFAULT_PREDICTOR_FALLBACK_STRATEGY
+    from .config import (
+        DEFAULT_INIT_STRATEGY,
+        DEFAULT_PREDICTOR_FALLBACK_STRATEGY,
+        FitConfig,
+        GenConfig,
+    )
 
     p = argparse.ArgumentParser(prog="structsplat")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -368,6 +380,24 @@ def main():
     f.add_argument("--qat-bits-colors", type=int, default=8)
     f.add_argument("--qat-bits-opacity", type=int, default=8)
     f.add_argument("--aa-dilation", type=float, default=0.0)
+    f.add_argument(
+        "--covariance-filter-mode",
+        choices=["none", "generation_density"],
+        default="none",
+        help="fixed birth-cohort covariance filter (experimental)",
+    )
+    f.add_argument(
+        "--covariance-filter-alpha",
+        type=float,
+        default=FitConfig.covariance_filter_alpha,
+        help="density divisor alpha in H*W/(alpha*N_after)",
+    )
+    f.add_argument(
+        "--covariance-filter-max-variance",
+        type=float,
+        default=FitConfig.covariance_filter_max_variance,
+        help="maximum added isotropic variance in px^2",
+    )
     f.add_argument("--support-fade", action="store_true",
                    help="subtract the Gaussian tail at sigma_cutoff for C0 compact support")
     f.add_argument("--support-fade-until-frac", type=float, default=None,
@@ -378,16 +408,40 @@ def main():
     f.add_argument("--pixel-loss", choices=["l1", "l2", "charbonnier"], default="l1")
     f.add_argument("--loss-weighting", choices=["none", "tensor"], default="none")
     f.add_argument("--loss-weight-beta", type=float, default=1.0)
+    f.add_argument(
+        "--geometry-loss-weight",
+        type=float,
+        default=0.0,
+        help="weight for ground-truth-gradient-weighted Sobel consistency",
+    )
+    f.add_argument(
+        "--geometry-loss-every",
+        type=int,
+        default=1,
+        help="evaluate Sobel consistency every N steps and scale its active weight by N",
+    )
     f.add_argument("--loss-warmup-iters", type=int, default=0)
     f.add_argument("--loss-warmup-pixel-loss", choices=["l1", "l2", "charbonnier"], default="l2")
     f.add_argument("--ssim-weight", type=float, default=0.3)
     f.add_argument("--ssim-backend", choices=["builtin", "fused", "auto"], default="builtin")
     f.add_argument("--lpips", action="store_true", help="compute LPIPS after fitting")
+    f.add_argument(
+        "--checkpoint-policy",
+        choices=["terminal", "best_psnr_final_count"],
+        default="terminal",
+        help="terminal field or best post-transition PSNR state at the terminal Gaussian count",
+    )
     f.add_argument("--flank-offset", type=float, default=None,
                    help="edge-center offset fraction; default is strategy-aware")
     f.add_argument("--max-axis-ratio", type=float, default=6.0)
     f.add_argument("--coherence-power", type=float, default=1.0)
     f.add_argument("--lr-schedule", choices=["none", "step", "cosine"], default="none")
+    f.add_argument(
+        "--lr-cosine-start-frac",
+        type=float,
+        default=0.0,
+        help="hold full LR through this fraction of a cosine schedule, then decay",
+    )
     f.add_argument("--lr-decay-every", type=int, default=None)
     f.add_argument("--lr-decay-gamma", type=float, default=0.5)
     f.add_argument("--prune-every", type=int, default=None)

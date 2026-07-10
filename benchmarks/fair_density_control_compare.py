@@ -16,8 +16,10 @@ optimizers, metrics, codecs, and checkpoint assumptions.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
+import os
 import time
 from dataclasses import asdict, replace
 from pathlib import Path
@@ -43,6 +45,7 @@ from benchmarks.common import (
     write_csv,
     write_json,
 )
+from benchmarks._util import package_versions, repository_state
 from structsplat import metrics as M
 from structsplat.config import FitConfig, InitConfig, StructureTensorConfig
 from structsplat.fit import fit
@@ -59,18 +62,108 @@ DEFAULT_IMAGES = [
     "results/datasets/abl004/kodak24/kodim19.png",
 ]
 
+
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _pixel_sha256(image: np.ndarray) -> str:
+    pixels = np.rint(np.clip(image, 0.0, 1.0) * 255.0).astype(np.uint8)
+    digest = hashlib.sha256()
+    digest.update(np.asarray(pixels.shape, dtype="<i8").tobytes())
+    digest.update(pixels.tobytes(order="C"))
+    return digest.hexdigest()
+
+
+def _artifact_source_id(path: Path, source_sha256: str) -> str:
+    """Return a readable, collision-resistant name for source-specific artifacts."""
+    canonical = path.resolve()
+    digest = hashlib.sha256()
+    digest.update(str(canonical).encode("utf-8"))
+    digest.update(b"\0")
+    digest.update(source_sha256.encode("ascii"))
+    return f"{canonical.stem}_{digest.hexdigest()[:16]}"
+
+
+def _source_fingerprint() -> dict[str, Any]:
+    root = Path(__file__).resolve().parents[1]
+    paths = {
+        "benchmark_source_sha256": Path(__file__).resolve(),
+        "fit_source_sha256": root / "src" / "structsplat" / "fit.py",
+        "config_source_sha256": root / "src" / "structsplat" / "config.py",
+        "gaussians_source_sha256": root / "src" / "structsplat" / "gaussians.py",
+        "render_source_sha256": root / "src" / "structsplat" / "render.py",
+        "metrics_source_sha256": root / "src" / "structsplat" / "metrics.py",
+        "init_source_sha256": root / "src" / "structsplat" / "init.py",
+    }
+    return {name: _file_sha256(path) for name, path in paths.items()}
+
+
+def _run_protocol_sha256(
+    scientific_protocol: dict[str, Any],
+    *,
+    device: str,
+    versions: dict[str, Any],
+    repo_state: dict[str, Any],
+    source_fingerprint: dict[str, Any],
+) -> str:
+    payload = {
+        "scientific_protocol": scientific_protocol,
+        "device": device,
+        "versions": versions,
+        "repository_commit": repo_state.get("commit"),
+        "repository_tracked_diff_sha256": repo_state.get("tracked_diff_sha256"),
+        **source_fingerprint,
+    }
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, default=str).encode("utf-8")
+    ).hexdigest()
+
 BEST_DEFAULT_METHOD = "structsplat_best_default"
+BEST_COSINE_METHOD = "structsplat_best_cosine"
+BEST_COSINE_TAIL_METHOD = "structsplat_best_cosine_tail"
+BEST_CHECKPOINT_METHOD = "structsplat_best_checkpoint"
+BEST_CAF_METHOD = "structsplat_best_generation_filter"
+BEST_CAF_WEAK_METHOD = "structsplat_best_generation_filter_a18pi"
+BEST_CAF_MILD_METHOD = "structsplat_best_generation_filter_a36pi"
 BEST_DEFAULT_BASE_METHOD = "structsplat_onedge_tensor_featurecap"
 BEST_DEFAULT_FEATURE_CAP = 12.0
 BEST_DEFAULT_GROWTH_WAVES = 5
 ADAPTIVE_EXTRA_CAP_MULT = 1.5
+DOMINANCE_BOOTSTRAP_SAMPLES = 5000
+DOMINANCE_BOOTSTRAP_SEED = 0
+
+# Positive gains always mean that the candidate is better than the pinned default.
+# Timing metrics therefore use the opposite sign from quality/convergence metrics.
+DOMINANCE_METRICS = {
+    "psnr": 1.0,
+    "ms_ssim": 1.0,
+    "auc_psnr": 1.0,
+    "fit_seconds": -1.0,
+    "total_seconds": -1.0,
+}
 
 DEFAULT_METHODS = [
     BEST_DEFAULT_METHOD,
+    BEST_COSINE_METHOD,
+    BEST_COSINE_TAIL_METHOD,
+    BEST_CHECKPOINT_METHOD,
+    BEST_CAF_METHOD,
+    BEST_CAF_WEAK_METHOD,
+    BEST_CAF_MILD_METHOD,
     "structsplat_best_ssim010",
     "structsplat_best_l1_only",
     "structsplat_best_charbonnier",
     "structsplat_best_tensor_loss",
+    "structsplat_best_gcr015",
+    "structsplat_best_gcr015_e2",
+    "structsplat_best_gcr015_e4",
+    "structsplat_best_gcr030",
+    "structsplat_best_gcr060",
     "structsplat_best_color_final",
     "structsplat_best_relocate",
     "structsplat_best_adaptive_1p5x",
@@ -99,10 +192,21 @@ DEFAULT_METHODS = [
 
 METHOD_LABELS = {
     BEST_DEFAULT_METHOD: "SS best default",
+    BEST_COSINE_METHOD: "SS best + cosine LR",
+    BEST_COSINE_TAIL_METHOD: "SS best + post-growth cosine LR",
+    BEST_CHECKPOINT_METHOD: "SS best + full-count checkpoint",
+    BEST_CAF_METHOD: "SS best + generation CAF",
+    BEST_CAF_WEAK_METHOD: "SS best + generation CAF 18pi",
+    BEST_CAF_MILD_METHOD: "SS best + generation CAF 36pi",
     "structsplat_best_ssim010": "SS best + SSIM 0.10",
     "structsplat_best_l1_only": "SS best + L1 only",
     "structsplat_best_charbonnier": "SS best + Charbonnier",
     "structsplat_best_tensor_loss": "SS best + tensor loss",
+    "structsplat_best_gcr015": "SS best + GCR 0.015",
+    "structsplat_best_gcr015_e2": "SS best + GCR 0.015 every2",
+    "structsplat_best_gcr015_e4": "SS best + GCR 0.015 every4",
+    "structsplat_best_gcr030": "SS best + GCR 0.030",
+    "structsplat_best_gcr060": "SS best + GCR 0.060",
     "structsplat_best_color_final": "SS best + final color solve",
     "structsplat_best_relocate": "SS best + split relocate",
     "structsplat_best_adaptive_1p5x": "SS best + adaptive 1.5x cap",
@@ -134,6 +238,29 @@ METHOD_NOTES = {
         "Pinned current Gaussian-image winner: aniso_onedge + WSE, feature cap 12@160, "
         "tensor-aware residual growth, 5 growth waves, L1 + 0.3 SSIM."
     ),
+    BEST_COSINE_METHOD: (
+        "Best default with one horizon-wide cosine learning-rate decay to stabilize long fits."
+    ),
+    BEST_COSINE_TAIL_METHOD: (
+        "Best default held at full LR through five growth waves, then cosine-decayed over "
+        "the final one-sixth of the horizon."
+    ),
+    BEST_CHECKPOINT_METHOD: (
+        "Best default with post-transition PSNR checkpoint selection restricted to states "
+        "at the terminal Gaussian count."
+    ),
+    BEST_CAF_METHOD: (
+        "Best default plus GaussianImage++-style birth-cohort covariance filtering with "
+        "s=min(300, HW/(9*pi*N_after)) px^2."
+    ),
+    BEST_CAF_WEAK_METHOD: (
+        "Weaker generation-density covariance filter with alpha=18*pi (half the native "
+        "GaussianImage++ variance)."
+    ),
+    BEST_CAF_MILD_METHOD: (
+        "Mild generation-density covariance filter with alpha=36*pi (quarter the native "
+        "GaussianImage++ variance)."
+    ),
     "structsplat_best_ssim010": (
         "Best default geometry/growth with SSIM weight lowered to 0.10 for lower pixel diff."
     ),
@@ -145,6 +272,21 @@ METHOD_NOTES = {
     ),
     "structsplat_best_tensor_loss": (
         "Best default geometry/growth with tensor-weighted pixel loss to emphasize edges."
+    ),
+    "structsplat_best_gcr015": (
+        "Best default plus ground-truth-gradient-weighted Sobel consistency at weight 0.015."
+    ),
+    "structsplat_best_gcr015_e2": (
+        "GCR 0.015 evaluated every 2 steps with active weight scaled to preserve its mean."
+    ),
+    "structsplat_best_gcr015_e4": (
+        "GCR 0.015 evaluated every 4 steps with active weight scaled to preserve its mean."
+    ),
+    "structsplat_best_gcr030": (
+        "Best default plus ground-truth-gradient-weighted Sobel consistency at weight 0.030."
+    ),
+    "structsplat_best_gcr060": (
+        "Best default plus ground-truth-gradient-weighted Sobel consistency at weight 0.060."
     ),
     "structsplat_best_color_final": (
         "Best default geometry/growth with a final fixed-geometry RGB least-squares color solve."
@@ -222,10 +364,21 @@ METHOD_NOTES = {
 
 METHOD_TRACKS = {
     BEST_DEFAULT_METHOD: "best-default",
+    BEST_COSINE_METHOD: "best-long-horizon",
+    BEST_COSINE_TAIL_METHOD: "best-long-horizon",
+    BEST_CHECKPOINT_METHOD: "best-long-horizon",
+    BEST_CAF_METHOD: "best-covariance-filter",
+    BEST_CAF_WEAK_METHOD: "best-covariance-filter",
+    BEST_CAF_MILD_METHOD: "best-covariance-filter",
     "structsplat_best_ssim010": "best-loss-sweep",
     "structsplat_best_l1_only": "best-loss-sweep",
     "structsplat_best_charbonnier": "best-loss-sweep",
     "structsplat_best_tensor_loss": "best-edge-loss",
+    "structsplat_best_gcr015": "best-geometry-loss",
+    "structsplat_best_gcr015_e2": "best-geometry-loss",
+    "structsplat_best_gcr015_e4": "best-geometry-loss",
+    "structsplat_best_gcr030": "best-geometry-loss",
+    "structsplat_best_gcr060": "best-geometry-loss",
     "structsplat_best_color_final": "best-color-polish",
     "structsplat_best_relocate": "best-relocate",
     "structsplat_best_adaptive_1p5x": "best-adaptive-capacity",
@@ -254,10 +407,21 @@ METHOD_TRACKS = {
 
 STRUCTSPLAT_INIT = {
     BEST_DEFAULT_METHOD: ("aniso_onedge", "wse", 0.0),
+    BEST_COSINE_METHOD: ("aniso_onedge", "wse", 0.0),
+    BEST_COSINE_TAIL_METHOD: ("aniso_onedge", "wse", 0.0),
+    BEST_CHECKPOINT_METHOD: ("aniso_onedge", "wse", 0.0),
+    BEST_CAF_METHOD: ("aniso_onedge", "wse", 0.0),
+    BEST_CAF_WEAK_METHOD: ("aniso_onedge", "wse", 0.0),
+    BEST_CAF_MILD_METHOD: ("aniso_onedge", "wse", 0.0),
     "structsplat_best_ssim010": ("aniso_onedge", "wse", 0.0),
     "structsplat_best_l1_only": ("aniso_onedge", "wse", 0.0),
     "structsplat_best_charbonnier": ("aniso_onedge", "wse", 0.0),
     "structsplat_best_tensor_loss": ("aniso_onedge", "wse", 0.0),
+    "structsplat_best_gcr015": ("aniso_onedge", "wse", 0.0),
+    "structsplat_best_gcr015_e2": ("aniso_onedge", "wse", 0.0),
+    "structsplat_best_gcr015_e4": ("aniso_onedge", "wse", 0.0),
+    "structsplat_best_gcr030": ("aniso_onedge", "wse", 0.0),
+    "structsplat_best_gcr060": ("aniso_onedge", "wse", 0.0),
     "structsplat_best_color_final": ("aniso_onedge", "wse", 0.0),
     "structsplat_best_relocate": ("aniso_onedge", "wse", 0.0),
     "structsplat_best_adaptive_1p5x": ("aniso_onedge", "wse", 0.0),
@@ -282,10 +446,21 @@ STRUCTSPLAT_INIT = {
 
 STRUCTSPLAT_SPLIT_MODE = {
     BEST_DEFAULT_METHOD: "residual_tensor_add",
+    BEST_COSINE_METHOD: "residual_tensor_add",
+    BEST_COSINE_TAIL_METHOD: "residual_tensor_add",
+    BEST_CHECKPOINT_METHOD: "residual_tensor_add",
+    BEST_CAF_METHOD: "residual_tensor_add",
+    BEST_CAF_WEAK_METHOD: "residual_tensor_add",
+    BEST_CAF_MILD_METHOD: "residual_tensor_add",
     "structsplat_best_ssim010": "residual_tensor_add",
     "structsplat_best_l1_only": "residual_tensor_add",
     "structsplat_best_charbonnier": "residual_tensor_add",
     "structsplat_best_tensor_loss": "residual_tensor_add",
+    "structsplat_best_gcr015": "residual_tensor_add",
+    "structsplat_best_gcr015_e2": "residual_tensor_add",
+    "structsplat_best_gcr015_e4": "residual_tensor_add",
+    "structsplat_best_gcr030": "residual_tensor_add",
+    "structsplat_best_gcr060": "residual_tensor_add",
     "structsplat_best_color_final": "residual_tensor_add",
     "structsplat_best_relocate": "residual_tensor_add",
     "structsplat_best_adaptive_1p5x": "residual_tensor_add",
@@ -316,10 +491,21 @@ RELOCATION_METHODS = {
 
 FEATURE_CAP_METHODS = {
     BEST_DEFAULT_METHOD,
+    BEST_COSINE_METHOD,
+    BEST_COSINE_TAIL_METHOD,
+    BEST_CHECKPOINT_METHOD,
+    BEST_CAF_METHOD,
+    BEST_CAF_WEAK_METHOD,
+    BEST_CAF_MILD_METHOD,
     "structsplat_best_ssim010",
     "structsplat_best_l1_only",
     "structsplat_best_charbonnier",
     "structsplat_best_tensor_loss",
+    "structsplat_best_gcr015",
+    "structsplat_best_gcr015_e2",
+    "structsplat_best_gcr015_e4",
+    "structsplat_best_gcr030",
+    "structsplat_best_gcr060",
     "structsplat_best_color_final",
     "structsplat_best_relocate",
     "structsplat_best_adaptive_1p5x",
@@ -339,21 +525,48 @@ FEATURE_REL_METHODS = {
 DEFAULT_FEATURE_CAP_REFERENCE_SIDE = 160.0
 BEST_VARIANT_METHODS = {
     BEST_DEFAULT_METHOD,
+    BEST_COSINE_METHOD,
+    BEST_COSINE_TAIL_METHOD,
+    BEST_CHECKPOINT_METHOD,
+    BEST_CAF_METHOD,
+    BEST_CAF_WEAK_METHOD,
+    BEST_CAF_MILD_METHOD,
     "structsplat_best_ssim010",
     "structsplat_best_l1_only",
     "structsplat_best_charbonnier",
     "structsplat_best_tensor_loss",
+    "structsplat_best_gcr015",
+    "structsplat_best_gcr015_e2",
+    "structsplat_best_gcr015_e4",
+    "structsplat_best_gcr030",
+    "structsplat_best_gcr060",
     "structsplat_best_color_final",
     "structsplat_best_relocate",
     "structsplat_best_adaptive_1p5x",
 }
-BEST_PINNED_METHODS = {BEST_DEFAULT_METHOD}
 BEST_SSIM010_METHODS = {"structsplat_best_ssim010"}
 BEST_L1_ONLY_METHODS = {"structsplat_best_l1_only"}
 BEST_CHARBONNIER_METHODS = {"structsplat_best_charbonnier"}
 BEST_TENSOR_LOSS_METHODS = {"structsplat_best_tensor_loss"}
+BEST_GCR_METHODS = {
+    "structsplat_best_gcr015": (0.015, 1),
+    "structsplat_best_gcr015_e2": (0.015, 2),
+    "structsplat_best_gcr015_e4": (0.015, 4),
+    "structsplat_best_gcr030": (0.030, 1),
+    "structsplat_best_gcr060": (0.060, 1),
+}
 BEST_COLOR_FINAL_METHODS = {"structsplat_best_color_final"}
 BEST_ADAPTIVE_METHODS = {"structsplat_best_adaptive_1p5x"}
+BEST_CHECKPOINT_METHODS = {BEST_CHECKPOINT_METHOD}
+BEST_COSINE_METHODS = {
+    BEST_COSINE_METHOD: 0.0,
+    BEST_COSINE_TAIL_METHOD: BEST_DEFAULT_GROWTH_WAVES / (BEST_DEFAULT_GROWTH_WAVES + 1),
+}
+BEST_CAF_METHODS = {
+    BEST_CAF_METHOD: 9.0 * math.pi,
+    BEST_CAF_WEAK_METHOD: 18.0 * math.pi,
+    BEST_CAF_MILD_METHOD: 36.0 * math.pi,
+}
 
 
 def _one(x):
@@ -415,13 +628,15 @@ def _apply_method_fit_overrides(
 ) -> tuple[FitConfig, dict[str, Any]]:
     """Apply explicit candidate-variant overrides after the shared growth schedule."""
     overrides: dict[str, Any] = {}
-    if method in BEST_PINNED_METHODS:
+    if method in BEST_VARIANT_METHODS:
         cfg = replace(
             cfg,
             pixel_loss="l1",
             ssim_weight=0.3,
             loss_weighting="none",
             loss_weight_beta=1.0,
+            geometry_loss_weight=0.0,
+            geometry_loss_every=1,
             color_basis="constant",
             color_solve_every=None,
             color_solve_schedule="none",
@@ -431,6 +646,7 @@ def _apply_method_fit_overrides(
             "pinned_best_default": True,
             "pixel_loss": "l1",
             "ssim_weight": 0.3,
+            "geometry_loss_weight": 0.0,
             "growth_waves": BEST_DEFAULT_GROWTH_WAVES,
         })
     if method in BEST_SSIM010_METHODS:
@@ -445,6 +661,42 @@ def _apply_method_fit_overrides(
     if method in BEST_TENSOR_LOSS_METHODS:
         cfg = replace(cfg, loss_weighting="tensor", loss_weight_beta=1.0)
         overrides.update({"loss_weighting": "tensor", "loss_weight_beta": 1.0})
+    if method in BEST_COSINE_METHODS:
+        start_frac = BEST_COSINE_METHODS[method]
+        cfg = replace(
+            cfg,
+            lr_schedule="cosine",
+            lr_cosine_start_frac=start_frac,
+        )
+        overrides.update({
+            "lr_schedule": "cosine",
+            "lr_cosine_start_frac": start_frac,
+        })
+    if method in BEST_CHECKPOINT_METHODS:
+        cfg = replace(cfg, checkpoint_policy="best_psnr_final_count")
+        overrides["checkpoint_policy"] = "best_psnr_final_count"
+    if method in BEST_GCR_METHODS:
+        weight, every = BEST_GCR_METHODS[method]
+        cfg = replace(
+            cfg,
+            geometry_loss_weight=weight,
+            geometry_loss_every=every,
+        )
+        overrides.update({
+            "geometry_loss_weight": weight,
+            "geometry_loss_every": every,
+        })
+    if method in BEST_CAF_METHODS:
+        cfg = replace(
+            cfg,
+            covariance_filter_mode="generation_density",
+            covariance_filter_alpha=BEST_CAF_METHODS[method],
+        )
+        overrides.update({
+            "covariance_filter_mode": "generation_density",
+            "covariance_filter_alpha": float(cfg.covariance_filter_alpha),
+            "covariance_filter_max_variance": float(cfg.covariance_filter_max_variance),
+        })
     if method in BEST_COLOR_FINAL_METHODS:
         cfg = replace(cfg, color_solve_every=None, color_solve_schedule="final")
         overrides.update({"color_solve_every": None, "color_solve_schedule": "final"})
@@ -750,15 +1002,26 @@ def _extra_metrics(render: torch.Tensor, target: torch.Tensor, want_lpips: bool)
 
 def _scale_stats(field: GaussianField) -> dict[str, float]:
     with torch.no_grad():
-        scales = field.scales().detach().reshape(-1)
+        base_scales = field.scales().detach().reshape(-1)
+        scales = field.effective_scales().detach().reshape(-1)
         return {
             "final_scale_max": float(scales.max()),
             "final_scale_p95": float(torch.quantile(scales, 0.95)),
             "final_scale_mean": float(scales.mean()),
+            "final_base_scale_max": float(base_scales.max()),
+            "final_base_scale_p95": float(torch.quantile(base_scales, 0.95)),
+            "final_base_scale_mean": float(base_scales.mean()),
         }
 
 
 def _cell_key(row: dict[str, Any]) -> tuple[Any, ...]:
+    fit_config = row.get("fit_config") if isinstance(row.get("fit_config"), dict) else {}
+    geometry_loss_weight = row.get(
+        "geometry_loss_weight", fit_config.get("geometry_loss_weight", 0.0)
+    )
+    geometry_loss_every = row.get(
+        "geometry_loss_every", fit_config.get("geometry_loss_every", 1)
+    )
     return (
         row.get("image"),
         row.get("source_path"),
@@ -776,9 +1039,23 @@ def _cell_key(row: dict[str, Any]) -> tuple[Any, ...]:
         float(row.get("ssim_weight")),
         row.get("feature_cap_px") if row.get("method") in FEATURE_CAP_METHODS else None,
         row.get("loss_weighting", "none"),
+        float(geometry_loss_weight),
+        int(geometry_loss_every),
         row.get("color_solve_schedule", "none"),
         bool(row.get("adaptive_count", False)),
         row.get("variant_max_gaussians"),
+        row.get("source_sha256"),
+        row.get("target_pixel_sha256"),
+        row.get("repository_commit"),
+        row.get("repository_tracked_diff_sha256"),
+        row.get("benchmark_source_sha256"),
+        row.get("fit_source_sha256"),
+        row.get("config_source_sha256"),
+        row.get("gaussians_source_sha256"),
+        row.get("render_source_sha256"),
+        row.get("metrics_source_sha256"),
+        row.get("init_source_sha256"),
+        row.get("run_protocol_sha256"),
     )
 
 
@@ -828,6 +1105,10 @@ def _fit_one(
         feature_cap,
         feature_cap_reference_side,
     )
+    if fcfg.checkpoint_policy != "terminal" and want_lpips:
+        # LPIPS is post-fit and excluded from fit_seconds; enabling it here preserves the
+        # terminal-vs-selected perceptual audit for checkpoint candidates.
+        fcfg = replace(fcfg, compute_lpips=True)
     out = fit(field, target, fcfg, verbose=False)
     render = out["render"].detach().clamp(0, 1)
     row = {
@@ -845,8 +1126,31 @@ def _fit_one(
         "auc_psnr": psnr_auc(out.get("history", {})),
         "iters_to_targets": out.get("iters_to_targets", {}),
         "history": out.get("history", {}),
+        "checkpoint_policy": out.get("checkpoint_policy", "terminal"),
+        "checkpoint_history": out.get("checkpoint_history"),
+        "trajectory_terminal_iter": out.get("trajectory_terminal_iter"),
+        "trajectory_terminal_n_gaussians": out.get("trajectory_terminal_n_gaussians"),
+        "trajectory_terminal_psnr": out.get("trajectory_terminal_psnr"),
+        "trajectory_terminal_ssim": out.get("trajectory_terminal_ssim"),
+        "trajectory_terminal_ms_ssim": out.get("trajectory_terminal_ms_ssim"),
+        "trajectory_terminal_lpips": out.get("trajectory_terminal_lpips"),
+        "selected_iter": out.get("selected_iter"),
+        "selected_n_gaussians": out.get("selected_n_gaussians"),
+        "selected_checkpoint_psnr": out.get("selected_checkpoint_psnr"),
+        "selected_fit_psnr": out.get("selected_psnr"),
+        "selected_fit_ssim": out.get("ssim"),
+        "selected_fit_ms_ssim": out.get("ms_ssim"),
+        "selected_fit_lpips": out.get("lpips"),
+        "selected_from_checkpoint": out.get("selected_from_checkpoint", False),
         "init_config": extra["init_config"],
         "fit_config": asdict(fcfg),
+        "covariance_filter_mode": out.get("covariance_filter_mode"),
+        "covariance_filter_active": out.get("covariance_filter_active"),
+        "covariance_filter_alpha": out.get("covariance_filter_alpha"),
+        "covariance_filter_max_variance": out.get("covariance_filter_max_variance"),
+        "covariance_filter_cohorts": out.get("covariance_filter_cohorts"),
+        "covariance_filter_variance_min": out.get("covariance_filter_variance_min"),
+        "covariance_filter_variance_max": out.get("covariance_filter_variance_max"),
         **_extra_metrics(render, target, want_lpips),
         **_scale_stats(out["field"]),
     }
@@ -884,6 +1188,15 @@ def _fmt(v: float | None, digits: int = 4) -> str:
     return f"{float(v):.{digits}f}"
 
 
+def _fmt_gain_ci(row: dict[str, Any], metric: str, digits: int) -> str:
+    center = row.get(f"gain_{metric}")
+    low = row.get(f"ci_low_{metric}")
+    high = row.get(f"ci_high_{metric}")
+    if center is None or low is None or high is None:
+        return "-"
+    return f"{float(center):+.{digits}f} [{float(low):+.{digits}f}, {float(high):+.{digits}f}]"
+
+
 def _fmt_pct(v: float | None) -> str:
     if v is None:
         return "-"
@@ -891,11 +1204,25 @@ def _fmt_pct(v: float | None) -> str:
 
 
 def _write_outputs(rows: list[dict[str, Any]], outdir: Path, methods: list[str]) -> None:
-    json_rows = json_safe_rows(rows, skip={"history"})
+    # Resume journals are an execution aid, not an append-only evidence ledger.  Compact them to
+    # the exact requested/current cells so stale source hashes or superseded duplicate rows cannot
+    # leak into a later summary under the newly written config provenance.
+    with (outdir / "metrics.jsonl").open("w", encoding="utf-8") as stream:
+        for row in rows:
+            stream.write(json.dumps(row, default=str) + "\n")
+    json_rows = json_safe_rows(rows, skip={"history", "checkpoint_history"})
     write_json(outdir / "metrics.json", json_rows)
     if json_rows:
         fieldnames = sorted({k for r in json_rows for k in r.keys() if k not in {"fit_config", "init_config", "iters_to_targets"}})
         write_csv(outdir / "metrics.csv", json_rows, fieldnames=fieldnames, extrasaction="ignore")
+    _write_default_dominance(rows, outdir, methods)
+    checkpoint_audit = _checkpoint_selection_audit(rows)
+    if checkpoint_audit:
+        write_csv(
+            outdir / "checkpoint_selection.csv",
+            checkpoint_audit,
+            fieldnames=list(checkpoint_audit[0]),
+        )
     _write_convergence_tables(rows, outdir, methods)
     _write_summary(rows, outdir, methods)
     _write_plots(rows, outdir, methods)
@@ -999,12 +1326,250 @@ def _target_summary(vals: list[dict[str, Any]], target: float) -> dict[str, floa
 def _promotion_pair_key(row: dict[str, Any]) -> tuple[Any, ...]:
     return (
         row.get("source_path") or row.get("image"),
+        row.get("source_sha256"),
+        row.get("target_pixel_sha256"),
+        row.get("repository_commit"),
+        row.get("repository_tracked_diff_sha256"),
+        row.get("benchmark_source_sha256"),
+        row.get("fit_source_sha256"),
+        row.get("config_source_sha256"),
+        row.get("gaussians_source_sha256"),
+        row.get("render_source_sha256"),
+        row.get("metrics_source_sha256"),
+        row.get("init_source_sha256"),
+        row.get("run_protocol_sha256"),
         int(row.get("max_side", 0) or 0),
         int(row.get("final_budget", 0) or 0),
         int(row.get("start_budget", 0) or 0),
+        float(row.get("start_fraction", 0.0) or 0.0),
+        int(row.get("growth_waves", 0) or 0),
         int(row.get("seed", 0) or 0),
         int(row.get("iters", 0) or 0),
         row.get("renderer"),
+        bool(row.get("support_fade", False)),
+    )
+
+
+def _over_budget_methods(rows: list[dict[str, Any]], methods: list[str]) -> set[str]:
+    over_budget: set[str] = set()
+    for method in methods:
+        for row in rows:
+            if row.get("status") != "ok" or row.get("method") != method:
+                continue
+            cap = row.get("final_budget")
+            achieved = row.get("n_gaussians")
+            if cap and achieved and float(achieved) > float(cap) * 1.02:
+                over_budget.add(method)
+                break
+    return over_budget
+
+
+def _bootstrap_mean_ci(
+    values: list[float],
+    *,
+    samples: int = DOMINANCE_BOOTSTRAP_SAMPLES,
+    seed: int = DOMINANCE_BOOTSTRAP_SEED,
+    alpha: float = 0.05,
+) -> tuple[float | None, float | None, float | None]:
+    arr = np.asarray(values, dtype=np.float64)
+    if arr.size == 0:
+        return None, None, None
+    center = float(arr.mean())
+    if arr.size == 1 or samples <= 0:
+        return center, float(arr[0]), float(arr[0])
+    rng = np.random.default_rng(seed)
+    idx = rng.integers(0, arr.size, size=(samples, arr.size))
+    means = arr[idx].mean(axis=1)
+    low, high = np.quantile(means, [alpha / 2.0, 1.0 - alpha / 2.0])
+    return center, float(low), float(high)
+
+
+def _clustered_gain_ci(
+    pairs: list[tuple[dict[str, Any], dict[str, Any]]],
+    metric: str,
+    direction: float,
+    *,
+    seed: int,
+    alpha: float = 0.05,
+) -> tuple[float | None, float | None, float | None, int, int]:
+    """Return an image-clustered paired gain and bootstrap CI.
+
+    Seeds and budgets from the same source image are correlated, so first average their
+    paired gains within image and bootstrap images rather than treating every row as an
+    independent unit. This keeps small multi-seed proxy runs from overstating certainty.
+    """
+    by_image: dict[str, list[float]] = {}
+    pair_count = 0
+    for base, candidate in pairs:
+        base_value = base.get(metric)
+        candidate_value = candidate.get(metric)
+        if base_value is None or candidate_value is None:
+            continue
+        try:
+            gain = direction * (float(candidate_value) - float(base_value))
+        except (TypeError, ValueError):
+            continue
+        if not math.isfinite(gain):
+            continue
+        image = str(candidate.get("source_path") or candidate.get("image") or "unknown")
+        by_image.setdefault(image, []).append(gain)
+        pair_count += 1
+    image_means = [mean(values) for values in by_image.values()]
+    center, low, high = _bootstrap_mean_ci(image_means, seed=seed, alpha=alpha)
+    return center, low, high, pair_count, len(image_means)
+
+
+def _default_dominance_audit(
+    rows: list[dict[str, Any]],
+    methods: list[str],
+    over_budget: set[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Compare every method with the pinned default on paired multi-objective gains."""
+    over_budget = over_budget if over_budget is not None else _over_budget_methods(rows, methods)
+    default_rows = [
+        row for row in rows
+        if row.get("status") == "ok" and row.get("method") == BEST_DEFAULT_METHOD
+    ]
+    default_by_key = {_promotion_pair_key(row): row for row in default_rows}
+    out: list[dict[str, Any]] = []
+    for method_idx, method in enumerate(methods):
+        if method == BEST_DEFAULT_METHOD:
+            continue
+        pairs = []
+        for row in rows:
+            if row.get("status") != "ok" or row.get("method") != method:
+                continue
+            base = default_by_key.get(_promotion_pair_key(row))
+            if base is not None:
+                pairs.append((base, row))
+        if not pairs:
+            continue
+
+        # Strict dominance is a joint statement, so every core metric must use the same
+        # complete paired cells. Optional LPIPS remains separately missing-safe.
+        complete_pairs = []
+        for base, candidate in pairs:
+            values = [base.get(metric) for metric in DOMINANCE_METRICS]
+            values += [candidate.get(metric) for metric in DOMINANCE_METRICS]
+            try:
+                complete = all(value is not None and math.isfinite(float(value)) for value in values)
+            except (TypeError, ValueError):
+                complete = False
+            if complete:
+                complete_pairs.append((base, candidate))
+
+        record: dict[str, Any] = {
+            "method": method,
+            "method_label": METHOD_LABELS[method],
+            "track": METHOD_TRACKS[method],
+            "pairs": len(complete_pairs),
+            "budget_matched": method not in over_budget,
+        }
+        core_intervals: list[tuple[float, float, float]] = []
+        familywise_intervals: list[tuple[float, float, float]] = []
+        paired_images: list[int] = []
+        for metric_idx, (metric, direction) in enumerate(DOMINANCE_METRICS.items()):
+            center, low, high, metric_pairs, images = _clustered_gain_ci(
+                complete_pairs,
+                metric,
+                direction,
+                seed=DOMINANCE_BOOTSTRAP_SEED + method_idx * 101 + metric_idx,
+            )
+            fw_center, fw_low, fw_high, _fw_pairs, _fw_images = _clustered_gain_ci(
+                complete_pairs,
+                metric,
+                direction,
+                seed=DOMINANCE_BOOTSTRAP_SEED + method_idx * 101 + metric_idx,
+                alpha=0.05 / len(DOMINANCE_METRICS),
+            )
+            record[f"gain_{metric}"] = center
+            record[f"ci_low_{metric}"] = low
+            record[f"ci_high_{metric}"] = high
+            record[f"pairs_{metric}"] = metric_pairs
+            if center is not None and low is not None and high is not None:
+                core_intervals.append((center, low, high))
+                paired_images.append(images)
+            if fw_center is not None and fw_low is not None and fw_high is not None:
+                familywise_intervals.append((fw_center, fw_low, fw_high))
+
+        lpips_center, lpips_low, lpips_high, lpips_pairs, lpips_images = _clustered_gain_ci(
+            pairs,
+            "lpips",
+            -1.0,
+            seed=DOMINANCE_BOOTSTRAP_SEED + method_idx * 101 + len(DOMINANCE_METRICS),
+        )
+        record.update({
+            "gain_lpips": lpips_center,
+            "ci_low_lpips": lpips_low,
+            "ci_high_lpips": lpips_high,
+            "pairs_lpips": lpips_pairs,
+            "images_lpips": lpips_images,
+            "paired_images": min(paired_images) if paired_images else 0,
+        })
+
+        means = [interval[0] for interval in core_intervals]
+        if method in over_budget:
+            sample_relation = "over_budget"
+            supported_relation = "not_comparable"
+        elif len(means) != len(DOMINANCE_METRICS):
+            sample_relation = "incomplete"
+            supported_relation = "incomplete"
+        elif all(value > 0.0 for value in means):
+            sample_relation = "candidate_dominates"
+            supported_relation = (
+                "candidate_dominates"
+                if len(familywise_intervals) == len(DOMINANCE_METRICS)
+                and all(low > 0.0 for _center, low, _high in familywise_intervals)
+                else "inconclusive"
+            )
+        elif all(value < 0.0 for value in means):
+            sample_relation = "default_dominates"
+            supported_relation = (
+                "default_dominates"
+                if len(familywise_intervals) == len(DOMINANCE_METRICS)
+                and all(high < 0.0 for _center, _low, high in familywise_intervals)
+                else "inconclusive"
+            )
+        else:
+            sample_relation = "tradeoff"
+            supported_relation = "tradeoff"
+        record["sample_relation"] = sample_relation
+        record["supported_relation_95ci"] = supported_relation
+        out.append(record)
+    return out
+
+
+def _write_default_dominance(
+    rows: list[dict[str, Any]],
+    outdir: Path,
+    methods: list[str],
+) -> None:
+    audit = _default_dominance_audit(rows, methods)
+    if not audit:
+        return
+    metric_fields = []
+    for metric in [*DOMINANCE_METRICS, "lpips"]:
+        metric_fields.extend([
+            f"gain_{metric}",
+            f"ci_low_{metric}",
+            f"ci_high_{metric}",
+            f"pairs_{metric}",
+        ])
+    write_csv(
+        outdir / "default_dominance.csv",
+        audit,
+        fieldnames=[
+            "method",
+            "method_label",
+            "track",
+            "pairs",
+            "paired_images",
+            "budget_matched",
+            *metric_fields,
+            "images_lpips",
+            "sample_relation",
+            "supported_relation_95ci",
+        ],
     )
 
 
@@ -1062,6 +1627,58 @@ def _promotion_checks(
             "promote": promote,
         })
     return out
+
+
+def _checkpoint_selection_audit(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Within-trajectory gain from selecting a same-final-count checkpoint."""
+    audit = []
+    for row in rows:
+        if (
+            row.get("status") != "ok"
+            or row.get("checkpoint_policy") != "best_psnr_final_count"
+        ):
+            continue
+        selected_n = row.get("selected_n_gaussians")
+        terminal_n = row.get("trajectory_terminal_n_gaussians")
+        if selected_n is None or terminal_n is None or int(selected_n) != int(terminal_n):
+            continue
+
+        def gain(selected_name: str, terminal_name: str, direction: float = 1.0):
+            selected = row.get(selected_name)
+            terminal = row.get(terminal_name)
+            if selected is None or terminal is None:
+                return None
+            return direction * (float(selected) - float(terminal))
+
+        audit.append({
+            "image": row.get("image"),
+            "source_path": row.get("source_path"),
+            "final_budget": row.get("final_budget"),
+            "seed": row.get("seed"),
+            "method": row.get("method"),
+            "terminal_iter": row.get("trajectory_terminal_iter"),
+            "selected_iter": row.get("selected_iter"),
+            "terminal_n_gaussians": int(terminal_n),
+            "selected_n_gaussians": int(selected_n),
+            "selected_from_checkpoint": bool(row.get("selected_from_checkpoint", False)),
+            "terminal_psnr": row.get("trajectory_terminal_psnr"),
+            "selected_psnr": row.get("selected_fit_psnr"),
+            "gain_psnr": gain("selected_fit_psnr", "trajectory_terminal_psnr"),
+            "terminal_ssim": row.get("trajectory_terminal_ssim"),
+            "selected_ssim": row.get("selected_fit_ssim"),
+            "gain_ssim": gain("selected_fit_ssim", "trajectory_terminal_ssim"),
+            "terminal_ms_ssim": row.get("trajectory_terminal_ms_ssim"),
+            "selected_ms_ssim": row.get("selected_fit_ms_ssim"),
+            "gain_ms_ssim": gain(
+                "selected_fit_ms_ssim", "trajectory_terminal_ms_ssim"
+            ),
+            "terminal_lpips": row.get("trajectory_terminal_lpips"),
+            "selected_lpips": row.get("selected_fit_lpips"),
+            "gain_lpips": gain(
+                "selected_fit_lpips", "trajectory_terminal_lpips", direction=-1.0
+            ),
+        })
+    return audit
 
 
 def _write_convergence_tables(rows: list[dict[str, Any]], outdir: Path, methods: list[str]) -> None:
@@ -1140,16 +1757,7 @@ def _write_summary(rows: list[dict[str, Any]], outdir: Path, methods: list[str])
     # rate-matched to the equal-budget rows (e.g. adaptive extra-capacity variants),
     # so their quality numbers are not directly comparable. Flag them with a dagger and
     # keep them out of the per-cell winners. Empty for a standard equal-budget run.
-    over_budget: set[str] = set()
-    for method in methods:
-        for r in ok:
-            if r["method"] != method:
-                continue
-            cap = r.get("final_budget")
-            achieved = r.get("n_gaussians")
-            if cap and achieved and float(achieved) > float(cap) * 1.02:
-                over_budget.add(method)
-                break
+    over_budget = _over_budget_methods(ok, methods)
 
     def _label(method: str) -> str:
         return METHOD_LABELS[method] + (" †" if method in over_budget else "")
@@ -1199,6 +1807,74 @@ def _write_summary(rows: list[dict[str, Any]], outdir: Path, methods: list[str])
             "(adaptive extra capacity). These rows spend more primitives — more rate for an "
             "image codec — so their PSNR/MS-SSIM is not directly comparable to the equal-budget "
             "rows, and they are excluded from the per-cell winners below.",
+        ]
+
+    checkpoint_audit = _checkpoint_selection_audit(ok)
+    if checkpoint_audit:
+        selected = sum(bool(row["selected_from_checkpoint"]) for row in checkpoint_audit)
+        lines += [
+            "",
+            "## Within-Trajectory Checkpoint Audit",
+            "",
+            "Each delta compares the selected state with that same run's terminal state; both "
+            "have the terminal Gaussian count. Positive means the selected state is better, "
+            "including LPIPS (positive means lower). This avoids attributing independent CUDA "
+            "trajectory divergence to checkpoint selection. Per-cell values are in "
+            "`checkpoint_selection.csv`.",
+            "",
+            "| Runs | Earlier states selected | PSNR gain | SSIM gain | MS-SSIM gain | LPIPS gain |",
+            "|---:|---:|---:|---:|---:|---:|",
+            f"| {len(checkpoint_audit)} | {selected} | "
+            f"{_fmt(_mean_or_none([r['gain_psnr'] for r in checkpoint_audit]), 4)} | "
+            f"{_fmt(_mean_or_none([r['gain_ssim'] for r in checkpoint_audit]), 5)} | "
+            f"{_fmt(_mean_or_none([r['gain_ms_ssim'] for r in checkpoint_audit]), 5)} | "
+            f"{_fmt(_mean_or_none([r['gain_lpips'] for r in checkpoint_audit]), 4)} |",
+        ]
+
+    dominance_rows = _default_dominance_audit(ok, methods, over_budget)
+    headline_methods = BEST_VARIANT_METHODS | {
+        "gaussianimage_fixed_full",
+        "gaussianimage_plus_residual",
+        "image_gs_residual",
+        "instant_gi_quadtree_fixed",
+    }
+    headline_dominance = [row for row in dominance_rows if row["method"] in headline_methods]
+    if headline_dominance:
+        lines += [
+            "",
+            "## Paired Strict-Dominance Audit",
+            "",
+            "Every delta is a candidate gain over `SS best default`; positive is better, "
+            "including fit/total-time gains (positive means faster) and LPIPS gain "
+            "(positive means lower LPIPS). Confidence intervals bootstrap source images after "
+            "averaging correlated seeds/budgets within each image. A tradeoff is not a dominance "
+            "result, and over-budget rows are not comparable. Displayed intervals are marginal "
+            "95% image-bootstrap intervals; the relation column uses Bonferroni-adjusted bounds "
+            "for 95% familywise coverage across the five core metrics. Full rows are in "
+            "`default_dominance.csv`.",
+            "",
+            "| Candidate | Pairs / images | PSNR gain [95% CI] | MS-SSIM gain [95% CI] | AUC gain [95% CI] | Fit gain s [95% CI] | Total gain s [95% CI] | LPIPS gain [95% CI] | Sample relation | Familywise 95% relation |",
+            "|---|---:|---:|---:|---:|---:|---:|---:|---|---|",
+        ]
+        for row in headline_dominance:
+            sample_relation = str(row["sample_relation"]).replace("_", " ")
+            supported_relation = str(row["supported_relation_95ci"]).replace("_", " ")
+            lines.append(
+                f"| {_label(row['method'])} | {row['pairs']} / {row['paired_images']} | "
+                f"{_fmt_gain_ci(row, 'psnr', 4)} | "
+                f"{_fmt_gain_ci(row, 'ms_ssim', 5)} | "
+                f"{_fmt_gain_ci(row, 'auc_psnr', 4)} | "
+                f"{_fmt_gain_ci(row, 'fit_seconds', 4)} | "
+                f"{_fmt_gain_ci(row, 'total_seconds', 4)} | "
+                f"{_fmt_gain_ci(row, 'lpips', 4)} | "
+                f"{sample_relation} | {supported_relation} |"
+            )
+        lines += [
+            "",
+            "The strict-dominance core uses PSNR, MS-SSIM, AUC, fit seconds, and total "
+            "seconds. LPIPS is reported when enabled but is not silently imputed or added to "
+            "the gate. These rows compare policies under StructSplat's harness; analogue labels "
+            "do not make them native external-repository results.",
         ]
 
     promotion_rows = _promotion_checks(ok, methods, over_budget)
@@ -1638,7 +2314,7 @@ def _write_index(outdir: Path, methods: list[str]) -> None:
         '<p class="note">Matched-policy benchmark: growth rows share the same initial count, final cap, growth waves, fitter, renderer, loss, target tracking, and iteration budget. External repos are represented by local analogues here; this is not a native external-pipeline benchmark.</p>',
         f'<p class="note">Visual grids show each reconstruction row followed by an amplified absolute difference row: |target - reconstruction| x{DIFF_GAIN:g}, clipped for display.</p>',
         "<h2>Files</h2>",
-        '<p><a href="summary.md">summary.md</a> · <a href="metrics.csv">metrics.csv</a> · <a href="metrics.json">metrics.json</a> · <a href="convergence_curves.csv">convergence_curves.csv</a> · <a href="target_hit_rates.csv">target_hit_rates.csv</a> · <a href="config.json">config.json</a></p>',
+        '<p><a href="summary.md">summary.md</a> · <a href="metrics.csv">metrics.csv</a> · <a href="metrics.json">metrics.json</a> · <a href="default_dominance.csv">default_dominance.csv</a> · <a href="convergence_curves.csv">convergence_curves.csv</a> · <a href="target_hit_rates.csv">target_hit_rates.csv</a> · <a href="config.json">config.json</a></p>',
         "<h2>Methods</h2><table><tr><th>Method</th><th>Track</th></tr>",
     ]
     for method in methods:
@@ -1676,7 +2352,9 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
     target_dir.mkdir(exist_ok=True)
     recon_dir.mkdir(exist_ok=True)
 
-    write_config(str(outdir), run_config({
+    repo_state = repository_state()
+    source_fingerprint = _source_fingerprint()
+    scientific_protocol = {
         "images": [str(p) for p in args.images],
         "budgets": budgets,
         "methods": methods,
@@ -1687,6 +2365,8 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
         "iters": args.iters,
         "target_psnr": args.target_psnr,
         "target_psnrs": args.target_psnrs,
+        "flat_frac": args.flat_frac,
+        "corner_frac": args.corner_frac,
         "renderer": args.renderer,
         "support_fade": args.support_fade,
         "render_chunk": args.render_chunk,
@@ -1697,25 +2377,63 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
         "relocate_downsample": args.relocate_downsample,
         "feature_cap": args.feature_cap,
         "feature_cap_reference_side": args.feature_cap_reference_side,
+    }
+    instant_gi_source = os.environ.get("STRUCTSPLAT_INSTANT_GI")
+    if any(method.startswith("instant_gi_") for method in methods):
+        instant_gi_path = None if not instant_gi_source else Path(instant_gi_source).resolve()
+        scientific_protocol["instant_gi_source"] = (
+            None if instant_gi_path is None else str(instant_gi_path)
+        )
+        scientific_protocol["instant_gi_source_sha256"] = (
+            None
+            if instant_gi_path is None or not instant_gi_path.is_file()
+            else _file_sha256(instant_gi_path)
+        )
+    run_protocol_sha256 = _run_protocol_sha256(
+        scientific_protocol,
+        device=device,
+        versions=package_versions(),
+        repo_state=repo_state,
+        source_fingerprint=source_fingerprint,
+    )
+    row_provenance = {
+        "repository_commit": repo_state.get("commit"),
+        "repository_tracked_diff_sha256": repo_state.get("tracked_diff_sha256"),
+        **source_fingerprint,
+        "run_protocol_sha256": run_protocol_sha256,
+    }
+    write_config(str(outdir), run_config({
+        **scientific_protocol,
         "resume": args.resume,
         "max_new_cells": args.max_new_cells,
+        **row_provenance,
     }, device=device))
 
     jsonl_path = outdir / "metrics.jsonl"
     existing = _load_jsonl(jsonl_path) if args.resume else []
     if not args.resume and jsonl_path.exists():
         jsonl_path.unlink()
-    done = {_cell_key(r) for r in existing if r.get("status") == "ok"}
-    rows = list(existing)
+    existing_by_key = {
+        _cell_key(row): row for row in existing if row.get("status") == "ok"
+    }
+    rows: list[dict[str, Any]] = []
+    selected_keys: set[tuple[Any, ...]] = set()
 
-    loaded: dict[str, tuple[np.ndarray, Path]] = {}
+    loaded: dict[str, tuple[np.ndarray, Path, str, str, str]] = {}
     for image_path in args.images:
-        image_path = Path(image_path)
+        image_path = Path(image_path).resolve()
         img = load_image(image_path, max_side=args.max_side)
-        stem = image_path.stem
-        target_path = target_dir / f"{stem}.png"
+        source_sha256 = _file_sha256(image_path)
+        source_id = _artifact_source_id(image_path, source_sha256)
+        target_path = target_dir / f"{source_id}.png"
         save_image(img, target_path)
-        loaded[str(image_path)] = (img, target_path)
+        loaded[str(image_path)] = (
+            img,
+            target_path,
+            source_sha256,
+            _pixel_sha256(img),
+            source_id,
+        )
 
     scfg = StructureTensorConfig(flat_frac=args.flat_frac, corner_frac=args.corner_frac)
     base_fit = _base_fit(args)
@@ -1723,9 +2441,11 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
     new_cells = 0
     cell_idx = 0
     for image_path in args.images:
-        image_path = Path(image_path)
-        img, target_path = loaded[str(image_path)]
-        image = image_path.stem
+        image_path = Path(image_path).resolve()
+        img, target_path, source_sha256, target_pixel_sha256, source_id = loaded[
+            str(image_path)
+        ]
+        image = source_id
         target = target_tensor(img, device)
         for final_budget in budgets:
             start_budget = _start_budget(final_budget, args.start_fraction)
@@ -1747,8 +2467,12 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
                     )
                     cell_idx += 1
                     key_row = {
+                        **row_provenance,
                         "image": image,
+                        "image_stem": image_path.stem,
                         "source_path": str(image_path),
+                        "source_sha256": source_sha256,
+                        "target_pixel_sha256": target_pixel_sha256,
                         "max_side": args.max_side,
                         "final_budget": final_budget,
                         "start_budget": start_budget,
@@ -1762,13 +2486,26 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
                         "pixel_loss": fit_sig.pixel_loss,
                         "ssim_weight": fit_sig.ssim_weight,
                         "loss_weighting": fit_sig.loss_weighting,
+                        "geometry_loss_weight": fit_sig.geometry_loss_weight,
+                        "geometry_loss_every": fit_sig.geometry_loss_every,
                         "color_solve_schedule": fit_sig.color_solve_schedule,
                         "adaptive_count": fit_sig.adaptive_count,
                         "variant_max_gaussians": fit_sig.max_gaussians
                         if fit_sig.adaptive_count else None,
                         "feature_cap_px": feature_cap_px,
                     }
-                    if _cell_key(key_row) in done:
+                    key = _cell_key(key_row)
+                    if key in selected_keys:
+                        print(
+                            f"[{cell_idx}/{total}] skip duplicate requested cell "
+                            f"{image} {final_budget} {method}",
+                            flush=True,
+                        )
+                        continue
+                    cached = existing_by_key.get(key)
+                    if cached is not None:
+                        rows.append(cached)
+                        selected_keys.add(key)
                         print(f"[{cell_idx}/{total}] skip existing {image} {final_budget} {method}", flush=True)
                         continue
                     print(
@@ -1787,6 +2524,8 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
                         "variant_max_gaussians": key_row["variant_max_gaussians"],
                         "loss_weighting": fit_sig.loss_weighting,
                         "loss_weight_beta": fit_sig.loss_weight_beta,
+                        "geometry_loss_weight": fit_sig.geometry_loss_weight,
+                        "geometry_loss_every": fit_sig.geometry_loss_every,
                         "color_solve_every": fit_sig.color_solve_every,
                         "color_solve_schedule": fit_sig.color_solve_schedule,
                         "adaptive_count": fit_sig.adaptive_count,
@@ -1810,7 +2549,9 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
                             args.feature_cap,
                             args.feature_cap_reference_side,
                         )
-                        recon_path = recon_dir / image / str(final_budget) / f"seed{seed}_{method}.png"
+                        recon_path = (
+                            recon_dir / source_id / str(final_budget) / f"seed{seed}_{method}.png"
+                        )
                         save_image(render_np, recon_path)
                         rec = {
                             **row_base,
@@ -1825,7 +2566,6 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
                             f"fit={rec['fit_seconds']:.2f}s",
                             flush=True,
                         )
-                        done.add(_cell_key(rec))
                     except Exception as exc:
                         rec = {
                             **row_base,
@@ -1836,6 +2576,7 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
                     with jsonl_path.open("a", encoding="utf-8") as f:
                         f.write(json.dumps(rec, default=str) + "\n")
                     rows.append(rec)
+                    selected_keys.add(key)
                     new_cells += 1
                     if torch.cuda.is_available():
                         torch.cuda.empty_cache()

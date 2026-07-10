@@ -21,6 +21,10 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | PORT-003 | Avoid atomics in tiled backward | todo | PORT-001 |
 | GEN-003 | VSD / multi-particle distillation | todo | GEN-001 |
 | ABL-005 | Fitter-knob influence pass at the fair regime | partial — CUDA-native fair shard started; color-solve and broader Kodak cells pending | ADR-0010, FIT-005/006/007, CORE-006 |
+| BENCH-005 | Native external-reference pipelines and paired central metrics | partial — native GI++/Image-GS/GaussianImage adapters, official proxy lanes, and terminal/checkpoint pairing complete | BENCH-001/002/003, ABL-004 |
+| FIT-013 | Geometry-consistent Sobel regularization | partial — quality candidate validated on COCO proxy and Kodak4; speed blocks promotion | FIT-005/006/007, ABL-004 |
+| FIT-014 | Generation-density covariance filtering | implemented/screened — exact and weaker cohort filters lose the COCO4 proxy; default off | FIT-004, CORE-002, COMP-002, BENCH-002 |
+| FIT-015 | Same-final-count best-PSNR checkpoint selection | implemented/screened — strong 5k endpoint gains, neutral 500-step guard; opt-in pending broader promotion | FIT-001/002, ABL-004, BENCH-005 |
 
 ## Retired Done Tasks
 

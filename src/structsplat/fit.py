@@ -41,6 +41,60 @@ _NORMALIZED_COLOR_SOLVE_RENDERERS = (
 _MIN_DENSIFY_SCALE = 0.35
 
 
+def _generation_density_filter_variance(cfg: FitConfig, H: int, W: int,
+                                        n_after: int) -> float:
+    """Fixed isotropic variance assigned to one birth cohort.
+
+    The ``9*pi`` default is the average area of a three-sigma disk. ``n_after`` is the active
+    Gaussian count immediately after inserting the cohort, matching GaussianImage++.
+    """
+    if n_after <= 0:
+        raise ValueError(f"n_after must be > 0, got {n_after}")
+    return min(
+        float(cfg.covariance_filter_max_variance),
+        float(H * W) / (float(cfg.covariance_filter_alpha) * float(n_after)),
+    )
+
+
+@torch.no_grad()
+def _ensure_generation_density_filter(field: GaussianField, cfg: FitConfig,
+                                      H: int, W: int) -> GaussianField:
+    """Assign the initial cohort and fill rows appended without cohort metadata."""
+    if cfg.covariance_filter_mode == "none":
+        return field
+    value = _generation_density_filter_variance(cfg, H, W, field.n)
+    if field.filter_variance is None:
+        field.filter_variance = torch.full(
+            (field.n,), value, device=field.means.device, dtype=field.means.dtype
+        )
+        return field
+    variance = field.filter_variance.detach().to(
+        device=field.means.device, dtype=field.means.dtype
+    ).reshape(-1).clone()
+    if variance.numel() != field.n:
+        raise ValueError(
+            "filter_variance must have one value per Gaussian, "
+            f"got {variance.numel()} for {field.n} rows"
+        )
+    if bool((variance < 0.0).any()):
+        raise ValueError("filter_variance must be non-negative")
+    # append() represents an unassigned filtered cohort with exact zero variance. Zero is also
+    # the valid result when max_variance=0, in which case this fill is intentionally a no-op.
+    variance[variance == 0.0] = value
+    field.filter_variance = variance
+    return field
+
+
+def _new_cohort_filter_variance(field: GaussianField, cfg: FitConfig, H: int, W: int,
+                                count: int) -> torch.Tensor | None:
+    if cfg.covariance_filter_mode == "none" or count <= 0:
+        return None
+    value = _generation_density_filter_variance(cfg, H, W, field.n + count)
+    return torch.full(
+        (count,), value, device=field.means.device, dtype=field.means.dtype
+    )
+
+
 def _mark_new_parent_idx(field: GaussianField, idx: torch.Tensor) -> GaussianField:
     field._new_parent_idx = idx.detach().clone()  # type: ignore[attr-defined]
     return field
@@ -175,8 +229,13 @@ def _lr_factor(cfg: FitConfig, it: int, sched_offset: int = 0,
         step = cfg.lr_decay_every if cfg.lr_decay_every and cfg.lr_decay_every > 0 else 500
         return cfg.lr_decay_gamma ** ((sched_offset + it) // step)
     if schedule == "cosine":
-        total = sched_total if sched_total is not None else cfg.iters
-        return 0.5 * (1.0 + math.cos(math.pi * (sched_offset + it) / max(1, total)))
+        total = max(1, sched_total if sched_total is not None else cfg.iters)
+        progress = (sched_offset + it) / total
+        start = cfg.lr_cosine_start_frac
+        if progress <= start:
+            return 1.0
+        tail_progress = (progress - start) / (1.0 - start)
+        return 0.5 * (1.0 + math.cos(math.pi * tail_progress))
     raise ValueError(f"unknown lr_schedule {cfg.lr_schedule!r}; expected none, step, or cosine")
 
 
@@ -257,6 +316,66 @@ def _weighted_pixel_loss(pred: torch.Tensor, target: torch.Tensor, kind: str,
     return (loss_map * w).sum() / w.sum().clamp_min(1e-12)
 
 
+_SOBEL_KERNEL_CACHE: dict[tuple[str, int, str, int], tuple[torch.Tensor, torch.Tensor]] = {}
+
+
+def _sobel_gradients(image: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    """Channel-wise Sobel gradients for an HWC image using reflected boundaries."""
+    if image.ndim != 3:
+        raise ValueError(f"expected an HWC image, got shape {tuple(image.shape)}")
+    height, width, channels = image.shape
+    if channels <= 0:
+        raise ValueError("expected at least one image channel")
+    device = image.device
+    key = (
+        device.type,
+        -1 if device.index is None else int(device.index),
+        str(image.dtype),
+        int(channels),
+    )
+    kernels = _SOBEL_KERNEL_CACHE.get(key)
+    if kernels is None:
+        horizontal = image.new_tensor([
+            [-1.0, 0.0, 1.0],
+            [-2.0, 0.0, 2.0],
+            [-1.0, 0.0, 1.0],
+        ])
+        vertical = horizontal.t().contiguous()
+        kernels = (
+            horizontal.view(1, 1, 3, 3).expand(channels, 1, 3, 3).contiguous(),
+            vertical.view(1, 1, 3, 3).expand(channels, 1, 3, 3).contiguous(),
+        )
+        _SOBEL_KERNEL_CACHE[key] = kernels
+    bchw = image.permute(2, 0, 1).unsqueeze(0)
+    pad_mode = "reflect" if height > 1 and width > 1 else "replicate"
+    padded = F.pad(bchw, (1, 1, 1, 1), mode=pad_mode)
+    grad_x = F.conv2d(padded, kernels[0], groups=channels)
+    grad_y = F.conv2d(padded, kernels[1], groups=channels)
+    return (
+        grad_x.squeeze(0).permute(1, 2, 0),
+        grad_y.squeeze(0).permute(1, 2, 0),
+    )
+
+
+def _geometry_consistent_loss(
+    pred: torch.Tensor,
+    target_gradients: tuple[torch.Tensor, torch.Tensor],
+) -> torch.Tensor:
+    """Ground-truth-gradient-weighted Sobel discrepancy from arXiv:2512.24018.
+
+    The paper divides the channel-summed discrepancy by H*W, rather than H*W*C.
+    Positive target-gradient magnitudes suppress flat-region contributions while retaining
+    directional horizontal/vertical supervision.
+    """
+    pred_x, pred_y = _sobel_gradients(pred)
+    target_x, target_y = target_gradients
+    discrepancy = (
+        target_x.abs() * (pred_x - target_x).square()
+        + target_y.abs() * (pred_y - target_y).square()
+    )
+    return discrepancy.sum(dim=2).mean()
+
+
 def _prepare_loss_weight_map(target: torch.Tensor, cfg: FitConfig,
                              loss_weight_map=None) -> torch.Tensor | None:
     if cfg.loss_weighting == "none":
@@ -310,10 +429,13 @@ def _fit_support_fade_alpha(cfg: FitConfig, it: int | None = None) -> float:
 
 def _render(field: GaussianField, cfg: FitConfig, H: int, W: int,
             support_fade_alpha: float | None = None) -> torch.Tensor:
+    scales = field.effective_scales(
+        cfg.aa_dilation if cfg.renderer in ("gsplat", "cuda_gsplat") else 0.0
+    )
     return render_field(field.means, field.conics(cfg.aa_dilation), field.colors,
                         field.radii(cfg.sigma_cutoff, cfg.aa_dilation),
                         H, W, cfg.render_chunk, cfg.renderer, field.opacity_values(),
-                        scales=field.scales(), rotations=field.rotations,
+                        scales=scales, rotations=field.rotations,
                         support_fade=cfg.support_fade, sigma_cutoff=cfg.sigma_cutoff,
                         color_grads=field.color_grads,
                         support_fade_alpha=support_fade_alpha,
@@ -375,7 +497,9 @@ def _noise_quantized_view(field: GaussianField, H: int, W: int, ccfg) -> Gaussia
         _noise_quantize(field.means[:, 0], 0.0, W - 1.0, ccfg.bits_means),
         _noise_quantize(field.means[:, 1], 0.0, H - 1.0, ccfg.bits_means),
     ], dim=1)
-    log_scales = _noise_quantize(field.log_scales, slo, shi, ccfg.bits_scales)
+    # Codec v1 materializes covariance filtering into RS scales, so QAT must quantize the same
+    # effective representation rather than a base scale that the bitstream cannot reconstruct.
+    log_scales = _noise_quantize(field.effective_log_scales(), slo, shi, ccfg.bits_scales)
     theta = (
         _noise_circular(field.rotations, float(torch.pi), ccfg.bits_rot)
         if ccfg.rot_circular
@@ -440,7 +564,10 @@ def differentiable_rate_bpp(field: GaussianField, H: int, W: int, cfg: FitConfig
     bits = bits + add_proxy(field.means, mean_steps)
     # Use a conservative unit-range step for log-scales/colors in the proxy; exact frozen codec
     # ranges are returned separately as `qat_codec_config` when QAT is enabled.
-    bits = bits + add_proxy(field.log_scales, 1.0 / max((1 << cfg.qat_bits_scales) - 1, 1))
+    bits = bits + add_proxy(
+        field.effective_log_scales(),
+        1.0 / max((1 << cfg.qat_bits_scales) - 1, 1),
+    )
     bits = bits + add_proxy(
         torch.remainder(field.rotations, torch.pi),
         float(torch.pi) / max(1 << cfg.qat_bits_rot, 1),
@@ -1100,14 +1227,20 @@ def _fp_duplicate_indices(field: GaussianField, idx: torch.Tensor, cfg: FitConfi
     scale_max = None if field.scale_max is None else field.scale_max.detach().clone()
     child_scale_max = None if field.scale_max is None else field.scale_max.detach()[idx].clone()
     child_color_grads = None if color_grads is None else color_grads[idx].clone()
+    child_filter_variance = (
+        None if field.filter_variance is None
+        else field.filter_variance.detach()[idx].clone()
+    )
     child = GaussianField(child_means, child_log_scales, child_rotations, child_colors,
-                          child_opacities, child_scale_max, child_color_grads)
+                          child_opacities, child_scale_max, child_color_grads,
+                          filter_variance=child_filter_variance)
     background_mask = (
         None if field.background_mask is None else field.background_mask.detach().clone()
     )
     grown = GaussianField(
         means, log_scales, rotations, colors, opacities, scale_max, color_grads,
         background_mask,
+        None if field.filter_variance is None else field.filter_variance.detach().clone(),
     ).append(child)
     return _mark_new_parent_idx(grown, idx), k
 
@@ -1177,14 +1310,20 @@ def _moment_preserving_duplicate_indices(field: GaussianField, idx: torch.Tensor
     scale_max = None if field.scale_max is None else field.scale_max.detach().clone()
     child_scale_max = None if field.scale_max is None else field.scale_max.detach()[idx].clone()
     child_color_grads = None if color_grads is None else color_grads[idx].clone()
+    child_filter_variance = (
+        None if field.filter_variance is None
+        else field.filter_variance.detach()[idx].clone()
+    )
     child = GaussianField(child_means, child_log_scales, child_rotations, child_colors,
-                          child_opacities, child_scale_max, child_color_grads)
+                          child_opacities, child_scale_max, child_color_grads,
+                          filter_variance=child_filter_variance)
     background_mask = (
         None if field.background_mask is None else field.background_mask.detach().clone()
     )
     grown = GaussianField(
         means, log_scales, rotations, colors, opacities, scale_max, color_grads,
         background_mask,
+        None if field.filter_variance is None else field.filter_variance.detach().clone(),
     ).append(child)
     return _mark_new_parent_idx(grown, idx), k
 
@@ -1217,7 +1356,14 @@ def _simple_duplicate_indices(field: GaussianField, idx: torch.Tensor, target: t
     opacities = None if field.opacities is None else field.opacities.detach()[idx].clone()
     scale_max = None if field.scale_max is None else field.scale_max.detach()[idx].clone()
     log_scales = _clamp_new_log_scales(log_scales, scale_max)
-    new = GaussianField(means, log_scales, rotations, colors, opacities, scale_max)
+    filter_variance = (
+        None if field.filter_variance is None
+        else field.filter_variance.detach()[idx].clone()
+    )
+    new = GaussianField(
+        means, log_scales, rotations, colors, opacities, scale_max,
+        filter_variance=filter_variance,
+    )
     return _mark_new_parent_idx(field.append(new), idx), k
 
 
@@ -1373,6 +1519,7 @@ def _relocate_from_residual(field: GaussianField, target: torch.Tensor,
     if cfg.relocate_count <= 0 or field.n <= 0:
         return field, 0, None, {}
     H, W = target.shape[:2]
+    field = _ensure_generation_density_filter(field, cfg, H, W)
     k = min(cfg.relocate_count, _detail_count(field), int(H * W))
     if k <= 0:
         return field, 0, None, {}
@@ -1427,6 +1574,12 @@ def _relocate_from_residual(field: GaussianField, target: torch.Tensor,
         if nearest is not None:
             scale_max[low_idx] = nearest
         log_scales[low_idx] = _clamp_new_log_scales(log_scales[low_idx], scale_max[low_idx])
+    filter_variance = (
+        None if field.filter_variance is None
+        else field.filter_variance.detach().clone()
+    )
+    if filter_variance is not None and cfg.covariance_filter_mode == "generation_density":
+        filter_variance[low_idx] = _generation_density_filter_variance(cfg, H, W, field.n)
     stats = {
         "activity_mean": float(activity[low_idx].mean().detach().cpu()),
         "residual_mean": float(residual[pix].mean().detach().cpu()),
@@ -1443,6 +1596,7 @@ def _relocate_from_residual(field: GaussianField, target: torch.Tensor,
             scale_max,
             color_grads,
             None if field.background_mask is None else field.background_mask.detach().clone(),
+            filter_variance,
         ),
         k, low_idx, stats,
     )
@@ -1504,6 +1658,7 @@ def _add_from_residual(field: GaussianField, target: torch.Tensor, render_img: t
         return field, 0
 
     H, W = target.shape[:2]
+    field = _ensure_generation_density_filter(field, cfg, H, W)
     residual_map = (render_img - target).abs().mean(dim=2)
     if tensor_aligned:
         score_map = F.avg_pool2d(residual_map[None, None], 3, stride=1, padding=1)[0, 0]
@@ -1546,8 +1701,15 @@ def _add_from_residual(field: GaussianField, target: torch.Tensor, render_img: t
     scale_max = _nearest_scale_caps(field, means)
     log_scales = _clamp_new_log_scales(log_scales, scale_max)
     colors = _residual_add_colors(target, render_img, y, x, cfg)
-    return field.append(GaussianField(means, log_scales, rotations, colors,
-                                      scale_max=scale_max)), k
+    filter_variance = _new_cohort_filter_variance(field, cfg, H, W, k)
+    return field.append(GaussianField(
+        means,
+        log_scales,
+        rotations,
+        colors,
+        scale_max=scale_max,
+        filter_variance=filter_variance,
+    )), k
 
 
 def _raw_attribute_bits_per_gaussian(field: GaussianField) -> int:
@@ -1635,8 +1797,22 @@ def _adaptive_growth_from_residual(field: GaussianField, target: torch.Tensor,
 
 def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: bool = True,
         sched_offset: int = 0, sched_total: int | None = None, loss_weight_map=None) -> dict:
+    checkpoint_enabled = cfg.checkpoint_policy == "best_psnr_final_count"
+    if checkpoint_enabled and (
+        sched_offset != 0 or (sched_total is not None and sched_total != cfg.iters)
+    ):
+        raise ValueError(
+            "checkpoint_policy='best_psnr_final_count' currently supports single-stage fits "
+            "only; global schedule offsets would make selected-iteration metadata ambiguous"
+        )
     H, W = target.shape[0], target.shape[1]
+    field = _ensure_generation_density_filter(field, cfg, H, W)
     pixel_weight = _prepare_loss_weight_map(target, cfg, loss_weight_map)
+    target_geometry_gradients = (
+        tuple(gradient.detach() for gradient in _sobel_gradients(target))
+        if cfg.geometry_loss_weight > 0.0
+        else None
+    )
     field = _ensure_color_basis(field, cfg)
     if _qat_enabled(cfg) and field.color_grads is not None:
         raise ValueError(
@@ -1662,8 +1838,14 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         "iter": [], "psnr": [], "loss": [], "n_gaussians": [], "elapsed": [],
         "split_events": [], "relocate_events": [], "color_solve_events": [],
         "adaptive_events": [], "qat_rate_bpp": [], "rate_loss": [],
-        "support_fade_alpha": [], "tempered_new_rows": [],
+        "support_fade_alpha": [], "tempered_new_rows": [], "geometry_loss": [],
     }
+    checkpoint_history = (
+        {"iter": [], "psnr": [], "n_gaussians": [], "terminal": []}
+        if checkpoint_enabled
+        else None
+    )
+    best_checkpoints_by_count: dict[int, dict] = {}
     color_solve_tokens = _color_solve_schedule_tokens(cfg)
     start_time = time.time()
     row_birth_iter = torch.full((field.n,), -1, device=target.device, dtype=torch.long)
@@ -1688,6 +1870,63 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 f"{trigger} {int(stats['iterations'])} cg iters  "
                 f"rel {float(stats['relative_residual']):.3e}"
             )
+
+    def record_checkpoint(
+        iteration: int,
+        support_fade_alpha: float,
+        *,
+        render_img: torch.Tensor | None = None,
+        psnr: float | None = None,
+        terminal: bool = False,
+    ) -> tuple[torch.Tensor, float]:
+        """Record one post-transition state and retain the best snapshot for its count."""
+        if checkpoint_history is None:
+            raise RuntimeError("checkpoint recording called while checkpoint selection is off")
+        with torch.no_grad():
+            if render_img is None:
+                render_img = _render(
+                    field, cfg, H, W, support_fade_alpha=support_fade_alpha
+                )
+            if psnr is None:
+                psnr = float(M.psnr(render_img, target))
+            else:
+                psnr = float(psnr)
+        count = int(field.n)
+        same_state_as_last = bool(
+            checkpoint_history["iter"]
+            and checkpoint_history["iter"][-1] == int(iteration)
+            and checkpoint_history["n_gaussians"][-1] == count
+        )
+        if same_state_as_last:
+            checkpoint_history["psnr"][-1] = psnr
+            checkpoint_history["terminal"][-1] = bool(terminal)
+        else:
+            checkpoint_history["iter"].append(int(iteration))
+            checkpoint_history["psnr"].append(psnr)
+            checkpoint_history["n_gaussians"].append(count)
+            checkpoint_history["terminal"].append(bool(terminal))
+
+        previous = best_checkpoints_by_count.get(count)
+        # The final evaluation is authoritative for an already-recorded identical state. In a
+        # tie it also wins, avoiding a needless restore of terminal parameters from a clone.
+        same_state_as_best = bool(
+            previous is not None and int(previous["iter"]) == int(iteration)
+        )
+        if (
+            previous is None
+            or psnr > float(previous["psnr"])
+            or (terminal and (same_state_as_best or psnr == float(previous["psnr"])))
+        ):
+            best_checkpoints_by_count[count] = {
+                "iter": int(iteration),
+                "psnr": psnr,
+                "n_gaussians": count,
+                # A terminal winner can reuse the live field. Earlier winners need an exact
+                # deep tensor snapshot so later optimizer steps cannot mutate the selected state.
+                "field": None if terminal else field.detached(),
+                "terminal": bool(terminal),
+            }
+        return render_img, psnr
 
     if "init" in color_solve_tokens:
         run_color_solve_event(0, "init", _fit_support_fade_alpha(cfg, 0))
@@ -1733,6 +1972,16 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         else:
             s = M.ssim(img, target, backend=cfg.ssim_backend)
             loss = (1 - cfg.ssim_weight) * pix + cfg.ssim_weight * (1 - s)
+        geometry_loss = None
+        if (
+            target_geometry_gradients is not None
+            and (sched_offset + it) % int(cfg.geometry_loss_every) == 0
+        ):
+            geometry_loss = _geometry_consistent_loss(img, target_geometry_gradients)
+            # Preserve the requested average regularization strength when evaluating the
+            # expensive gradient term intermittently.
+            active_weight = float(cfg.geometry_loss_weight) * int(cfg.geometry_loss_every)
+            loss = loss + active_weight * geometry_loss
         if field.color_grads is not None and cfg.color_grad_l2 > 0.0:
             loss = loss + cfg.color_grad_l2 * (field.color_grads * field.color_grads).mean()
         rate_bpp = None
@@ -2014,6 +2263,15 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             if "on_split" in color_solve_tokens and (added > 0 or relocated > 0):
                 run_color_solve_event(it, "on_split", fade_alpha)
 
+        # This is deliberately separate from the legacy trajectory history below. That history
+        # is a pre-step render paired with n_at_render; checkpoint selection evaluates the actual
+        # field after the optimizer step and every prune/split/relocation/color-solve transition.
+        if checkpoint_enabled and log_now and not last_it:
+            record_checkpoint(
+                it + 1,
+                _fit_support_fade_alpha(cfg, it + 1),
+            )
+
         if log_now:
             hist["iter"].append(it)
             hist["psnr"].append(p_now)
@@ -2029,6 +2287,9 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 hist["rate_loss"].append(float(cfg.lambda_rate) * rb)
             hist["support_fade_alpha"].append(float(fade_alpha))
             hist["tempered_new_rows"].append(tempered_count)
+            hist["geometry_loss"].append(
+                None if geometry_loss is None else float(geometry_loss.detach().cpu())
+            )
             if verbose:
                 print(f"  iter {it:5d}  psnr {p_now:6.2f}  loss {loss.item():.5f}")
             if cfg.early_stop_patience is not None and it >= cfg.early_stop_min_iters:
@@ -2056,22 +2317,73 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             iters_to_targets = {
                 str(t): (None if int(v) < 0 else int(v)) for t, v in zip(targets, reached)
             }
-        img = _render(field, cfg, H, W, support_fade_alpha=final_fade_alpha)
-        final_psnr = M.psnr(img, target)
-        final_ms_ssim = M.ms_ssim(img, target)
+        terminal_field = field
+        terminal_img = _render(field, cfg, H, W, support_fade_alpha=final_fade_alpha)
+        terminal_psnr = M.psnr(terminal_img, target)
+        terminal_ssim = float(M.ssim(terminal_img, target, backend=cfg.ssim_backend))
+        terminal_ms_ssim = M.ms_ssim(terminal_img, target)
+        terminal_lpips = (
+            M.LPIPS.distance(terminal_img, target) if cfg.compute_lpips else None
+        )
+        terminal_iter = last_iter + 1
+        terminal_n = int(field.n)
+        selected_record = None
+        if checkpoint_enabled:
+            record_checkpoint(
+                terminal_iter,
+                final_fade_alpha,
+                render_img=terminal_img,
+                psnr=terminal_psnr,
+                terminal=True,
+            )
+            selected_record = best_checkpoints_by_count[terminal_n]
+            if int(selected_record["n_gaussians"]) != terminal_n:
+                raise RuntimeError("checkpoint selection violated the terminal-count invariant")
+            if selected_record["field"] is not None:
+                field = selected_record["field"].trainable()
+                img = _render(field, cfg, H, W, support_fade_alpha=final_fade_alpha)
+                final_psnr = M.psnr(img, target)
+                final_ssim = float(M.ssim(img, target, backend=cfg.ssim_backend))
+                final_ms_ssim = M.ms_ssim(img, target)
+                final_lpips = M.LPIPS.distance(img, target) if cfg.compute_lpips else None
+            else:
+                img = terminal_img
+                final_psnr = terminal_psnr
+                final_ssim = terminal_ssim
+                final_ms_ssim = terminal_ms_ssim
+                final_lpips = terminal_lpips
+        else:
+            img = terminal_img
+            final_psnr = terminal_psnr
+            final_ssim = terminal_ssim
+            final_ms_ssim = terminal_ms_ssim
+            final_lpips = terminal_lpips
+            selected_record = {
+                "iter": terminal_iter,
+                "psnr": float(terminal_psnr),
+                "n_gaussians": terminal_n,
+                "field": None,
+                "terminal": True,
+            }
         if cfg.adaptive_count and adaptive_stop is None:
             adaptive_stop = _adaptive_stop_reason(
-                cfg, field, H, W, final_psnr, final_ms_ssim, adaptive_stale_waves
+                cfg,
+                terminal_field,
+                H,
+                W,
+                terminal_psnr,
+                terminal_ms_ssim,
+                adaptive_stale_waves,
             ) or "iteration_limit"
         if cfg.adaptive_count:
             hist["adaptive_stop_reason"] = adaptive_stop
-            hist["adaptive_selected_n"] = field.n
+            hist["adaptive_selected_n"] = terminal_n
         out = {
             "field": field, "history": hist, "render": img,
             "psnr": final_psnr,
-            "ssim": float(M.ssim(img, target, backend=cfg.ssim_backend)),
+            "ssim": final_ssim,
             "ms_ssim": final_ms_ssim,
-            "lpips": M.LPIPS.distance(img, target) if cfg.compute_lpips else None,
+            "lpips": final_lpips,
             "iters_to_target": (
                 iters_to_targets.get(str(float(cfg.target_psnr)))
                 if cfg.target_psnr is not None else None
@@ -2094,6 +2406,39 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             "qat_codec_config": qat_ccfg,
             "loss_weighting": cfg.loss_weighting,
             "loss_weight_beta": float(cfg.loss_weight_beta),
+            "geometry_loss_weight": float(cfg.geometry_loss_weight),
+            "geometry_loss_every": int(cfg.geometry_loss_every),
+            "lr_schedule": cfg.lr_schedule,
+            "lr_cosine_start_frac": float(cfg.lr_cosine_start_frac),
+            "checkpoint_policy": cfg.checkpoint_policy,
+            "checkpoint_history": checkpoint_history,
+            "trajectory_terminal_iter": terminal_iter,
+            "trajectory_terminal_n_gaussians": terminal_n,
+            "trajectory_terminal_psnr": float(terminal_psnr),
+            "trajectory_terminal_ssim": terminal_ssim,
+            "trajectory_terminal_ms_ssim": float(terminal_ms_ssim),
+            "trajectory_terminal_lpips": terminal_lpips,
+            "selected_iter": int(selected_record["iter"]),
+            "selected_n_gaussians": int(selected_record["n_gaussians"]),
+            "selected_checkpoint_psnr": float(selected_record["psnr"]),
+            "selected_psnr": float(final_psnr),
+            "selected_from_checkpoint": selected_record["field"] is not None,
+            "covariance_filter_mode": cfg.covariance_filter_mode,
+            "covariance_filter_active": field.filter_variance is not None,
+            "covariance_filter_alpha": float(cfg.covariance_filter_alpha),
+            "covariance_filter_max_variance": float(cfg.covariance_filter_max_variance),
+            "covariance_filter_cohorts": (
+                0 if field.filter_variance is None
+                else int(torch.unique(field.filter_variance.detach()).numel())
+            ),
+            "covariance_filter_variance_min": (
+                None if field.filter_variance is None
+                else float(field.filter_variance.min().detach().cpu())
+            ),
+            "covariance_filter_variance_max": (
+                None if field.filter_variance is None
+                else float(field.filter_variance.max().detach().cpu())
+            ),
             "loss_weight_mean": (
                 None if pixel_weight is None else float(pixel_weight.mean().detach().cpu())
             ),

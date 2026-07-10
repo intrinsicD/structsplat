@@ -1,0 +1,76 @@
+{
+  "resolved": {
+    "images": [
+      "tests/test_images/COCO_train2014_000000000009.jpg",
+      "tests/test_images/COCO_train2014_000000000025.jpg",
+      "tests/test_images/COCO_train2014_000000000030.jpg",
+      "tests/test_images/COCO_train2014_000000000034.jpg"
+    ],
+    "budgets": [
+      640
+    ],
+    "methods": [
+      "structsplat_best_default",
+      "structsplat_best_generation_filter",
+      "structsplat_best_generation_filter_a18pi",
+      "structsplat_best_generation_filter_a36pi"
+    ],
+    "seeds": [
+      0,
+      1
+    ],
+    "start_fraction": 0.5,
+    "growth_waves": 5,
+    "max_side": 160,
+    "iters": 500,
+    "target_psnr": 35.0,
+    "target_psnrs": [
+      22.0,
+      24.0,
+      26.0,
+      28.0,
+      30.0,
+      32.0
+    ],
+    "renderer": "cuda",
+    "support_fade": false,
+    "render_chunk": 512,
+    "pixel_loss": "l1",
+    "ssim_weight": 0.3,
+    "lpips": true,
+    "relocate_fraction": 0.25,
+    "relocate_downsample": 4,
+    "feature_cap": 12.0,
+    "feature_cap_reference_side": 160.0,
+    "resume": true,
+    "max_new_cells": null
+  },
+  "device": "cuda",
+  "versions": {
+    "torch": "2.9.0+cu128",
+    "torch_cuda": "12.8",
+    "cuda_available": true,
+    "numpy": "2.1.3",
+    "structsplat": "0.1.0"
+  },
+  "repository": {
+    "root": "/home/alex/Documents/structsplat",
+    "commit": "9c13583d68acdb75751f81d458ae9b576171e21d",
+    "dirty": true,
+    "tracked_diff_sha256": "5781f0ae0977b04c359aacc8a675a5001fcb074e2cad58c37f001600b286402b",
+    "untracked_files": [
+      "ara/evidence/bench005-native-gi-plus-proxy-2026-07-10/",
+      "ara/evidence/fair-gaussian-variants-full-external-same-hparams-2026-07-10/default_dominance.csv",
+      "ara/evidence/fit013-geometry-consistency-2026-07-10/",
+      "benchmarks/native_image_gs_compare.py",
+      "benchmarks/native_reference_compare.py",
+      "benchmarks/native_runners/",
+      "scripts/setup_native_image_gs_env.sh",
+      "tasks/BENCH-005-native-reference-pipelines.md",
+      "tasks/FIT-013-geometry-consistent-regularization.md",
+      "tests/test_covariance_filter.py",
+      "tests/test_native_image_gs_compare.py",
+      "tests/test_native_reference_compare.py"
+    ]
+  }
+}

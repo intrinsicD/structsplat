@@ -1,0 +1,121 @@
+{
+  "resolved": {
+    "protocol": "matched_axes_fixed_n",
+    "profile": "matched_steps_fixed_n",
+    "method": "gaussianimage_native",
+    "schema_version": 1,
+    "adapter_revision": "gaussianimage_v1",
+    "metric_protocol_revision": 2,
+    "repo_root": "/home/alex/Documents/structsplat/results/native_envs/gaussianimage_official/repo",
+    "repo_commit": "d53393bee7c9fbb24e3510614e3ff2c85b8fbbc1",
+    "repo_tree": "ea4512707f0c2d1c3a5318093c2b82c949a7264d",
+    "repo_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "gsplat_root": "/home/alex/Documents/structsplat/results/native_envs/gaussianimage_official/repo/gsplat",
+    "gsplat_commit": "bcca3ecae966a052e3bf8dd1ff9910cf7b8f851d",
+    "gsplat_tree": "f8b967d32fb2f1a316b168108543291b83f02745",
+    "gsplat_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "repo_gsplat_python_source_sha256": "318874a19b31f5df2a30f96e04f65acb8acd3e048d9b9da150a12a4d5e9784e7",
+    "model_source_sha256": {
+      "gaussianimage_cholesky.py": "e475ac9acaa97a83e5779e9a0e7a8fe8a919a22b712b70821525f3924cf8929d",
+      "gaussianimage_rs.py": "85885b0495aed2c502177641406afa97659b40b27bc21a695e45e41e107df318"
+    },
+    "python_executable": "/home/alex/Documents/structsplat/results/native_envs/gaussianimage_official/env/bin/python",
+    "python_version": "3.10.20 (main, Jun 11 2026, 15:17:37) [GCC 14.3.0]",
+    "environment_root": "/home/alex/Documents/structsplat/results/native_envs/gaussianimage_official/env",
+    "torch_version": "2.0.0+cu118",
+    "torch_cuda_version": "11.8",
+    "cuda_available": true,
+    "cuda_devices": [
+      {
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 3050",
+        "total_memory": 8199143424,
+        "compute_capability": [
+          8,
+          6
+        ]
+      }
+    ],
+    "gsplat_module": "/home/alex/Documents/structsplat/results/native_envs/gaussianimage_official/env/lib/python3.10/site-packages/gsplat/__init__.py",
+    "gsplat_csrc": "/home/alex/Documents/structsplat/results/native_envs/gaussianimage_official/env/lib/python3.10/site-packages/gsplat/csrc.so",
+    "gsplat_csrc_sha256": "ec4347635caf065c970d1984d9349a03d1592c563718dc1429444cd0d1d0469e",
+    "gsplat_version": "0.1.3",
+    "gsplat_python_source_sha256": "318874a19b31f5df2a30f96e04f65acb8acd3e048d9b9da150a12a4d5e9784e7",
+    "native_dependency_versions": {
+      "numpy": "1.26.4",
+      "pillow": "10.4.0",
+      "pytorch-msssim": "1.0.0",
+      "torchvision": "0.15.1+cu118"
+    },
+    "gsplat_wheel": "/home/alex/Documents/structsplat/results/native_envs/gaussianimage_official/wheels/gsplat-0.1.3-cp310-cp310-linux_x86_64.whl",
+    "gsplat_wheel_sha256": "1f78e728a75a354590d3d05078f7d8bb94a84f693ac106def3767d67f48bd605",
+    "libstdcxx_preload": "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33",
+    "libstdcxx_sha256": "1fd75fe70354a416d75aef22bcae68c47bd25d20e2d0568c30b1a9838cf62f11",
+    "native_adapter_source_sha256": "fdb86a04a95d351296e88db38d040efcbe200c74bb9e3d57fad0406dbc32037e",
+    "native_harness_source_sha256": "6336b1499e14121f7109b48ac0aa7f9c1bd64a02b1fae57c168d0ff9321fa8f1",
+    "metric_protocol_source_sha256": "8d9963efa6d3e7b687e349398079ff058326653eeaac47fdf5d1b4778ce8a8b7",
+    "shared_compare_source_sha256": "bf2f02d9bf803569759ea65ac92347b50608f8bdccf703d9a25d45196b9ebbf6",
+    "native_python": "/home/alex/Documents/structsplat/results/native_envs/gaussianimage_official/env/bin/python",
+    "images": [
+      "tests/test_images/COCO_train2014_000000000009.jpg",
+      "tests/test_images/COCO_train2014_000000000025.jpg",
+      "tests/test_images/COCO_train2014_000000000030.jpg",
+      "tests/test_images/COCO_train2014_000000000034.jpg"
+    ],
+    "max_sides": [
+      160
+    ],
+    "budgets": [
+      640
+    ],
+    "iters": 500,
+    "seeds": [
+      0,
+      1
+    ],
+    "render_warmup": 10,
+    "render_repeats": 50,
+    "lpips": true,
+    "structsplat_metrics": "results/structsplat_checkpoint_500_two_seed/metrics.json",
+    "structsplat_methods": [
+      "structsplat_best_default",
+      "structsplat_best_checkpoint"
+    ],
+    "resume": false,
+    "max_new_cells": null
+  },
+  "device": "cuda:0",
+  "versions": {
+    "torch": "2.9.0+cu128",
+    "torch_cuda": "12.8",
+    "cuda_available": true,
+    "numpy": "2.1.3",
+    "structsplat": "0.1.0"
+  },
+  "repository": {
+    "root": "/home/alex/Documents/structsplat",
+    "commit": "9c13583d68acdb75751f81d458ae9b576171e21d",
+    "dirty": true,
+    "tracked_diff_sha256": "f4f0c44f28b897010bcf1680aa34dc8bebb7c3b05724c3638ae17fe50f98078d",
+    "untracked_files": [
+      "ara/evidence/bench005-native-gi-plus-proxy-2026-07-10/",
+      "ara/evidence/bench005-native-image-gs-2026-07-10/",
+      "ara/evidence/fair-gaussian-variants-full-external-same-hparams-2026-07-10/default_dominance.csv",
+      "ara/evidence/fit013-geometry-consistency-2026-07-10/",
+      "ara/evidence/fit014-generation-caf-2026-07-10/",
+      "benchmarks/native_gaussianimage_compare.py",
+      "benchmarks/native_image_gs_compare.py",
+      "benchmarks/native_reference_compare.py",
+      "benchmarks/native_runners/",
+      "scripts/setup_native_gaussianimage_env.sh",
+      "scripts/setup_native_image_gs_env.sh",
+      "tasks/BENCH-005-native-reference-pipelines.md",
+      "tasks/FIT-013-geometry-consistent-regularization.md",
+      "tasks/FIT-014-generation-density-covariance-filter.md",
+      "tests/test_covariance_filter.py",
+      "tests/test_native_gaussianimage_compare.py",
+      "tests/test_native_image_gs_compare.py",
+      "tests/test_native_reference_compare.py"
+    ]
+  }
+}

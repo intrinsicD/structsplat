@@ -48,6 +48,11 @@ def test_common_image_auc_and_row_writers(tmp_path):
     assert json.loads((tmp_path / "rows.json").read_text()) == rows
     assert (tmp_path / "rows.csv").read_text().splitlines()[0] == "b,a"
 
+    config = common.run_config({"example": 1}, device="cpu")
+    assert config["repository"]["commit"]
+    assert len(config["repository"]["tracked_diff_sha256"]) == 64
+    assert isinstance(config["repository"]["untracked_files"], list)
+
 
 def test_proxy_calibration_reports_rank_and_sign_agreement():
     full = [

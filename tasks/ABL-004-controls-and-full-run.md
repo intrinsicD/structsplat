@@ -181,6 +181,28 @@ conditions and honest controls?
   four COCO images, budget 640, max-side 160, 500 iters, seeds 0/1, exact CUDA. No default candidate
   passed the promotion gate: tensor loss gained PSNR/AUC/speed but lost MS-SSIM, and final color
   solve gained PSNR/MS-SSIM but lost AUC and speed. Keep `structsplat_best_default` unchanged.
+- 2026-07-10: Upgraded the proxy artifact analysis with `default_dominance.csv` and image-clustered
+  paired 95% confidence intervals across PSNR, MS-SSIM, AUC, fit time, and total time. The result
+  now states the review conclusion mechanically: every equal-budget headline reference analogue
+  is a tradeoff against the pinned default, and adaptive 1.5x is explicitly not comparable.
+  BENCH-005 also added the first true native external path and completed the full COCO4 x seeds
+  0/1 review-proxy slice at max-side 160, cap 640, and 500 steps. Paired against a fresh LPIPS-
+  enabled StructSplat-default rerun, native GaussianImage++ is faster (+0.4284 s fit-time gain,
+  95% CI [+0.2704, +0.6549]) but loses PSNR (-5.0678 dB), proxy MS-SSIM (-0.05142), LPIPS
+  (native gain -0.1886), and AUC (-7.1638), with all four quality/convergence CIs below zero.
+  Keep this short-horizon matched-axis result separate from native-default/full-resolution claims.
+- 2026-07-10: Diagnosed the 5k terminal regression and added FIT-015's post-transition
+  `best_psnr_final_count` policy plus a within-trajectory audit. On COCO4 x seeds 0/1, N=640,
+  5,000 steps, 7/8 runs restored an earlier state at the identical final count, gaining +0.7702 dB
+  PSNR, +0.00892 MS-SSIM, and +0.0076 LPIPS on average over their own terminal states. The 500-step
+  guard retained the terminal state in 7/8 runs and was effectively neutral. Keep the pinned
+  general default unchanged; expose checkpoint selection as the long-horizon quality candidate.
+- 2026-07-10: Rebuilt/reran Image-GS in its official Python 3.11/Torch 2.4/CUDA 12.4 environment
+  and added an official base-GaussianImage Python 3.10/Torch 2.0/cu118 runner. At 500 steps,
+  StructSplat wins Image-GS final quality familywise and base GaussianImage is far from convergence.
+  At 5k, both native methods are tradeoffs against the checkpoint candidate: Image-GS and
+  GaussianImage retain proxy-MS-SSIM/speed advantages respectively, while StructSplat has higher
+  PSNR and better LPIPS. None is a global dominance result.
 
 ## Decision-grade staged protocol
 

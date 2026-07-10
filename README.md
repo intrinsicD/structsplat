@@ -110,7 +110,24 @@ low-budget/MS-SSIM alternative. `aniso_flanking`, `quadtree_hybrid`, `iso_blue_n
 Floyd-Steinberg were eliminated at stage 1 by the frozen CI rule. ADR-0013 updates the shipped init
 default to `quadtree_wse`; flanking stays available as an explicit control arm. The cross-repo
 caveat stands: these are matched policy analogues inside StructSplat's harness, not native external
-pipelines.
+pipelines. BENCH-005 now has isolated, provenance-checked native GaussianImage++, Image-GS, and
+GaussianImage runners. The official-environment Image-GS fixed-N 500-step slice supports
+StructSplat on final PSNR/proxy-MS-SSIM, but differing initialization and timing semantics prevent
+a strict implementation-dominance claim. At 5k steps, official Image-GS remains a tradeoff: versus
+the full-count-checkpoint StructSplat candidate it has higher proxy MS-SSIM, while StructSplat has
+higher PSNR and substantially better LPIPS. Native GaussianImage is much faster: at 500 steps it
+has not converged, while at 5k it is roughly PSNR-competitive, higher in proxy MS-SSIM, lower in
+AUC, and worse in LPIPS than the checkpoint candidate. Full-resolution, multi-budget/time-envelope,
+native codec/RD, and learned Instant-GI tracks remain open.
+
+FIT-015 adds opt-in `checkpoint_policy=best_psnr_final_count`. It selects only post-transition
+states with the terminal Gaussian count and writes a same-trajectory audit. On COCO4 x seeds 0/1,
+640 Gaussians, and 5k steps, 7/8 runs selected an earlier full-count state and improved their own
+terminal means by +0.7702 dB PSNR, +0.00892 MS-SSIM, and +0.0076 LPIPS gain. At 500 steps it kept
+the terminal state in 7/8 runs and was effectively neutral. Keep the pinned default unchanged
+until broader budget/resolution evidence resolves AUC, speed, and metric tradeoffs; use the
+checkpoint policy for long-horizon quality runs. FIT-013's Sobel loss and FIT-014's covariance
+filter remain experimental and default-off.
 
 ## Verification status
 Init-time math is validated numerically in this environment: structure-tensor orientation/labels,
@@ -120,7 +137,8 @@ The PyTorch modules compile and are covered by tests that run once `torch` is in
 (`pytest -q`); run the smoke test locally to confirm the fit loop end-to-end on your hardware.
 
 **Reproducibility caveat.** Every benchmark writes a `config.json` (resolved args + device +
-torch/numpy/structsplat versions) so a run is reproducible from its own artifacts. Results are
+torch/numpy/structsplat versions + repository commit/dirty diff fingerprint) so a run is
+source-bound from its own artifacts. Results are
 bit-exact from a seed only on **CPU**: the CUDA renderer accumulates with atomics
 (`atomicAdd` / `index_add`), so GPU renders vary run to run — the logged renderer/device/versions
 bound that variation. See the `benchmark` skill for the full experimental-validity rules.

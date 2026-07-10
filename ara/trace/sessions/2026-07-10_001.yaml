@@ -2,9 +2,9 @@ session:
   id: "2026-07-10_001"
   date: "2026-07-10"
   started: "2026-07-10T11:14+0200"
-  last_turn: "2026-07-10T13:16+0200"
-  turn_count: 8
-  summary: "Added a fair-density default-promotion audit, recomputed the supplied HTML benchmark artifact, kept the pinned best default unchanged, completed and interpreted the same-hyperparameter fair run with the local Instant-GI hook, split ABL-005 into CUDA-native and affine quality-only influence shard runners, then extended the CUDA-native fair shard to four paired cells across two Kodak images with committed evidence."
+  last_turn: "2026-07-10T16:29+0200"
+  turn_count: 12
+  summary: "Hardened fair/native auditing; added correctness-safe same-final-count checkpoint selection; rebuilt official Image-GS and GaussianImage environments; completed bounded 500/5k native lanes; kept the balanced terminal default unchanged; and preserved horizon- and metric-specific claim boundaries."
 
 events_logged:
   - turn: 1
@@ -55,6 +55,198 @@ events_logged:
     routing: staged
     provenance: ai-suggested
     summary: "Staged the conclusion that N73 supports keeping `structsplat_best_default` unchanged while treating tensor loss and final color solve as non-default specialist candidates."
+  - turn: 9
+    type: observation
+    id: "O31"
+    routing: staged
+    provenance: user
+    summary: "Recorded the supplied review's boundary: N73 supports a balanced equal-budget proxy default, not strict dominance or native external/paper-grade claims."
+  - turn: 10
+    type: experiment
+    id: "N74"
+    routing: direct
+    provenance: ai-executed
+    summary: "Hardened complete-pair familywise dominance, native resume identity, and benchmark source provenance; full validation passed 326 tests."
+  - turn: 10
+    type: experiment
+    id: "N75"
+    routing: direct
+    provenance: ai-executed
+    summary: "Completed 8/8 provenance-valid native GaussianImage++ matched-axis cells and measured a short-horizon time-quality tradeoff versus StructSplat default."
+  - turn: 10
+    type: experiment
+    id: "N76"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented FIT-013 Sobel geometry regularization and completed dense-weight, cadence, and held-out Kodak experiments."
+  - turn: 10
+    type: dead_end
+    id: "N77"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rejected manual sliced Sobel arithmetic after it ran slower than cached grouped convolutions on CUDA."
+  - turn: 10
+    type: decision
+    id: "N78"
+    routing: direct
+    provenance: ai-executed
+    summary: "Kept geometry loss disabled in the pinned default and retained dense weight 0.015 only as an opt-in quality candidate."
+  - turn: 10
+    type: claim
+    id: "O31"
+    routing: crystallized
+    provenance: user
+    summary: "Crystallized the supplied balanced-proxy/not-universal-dominance boundary as C12 via artifact commitment."
+  - turn: 10
+    type: claim
+    id: "O32"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the native GaussianImage++ short-horizon time-quality tradeoff as C13 via artifact commitment."
+  - turn: 10
+    type: claim
+    id: "O33"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized dense GCR 0.015 as a quality candidate rather than balanced default as C14 via artifact commitment."
+  - turn: 10
+    type: heuristic
+    id: "O34"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized complete-pair familywise dominance auditing as H04 via artifact commitment."
+  - turn: 11
+    type: experiment
+    id: "N79"
+    routing: direct
+    provenance: ai-executed
+    summary: "Built/hardened native Image-GS adapter-v2 and completed 8/8 fixed-N 500-step hash-verified cells; StructSplat wins the bounded final-quality relation."
+  - turn: 11
+    type: experiment
+    id: "N80"
+    routing: direct
+    provenance: ai-executed
+    summary: "Completed the one-seed Image-GS SIGGRAPH25 5k algorithm-profile lane; PSNR is roughly tied, proxy MS-SSIM favors Image-GS, and LPIPS favors StructSplat."
+  - turn: 11
+    type: experiment
+    id: "N81"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented faithful generation-density cohort covariance filtering and screened exact/half/quarter strengths on 32 paired proxy cells."
+  - turn: 11
+    type: dead_end
+    id: "N82"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rejected persistent cohort covariance filtering after every tested strength lost all aggregate quality/convergence metrics."
+  - turn: 11
+    type: decision
+    id: "N83"
+    routing: direct
+    provenance: ai-executed
+    summary: "Kept generation-density covariance filtering default-off and closed broader confirmation of the persistent mechanism."
+  - turn: 11
+    type: decision
+    id: "N84"
+    routing: direct
+    provenance: ai-executed
+    summary: "Kept fixed-N and 5k Image-GS lanes separate and BENCH-005 partial; made no strict speed/AUC/codec/global-dominance claim."
+  - turn: 11
+    type: claim
+    id: "O35"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the bounded native Image-GS fixed-N final-quality loss as C15 via artifact commitment."
+  - turn: 11
+    type: claim
+    id: "O36"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the one-seed Image-GS 5k metric tradeoff as C16 via artifact commitment."
+  - turn: 11
+    type: claim
+    id: "O37"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized persistent generation-density covariance filtering as non-default-worthy C17 via artifact commitment after empirical resolution."
+  - turn: 11
+    type: heuristic
+    id: "O38"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the isolated native-reference provenance contract as H05 via artifact commitment."
+  - turn: 12
+    type: experiment
+    id: "N85"
+    routing: direct
+    provenance: ai-executed
+    summary: "Screened long-horizon cosine and delayed-cosine schedules and found the independent CUDA deltas causally confounded plus a failing 500-step guard."
+  - turn: 12
+    type: dead_end
+    id: "N86"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rejected delayed cosine as a general default after short-horizon quality losses and pre-activation trajectory divergence."
+  - turn: 12
+    type: experiment
+    id: "N87"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented FIT-015 same-final-count checkpoint selection and measured strong 5k endpoint repair with a neutral 500-step guard."
+  - turn: 12
+    type: decision
+    id: "N88"
+    routing: direct
+    provenance: ai-executed
+    summary: "Kept terminal as the shipped default and exposed best-PSNR final-count selection as an opt-in long-horizon quality policy."
+  - turn: 12
+    type: experiment
+    id: "N89"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rebuilt the official Image-GS environment and reran provenance-valid 500/5k lanes against terminal and checkpoint StructSplat endpoints."
+  - turn: 12
+    type: experiment
+    id: "N90"
+    routing: direct
+    provenance: ai-executed
+    summary: "Added the official base-GaussianImage environment/harness and completed bounded 500/5k native lanes."
+  - turn: 12
+    type: decision
+    id: "N91"
+    routing: direct
+    provenance: ai-executed
+    summary: "Preserved horizon- and metric-specific native claim boundaries and left BENCH-005 partial."
+  - turn: 12
+    type: claim
+    id: "O39"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized same-final-count checkpoint repair as the opt-in long-horizon claim C18 via artifact commitment."
+  - turn: 12
+    type: heuristic
+    id: "O40"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the checkpoint final-count invariant as H06 via artifact commitment."
+  - turn: 12
+    type: heuristic
+    id: "O41"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized same-trajectory causal auditing under nondeterministic CUDA as H07 via artifact commitment."
+  - turn: 12
+    type: claim
+    id: "O42"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the official Image-GS horizon/metric boundary as C19 via artifact commitment."
+  - turn: 12
+    type: claim
+    id: "O43"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the official base-GaussianImage horizon tradeoff as C20 via artifact commitment."
 
 ai_actions:
   - turn: 1
@@ -120,8 +312,105 @@ ai_actions:
       - "ara/trace/sessions/2026-07-10_001.yaml"
       - "ara/trace/sessions/session_index.yaml"
       - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 9
+    action: "Interpreted the supplied external review as claim-calibration feedback and staged its proxy/native-evidence boundary without modifying benchmark code or defaults."
+    provenance: ai-executed
+    files_changed:
+      - "ara/staging/observations.yaml"
+      - "ara/trace/sessions/2026-07-10_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 10
+    action: "Researched primary-source 2025/2026 ideas; implemented GCR config/fit/CLI and fair candidates; built and hardened the isolated native GaussianImage++ adapter and paired evaluator; reran native/COCO/Kodak artifacts; added familywise dominance and source provenance; updated tasks/docs; curated ARA evidence; and validated 326 tests."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/config.py"
+      - "src/structsplat/fit.py"
+      - "src/structsplat/cli.py"
+      - "benchmarks/_util.py"
+      - "benchmarks/fair_density_control_compare.py"
+      - "benchmarks/native_reference_compare.py"
+      - "benchmarks/native_runners/gaussianimage_plus.py"
+      - "tests/test_fit_dynamics.py"
+      - "tests/test_fair_density_control_compare.py"
+      - "tests/test_native_reference_compare.py"
+      - "tasks/BENCH-005-native-reference-pipelines.md"
+      - "tasks/FIT-013-geometry-consistent-regularization.md"
+      - "ara/evidence/bench005-native-gi-plus-proxy-2026-07-10/"
+      - "ara/evidence/fit013-geometry-consistency-2026-07-10/"
+  - turn: 11
+    action: "Built and adversarially hardened the isolated native Image-GS v2 environment/adapter/harness; reran hash-verified StructSplat and Image-GS fixed-N/5k lanes; implemented and screened generation-density covariance filtering; curated tasks/docs/ARA evidence; validated cache reuse/artifacts; and passed 340 tests plus Ruff/shell/diff checks."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/native_image_gs_compare.py"
+      - "benchmarks/native_runners/image_gs.py"
+      - "benchmarks/native_reference_compare.py"
+      - "scripts/setup_native_image_gs_env.sh"
+      - "src/structsplat/config.py"
+      - "src/structsplat/gaussians.py"
+      - "src/structsplat/fit.py"
+      - "src/structsplat/codec.py"
+      - "src/structsplat/cli.py"
+      - "src/structsplat/generate.py"
+      - "src/structsplat/pyramid.py"
+      - "benchmarks/fair_density_control_compare.py"
+      - "tests/test_native_image_gs_compare.py"
+      - "tests/test_native_reference_compare.py"
+      - "tests/test_covariance_filter.py"
+      - "tasks/BENCH-005-native-reference-pipelines.md"
+      - "tasks/FIT-014-generation-density-covariance-filter.md"
+      - "ara/evidence/bench005-native-image-gs-2026-07-10/"
+      - "ara/evidence/fit014-generation-caf-2026-07-10/"
+  - turn: 12
+    action: "Implemented delayed-cosine screening and FIT-015 full-count checkpoint selection; rebuilt official Image-GS and GaussianImage environments; added the native GaussianImage runner/harness and multi-baseline pairing; ran bounded 500/5k native lanes; updated tasks/docs/ARA evidence; and passed 353 tests plus Ruff/bash/diff checks."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/config.py"
+      - "src/structsplat/fit.py"
+      - "src/structsplat/cli.py"
+      - "benchmarks/fair_density_control_compare.py"
+      - "benchmarks/native_image_gs_compare.py"
+      - "benchmarks/native_gaussianimage_compare.py"
+      - "benchmarks/native_runners/gaussianimage.py"
+      - "scripts/setup_native_image_gs_env.sh"
+      - "scripts/setup_native_gaussianimage_env.sh"
+      - "tests/test_fit_dynamics.py"
+      - "tests/test_fair_density_control_compare.py"
+      - "tests/test_native_image_gs_compare.py"
+      - "tests/test_native_gaussianimage_compare.py"
+      - "tasks/BENCH-005-native-reference-pipelines.md"
+      - "tasks/FIT-015-full-count-checkpoint-selection.md"
+      - "ara/evidence/fit015-full-count-checkpoint-2026-07-10/"
+      - "ara/evidence/bench005-official-native-references-2026-07-10/"
 
-claims_touched: []
+claims_touched:
+  - id: C12
+    action: crystallized
+    turn: 10
+  - id: C13
+    action: crystallized
+    turn: 10
+  - id: C14
+    action: crystallized
+    turn: 10
+  - id: C15
+    action: crystallized
+    turn: 11
+  - id: C16
+    action: crystallized
+    turn: 11
+  - id: C17
+    action: crystallized
+    turn: 11
+  - id: C18
+    action: crystallized
+    turn: 12
+  - id: C19
+    action: crystallized
+    turn: 12
+  - id: C20
+    action: crystallized
+    turn: 12
 
 key_context:
   - turn: 1
@@ -140,6 +429,14 @@ key_context:
     excerpt: "User asked to compute a full benchmark using the linked `index.html` hyperparameters and include local GaussianImage/similar repository comparisons."
   - turn: 8
     excerpt: "User asked for the conclusion from `results/fair_gaussian_variants_20260710_full_external_same_hparams/index.html`."
+  - turn: 9
+    excerpt: "User supplied a review concluding that StructSplat is the best balanced equal-budget default under the proxy gate, but does not strictly dominate reference methods and lacks native external/paper-grade evidence."
+  - turn: 10
+    excerpt: "User set the persistent objective to improve StructSplat using SOTA or invented ideas and adapt benchmarks so reference-repository comparisons become judgment-grade."
+  - turn: 11
+    excerpt: "The supplied review's two open gaps—native reference pipelines and stronger metrics/convergence evidence—were addressed with isolated Image-GS fixed/5k lanes; a separate upstream covariance-filter idea was implemented and empirically rejected rather than promoted."
+  - turn: 12
+    excerpt: "The supplied review motivated a correctness-safe long-horizon endpoint policy and official-environment Image-GS/GaussianImage reruns while preserving the conclusion that no method is universally dominant."
 
 open_threads:
   - "Continue iterating active tasks after this bounded ABL-004 benchmark-audit slice."
@@ -150,8 +447,13 @@ open_threads:
   - "Expand ABL-005 fast CUDA-native rows beyond the first `kodim01`/2k/seed0 cell before interpreting any deltas."
   - "Continue expanding ABL-005 beyond `kodim01`/2k seeds 0/1 before considering any fitter-knob default changes."
   - "Continue expanding ABL-005 beyond `kodim01`/`kodim04` budget-2000 seeds 0/1 before considering any fitter-knob default changes."
-  - "Native GaussianImage/GaussianImage++/Image-GS pipelines still require a separate dependency/submodule-compatible benchmark; current fair evidence uses matched-policy analogue rows plus the local Instant-GI hook."
+  - "Instant-GI's learned path still needs checkpoint/extensions; GaussianImage++, Image-GS, and GaussianImage need full-resolution, multi-budget, native-authentic, and codec-RD expansion."
   - "Existing `.idea` changes are user/workspace state and remain outside the task commit."
+  - "Keep public/paper wording bounded to a balanced equal-budget proxy-default result; do not claim universal or native-method dominance from N73."
+  - "For paper-grade external evidence, expand official Image-GS/GaussianImage/GaussianImage++ seeds, budgets, and native resolutions; add packed-stream bpp/RD and shared trajectory/timing protocols."
+  - "Confirm dense GCR 0.015 on randomized all-Kodak, multi-seed, matched-Gaussians-per-pixel budgets with synchronized setup/train/eval timing and gradient-domain metrics before promotion."
+  - "Do not promote persistent generation-density covariance filtering; only revisit a released/materialized coarse-to-fine schedule if a new proxy hypothesis justifies it."
+  - "Broaden FIT-015 across budgets and resolutions and decide whether checkpoint selection should optimize PSNR alone or a preregistered perceptual composite before any default promotion."
 
 ai_suggestions_pending:
   - "Confirm or revise O30: N73 supports keeping `structsplat_best_default` unchanged; tensor loss and final color solve are specialist candidates, not defaults."

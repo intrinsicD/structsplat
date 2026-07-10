@@ -116,3 +116,161 @@ memory control, not a quality change; on a 256x256 CUDA reference-render smoke w
 it reduced peak allocated memory delta from 203.55 MB to 29.65 MB at identical loss. Keep
 `support_fade=False` and `render_checkpoint=False` by default; enable checkpointing when the Python
 reference renderer is memory-bound. See `ara/evidence/core005-render-checkpoint-2026-07-07/`.
+
+## C12: The pinned default is balanced under the review proxy, not universally dominant
+
+- **Statement**: On N73's fixed four-COCO-image, cap-640, max-side-160, 500-step, two-seed fair
+  proxy, `structsplat_best_default` remains the best balanced equal-budget default under the
+  predeclared PSNR/MS-SSIM/AUC/fit/total-time gate, but it does not strictly dominate every
+  analogue row and the artifact cannot support native external, codec, or paper-grade convergence
+  superiority claims.
+- **Status**: supported
+- **Provenance**: user
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: An equal-budget candidate jointly beats the pinned row on all five
+  complete-pair core metrics under the familywise audit, or a broader native comparison changes
+  the stated scope/ranking.
+- **Proof**: [`ara/evidence/fair-gaussian-variants-full-external-same-hparams-2026-07-10/default_dominance.csv`, `ara/evidence/fair-gaussian-variants-full-external-same-hparams-2026-07-10/summary.md`]
+- **Dependencies**: [C04]
+- **Tags**: default-selection, proxy, dominance, claim-boundary
+- **From staging**: O31
+
+## C13: Native GaussianImage++ is a short-horizon time-quality tradeoff
+
+- **Statement**: In the BENCH-005 matched-axis slice (COCO4 x seeds 0/1, max-side 160, cap 640,
+  500 requested steps), native GaussianImage++ is faster than StructSplat default by 0.4284 s mean
+  fit time, but its native-minus-StructSplat gains are -5.0678 dB PSNR, -0.05142 proxy MS-SSIM,
+  -0.1886 LPIPS, and -7.1638 AUC; this establishes a proxy time-quality tradeoff, not a global
+  method ranking.
+- **Status**: supported
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: A provenance-valid rerun on the same cells reverses one or more
+  stated paired means, or broader native-authentic/multi-budget evidence invalidates extending the
+  bounded tradeoff beyond this slice.
+- **Proof**: [`ara/evidence/bench005-native-gi-plus-proxy-2026-07-10/paired_native_vs_structsplat_summary.csv`, `ara/evidence/bench005-native-gi-plus-proxy-2026-07-10/summary.md`]
+- **Dependencies**: [C04, C12]
+- **Tags**: native-reference, GaussianImage++, convergence, performance, proxy
+- **From staging**: O32
+
+## C14: Geometry-consistent regularization is a quality candidate, not the default
+
+- **Statement**: Dense target-gradient-weighted Sobel regularization at weight 0.015 improves
+  StructSplat quality/convergence means in the current COCO proxy and Kodak4 confirmation, but its
+  larger-resolution time cost blocks balanced-default promotion; every-two/every-four cadence does
+  not reliably preserve the quality benefit.
+- **Status**: supported
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: A randomized multi-seed/multi-density confirmation shows no dense
+  quality/AUC advantage, or a synchronized implementation removes the cost and passes all
+  familywise promotion gates.
+- **Proof**: [`ara/evidence/fit013-geometry-consistency-2026-07-10/proxy/default_dominance.csv`, `ara/evidence/fit013-geometry-consistency-2026-07-10/kodak4/default_dominance.csv`, `ara/evidence/fit013-geometry-consistency-2026-07-10/schedule/default_dominance.csv`]
+- **Dependencies**: [C06, C12]
+- **Tags**: geometry-loss, Sobel, convergence, perceptual-quality, default-selection
+- **From staging**: O33
+
+## C15: Native Image-GS fixed-N loses final quality at the short proxy horizon
+
+- **Statement**: In the hash-verified BENCH-005 fixed-N lane (COCO4 x seeds 0/1, max-side 160,
+  cap/start 640, 500 steps), native Image-GS minus StructSplat gains are -3.6011 dB PSNR,
+  -0.01879 proxy MS-SSIM, and -0.1842 LPIPS; the familywise PSNR/proxy-MS relation supports
+  StructSplat on this ablation, but does not establish strict implementation dominance.
+- **Status**: supported
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: A provenance-valid rerun on the same decoded pixels reverses the
+  paired final-quality relation, or evidence is presented as strict speed/AUC/global dominance
+  without resolving the recorded initialization, timing, and trajectory-protocol differences.
+- **Proof**: [`ara/evidence/bench005-native-image-gs-2026-07-10/fixed_paired_summary.csv`, `ara/evidence/bench005-native-image-gs-2026-07-10/fixed_summary.md`]
+- **Dependencies**: [C12]
+- **Tags**: native-reference, Image-GS, fixed-N, proxy, final-quality
+- **From staging**: O35
+
+## C16: Image-GS is a metric tradeoff at the 5k algorithm-profile horizon
+
+- **Statement**: In the one-seed COCO4 max-side-160 cap-640/start-320 5,000-step lane, native
+  Image-GS minus StructSplat gains are -0.3840 dB PSNR (95% CI [-2.3698,+1.1997]), +0.01608
+  proxy MS-SSIM [+0.00074,+0.03142], and -0.0443 LPIPS gain [-0.0652,-0.0243]; this is a
+  heterogeneous tradeoff, not a global winner.
+- **Status**: supported
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: A hash-verified multi-seed rerun at the same algorithm profiles
+  yields same-direction gains across PSNR, proxy MS-SSIM, and LPIPS, or official-environment/
+  full-resolution evidence overturns the stated bounded tradeoff.
+- **Proof**: [`ara/evidence/bench005-native-image-gs-2026-07-10/siggraph25_paired_summary.csv`, `ara/evidence/bench005-native-image-gs-2026-07-10/siggraph25_summary.md`]
+- **Dependencies**: [C12, C15]
+- **Tags**: native-reference, Image-GS, convergence-horizon, perceptual-quality, proxy
+- **From staging**: O36
+
+## C17: Persistent generation-density covariance filtering does not transfer as a default
+
+- **Statement**: For the current normalized StructSplat best-default recipe on COCO4 x seeds
+  0/1 at cap 640/500 steps, persistent birth-cohort covariance filters with alpha 9*pi, 18*pi,
+  and 36*pi all lose PSNR, proxy MS-SSIM, AUC, and LPIPS versus filter-off; the exact mechanism
+  is therefore not default-worthy.
+- **Status**: supported
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: A paired confirmation finds a positive filter strength that beats
+  filter-off on final PSNR, proxy MS-SSIM, AUC, and LPIPS without extra capacity, or a different
+  compositor invalidates applying this bounded conclusion to that renderer.
+- **Proof**: [`ara/evidence/fit014-generation-caf-2026-07-10/default_dominance.csv`, `ara/evidence/fit014-generation-caf-2026-07-10/summary.md`]
+- **Dependencies**: [C12]
+- **Tags**: covariance-filter, GaussianImage++, normalized-compositor, dead-end, default-selection
+- **From staging**: O37
+
+## C18: Same-final-count checkpoint selection repairs long-horizon terminal regression
+
+- **Statement**: On COCO4 x seeds 0/1 at N=640, same-final-count best-PSNR checkpoint selection
+  improves the pinned recipe's 5,000-step endpoint over its own terminal state by +0.7702 dB
+  PSNR, +0.00892 MS-SSIM, and +0.0076 LPIPS gain across eight runs, while the corresponding
+  500-step audit is effectively neutral. This supports an opt-in long-horizon quality policy,
+  not replacement of the general terminal default.
+- **Status**: supported
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: Broader matched-budget/resolution evidence shows no long-horizon
+  endpoint gain, selected and terminal states do not have identical final counts, or the
+  short-horizon/perceptual tradeoffs become large enough to invalidate opt-in use.
+- **Proof**: [`ara/evidence/fit015-full-count-checkpoint-2026-07-10/run.md`, `ara/evidence/fit015-full-count-checkpoint-2026-07-10/long_checkpoint_selection.csv`, `ara/evidence/fit015-full-count-checkpoint-2026-07-10/short_checkpoint_selection.csv`]
+- **Dependencies**: [C12]
+- **Tags**: checkpoint-selection, long-horizon, terminal-regression, default-selection
+- **From staging**: O39
+
+## C19: Official Image-GS evidence remains horizon- and metric-dependent
+
+- **Statement**: In the verified official Image-GS environment on COCO4 at max-side 160 and
+  N=640, StructSplat wins the bounded two-seed 500-step final-quality relation, whereas at
+  5,000 steps the StructSplat checkpoint candidate is +0.3601 dB in PSNR and better in LPIPS
+  while Image-GS is +0.01038 in proxy MS-SSIM. These lanes establish a horizon- and
+  metric-dependent tradeoff, not strict implementation or global dominance.
+- **Status**: supported
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: A provenance-valid rerun of the same official-environment cells
+  reverses the stated paired means, or broader native-resolution/multi-budget evidence supports
+  same-direction gains across all final-quality metrics under a shared protocol.
+- **Proof**: [`ara/evidence/bench005-official-native-references-2026-07-10/run.md`, `ara/evidence/bench005-official-native-references-2026-07-10/image_gs_500_vs_default.csv`, `ara/evidence/bench005-official-native-references-2026-07-10/image_gs_5000_vs_checkpoint.csv`]
+- **Dependencies**: [C15, C16, C18]
+- **Tags**: native-reference, Image-GS, official-environment, convergence-horizon, metric-tradeoff
+- **From staging**: O42
+
+## C20: Native GaussianImage needs explicit horizons and is a 5k tradeoff
+
+- **Statement**: In the official base-GaussianImage fixed-N COCO4 lanes, 500 steps leaves the
+  native optimizer far from competitive final quality despite faster fitting. At 5,000 steps,
+  GaussianImage is 6.4448 s faster and +0.01298 in proxy MS-SSIM, while the StructSplat
+  checkpoint candidate is +0.1207 dB in PSNR, better by 0.0253 LPIPS gain, and +1.5337 in
+  diagnostic AUC. This is a horizon-specific tradeoff, not a global ranking.
+- **Status**: supported
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: A provenance-valid same-cell rerun reverses the stated paired
+  means, or shared native-resolution/multi-budget timing and trajectory evidence produces a
+  consistent winner across quality, convergence, and performance.
+- **Proof**: [`ara/evidence/bench005-official-native-references-2026-07-10/run.md`, `ara/evidence/bench005-official-native-references-2026-07-10/gaussianimage_500_vs_default.csv`, `ara/evidence/bench005-official-native-references-2026-07-10/gaussianimage_5000_vs_checkpoint.csv`]
+- **Dependencies**: [C13, C18, C19]
+- **Tags**: native-reference, GaussianImage, official-environment, convergence-horizon, metric-tradeoff
+- **From staging**: O43
