@@ -267,3 +267,8 @@ entries:
       - "Routed the FF-001 equal-N evaluator as N65 because it produced committed benchmark code, regression coverage, full-suite validation, and a smoke artifact comparing learned/tensor-prior/scratch rows at equal N."
       - "Routed COMP-004 fit-time QAT/rate plumbing as N66 because it produced committed config/fit/CLI code, focused/full tests, and a codec RD smoke using the returned QAT codec config."
       - "Did not stage positive quality or RD claims: N65's tiny learned checkpoint loses in the smoke, and N66 validates plumbing without a lambda sweep or low-bit improvement result."
+  - turn: "2026-07-10_001#1"
+    notes:
+      - "Routed the fair benchmark promotion audit as N67 because it produced committed code, a full recomputed artifact, and a bounded default-selection result."
+      - "Did not stage or crystallize a global tensor-loss/default claim because this local proxy slice explicitly failed the promotion gate and FIT-012 already keeps public tensor loss default off."
+      - "Left ABL-004 active because this turn improved benchmark decision hygiene but did not complete the original full ABL-001/20k/control matrix."

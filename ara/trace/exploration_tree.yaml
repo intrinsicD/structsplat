@@ -1440,3 +1440,26 @@ tree:
       - "tests/test_fit_dynamics.py"
     also_depends_on: [N54, N61]
     status: resolved
+  - id: N67
+    type: experiment
+    title: "Fair benchmark default-promotion audit"
+    provenance: ai-executed
+    timestamp: "2026-07-10T11:14+0200"
+    result: >
+      Added a paired default-promotion check to `benchmarks.fair_density_control_compare`,
+      recomputed `results/fair_gaussian_variants_20260709_best_candidates/`
+      (4 COCO fixtures x budget 640 x seeds 0/1 x 29 methods, max-side 160,
+      500 iters, exact CUDA), and committed the result. 224/232 rows completed
+      ok; 8 Instant-GI rows skipped because `STRUCTSPLAT_INSTANT_GI` is unset.
+      No equal-budget best-default candidate passed the promotion gate.
+      `structsplat_best_tensor_loss` improved AUC by +0.0028 but lost PSNR by
+      -0.0201 dB and MS-SSIM by -0.00084; `structsplat_best_color_final`
+      improved PSNR by +0.1555 dB and MS-SSIM by +0.00084 but lost AUC by
+      -0.0030 and added +0.1079 s fit time. `structsplat_best_default`
+      remains unchanged.
+    evidence:
+      - "results/fair_gaussian_variants_20260709_best_candidates/index.html"
+      - "results/fair_gaussian_variants_20260709_best_candidates/summary.md"
+      - "commit 028a818"
+    also_depends_on: [N54]
+    status: resolved

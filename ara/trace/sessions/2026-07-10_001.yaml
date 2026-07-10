@@ -1,0 +1,39 @@
+session:
+  id: "2026-07-10_001"
+  date: "2026-07-10"
+  started: "2026-07-10T11:14+0200"
+  last_turn: "2026-07-10T11:14+0200"
+  turn_count: 1
+  summary: "Added a fair-density default-promotion audit, recomputed the supplied HTML benchmark artifact, and kept the pinned best default unchanged because no candidate beat quality, convergence, and speed together."
+
+events_logged:
+  - turn: 1
+    type: experiment
+    id: "N67"
+    routing: direct
+    provenance: ai-executed
+    summary: "Added paired default-promotion audit and recomputed the supplied fair benchmark; no candidate passed all promotion gates."
+
+ai_actions:
+  - turn: 1
+    action: "Implemented promotion-check summary logic, added regression coverage, updated benchmark docs and ABL-004 notes, regenerated the tracked benchmark artifact, validated, and committed."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/fair_density_control_compare.py"
+      - "tests/test_fair_density_control_compare.py"
+      - "benchmarks/README.md"
+      - "tasks/ABL-004-controls-and-full-run.md"
+      - "results/fair_gaussian_variants_20260709_best_candidates/"
+
+claims_touched: []
+
+key_context:
+  - turn: 1
+    excerpt: "User asked to follow the agentic workflow, recompute the linked `index.html` benchmark after relevant changes, update the best default only if it beats current default on convergence, performance, and quality, and commit."
+
+open_threads:
+  - "Continue iterating active tasks after this bounded ABL-004 benchmark-audit slice."
+  - "Do not promote `structsplat_best_default` from this run; future candidates must pass the paired quality/convergence/speed promotion gate."
+  - "Existing `.idea` changes are user/workspace state and remain outside the task commit."
+
+ai_suggestions_pending: []
