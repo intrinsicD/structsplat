@@ -172,6 +172,15 @@ conditions and honest controls?
   (+0.0028) while losing PSNR (-0.0201 dB) and MS-SSIM (-0.00084); final color solve improved
   quality (+0.1555 dB PSNR, +0.00084 MS-SSIM) but lost AUC (-0.0030) and speed (+0.1079 s fit).
   Keep `structsplat_best_default` unchanged.
+- 2026-07-10: Recomputed the same-hyperparameter fair Gaussian-variant benchmark with the local
+  Instant-GI hook enabled (`STRUCTSPLAT_INSTANT_GI=/home/alex/Documents/Instant-GI/quard_image.py`),
+  producing `results/fair_gaussian_variants_20260710_full_external_same_hparams/index.html` and
+  committed curated evidence under
+  `ara/evidence/fair-gaussian-variants-full-external-same-hparams-2026-07-10/`. The rerun completed
+  232/232 cells (the prior linked artifact had 224/232 because Instant-GI was unset) at the same
+  four COCO images, budget 640, max-side 160, 500 iters, seeds 0/1, exact CUDA. No default candidate
+  passed the promotion gate: tensor loss gained PSNR/AUC/speed but lost MS-SSIM, and final color
+  solve gained PSNR/MS-SSIM but lost AUC and speed. Keep `structsplat_best_default` unchanged.
 
 ## Decision-grade staged protocol
 
