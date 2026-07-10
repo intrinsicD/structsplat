@@ -1267,6 +1267,15 @@ def _write_outputs(rows: list[dict[str, Any]], outdir: Path, methods: list[str])
         )
     else:
         (outdir / "checkpoint_selection.csv").unlink(missing_ok=True)
+    checkpoint_summary = _checkpoint_selection_summary(checkpoint_audit)
+    if checkpoint_summary:
+        write_csv(
+            outdir / "checkpoint_selection_summary.csv",
+            checkpoint_summary,
+            fieldnames=list(checkpoint_summary[0]),
+        )
+    else:
+        (outdir / "checkpoint_selection_summary.csv").unlink(missing_ok=True)
     lowpass_pairs, lowpass_summary = _paired_method_audit(
         rows,
         baseline_method=BEST_CHECKPOINT_METHOD,
@@ -1723,6 +1732,9 @@ def _checkpoint_selection_audit(rows: list[dict[str, Any]]) -> list[dict[str, An
         audit.append({
             "image": row.get("image"),
             "source_path": row.get("source_path"),
+            "max_side": row.get("max_side"),
+            "height": row.get("height"),
+            "width": row.get("width"),
             "final_budget": row.get("final_budget"),
             "seed": row.get("seed"),
             "method": row.get("method"),
@@ -1749,6 +1761,91 @@ def _checkpoint_selection_audit(rows: list[dict[str, Any]]) -> list[dict[str, An
             ),
         })
     return audit
+
+
+def _checkpoint_selection_summary(
+    audit: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Image-clustered checkpoint gains, pooled and stratified by final count."""
+    if not audit:
+        return []
+    out = []
+    metrics = ("gain_psnr", "gain_ssim", "gain_ms_ssim", "gain_lpips")
+    methods = sorted({str(row["method"]) for row in audit})
+    for method_idx, method in enumerate(methods):
+        method_rows = [row for row in audit if row["method"] == method]
+        budgets = sorted({int(row["final_budget"]) for row in method_rows})
+        scopes: list[tuple[str, int | None, list[dict[str, Any]]]] = [
+            ("all", None, method_rows)
+        ]
+        scopes += [
+            (
+                "final_budget",
+                budget,
+                [row for row in method_rows if int(row["final_budget"]) == budget],
+            )
+            for budget in budgets
+        ]
+        for scope_idx, (scope, final_budget, scope_rows) in enumerate(scopes):
+            record: dict[str, Any] = {
+                "method": method,
+                "method_label": METHOD_LABELS.get(method, method),
+                "scope": scope,
+                "max_side": (
+                    next(iter({row.get("max_side") for row in scope_rows}))
+                    if len({row.get("max_side") for row in scope_rows}) == 1
+                    else None
+                ),
+                "final_budget": final_budget,
+                "runs": len(scope_rows),
+                "images": len({str(row.get("source_path")) for row in scope_rows}),
+                "earlier_selected": sum(
+                    bool(row.get("selected_from_checkpoint")) for row in scope_rows
+                ),
+            }
+            record["earlier_selected_rate"] = (
+                record["earlier_selected"] / record["runs"] if record["runs"] else None
+            )
+            for metric_idx, metric in enumerate(metrics):
+                by_image: dict[str, list[float]] = {}
+                pair_count = 0
+                for row in scope_rows:
+                    value = row.get(metric)
+                    try:
+                        finite = value is not None and math.isfinite(float(value))
+                    except (TypeError, ValueError):
+                        finite = False
+                    if not finite:
+                        continue
+                    image = str(row.get("source_path") or row.get("image") or "unknown")
+                    by_image.setdefault(image, []).append(float(value))
+                    pair_count += 1
+                image_means = [mean(values) for values in by_image.values()]
+                center, low, high = _bootstrap_mean_ci(
+                    image_means,
+                    seed=(
+                        DOMINANCE_BOOTSTRAP_SEED
+                        + 1200
+                        + method_idx * 101
+                        + scope_idx * 11
+                        + metric_idx
+                    ),
+                )
+                record[metric] = center
+                record[f"ci_low_{metric.removeprefix('gain_')}"] = low
+                record[f"ci_high_{metric.removeprefix('gain_')}"] = high
+                record[f"pairs_{metric.removeprefix('gain_')}"] = pair_count
+                record[f"images_{metric.removeprefix('gain_')}"] = len(image_means)
+            cell_psnr_gains = [
+                float(row["gain_psnr"])
+                for row in scope_rows
+                if row.get("gain_psnr") is not None
+            ]
+            record["min_cell_gain_psnr"] = (
+                min(cell_psnr_gains) if cell_psnr_gains else None
+            )
+            out.append(record)
+    return out
 
 
 def _paired_method_audit(
@@ -2094,6 +2191,11 @@ def _write_summary(rows: list[dict[str, Any]], outdir: Path, methods: list[str])
 
     checkpoint_audit = _checkpoint_selection_audit(ok)
     if checkpoint_audit:
+        checkpoint_summary = [
+            row
+            for row in _checkpoint_selection_summary(checkpoint_audit)
+            if row["scope"] == "all"
+        ]
         lines += [
             "",
             "## Within-Trajectory Checkpoint Audit",
@@ -2102,20 +2204,21 @@ def _write_summary(rows: list[dict[str, Any]], outdir: Path, methods: list[str])
             "have the terminal Gaussian count. Positive means the selected state is better, "
             "including LPIPS (positive means lower). This avoids attributing independent CUDA "
             "trajectory divergence to checkpoint selection. Per-cell values are in "
-            "`checkpoint_selection.csv`.",
+            "`checkpoint_selection.csv`; image-clustered pooled/by-budget rows are in "
+            "`checkpoint_selection_summary.csv`.",
             "",
-            "| Method | Runs | Earlier states selected | PSNR gain | SSIM gain | MS-SSIM gain | LPIPS gain |",
+            "| Method | Runs / images | Earlier states selected | PSNR gain [95% CI] | SSIM gain [95% CI] | MS-SSIM gain [95% CI] | LPIPS gain [95% CI] |",
             "|---|---:|---:|---:|---:|---:|---:|",
         ]
-        for method in sorted({str(row["method"]) for row in checkpoint_audit}):
-            method_rows = [row for row in checkpoint_audit if row["method"] == method]
-            selected = sum(bool(row["selected_from_checkpoint"]) for row in method_rows)
+        for summary_row in checkpoint_summary:
             lines.append(
-                f"| {_label(method)} | {len(method_rows)} | {selected} | "
-                f"{_fmt(_mean_or_none([r['gain_psnr'] for r in method_rows]), 4)} | "
-                f"{_fmt(_mean_or_none([r['gain_ssim'] for r in method_rows]), 5)} | "
-                f"{_fmt(_mean_or_none([r['gain_ms_ssim'] for r in method_rows]), 5)} | "
-                f"{_fmt(_mean_or_none([r['gain_lpips'] for r in method_rows]), 4)} |"
+                f"| {_label(summary_row['method'])} | "
+                f"{summary_row['runs']} / {summary_row['images']} | "
+                f"{summary_row['earlier_selected']} | "
+                f"{_fmt_gain_ci(summary_row, 'psnr', 4)} | "
+                f"{_fmt_gain_ci(summary_row, 'ssim', 5)} | "
+                f"{_fmt_gain_ci(summary_row, 'ms_ssim', 5)} | "
+                f"{_fmt_gain_ci(summary_row, 'lpips', 4)} |"
             )
 
     _lowpass_pairs, lowpass_summary = _paired_method_audit(
@@ -2631,7 +2734,10 @@ def _write_index(outdir: Path, methods: list[str]) -> None:
         if (outdir / name).exists():
             file_links.append(f'<a href="{name}">{name}</a>')
     if (outdir / "checkpoint_selection.csv").exists():
-        file_links.append('<a href="checkpoint_selection.csv">checkpoint_selection.csv</a>')
+        file_links += [
+            '<a href="checkpoint_selection.csv">checkpoint_selection.csv</a>',
+            '<a href="checkpoint_selection_summary.csv">checkpoint_selection_summary.csv</a>',
+        ]
     if (outdir / "lowpass_vs_checkpoint.csv").exists():
         file_links += [
             '<a href="lowpass_vs_checkpoint.csv">lowpass_vs_checkpoint.csv</a>',

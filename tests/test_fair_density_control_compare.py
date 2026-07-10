@@ -320,6 +320,16 @@ def test_checkpoint_audit_is_same_trajectory_and_same_count():
     assert audit[0]["gain_psnr"] == 1.0
     assert audit[0]["gain_ms_ssim"] == pytest.approx(0.02)
     assert audit[0]["gain_lpips"] == pytest.approx(0.05)
+    summary = F._checkpoint_selection_summary(audit)
+    assert len(summary) == 2
+    assert summary[0]["scope"] == "all"
+    assert summary[0]["runs"] == 1
+    assert summary[0]["images"] == 1
+    assert summary[0]["earlier_selected"] == 1
+    assert summary[0]["gain_psnr"] == 1.0
+    assert summary[0]["ci_low_psnr"] == 1.0
+    assert summary[1]["scope"] == "final_budget"
+    assert summary[1]["final_budget"] == 640
 
     row["selected_n_gaussians"] = 639
     assert F._checkpoint_selection_audit([row]) == []
@@ -551,6 +561,7 @@ def test_write_outputs_compacts_resume_journal_to_selected_rows(tmp_path: Path, 
     )
     optional_outputs = (
         "checkpoint_selection.csv",
+        "checkpoint_selection_summary.csv",
         "lowpass_vs_checkpoint.csv",
         "lowpass_vs_checkpoint_summary.csv",
     )

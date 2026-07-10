@@ -168,7 +168,13 @@ attribution from nondeterministic CUDA trajectories. On COCO4 x seeds 0/1, N=640
 policy selected earlier states in 7/8 runs and gained +0.7702 dB PSNR, +0.00892 MS-SSIM, and
 +0.0076 LPIPS on average. At 500 steps it selected an earlier state only once, for a negligible
 +0.0066 dB mean PSNR gain with small SSIM/LPIPS tradeoffs. It is therefore a long-horizon quality
-option, not the pinned general default.
+option, not the pinned general default. A broader 72-trajectory Kodak4 confirmation at max-side
+{160,240,320}, N={1280,2560,5120}, and seeds {0,1} gained +0.4884 dB pooled PSNR (95% image-
+bootstrap CI [+0.4167,+0.5304]), +0.00433 MS-SSIM, and +0.00736 LPIPS. The gain falls from
++1.0380 dB at N=1280 to +0.0458 dB at N=5120, with saturated strata often retaining the terminal
+state. Use the policy for sparse/moderate-density long fits; keep the compute-minimal terminal
+policy as the universal default. New runs also write `checkpoint_selection_summary.csv` with
+image-clustered pooled and per-budget intervals.
 
 FIT-016 keeps the low-pass image strictly inside the differentiable pixel/SSIM objective. All
 reported metrics, target hits, early stopping, checkpoint scores, and residual/tensor growth use
