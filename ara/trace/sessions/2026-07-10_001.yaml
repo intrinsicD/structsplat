@@ -2,9 +2,9 @@ session:
   id: "2026-07-10_001"
   date: "2026-07-10"
   started: "2026-07-10T11:14+0200"
-  last_turn: "2026-07-10T18:29+0200"
-  turn_count: 13
-  summary: "Hardened fair/native auditing; confirmed checkpoint selection as density-dependent long-fit protection; rejected the low-pass loss curriculum; audited GaussianImage release/QAT rate semantics; kept the compute-minimal terminal default; and preserved native claim boundaries."
+  last_turn: "2026-07-10T18:52+0200"
+  turn_count: 14
+  summary: "Hardened fair/native auditing; confirmed density-dependent checkpoint protection; rejected the low-pass curriculum; audited GaussianImage QAT/rate semantics; kept the terminal default; and identified that completed bounded results are not yet unified or fully native-complete in HTML."
 
 events_logged:
   - turn: 1
@@ -301,6 +301,18 @@ events_logged:
     routing: crystallized
     provenance: ai-suggested
     summary: "Crystallized GaussianImage's no-EC analytical-rate and live-decoder-state boundary as C23 via artifact commitment."
+  - turn: 14
+    type: experiment
+    id: "N98"
+    routing: direct
+    provenance: ai-executed
+    summary: "Audited completed-cell counts and HTML visibility; bounded FIT runs are complete, but pooled/native evidence is fragmented and no master index exists."
+  - turn: 14
+    type: observation
+    id: "O47"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged the constraint that completed bounded benchmark evidence is not yet a unified or fully native-complete user-facing HTML report."
 
 ai_actions:
   - turn: 1
@@ -456,6 +468,15 @@ ai_actions:
       - "ara/evidence/fit015-checkpoint-broad-2026-07-10/"
       - "ara/evidence/fit016-lowpass-curriculum-2026-07-10/"
       - "ara/evidence/bench005-gaussianimage-release-rd-audit-2026-07-10/"
+  - turn: 14
+    action: "Read-only audited FIT-015/FIT-016/fair/native result directories, verified completed-cell counts and HTML links, separated bounded-complete from still-open native coverage, and recorded the missing unified-report constraint."
+    provenance: ai-executed
+    files_changed:
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/sessions/2026-07-10_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
 
 claims_touched:
   - id: C12
@@ -522,6 +543,8 @@ key_context:
     excerpt: "The supplied review motivated a correctness-safe long-horizon endpoint policy and official-environment Image-GS/GaussianImage reruns while preserving the conclusion that no method is universally dominant."
   - turn: 13
     excerpt: "After the prior Codex session was terminated, the user asked to continue the recovered objective: improve StructSplat, test ideas thoroughly, and adapt reference-repository benchmarks without losing the existing workspace state."
+  - turn: 14
+    excerpt: "User asked whether all tests, budget/convergence benchmarks, and results were complete and visible in index.html."
 
 open_threads:
   - "Continue iterating active tasks after this bounded ABL-004 benchmark-audit slice."
@@ -540,5 +563,7 @@ open_threads:
   - "Do not promote persistent generation-density covariance filtering; only revisit a released/materialized coarse-to-fine schedule if a new proxy hypothesis justifies it."
   - "Use FIT-015 checkpoint selection for sparse/moderate-density long fits; only reconsider universal promotion after broader image coverage or a preregistered density/perceptual rule clears every stratum."
   - "Implement the one-cell `release_kodak_cholesky_qat_woec` cold-reload/decode/rate validation before expanding GaussianImage to Kodak24 x six counts."
+  - "Create a root benchmark index that unifies FIT-015 pooled confidence intervals, FIT-016 rejection, matched-policy evidence, native-reference summaries, cell-completeness status, and explicit open gaps."
 
-ai_suggestions_pending: []
+ai_suggestions_pending:
+  - "Resolve O47 by building a unified results index without presenting intentionally gated or still-open native tracks as completed evidence."

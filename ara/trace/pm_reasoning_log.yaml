@@ -341,3 +341,9 @@ entries:
       - "Staged then crystallized O44->C21, O45->C22, and O46->C23 via artifact commitment because tasks, benchmark docs, default choices, and newly curated evidence now depend on these bounded conclusions."
       - "Found no contradiction with C18 or C20: C22 confirms and narrows the checkpoint recommendation by density, while C23 narrows the still-open GaussianImage codec/RD scope without changing the earlier 5k representation tradeoff."
       - "Preserved user/workspace `.idea` state outside every task commit and closed the recovered continuation only after full-suite and independent audit evidence."
+  - turn: "2026-07-10_001#14"
+    notes:
+      - "Routed the report audit as N98 because it checked concrete cell counts, report contents, link integrity, and task status without executing or mutating scientific runs."
+      - "Staged O47 as a constraint rather than crystallizing it: the fragmented/missing master-index state is verified, but no reporting artifact has yet committed to the unified remedy."
+      - "Kept intentionally gated FIT-016 5k/Kodak work distinct from missing work; its absence is a valid preregistered stop, whereas BENCH-005 native-authentic multi-budget/RD coverage remains genuinely open."
+      - "Added a master results index as an open thread so later work cannot answer the user's visibility question from scattered per-run pages alone."

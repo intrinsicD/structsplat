@@ -2133,3 +2133,27 @@ tree:
       - "benchmarks/README.md"
     also_depends_on: [N90, N91]
     status: resolved
+  - id: N98
+    type: experiment
+    title: "Benchmark HTML completeness and visibility audit"
+    provenance: ai-executed
+    timestamp: "2026-07-10T18:52+0200"
+    result: >
+      Audited completed cells, report sections, and every link in the current FIT-015, FIT-016,
+      matched-policy, and native-reference HTML artifacts. FIT-015 is complete for its bounded
+      72-cell matrix and its three per-resolution pages expose budget, convergence, target-hit,
+      timing, and visual plots, but the pooled cross-resolution result is not in a unified HTML.
+      FIT-016 is complete for its 16-cell preregistered guard; later stages were correctly gated
+      off. The 232-cell analogue benchmark is complete only at N=640/500 steps. Native Image-GS
+      and GI++ pages are link-only, base GaussianImage has no index.html, and BENCH-005 remains
+      partial pending native-resolution/multi-budget/50k-QAT/RD/Instant-GI work. No root
+      `results/index.html` exists. All links in existing audited HTML pages resolve.
+    evidence:
+      - "results/fit015_checkpoint_kodak4_r160_5000/index.html"
+      - "results/fit015_checkpoint_kodak4_r240_5000/index.html"
+      - "results/fit015_checkpoint_kodak4_r320_5000/index.html"
+      - "results/fit016_lowpass_coco4_500/index.html"
+      - "results/fair_gaussian_variants_20260710_full_external_same_hparams/index.html"
+      - "tasks/BENCH-005-native-reference-pipelines.md"
+    also_depends_on: [N73, N89, N90, N92, N95]
+    status: resolved

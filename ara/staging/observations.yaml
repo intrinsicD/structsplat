@@ -505,3 +505,14 @@ observations:
     promoted_to: "logic/claims.md:C23"
     crystallized_via: artifact-commitment
     stale: false
+  - id: O47
+    timestamp: "2026-07-10T18:52+0200"
+    provenance: ai-suggested
+    content: "Completed bounded benchmark cells are not yet equivalent to a complete user-facing report: current evidence is fragmented across multiple per-run HTML files, the pooled FIT-015 conclusion is absent from HTML, base GaussianImage lacks index.html, and BENCH-005's native-authentic multi-budget/RD tracks remain open."
+    context: "The user asked whether all tests, budget/convergence benchmarks, and results were complete and visible in index.html. A read-only audit verified cell counts and links, then found no root results index and several visibility/coverage gaps."
+    potential_type: constraint
+    bound_to: [N98]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
