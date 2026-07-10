@@ -1592,3 +1592,32 @@ tree:
       - "commit 1f95233"
     also_depends_on: [N71]
     status: resolved
+  - id: N73
+    type: experiment
+    title: "Same-hyperparameter fair benchmark with Instant-GI"
+    provenance: ai-executed
+    timestamp: "2026-07-10T13:12+0200"
+    result: >
+      Recomputed the linked fair Gaussian-variant benchmark with the same
+      hyperparameters as `results/fair_gaussian_variants_20260709_best_candidates/`:
+      four pinned COCO images, budget 640, max-side 160, 500 iterations,
+      seeds 0 and 1, exact CUDA, and L1 + 0.3 SSIM. Enabled the local
+      Instant-GI hook at `/home/alex/Documents/Instant-GI/quard_image.py`,
+      turning the previous 224/232 run into a complete 232/232 successful
+      run with eight Instant-GI quadtree rows. The GaussianImage,
+      GaussianImage++, and Image-GS rows remain matched-policy analogues under
+      the fair harness; native repo probe notes document why native pipelines
+      were not mixed into this promotion artifact. No equal-budget candidate
+      passed the default-promotion gate: tensor loss improved PSNR/AUC/speed
+      but lost MS-SSIM, while final color solve improved PSNR/MS-SSIM but lost
+      AUC and speed. `structsplat_best_default` remains unchanged.
+    evidence:
+      - "ara/evidence/fair-gaussian-variants-full-external-same-hparams-2026-07-10/run.md"
+      - "ara/evidence/fair-gaussian-variants-full-external-same-hparams-2026-07-10/index.html"
+      - "ara/evidence/fair-gaussian-variants-full-external-same-hparams-2026-07-10/summary.md"
+      - "ara/evidence/fair-gaussian-variants-full-external-same-hparams-2026-07-10/native_repo_probe.md"
+      - "results/fair_gaussian_variants_20260710_full_external_same_hparams/index.html"
+      - "commit 86115d5"
+      - "commit 95f69b7"
+    also_depends_on: [N67]
+    status: resolved
