@@ -138,7 +138,7 @@ growth, 5 growth waves, and `L1 + 0.3 SSIM`. Keep this row in default comparison
 the current best-known StructSplat reference even when global CLI loss or growth options change.
 Additional default candidate rows explore lower/no SSIM, Charbonnier, tensor-weighted loss, final
 color solve, split relocation, LR stabilization, same-final-count checkpoint selection, and
-adaptive extra capacity (`1.5x` cap) for reducing absolute diff. The experimental
+adaptive growth (up to a `1.5x` cap in ordinary lanes) for reducing absolute diff. The experimental
 `structsplat_best_checkpoint_lowpass2x_f10` arm adds frequency-ordered supervision to the
 checkpoint control: it trains against a 2x area-lowpass target initially and cosine-blends to the
 full target by 10% of the global horizon.
@@ -159,10 +159,37 @@ source fingerprint while excluding execution-only sharding controls. Summaries a
 are compacted to current rows so stale reruns cannot be cross-paired or attributed to the newly
 written `config.json`.
 
+`storage_budget_compare.py` is the frozen equal-capacity/convergence lane. It interprets 168 KiB
+as exactly 172,032 bytes and counts the common frozen constant-RGB RS payload only: mean x/y,
+log-scale x/y, rotation, and RGB, all float32. That is 32 bytes/Gaussian and exactly 5,376
+Gaussians. Source file bytes, prepared-target PNG bytes, reconstruction PNG bytes, decoded float32
+array bytes, and actual SSPL1 stream bytes are distinct columns; none is silently substituted for
+the analytical payload. The lane runs the explicit 41-method registry snapshot on COCO4 x seeds
+{0,1}, max-side 160, with a 10k ceiling. All scheduled growth finishes before the 6,500-iteration
+plateau gate; six consecutive 100-step evaluations without a 0.005 dB gain stop a run. The scored
+reconstruction is the convergence endpoint, including checkpoint selection and final color solve,
+and early exits hold that endpoint to the nominal AUC horizon. Max-horizon cells are reported as
+right-censored. Instant-GI's native under-allocation is filled with deterministic random target
+samples while preserving native/fill counts; the adaptive arm stops adaptive additions at the
+exact cap, finishes scheduled fill, and continues optimization. This remains a local analogue
+comparison, not a native-codec byte match.
+
+```
+LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 \
+  STRUCTSPLAT_INSTANT_GI=/path/to/Instant-GI/quard_image.py \
+  python -m benchmarks.storage_budget_compare
+```
+
+Each run writes per-image byte/metric tables and its own `index.html`, then
+`results_index.py` builds a portable `results/index.html` from an explicit report list. The root
+dashboard never scans `results/` or silently promotes stale directories.
+
 `structsplat_best_checkpoint` sets `checkpoint_policy=best_psnr_final_count`. Checkpoint scoring is
 post-transition (after the optimizer step and any prune/grow/relocate/on-split solve), and only a
-state with the terminal Gaussian count may be restored. The legacy pre-step convergence history,
-AUC, iteration count, and fit timing remain intact. `checkpoint_selection.csv` is the causal audit:
+state with the terminal Gaussian count may be restored. The fitter retains its pre-step training
+history; fair reports replace only the final convergence sample with the scored reconstruction so
+AUC/plots agree with the selected output. Iteration count and fit timing remain intact.
+`checkpoint_selection.csv` is the causal audit:
 it compares selected and terminal states from the same trajectory/count, avoiding false
 attribution from nondeterministic CUDA trajectories. On COCO4 x seeds 0/1, N=640, 5k steps, this
 policy selected earlier states in 7/8 runs and gained +0.7702 dB PSNR, +0.00892 MS-SSIM, and

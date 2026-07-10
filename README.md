@@ -137,6 +137,10 @@ density concentration, WSE exact-count + blue-noise spacing + density adaptivity
 anisotropy metric, and the conic inverse-covariance + render compositing formulas (NumPy mirror).
 The PyTorch modules compile and are covered by tests that run once `torch` is installed
 (`pytest -q`); run the smoke test locally to confirm the fit loop end-to-end on your hardware.
+The fixed-storage benchmark writes per-image byte sizes, 5,376-Gaussian quality/convergence
+metrics, cold-decode codec metrics, and explicit completeness into
+`results/storage_budget_168k_all_methods/index.html`; the portable multi-report entry point is
+`results/index.html`.
 
 **Reproducibility caveat.** Every benchmark writes a `config.json` (resolved args + device +
 torch/numpy/structsplat versions + repository commit/dirty diff fingerprint) so a run is

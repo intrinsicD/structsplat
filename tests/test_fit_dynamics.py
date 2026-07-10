@@ -984,6 +984,32 @@ def test_adaptive_count_stops_at_max_gaussians():
 
     assert out["adaptive_stop_reason"] == "max_gaussians_reached"
     assert out["n_gaussians"] == 8
+    assert out["iterations_run"] == 1
+
+
+def test_adaptive_count_can_freeze_capacity_and_continue_optimization():
+    _img, target, field = _adaptive_fixture(8)
+    out = fit(
+        field,
+        target,
+        FitConfig(
+            iters=5,
+            log_every=1,
+            target_psnr=99.0,
+            adaptive_count=True,
+            adaptive_continue_after_stop=True,
+            max_gaussians=8,
+            adaptive_growth_every=1,
+            adaptive_growth_count=4,
+            ssim_weight=0.0,
+        ),
+        verbose=False,
+    )
+
+    assert out["adaptive_stop_reason"] == "max_gaussians_reached"
+    assert out["n_gaussians"] == 8
+    assert out["iterations_run"] == 5
+    assert len(out["history"]["adaptive_events"]) == 1
 
 
 def test_adaptive_count_stops_at_target_bpp_cap():
@@ -1840,6 +1866,32 @@ def test_fit_relocation_can_follow_split_schedule():
     assert all(e["trigger"] == "split" for e in events)
     assert all(e["residual_downsample"] == 2.0 for e in events)
     assert out["n_gaussians"] == 14
+
+
+def test_split_scheduled_relocation_can_stop_after_reaching_cap():
+    img = np.zeros((16, 16, 3), np.float32)
+    img[:, 8:] = 1.0
+    target = torch.as_tensor(img)
+    field = _init.build_field(img, InitConfig(strategy="random", num_gaussians=10, seed=0))
+    out = fit(
+        field,
+        target,
+        FitConfig(
+            iters=8,
+            log_every=1,
+            split_every=2,
+            split_count=2,
+            split_mode="residual_add",
+            split_schedule_stops_at_max=True,
+            max_gaussians=14,
+            relocate_at_split=True,
+            relocate_count=1,
+        ),
+        verbose=False,
+    )
+
+    assert out["n_gaussians"] == 14
+    assert [event["iter"] for event in out["history"]["relocate_events"]] == [1, 3]
 
 
 def test_zero_opacity_gaussian_is_pruned():

@@ -2039,6 +2039,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
     adaptive_prev_psnr: float | None = None
     adaptive_stale_waves = 0
     adaptive_stop = None
+    adaptive_finished = False
     last_iter = -1
 
     for it in range(cfg.iters):
@@ -2111,7 +2112,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         last_it = it == cfg.iters - 1
         log_now = it % cfg.log_every == 0 or it == cfg.iters - 1
         adaptive_due = (
-            cfg.adaptive_count and not last_it
+            cfg.adaptive_count and not adaptive_finished and not last_it
             and (it + 1) % int(cfg.adaptive_growth_every) == 0
         )
         with torch.no_grad():
@@ -2154,7 +2155,12 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         # never restructure on the final iteration: the returned field/metrics would include
         # Gaussians that no optimizer step ever touched
         split_due = (not last_it and cfg.split_every is not None and cfg.split_every > 0
-                     and cfg.split_count > 0 and (it + 1) % cfg.split_every == 0)
+                     and cfg.split_count > 0 and (it + 1) % cfg.split_every == 0
+                     and not (
+                         cfg.split_schedule_stops_at_max
+                         and cfg.max_gaussians is not None
+                         and field.n >= cfg.max_gaussians
+                     ))
         relocate_periodic_due = (
             not last_it and cfg.relocate_every is not None and cfg.relocate_every > 0
             and (it + 1) % cfg.relocate_every == 0
@@ -2305,7 +2311,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             if reason is not None:
                 adaptive_stop = reason
                 hist["adaptive_events"].append({**event, "action": "stop", "reason": reason})
-                adaptive_should_stop = True
+                adaptive_finished = True
+                adaptive_should_stop = not cfg.adaptive_continue_after_stop
                 if verbose:
                     print(f"  adaptive stop {reason} at {field.n} gaussians")
             else:
@@ -2317,7 +2324,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                     hist["adaptive_events"].append(
                         {**event, "action": "stop", "reason": adaptive_stop}
                     )
-                    adaptive_should_stop = True
+                    adaptive_finished = True
+                    adaptive_should_stop = not cfg.adaptive_continue_after_stop
                 else:
                     if adaptive_added > 0:
                         new_parent_idx_parts.append(

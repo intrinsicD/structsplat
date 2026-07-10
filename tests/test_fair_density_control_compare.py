@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -38,6 +39,29 @@ def test_growth_fit_cfg_reaches_final_cap_with_shared_schedule():
     assert cfg.split_mode == "residual_add"
     assert cfg.split_every == 20
     assert cfg.split_count == 125
+
+
+def test_fixed_storage_growth_finishes_before_convergence_gate() -> None:
+    base = FitConfig(
+        iters=10_000,
+        early_stop_patience=6,
+        early_stop_min_iters=6_500,
+        loss_target_downsample=2,
+        loss_target_full_frac=0.1,
+    )
+    growth = F._growth_fit_cfg(
+        base,
+        final_budget=5_376,
+        start_budget=2_688,
+        split_mode="residual_tensor_add",
+        growth_waves=5,
+    )
+    storage = F._storage_growth_fit_cfg(growth, 5, enabled=True)
+
+    assert storage.split_every == 1_083
+    assert storage.split_schedule_stops_at_max is True
+    assert storage.split_every - 1 >= 1_000
+    assert storage.split_every * 5 - 1 < storage.early_stop_min_iters
 
 
 def test_best_default_is_first_default_and_pinned(tmp_path: Path):
@@ -202,6 +226,16 @@ def test_best_diff_reduction_variants_apply_fit_overrides(tmp_path: Path):
     assert cfg.adaptive_count is True
     assert cfg.max_gaussians == 304
     assert meta["variant_overrides"]["adaptive_cap_multiplier"] == F.ADAPTIVE_EXTRA_CAP_MULT
+
+    storage_cfg, storage_meta = F._apply_method_fit_overrides(
+        "structsplat_best_adaptive_1p5x",
+        F._growth_fit_cfg(base, 5_376, 2_688, "residual_tensor_add", 5),
+        5_376,
+        storage_gaussian_cap=5_376,
+    )
+    assert storage_cfg.max_gaussians == 5_376
+    assert storage_cfg.adaptive_continue_after_stop is True
+    assert storage_meta["adaptive_cap_multiplier"] == 1.0
 
 
 def test_lowpass_candidate_differs_from_checkpoint_control_in_exactly_two_fields(tmp_path):
@@ -570,6 +604,7 @@ def test_write_outputs_compacts_resume_journal_to_selected_rows(tmp_path: Path, 
     for name in (
         "write_json",
         "write_csv",
+        "_write_storage_tables",
         "_write_default_dominance",
         "_write_convergence_tables",
         "_write_summary",
@@ -587,6 +622,51 @@ def test_write_outputs_compacts_resume_journal_to_selected_rows(tmp_path: Path, 
     ]
     assert compacted == [current]
     assert all(not (tmp_path / name).exists() for name in optional_outputs)
+
+
+def test_cached_row_rejects_same_size_reconstruction_corruption(tmp_path: Path) -> None:
+    source = tmp_path / "source.jpg"
+    target = tmp_path / "target.png"
+    recon = tmp_path / "recon.png"
+    source.write_bytes(b"source")
+    target.write_bytes(b"target")
+    recon.write_bytes(b"before")
+    row = {
+        "source_path": str(source),
+        "source_file_bytes": source.stat().st_size,
+        "source_sha256": F._file_sha256(source),
+        "target_path": str(target),
+        "target_file_bytes": target.stat().st_size,
+        "target_file_sha256": F._file_sha256(target),
+        "reconstruction_path": str(recon),
+        "reconstruction_file_bytes": recon.stat().st_size,
+        "reconstruction_sha256": F._file_sha256(recon),
+    }
+    assert F._cached_row_artifacts_valid(row)
+
+    recon.write_bytes(b"after!")
+    assert recon.stat().st_size == row["reconstruction_file_bytes"]
+    assert not F._cached_row_artifacts_valid(row)
+
+
+def test_output_aligned_history_uses_scored_reconstruction_endpoint() -> None:
+    history, previous = F._output_aligned_history(
+        {
+            "iter": [0, 9],
+            "psnr": [20.0, 25.0],
+            "elapsed": [0.1, 1.0],
+            "n_gaussians": [50, 100],
+        },
+        terminal_iter=9,
+        terminal_psnr=30.0,
+        terminal_elapsed=1.2,
+        terminal_gaussians=100,
+    )
+
+    assert previous == 25.0
+    assert history["iter"] == [0, 9]
+    assert history["psnr"] == [20.0, 30.0]
+    assert history["elapsed"][-1] == 1.2
 
 
 def test_repo_growth_methods_honor_non_half_start_budget(tmp_path: Path):
@@ -613,6 +693,45 @@ def test_repo_growth_methods_honor_non_half_start_budget(tmp_path: Path):
         assert actual_start == start_budget
         assert meta["init_config"]["num_gaussians"] == start_budget
         assert cfg.split_count == 35
+
+
+def test_storage_lane_pads_instant_gi_underfill_to_exact_count(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    img = np.full((16, 16, 3), 0.5, dtype=np.float32)
+    image_path = tmp_path / "target.png"
+    Image.fromarray((img * 255).astype(np.uint8), mode="RGB").save(image_path)
+    native = F.build_field(
+        img,
+        F.InitConfig(strategy="random", num_gaussians=12, seed=4),
+        StructureTensorConfig(),
+        device="cpu",
+    )
+
+    def fake_analogue(*args, **kwargs):
+        return native, FitConfig(iters=5), 0.1, native.n
+
+    monkeypatch.setattr(F, "build_comparison_analogue", fake_analogue)
+    field, _cfg, _seconds, actual_start, meta = F._build_method(
+        method="instant_gi_quadtree_fixed",
+        img=img,
+        image_path=image_path,
+        final_budget=20,
+        start_budget=10,
+        seed=3,
+        base_fit=FitConfig(iters=5),
+        scfg=StructureTensorConfig(),
+        growth_waves=4,
+        device="cpu",
+        storage_gaussian_cap=20,
+    )
+
+    assert field.n == 20
+    assert actual_start == 20
+    assert meta["instant_gi_native_gaussians"] == 12
+    assert meta["storage_fill_gaussians"] == 8
+    assert meta["storage_fill_rule"] == "seeded_random_target_samples"
 
 
 def test_relocation_method_uses_split_scheduled_coarse_residual(tmp_path: Path):
@@ -785,6 +904,176 @@ def test_write_convergence_tables_from_histories(tmp_path: Path):
     assert "target_psnr" in targets
     assert "gaussianimage_plus_residual" in targets
     assert ",24.0,1,0," in targets
+
+
+def test_convergence_table_holds_early_terminal_values_to_nominal_horizon(
+    tmp_path: Path,
+):
+    method = "gaussianimage_fixed_full"
+    rows = [
+        {
+            "status": "ok",
+            "final_budget": 100,
+            "method": method,
+            "iters": 300,
+            "history": {"iter": [0, 100], "psnr": [20.0, 30.0]},
+            "iters_to_targets": {},
+        },
+        {
+            "status": "ok",
+            "final_budget": 100,
+            "method": method,
+            "iters": 300,
+            "history": {"iter": [0, 100, 200], "psnr": [22.0, 32.0, 34.0]},
+            "iters_to_targets": {},
+        },
+    ]
+
+    F._write_convergence_tables(rows, tmp_path, [method])
+    with (tmp_path / "convergence_curves.csv").open(newline="", encoding="utf-8") as stream:
+        curves = list(csv.DictReader(stream))
+
+    terminal = next(row for row in curves if int(row["iter"]) == 299)
+    assert float(terminal["mean_psnr"]) == 32.0
+    assert int(terminal["runs"]) == 2
+    assert int(terminal["active_runs"]) == 0
+    assert int(terminal["carried_runs"]) == 2
+
+
+def test_storage_underfill_is_excluded_from_equal_capacity_ranking() -> None:
+    rows = [
+        {
+            "status": "ok",
+            "method": "instant_gi_quadtree_fixed",
+            "final_budget": 5_376,
+            "n_gaussians": 4_000,
+            "storage_budget_bytes": 172_032,
+            "storage_exact_budget": False,
+        }
+    ]
+
+    mismatched = F._over_budget_methods(rows, ["instant_gi_quadtree_fixed"])
+    assert mismatched == {"instant_gi_quadtree_fixed"}
+
+
+def test_storage_tables_and_index_expose_unambiguous_image_bytes(tmp_path: Path) -> None:
+    method = "gaussianimage_fixed_full"
+    row = {
+        "status": "ok",
+        "image": "source_deadbeef",
+        "image_stem": "source",
+        "source_path": "/data/source.jpg",
+        "source_width": 640,
+        "source_height": 480,
+        "width": 160,
+        "height": 120,
+        "source_file_bytes": 224_297,
+        "benchmark_rgb8_payload_bytes": 57_600,
+        "benchmark_array_bytes": 230_400,
+        "target_file_bytes": 43_026,
+        "storage_budget_bytes": 172_032,
+        "storage_gaussian_cap": 5_376,
+        "storage_bytes_per_gaussian": 32,
+        "storage_accounting": "float32_constant_rgb_rs_payload_v1",
+        "method": method,
+        "method_label": F.METHOD_LABELS[method],
+        "seed": 0,
+        "iterations_run": 4_900,
+        "convergence_stop_reason": "psnr_plateau",
+        "stopped_early": True,
+        "start_gaussians": 5_376,
+        "n_gaussians": 5_376,
+        "storage_budget_status": "exact",
+        "storage_exact_budget": True,
+        "representation_payload_bytes": 172_032,
+        "actual_codec_bytes": 54_321,
+        "reconstruction_file_bytes": 51_234,
+        "psnr": 31.25,
+        "ssim": 0.91,
+        "ms_ssim": 0.95,
+        "lpips": 0.12,
+        "auc_psnr": 29.5,
+        "fit_seconds": 10.0,
+        "total_seconds": 10.2,
+        "codec_psnr": 30.8,
+        "codec_ms_ssim": 0.94,
+        "actual_codec_bpp": 2.0,
+    }
+    (tmp_path / "plots").mkdir()
+    (tmp_path / "grids" / "by_image").mkdir(parents=True)
+    (tmp_path / "grids" / "by_budget").mkdir(parents=True)
+    failed_method = "gaussianimage_plus_residual"
+    failed = {
+        **{
+            key: row[key]
+            for key in (
+                "image",
+                "image_stem",
+                "source_path",
+                "source_width",
+                "source_height",
+                "width",
+                "height",
+                "source_file_bytes",
+                "target_file_bytes",
+                "benchmark_rgb8_payload_bytes",
+                "benchmark_array_bytes",
+                "storage_budget_bytes",
+                "storage_gaussian_cap",
+                "storage_bytes_per_gaussian",
+                "storage_accounting",
+            )
+        },
+        "status": "error",
+        "method": failed_method,
+        "seed": 0,
+        "error": "RuntimeError: boom",
+    }
+
+    methods = [method, failed_method]
+    F._write_storage_tables([row, failed], tmp_path, methods)
+    F._write_index(tmp_path, methods, rows=[row, failed])
+
+    image_csv = (tmp_path / "image_storage.csv").read_text(encoding="utf-8")
+    metrics_csv = (tmp_path / "image_metrics.csv").read_text(encoding="utf-8")
+    html = (tmp_path / "index.html").read_text(encoding="utf-8")
+    assert "source_file_bytes" in image_csv
+    assert "224297" in image_csv
+    assert "source_path" in metrics_csv
+    assert "representation_payload_bytes" in metrics_csv
+    assert "actual_codec_bytes" in metrics_csv
+    assert "172,032 bytes = 168 KiB" in html
+    assert "224,297" in html
+    assert "230,400" in html
+    assert "54,321" in html
+    assert "Failed cells" in html
+    assert "RuntimeError: boom" in html
+
+
+def test_zero_success_output_writers_remove_stale_derived_evidence(tmp_path: Path) -> None:
+    for name in ("image_metrics.csv", "convergence_curves.csv", "target_hit_rates.csv"):
+        (tmp_path / name).write_text("stale\n", encoding="utf-8")
+    for directory in (tmp_path / "plots", tmp_path / "grids", tmp_path / "diffs"):
+        directory.mkdir(parents=True)
+        (directory / "stale.png").write_bytes(b"stale")
+    error = {
+        "status": "error",
+        "image": "source_deadbeef",
+        "source_path": "/data/source.jpg",
+        "method": "gaussianimage_fixed_full",
+    }
+
+    F._write_storage_tables([error], tmp_path, ["gaussianimage_fixed_full"])
+    F._write_convergence_tables([error], tmp_path, ["gaussianimage_fixed_full"])
+    F._write_plots([error], tmp_path, ["gaussianimage_fixed_full"])
+    F._write_grids([error], tmp_path, ["gaussianimage_fixed_full"])
+
+    assert not (tmp_path / "image_metrics.csv").exists()
+    assert not (tmp_path / "convergence_curves.csv").exists()
+    assert not (tmp_path / "target_hit_rates.csv").exists()
+    assert not (tmp_path / "plots").exists()
+    assert not (tmp_path / "grids").exists()
+    assert not (tmp_path / "diffs").exists()
 
 
 def test_summary_headline_targets_are_bench004_set(tmp_path: Path):

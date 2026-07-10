@@ -253,6 +253,7 @@ class FitConfig:
     split_scale: float = 0.7
     split_oversample: float = 1.0       # residual_add candidate multiplier before spacing NMS
     split_min_spacing: float = 0.0      # residual_add NMS radius = this * base densify scale
+    split_schedule_stops_at_max: bool = False  # suppress later split-triggered side effects at cap
     split_color_init: str = "target"    # target or residual; additive renderers force residual
     seed_new_row_optimizer_state: bool = False  # seed split children from parent/median moments
     new_row_temper_iters: int = 0        # post-insert update ramp length; 0 disables
@@ -276,6 +277,7 @@ class FitConfig:
     adaptive_split_mode: str = "residual_tensor_add"
     adaptive_min_delta_psnr: float = 0.02  # min gain between adaptive checks to keep growing
     adaptive_patience: int = 2             # stale adaptive checks before stopping
+    adaptive_continue_after_stop: bool = False  # freeze N and optimize after adaptive criterion
     early_stop_patience: int | None = None  # logged evals without improvement; None disables
     early_stop_min_delta: float = 0.0       # PSNR improvement required to reset patience
     early_stop_min_iters: int = 0           # do not early-stop before this iteration
