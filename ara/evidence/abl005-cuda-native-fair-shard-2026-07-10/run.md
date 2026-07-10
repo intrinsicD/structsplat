@@ -40,27 +40,28 @@ BUDGETS=2000 SEEDS="0 1" COLOR_SOLVE_MODES=none \
 scripts/run_abl005_cuda_native_influence.sh ...
 ```
 
-All resume commands used the same 8 Kodak screen images listed in the initial command.
+All resume commands used the same 8 Kodak screen images listed in the initial command. The final
+command was repeated to complete `kodim04` seed 1.
 
 ## Result
 
-- Completed 18 full fair-regime CUDA rows: `kodim01` budget 2000 seeds 0 and 1, plus `kodim04`
-  budget 2000 seed 0, with 1500 iterations, max-side 768, exact CUDA renderer.
-- Current coverage is 18/288 fast-axis rows, or 18/336 CUDA-native rows when the slow
+- Completed 24 full fair-regime CUDA rows: `kodim01` and `kodim04`, budget 2000, seeds 0 and 1,
+  with 1500 iterations, max-side 768, exact CUDA renderer.
+- Current coverage is 24/288 fast-axis rows, or 24/336 CUDA-native rows when the slow
   `color_solve=every10` arm is included.
 - Wrote `results/abl005_cuda_native_influence/index.html`, `influence.md`, `summary.md`,
   `stage_search.csv`, and `config.json`; copied the same artifacts into this evidence directory.
 - The mixed shard was interrupted at `color_solve=every10`; that arm should be resumed separately
   with a small `MAX_NEW_CELLS` because it runs much slower than ordinary CUDA fit arms.
-- This is not promotion evidence: only two images, one budget, three paired cells, and no completed
+- This is not promotion evidence: only two images, one budget, four paired cells, and no completed
   color-solve arm.
 
 ## Paired deltas vs baseline
 
-- `density=variance` (3 pairs): ΔPSNR +0.3730, ΔMS-SSIM +0.00787, ΔAUC +0.0191, Δfit -0.431s
-- `opacity=constant` (3 pairs): ΔPSNR +1.1558, ΔMS-SSIM +0.01875, ΔAUC +0.3108, Δfit +0.654s
-- `loss=charbonnier` (3 pairs): ΔPSNR +0.3048, ΔMS-SSIM +0.00319, ΔAUC -0.0157, Δfit +0.214s
-- `lr_schedule=cosine` (3 pairs): ΔPSNR +0.7819, ΔMS-SSIM +0.01224, ΔAUC +0.1109, Δfit +0.046s
-- `refine_site=residual|refine_primitive=moment_preserving` (3 pairs): ΔPSNR +0.4064, ΔMS-SSIM +0.00539, ΔAUC -0.0338, Δfit -0.636s
+- `density=variance` (4 pairs): ΔPSNR +0.1632, ΔMS-SSIM +0.00504, ΔAUC -0.0016, Δfit -0.525s
+- `opacity=constant` (4 pairs): ΔPSNR +0.9082, ΔMS-SSIM +0.01472, ΔAUC +0.2617, Δfit +0.773s
+- `loss=charbonnier` (4 pairs): ΔPSNR +0.1037, ΔMS-SSIM +0.00156, ΔAUC -0.0512, Δfit +0.160s
+- `lr_schedule=cosine` (4 pairs): ΔPSNR +0.5757, ΔMS-SSIM +0.00906, ΔAUC +0.0738, Δfit +0.019s
+- `refine_site=residual|refine_primitive=moment_preserving` (4 pairs): ΔPSNR +0.2973, ΔMS-SSIM +0.00366, ΔAUC -0.0443, Δfit -0.507s
 Baseline row: `quadtree_wse`, structure density, no opacity, `loss=l1`, no LR schedule, no refine,
 constant color basis, `renderer=cuda`.

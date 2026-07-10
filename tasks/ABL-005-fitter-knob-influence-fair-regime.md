@@ -94,7 +94,12 @@ so promotion decisions (each via its own ADR) rest on isolated, regime-correct e
   deltas are now: `opacity=constant` (+1.1558 dB PSNR, +0.3108 AUC, +0.654 s fit),
   `lr_schedule=cosine` (+0.7819 dB, +0.1109 AUC, +0.046 s fit), `density=variance`
   (+0.3730 dB, +0.0191 AUC, -0.431 s fit), `loss=charbonnier` (+0.3048 dB, -0.0157 AUC), and
-  `moment_preserving` (+0.4064 dB, -0.0338 AUC).
+  `moment_preserving` (+0.4064 dB, -0.0338 AUC). A follow-up resume completed `kodim04`/2k/seed1,
+  bringing the shard to 24/336 CUDA-native fair cells (24/288 excluding the slow color-solve arm).
+  Four-pair deltas: `opacity=constant` (+0.9082 dB PSNR, +0.2617 AUC, +0.773 s fit),
+  `lr_schedule=cosine` (+0.5757 dB, +0.0738 AUC, +0.019 s fit), `density=variance`
+  (+0.1632 dB, -0.0016 AUC, -0.525 s fit), `loss=charbonnier` (+0.1037 dB, -0.0512 AUC), and
+  `moment_preserving` (+0.2973 dB, -0.0443 AUC).
 - Next action: run/resume the CUDA-native shard on the 8-image Kodak screen at the fixed fair
   regime, then run the affine quality-only shard separately and promote knobs only from paired
   metrics with no quality/convergence/performance regression.
