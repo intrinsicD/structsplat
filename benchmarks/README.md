@@ -181,6 +181,12 @@ curriculum effect, while `default_dominance.csv` necessarily includes both check
 curriculum changes. This candidate approximates LIG's frequency ordering; it does not claim LIG's
 separate residual fields or memory behavior.
 
+The preregistered COCO4 x seeds 0/1, N=640, 500-step guard rejected this exact `2x_f10`
+curriculum: direct gain over the checkpoint control was -0.1645 dB selected PSNR (95% image-
+bootstrap CI [-0.2856,-0.0677]), -0.00068 MS-SSIM, -0.0716 dB AUC, and -0.0030 LPIPS gain. These
+miss the allowed -0.05 dB short-horizon loss, so the planned 5k and difficult-Kodak stages were not
+run. Keep the fields for reproducible research, but do not use this arm as a quality default.
+
 FIT-013 adds opt-in geometry-consistency rows (`structsplat_best_gcr015`, `gcr030`, `gcr060`, and
 intermittent variants). These apply target-gradient-weighted Sobel supervision on top of the pinned
 default. They are experimental candidates: dense 0.015 improves quality/convergence in the current

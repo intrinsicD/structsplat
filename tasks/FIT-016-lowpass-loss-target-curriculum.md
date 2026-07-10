@@ -2,7 +2,8 @@
 
 ## Status
 
-Implemented and unit-tested; bounded proxy screening pending. Experimental and default-off.
+Implemented and screened; rejected by the preregistered 500-step guard. Keep default-off and do
+not spend the planned 5,000-step or difficult-Kodak confirmation budgets on this exact schedule.
 
 ## Motivation
 
@@ -60,9 +61,9 @@ enabled. Runtime provenance includes Python, Torch/CUDA/cuDNN, metric-package ve
 UUID/properties, and NVIDIA driver; resume therefore cannot mix hardware or LPIPS environments.
 
 ```bash
-for ITERS in 500 5000; do
-  LD_PRELOAD=/lib/x86_64-linux-gnu/libstdc++.so.6 \
-  python -m benchmarks.fair_density_control_compare \
+ITERS=500
+LD_PRELOAD=/lib/x86_64-linux-gnu/libstdc++.so.6 \
+python -m benchmarks.fair_density_control_compare \
     --images \
       tests/test_images/COCO_train2014_000000000009.jpg \
       tests/test_images/COCO_train2014_000000000025.jpg \
@@ -76,13 +77,40 @@ for ITERS in 500 5000; do
     --start-fraction 0.5 --growth-waves 5 --renderer cuda --device cuda \
     --render-chunk 512 --pixel-loss l1 --ssim-weight 0.3 \
     --target-psnr 35 --target-psnrs 22 24 26 28 30 32 --lpips --resume
-done
 ```
+
+The planned long stage used the same command with `ITERS=5000`; it was gated off by the short
+result.
 
 Proxy survival requires long-proxy selected PSNR gain >= +0.10 dB, no material MS-SSIM regression
 (>0.001), LPIPS regression (>0.005), or AUC loss (>0.10 dB), fit-time overhead <=3%, and no more
 than 0.05 dB PSNR loss in the 500-step guard. Report selected and terminal endpoints separately;
 promotion still requires the project's stricter multi-metric default-dominance gate.
+
+## Evidence (2026-07-10)
+
+Artifact: `results/fit016_lowpass_coco4_500/`.
+
+All 16 short-guard cells completed under the exact command above. Candidate gain over the
+checkpoint control (positive is better) was:
+
+| Endpoint | PSNR | MS-SSIM | AUC | LPIPS gain | Fit-time gain |
+|---|---:|---:|---:|---:|---:|
+| selected checkpoint | -0.1645 dB | -0.00068 | -0.0716 dB | -0.0030 | +0.065 s |
+| unselected terminal | -0.8949 dB | -0.00064 | n/a | -0.0028 | n/a |
+
+The image-clustered 95% CI for selected PSNR was `[-0.2856,-0.0677]` dB, wholly below zero;
+selected MS-SSIM and AUC intervals were also wholly negative. The terminal PSNR mean was distorted
+by a severe low-pass-arm collapse on one image/seed; terminal-count checkpoint selection rescued
+most of it, but the selected endpoint still exceeded the allowed 0.05 dB short-guard loss.
+
+## Decision
+
+Reject `lowpass2x_f10` and stop at stage 1. The mechanism orders frequencies as intended but harms
+early convergence and endpoint quality under StructSplat's already structured initialization and
+five-wave growth. Do not tune the transition fraction on the same four-image guard; that would
+turn the preregistered test into an adaptive search. A materially different multiscale mechanism
+needs a new hypothesis and independent screen.
 
 ## Interfaces
 
