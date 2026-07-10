@@ -136,7 +136,7 @@
     "early_exit_min_iters": null,
     "log_every": 75,
     "resume": true,
-    "max_new_cells": 3,
+    "max_new_cells": 6,
     "dedupe": true
   },
   "device": "cuda",
