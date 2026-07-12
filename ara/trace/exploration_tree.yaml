@@ -2271,3 +2271,144 @@ tree:
       - "419/419 pytest tests and Ruff validation"
     also_depends_on: [N67, N73, N102, N103]
     status: resolved
+  - id: N105
+    type: question
+    title: "Find meaningful improvements through the agentic research workflow"
+    provenance: user
+    timestamp: "2026-07-13T01:08+0200"
+    description: >
+      Use the repository-native agentic workflow to perform real literature/repository research,
+      identify meaningful improvements, implement bounded candidates, and follow evidence rather
+      than assuming the first idea succeeds.
+    also_depends_on: [N103, N104]
+    status: resolved
+  - id: N106
+    type: decision
+    title: "Screen kernel-matched signed-residual densification first"
+    provenance: ai-executed
+    timestamp: "2026-07-13T01:08+0200"
+    choice: >
+      Build a primary-source frontier map and 11-candidate portfolio, then select FIT-017's
+      scale-matched signed-residual sampled-add score as the first low-cost falsifiable candidate.
+      Preserve tensor-aligned geometry, target colors, count, and schedule so only scoring changes.
+    alternatives:
+      - "Start with exact removal-delta pruning, progressive WSE, mixed precision, or a larger transformational method."
+      - "Implement the naive center-exact normalized-renderer color rule despite its negative pilot."
+      - "Promote the one-seed positive pilot without a same-width magnitude control or recovery guard."
+    evidence:
+      - "ara/evidence/research-portfolio-2026-07-13.md"
+      - "tasks/FIT-017-matched-residual-densification.md"
+    also_depends_on: [N105]
+    status: resolved
+  - id: N107
+    type: experiment
+    title: "FIT-017 shared-start coherent-residual guard"
+    provenance: ai-executed
+    timestamp: "2026-07-13T01:08+0200"
+    result: >
+      Implemented `sampled_add_score={legacy_abs,gaussian_abs,signed_gaussian}` with a separable
+      2D-convolution oracle, synthetic cancellation tests, stage/CLI exposure, and a shared-start
+      COCO4 x seeds{0,1} CPU guard at 64->80 Gaussians. Signed scoring gained +0.5199 dB on the
+      immediate post-add render but changed post-20/post-100 PSNR by -0.0318/-0.2301 dB versus
+      legacy and won only 3/8 post-20 pairs. Same-width magnitude blur also reversed after recovery.
+    evidence:
+      - "tasks/FIT-017-matched-residual-densification.md"
+      - "benchmarks/sampled_add_score_compare.py"
+      - "a68337d"
+    also_depends_on: [N106]
+    status: resolved
+  - id: N108
+    type: dead_end
+    title: "Isotropic signed-Gaussian sampled-add scoring"
+    provenance: ai-executed
+    timestamp: "2026-07-13T01:08+0200"
+    hypothesis: >
+      Signed residual coherence at the planned child scale would improve equal-count sampled-add
+      recovery by at least +0.10 dB after 20 steps and retain quality through 100 steps.
+    failure_mode: >
+      The two-seed guard reversed the immediate gain by both recovery horizons, failed the mean
+      post-20, sign-agreement, and post-100 gates, and underperformed the same-width magnitude
+      control. The original pilot primarily exposed a transient wider-support effect.
+    lesson: >
+      Do not tune kernel width on the same eight pairs or describe this heuristic as exact
+      normalized-renderer utility. A future anisotropic or denominator-aware intervention is a
+      new hypothesis and needs independent evidence.
+    evidence:
+      - "N107"
+      - "tasks/FIT-017-matched-residual-densification.md"
+    also_depends_on: [N107]
+    status: resolved
+  - id: N109
+    type: pivot
+    title: "Pivot from failed densification score to the progressive-WSE contract repair"
+    provenance: ai-executed
+    timestamp: "2026-07-13T01:08+0200"
+    from: "FIT-017 isotropic signed-residual sampled-add scoring."
+    to: "INIT-009 terminal-set-preserving progressive WSE survivor ordering."
+    trigger: >
+      FIT-017 failed its preregistered guard, while the frontier audit found that
+      `sampling.eliminate()` returned candidate-index order despite theory claiming
+      blue-noise-like prefixes.
+    also_depends_on: [N105, N108]
+    status: resolved
+  - id: N110
+    type: experiment
+    title: "INIT-009 progressive WSE implementation and prefix audit"
+    provenance: ai-executed
+    timestamp: "2026-07-13T01:08+0200"
+    result: >
+      Implemented Yuksel-style recursive survivor halving with sqrt(2) radius growth and
+      reverse-removal shells, applied as a late permutation after flanking and attribute
+      materialization. Legacy survivor indices matched an independent pre-diff implementation in
+      756 randomized cases; complete Gaussian tuples remained identical. The source-bound uniform
+      Euclidean M=2048->N=256, eight-seed audit preserved every terminal set and won normalized
+      minimum spacing plus inverse coverage-hole in all 32 descriptive seed/prefix pairs. The
+      ordering subroutine took 14.2% of terminal selection time; the full suite passed 443 tests.
+    evidence:
+      - "ara/evidence/init009-wse-prefix-audit-2026-07-13/"
+      - "tasks/INIT-009-progressive-wse-order.md"
+      - "916245e"
+      - "dfd8e77"
+    also_depends_on: [N109]
+    status: resolved
+  - id: N111
+    type: decision
+    title: "Accept progressive WSE as an opt-in compatibility-safe repair"
+    provenance: ai-executed
+    timestamp: "2026-07-13T01:08+0200"
+    choice: >
+      Ship `wse_progressive_order=True` only for pure-WSE detail layouts, keep the default off,
+      reject unsupported mixed/non-WSE combinations, keep frozen background rows before the
+      ordered detail suffix, and explicitly exclude the Morton-sorted codec from progressive-stream
+      claims.
+    alternatives:
+      - "Change the default row order immediately from the positive structural audit."
+      - "Silently no-op the flag on unsupported layouts."
+      - "Claim anisotropic/quadtree quality gains or end-to-end initialization overhead from the uniform microbenchmark."
+      - "Leave the documented prefix contract false instead of adding a compatibility-safe option."
+    evidence:
+      - "N110"
+      - "tasks/INIT-009-progressive-wse-order.md"
+      - "docs/theory.md"
+    also_depends_on: [N110]
+    status: resolved
+  - id: N112
+    type: decision
+    title: "Integrate the completed research sequence into local main"
+    provenance: ai-executed
+    timestamp: "2026-07-13T01:08+0200"
+    choice: >
+      Commit the rejected FIT-017 result, the accepted INIT-009 repair, and source-bound evidence
+      as three scoped commits, then fast-forward local main after full tests, Ruff, portfolio
+      validation, diff hygiene, and independent implementation/evidence review passed.
+    alternatives:
+      - "Discard the negative FIT-017 result and retain only the winning repair."
+      - "Merge before binding INIT-009 evidence to a clean source commit."
+      - "Push to origin without an explicit push request."
+    evidence:
+      - "a68337d"
+      - "916245e"
+      - "dfd8e77"
+      - "443/443 pytest tests"
+    also_depends_on: [N104, N107, N108, N110, N111]
+    status: resolved

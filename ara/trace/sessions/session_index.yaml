@@ -62,3 +62,10 @@ sessions:
     events_count: 2
     claims_touched: []
     open_threads: 4
+  - id: "2026-07-13_001"
+    date: "2026-07-13"
+    summary: "Built a research portfolio, rejected matched signed-residual scoring, confirmed opt-in progressive WSE ordering with source-bound evidence, and integrated the results into local main."
+    turn_count: 1
+    events_count: 11
+    claims_touched: [C24, C25]
+    open_threads: 3

@@ -79,3 +79,16 @@
 - **Sensitivity**: high
 - **Code ref**: [`benchmarks/storage_budget.py`, `benchmarks/storage_budget_compare.py`, `benchmarks/fair_density_control_compare.py`, `benchmarks/results_index.py`, `tasks/BENCH-006-fixed-storage-convergence.md`]
 - **From staging**: O48
+
+## H09: Apply Representation-Preserving Orders as One Late Tuple Permutation
+- **Rationale**: When ordering should change only prefix semantics, first finish any
+  row-index-sensitive geometry transform such as alternating flanking, compute the ordering while
+  the original sampling metric is still available, materialize colors/scales/caps/opacities in the
+  legacy row association, and then apply one permutation to every row-aligned attribute. This
+  preserves the complete represented tuple set and prevents per-leaf or pre-transform ordering
+  from silently changing geometry.
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Sensitivity**: high
+- **Code ref**: [`src/structsplat/init.py`, `src/structsplat/sampling.py`, `tests/test_init_stages.py`, `tests/test_sampling.py`]
+- **From staging**: O51

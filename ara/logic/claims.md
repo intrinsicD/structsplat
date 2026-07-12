@@ -328,3 +328,38 @@ reference renderer is memory-bound. See `ara/evidence/core005-render-checkpoint-
 - **Dependencies**: [C20]
 - **Tags**: native-reference, GaussianImage, QAT, analytical-rate, codec-boundary
 - **From staging**: O46
+
+## C24: Isotropic signed-Gaussian sampled-add scoring fails the recovery guard
+
+- **Statement**: On FIT-017's shared-start COCO4 x seeds 0/1 guard at max-side 64 and
+  N=64->80, `signed_gaussian` improves immediate PSNR by +0.5199 dB versus `legacy_abs` but
+  changes post-20/post-100 PSNR by -0.0318/-0.2301 dB and wins only 3/8 post-20 pairs. This exact
+  isotropic coherent-error score is refuted under the preregistered recovery criteria.
+- **Status**: refuted
+- **Provenance**: ai-suggested
+- **Crystallized via**: empirical-resolution
+- **Falsification criteria**: A source-bound rerun of the same shared-start cells passes the
+  +0.10 dB post-20, 75% sign-agreement, and -0.05 dB post-100 gates; materially anisotropic,
+  denominator-aware, or differently colored interventions do not count as this exact score.
+- **Proof**: [`tasks/FIT-017-matched-residual-densification.md`, `benchmarks/sampled_add_score_compare.py`, `a68337d`]
+- **Dependencies**: []
+- **Tags**: densification, matched-filter, signed-residual, dead-end, normalized-renderer
+- **From staging**: O49
+
+## C25: Progressive WSE ordering repairs uniform low-count prefixes without changing the set
+
+- **Statement**: On INIT-009's clean-commit uniform Euclidean audit with eight independently
+  generated M=2048->N=256 terminal sets, Yuksel-style progressive ordering preserves every
+  terminal set and improves both normalized minimum spacing and inverse normalized coverage-hole
+  over candidate-index ordering in all 32 descriptive seed/prefix pairs at counts 16/32/64/128;
+  the ordering subroutine takes 14.2% of terminal selection time in this microbenchmark.
+- **Status**: supported
+- **Provenance**: ai-suggested
+- **Crystallized via**: empirical-resolution
+- **Falsification criteria**: A source-bound rerun changes terminal membership, fails either mean
+  metric at a preregistered prefix, falls below 75% joint paired wins, or exceeds the 25%
+  subroutine-overhead gate. Anisotropic/quadtree/image-quality claims require separate evidence.
+- **Proof**: [`ara/evidence/init009-wse-prefix-audit-2026-07-13/aggregate.json`, `ara/evidence/init009-wse-prefix-audit-2026-07-13/prefix_rows.csv`, `ara/evidence/init009-wse-prefix-audit-2026-07-13/config.json`]
+- **Dependencies**: []
+- **Tags**: weighted-sample-elimination, progressive-order, prefix, blue-noise, correctness
+- **From staging**: O50

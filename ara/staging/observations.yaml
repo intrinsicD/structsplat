@@ -527,3 +527,36 @@ observations:
     promoted_to: "logic/solution/heuristics.md:H08"
     crystallized_via: artifact-commitment
     stale: false
+  - id: O49
+    timestamp: "2026-07-13T01:08+0200"
+    provenance: ai-suggested
+    content: "At FIT-017's COCO4 x seeds{0,1}, 64->80 shared-start guard, isotropic signed-Gaussian sampled-add scoring improves immediate PSNR by +0.5199 dB but loses 0.0318 dB after 20 recovery steps and 0.2301 dB after 100, with only 3/8 positive post-20 pairs; this exact score is refuted under the guard."
+    context: "The first portfolio candidate was implemented behind an orthogonal score axis and compared with both the historical tensor-smoothed magnitude score and a same-width magnitude-blur control."
+    potential_type: claim
+    bound_to: [N107, N108]
+    promoted: true
+    promoted_to: "logic/claims.md:C24"
+    crystallized_via: empirical-resolution
+    stale: false
+  - id: O50
+    timestamp: "2026-07-13T01:08+0200"
+    provenance: ai-suggested
+    content: "On eight uniform Euclidean M=2048->N=256 terminal WSE sets, Yuksel-style progressive survivor ordering preserves every terminal set and improves normalized minimum spacing plus inverse coverage-hole over candidate-index ordering in all 32 descriptive seed/prefix pairs; ordering costs 14.2% of terminal selection time in this microbenchmark."
+    context: "INIT-009's preregistered audit was rerun from clean commit 916245e and curated with full config, rows, timings, aggregate, and summary."
+    potential_type: claim
+    bound_to: [N110, N111]
+    promoted: true
+    promoted_to: "logic/claims.md:C25"
+    crystallized_via: empirical-resolution
+    stale: false
+  - id: O51
+    timestamp: "2026-07-13T01:08+0200"
+    provenance: ai-suggested
+    content: "A progressive ordering that must preserve the represented Gaussian set should be computed after parity-dependent geometry transforms, before sampling-metric attributes are overwritten, and applied once to every row-aligned attribute after materialization."
+    context: "Independent review identified flanking parity, quadtree leaf concatenation, caps, colors, opacities, backgrounds, and unsupported mixed layouts as the critical tuple-preservation boundaries for INIT-009."
+    potential_type: heuristic
+    bound_to: [N110, N111]
+    promoted: true
+    promoted_to: "logic/solution/heuristics.md:H09"
+    crystallized_via: artifact-commitment
+    stale: false

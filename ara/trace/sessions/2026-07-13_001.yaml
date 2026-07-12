@@ -1,0 +1,128 @@
+session:
+  id: "2026-07-13_001"
+  date: "2026-07-13"
+  started: "2026-07-13T01:08+0200"
+  last_turn: "2026-07-13T01:08+0200"
+  turn_count: 1
+  summary: "Built a primary-source research portfolio, rejected matched signed-residual densification under its guard, pivoted to and confirmed progressive WSE ordering, curated source-bound evidence, and fast-forwarded three commits into local main."
+
+events_logged:
+  - turn: 1
+    type: question
+    id: "N105"
+    routing: direct
+    provenance: user
+    summary: "Requested real agentic research that identifies and implements meaningful repository improvements."
+  - turn: 1
+    type: decision
+    id: "N106"
+    routing: direct
+    provenance: ai-executed
+    summary: "Built the research portfolio and selected scale-matched signed-residual scoring as the first falsifiable candidate."
+  - turn: 1
+    type: experiment
+    id: "N107"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented FIT-017 and ran the COCO4/two-seed shared-start guard; immediate gains reversed after 20 and 100 recovery steps."
+  - turn: 1
+    type: dead_end
+    id: "N108"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rejected the exact isotropic signed-Gaussian score and prohibited same-guard width tuning."
+  - turn: 1
+    type: pivot
+    id: "N109"
+    routing: direct
+    provenance: ai-executed
+    summary: "Pivoted from failed densification scoring to the documented progressive-WSE prefix contract gap."
+  - turn: 1
+    type: experiment
+    id: "N110"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented late tuple-preserving progressive WSE order and confirmed 32/32 uniform prefix wins with identical terminal sets."
+  - turn: 1
+    type: decision
+    id: "N111"
+    routing: direct
+    provenance: ai-executed
+    summary: "Accepted progressive WSE as a pure-layout opt-in, retained compatibility default-off, and bounded background/codec/anisotropic claims."
+  - turn: 1
+    type: decision
+    id: "N112"
+    routing: direct
+    provenance: ai-executed
+    summary: "Committed both outcomes and source-bound evidence, validated 443 tests, and fast-forwarded the branch into local main without pushing."
+  - turn: 1
+    type: claim
+    id: "O49"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the failed FIT-017 recovery hypothesis as refuted claim C24 via empirical resolution."
+  - turn: 1
+    type: claim
+    id: "O50"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the uniform progressive-WSE prefix improvement as supported claim C25 via empirical resolution."
+  - turn: 1
+    type: heuristic
+    id: "O51"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized late complete-tuple permutation as H09 via artifact commitment."
+
+ai_actions:
+  - turn: 1
+    action: "Ran parallel repository, primary-literature, and cross-domain frontier audits; generated and validated an 11-candidate research portfolio with calibrated prior-art threats and falsification programs."
+    provenance: ai-executed
+    files_changed:
+      - "ara/evidence/research-portfolio-2026-07-13.md"
+  - turn: 1
+    action: "Created FIT-017, implemented three sampled-add scoring controls and a shared-start benchmark, ran the two-seed guard, rejected the candidate, documented the dead end, and committed a68337d."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/config.py"
+      - "src/structsplat/fit.py"
+      - "src/structsplat/cli.py"
+      - "benchmarks/stage_search.py"
+      - "benchmarks/sampled_add_score_compare.py"
+      - "tests/test_fit_dynamics.py"
+      - "tests/test_sampled_add_score_compare.py"
+      - "tasks/FIT-017-matched-residual-densification.md"
+  - turn: 1
+    action: "Created INIT-009, implemented Yuksel-style progressive order with late tuple permutation and pure-layout validation, ran/curated the clean-commit audit, tightened claim scope from two independent reviews, passed 443 tests plus Ruff/portfolio/diff checks, committed 916245e/dfd8e77, and fast-forwarded local main."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/sampling.py"
+      - "src/structsplat/init.py"
+      - "src/structsplat/config.py"
+      - "src/structsplat/cli.py"
+      - "benchmarks/wse_prefix_audit.py"
+      - "tests/test_sampling.py"
+      - "tests/test_init_stages.py"
+      - "tests/test_wse_prefix_audit.py"
+      - "tasks/INIT-009-progressive-wse-order.md"
+      - "ara/evidence/init009-wse-prefix-audit-2026-07-13/"
+
+claims_touched:
+  - id: C24
+    action: crystallized
+    turn: 1
+  - id: C25
+    action: crystallized
+    turn: 1
+
+key_context:
+  - turn: 1
+    excerpt: "User requested: use the agentic workflow to do real research and find meaningful improvements to implement in this repository."
+
+open_threads:
+  - "Do not retune FIT-017 on the same guard; an anisotropic or denominator-aware score is a new hypothesis."
+  - "INIT-009 still lacks density/metric-normalized image-prefix quality and end-to-end initialization-overhead evidence; the Morton codec is not progressive."
+  - "The portfolio's strongest next causal fitter candidate is exact normalized leave-one-out removal-delta pruning, with novelty claimed only as a repository transfer."
+
+ai_suggestions_pending:
+  - "If continuing the research portfolio, validate analytical removal deltas against brute-force rerenders before changing pruning behavior."
