@@ -354,3 +354,10 @@ entries:
       - "Did not crystallize O47: a root-index generator is committed, but the canonical complete report remains absent after the user stopped the run at 1/328 cells."
       - "Recorded the single completed cell only as execution/accounting evidence and explicitly rejected any all-method ranking from 1/328 coverage."
       - "Preserved `.idea` as pre-existing user/workspace state and kept it outside both task commits."
+  - turn: "2026-07-12_001#1"
+    notes:
+      - "Routed the committed research-ideation front end as decision N103 because the user-directed artifact commitment makes one canonical skill and its agent-discovery route part of the repository workflow."
+      - "Routed merge readiness as N104 because the user's conditional merge request required deciding whether a negative promotion result counts as a completed research outcome; the validated audit was complete even though broader tasks remain partial."
+      - "Did not stage or crystallize a new scientific claim: this turn produced no new benchmark data, and merging does not broaden N73/C12 beyond their existing proxy and native-evidence boundaries."
+      - "Did not mark additional observations stale: no three new session-days have elapsed since the 2026-07-10 maturity audit, and active benchmark/renderer topics remain referenced by open tasks."
+      - "Closed the prior `.idea` workspace-state thread by normalizing the staged rename into one valid module-file update and committing it under the user's explicit commit-all instruction."

@@ -2228,3 +2228,46 @@ tree:
     trigger: "User instruction: please stop and commit all changes."
     also_depends_on: [N101]
     status: resolved
+  - id: N103
+    type: decision
+    title: "Adopt repository-native transformational research ideation"
+    provenance: user
+    timestamp: "2026-07-12T22:59+0200"
+    choice: >
+      Commit the canonical StructSplat research-ideation skill, expose it to Agent Skills through
+      one relative discovery symlink, and route open-ended research discovery through this front
+      end before selected candidates re-enter the task, method, benchmark, review, and docs flow.
+    alternatives:
+      - "Leave the research-ideation workflow untracked and locally undiscoverable."
+      - "Duplicate the skill tree for each agent ecosystem instead of sharing one canonical tree."
+      - "Apply the transformational ideation workflow to routine implementation tasks outside its activation boundary."
+    evidence:
+      - "ff88a11"
+      - ".claude/skills/structsplat-research-ideation/SKILL.md"
+      - ".agents/skills/structsplat-research-ideation"
+      - "CLAUDE.md"
+      - "README.md"
+    status: resolved
+  - id: N104
+    type: decision
+    title: "Integrate the completed negative promotion audit"
+    provenance: ai-executed
+    timestamp: "2026-07-12T22:59+0200"
+    choice: >
+      Treat failure of the tensor-loss promotion gate as a completed branch outcome, keep the
+      shipped best default unchanged, and fast-forward the 25 validated feature-branch commits
+      into local main while preserving longer ABL/BENCH/FIT research programs as explicitly
+      partial rather than claiming their closure.
+    alternatives:
+      - "Hold all validated infrastructure until every multi-day research program is complete."
+      - "Treat a rejected promotion hypothesis as unfinished branch work."
+      - "Merge without first resolving staged-index anomalies and full-suite validation."
+    evidence:
+      - "N67"
+      - "N73"
+      - "tasks/ABL-004-controls-and-full-run.md"
+      - "tasks/ABL-005-fitter-knob-influence-fair-regime.md"
+      - "ff88a11"
+      - "419/419 pytest tests and Ruff validation"
+    also_depends_on: [N67, N73, N102, N103]
+    status: resolved
