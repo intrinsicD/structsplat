@@ -422,7 +422,7 @@ python -m benchmarks.init_spectral_analysis path/to/images --num-gaussians 2048 
 `wse_prefix_audit.py` is INIT-009's terminal-set-preserving ordering audit. It compares historical
 candidate-index prefixes with Yuksel-style recursive WSE prefixes on identical survivors. The
 uniform Euclidean eight-seed M=2048 -> N=256 audit produced 32/32 descriptive joint
-spacing+coverage wins across four correlated prefixes, with the ordering subroutine taking 13.6%
+spacing+coverage wins across four correlated prefixes, with the ordering subroutine taking 14.2%
 of terminal selection time. This does not measure end-to-end anisotropic/quadtree initialization
 overhead or establish optimality over other progressive orders. The initialization flag remains
 opt-in for artifact compatibility:

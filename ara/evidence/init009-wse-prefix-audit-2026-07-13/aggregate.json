@@ -1,0 +1,64 @@
+{
+  "prefixes": {
+    "16": {
+      "candidate_index": {
+        "normalized_min_spacing": 0.22129394310386225,
+        "inverse_normalized_coverage_hole": 0.6591490846556498
+      },
+      "progressive": {
+        "normalized_min_spacing": 0.8812288341635346,
+        "inverse_normalized_coverage_hole": 0.9361982957179482,
+        "delta_normalized_min_spacing": 0.6599348910596723,
+        "delta_inverse_normalized_coverage_hole": 0.2770492110622984
+      }
+    },
+    "32": {
+      "candidate_index": {
+        "normalized_min_spacing": 0.27429116991630087,
+        "inverse_normalized_coverage_hole": 0.5358398954592187
+      },
+      "progressive": {
+        "normalized_min_spacing": 0.7883577092222054,
+        "inverse_normalized_coverage_hole": 0.9759605921503677,
+        "delta_normalized_min_spacing": 0.5140665393059045,
+        "delta_inverse_normalized_coverage_hole": 0.44012069669114895
+      }
+    },
+    "64": {
+      "candidate_index": {
+        "normalized_min_spacing": 0.3656268756232607,
+        "inverse_normalized_coverage_hole": 0.5941533824709668
+      },
+      "progressive": {
+        "normalized_min_spacing": 0.7564443354647133,
+        "inverse_normalized_coverage_hole": 1.001890287619673,
+        "delta_normalized_min_spacing": 0.39081745984145266,
+        "delta_inverse_normalized_coverage_hole": 0.4077369051487061
+      }
+    },
+    "128": {
+      "candidate_index": {
+        "normalized_min_spacing": 0.5100981185356126,
+        "inverse_normalized_coverage_hole": 0.6913503757963129
+      },
+      "progressive": {
+        "normalized_min_spacing": 0.7254264302794896,
+        "inverse_normalized_coverage_hole": 1.0123738617420637,
+        "delta_normalized_min_spacing": 0.215328311743877,
+        "delta_inverse_normalized_coverage_hole": 0.3210234859457508
+      }
+    }
+  },
+  "decision": {
+    "accepted": true,
+    "checks": {
+      "terminal_sets_identical": true,
+      "mean_spacing_improves_every_prefix": true,
+      "mean_coverage_improves_every_prefix": true,
+      "joint_pair_win_fraction_ge_0.75": true,
+      "ordering_overhead_fraction_le_0.25": true
+    },
+    "joint_pair_win_fraction": 1.0,
+    "ordering_overhead_fraction": 0.1420771331709095
+  }
+}

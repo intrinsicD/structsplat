@@ -64,6 +64,9 @@ python -m benchmarks.wse_prefix_audit \
   --prefixes 16 32 64 128
 ```
 
+Committed artifact: `ara/evidence/init009-wse-prefix-audit-2026-07-13/`, source-bound to clean
+commit `916245e000499179739d5d3438b77062c7d27a9e`.
+
 The terminal survivor set matched in all eight uniform Euclidean seeds. Progressive ordering won
 both normalized minimum spacing and inverse normalized coverage-hole in all 32 descriptive
 seed/prefix pairs (four correlated prefixes per independently generated terminal set):
@@ -75,7 +78,7 @@ seed/prefix pairs (four correlated prefixes per independently generated terminal
 | 64 | +0.3908 | +0.4077 |
 | 128 | +0.2153 | +0.3210 |
 
-The ordering subroutine took 13.6% of this uniform terminal-set WSE selection time, below the 25%
+The ordering subroutine took 14.2% of this uniform terminal-set WSE selection time, below the 25%
 gate; this is not an end-to-end anisotropic/quadtree initialization-overhead claim. Accept the
 opt-in repair. Keep the compatibility default off because row order affects NPZ hashes, predictor slots,
 CUDA atomic summation, and resumed artifacts even though complete Gaussian tuples are identical.

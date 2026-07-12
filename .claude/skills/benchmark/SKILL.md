@@ -90,7 +90,7 @@ difficult-four 2k/5k slice. Keep `pyramid=single` as the default until larger co
 
 Within-WSE progressive ordering is also an opt-in compatibility feature. INIT-009's uniform
 Euclidean M=2048 -> N=256 audit preserved terminal sets and won normalized spacing plus coverage
-in all 32 descriptive seed/prefix pairs; the ordering subroutine took 13.6% of terminal selection
+in all 32 descriptive seed/prefix pairs; the ordering subroutine took 14.2% of terminal selection
 time. Use `wse_progressive_order=True` for
 prefix/LOD experiments, but keep the default off because row order changes artifact hashes and
 CUDA reduction order; the Morton-sorted codec is not a progressive stream.

@@ -385,8 +385,9 @@ feature opt-in unless a larger fair-regime confirmation passes repository promot
 
 Execution update: the eight-pair FIT-017 guard rejected P1 after its immediate gain reversed by
 post-20 (-0.0318 dB) and post-100 (-0.2301 dB). The workflow therefore advanced to P3. INIT-009's
-eight-seed, four-prefix audit preserved every terminal WSE set and won both normalized spacing and
-coverage in all 32 paired cases, with 13.6% ordering/selection overhead. P3 is implemented as an
+eight-seed, four-prefix uniform Euclidean audit preserved every terminal WSE set and won both
+normalized spacing and coverage in all 32 descriptive paired cases, with 14.2%
+ordering/selection-subroutine overhead. P3 is implemented as an
 opt-in compatibility-safe repair; the codec still destroys this order through Morton sorting.
 
 ## 11. Audit limitations
