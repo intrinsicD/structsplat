@@ -58,6 +58,7 @@ def cmd_fit(args):
     icfg = InitConfig(strategy=args.strategy, num_gaussians=args.num_gaussians, seed=args.seed,
                       density_mode=args.density_mode,
                       sampling_mode=args.sampling_mode,
+                      wse_progressive_order=args.wse_progressive_order,
                       orientation_mode=args.orientation_mode,
                       flank_offset_frac=args.flank_offset,
                       max_axis_ratio=args.max_axis_ratio,
@@ -341,6 +342,8 @@ def main():
                    choices=["wse", "density_random", "jittered_grid", "dart_throwing", "halton",
                             "farthest_point", "cvt"],
                    default="wse")
+    f.add_argument("--wse-progressive-order", action="store_true",
+                   help="order a pure-WSE detail set into blue-noise-like nested prefixes")
     f.add_argument("--orientation-mode", choices=["tensor", "random", "zero"], default="tensor")
     f.add_argument("--color-mode", choices=["bilinear", "local_mean", "two_sided", "aggregate"],
                    default="bilinear")

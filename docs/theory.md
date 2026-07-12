@@ -21,9 +21,18 @@ keeps counts comparable to isotropic. Blue-noise in the warped space ⇒ dense-a
 in image space. Realized with Weighted Sample Elimination for exact N (Yuksel 2015).
 
 ## Hierarchy
-Progressive maximal blue-noise ordering: any prefix is a valid blue-noise set at its density = a
-free LOD stack. Finer levels driven by the residual structure tensor. Under a normalized renderer
-this is densification (add + re-fit), not additive residual summation (ADR-0003).
+WSE guarantees the selected terminal set, not candidate-index prefixes. INIT-009 adds Yuksel's
+recursive halving/reverse-shell permutation behind `wse_progressive_order=True`; with that opt-in,
+each within-WSE prefix is blue-noise-like at its density while the complete Gaussian tuples remain
+unchanged. The default stays off because row order is part of saved-artifact and GPU-reduction
+provenance. This within-level sequence is distinct from pyramid append order: finer pyramid levels
+are driven by the residual structure tensor. Under a normalized renderer this is densification
+(add + re-fit), not additive residual summation (ADR-0003). The Morton-sorted codec does not yet
+preserve either order as a progressive bitstream.
+For `quadtree_wse`, the permutation is global over the union of locally selected leaf sets; it does
+not turn them into one globally selected WSE set. With a frozen background layer, background rows
+remain first and the progressive guarantee applies to the following detail suffix, not arbitrary
+prefixes of the complete field.
 
 ## Empirical answer
 The optimizer discovers anisotropy itself, so the useful question became which structured placement

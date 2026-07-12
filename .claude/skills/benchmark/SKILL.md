@@ -88,6 +88,13 @@ adds explicit schedules with `--pyramid-level-iters`; `150 1350` on the 0.35/0.6
 beats the old 750/750 pyramid by +0.0601 dB and is AUC-neutral versus single (+0.0011) on the
 difficult-four 2k/5k slice. Keep `pyramid=single` as the default until larger confirmation.
 
+Within-WSE progressive ordering is also an opt-in compatibility feature. INIT-009's uniform
+Euclidean M=2048 -> N=256 audit preserved terminal sets and won normalized spacing plus coverage
+in all 32 descriptive seed/prefix pairs; the ordering subroutine took 13.6% of terminal selection
+time. Use `wse_progressive_order=True` for
+prefix/LOD experiments, but keep the default off because row order changes artifact hashes and
+CUDA reduction order; the Morton-sorted codec is not a progressive stream.
+
 ## Experimental-validity rules (BENCH-002 — a sweep result is trustworthy by construction)
 - **Equal budgets.** Refine (adding) arms are capped at the cell budget and start below it so
   their planned additions land *at* budget — never compare a refine arm that carries +split_count

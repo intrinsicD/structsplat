@@ -88,6 +88,8 @@ class InitConfig:
     # wse, density_random, floyd_steinberg, jittered_grid, dart_throwing, halton,
     # farthest_point, or cvt
     sampling_mode: str = "wse"
+    # Terminal-set-preserving recursive WSE order; opt-in until INIT-009's prefix audit promotes it.
+    wse_progressive_order: bool = False
     # anisotropy: axis ratio cap for edge Gaussians (major/minor); 1.0 => isotropic
     max_axis_ratio: float = 6.0
     coherence_power: float = 1.0     # maps coherence -> anisotropy; >1 is more conservative
@@ -130,6 +132,16 @@ class InitConfig:
         if self.candidate_oversample < 1.0:
             raise ValueError(
                 f"candidate_oversample must be >= 1, got {self.candidate_oversample}")
+        if self.wse_progressive_order:
+            pure_wse = self.strategy == "quadtree_wse" or (
+                self.strategy in ("iso_blue_noise", "aniso_onedge", "aniso_flanking")
+                and self.sampling_mode == "wse"
+            )
+            if not pure_wse:
+                raise ValueError(
+                    "wse_progressive_order requires a pure-WSE layout: quadtree_wse, or "
+                    "iso_blue_noise/aniso_onedge/aniso_flanking with sampling_mode='wse'; "
+                    f"got strategy={self.strategy!r}, sampling_mode={self.sampling_mode!r}")
         if self.scale_cap_mode not in ("none", "hard", "feature", "feature_rel"):
             raise ValueError(
                 "scale_cap_mode must be none, hard, feature, or feature_rel, "

@@ -419,6 +419,21 @@ edge-local anisotropy signatures, and realized coherence -> axis-ratio sweep met
 python -m benchmarks.init_spectral_analysis path/to/images --num-gaussians 2048 --max-axis-ratios 2 4 6 8 --coherence-powers 0.5 1 2
 ```
 
+`wse_prefix_audit.py` is INIT-009's terminal-set-preserving ordering audit. It compares historical
+candidate-index prefixes with Yuksel-style recursive WSE prefixes on identical survivors. The
+uniform Euclidean eight-seed M=2048 -> N=256 audit produced 32/32 descriptive joint
+spacing+coverage wins across four correlated prefixes, with the ordering subroutine taking 13.6%
+of terminal selection time. This does not measure end-to-end anisotropic/quadtree initialization
+overhead or establish optimality over other progressive orders. The initialization flag remains
+opt-in for artifact compatibility:
+
+```bash
+python -m benchmarks.wse_prefix_audit \
+  --outdir results/init009_wse_prefix_audit --seeds 0 1 2 3 4 5 6 7 \
+  --candidates 2048 --terminal 256 --prefixes 16 32 64 128
+structsplat fit image.png --wse-progressive-order
+```
+
 `rate_distortion.py` evaluates the codec/QAT path (`COMP-001/COMP-003`) and records full
 codec/render semantics per row. Caveat: QAT rows spend extra optimization; compare them with the
 `refine_noste` equal-compute control. Rows include the fitted/selected Gaussian count and a

@@ -16,6 +16,80 @@ def test_wse_exact_count_and_spacing():
     assert d.min() > 0.0  # blue-noise: no coincident points
 
 
+def test_progressive_wse_preserves_terminal_set_for_isotropic_and_anisotropic_inputs():
+    rng = np.random.default_rng(31)
+    points = rng.random((320, 2)) * 40.0
+    r_i = rng.uniform(1.2, 2.8, len(points))
+    metric = sa.anisotropy_metric(
+        rng.uniform(-np.pi, np.pi, len(points)),
+        rng.uniform(1.0, 5.0, len(points)),
+    )
+    for candidate_metric in (None, metric):
+        legacy = sa.eliminate(points, 96, r_i, metric=candidate_metric)
+        progressive = sa.eliminate(
+            points, 96, r_i, metric=candidate_metric, progressive=True
+        )
+        assert np.array_equal(np.sort(progressive), legacy)
+        assert np.array_equal(
+            progressive,
+            sa.eliminate(points, 96, r_i, metric=candidate_metric, progressive=True),
+        )
+
+
+def test_progressive_order_matches_recursive_halving_survivor_sets():
+    rng = np.random.default_rng(11)
+    points = rng.random((63, 2)) * 20.0
+    r_i = rng.uniform(0.8, 1.6, len(points))
+    metric = sa.anisotropy_metric(
+        rng.uniform(-np.pi, np.pi, len(points)),
+        rng.uniform(1.0, 4.0, len(points)),
+    )
+    order = sa.progressive_order(points, r_i, metric=metric)
+    assert order.dtype == np.int64
+    assert np.array_equal(np.sort(order), np.arange(len(points)))
+
+    active = np.arange(len(points), dtype=np.int64)
+    scale = np.sqrt(2.0)
+    while len(active) >= 3:
+        keep, _removed = sa._eliminate_partition(
+            points[active],
+            len(active) // 2,
+            r_i[active] * scale,
+            metric=metric[active],
+        )
+        active = active[keep]
+        assert set(order[:len(active)]) == set(active)
+        scale *= np.sqrt(2.0)
+
+
+def test_progressive_order_handles_degenerate_sizes_and_tied_graphs():
+    for n in (0, 1, 2):
+        points = np.arange(2 * n, dtype=np.float64).reshape(n, 2)
+        order = sa.progressive_order(points, np.ones(n))
+        assert np.array_equal(order, np.arange(n))
+
+    points = np.arange(12, dtype=np.float64).reshape(6, 2) * 100.0
+    radii = np.full(6, 1e-3)
+    assert np.array_equal(sa.progressive_order(points, radii), np.arange(5, -1, -1))
+    assert np.array_equal(sa.eliminate(points, 6, radii), np.arange(6))
+    assert np.array_equal(
+        sa.eliminate(points, 6, radii, progressive=True), np.arange(5, -1, -1)
+    )
+    with pytest.warns(UserWarning, match="exact-N contract"):
+        over = sa.eliminate(points, 8, radii, progressive=True)
+    assert np.array_equal(np.sort(over), np.arange(6))
+
+
+def test_wse_legacy_candidate_order_golden_is_unchanged():
+    rng = np.random.default_rng(5)
+    points = rng.random((20, 2)) * 10.0
+    radii = np.full(20, 1.4)
+    assert np.array_equal(
+        sa.eliminate(points, 7, radii),
+        np.array([2, 3, 4, 8, 15, 18, 19]),
+    )
+
+
 def test_floyd_steinberg_exact_count_density_and_spacing():
     density = np.ones((32, 32), dtype=np.float64)
     density[:, :8] = 8.0

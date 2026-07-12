@@ -383,6 +383,12 @@ the four-image deterministic pilot and a bounded 160 px paired CUDA screen. Aban
 gain is below +0.10 dB, vanishes by step 100/final, or scoring adds more than 15% wall time. Keep the
 feature opt-in unless a larger fair-regime confirmation passes repository promotion gates.
 
+Execution update: the eight-pair FIT-017 guard rejected P1 after its immediate gain reversed by
+post-20 (-0.0318 dB) and post-100 (-0.2301 dB). The workflow therefore advanced to P3. INIT-009's
+eight-seed, four-prefix audit preserved every terminal WSE set and won both normalized spacing and
+coverage in all 32 paired cases, with 13.6% ordering/selection overhead. P3 is implemented as an
+opt-in compatibility-safe repair; the codec still destroys this order through Morton sorting.
+
 ## 11. Audit limitations
 
 Search cannot prove global novelty; patents, non-English sources, private branches, and unpublished

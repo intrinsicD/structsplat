@@ -6,7 +6,8 @@ torch = pytest.importorskip("torch")
 
 from structsplat import init as I
 from structsplat import structure_tensor as ST
-from structsplat.config import InitConfig
+from structsplat.config import FitConfig, InitConfig
+from structsplat.fit import _render
 
 
 def _toy(H=48, W=64):
@@ -320,6 +321,105 @@ def test_quadtree_variants_are_exact_and_deterministic(strategy, color):
     assert torch.equal(a.means, b.means)
     assert torch.equal(a.colors, b.colors)
     assert (a.colors >= 0).all() and (a.colors <= 1).all()
+
+
+@pytest.mark.parametrize("strategy", ["iso_blue_noise", "aniso_flanking", "quadtree_wse"])
+def test_progressive_wse_init_only_permutes_complete_gaussian_tuples(strategy):
+    img = _toy()
+    common = dict(
+        strategy=strategy,
+        num_gaussians=96,
+        density_mode="variance",
+        sampling_mode="wse",
+        scale_cap_mode="feature_rel",
+        opacity_mode="constant",
+        seed=7,
+    )
+    legacy = I.build_field(img, InitConfig(**common, wse_progressive_order=False))
+    progressive = I.build_field(img, InitConfig(**common, wse_progressive_order=True))
+    repeated = I.build_field(img, InitConfig(**common, wse_progressive_order=True))
+
+    def canonical(field):
+        rows = torch.cat([
+            field.means,
+            field.log_scales,
+            field.rotations[:, None],
+            field.colors,
+            field.opacities[:, None],
+            field.scale_max,
+        ], dim=1).numpy()
+        return np.asarray(sorted(map(tuple, rows.tolist())))
+
+    np.testing.assert_array_equal(canonical(progressive), canonical(legacy))
+    assert torch.equal(progressive.means, repeated.means)
+    assert not torch.equal(progressive.means, legacy.means)
+    cfg = FitConfig(iters=1, render_chunk=64)
+    legacy_render = _render(legacy, cfg, img.shape[0], img.shape[1])
+    progressive_render = _render(progressive, cfg, img.shape[0], img.shape[1])
+    assert torch.allclose(progressive_render, legacy_render, atol=2e-6, rtol=2e-6)
+
+
+def test_progressive_wse_rejects_mixed_quadtree_hybrid_rows():
+    with pytest.raises(ValueError, match="requires a pure-WSE layout"):
+        InitConfig(
+            strategy="quadtree_hybrid",
+            num_gaussians=64,
+            wse_progressive_order=True,
+            seed=0,
+        )
+
+
+@pytest.mark.parametrize("strategy,sampling", [
+    ("random", "wse"),
+    ("grid", "wse"),
+    ("quadtree_aggregate", "wse"),
+    ("aniso_onedge", "density_random"),
+])
+def test_progressive_wse_rejects_every_non_wse_layout(strategy, sampling):
+    with pytest.raises(ValueError, match="requires a pure-WSE layout"):
+        InitConfig(
+            strategy=strategy,
+            sampling_mode=sampling,
+            wse_progressive_order=True,
+        )
+
+
+def test_progressive_wse_keeps_background_rows_first():
+    field = I.build_field(
+        _toy(),
+        InitConfig(
+            strategy="quadtree_wse",
+            num_gaussians=80,
+            background_fraction=0.1,
+            background_grid=4,
+            wse_progressive_order=True,
+            seed=2,
+        ),
+    )
+    assert field.background_mask is not None
+    n_bg = field.background_count
+    assert n_bg > 0
+    assert bool(field.background_mask[:n_bg].all())
+    assert not bool(field.background_mask[n_bg:].any())
+
+
+def test_progressive_quadtree_wse_prefix_spans_global_leaf_union():
+    img = _toy()
+    common = dict(
+        strategy="quadtree_wse",
+        num_gaussians=128,
+        density_mode="variance",
+        seed=0,
+    )
+    legacy = I.build_field(img, InitConfig(**common, wse_progressive_order=False))
+    progressive = I.build_field(img, InitConfig(**common, wse_progressive_order=True))
+    legacy_prefix = legacy.means[:8].numpy()
+    progressive_prefix = progressive.means[:8].numpy()
+
+    # Leaf-concatenation order clusters the first rows in the first few leaves. One global
+    # progressive permutation must cover both image axes without changing the terminal tuples.
+    assert np.ptp(progressive_prefix[:, 0]) > 2.0 * np.ptp(legacy_prefix[:, 0])
+    assert np.ptp(progressive_prefix[:, 1]) > 1.5 * np.ptp(legacy_prefix[:, 1])
 
 
 def test_hard_scale_cap_is_stored_and_applied():

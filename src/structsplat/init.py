@@ -768,6 +768,27 @@ def build_field(img: np.ndarray, icfg: InitConfig,
                 pts, spacing, ratios, tensor, scfg, icfg,
                 two_sided=icfg.color_mode == "two_sided")
 
+    progressive_perm = None
+    pure_wse = strat == "quadtree_wse" or (
+        strat in ("iso_blue_noise", "aniso_onedge", "aniso_flanking")
+        and icfg.sampling_mode == "wse"
+    )
+    if icfg.wse_progressive_order and pure_wse and len(pts) >= 3:
+        # Compute after parity-based flanking so ordering cannot change the represented geometry,
+        # but before orientation ablations overwrite the sampling metric. Apply the permutation
+        # only after every row-aligned Gaussian attribute has been constructed.
+        progressive_metric = None
+        if strat != "iso_blue_noise":
+            progressive_metric = sa.anisotropy_metric(
+                np.asarray(angles) - np.pi * 0.5,
+                np.asarray(ratios),
+            )
+        progressive_perm = sa.progressive_order(
+            np.asarray(pts),
+            np.asarray(spacing) / _SPACING_PER_RADIUS,
+            metric=progressive_metric,
+        )
+
     n_out = len(pts)
     feature_scale = np.asarray(feature_scale, dtype=np.float64)[:n_out]
     m = icfg.init_scale_mult
@@ -809,5 +830,14 @@ def build_field(img: np.ndarray, icfg: InitConfig,
                 "two_sided, or aggregate"
             )
     opacities = _opacity_logits(n_out, icfg.opacity_mode, icfg.init_opacity)
+    if progressive_perm is not None:
+        pts = np.asarray(pts)[progressive_perm]
+        scales = np.asarray(scales)[progressive_perm]
+        angles = np.asarray(angles)[progressive_perm]
+        colors = np.asarray(colors)[progressive_perm]
+        if opacities is not None:
+            opacities = np.asarray(opacities)[progressive_perm]
+        if scale_max is not None:
+            scale_max = np.asarray(scale_max)[progressive_perm]
     return GaussianField.from_numpy(pts, scales, angles[:n_out], colors, opacities,
                                     scale_max, device=device)

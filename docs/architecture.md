@@ -26,7 +26,8 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
 - **NumPy, init-time, no autograd:** `structure_tensor` (selectable central/sobel/scharr operator;
   luma or Di Zenzo rgb color space), `density` (structure/gradient/variance/hybrid/uniform modes +
   the inverse-CDF warp for low-discrepancy samplers), `sampling` (WSE blue noise, Poisson-disk
-  dart throwing, farthest-point, CVT/Lloyd, Halton), `config`.
+  dart throwing, farthest-point, CVT/Lloyd, Halton, and opt-in terminal-set-preserving progressive
+  WSE order), `config`.
 - **torch, autograd:** `gaussians` (RS + optional opacity + optional per-Gaussian scale caps,
   ADR-0012), `render` (normalized default + additive, ADR-0006, exact CUDA variants, ADR-0011,
   and gsplat comparator, sharing one accumulator where semantics match), `metrics`, `init`

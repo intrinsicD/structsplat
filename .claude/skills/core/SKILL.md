@@ -14,7 +14,8 @@ IntrinsicEngine as an RHI pass.
   **orientation**, and **flat/edge/corner** labels. One operator, three jobs (ADR-0004).
 - `density.py` (NumPy) — energy -> density pmf; residual density for pyramid levels.
 - `sampling.py` (NumPy) — Weighted Sample Elimination: exact-N blue noise, density-adaptive via
-  per-point radius, anisotropic via a per-point metric tensor (ADR-0005).
+  per-point radius, anisotropic via a per-point metric tensor (ADR-0005), with opt-in
+  terminal-set-preserving progressive survivor order (INIT-009).
 - `gaussians.py` (torch) — `GaussianField`, RS parameterization, conics, radii (ADR-0002).
 - `render.py` (torch) — differentiable normalized-weighted-sum rasterizer, no sort (ADR-0003).
 - `init.py` (torch bridge) — the five strategies in `STRATEGIES` (the ablation variables).

@@ -118,6 +118,41 @@ def test_fit_cli_accepts_qat_rate_flags(tmp_path, monkeypatch, capsys):
     assert "8 gaussians" in capsys.readouterr().out
 
 
+def test_fit_cli_accepts_progressive_wse_order(tmp_path, monkeypatch, capsys):
+    pytest.importorskip("torch")
+    img = np.zeros((12, 12, 3), np.float32)
+    img[:, 6:] = 1.0
+    path = tmp_path / "toy.png"
+    save_image(str(path), img)
+    outdir = tmp_path / "runs"
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "structsplat",
+            "fit",
+            str(path),
+            "--strategy",
+            "iso_blue_noise",
+            "--wse-progressive-order",
+            "--num-gaussians",
+            "8",
+            "--iters",
+            "1",
+            "--chunk",
+            "8",
+            "--outdir",
+            str(outdir),
+            "--device",
+            "cpu",
+        ],
+    )
+
+    main()
+
+    assert (outdir / "toy_iso_blue_noise.npz").exists()
+    assert "8 gaussians" in capsys.readouterr().out
+
+
 def test_stage_search_cli_forwards_sharding_and_factored_axes(monkeypatch):
     import benchmarks.stage_search as stage_search
 

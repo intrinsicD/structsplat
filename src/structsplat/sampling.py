@@ -18,6 +18,7 @@ specifically versus any reasonably even, density-adaptive point set. They share 
 """
 from __future__ import annotations
 import heapq
+import math
 import warnings
 import numpy as np
 
@@ -159,19 +160,15 @@ def _neighbor_pairs(points: np.ndarray, r_i: np.ndarray, metric: np.ndarray | No
     return np.concatenate(recv_all), np.concatenate(ctrb_all), np.concatenate(w_all)
 
 
-def eliminate(points: np.ndarray, n: int, r_i: np.ndarray,
-              metric: np.ndarray | None = None, alpha: float = 8.0) -> np.ndarray:
-    """Return indices (n,) of a blue-noise subset of `points`.
-
-    points : (M,2) candidate positions
-    n      : target count (<= M)
-    r_i    : (M,) per-point target radius (local desired spacing)
-    metric : (M,2,2) unit-area metric per point, or None for Euclidean
-    """
+def _eliminate_partition(points: np.ndarray, n: int, r_i: np.ndarray,
+                         metric: np.ndarray | None = None,
+                         alpha: float = 8.0) -> tuple[np.ndarray, np.ndarray]:
+    """One unchanged WSE pass: sorted survivors and chronological removals."""
     M = points.shape[0]
-    if n >= M:
-        _warn_if_not_reducing(n, M)
-        return np.arange(M)
+    target_n = min(max(int(n), 0), M)
+    if M == 0:
+        empty = np.empty(0, dtype=np.int64)
+        return empty, empty.copy()
     points = np.asarray(points, dtype=np.float64)
     r_i = np.asarray(r_i, dtype=np.float64)
 
@@ -192,12 +189,14 @@ def eliminate(points: np.ndarray, n: int, r_i: np.ndarray,
     heapq.heapify(heap)
     push, pop = heapq.heappush, heapq.heappop
 
+    removed = []
     remaining = M
-    while remaining > n:
-        negw, i, ver = pop(heap)
+    while remaining > target_n:
+        _negw, i, ver = pop(heap)
         if not alive[i] or ver != version[i]:
             continue  # stale entry
         # remove the most crowded surviving sample
+        removed.append(i)
         alive[i] = False
         remaining -= 1
         for e in range(indptr[i], indptr[i + 1]):
@@ -207,8 +206,71 @@ def eliminate(points: np.ndarray, n: int, r_i: np.ndarray,
             weights[j] -= w_of[e]
             version[j] += 1
             push(heap, (-weights[j], j, version[j]))
+    return np.nonzero(alive)[0], np.asarray(removed, dtype=np.int64)
 
-    return np.nonzero(alive)[0]
+
+def progressive_order(points: np.ndarray, r_i: np.ndarray,
+                      metric: np.ndarray | None = None, alpha: float = 8.0) -> np.ndarray:
+    """Return a progressive-WSE permutation of a fixed terminal sample set.
+
+    This mirrors Yuksel's secondary recursive halving: the first half is re-eliminated with
+    radii enlarged by sqrt(2) in 2D, recursively ordered, then followed by the eliminated shell
+    in reverse removal order. The input set and every point attribute remain unchanged.
+    """
+    points = np.asarray(points, dtype=np.float64)
+    r_i = np.asarray(r_i, dtype=np.float64)
+    if points.ndim != 2 or points.shape[1] != 2:
+        raise ValueError(f"points must have shape (N, 2), got {points.shape}")
+    if r_i.shape != (len(points),):
+        raise ValueError(f"r_i must have shape ({len(points)},), got {r_i.shape}")
+    if metric is not None:
+        metric = np.asarray(metric, dtype=np.float64)
+        if metric.shape != (len(points), 2, 2):
+            raise ValueError(
+                f"metric must have shape ({len(points)}, 2, 2), got {metric.shape}")
+
+    def recurse(active: np.ndarray, scale: float) -> np.ndarray:
+        if len(active) < 3:
+            return active.copy()
+        local_metric = None if metric is None else metric[active]
+        keep, removed = _eliminate_partition(
+            points[active],
+            len(active) // 2,
+            r_i[active] * scale,
+            metric=local_metric,
+            alpha=alpha,
+        )
+        core = recurse(active[keep], scale * math.sqrt(2.0))
+        shell = active[removed[::-1]]
+        return np.concatenate([core, shell])
+
+    active = np.arange(len(points), dtype=np.int64)
+    return recurse(active, math.sqrt(2.0))
+
+
+def eliminate(points: np.ndarray, n: int, r_i: np.ndarray,
+              metric: np.ndarray | None = None, alpha: float = 8.0, *,
+              progressive: bool = False) -> np.ndarray:
+    """Return indices (n,) of a blue-noise subset of `points`.
+
+    ``progressive=True`` only permutes the fixed terminal survivor set. False preserves the
+    historical candidate-index ordering and remains the compatibility default.
+    """
+    M = points.shape[0]
+    if n >= M:
+        _warn_if_not_reducing(n, M)
+        keep = np.arange(M, dtype=np.int64)
+    else:
+        keep, _removed = _eliminate_partition(points, n, r_i, metric=metric, alpha=alpha)
+    if not progressive or len(keep) < 3:
+        return keep
+    order = progressive_order(
+        np.asarray(points)[keep],
+        np.asarray(r_i)[keep],
+        None if metric is None else np.asarray(metric)[keep],
+        alpha=alpha,
+    )
+    return keep[order]
 
 
 def floyd_steinberg(density: np.ndarray, n: int) -> np.ndarray:

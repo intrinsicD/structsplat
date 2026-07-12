@@ -60,6 +60,10 @@ Additional quadtree strategies: `quadtree_aggregate`, `quadtree_hybrid`, `quadtr
 Samplers: `wse` (blue noise), `floyd_steinberg` (density-map error diffusion),
 `dart_throwing` (Poisson disk), `halton`, `cvt`, `farthest_point`, `density_random`,
 `jittered_grid`.
+Pure-WSE layouts can add `--wse-progressive-order` to permute the identical terminal Gaussian set
+into Yuksel-style nested prefixes. It is opt-in because saved row order and GPU reduction order are
+part of experimental provenance; the current codec still Morton-sorts the full field. With a
+background layer, frozen background rows stay first and only the detail suffix has WSE ordering.
 Renderers: `normalized`, `additive`, `cuda`, `cuda_additive`, `gsplat`. `cuda`/`cuda_additive`
 are exact StructSplat semantics; `gsplat` is a GaussianImage++-style alpha/sum comparator.
 Scale caps: `none`, `hard`, `feature` (ADR-0012).
