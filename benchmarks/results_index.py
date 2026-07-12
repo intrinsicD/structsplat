@@ -832,11 +832,11 @@ def _author_html(
     <article class="reading">
       <div class="kicker">Benchmark coverage dashboard</div>
       <header><h1>{escape(title)}</h1></header>
-      <p class="deck">One portable entry point for explicitly selected benchmark artifacts. 
-        Completeness, errors, protocol coverage, storage assumptions, caveats, and source links 
+      <p class="deck">One portable entry point for explicitly selected benchmark artifacts.
+        Completeness, errors, protocol coverage, storage assumptions, caveats, and source links
         stay visible without JavaScript.</p>
       <section class="summary"><div class="summary-label">Current readout</div>
-        <div class="summary-body"><p><strong>{escape(lane_note)}</strong> The dashboard does not 
+        <div class="summary-body"><p><strong>{escape(lane_note)}</strong> The dashboard does not
         claim that different benchmark protocols are directly comparable.</p></div></section>
       <section class="metrics">
         <div class="metric"><div class="metric-label">Selected reports</div>
@@ -848,7 +848,7 @@ def _author_html(
         <div class="metric"><div class="metric-label">Complete reports</div>
           <div class="metric-value">{complete_reports:,}</div><div class="metric-note">{errors:,} error cells visible</div></div>
       </section>
-      <section><h2>Coverage before conclusions</h2><p class="deck">Observed coverage includes 
+      <section><h2>Coverage before conclusions</h2><p class="deck">Observed coverage includes
         successful and error cells. The table separates them so a failed cell cannot look complete.</p></section>
     </article>
     <div class="wide"><figure class="card"><div class="card-head"><h3>Observed benchmark coverage</h3>
@@ -856,7 +856,7 @@ def _author_html(
       <div class="chart-wrap"><div data-recharts-chart="report-completeness">
         <div class="chart-fallback" data-recharts-fallback>{svg}</div>
         <div data-recharts-live aria-hidden="true"></div></div></div>
-      <figcaption class="chart-note">Static fallback and optional Recharts upgrade use the same 
+      <figcaption class="chart-note">Static fallback and optional Recharts upgrade use the same
         normalized manifest rows.</figcaption></figure></div>
     <article class="reading"><section class="card table-card"><div class="card-head">
       <h3>Selected report matrix</h3><p>Links are relative to this dashboard for portable local use.</p>

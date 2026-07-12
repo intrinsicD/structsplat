@@ -8,7 +8,7 @@ PyTorch reference; the sampler + rasterizer are the CUDA/Vulkan + IntrinsicEngin
 > `structsplat` is a placeholder project name. If it changes, follow the `docs-sync` skill.
 
 ## Skill-aware routing (load the skill, then act)
-This repo ships six project skills in `.claude/skills/`. Load them by task — do not reimplement
+This repo ships seven project skills in `.claude/skills/`. Load them by task — do not reimplement
 their guidance inline.
 
 | When you are… | Load skill |
@@ -16,12 +16,15 @@ their guidance inline.
 | Starting any session / orienting / deciding where code goes | **core** (always first) |
 | Picking up or closing a task from `tasks/` | **task-workflow** |
 | Adding/changing an init strategy, renderer, sampler, hierarchy | **method** |
+| Developing novel research directions, cross-domain transfers, or falsifiable research portfolios | **structsplat-research-ideation** |
 | Running/extending the ablation, or wiring a fitness signal | **benchmark** |
 | Reviewing a diff or self-reviewing before commit | **review** |
 | A change touches documented behavior, decisions, or task status | **docs-sync** |
 
 Typical flow: `core` → `task-workflow` (open the task) → `method` (if adding a component) →
 `review` (before commit) → `docs-sync` (same commit). Explicit invocation: "use the method skill".
+For open-ended research discovery: `core` → `structsplat-research-ideation`; a selected candidate
+then re-enters `task-workflow` → `method` → `benchmark` → `review` → `docs-sync`.
 
 ## Non-negotiable invariants (full list in the `core` skill)
 1. Init-time math (`structure_tensor`, `density`, `sampling`) is **NumPy and importable without

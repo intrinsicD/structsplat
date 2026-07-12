@@ -68,14 +68,20 @@ Scale caps: `none`, `hard`, `feature` (ADR-0012).
 This repo is built to be implemented *with* Claude Code, mirroring the IntrinsicEngine setup.
 
 - **`CLAUDE.md`** — project guide + a skill-aware routing table.
-- **`.claude/skills/`** — six project skills: `core`, `task-workflow`, `review`, `method`,
-  `benchmark`, `docs-sync`. They're auto-discovered inside this repo; run
-  `scripts/install_skills.sh` to symlink them into `~/.claude/skills` for global use.
+- **`.claude/skills/`** — seven canonical project skills: `core`, `task-workflow`, `review`,
+  `method`, `benchmark`, `docs-sync`, `structsplat-research-ideation`. They're auto-discovered
+  inside this repo; run `scripts/install_skills.sh` to symlink them into `~/.claude/skills` for
+  global use. `.agents/skills/structsplat-research-ideation` is a relative discovery symlink to
+  the same research-ideation tree for Codex/Agent Skills, not a duplicate. The skill is a
+  first-party, MIT-licensed adaptation by Alexander Dieckmann of
+  `transformational-research-skill-kit` v1.0.0.
 - **`tasks/`** — work items (`AREA-NNN-slug.md`) tracked in `tasks/INDEX.md`. Say *"work on
   INIT-003"* and the `task-workflow` skill drives the lifecycle.
 - **`docs/adr/`** — architecture decisions the code references by number.
 
 Typical loop: `core` → `task-workflow` → `method` (if adding a component) → `review` → `docs-sync`.
+Research discovery starts with `core` → `structsplat-research-ideation`; selected candidates then
+enter the normal task/method/benchmark loop.
 
 ## Layout
 ```
