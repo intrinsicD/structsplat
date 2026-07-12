@@ -19,6 +19,8 @@ from structsplat.fit import (
     _loss_target_full_weight,
     _lr_factor,
     _make_optimizer,
+    _matched_residual_score_map,
+    _magnitude_residual_score_map,
     _maybe_prune,
     _moment_preserving_duplicate_indices,
     _pixel_loss,
@@ -1476,6 +1478,115 @@ def test_residual_add_min_spacing_suppresses_same_error_cluster():
 
     assert int(in_cluster.sum()) == 1
     assert float(torch.pdist(children).min()) >= cfg.split_min_spacing * base_scale - 1.0
+
+
+def test_matched_residual_score_rewards_coherence_and_cancels_signs():
+    H = W = 25
+    render_img = torch.full((H, W, 3), 0.5)
+    coherent = render_img.clone()
+    alternating = render_img.clone()
+    coherent[7:18, 7:18, 0] = 0.9
+    yy, xx = torch.meshgrid(torch.arange(11), torch.arange(11), indexing="ij")
+    signs = torch.where((xx + yy) % 2 == 0, 1.0, -1.0)
+    alternating[7:18, 7:18, 0] = 0.5 + 0.4 * signs
+
+    coherent_score = _matched_residual_score_map(coherent, render_img, sigma_px=2.0)
+    alternating_score = _matched_residual_score_map(alternating, render_img, sigma_px=2.0)
+    alternating_abs = _magnitude_residual_score_map(alternating, render_img, sigma_px=2.0)
+
+    assert coherent_score.shape == (H, W)
+    assert torch.isfinite(coherent_score).all()
+    assert coherent_score[12, 12] > 10.0 * alternating_score[12, 12]
+    assert coherent_score[12, 12] > alternating_score.max()
+    assert alternating_abs[12, 12] == pytest.approx(coherent_score[12, 12], rel=1e-6)
+
+
+def test_matched_residual_separable_filter_matches_direct_2d_oracle():
+    torch.manual_seed(4)
+    target = torch.rand(9, 11, 3)
+    render_img = torch.rand_like(target)
+    sigma = 1.25
+    radius = math.ceil(3.0 * sigma)
+    offsets = torch.arange(-radius, radius + 1, dtype=target.dtype)
+    kernel_1d = torch.exp(-0.5 * (offsets / sigma) ** 2)
+    kernel_1d /= kernel_1d.sum()
+    kernel_2d = torch.outer(kernel_1d, kernel_1d)
+    weights = kernel_2d.view(1, 1, *kernel_2d.shape).expand(3, 1, -1, -1)
+    signed = (target - render_img).permute(2, 0, 1).unsqueeze(0)
+    expected_rgb = torch.nn.functional.conv2d(
+        signed, weights, padding=radius, groups=3
+    )[0]
+    expected = torch.linalg.vector_norm(expected_rgb, dim=0)
+
+    actual = _matched_residual_score_map(target, render_img, sigma)
+
+    assert torch.allclose(actual, expected, atol=2e-7, rtol=1e-6)
+
+
+@pytest.mark.parametrize("shape", [(1, 1), (1, 7), (7, 1)])
+def test_matched_residual_score_is_finite_for_tiny_images(shape):
+    H, W = shape
+    target = torch.ones(H, W, 3)
+    render_img = torch.zeros_like(target)
+    score = _matched_residual_score_map(target, render_img, sigma_px=20.0)
+    assert score.shape == (H, W)
+    assert torch.isfinite(score).all()
+
+
+def test_signed_gaussian_score_preserves_tensor_aligned_growth_geometry(monkeypatch):
+    H = W = 12
+    target = torch.zeros(H, W, 3)
+    render_img = torch.zeros_like(target)
+    field = _init.build_field(
+        target.numpy(), InitConfig(strategy="random", num_gaussians=4, seed=0))
+    captured = {}
+
+    def capture(field_arg, target_arg, render_arg, cfg_arg, *, tensor_aligned=False):
+        captured.update(
+            tensor_aligned=tensor_aligned,
+            sampled_add_score=cfg_arg.sampled_add_score,
+        )
+        return field_arg, 0
+
+    monkeypatch.setattr("structsplat.fit._add_from_residual", capture)
+    cfg = FitConfig(
+        split_count=1,
+        split_mode="residual_tensor_add",
+        sampled_add_score="signed_gaussian",
+        max_gaussians=8,
+    )
+    grown, added = _split_from_residual(field, target, render_img, cfg)
+
+    assert grown is field
+    assert added == 0
+    assert cfg.refine_site == "residual_tensor"
+    assert cfg.refine_primitive == "sampled_add"
+    assert captured == {"tensor_aligned": True, "sampled_add_score": "signed_gaussian"}
+
+
+def test_signed_gaussian_score_grows_exact_count_with_finite_parameters():
+    H = W = 24
+    target = torch.zeros(H, W, 3)
+    target[5:19, 8:16, 0] = 1.0
+    render_img = torch.zeros_like(target)
+    field = _init.build_field(
+        target.numpy(), InitConfig(strategy="random", num_gaussians=8, seed=0))
+    cfg = FitConfig(
+        split_count=4,
+        split_mode="residual_tensor_add",
+        sampled_add_score="signed_gaussian",
+        split_min_spacing=0.5,
+        split_oversample=8.0,
+        max_gaussians=12,
+    )
+
+    grown, added = _split_from_residual(field, target, render_img, cfg)
+
+    assert added == 4
+    assert grown.n == 12
+    assert torch.isfinite(grown.means[-added:]).all()
+    assert torch.isfinite(grown.log_scales[-added:]).all()
+    assert torch.isfinite(grown.rotations[-added:]).all()
 
 
 def test_residual_add_color_init_is_configurable_and_additive_safe():

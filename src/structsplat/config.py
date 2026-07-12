@@ -247,7 +247,8 @@ class FitConfig:
     split_every: int | None = None
     split_count: int = 0
     split_mode: str = "duplicate"      # legacy alias for refine_site/primitive/nms
-    refine_site: str | None = None     # none/residual/residual_tensor/support/absgrad/ranked/freq
+    # none/residual/residual_tensor/support/absgrad/ranked/freq
+    refine_site: str | None = None
     refine_primitive: str | None = None  # duplicate/fp/moment_preserving/sampled_add
     refine_nms: str | None = None      # off/on; on applies sampled-add spacing defaults
     split_scale: float = 0.7
@@ -255,6 +256,8 @@ class FitConfig:
     split_min_spacing: float = 0.0      # residual_add NMS radius = this * base densify scale
     split_schedule_stops_at_max: bool = False  # suppress later split-triggered side effects at cap
     split_color_init: str = "target"    # target or residual; additive renderers force residual
+    # sampled-add site score; signed_gaussian is FIT-017's coherent-error hypothesis
+    sampled_add_score: str = "legacy_abs"  # legacy_abs, gaussian_abs, or signed_gaussian
     seed_new_row_optimizer_state: bool = False  # seed split children from parent/median moments
     new_row_temper_iters: int = 0        # post-insert update ramp length; 0 disables
     new_row_temper_start: float = 0.25   # first-step update multiplier for young rows
@@ -506,6 +509,10 @@ class FitConfig:
             raise ValueError(
                 "adaptive_split_mode must be one of "
                 f"{', '.join(adaptive_modes)}, got {self.adaptive_split_mode!r}")
+        if self.sampled_add_score not in ("legacy_abs", "gaussian_abs", "signed_gaussian"):
+            raise ValueError(
+                "sampled_add_score must be legacy_abs, gaussian_abs, or signed_gaussian, "
+                f"got {self.sampled_add_score!r}")
         if self.adaptive_growth_every <= 0:
             raise ValueError(
                 f"adaptive_growth_every must be > 0, got {self.adaptive_growth_every}")

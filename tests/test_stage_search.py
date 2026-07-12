@@ -564,12 +564,14 @@ def test_factored_refine_axes_smoke_residual_tensor_moment(tmp_path):
         refine_sites=["none", "residual", "residual_tensor"],
         refine_primitives=["sampled_add", "moment_preserving"],
         refine_nms_modes=["off"], refine_color_inits=["target"],
+        refine_score_modes=["legacy_abs", "signed_gaussian"],
         refine_prune_modes=["off"], refine_relocate_modes=["off"],
         pyramid_modes=["single"], split_every=5, split_count=8, render_chunk=8,
         outdir=str(outdir), device="cpu",
     )
 
-    assert len(rows) == 5  # site=none makes primitive inert and dedupes one cell
+    # score is inert for site=none and non-sampled primitives
+    assert len(rows) == 7
     assert all(r["status"] == "ok" for r in rows)
     combos = {(r["refine_site"], r["refine_primitive"]) for r in rows}
     assert ("residual_tensor", "moment_preserving") in combos
@@ -582,6 +584,15 @@ def test_factored_refine_axes_smoke_residual_tensor_moment(tmp_path):
     assert target["n_gaussians"] == target["budget"]
     assert target["init_budget"] < target["budget"]
     assert "refine_site=residual_tensor" in target["config_label"]
+
+    signed = [
+        r for r in rows
+        if r["refine_site"] == "residual_tensor"
+        and r["refine_primitive"] == "sampled_add"
+        and r["refine_score"] == "signed_gaussian"
+    ][0]
+    assert signed["status"] == "ok"
+    assert "refine_score=signed_gaussian" in signed["config_label"]
 
 
 def test_color_basis_is_stage_axis(tmp_path):
@@ -798,6 +809,7 @@ def test_stage_influence_index_ranks_best_delta_first(tmp_path):
             "refine_primitive": "duplicate",
             "refine_nms": "off",
             "refine_color": "target",
+            "refine_score": "legacy_abs",
             "refine_prune": "off",
             "refine_relocate": "off",
             "state_seed": "off",

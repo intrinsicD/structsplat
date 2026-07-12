@@ -149,6 +149,10 @@ def test_stage_search_cli_forwards_sharding_and_factored_axes(monkeypatch):
             "--refine-color-inits",
             "target",
             "residual",
+            "--refine-score-modes",
+            "legacy_abs",
+            "gaussian_abs",
+            "signed_gaussian",
             "--refine-prune-modes",
             "off",
             "on",
@@ -176,6 +180,9 @@ def test_stage_search_cli_forwards_sharding_and_factored_axes(monkeypatch):
     assert captured["refine_primitives"] == ["duplicate", "moment_preserving"]
     assert captured["refine_nms_modes"] == ["off", "on"]
     assert captured["refine_color_inits"] == ["target", "residual"]
+    assert captured["refine_score_modes"] == [
+        "legacy_abs", "gaussian_abs", "signed_gaussian",
+    ]
     assert captured["refine_prune_modes"] == ["off", "on"]
     assert captured["refine_relocate_modes"] == ["off", "on"]
     assert captured["early_exit"] is True

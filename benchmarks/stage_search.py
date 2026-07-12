@@ -48,7 +48,8 @@ STAGE_KEYS = [
     "strategy", "tensor", "tensor_color", "density", "sampling", "orientation", "color",
     "scale", "scale_cap", "background", "opacity", "renderer", "aa", "color_basis",
     "color_solve", "loss", "loss_weight", "optimizer", "lr_schedule", "refine_site",
-    "refine_primitive", "refine_nms", "refine_color", "refine_prune", "refine_relocate",
+    "refine_primitive", "refine_nms", "refine_color", "refine_score", "refine_prune",
+    "refine_relocate",
     "state_seed", "row_temper", "support_fade", "pyramid",
 ]
 
@@ -78,6 +79,7 @@ FACTORIAL_DEFAULTS: dict[str, tuple[str, ...]] = {
     "refine_primitives": ("sampled_add",),
     "refine_nms_modes": ("off",),
     "refine_color_inits": ("target",),
+    "refine_score_modes": ("legacy_abs",),
     "refine_prune_modes": ("off",),
     "refine_relocate_modes": ("off",),
     "state_seed_modes": ("off",),
@@ -122,6 +124,7 @@ INFLUENCE_DEFAULTS: dict[str, tuple[str, ...]] = {
     "refine_primitives": ("fp", "duplicate", "moment_preserving", "sampled_add"),
     "refine_nms_modes": ("off", "on"),
     "refine_color_inits": ("target", "residual"),
+    "refine_score_modes": ("legacy_abs", "gaussian_abs", "signed_gaussian"),
     "refine_prune_modes": ("off", "on"),
     "refine_relocate_modes": ("off", "on"),
     "state_seed_modes": ("off", "on"),
@@ -148,6 +151,7 @@ _AXIS_TO_KEY = {
     "refine_modes": "refine",
     "refine_sites": "refine_site", "refine_primitives": "refine_primitive",
     "refine_nms_modes": "refine_nms", "refine_color_inits": "refine_color",
+    "refine_score_modes": "refine_score",
     "refine_prune_modes": "refine_prune", "refine_relocate_modes": "refine_relocate",
     "state_seed_modes": "state_seed", "row_temper_modes": "row_temper",
     "support_fade_modes": "support_fade",
@@ -231,13 +235,14 @@ def _canonicalize(cfg: dict[str, Any], canonical: dict[str, str]) -> dict[str, A
     if strat != "aniso_flanking" and c["color"] == "two_sided":
         c["color"] = "bilinear"
     if c.get("refine_site") == "none":
-        for k in ("refine_primitive", "refine_nms", "refine_color"):
+        for k in ("refine_primitive", "refine_nms", "refine_color", "refine_score"):
             c[k] = canonical[k]
     if c.get("refine_primitive") != "sampled_add":
         # NMS and residual-color initialization are sampled-add controls; duplicate-style
         # primitives ignore them, so pin them to avoid duplicate equivalent cells.
         c["refine_nms"] = canonical["refine_nms"]
         c["refine_color"] = canonical["refine_color"]
+        c["refine_score"] = canonical["refine_score"]
     if c.get("refine_site") == "none" and c.get("refine_relocate") != "on":
         c["state_seed"] = canonical["state_seed"]
         c["row_temper"] = canonical["row_temper"]
@@ -278,6 +283,7 @@ def _base_refine_config() -> dict[str, Any]:
         "refine_primitive": "duplicate",
         "refine_nms": "off",
         "refine_color": "target",
+        "refine_score": "legacy_abs",
         "refine_prune": "off",
         "refine_relocate": "off",
     }
@@ -331,7 +337,7 @@ def _normalize_refine_config(cfg: dict[str, Any]) -> dict[str, Any]:
     c = dict(cfg)
     if "refine" in c and not all(k in c for k in (
         "refine_site", "refine_primitive", "refine_nms", "refine_color",
-        "refine_prune", "refine_relocate",
+        "refine_score", "refine_prune", "refine_relocate",
     )):
         c.update(_legacy_refine_config(c["refine"]))
     else:
@@ -339,6 +345,7 @@ def _normalize_refine_config(cfg: dict[str, Any]) -> dict[str, Any]:
         c.setdefault("refine_primitive", "duplicate")
         c.setdefault("refine_nms", "off")
         c.setdefault("refine_color", "target")
+        c.setdefault("refine_score", "legacy_abs")
         c.setdefault("refine_prune", "off")
         c.setdefault("refine_relocate", "off")
     c.setdefault("state_seed", "off")
@@ -378,6 +385,7 @@ def _refine_kwargs_from_config(cfg: dict[str, Any], split_every: int | None,
             "refine_primitive": refine_cfg["refine_primitive"],
             "refine_nms": refine_cfg["refine_nms"],
             "split_color_init": refine_cfg["refine_color"],
+            "sampled_add_score": refine_cfg["refine_score"],
         })
         if refine_cfg["refine_nms"] == "on":
             out.update({"split_min_spacing": 1.0, "split_oversample": 8.0})
@@ -395,6 +403,8 @@ def _refine_kwargs(mode: str, split_every: int | None, split_count: int,
     )
     for key in ("refine_site", "refine_primitive", "refine_nms"):
         out.pop(key, None)
+    if out.get("sampled_add_score") == "legacy_abs":
+        out.pop("sampled_add_score")
     if out.get("split_color_init") == "target":
         out.pop("split_color_init", None)
     return out
@@ -905,6 +915,7 @@ def run_stage_search(
     refine_primitives=None,
     refine_nms_modes=None,
     refine_color_inits=None,
+    refine_score_modes=None,
     refine_prune_modes=None,
     refine_relocate_modes=None,
     state_seed_modes=None,
@@ -969,6 +980,7 @@ def run_stage_search(
         raise ValueError(f"unknown mode {mode!r}; expected factorial or influence")
     explicit_refine = (
         refine_sites, refine_primitives, refine_nms_modes, refine_color_inits,
+        refine_score_modes,
         refine_prune_modes, refine_relocate_modes,
     )
     if refine_modes is not None and any(v is not None for v in explicit_refine):
@@ -1001,6 +1013,7 @@ def run_stage_search(
             "refine_primitives": refine_primitives,
             "refine_nms_modes": refine_nms_modes,
             "refine_color_inits": refine_color_inits,
+            "refine_score_modes": refine_score_modes,
             "refine_prune_modes": refine_prune_modes,
             "refine_relocate_modes": refine_relocate_modes,
         })
@@ -1783,6 +1796,8 @@ def main():
                    help="off or on")
     p.add_argument("--refine-color-inits", nargs="+", default=None,
                    help="target or residual")
+    p.add_argument("--refine-score-modes", nargs="+", default=None,
+                   help="legacy_abs, gaussian_abs, or signed_gaussian; sampled-add only")
     p.add_argument("--refine-prune-modes", nargs="+", default=None,
                    help="off or on")
     p.add_argument("--refine-relocate-modes", nargs="+", default=None,
@@ -1866,6 +1881,7 @@ def main():
         refine_primitives=a.refine_primitives,
         refine_nms_modes=a.refine_nms_modes,
         refine_color_inits=a.refine_color_inits,
+        refine_score_modes=a.refine_score_modes,
         refine_prune_modes=a.refine_prune_modes,
         refine_relocate_modes=a.refine_relocate_modes,
         state_seed_modes=a.state_seed_modes,

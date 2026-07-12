@@ -62,6 +62,19 @@ FIT-004/006/007 densification variants can still be requested with legacy `--ref
 such as `residual_add_nms`, `residual_tensor_add_nms`, `fp_duplicate`, `ranked_wave`, `relocate`,
 and `absgrad_wave`, but new sweeps should prefer explicit axes like
 `--refine-sites residual residual_tensor --refine-primitives sampled_add moment_preserving`.
+FIT-017 adds an orthogonal sampled-add score axis:
+`--refine-score-modes legacy_abs gaussian_abs signed_gaussian`. `gaussian_abs` is the required
+same-width magnitude control for the signed-coherence hypothesis. The deterministic COCO4 x
+two-seed 64->80 guard rejected both wider scores after recovery: signed Gaussian gained
++0.5199 dB immediately but lost -0.0318 dB after 20 steps and -0.2301 dB after 100. Keep
+`legacy_abs` as the default. Reproduce the shared-start guard with:
+
+```bash
+python -m benchmarks.sampled_add_score_compare \
+  --outdir results/fit017_sampled_add_score_guard \
+  --seeds 0 1 --max-side 64 --start-count 64 --add-count 16 --pre-iters 40 --device cpu
+```
+
 FIT-009's difficult-four slice did not promote `residual_tensor x moment_preserving`; keep it as a
 searchable combination. Stretch controls also include `optimizer=adan` and the `aa` stage from
 `--aa-dilations`. CORE-006 affine colors are exposed as `--color-basis-modes affine`; keep

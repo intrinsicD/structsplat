@@ -129,6 +129,7 @@ def cmd_fit(args):
                      split_oversample=args.split_oversample,
                      split_min_spacing=args.split_min_spacing,
                      split_color_init=args.split_color_init,
+                     sampled_add_score=args.sampled_add_score,
                      seed_new_row_optimizer_state=args.seed_new_row_optimizer_state,
                      new_row_temper_iters=args.new_row_temper_iters,
                      new_row_temper_start=args.new_row_temper_start,
@@ -207,6 +208,7 @@ def cmd_stage_search(args):
         refine_primitives=args.refine_primitives,
         refine_nms_modes=args.refine_nms_modes,
         refine_color_inits=args.refine_color_inits,
+        refine_score_modes=args.refine_score_modes,
         refine_prune_modes=args.refine_prune_modes,
         refine_relocate_modes=args.refine_relocate_modes,
         state_seed_modes=args.state_seed_modes,
@@ -477,6 +479,10 @@ def main():
                    help="residual-add spacing radius as a multiple of the densify base scale")
     f.add_argument("--split-color-init", choices=["target", "residual"], default="target",
                    help="color initialization for normalized residual-add children")
+    f.add_argument("--sampled-add-score",
+                   choices=["legacy_abs", "gaussian_abs", "signed_gaussian"],
+                   default="legacy_abs",
+                   help="sampled-add site score; signed_gaussian is the FIT-017 experiment")
     f.add_argument("--seed-new-row-optimizer-state", action="store_true",
                    help="seed new-row optimizer moments from split parents or carried-row median")
     f.add_argument("--new-row-temper-iters", type=int, default=0,
@@ -570,6 +576,8 @@ def main():
                    help="off or on")
     s.add_argument("--refine-color-inits", nargs="+", default=None,
                    help="target or residual")
+    s.add_argument("--refine-score-modes", nargs="+", default=None,
+                   help="legacy_abs, gaussian_abs, or signed_gaussian; sampled-add only")
     s.add_argument("--refine-prune-modes", nargs="+", default=None,
                    help="off or on")
     s.add_argument("--refine-relocate-modes", nargs="+", default=None,

@@ -1701,7 +1701,11 @@ def _split_from_residual(field: GaussianField, target: torch.Tensor, render_img:
                 "refine_primitive='sampled_add' requires refine_site residual or "
                 f"residual_tensor, got {cfg.refine_site!r}")
         return _add_from_residual(
-            field, target, render_img, cfg, tensor_aligned=cfg.refine_site == "residual_tensor"
+            field,
+            target,
+            render_img,
+            cfg,
+            tensor_aligned=cfg.refine_site == "residual_tensor",
         )
 
     H, W = target.shape[:2]
@@ -1741,18 +1745,24 @@ def _add_from_residual(field: GaussianField, target: torch.Tensor, render_img: t
 
     H, W = target.shape[:2]
     field = _ensure_generation_density_filter(field, cfg, H, W)
+    room = field.n if cfg.max_gaussians is None else max(0, cfg.max_gaussians - field.n)
+    k = min(cfg.split_count, int(H * W), room)
+    if k <= 0:
+        return field, 0
+
+    # The score and the inserted cohort share this scale. Keeping the two coupled is the central
+    # FIT-017 control: only site scoring changes relative to residual_tensor sampled-add growth.
+    base_scale = math.sqrt((H * W) / max(field.n + k, 1)) * cfg.split_scale
     residual_map = (render_img - target).abs().mean(dim=2)
-    if tensor_aligned:
+    if cfg.sampled_add_score == "signed_gaussian":
+        residual = _matched_residual_score_map(target, render_img, base_scale).reshape(-1)
+    elif cfg.sampled_add_score == "gaussian_abs":
+        residual = _magnitude_residual_score_map(target, render_img, base_scale).reshape(-1)
+    elif tensor_aligned:
         score_map = F.avg_pool2d(residual_map[None, None], 3, stride=1, padding=1)[0, 0]
         residual = (0.7 * residual_map + 0.3 * score_map).reshape(-1)
     else:
         residual = residual_map.reshape(-1)
-    room = field.n if cfg.max_gaussians is None else max(0, cfg.max_gaussians - field.n)
-    k = min(cfg.split_count, int(residual.numel()), room)
-    if k <= 0:
-        return field, 0
-
-    base_scale = math.sqrt((H * W) / max(field.n + k, 1)) * cfg.split_scale
     min_spacing = cfg.split_min_spacing * max(base_scale, _MIN_DENSIFY_SCALE)
     idx = _spaced_topk_pixels(residual, W, k, min_spacing, cfg.split_oversample)
     y = torch.div(idx, W, rounding_mode="floor")
@@ -1792,6 +1802,69 @@ def _add_from_residual(field: GaussianField, target: torch.Tensor, render_img: t
         scale_max=scale_max,
         filter_variance=filter_variance,
     )), k
+
+
+@torch.no_grad()
+def _gaussian_residual_score_map(target: torch.Tensor, render_img: torch.Tensor,
+                                 sigma_px: float, *, preserve_sign: bool) -> torch.Tensor:
+    """Filter RGB residual with one planned isotropic Gaussian footprint.
+
+    With ``preserve_sign=True``, per-channel convolution happens before the RGB norm, so adjacent
+    errors of opposite sign cancel instead of looking like useful coherent support. False is the
+    same-width magnitude-blur control. Kernels are truncated only where an offset cannot overlap
+    the finite image; their common normalization does not affect ranking.
+    """
+    if target.shape != render_img.shape or target.ndim != 3 or target.shape[2] != 3:
+        raise ValueError(
+            "target and render_img must have matching (H, W, 3) shapes, got "
+            f"{tuple(target.shape)} and {tuple(render_img.shape)}"
+        )
+    if not math.isfinite(sigma_px) or sigma_px <= 0.0:
+        raise ValueError(f"sigma_px must be finite and > 0, got {sigma_px}")
+
+    H, W = target.shape[:2]
+    sigma = max(float(sigma_px), _MIN_DENSIFY_SCALE)
+    residual = target - render_img
+    if not preserve_sign:
+        residual = residual.abs()
+    residual = residual.permute(2, 0, 1).unsqueeze(0)
+
+    def kernel(radius: int) -> torch.Tensor:
+        if radius <= 0:
+            return residual.new_ones(1)
+        offsets = torch.arange(-radius, radius + 1, device=residual.device,
+                               dtype=residual.dtype)
+        weights = torch.exp(-0.5 * (offsets / sigma) ** 2)
+        return weights / weights.sum().clamp_min(torch.finfo(weights.dtype).eps)
+
+    radius = int(math.ceil(3.0 * sigma))
+    radius_x = min(radius, max(W - 1, 0))
+    radius_y = min(radius, max(H - 1, 0))
+    if radius_x > 0:
+        weights_x = kernel(radius_x).view(1, 1, 1, -1).expand(3, 1, 1, -1)
+        residual = F.conv2d(residual, weights_x, padding=(0, radius_x), groups=3)
+    if radius_y > 0:
+        weights_y = kernel(radius_y).view(1, 1, -1, 1).expand(3, 1, -1, 1)
+        residual = F.conv2d(residual, weights_y, padding=(radius_y, 0), groups=3)
+    return torch.linalg.vector_norm(residual[0], dim=0)
+
+
+@torch.no_grad()
+def _matched_residual_score_map(target: torch.Tensor, render_img: torch.Tensor,
+                                sigma_px: float) -> torch.Tensor:
+    """Signed coherent-error score used by FIT-017."""
+    return _gaussian_residual_score_map(
+        target, render_img, sigma_px, preserve_sign=True
+    )
+
+
+@torch.no_grad()
+def _magnitude_residual_score_map(target: torch.Tensor, render_img: torch.Tensor,
+                                  sigma_px: float) -> torch.Tensor:
+    """Same-width blurred-magnitude control for FIT-017."""
+    return _gaussian_residual_score_map(
+        target, render_img, sigma_px, preserve_sign=False
+    )
 
 
 def _raw_attribute_bits_per_gaussian(field: GaussianField) -> int:
