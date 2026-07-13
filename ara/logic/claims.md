@@ -363,3 +363,48 @@ reference renderer is memory-bound. See `ara/evidence/core005-render-checkpoint-
 - **Dependencies**: []
 - **Tags**: weighted-sample-elimination, progressive-order, prefix, blue-noise, correctness
 - **From staging**: O50
+
+## C26: The completed 168 KiB lane is high-rate policy evidence, not compression evidence
+
+- **Statement**: The external-present BENCH-006 execution completed 320/320 common-harness cells
+  (40 methods × four COCO training images × two seeds), but its fixed 172,032-byte float payload is
+  71.68–81.15 bpp at the prepared resolutions. Its actual SSPL1 streams are about 22 bpp, while the
+  prepared lossless target PNGs average about 17.99 bpp. The report supports bounded optimizer and
+  policy comparisons under a normalized StructSplat harness; it cannot establish compression SOTA
+  or native superiority over paper methods.
+- **Status**: supported
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: Recalculation from the committed source dimensions and complete
+  streams contradicts the stated rates, or the report is incorrectly relabeled despite changing
+  neither its data, native-method execution, nor rate protocol.
+- **Proof**: [`ara/evidence/bench001-external-complete-2026-07-13/run.md`,
+  `ara/evidence/storage-budget-168k-sota-audit-2026-07-13.md`,
+  `results/storage_budget_168k_external_present/image_storage.csv`,
+  `results/storage_budget_168k_external_present/metrics.csv`]
+- **Dependencies**: [C04, C12]
+- **Tags**: actual-rate, fixed-storage, claim-boundary, native-reference, compression
+- **From staging**: direct 2026-07-13 repository/SOTA audit
+
+## C27: StructSplat's broad structure-aware novelty boundary is occupied
+
+- **Statement**: Broad claims for structure-aware 2D Gaussian allocation/orientation/precision,
+  normalized local ownership, progressive Gaussian coding, segmentation-gated boundaries, learned
+  initialization, and generic clustered quantization are directly covered or threatened by
+  Structure-Guided Allocation, Image-GS/SAD, P-GSVC, Contour-Aware 2DGS, Instant-GI and later
+  learned samplers, and CGVQ. The remaining provisional claim is narrower: whether a training-free
+  tensor-metric/WSE relationship yields held-out actual-rate or robustness value beyond direct
+  controls.
+- **Status**: supported as a prior-art boundary; the narrow positive claim is unresolved
+- **Provenance**: ai-suggested
+- **Crystallized via**: prior-art-audit
+- **Falsification criteria**: A primary-source audit shows that one named threat lacks the attributed
+  mechanism, or a more specific StructSplat claim is demonstrated to predate or be irreducible to
+  those mechanisms. Search cannot prove global novelty, so the narrow claim remains provisional
+  even if BENCH-007 succeeds.
+- **Proof**: [`ara/evidence/storage-budget-168k-sota-audit-2026-07-13.md`,
+  `ara/evidence/research-portfolio-2026-07-13.md`,
+  `tasks/BENCH-007-actual-rate-structure-phase-diagram.md`]
+- **Dependencies**: [C05, C25, C26]
+- **Tags**: novelty-boundary, prior-art, structure, actual-rate, research-scope
+- **From staging**: 2026-07-13 primary-source research audit

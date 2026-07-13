@@ -2,10 +2,10 @@
 
 ## Status
 Partial. Isolated native GaussianImage++, Image-GS, and base GaussianImage adapters, official
-environments, central metric harnesses, matched COCO4 500/5k proxy slices, and same-pixel pairing
-against both the terminal and full-count-checkpoint StructSplat rows are complete. Native-authentic
-full-resolution, multi-budget/time-envelope, actual-codec/RD, and learned Instant-GI tracks remain
-open.
+environments, central metric harnesses, matched COCO4 500/5k proxy slices, same-pixel pairing, the
+10k-step native GaussianImage fixed-storage slice, and a separately scoped native AIR inference
+run are complete. Native-authentic full-resolution multi-rate curves, actual-codec RD where streams
+exist, and the remaining 2026 reference methods remain open.
 
 ## Goal
 Replace paper-name analogue rows as the sole external comparison with separately reported native
@@ -161,22 +161,41 @@ StructSplat matched-policy default-promotion gate.
   including cold checkpoint reload and in-memory quantized-decode equality before expanding to
   Kodak24 x six counts.
 
+## Completed 2026-07-13
+
+- Completed the available-repository fixed-storage suite and documented it in
+  `ara/evidence/bench001-external-complete-2026-07-13/run.md`. The native official
+  GaussianImage lane completed 8/8 COCO4 × seed cells at max-side 160, N=5,376, and 10,000
+  requested steps. It averaged 35.6571 dB in 6.392 s and about 4,412 render FPS. Against the
+  historical pinned StructSplat row it is a -13.142 dB / +8.288 s quality-speed tradeoff. Its
+  78.591 bpp value is float-parameter accounting, not an encoded stream.
+- Ran native AIR inference separately on the same four source images at max-side 256 because AIR's
+  MS-SSIM path rejects the 160-side lane. It completed 4/4 images, averaging 25.254 dB,
+  37.007 ms inference, 3,511.25 Gaussians, and a native-reported quantized 4.328 bpp. Resolution,
+  learned-checkpoint, metric, and rate semantics differ, so this is environment evidence rather
+  than a paired ranking.
+- The common-harness 320-cell report remains a local-mechanism study. It must not be used as the
+  native-reference table merely because some rows have paper-derived labels.
+
 ## Next actions
 
-1. Expand GaussianImage++ across multiple budgets and add an iteration/time envelope so the
-   current 500-step convergence result is not confused with the repository's 50k-step default.
-2. Add a native-authentic GaussianImage++ track at full resolution and its published optimization
-   horizon, plus the real quantized bitstream path for actual bpp/RD.
-3. Expand the official one-seed 5k `siggraph25` proxy, then run Image-GS release quick-start,
-   native-authentic/full-resolution, multi-budget, and time-matched tracks. Keep the fixed-N short
-   proxy separate because it disables native growth.
-4. Add a real Image-GS packed-stream path before making codec-bpp/RD claims; do not reinterpret
+1. Use BENCH-007 to establish self-contained StructSplat RD targets before expanding external
+   comparisons. Native methods must be evaluated at their real rate definitions, not forced into
+   the 168 KiB proxy.
+2. Add native Structure-Guided Allocation first if official code is available; it is the direct
+   handcrafted structure baseline. Then prioritize SAD and WIPES as representation controls.
+3. Expand GaussianImage++ across multiple native-resolution rates and an iteration/time envelope;
+   include its real quantized stream path before actual-bpp claims.
+4. Expand Image-GS release quick-start and native-authentic/full-resolution multi-rate/time-matched
+   tracks. Add a real packed-stream path before codec-bpp claims; never reinterpret
    `analytical_bpp` as actual rate.
 5. Add `release_kodak_cholesky_qat_woec`: enforce native resolution/counts/order, run 50k
    representation + 50k QAT, preserve upstream best-QAT selection, validate cold/in-memory decode,
    and report both upstream and corrected `56*N+1728` analytical rates. Keep actual bytes/bpp null;
    no released self-contained bitstream exists.
-6. Provision Instant-GI's `torch_kdtree`, native extensions, and learned checkpoint; report its
+6. Harden the AIR adapter as a BENCH-005 native row with central original-pixel rate accounting and
+   checkpoint/build provenance; retain the max-side mismatch in every report.
+7. Provision Instant-GI's `torch_kdtree`, native extensions, and learned checkpoint; report its
    adaptive N rather than truncating it into a fixed-N claim.
 
 ## Interfaces

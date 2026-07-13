@@ -1224,6 +1224,29 @@ def _scale_stats(field: GaussianField) -> dict[str, float]:
         }
 
 
+def _representation_layout(field: GaussianField) -> dict[str, Any]:
+    """Return analytical frozen payload layout for a completed field.
+
+    The 168 KiB lane is defined by the common constant-RGB RS payload. Some experimental rows
+    carry extra stored attributes such as opacity or affine color gradients; those rows should be
+    reported as capacity-mismatched instead of failing before quality can be scored.
+    """
+    base = SB.CONSTANT_RGB_RS_SCALARS_PER_GAUSSIAN
+    opacity_scalars = 1 if field.opacities is not None else 0
+    color_grad_scalars = 0
+    if field.color_grads is not None:
+        color_grad_scalars = int(field.color_grads.reshape(field.n, -1).shape[1])
+    scalars = base + opacity_scalars + color_grad_scalars
+    return {
+        "representation_payload_scalars_per_gaussian": scalars,
+        "representation_extra_scalars_per_gaussian": scalars - base,
+        "representation_actual_bytes_per_gaussian": scalars * SB.FLOAT32_BYTES,
+        "representation_common_bytes_per_gaussian": SB.CONSTANT_RGB_RS_BYTES_PER_GAUSSIAN,
+        "representation_opacity_scalars_per_gaussian": opacity_scalars,
+        "representation_color_grad_scalars_per_gaussian": color_grad_scalars,
+    }
+
+
 def _cell_key(row: dict[str, Any]) -> tuple[Any, ...]:
     fit_config = row.get("fit_config") if isinstance(row.get("fit_config"), dict) else {}
     geometry_loss_weight = row.get(
@@ -1415,10 +1438,7 @@ def _fit_one(
         fcfg = replace(fcfg, compute_lpips=True)
     out = fit(field, target, fcfg, verbose=False)
     frozen_field = out["field"]
-    if storage_gaussian_cap is not None and (
-        frozen_field.opacities is not None or frozen_field.color_grads is not None
-    ):
-        raise RuntimeError("fixed-storage accounting requires constant RGB and no stored opacity")
+    representation_layout = _representation_layout(frozen_field)
     render = out["render"].detach().clamp(0, 1)
     final_psnr = M.psnr(render, target)
     iterations_run = int(out.get("iterations_run", base_fit.iters))
@@ -1466,6 +1486,7 @@ def _fit_one(
         "codec_bits": None,
         "representation_has_opacity": frozen_field.opacities is not None,
         "representation_has_affine_color": frozen_field.color_grads is not None,
+        **representation_layout,
         "psnr": final_psnr,
         "ssim": float(M.ssim(render, target, backend=fcfg.ssim_backend)),
         "ms_ssim": M.ms_ssim(render, target),
@@ -3860,21 +3881,49 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
                         )
                         save_image(render_np, recon_path)
                         reconstruction_file_bytes = int(recon_path.stat().st_size)
-                        storage_fields = (
-                            SB.row_storage_accounting(
+                        if storage_budget_bytes is not None:
+                            actual_bytes_per_gaussian = int(
+                                row.get(
+                                    "representation_actual_bytes_per_gaussian",
+                                    SB.CONSTANT_RGB_RS_BYTES_PER_GAUSSIAN,
+                                )
+                            )
+                            storage_fields = SB.row_storage_accounting(
                                 int(row["n_gaussians"]),
                                 source_path=image_path,
                                 target_path=target_path,
                                 reconstruction_path=recon_path,
                                 budget_bytes=storage_budget_bytes,
+                                bytes_per_gaussian=actual_bytes_per_gaussian,
                             )
-                            if storage_budget_bytes is not None
-                            else {
+                            storage_fields["storage_actual_bytes_per_gaussian"] = (
+                                actual_bytes_per_gaussian
+                            )
+                            storage_fields["storage_layout_gaussian_cap"] = storage_fields[
+                                "storage_gaussian_cap"
+                            ]
+                            storage_fields["storage_common_gaussian_cap"] = storage_gaussian_cap
+                            storage_fields["storage_common_bytes_per_gaussian"] = (
+                                SB.CONSTANT_RGB_RS_BYTES_PER_GAUSSIAN
+                            )
+                            # Preserve the protocol columns used in cell keys and existing reports.
+                            storage_fields["storage_gaussian_cap"] = storage_gaussian_cap
+                            storage_fields["storage_bytes_per_gaussian"] = (
+                                SB.CONSTANT_RGB_RS_BYTES_PER_GAUSSIAN
+                            )
+                        else:
+                            actual_bytes_per_gaussian = int(
+                                row.get(
+                                    "representation_actual_bytes_per_gaussian",
+                                    SB.CONSTANT_RGB_RS_BYTES_PER_GAUSSIAN,
+                                )
+                            )
+                            storage_fields = {
                                 "reconstruction_file_bytes": reconstruction_file_bytes,
                                 "representation_payload_bytes": int(row["n_gaussians"])
-                                * SB.CONSTANT_RGB_RS_BYTES_PER_GAUSSIAN,
+                                * actual_bytes_per_gaussian,
+                                "storage_actual_bytes_per_gaussian": actual_bytes_per_gaussian,
                             }
-                        )
                         rec = {
                             **row_base,
                             **row,

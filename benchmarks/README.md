@@ -177,15 +177,22 @@ as exactly 172,032 bytes and counts the common frozen constant-RGB RS payload on
 log-scale x/y, rotation, and RGB, all float32. That is 32 bytes/Gaussian and exactly 5,376
 Gaussians. Source file bytes, prepared-target PNG bytes, reconstruction PNG bytes, decoded float32
 array bytes, and actual SSPL1 stream bytes are distinct columns; none is silently substituted for
-the analytical payload. The lane runs the explicit 41-method registry snapshot on COCO4 x seeds
-{0,1}, max-side 160, with a 10k ceiling. All scheduled growth finishes before the 6,500-iteration
+the analytical payload. The intended registry snapshot had 41 methods; the completed
+external-present run had 40 because Instant-GI was absent, and finished 320/320 COCO4 x seed
+cells at max-side 160 with a 10k ceiling. All scheduled growth finishes before the 6,500-iteration
 plateau gate; six consecutive 100-step evaluations without a 0.005 dB gain stop a run. The scored
 reconstruction is the convergence endpoint, including checkpoint selection and final color solve,
 and early exits hold that endpoint to the nominal AUC horizon. Max-horizon cells are reported as
-right-censored. Instant-GI's native under-allocation is filled with deterministic random target
+right-censored. When available, Instant-GI's native under-allocation is filled with deterministic random target
 samples while preserving native/fill counts; the adaptive arm stops adaptive additions at the
 exact cap, finishes scheduled fill, and continues optimization. This remains a local analogue
 comparison, not a native-codec byte match.
+
+Do not use this lane for a compression or SOTA decision. At the four prepared resolutions its
+172,032-byte analytical payload is 71.68–81.15 bpp; completed SSPL1 rows are about 22 bpp, versus
+17.99 bpp average for the lossless target PNGs. BENCH-007 owns the replacement experiment:
+self-contained SSPL1 targets at 0.25/0.5/1/2/4 bpp, held-out images, equal codec search, direct
+structure controls, and BD-rate over measured overlap.
 
 ```
 LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 \

@@ -13,11 +13,21 @@ included [GaussianImage](https://arxiv.org/abs/2403.08551),
 [EigenGS](https://openaccess.thecvf.com/content/CVPR2025/html/Tai_EigenGS_Representation_From_Eigenspace_to_Gaussian_Image_Space_CVPR_2025_paper.html),
 [SGI](https://arxiv.org/abs/2603.07789), [AIR](https://arxiv.org/abs/2605.20820),
 [Soft Anisotropic Diagrams](https://arxiv.org/abs/2604.21984),
+[Structure-Guided Allocation](https://arxiv.org/abs/2512.24018),
+[P-GSVC](https://arxiv.org/abs/2603.10551),
+[CGVQ](https://arxiv.org/abs/2607.05667),
+[Contour-Aware 2DGS](https://arxiv.org/abs/2512.23255),
+[WIPES](https://openaccess.thecvf.com/content/ICCV2025/html/Zhang_WIPES_Wavelet-based_Visual_Primitives_ICCV_2025_paper.html),
 [SteepGS](https://openaccess.thecvf.com/content/CVPR2025/html/Wang_Steepest_Descent_Density_Control_for_Compact_3D_Gaussian_Splatting_CVPR_2025_paper.html),
 [ResGS](https://arxiv.org/abs/2412.07494),
 [generalized matching pursuit](https://proceedings.mlr.press/v54/locatello17a.html),
 [weighted sample elimination](https://www.cemyuksel.com/research/sampleelimination/), and
 [adaptive finite-element error control](https://epubs.siam.org/doi/10.1137/S0036144502409093).
+
+**Execution update:** the candidate cards below preserve the ideation and killing-test provenance.
+FIT-017 subsequently refuted the exact matched-residual formulation and INIT-009 completed the WSE
+prefix repair. The linked 168 KiB SOTA/rate audit then moved the selected experiment to BENCH-007's
+held-out actual-rate structure phase diagram. Section 10 is the current recommendation.
 
 **Key unresolved assumptions:** a high pointwise residual is the best birth site; activity is a
 causal deletion score; more Gaussians should be added monotonically; a field is best understood as
@@ -32,8 +42,8 @@ adequate; and independent CUDA trajectories are precise enough for sub-0.1 dB de
 | Growth | Raw residual/tensor sampled-add, support/ranked/AbsGrad/frequency splits, relocation | Tensor sampled-add is the strongest existing broad control; many micro-levers lost | Birth sites are scored pointwise, not by predicted marginal utility of a child footprint |
 | Optimization | Adam/Adan, color solve, geometry loss, checkpoint selection | GCR helps edge-heavy pixels; checkpointing repairs sparse long fits | Atomic nondeterminism and overlap conditioning obscure causal attribution |
 | Representation | Normalized constant/affine colors, optional opacity/background/filtering | Background and opacity are promising; fixed covariance filters lost | Responsibilities, overlap disagreement, and boundary leakage are not explicit primitives |
-| Compression | Self-describing scalar codec, QAT/rate proxy, Morton deltas | Post-fit QAT remains strongest locally | No causal structural RD controller, local entropy graph, or mixed precision |
-| Measurement | PSNR/MS-SSIM/LPIPS, AUC, native-reference provenance | Strong audit discipline and resumable harnesses | Mechanism-blind aggregates; incomplete progressive-prefix and fixed-storage evidence |
+| Compression | Self-describing SSPL1 scalar codec, QAT/rate proxy, Morton deltas | Post-fit QAT remains strongest locally; actual streams are measurable | No target-rate controller, structure-conditioned entropy model, or demonstrated advantage below ordinary image-file rate |
+| Measurement | PSNR/MS-SSIM/LPIPS, AUC, native provenance, completed fixed-storage lane | Strong audit discipline and resumable harnesses | No held-out actual-rate phase diagram; native/full-resolution rate definitions remain incomplete |
 
 Dominant paradigms are pointwise residual growth, gradient descent on a fixed field between
 restructuring events, and global scalar budgets. Densely explored regions include loss swaps,
@@ -369,33 +379,45 @@ Scores are 0–5 and keep novelty separate from value.
 | T3 interface primitives | 3 | 5 | 4 | 3 | 4 | 5 | 4 |
 | Deterministic backward | 2 | 5 | 5 | 2 | 2 | 5 | 4 |
 
-Pareto representatives: P1 fastest positive algorithmic test; E4 strongest measurement return;
-P3 cheapest correctness repair; deterministic backward strongest systems/causal direction; T1
-highest integrated importance; T2 strongest theory direction; T3 strongest representation change.
+Historical Pareto representatives: P1 was the fastest algorithmic killing test and is now refuted;
+P3 was the cheapest correctness repair and is now implemented; E4 remains the strongest
+measurement return; deterministic backward remains the strongest systems/causal direction; T1/T2
+remain high-risk theory directions. The SOTA/rate audit adds actual-rate P1/P5 programs that now
+dominate implementation priority.
 
 ## 10. Recommended first experiment
 
-Implement P1 as `FIT-017`: a new sampled-add score that filters signed RGB residual after
-separable Gaussian filtering at the planned child scale, while retaining the existing tensor-aligned
-child geometry, target color, count, and optimization schedule. This isolates selection from the
-rejected color correction. First validate cancellation/coherence on synthetic residuals, then rerun
-the four-image deterministic pilot and a bounded 160 px paired CUDA screen. Abandon if the post-20
-gain is below +0.10 dB, vanishes by step 100/final, or scoring adds more than 15% wall time. Keep the
-feature opt-in unless a larger fair-regime confirmation passes repository promotion gates.
+Execute `BENCH-007`, the actual-rate structure phase diagram. The exact contract is in
+`tasks/BENCH-007-actual-rate-structure-phase-diagram.md`:
 
-Execution update: the eight-pair FIT-017 guard rejected P1 after its immediate gain reversed by
-post-20 (-0.0318 dB) and post-100 (-0.2301 dB). The workflow therefore advanced to P3. INIT-009's
-eight-seed, four-prefix uniform Euclidean audit preserved every terminal WSE set and won both
-normalized spacing and coverage in all 32 descriptive paired cases, with 14.2%
-ordering/selection-subroutine overhead. P3 is implemented as an
-opt-in compatibility-safe repair; the codec still destroys this order through Morton sorting.
+- shared renderer/fitter/codec arms for tensor-WSE, quadtree-WSE, SLIC/Sobel structure classes,
+  Image-GS-style gradient sampling, uniform WSE, and random placement;
+- self-contained SSPL1 targets at 0.25/0.5/1/2/4 bpp using original pixel dimensions;
+- an eight-image frozen DIV2K-training killing pilot at 0.5/1 bpp, followed only on a pass by
+  full DIV2K validation and a development-exposed Kodak replication;
+- equal count/bit-mix/QAT search, cold decode, stream/component bytes, mechanism maps, compute,
+  image-cluster intervals, and no-extrapolation BD-rate;
+- promotion only for PSNR BD-rate <=-10% (candidate versus control) or >=+0.25 dB at both 0.5 and
+  1 bpp, with a positive interval, predicted mechanism movement, and <=10% fit-plus-search
+  regression.
+
+This experiment directly tests the narrow claim left after Structure-Guided Allocation and other
+current work occupy broad structure-aware novelty. FIT-017 and INIT-009 are execution history:
+the eight-pair FIT-017 guard rejected matched residual after its immediate gain reversed by post-20
+(-0.0318 dB) and post-100 (-0.2301 dB); INIT-009 preserved every audited terminal WSE set and won
+both prefix spacing and coverage in 32/32 descriptive cases, but SSPL1 Morton sorting still
+destroys the progressive order.
+
+If BENCH-007 finds a renderer/objective interaction, enter BENCH-008. If tensor structure survives
+and explicit layout bytes bind, enter the provisional COMP-005 decoder-synchronized-geometry
+spike. Otherwise close or reframe the compression claim without post-hoc tuning.
 
 ## 11. Audit limitations
 
 Search cannot prove global novelty; patents, non-English sources, private branches, and unpublished
 2026 work may be missing. Several 2026 papers are recent preprints with limited independent
-replication. The positive matched-residual pilot is four images at 64 px on deterministic CPU and
-must not be generalized. CUDA atomic nondeterminism can exceed small candidate deltas. The GCR band
+replication. The small matched-residual pilot and its later rejection must not be generalized.
+CUDA atomic nondeterminism can exceed small candidate deltas. The GCR band
 audit used saved 8-bit PNGs. SAD directly threatens removal-delta and residual-moment novelty;
 Yuksel directly owns progressive WSE; adaptive bitwidth and progressive Gaussian coding are known.
 The strongest prior-art threat to P1 is that classical matching pursuit plus ResGS may reconstruct

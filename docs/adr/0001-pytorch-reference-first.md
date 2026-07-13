@@ -1,8 +1,12 @@
 # ADR-0001: PyTorch reference implementation first, CUDA/Vulkan later
 
+**Status update (2026-07-13):** the reference-first decision remains the correctness policy, but
+the exact CUDA renderer was subsequently implemented under ADR-0011. PORT-001 now denotes the
+remaining production/tiled/Vulkan/RHI path, not the absence of a CUDA research renderer.
+
 ## Context
-The research question is about *initialization* (structure-tensor anisotropic blue noise) and its
-effect on 2D-Gaussian image reconstruction across budgets. That demands fast iteration on init
+The original research question was about *initialization* (structure-tensor anisotropic blue noise)
+and its effect on 2D-Gaussian image reconstruction across budgets. That demanded fast iteration on init
 variants, an autograd fitter, optional perceptual metrics, and possibly a learned feed-forward
 predictor — all of which are cheapest in PyTorch and match the reference ecosystem (GaussianImage,
 Image-GS, AIR). The end goal is still a CUDA/Vulkan rasterizer inside IntrinsicEngine.
