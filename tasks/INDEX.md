@@ -15,20 +15,23 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | PORT-001 | CUDA tile rasterizer → IntrinsicEngine RHI pass | partial | CORE-001 |
 | ABL-004 | Killer controls + full ABL-001 run + committed evidence | partial | BENCH-002, ABL-003, FIT-004 |
 | COMP-003 | Compression-ratio ladder (scale ranges → planes → LSQ → VQ → entropy) | partial | COMP-002, BENCH-002 |
-| CORE-007 | Boundary-gated Gaussians | todo | INIT-004, CORE-001 |
-| CORE-008 | Hybrid Gaussian + edge primitives | todo | CORE-001, INIT-001, FIT-001 |
+| CORE-007 | Segmentation-free responsibility boundary flux | needs re-scope before implementation — broad gating is directly threatened by Contour-Aware 2DGS | INIT-004, CORE-001, BENCH-007 |
+| CORE-008 | Hybrid Gaussian + frequency-bearing primitive control | needs prior-art-controlled spike — WIPES is the direct primitive baseline | CORE-001, INIT-001, FIT-001, BENCH-007 |
 | INIT-009 | Progressive WSE survivor ordering | implemented/confirmed — 32/32 uniform Euclidean prefix wins with identical terminal sets; opt-in for compatibility | INIT-003/005/006, BENCH-002 |
 | PORT-002 | GPU-native tile index + fused loss/backward | todo | PORT-001, FIT-003 |
 | PORT-003 | Avoid atomics in tiled backward | todo | PORT-001 |
 | GEN-003 | VSD / multi-particle distillation | todo | GEN-001 |
 | ABL-005 | Fitter-knob influence pass at the fair regime | partial — CUDA-native fair shard started; color-solve and broader Kodak cells pending | ADR-0010, FIT-005/006/007, CORE-006 |
-| BENCH-005 | Native external-reference pipelines and paired central metrics | partial — native GI++/Image-GS/GaussianImage adapters, official proxy lanes, and terminal/checkpoint pairing complete | BENCH-001/002/003, ABL-004 |
+| BENCH-005 | Native external-reference pipelines and paired central metrics | partial — GI++/Image-GS/GaussianImage adapters plus bounded native GaussianImage/AIR evidence complete; full-resolution actual-RD and remaining 2026 methods open | BENCH-001/002/003, ABL-004 |
 | FIT-013 | Geometry-consistent Sobel regularization | partial — quality candidate validated on COCO proxy and Kodak4; speed blocks promotion | FIT-005/006/007, ABL-004 |
 | FIT-014 | Generation-density covariance filtering | implemented/screened — exact and weaker cohort filters lose the COCO4 proxy; default off | FIT-004, CORE-002, COMP-002, BENCH-002 |
 | FIT-015 | Same-final-count best-PSNR checkpoint selection | implemented/confirmed — +0.4884 dB pooled across 72 Kodak trajectories; opt-in for sparse/moderate-density long fits | FIT-001/002, ABL-004, BENCH-005 |
 | FIT-016 | Coarse-to-full loss-target curriculum | implemented/screened — rejected by 500-step guard (−0.1645 dB selected PSNR); default off | FIT-015, HIER-003/004, ABL-004, BENCH-002 |
 | FIT-017 | Kernel-matched signed-residual densification | implemented/screened — wider scores improve immediate PSNR but lose post-20/post-100; default legacy score retained | FIT-004, FIT-009, BENCH-002, ABL-004 |
-| BENCH-006 | Fixed-storage all-method convergence lane | implementation validated — run stopped by user after 1/328 cells; resumable, no full conclusion | BENCH-001/002/003/004, COMP-002, ABL-004 |
+| BENCH-006 | Fixed-storage all-method convergence lane | completed as a 320-cell high-rate local-policy diagnostic; superseded for compression decisions by BENCH-007 | BENCH-001/002/003/004, COMP-002, ABL-004 |
+| BENCH-007 | Actual-rate structure phase diagram | todo — preregistered; highest priority | BENCH-001/002/003/004/006, COMP-001/002/004, INIT-003/009 |
+| BENCH-008 | Common/native causal bridge | blocked on BENCH-007 Stage 1 and schema feasibility | BENCH-005/007, CORE-001/003/005, COMP-002 |
+| COMP-005 | Decoder-synchronized structural geometry | research spike; blocked on BENCH-007 Stage 1 | BENCH-007, COMP-001/002/003/004, INIT-001/003/009 |
 
 ## Retired Done Tasks
 
@@ -79,6 +82,27 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 
 Retired tasks remain valid dependency IDs. They describe completed reference/correctness work; the
 performance and scale follow-ups stay active under PORT/FIT/INIT/BENCH/ABL tasks.
+
+## Current priority (from the 2026-07-13 SOTA and actual-rate audit)
+
+The completed 168 KiB lane is an overcomplete convergence study: its nominal payload is
+71.68–81.15 bpp at the prepared resolutions, and its SSPL1 streams are about 22 bpp. Current
+structure-aware, ownership-based, learned, progressive, and entropy-coded methods occupy the broad
+claims this repository originally targeted. The queue is therefore:
+
+1. **BENCH-007:** implement and run the frozen actual-byte Stage-1 phase diagram. The decision is
+   tensor-WSE versus SLIC/Sobel and other direct controls at 0.5/1.0 bpp, not another high-rate
+   leaderboard search.
+2. **BENCH-008 only if BENCH-007 identifies a renderer/objective interaction:** separate
+   initialization from representation and optimizer effects, while preserving native-authentic
+   results as a distinct lane.
+3. **COMP-005 only if tensor structure survives actual-rate controls and layout bytes bind:**
+   test decoder-synchronized geometry as the high-risk rate-saving mechanism.
+4. Keep CORE-007/008 design-only until their direct Contour-Aware 2DGS and WIPES controls are
+   available. Do not implement the old broad formulations as if the novelty boundary were
+   unchanged.
+
+The dated priority sections below are retained as execution history, not as the current queue.
 
 ## Suggested order (from the 2026-07-03 repo review)
 

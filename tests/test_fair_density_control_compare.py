@@ -11,6 +11,7 @@ from PIL import Image
 
 from benchmarks import fair_density_control_compare as F
 from structsplat.config import FitConfig, StructureTensorConfig
+from structsplat.gaussians import GaussianField
 
 
 def test_artifact_source_id_binds_canonical_path_and_content(tmp_path: Path):
@@ -39,6 +40,23 @@ def test_growth_fit_cfg_reaches_final_cap_with_shared_schedule():
     assert cfg.split_mode == "residual_add"
     assert cfg.split_every == 20
     assert cfg.split_count == 125
+
+
+def test_representation_layout_counts_stored_extra_attributes() -> None:
+    field = GaussianField.from_numpy(
+        np.zeros((2, 2), dtype=np.float32),
+        np.ones((2, 2), dtype=np.float32),
+        np.zeros(2, dtype=np.float32),
+        np.zeros((2, 3), dtype=np.float32),
+        opacities=np.zeros(2, dtype=np.float32),
+        color_grads=np.zeros((2, 2, 3), dtype=np.float32),
+    )
+
+    layout = F._representation_layout(field)
+
+    assert layout["representation_payload_scalars_per_gaussian"] == 15
+    assert layout["representation_extra_scalars_per_gaussian"] == 7
+    assert layout["representation_actual_bytes_per_gaussian"] == 60
 
 
 def test_fixed_storage_growth_finishes_before_convergence_gate() -> None:

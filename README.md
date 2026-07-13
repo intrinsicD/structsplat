@@ -3,7 +3,7 @@
 **Hierarchical, feature-aware, anisotropic blue-noise 2D Gaussian image representation.**
 
 A single image is encoded as a set of oriented 2D Gaussians and rendered by a sorting-free,
-normalized weighted-sum rasterizer. The research contribution is the **initialization**:
+normalized weighted-sum rasterizer. The repository's tested structural-prior candidate is:
 
 - a **structure tensor** `J = G_ρ * (∇I ∇Iᵀ)` is the single operator for *density* (where to put
   Gaussians), *orientation* (how to elongate them), and *classification* (flat / edge / corner);
@@ -11,15 +11,19 @@ normalized weighted-sum rasterizer. The research contribution is the **initializ
   with a Mahalanobis metric) — packing across edges, spreading along them, no clumping, no grid;
 - edges are tensor-aligned and density-aware; flanking remains available as a control, but the
   current evidence favors on-edge/quadtree WSE placement over flanking;
-- the layout is built **progressively** (coarse→fine), so prefixes act as a level-of-detail stack.
+- an optional progressive WSE ordering improves audited uniform-set geometric prefixes without
+  changing the terminal set; SSPL1 currently Morton-reorders the field, so this is not yet an
+  embedded-codec/LOD claim.
 
-The pieces exist separately in prior work (anisotropic blue noise; structured 2D-GS init;
-error-driven densification) but not combined into a progressive 2D-Gaussian image codec. `structsplat`
-is a **placeholder name** — rename freely (see the `docs-sync` skill).
+The broad ingredients and several close combinations now exist in prior work, including
+structure-guided allocation/orientation/precision and progressive Gaussian coding. The unresolved
+claim is narrower: whether tensor-metric WSE adds held-out actual-rate value beyond direct
+SLIC/Sobel, gradient, uniform, and native controls. `structsplat` is a **placeholder name** —
+rename freely (see the `docs-sync` skill).
 
 > This is a PyTorch **research reference** with an opt-in exact CUDA extension for the same
 > normalized/additive equations. The remaining production port is a tiled CUDA/Vulkan/RHI path
-> (`tasks/PORT-001`, ADR-0011).
+> (`tasks/PORT-001-cuda-rasterizer.md`, ADR-0011).
 
 ## Install
 ```bash
@@ -130,6 +134,16 @@ has not converged, while at 5k it is roughly PSNR-competitive, higher in proxy M
 AUC, and worse in LPIPS than the checkpoint candidate. Full-resolution, multi-budget/time-envelope,
 native codec/RD, and learned Instant-GI tracks remain open.
 
+**Current research boundary (2026-07-13).** The completed
+`storage_budget_168k_external_present` run is a strong local optimizer/policy diagnostic, but its
+nominal payload is 71.68–81.15 bpp at the prepared sizes and its SSPL1 streams are about 22 bpp.
+It is not compression-SOTA evidence. Current work already covers broad structure-guided
+allocation/orientation/precision, normalized ownership, progressive Gaussian streams, learned
+initialization, boundary gating, and clustered quantization. BENCH-007 therefore asks the narrower
+question: does tensor-WSE beat SLIC/Sobel, gradient, uniform-WSE, and random controls at
+0.25–4.0 **actual** bpp on held-out images? See
+`ara/evidence/storage-budget-168k-sota-audit-2026-07-13.md`.
+
 FIT-015 adds opt-in `checkpoint_policy=best_psnr_final_count`. It selects only post-transition
 states with the terminal Gaussian count and writes a same-trajectory audit. On COCO4 x seeds 0/1,
 640 Gaussians, and 5k steps, 7/8 runs selected an earlier full-count state and improved their own
@@ -147,10 +161,11 @@ density concentration, WSE exact-count + blue-noise spacing + density adaptivity
 anisotropy metric, and the conic inverse-covariance + render compositing formulas (NumPy mirror).
 The PyTorch modules compile and are covered by tests that run once `torch` is installed
 (`pytest -q`); run the smoke test locally to confirm the fit loop end-to-end on your hardware.
-The fixed-storage benchmark writes per-image byte sizes, 5,376-Gaussian quality/convergence
-metrics, cold-decode codec metrics, and explicit completeness into
-`results/storage_budget_168k_all_methods/index.html`; the portable multi-report entry point is
-`results/index.html`.
+The completed available-repository fixed-storage benchmark writes per-image byte sizes,
+5,376-Gaussian quality/convergence metrics, cold-decode codec metrics, and explicit completeness
+into `results/storage_budget_168k_external_present/index.html`; the portable multi-report entry
+point is `results/index.html`. Its analytical and actual rates are reported separately and the
+report must not be presented as an actual-rate compression comparison.
 
 **Reproducibility caveat.** Every benchmark writes a `config.json` (resolved args + device +
 torch/numpy/structsplat versions + repository commit/dirty diff fingerprint) so a run is
@@ -160,9 +175,10 @@ bit-exact from a seed only on **CPU**: the CUDA renderer accumulates with atomic
 bound that variation. See the `benchmark` skill for the full experimental-validity rules.
 
 ## Selected references
-GaussianImage (ECCV 2024) · Image-GS (SIGGRAPH 2025) · AIR, Fast-2DGS (2025) · GaussianVision
-(structured init) · Li & Wei, *Anisotropic Blue Noise Sampling* (SIGGRAPH Asia 2010) · Yuksel,
-*Sample Elimination* (EGSR 2015) · *Gaussian Blue Noise* (2022).
+GaussianImage (ECCV 2024) · Image-GS (SIGGRAPH 2025) · GaussianImage++ (AAAI 2026) ·
+Structure-Guided Allocation (2025) · SAD, SGI, AIR, CGVQ (2026) · P-GSVC · Contour-Aware 2DGS ·
+WIPES (ICCV 2025) · Instant-GI · Li & Wei, *Anisotropic Blue Noise Sampling* (SIGGRAPH Asia
+2010) · Yuksel, *Sample Elimination* (EGSR 2015).
 
 ## License
 MIT.

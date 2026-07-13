@@ -1,9 +1,13 @@
 # StructSplat — Claude Code project guide
 
-Hierarchical, feature-aware, **anisotropic blue-noise 2D Gaussian image representation**. A single
-image is encoded as a set of oriented 2D Gaussians; the contribution is the *initialization* —
-structure-tensor-driven, anisotropic-blue-noise, progressive — for 2D-Gaussian image codecs.
-PyTorch reference; the sampler + rasterizer are the CUDA/Vulkan + IntrinsicEngine port targets.
+Hierarchical, feature-aware, **anisotropic blue-noise 2D Gaussian research substrate**. A single
+image is represented by oriented 2D Gaussians under a normalized compositor. The current
+defensible research candidate is narrow: a training-free tensor-metric/WSE structural prior whose
+value must be established at actual coded rate against direct SLIC/Sobel, gradient, uniform, and
+native controls. Structure-aware allocation, orientation, progressive coding, and generic
+Gaussian compression are not blanket novelty claims. See BENCH-007 and the 2026-07-13 SOTA audit.
+PyTorch reference plus exact CUDA; the sampler/rasterizer remain CUDA/Vulkan + IntrinsicEngine port
+targets.
 
 > `structsplat` is a placeholder project name. If it changes, follow the `docs-sync` skill.
 
@@ -41,7 +45,8 @@ then re-enters `task-workflow` → `method` → `benchmark` → `review` → `do
 `pip install -e .` (torch, numpy, pillow, imageio). Optional metrics: `pip install -e ".[metrics]"`
 (lpips, pytorch-msssim). Dev: `pip install -e ".[dev]"` then `pytest -q`.
 Reference code is CPU-correct but slow at large N; use GPU and small budgets while iterating. The
-CUDA tile rasterizer is `PORT-001`.
+remaining production/tiled CUDA/Vulkan/RHI work is `PORT-001`/002/003; ADR-0011 owns the exact
+CUDA research renderer.
 
 ## Definition of done (short form)
 Acceptance criteria tested · NumPy/torch split intact · ADR for any real decision · docs updated in

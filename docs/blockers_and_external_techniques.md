@@ -1,147 +1,117 @@
-# Remaining Blockers and External Techniques
+# Current blockers and external techniques
 
-Analysis date: 2026-07-02
+**Updated:** 2026-07-13. This replaces the 2026-07-02 recommendation to tune residual
+densification: that family has now been extensively screened, the exact CUDA renderer exists, and
+the main blocker has moved from local optimizer quality to actual-rate scientific validity.
 
-Inputs:
+## Current signal
 
-- `results/quadtree_init_compare/summary.md`
-- `results/optimization_followup/summary.md`
-- `results/stage_search_coco4_after_update/best_vs_previous.md`
-- Local repos: `GaussianImage`, `GaussianImage_plus`, `image-gs`, `Instant-GI`
-- Literature: GaussianImage, GaussianImage++, Image-GS, Instant-GI, 3DGS, 3DGS surveys and densification papers.
+- Structured placement remains a useful bounded result: the flanking hypothesis is retired,
+  quadtree-WSE is the shipped high-budget PSNR choice, and tensor/on-edge placement remains a
+  low-budget/MS-SSIM control.
+- The completed 168 KiB report is a strong optimizer/policy audit but an invalid compression
+  operating point: 71.68–81.15 analytical bpp and about 22 SSPL1 bpp on small prepared images.
+- Cosine LR and final color solve produce large float-field endpoint gains in that overcomplete
+  lane. This says the optimizer was not converged under the historical default; it does not
+  establish a better coded representation.
+- Native Image-GS, GaussianImage++, GaussianImage, and AIR evidence is now executable and
+  provenance-aware, but still limited to small/bounded or mismatched protocols.
+- Current literature directly occupies broad structure-aware allocation, normalized ownership,
+  progressive coding, learned initialization, boundary gating, and clustered quantization.
 
-## Current Signal
+## Blocking issues
 
-The latest cap/quadtree run shows that scale control is a real improvement, not just a visual cleanup:
+### 1. No held-out actual-rate decision benchmark
 
-- `quadtree_wse_feature_cap12`: 24.6528 PSNR, 0.95769 MS-SSIM, 1.360 s total.
-- `stage_top1_feature_cap12`: 24.6423 PSNR, 0.95736 MS-SSIM, 1.269 s total.
-- `stage_top1` uncapped: 24.5490 PSNR, 0.95824 MS-SSIM, 2.293 s total, with mean final max scale 72.740 px.
-- `current_baseline`: 24.3378 PSNR, 0.95590 MS-SSIM, 2.062 s total.
+The current RD script emits real SSPL1 bytes but sweeps counts/bit mixes rather than targeting byte
+caps with equal encoder search. The fixed-storage lane normalizes neither bytes by original pixels
+nor capacity by rate. BENCH-007 must add:
 
-So the feature cap improved mean PSNR by about +0.31 dB against the current baseline and about +0.10 dB against the previous stage-search best while cutting total time by roughly 0.9 to 1.0 s versus uncapped `stage_top1` on the 8-image COCO subset.
+- target rates 0.25/0.5/1/2/4 bpp;
+- complete-stream bytes and original-pixel denominators;
+- independently fitted candidate counts with equal QAT/bit-mix search;
+- cold-decode validation;
+- robust nondominated curves and no-extrapolation BD-rate;
+- held-out DIV2K validation, with Kodak only as a replication set.
 
-The remaining issue is that the best candidate changes by image and metric. `quadtree_wse_feature_cap12` wins PSNR on 3/8 images, `stage_top1_feature_cap12` wins on 2/8, uncapped `stage_top1` wins on 1/8, and uncapped `quadtree_hybrid_agg_variance` wins on 2/8. For MS-SSIM, the winners are even more scattered. This means a fixed initializer/cap policy is probably leaving performance on the table.
+Until then, no compression ranking is decision-grade.
 
-## Main Blockers
+### 2. The closest direct handcrafted baseline is missing
 
-1. Fixed policy rather than adaptive density control
+[Structure-Guided Allocation](https://arxiv.org/abs/2512.24018) already couples SLIC/Sobel
+structure classes to allocation, geometry regularization, and adaptive covariance precision. A
+random/grid/GaussianImage analogue is no longer the strongest control for the tensor/WSE claim.
+BENCH-007 needs a mechanism-faithful common-renderer SLIC/Sobel arm, and BENCH-005 should run the
+official method if code is available.
 
-StructSplat is still mostly being evaluated as a fixed-budget initializer followed by fitting. The fitter has residual-add and prune support, but the current winning cap/quadtree comparison did not tune those paths as the main method. GaussianImage++, Image-GS, Instant-GI, and 3DGS literature all point in the same direction: allocation has to change during fitting, not only before it.
+### 3. Count, parameter BPP, and actual rate are mixed across the field
 
-2. Residual-add is too simple
+SSPL1 bytes, a 32-byte float payload, Image-GS analytical bits, GaussianImage's
+`56N+1728` no-EC formula, checkpoint size, and AIR/native quantized rate answer different
+questions. Every report and table must use separate columns, null unavailable quantities, and
+forbid substitutions. Header, ranges, codebooks, masks, base layers, and side information count.
 
-Current `residual_add` adds Gaussians at top residual pixels with a uniform base scale and zero rotation. That is closer to a useful baseline than a strong densifier. Image-GS uses residual maps but initializes new colors from the residual itself. GaussianImage++ adds points from high-error pixels under a bounded max count. 3DGS variants use gradient/error/opacity/scale criteria to decide split, clone, or prune. StructSplat should use residual plus local tensor/scale/cap information when adding new points.
+### 4. Common controls and native methods answer different questions
 
-3. Scale cap solved overshoot but not detail recovery
+Paper-inspired rows inside StructSplat isolate mechanisms under one renderer/fitter. Native
+executions preserve external validity but confound initialization, representation, loss,
+optimizer, schedule, and code. BENCH-008 should cross fields and renderers only if BENCH-007 shows
+a meaningful interaction; native-authentic results remain separate.
 
-The cap removes long spiky Gaussians and reduces runtime, but it can also reduce the broad support that previously masked missing detail. The next step is to pair capped large Gaussians with targeted small residual Gaussians. Otherwise the cap is acting only as a clamp, not as a capacity reallocation mechanism.
+### 5. The representation frontier has moved
 
-4. Renderer is still the production bottleneck
+- [SAD](https://arxiv.org/abs/2604.21984) makes reach and temperature independent and uses
+  normalized top-K ownership.
+- [SGI](https://openaccess.thecvf.com/content/CVPR2026/papers/Pan_SGI_Structured_2D_Gaussians_for_Efficient_and_Compact_Large_Image_CVPR_2026_paper.pdf)
+  organizes Gaussians under seeds and entropy-codes them at megapixel scale.
+- [WIPES](https://openaccess.thecvf.com/content/ICCV2025/html/Zhang_WIPES_Wavelet-based_Visual_Primitives_ICCV_2025_paper.html)
+  challenges the Gaussian primitive itself.
+- [Contour-Aware 2DGS](https://arxiv.org/abs/2512.23255) directly threatens broad boundary gating.
+- [CGVQ](https://arxiv.org/abs/2607.05667) occupies generic clustered codebook quantization.
 
-GaussianImage, GaussianImage++, Image-GS, and Instant-GI all rely on CUDA splatting paths. StructSplat's renderer is a reference PyTorch implementation. The Python tile prototype matched numerically but was 10x to 12x slower than the current reference path in the small benchmark, so the viable speed path is a compiled tile renderer, not more Python tiling.
+CORE-007/008 are therefore gated research spikes with these direct controls, not ready-to-build
+features.
 
-5. No image-adaptive budget policy
+### 6. Structural regularity does not yet reduce transmitted bits
 
-Instant-GI explicitly targets the fixed-count weakness by deriving the number of Gaussians from image complexity. StructSplat currently uses fixed budgets in the benchmarks. COCO results show some images barely benefit while others gain much more, which suggests entropy/detail maps should control either the budget or the growth schedule.
+Progressive WSE improves geometric prefixes, but SSPL1 Morton reordering discards that order and the
+codec does not derive geometry at the decoder. COMP-005 is the high-risk follow-up only if
+BENCH-007 first proves the structural mechanism at actual rate: derive enhancement geometry
+deterministically from an already transmitted base layer and measure whether layout bytes fall
+after all side information is counted.
 
-6. Initial attributes are underpowered
+### 7. Native coverage is incomplete
 
-Quadtree aggregate variants often have stronger init PSNR, but that does not consistently translate into best final PSNR. Instant-GI predicts position, scale, rotation, opacity, and color from local features plus Delaunay/ellipse geometry. StructSplat currently uses tensor priors and sampled or aggregate colors, but it does not estimate local affine/ellipse attributes from a neighborhood graph.
+Open native work includes full-resolution/multi-rate GaussianImage++, Image-GS packed streams,
+released GaussianImage Kodak/QAT semantics, hardened AIR rate accounting, Instant-GI checkpoint
+execution, and current Structure-Guided/SAD/WIPES implementations where available. Missing code
+must stay “not run,” not be replaced by a local analogue under the native name.
 
-7. Objective mismatch remains
+## Resolved or retired blockers
 
-The best PSNR candidate is not always the best MS-SSIM candidate. Uncapped `stage_top1` still has slightly higher aggregate MS-SSIM than capped top candidates. Image-GS reports PSNR, SSIM, MS-SSIM, LPIPS, and FLIP; StructSplat can compute some of these, but the search has mostly optimized PSNR/MS-SSIM. We need a target metric choice before optimizing visual quality claims.
+- **Exact rendering speed:** StructSplat owns an exact CUDA path; the old “PyTorch reference only”
+  description is obsolete. Further performance work is PORT-002/003, not a prerequisite for the
+  actual-rate killing pilot.
+- **Flanking as the flagship:** retired by ABL-006/ADR-0013.
+- **Simple residual densification as the immediate answer:** multiple growth, relocation,
+  matched-residual, filtering, scale-cap, and recovery interventions have been screened. FIT-017's
+  signed-Gaussian score improved the immediate step and then lost after recovery.
+- **Progressive WSE prefix correctness:** INIT-009 implements the ordering repair, but codec value
+  remains unproved.
+- **More high-rate proxy search:** BENCH-006 completed it. Further policy mining at 22+ bpp is not
+  the priority.
 
-8. Compression path is not yet competitive
+## Recommended execution order
 
-GaussianImage uses vector quantization and quantization-aware training; GaussianImage++ adds attribute-separated learnable scalar quantizers and QAT. 3DGS compression surveys emphasize pruning plus scalar/vector quantization and entropy coding. StructSplat has basic quantization/QAT support, but density control and codec decisions are not yet jointly optimized.
+1. Implement BENCH-007's tested target-rate substrate and freeze its Stage-1 manifest.
+2. Run the eight-image 0.5/1.0 bpp killing pilot and apply the preregistered gate.
+3. If it passes, run full DIV2K validation plus Kodak replication and expand native actual-RD
+   controls.
+4. Enter BENCH-008 only for a measured renderer/objective interaction.
+5. Enter COMP-005 only when tensor structure survives and explicit layout bytes are the binding
+   rate cost.
+6. Keep CORE-007/008 closed until BENCH-007 mechanism maps and direct prior-art controls justify
+   them.
 
-## Techniques Worth Borrowing
-
-### From GaussianImage
-
-- CUDA sum rasterization and tile projection path.
-- Fixed, simple representation as the sanity baseline.
-- QAT and residual vector quantization for color/attributes.
-- Adan optimizer as a candidate for longer high-budget fits.
-
-### From GaussianImage++
-
-- Distortion-driven densification: allocate new primitives where current reconstruction error is high.
-- Context-aware low-pass/covariance bounds to avoid badly conditioned or wasteful large primitives.
-- Prune invalid/non-positive-definite covariance entries.
-- Attribute-separated scalar quantization and QAT.
-
-### From Image-GS
-
-- Gradient/saliency initialization plus error-guided progressive optimization.
-- Residual-color initialization for newly added Gaussians.
-- Smooth LOD stack from progressive additions.
-- Wider metric set: PSNR, SSIM, MS-SSIM, LPIPS, FLIP.
-- Compiled CUDA rendering with top-k normalization and optional tiled/no-tile modes.
-
-### From Instant-GI
-
-- Position Probability Map followed by dithering/discretization.
-- Dynamic point count based on image entropy/detail.
-- Delaunay/ellipse geometry for scale and rotation estimates.
-- Learned or amortized initializer for batches of similar images.
-- The quadtree baseline plus Delaunay post-process is a useful non-learned variant.
-
-### From 3D Gaussian Splatting Literature
-
-- Interleaved optimization and density control rather than one-shot initialization.
-- Clone/split/prune cycles based on positional gradients, opacity/activity, scale, and screen-space footprint.
-- Improved density-control criteria: pixel-error-driven densification, homodirectional gradients, long-axis splitting, recovery-aware/adaptive pruning, and dynamic thresholds.
-- Anti-aliasing and scale-aware filters: Mip-Splatting-style constraints map naturally to 2D scale caps and render-time dilation/filtering.
-- Hierarchical anchors/LOD: Scaffold-GS and Octree-GS suggest that quadtree/octree structure should not only initialize points; it can also organize levels and runtime selection.
-
-## Prioritized Next Experiments
-
-1. Tuned capped residual densification
-
-Start at 512 capped Gaussians, then add 128 or 256 residual Gaussians in 2 to 4 waves. New Gaussians should inherit local tensor orientation, feature cap, and either target color or residual color depending on renderer. Compare against fixed 512 and fixed 640/768 from scratch.
-
-2. Better split criterion
-
-Replace simple top residual at Gaussian centers with a combined score:
-
-`score = residual_under_support * activity * scale_factor * feature_energy`
-
-Then split long/high-error Gaussians along their major axis or add small residual children near support error maxima. This is the 2D analog of 3DGS split/clone/densify logic.
-
-3. Image-adaptive budget/growth router
-
-Compute cheap image statistics from the tensor/quadtree pass: entropy, high-energy mass, edge/corner fraction, residual concentration after a short fit. Use those to choose between `stage_top1_feature_cap12`, `quadtree_wse_feature_cap12`, and `quadtree_hybrid_agg_feature_cap12`, and to decide whether to grow by 0, 128, or 256 points.
-
-4. Geometry-derived quadtree attributes
-
-Extend quadtree initialization with a Delaunay/ellipse or local second-moment pass. Use aggregate color, local covariance, and feature cap together. This tests the Instant-GI geometric post-process without requiring a learned network.
-
-5. Compiled renderer spike
-
-Do not optimize the Python tile prototype further. Build a minimal CUDA/Triton/C++ extension or adapt `gsplat` for the current normalized/additive renderer. The goal is exact or near-exact parity on the 8-image benchmark, then measure fit-loop time.
-
-### 2026-07-02 Follow-up: Exact CUDA Renderer
-
-StructSplat now has an owned CUDA extension for the exact clipped-support normalized and additive
-equations. `renderer=cuda` matches normalized reference output with mean absolute difference
-`4e-8` and max difference `5.4e-7` on the 512-Gaussian COCO parity smoke; `renderer=cuda_additive`
-matches additive with mean absolute difference `1.2e-7` and max difference `2.9e-6`. On the
-four-image COCO 80-iteration fit loop, exact CUDA reduced mean normalized wall time from `1.181s`
-to `0.181s` (`6.51x`) while preserving PSNR/MS-SSIM. The local conda `libstdc++` still requires
-`LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6` for CUDA extension loading. See ARA evidence
-`cuda-exact-renderer-2026-07-02` / trace node `N15`.
-
-6. Metric-aligned search
-
-Run the top candidates with LPIPS/FLIP enabled on a smaller image set. Decide whether the project optimizes PSNR, MS-SSIM, or a multi-metric score. Current capped candidates improve PSNR/runtime but do not dominate MS-SSIM.
-
-7. Codec-aware pass after density control
-
-Once adaptive growth/prune is stable, rerun rate-distortion with attribute-separated quantization. Compression before density control will mainly encode the current allocation mistakes more cheaply.
-
-## Recommended Immediate Direction
-
-The best next implementation is not a new initializer alone. It is capped quadtree/stage initialization plus a tuned residual densification loop that keeps the scale cap and adds detail where the cap exposes residual error. That directly addresses the current observed artifacts and aligns with the strongest repeated idea from GaussianImage++, Image-GS, Instant-GI, and 3DGS densification work.
+The exact executable handoff is in
+`ara/prompts/continue-structsplat-actual-rate-research.md`.

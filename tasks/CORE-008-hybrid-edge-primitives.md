@@ -1,35 +1,42 @@
-# CORE-008: Hybrid Gaussian + edge primitives
+# CORE-008: Hybrid Gaussian + frequency-bearing primitive control
 
-**Status: todo (stretch).** Non-pure-2DGS experiment for sharp contours and textures.
+**Status: needs prior-art-controlled spike.** WIPES is the direct frequency-bearing primitive
+baseline; the old “Gaussian + edge primitive” idea is not ready for implementation.
 
 ## Context
-Some high-frequency edges and textures are inefficient for blob-only Gaussian bases. A Gaussian
-envelope multiplied by a signed edge, DoG, or Gabor-like component could represent contours and
-oriented texture with far fewer primitives, at the cost of leaving the pure 2DGS model class.
+Some high-frequency edges and textures are inefficient for blob-only Gaussian bases. WIPES already
+demonstrates localized wavelet visual primitives, so a Gaussian-windowed edge/DoG/Gabor arm is
+scientifically useful only as a controlled basis-family experiment with actual bytes—not as a
+generic claim that frequency-bearing primitives are new.
 
 ## Goal
-Prototype a `hybrid_gaussian_edge` primitive family and benchmark whether it improves quality per
-primitive on sharp synthetic and natural-image edge cases.
+Identify whether StructSplat's residual failure is caused by the Gaussian basis lacking phase/sign
+degrees of freedom, after controlling for parameter count, actual stream bytes, optimization
+compute, and WIPES/native wavelet evidence.
 
 ## Approach
-1. Add a separate primitive type instead of overloading normal Gaussians.
-2. Implement a reference renderer path for Gaussian envelope times signed edge/wave component.
-3. Initialize edge primitives from tensor-classified edge pixels or residual edge evidence.
-4. Compare hybrid fields against pure Gaussian fields at equal parameter count and equal byte
-   budget.
+1. Wait for BENCH-007 mechanism maps to show a repeatable texture/thin-line failure at <=1 bpp.
+2. Reproduce or run WIPES first where official code permits. Record native evidence separately.
+3. Build a synthetic linear-dictionary oracle: pure Gaussian, Gaussian derivative, Gabor, and
+   localized wavelet atoms under exact coefficient/metadata costs. This is the cheapest killing
+   test and does not require production renderer changes.
+4. Only if a phase-bearing family has a >=20% sparse-coding RD advantage on the frozen synthetic
+   set and the eight-image pilot should a versioned hybrid field/renderer be proposed.
 
 ## Acceptance criteria
-- [ ] Primitive type is represented explicitly in field data and renderer dispatch.
-- [ ] Reference forward/backward path passes finite-gradient tests.
-- [ ] Initialization produces plausible edge primitive orientation, scale, phase/sign, and color.
-- [ ] Benchmark includes synthetic hard edges, thin lines, and at least one natural-image crop.
-- [ ] Results report both quality and complexity: PSNR/MS-SSIM, primitive count, parameters, and
-      encoded bytes if codec support exists.
-- [ ] README/benchmark notes clearly label this as a hybrid baseline, not core 2DGS.
+- [ ] BENCH-007 provides the failure regime and frozen image IDs.
+- [ ] WIPES prior-art/native-control status is recorded before implementation.
+- [ ] Synthetic hard edges, junctions, thin lines, chirps, and oriented textures are evaluated with
+      exact atom metadata and coefficients counted.
+- [ ] Pure Gaussian, extra-Gaussian-count, derivative/Gabor, and localized-wavelet controls receive
+      equal RDO search and compute.
+- [ ] Promotion requires >=20% favorable RD at the synthetic sparse frontier and >=0.25 dB at both
+      0.5 and 1.0 actual bpp on the eight-image pilot without >20% decode-time regression.
+- [ ] A failed spike closes the basis-family task without modifying the production field format.
 
 ## Interfaces touched
-`src/structsplat/gaussians.py`, `src/structsplat/render.py`, `src/structsplat/init.py`,
-`src/structsplat/fit.py`, `benchmarks/stage_search.py`, tests for render/init.
+Start as a standalone benchmark/dictionary spike. Production field, renderer, fit, codec, and ADR
+changes are explicitly out of scope until the gate passes.
 
 ## Depends on
-CORE-001, INIT-001, FIT-001. Optional: CORE-007.
+CORE-001, INIT-001, FIT-001, BENCH-007. Optional: CORE-007.

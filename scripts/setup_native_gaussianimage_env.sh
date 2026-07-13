@@ -19,6 +19,7 @@ CUDA_VERSION="11.8"
 TORCH_VERSION="2.0.0"
 TORCHVISION_VERSION="0.15.1"
 SYSTEM_LIBSTDCXX="/usr/lib/x86_64-linux-gnu/libstdc++.so.6"
+TORCH_CUDA_ARCH_LIST="${TORCH_CUDA_ARCH_LIST:-8.9}"
 
 if [[ ! -e "${SYSTEM_LIBSTDCXX}" ]]; then
   echo "System libstdc++ preload not found: ${SYSTEM_LIBSTDCXX}" >&2
@@ -35,10 +36,12 @@ fi
 
 mkdir -p "${ROOT}" "${PROVENANCE_DIR}" "${WHEEL_DIR}"
 
+CLONED_REPO=0
 if [[ ! -d "${REPO_DIR}/.git" ]]; then
   git clone --no-checkout --filter=blob:none "${GAUSSIANIMAGE_URL}" "${REPO_DIR}"
+  CLONED_REPO=1
 fi
-if [[ -n "$(git -C "${REPO_DIR}" status --porcelain --untracked-files=no)" ]]; then
+if [[ "${CLONED_REPO}" -eq 0 && -n "$(git -C "${REPO_DIR}" status --porcelain --untracked-files=no)" ]]; then
   echo "Refusing to alter a tracked-dirty isolated checkout: ${REPO_DIR}" >&2
   exit 2
 fi
@@ -101,7 +104,7 @@ rm -f "${WHEEL_DIR}"/gsplat-*.whl
 CC=/usr/bin/gcc-11 \
 CXX=/usr/bin/g++-11 \
 CUDA_HOME="${ENV_PREFIX}" \
-TORCH_CUDA_ARCH_LIST="8.6" \
+TORCH_CUDA_ARCH_LIST="${TORCH_CUDA_ARCH_LIST}" \
 PYTHONNOUSERSITE=1 \
 "${ENV_PREFIX}/bin/python" -m pip wheel \
   --no-build-isolation --no-deps --wheel-dir "${WHEEL_DIR}" "${BUILD_ROOT}"

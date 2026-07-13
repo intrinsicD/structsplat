@@ -13,8 +13,9 @@ payload until a declared plateau criterion or a visible maximum horizon.
   exactly 32 bytes/Gaussian and 5,376 Gaussians.
 - Keep source, target PNG, reconstruction PNG, decoded array, analytical payload, and actual SSPL1
   stream bytes in separately named fields.
-- Freeze the current 41-method fair-harness registry; COCO4, max-side 160, seeds `{0,1}`, exact
-  CUDA, LPIPS and cold-decode SSPL1 metrics enabled.
+- Freeze the available external-present fair-harness registry; the completed run contained 40
+  methods because Instant-GI was absent from the declared external root. Use COCO4, max-side 160,
+  seeds `{0,1}`, exact CUDA, LPIPS, and cold-decode SSPL1 metrics.
 - Ceiling 10,000 iterations. Complete all structural growth before iteration 6,500, then stop
   after six consecutive 100-step evaluations without a 0.005 dB PSNR gain. Hold a stopped run's
   scored endpoint to the nominal horizon for convergence curves and AUC. Mark max-horizon cells
@@ -32,9 +33,19 @@ payload until a declared plateau criterion or a visible maximum horizon.
 
 ## Status
 
-Implementation and focused/full-suite validation complete. The 328-cell run was launched and then
-stopped at the user's request after 1 completed cell; the journal is resumable. Evidence:
-`ara/evidence/bench006-storage-stopped-2026-07-11/run.md`. No full-run conclusion is claimed.
+Implementation, validation, and the external-present execution are complete. The first 41-method
+attempt was stopped after 1/328 cells and remains preserved at
+`ara/evidence/bench006-storage-stopped-2026-07-11/run.md`. The subsequently frozen available-repo
+run excluded absent Instant-GI and completed 320/320 cells (40 methods × four COCO images × two
+seeds), with 296 exact-capacity and 24 explicitly overfilled rows:
+`ara/evidence/bench001-external-complete-2026-07-13/run.md` and
+`results/storage_budget_168k_external_present/`.
+
+Scientific status: completed as a **high-rate local optimizer/policy diagnostic**, not a
+compression or SOTA benchmark. At the prepared image sizes the 172,032-byte analytical field is
+71.68–81.15 bpp; the actual SSPL1 streams are about 22 bpp, while the prepared lossless PNGs
+average about 17.99 bpp. Most paper-name rows are common-harness analogues, not native executions.
+Compression decisions move to BENCH-007; this report remains immutable evidence.
 
 ## Depends on
 

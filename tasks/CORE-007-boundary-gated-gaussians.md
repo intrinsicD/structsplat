@@ -1,35 +1,45 @@
-# CORE-007: Boundary-gated Gaussians
+# CORE-007: Segmentation-free responsibility boundary flux
 
-**Status: todo (research prototype).** Edge-contamination control for normalized splats.
+**Status: needs re-scope before implementation.** The original broad gate formulation is directly
+threatened by Contour-Aware 2DGS and must not be implemented as an unqualified novelty claim.
 
 ## Context
-Flanking placement helps avoid centering Gaussians across discontinuities, but normalized Gaussian
-weights can still blend colors across strong boundaries. Contour-aware 2DGS work points in the same
-direction: use contour or segmentation priors to prevent low-budget splats from crossing object or
-edge boundaries.
+Normalized Gaussian weights can blend colors across strong boundaries. Contour-Aware 2DGS already
+uses segmentation-region-constrained rasterization to prevent cross-boundary mixing, especially at
+small Gaussian counts. A per-Gaussian half-plane or segmentation gate is therefore a direct
+baseline, not the remaining research contribution.
 
 ## Goal
-Add an optional per-Gaussian soft half-plane or segmentation gate so a Gaussian can cover one side
-of a boundary without leaking weight across it.
+Test whether **segmentation-free responsibility flux** derived from the image structure tensor can
+reduce cross-boundary mixing at actual low rates without transmitting external masks or duplicating
+per-splat boundary metadata.
 
 ## Approach
-1. Start with a soft oriented half-plane gate tied to the local structure-tensor edge normal.
-2. Multiply the Gaussian weight by `sigmoid(k * signed_distance)` before normalized accumulation.
-3. Optionally support two-sided colors for a single boundary primitive after the one-sided gate is
-   stable.
-4. Keep the feature opt-in and benchmarked against flanking-only placement.
+1. First implement diagnostics only: normalized responsibility mass crossing tensor-normal ridges,
+   signed cross-edge bleed, and edge/texture-band distortion.
+2. Use Contour-Aware 2DGS or the closest official implementation as the native direct control.
+   If code is unavailable, keep its result in the literature table and label any reproduction
+   `local_contour_gate_control`.
+3. Compare a no-new-parameter flux penalty with a tensor-derived soft half-plane control. Count
+   every gate parameter or boundary representation in actual stream bytes.
+4. Run only after BENCH-007 identifies an edge-band failure at 0.5/1.0 bpp. Keep the feature opt-in.
 
 ## Acceptance criteria
-- [ ] Field representation stores optional gate normal, offset, sharpness, and enabled mask.
-- [ ] Reference renderer supports gated normalized accumulation with finite gradients.
-- [ ] Initializer can assign gates from tensor/edge evidence for edge-classified Gaussians.
-- [ ] Synthetic step-edge test shows lower cross-boundary color bleed at equal N.
-- [ ] Benchmark slice compares on-edge, flanking, and boundary-gated variants under low budgets.
-- [ ] Codec/save-load behavior is versioned or explicitly rejects gated fields.
+- [ ] BENCH-007 establishes a reproducible cross-boundary failure at actual low rate.
+- [ ] Responsibility-flux diagnostic is validated on synthetic step, junction, thin-line, and
+      texture controls without changing the renderer.
+- [ ] The no-parameter penalty is isolated from the parameterized gate control.
+- [ ] Synthetic and eight-image tests compare no gate, flux penalty, local contour gate, and native
+      Contour-Aware evidence where executable.
+- [ ] Every side parameter/mask is counted in a self-contained stream and cold decoded.
+- [ ] Promotion requires at least +0.20 dB edge-band benefit at 0.5 and 1.0 bpp, no worse than
+      -0.05 dB whole-image PSNR, no texture-band regression, and an image-bootstrap interval above
+      zero. Otherwise close the exact formulation.
 
 ## Interfaces touched
-`src/structsplat/gaussians.py`, `src/structsplat/render.py`, `src/structsplat/init.py`,
-`src/structsplat/config.py`, `tests/test_render.py`, benchmark configs.
+Begin in benchmark diagnostics. Only after the gate passes may it touch
+`src/structsplat/gaussians.py`, `src/structsplat/render.py`, `src/structsplat/config.py`,
+codec versioning, and render/codec tests.
 
 ## Depends on
-INIT-004, CORE-001.
+INIT-004, CORE-001, BENCH-007.

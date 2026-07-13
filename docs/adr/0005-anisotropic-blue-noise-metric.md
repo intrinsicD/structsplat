@@ -1,5 +1,10 @@
 # ADR-0005: Anisotropy via a Mahalanobis metric inside Weighted Sample Elimination
 
+**2026-07-13 scope update:** the sampler decision remains accepted, but its original broad novelty
+rationale is superseded. Structure-Guided Allocation, Image-GS, P-GSVC, and related work occupy
+structure-aware/progressive Gaussian territory. The unresolved claim is the specific tensor-metric
+WSE relationship at held-out actual rate (BENCH-007).
+
 ## Context
 Isotropic blue noise wants equal spacing in all directions, which fights edges (we want dense
 across an edge, sparse along it). We need blue-noise spectra *and* feature-adapted anisotropy, with
@@ -15,8 +20,8 @@ tensor: the WSE conflict distance is Mahalanobis in `M`. Samples are blue-noise 
 ## Consequences
 + One sampler yields all strategies: metric=None → isotropic; metric from tensor → anisotropic.
 + Exact N → clean `strategy x budget` ablation rows.
-+ Prior art exists in pieces (anisotropic blue noise; structured 2D-GS init; error-driven
-  densification) but not combined into a progressive 2D-Gaussian image codec — the novelty seam.
++ The combination is a useful interpretable mechanism and control surface; no blanket novelty or
+  progressive-codec claim follows from it.
 - Metric normalization (how axis-ratio maps to coherence) is a tuning surface; unit-area keeps
   counts comparable but the exact mapping is an ablation knob (`INIT-003`, `INIT-004`).
 - Reference WSE is O(M) removals with grid neighbors; fine for init, not a hot loop.

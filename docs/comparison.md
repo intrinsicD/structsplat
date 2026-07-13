@@ -1,163 +1,114 @@
-# StructSplat Comparison Against Related 2D Gaussian Image Repos
+# StructSplat and the 2D Gaussian image frontier
 
-This note compares the local `structsplat` approach against local copies of:
+**Updated:** 2026-07-13
 
-- `/home/alex/Documents/GaussianImage`
-- `/home/alex/Documents/GaussianImage_plus`
-- `/home/alex/Documents/image-gs`
-- `/home/alex/Documents/Instant-GI`
+**Scope:** primary papers/official pages plus provenance-checked local executions.
+**Detailed audit:** `ara/evidence/storage-budget-168k-sota-audit-2026-07-13.md`.
 
-The comparison is based on the local README files and implementation paths inspected on
-2026-07-02. The initial pass only test-ran `structsplat` (`33 passed in 108.55s` at commit state
-`pytest-2026-07-02`). Later ARA entries add current exact-CUDA and cross-repo matrix evidence; keep
-the dates/commit states separate when citing numbers. The other repos were not benchmarked through
-their native end-to-end pipelines because they require CUDA extension builds, datasets, and in some
-cases pretrained checkpoints. Treat runtime and quality claims for those repos as their
-repo/paper-code intent unless a specific ARA evidence ID says otherwise.
+## Bottom line
 
-## High-Level Positioning
+StructSplat is not currently established as a state-of-the-art image codec. Its strongest evidence
+is a controlled causal harness for a training-free tensor/WSE prior under a normalized Gaussian
+renderer. The completed 168 KiB experiment is high-rate local-policy evidence:
 
-| Project | Main bet | Best comparison axis |
+- 40 methods × four COCO training images × two seeds = 320 completed cells;
+- 71.68–81.15 analytical bpp at the prepared resolutions;
+- roughly 22 bpp for the actual SSPL1 streams;
+- about 17.99 bpp for the corresponding lossless target PNGs;
+- mostly local paper-inspired controls rather than native external executions.
+
+The next defensible question is not whether “structure helps.” It is whether **tensor-metric
+blue-noise placement** contributes rate-distortion value beyond direct SLIC/Sobel, gradient,
+uniform-WSE, and random controls at a self-contained 0.25–4 bpp. BENCH-007 owns that experiment.
+
+## Current primary-source map
+
+These results do not form one leaderboard: datasets, rate definitions, renderers, optimization
+horizons, learned priors, and hardware differ.
+
+| Method | What it establishes | Consequence for StructSplat |
 |---|---|---|
-| StructSplat | Better deterministic initialization from structure tensor + anisotropic blue-noise sampling + edge flanking | Low-budget quality, convergence speed, interpretable ablations |
-| GaussianImage | Simple fixed-count 2D Gaussian representation with very fast CUDA rendering and codec path | Published baseline for per-image fitting, rendering FPS, and rate-distortion |
-| GaussianImage++ | Boost GaussianImage with direct covariance, adaptive point growth, pruning, and improved quantization | Practical improvement over GaussianImage under variable budgets |
-| Image-GS | Content-adaptive gradient/saliency init plus error-guided progressive optimization and LOD | Closest conceptual neighbor for adaptive placement and progressive hierarchy |
-| Instant-GI | Learned initializer predicts a coarse Gaussian representation, then lightly fine-tunes | Fast amortized initialization across many images from a learned distribution |
+| [GaussianImage](https://arxiv.org/abs/2403.08551) (ECCV 2024) | Foundational per-image 2D Gaussian representation and quantization path. | Baseline renderer/optimizer/codec family; native fixed-horizon results are tradeoffs, not common-method ablations. |
+| [Image-GS](https://arxiv.org/abs/2407.01866) (SIGGRAPH 2025) | Gradient-informed allocation, error-guided progressive optimization, top-K normalized rendering, random access, and LOD. | Broad content-adaptive progressive allocation and normalized-mixture territory is occupied. |
+| [GaussianImage++](https://ojs.aaai.org/index.php/AAAI/article/view/37572) (AAAI 2026) | Distortion-driven growth, covariance filtering, and attribute-separated learned quantization. | Local residual/covariance transplants do not reproduce the native method; full native RD is required. |
+| [Structure-Guided Allocation](https://arxiv.org/abs/2512.24018) (2025) | SLIC/Sobel allocation, geometry consistency, and structure-adaptive covariance precision; reports -43.44% Kodak and -29.91% DIV2K BD-rate versus GSImage. | Closest handcrafted direct baseline. Broad structure-aware allocation/orientation/precision novelty is occupied. |
+| [Soft Anisotropic Diagrams](https://arxiv.org/abs/2604.21984) (SIGGRAPH 2026) | Top-K normalized anisotropic ownership with independent reach/temperature and removal-delta pruning. Its reported BPP is a parameter proxy, not entropy-coded bytes. | Strong representation-level threat and a causal bridge target; never compare its proxy BPP with SSPL1 actual BPP as if identical. |
+| [SGI](https://openaccess.thecvf.com/content/CVPR2026/papers/Pan_SGI_Structured_2D_Gaussians_for_Efficient_and_Compact_Large_Image_CVPR_2026_paper.pdf) (CVPR 2026) | Seed-organized neural Gaussians, context entropy coding, and multiscale fitting on 27–76 MP images. | Defines the high-resolution structured/entropy-coded frontier absent from the 160-pixel study. |
+| [AIR](https://arxiv.org/abs/2605.20820) (2026) | Learned stage-wise residual prediction and adaptive quantization with feed-forward encoding. | Defines the amortized encoder frontier. The local four-image max-side-256 run is only environment evidence. |
+| [P-GSVC](https://arxiv.org/abs/2603.10551) (MMSys 2026) | Joint base/enhancement Gaussian layers for quality and resolution scalability. | Progressive WSE order is an engineering mechanism unless preserved and optimized in an embedded stream. |
+| [CGVQ](https://arxiv.org/abs/2607.05667) (2026) | Cluster-guided codebooks; reports about 20% lower bpp at similar quality versus its baseline. | Generic clustered VQ is occupied; a new codec needs a structure-conditioned rate argument. |
+| [Contour-Aware 2DGS](https://arxiv.org/abs/2512.23255) (2025/2026) | Segmentation-region-constrained rasterization reduces cross-boundary mixing at low counts. | Direct threat to CORE-007's old broad gate. Remaining lane is segmentation-free flux with every boundary bit counted. |
+| [WIPES](https://openaccess.thecvf.com/content/ICCV2025/html/Zhang_WIPES_Wavelet-based_Visual_Primitives_ICCV_2025_paper.html) (ICCV 2025) | Localized wavelet visual primitives provide a frequency-bearing alternative to Gaussians. | Required direct control for CORE-008; Gaussian-only comparisons cannot identify the best primitive family. |
+| [Instant-GI](https://openaccess.thecvf.com/content/ICCV2025/html/Zeng_Instant_GaussianImage_A_Generalizable_and_Self-Adaptive_Image_Representation_via_2D_ICCV_2025_paper.html) and later learned samplers | Learned adaptive Gaussian fields with little or no per-image fitting. | Learned initialization is crowded; StructSplat's viable distinction is training-free interpretability with measured RD or robustness value. |
 
-## What StructSplat Actually Contributes
+For ordinary image compression, the outside-class frontier also matters. A practical learned codec
+at CVPR 2026 reports subjective bitrate gains against AV1/AV2/VVC/ECM/JPEG-AI while decoding large
+images on-device
+([primary source](https://openaccess.thecvf.com/content/CVPR2026/html/Tatwawadi_What_Matters_in_Practical_Learned_Image_Compression_CVPR_2026_paper.html)).
+A Gaussian method is not overall compression SOTA merely because it leads other Gaussian methods.
 
-`structsplat` is not primarily a faster renderer today. Its current contribution is a controlled
-research harness around initialization:
+## What the local native evidence says
 
-- It computes a structure tensor once and uses it consistently for density, orientation, and
-  flat/edge/corner classification.
-- It samples positions with density-adaptive Weighted Sample Elimination, optionally in an
-  anisotropic Mahalanobis metric.
-- It explicitly flanks edge Gaussians rather than placing them on the discontinuity.
-- It supports a coarse-to-fine pyramid where later levels are driven by residual structure.
-- It has focused ablation and stage-search harnesses for deciding whether the extra structure
-  actually helps.
+Native results are intentionally kept separate from common-renderer mechanism controls:
 
-This makes StructSplat strong as a hypothesis-testing framework. It now has an exact CUDA extension
-for its own normalized/additive equations, but the tiled production CUDA/Vulkan path and native
-end-to-end codec comparisons are still open.
+| Native lane | Bounded result | Missing for a strong claim |
+|---|---|---|
+| Image-GS official environment, fixed N, 500 steps, COCO4 at max-side 160 | StructSplat has higher paired final PSNR/proxy-MS-SSIM; start-count and timing semantics differ. | Native resolution, rate curve, packed stream, broader held-out data. |
+| Image-GS `siggraph25`, 5k, one seed | Metric tradeoff: Image-GS has higher proxy MS-SSIM; StructSplat checkpoint has higher PSNR and better LPIPS. | Multi-seed, native-resolution, actual-rate confirmation. |
+| GaussianImage official environment, 5k | Speed/quality tradeoff; neither method is a uniform winner. | Released 50k + 50k QAT Kodak protocol and a self-contained rate definition. |
+| GaussianImage official environment, N=5,376, 10k | 35.657 dB, 6.392 s, about 4,412 FPS on the four small targets; -13.142 dB but +8.288 s versus the historical StructSplat row. | This is float representation evidence, not codec RD. |
+| AIR checkpoint, four inputs at max-side 256 | 25.254 dB, 37.0 ms inference, native-reported quantized 4.328 bpp. | Same resolution/denominator, central stream audit, paper-protocol dataset. |
 
-## Fair Repo-by-Repo Comparison
+No native evidence above supports a global implementation ranking.
 
-### GaussianImage
+## The two comparison lanes
 
-GaussianImage is the clean baseline. Its local code initializes Gaussian positions randomly in
-normalized coordinates, optimizes a fixed number of points, and offers Cholesky and scale-rotation
-parameterizations backed by a CUDA `gsplat` renderer. The compression path uses quantization-aware
-training, half-precision positions, vector-quantized colors, low-bit covariance/scale parameters,
-and optional entropy coding analysis.
+### Common-mechanism lane
 
-Compared with GaussianImage, StructSplat changes the front of the pipeline, not the overall idea
-of overfitting a single image with 2D Gaussians. The fair question is: with the same renderer,
-budget, loss, and iteration limit, does tensor/blue-noise/flanking initialization reach the same
-PSNR faster or reach better PSNR at low budgets? StructSplat is designed exactly to answer that.
+Use one StructSplat representation, renderer, fitter, codec, candidate search, and actual byte
+definition. Change exactly one allocation mechanism. This lane answers causal questions and must
+label transplants `local_<mechanism>_control`.
 
-GaussianImage should still be expected to win on maturity, CUDA throughput, published codec
-numbers, and simple reproducibility. StructSplat should only claim advantage if its ablation shows
-the initializer improves convergence or low-budget quality under matched conditions.
+BENCH-007 predeclares:
 
-### GaussianImage++
+- tensor/on-edge WSE;
+- shipped quadtree-WSE;
+- SLIC/Sobel structure classes;
+- Image-GS-style gradient sampling;
+- uniform Euclidean WSE;
+- random placement.
 
-GaussianImage++ is closer to a practical improvement of GaussianImage. In the local code, it uses
-direct 2D covariance parameters, an image-size/point-count scale lower bound (`SLV_init`), pruning
-of non-positive-definite covariance entries, and adaptive addition of points at high-error pixels
-until `max_num_points` is reached. Its quantization path adds LSQ-style control for positions,
-covariance, and colors.
+Primary data are DIV2K validation; Kodak-24 is a development-exposed replication. Primary
+endpoints are PSNR BD-rate and paired PSNR at 0.5/1.0 actual bpp, with image-cluster intervals.
 
-StructSplat and GaussianImage++ both attack poor capacity allocation, but from opposite ends:
+### Native-authentic lane
 
-- StructSplat tries to start from a good structured distribution before fitting.
-- GaussianImage++ starts simpler, then repairs allocation during fitting with residual growth and
-  pruning.
+Execute official code at its intended renderer, optimizer, checkpoint, resolution, rate definition,
+and horizon. Record repository/build/environment provenance and centrally rescore decoded pixels.
+Keep these rate columns distinct:
 
-GaussianImage++ is more directly useful if the goal is "make GaussianImage better with a stronger
-training loop and codec." StructSplat is cleaner if the goal is "is there a geometry/sampling
-principle that gives a better first layout?" The strongest fair experiment would combine them:
-use StructSplat initialization as the initial point set, then run GaussianImage++ growth/pruning.
+- self-contained codec bytes/bpp;
+- analytical or parameter bpp;
+- checkpoint bytes;
+- null when no complete stream exists.
 
-### Image-GS
+BENCH-008 may cross fields/renderers to study interactions, but those interventions never replace
+native-authentic rows.
 
-Image-GS is the closest conceptual peer. It supports gradient, saliency, and random position
-initialization; error-guided progressive optimization; a natural LOD stack; configurable bit
-precision; top-k normalized CUDA rendering; texture stack compression; and rendering at new
-resolutions.
+## Claim boundary
 
-The key difference is placement quality. Image-GS uses weighted random sampling from gradient or
-saliency maps, then adds more Gaussians from residual-error probability. StructSplat instead uses
-blue-noise elimination under a density and anisotropy field, so it is explicitly trying to avoid
-clumps while respecting local orientation. StructSplat also distinguishes on-edge versus flanking
-edge placement, which Image-GS leaves to optimization.
+Currently defensible:
 
-Image-GS is more mature for applications: it has CUDA kernels, richer metrics/logging, texture
-stack support, post-optimization rendering, and a clear compression interface. StructSplat is more
-methodically isolated for testing one initialization hypothesis. If StructSplat wins anywhere, it
-should be in low-budget or early-iteration regimes where placement regularity matters most.
+> StructSplat is an interpretable, training-free structural-prior and causal-experimentation
+> substrate for normalized local image representations.
 
-### Instant-GI
+Not established:
 
-Instant-GI changes the problem: it amortizes initialization over a dataset. Its network predicts a
-position field, discretizes it through dithering, constructs geometry through Delaunay/ellipse
-processing, predicts Gaussian attributes, and then runs GaussianImage-style fine-tuning. It also
-has quadtree and random initializers as baselines. The learned path can dynamically choose the
-number of Gaussians produced by the position field.
+- state-of-the-art image compression;
+- broad novelty for structure-aware allocation or orientation;
+- native superiority over named external methods;
+- progressive-codec novelty from WSE ordering alone;
+- boundary or hybrid-primitive novelty without Contour-Aware 2DGS/WIPES controls;
+- actual-rate superiority from Gaussian count, float payload, analytical BPP, or checkpoint size.
 
-StructSplat is non-learned and per-image. That is a strength when no training corpus or checkpoint
-is available, and a weakness when many images come from the same distribution. Instant-GI should
-win on time-to-good-initialization if its pretrained checkpoint generalizes to the target images.
-StructSplat is easier to audit, easier to port, and less vulnerable to domain shift.
-
-The fairest interpretation is that Instant-GI is an amortized learned initializer, while
-StructSplat is a deterministic analytic initializer. They can be complementary: StructSplat's
-tensor density or blue-noise targets could be used as training supervision or as a fallback when
-Instant-GI's checkpoint is unavailable.
-
-## Comparison Matrix
-
-| Axis | StructSplat | GaussianImage | GaussianImage++ | Image-GS | Instant-GI |
-|---|---|---|---|---|---|
-| Initialization | Structure tensor, density-adaptive WSE, anisotropic metric, edge flanking | Random fixed-count | Random plus adaptive residual growth/pruning | Gradient/saliency/random, then residual additions | Learned position field plus dithering/Delaunay/ellipse attributes |
-| Orientation/scale prior | Tensor-driven orientation and axis ratio | Learned from random start | Direct covariance with scale lower bound | Learned scale/rotation; initial scale fixed | Network predicts scale/rotation from local geometry/features |
-| Budget policy | Fixed budget, optional pyramid allocation | Fixed count | Starts at `num_points`, grows to `max_num_points` | Starts at fraction, progressively adds to fixed total | Point count emerges from predicted/dithered position field, or fixed random baseline |
-| Renderer maturity | PyTorch reference; CUDA/Vulkan planned | CUDA `gsplat` sum renderer | CUDA `gsplat` plus modified covariance/raster path | Custom CUDA tile/no-tile renderer with top-k norm | GaussianImage-style CUDA renderer |
-| Compression path | Basic post-fit quantization + Morton/zlib + STE QAT | Mature QAT/VQ/entropy-analysis path | Stronger LSQ-style quantization controls | Bit-precision control by parameter group | Not the main local code path |
-| LOD/progressive behavior | Explicit prefix-oriented pyramid | No natural LOD in baseline | Adaptive count, not explicitly prefix-LOD | Explicit progressive optimization/LOD stack | Coarse net init then fine-tune, not primarily LOD |
-| External dependency | Minimal for reference; metrics optional | CUDA extensions and datasets | CUDA extensions and datasets | CUDA extensions, fused SSIM, optional saliency model | CUDA extensions, pretrained init checkpoint, training data for custom init net |
-| Scientific auditability | High: tests, ADRs, ablation harnesses | Medium: compact paper code | Medium: practical but more entangled | Medium-high: configurable and documented | Medium: learned components add training-data dependence |
-
-## Suggested Fair Benchmark
-
-To compare fairly, do not compare README headline numbers. Use one harness and record:
-
-- Same image set: Kodak 24 plus a small DIV2K or COCO subset.
-- Same output resolution and color space.
-- Same Gaussian budgets: for example 2k, 5k, 10k, 20k.
-- Same stopping modes: fixed iterations, fixed wall-clock, and time-to-target PSNR.
-- Same metrics: PSNR, SSIM, MS-SSIM, LPIPS/FLIP if available, init time, fit time, render FPS,
-  actual bpp after each repo's codec.
-- Same seeds where stochastic sampling is used.
-- Separate representation results from codec results, because the repos define bpp differently.
-
-The most informative first test is:
-
-1. Disable progressive growth in Image-GS/GaussianImage++ and compare only initial layouts at fixed
-   count and fixed iterations.
-2. Then enable each repo's native growth/progressive mode and compare end-to-end practical quality.
-3. Finally test hybrids, especially StructSplat init plus GaussianImage++ or Image-GS training.
-
-## Bottom Line
-
-StructSplat is best understood as an initialization research contribution, not yet as a complete
-replacement for the mature CUDA codecs. GaussianImage is the baseline to beat, GaussianImage++ is
-the strongest practical GaussianImage-style training/codec improvement, Image-GS is the closest
-peer for progressive content-adaptive placement, and Instant-GI is the learned amortized alternative.
-
-The decisive claim for StructSplat should be narrow: under matched renderer/loss/budget settings,
-does structure-tensor anisotropic blue-noise flanking improve low-budget quality or convergence
-speed? The local repo is set up to test that claim, but it still needs full cross-repo benchmarks
-before making stronger performance claims.
+The claim may expand only after BENCH-007 passes its preregistered held-out actual-rate gate.
