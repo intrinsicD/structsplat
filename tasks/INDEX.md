@@ -29,7 +29,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | FIT-016 | Coarse-to-full loss-target curriculum | implemented/screened — rejected by 500-step guard (−0.1645 dB selected PSNR); default off | FIT-015, HIER-003/004, ABL-004, BENCH-002 |
 | FIT-017 | Kernel-matched signed-residual densification | implemented/screened — wider scores improve immediate PSNR but lose post-20/post-100; default legacy score retained | FIT-004, FIT-009, BENCH-002, ABL-004 |
 | BENCH-006 | Fixed-storage all-method convergence lane | completed as a 320-cell high-rate local-policy diagnostic; superseded for compression decisions by BENCH-007 | BENCH-001/002/003/004, COMP-002, ABL-004 |
-| BENCH-007 | Actual-rate structure phase diagram | todo — preregistered; highest priority | BENCH-001/002/003/004/006, COMP-001/002/004, INIT-003/009 |
+| BENCH-007 | Actual-rate structure phase diagram | in-progress — Stage-0 substrate implementation | BENCH-001/002/003/004/006, COMP-001/002/004, INIT-003/009 |
 | BENCH-008 | Common/native causal bridge | blocked on BENCH-007 Stage 1 and schema feasibility | BENCH-005/007, CORE-001/003/005, COMP-002 |
 | COMP-005 | Decoder-synchronized structural geometry | research spike; blocked on BENCH-007 Stage 1 | BENCH-007, COMP-001/002/003/004, INIT-001/003/009 |
 

@@ -6,6 +6,7 @@ torch = pytest.importorskip("torch")
 
 from structsplat import init as I
 from structsplat import structure_tensor as ST
+from structsplat import structural_controls as SC
 from structsplat.config import FitConfig, InitConfig
 from structsplat.fit import _render
 
@@ -23,6 +24,29 @@ def _assert_field_ok(f, n):
         assert torch.isfinite(t).all()
     assert (f.means[:, 0] >= -0.5).all() and (f.means[:, 0] <= 63.5).all()
     assert (f.means[:, 1] >= -0.5).all() and (f.means[:, 1] <= 47.5).all()
+
+
+def test_local_slic_sobel_control_is_exact_and_deterministic():
+    pytest.importorskip("skimage")
+    img = _toy()
+    cfg = InitConfig(strategy="local_slic_sobel_control", num_gaussians=91, seed=7)
+    a = I.build_field(img, cfg)
+    b = I.build_field(img, cfg)
+    _assert_field_ok(a, 91)
+    assert torch.equal(a.means, b.means)
+    assert torch.equal(a.log_scales, b.log_scales)
+
+
+def test_slic_sobel_complexity_groups_use_reported_sparse_ratio():
+    complexity = np.arange(9, dtype=np.float64)
+    counts, categories = SC._ranked_region_allocation(complexity, 90, (6, 2, 1))
+    totals = [int(counts[categories == category].sum()) for category in range(3)]
+    assert totals == [60, 20, 10]
+    # Within-category leftovers are awarded in descending complexity order.
+    counts, categories = SC._ranked_region_allocation(complexity, 92, (6, 2, 1))
+    top_group = np.argsort(-complexity)[:3]
+    assert counts[top_group[0]] >= counts[top_group[-1]]
+    assert int(counts.sum()) == 92
 
 
 def _quadtree_leaves_reference(density, n):

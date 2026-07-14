@@ -1,6 +1,6 @@
 # BENCH-007 — Actual-rate structure phase diagram
 
-**Status:** todo — preregistered 2026-07-13; highest-priority research task.
+**Status:** in-progress — preregistered 2026-07-13; implementation started 2026-07-14.
 
 ## Decision this task owns
 
@@ -136,6 +136,23 @@ Reject or reframe the compression claim if the gain:
 - Raw CSV/JSON, central metrics, per-image curves, component byte tables, statistical summaries,
   resource telemetry, and a portable HTML index.
 - ARA evidence and a bounded claim update. Negative results are a valid completion.
+
+## Implementation ledger
+
+- [x] Exact-N local SLIC/Sobel control with frozen fidelity assumptions and strategy tests.
+- [x] Complete SSPL1 header/stream component accounting with malformed-stream tests.
+- [x] Frozen source/pixel hashes, resolution-normalized equal candidate ladders, dry-run planning,
+  append-only fit/candidate/error journals, hash-checked resume, and resource telemetry.
+- [x] Exact integer byte caps, cold decode/parity, central scoring, RDO selection, explicit missing
+  rows, nondominated envelopes, and no-extrapolation BD-rate edge cases.
+- [x] Predeclared edge/texture/bleed/contributor metrics, image-cluster bootstrap, Holm adjustment,
+  strongest-direct-control rule, and executable Stage-1 gate.
+- [x] Automatic F5--F9, retained selected streams/reconstructions, raw CSV/JSON, and portable HTML.
+- [x] Separately labeled lossless PNG, JPEG-444, and AVIF-444 context sweep.
+- [ ] Complete Stage-0a plumbing validation on all four pinned COCO fixtures.
+- [ ] Complete Stage-0b calibration on the four preregistered DIV2K training IDs.
+- [ ] Freeze and complete Stage 1; obey its stop/go decision without post-hoc rescue.
+- [ ] Freeze and run Stage 2 only if the Stage-1 gate authorizes it.
 
 ## Non-goals
 

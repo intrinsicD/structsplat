@@ -28,6 +28,10 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
   the inverse-CDF warp for low-discrepancy samplers), `sampling` (WSE blue noise, Poisson-disk
   dart throwing, farthest-point, CVT/Lloyd, Halton, and opt-in terminal-set-preserving progressive
   WSE order), `config`.
+- **benchmark-only structural controls:** `structural_controls` lazily calls SLIC and keeps the
+  SLIC/Sobel complexity ranking, exact-N 6:2:1 allocation, and unresolved upstream-fidelity
+  assumptions explicit. `init` registers `local_slic_sobel_control`, but it is not a shipped
+  default or an upstream-paper implementation.
 - **torch, autograd:** `gaussians` (RS + optional opacity + optional per-Gaussian scale caps,
   ADR-0012), `render` (normalized default + additive, ADR-0006, exact CUDA variants, ADR-0011,
   and gsplat comparator, sharing one accumulator where semantics match), `metrics`, `init`
@@ -37,6 +41,8 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
   torch normalized renderer, then exports raw tensor/field/responsibility maps plus deterministic
   explanatory panels. It never fits or changes a field and is not benchmark evidence (DOCS-002).
 - **entry:** `cli` (`structsplat fit` / `ablation` / `stage-search`).
+- **decision benchmark:** `benchmarks.actual_rate_phase_diagram` owns frozen actual-rate manifests,
+  SSPL1 cold scoring, exact-cap RDO/statistics, and result figures for BENCH-007.
 
 ## Stage-search (ABL-002, protocol in ADR-0010)
 `benchmarks/stage_search.py` sweeps configurations across every swappable stage — tensor operator,

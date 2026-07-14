@@ -113,6 +113,28 @@ def test_codec_stream_transform_flags_are_self_describing():
     assert torch.isfinite(codec.decode(plain_blob).colors).all()
 
 
+def test_blob_components_exactly_partition_sspl1_bytes():
+    img = _toy()
+    field = _fitted_field(img, n=48)
+    blob = codec.encode(field, *img.shape[:2], codec.CodecConfig())
+    parts = codec.blob_components(blob)
+    assert parts["total_bytes"] == len(blob)
+    assert parts["header_bytes"] + sum(
+        stream["framed_bytes"] for stream in parts["streams"].values()
+    ) == len(blob)
+    assert list(parts["streams"]) == ["means", "scales", "rotation", "colors"]
+    assert all(stream["payload_bytes"] > 0 for stream in parts["streams"].values())
+
+
+def test_blob_components_rejects_truncated_or_trailing_bytes():
+    img = _toy()
+    blob = codec.encode(_fitted_field(img, n=16), *img.shape[:2], codec.CodecConfig())
+    with pytest.raises(ValueError, match="truncated"):
+        codec.blob_components(blob[:-1])
+    with pytest.raises(ValueError, match="trailing"):
+        codec.blob_components(blob + b"x")
+
+
 def test_png_stream_codec_roundtrips_and_is_self_describing():
     img = _toy()
     target = torch.as_tensor(img)

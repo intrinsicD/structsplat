@@ -10,6 +10,7 @@ STRATEGIES:
   quadtree_aggregate density-adaptive quadtree cells with aggregate color/features
   quadtree_hybrid   aggregate smooth cells, WSE/flanking samples for detailed cells
   quadtree_wse      quadtree budget cells with local WSE samples (shipped default)
+  local_slic_sobel_control  local SLIC/Sobel complexity allocation (publication control)
 
 The feature-aware strategies all share the structure tensor (orientation + density).
 `build_field` also accepts a precomputed density/tensor so the pyramid can drive placement from
@@ -30,6 +31,7 @@ from .gaussians import GaussianField
 STRATEGIES = (
     "random", "grid", "iso_blue_noise", "aniso_onedge", "aniso_flanking",
     "feedforward", "quadtree_aggregate", "quadtree_hybrid", "quadtree_wse",
+    "local_slic_sobel_control",
 )
 
 
@@ -720,6 +722,15 @@ def build_field(img: np.ndarray, icfg: InitConfig,
         feature_scale = spacing.copy()
         angles = np.zeros(len(pts))
         ratios = np.ones(len(pts))
+    elif strat == "local_slic_sobel_control":
+        from .structural_controls import slic_sobel_placement
+
+        placement = slic_sobel_placement(img, n, seed=icfg.seed)
+        pts = placement.points_xy
+        spacing = placement.spacing
+        feature_scale = spacing.copy()
+        angles = np.zeros(n)
+        ratios = np.ones(n)
     else:
         if tensor is None:
             tensor = st.compute(img, scfg)

@@ -372,6 +372,57 @@ def blob_header(blob: bytes) -> dict:
     return json.loads(blob[9:9 + hlen])
 
 
+def blob_components(blob: bytes) -> dict:
+    """Return an exact byte-accounting breakdown of one SSPL1 container.
+
+    ``header_bytes`` includes the magic, header-length prefix, and JSON header.
+    Each stream's ``framed_bytes`` includes its four-byte payload-length prefix,
+    so ``header_bytes + sum(framed_bytes) == total_bytes`` by construction.
+    """
+    if len(blob) < 9 or blob[:5] != _MAGIC:
+        raise ValueError("not a structsplat codec blob")
+    (hlen,) = struct.unpack_from("<I", blob, 5)
+    header_end = 9 + int(hlen)
+    if header_end > len(blob):
+        raise ValueError("truncated structsplat codec header")
+    try:
+        header = json.loads(blob[9:header_end])
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError("invalid structsplat codec header") from exc
+
+    names = ["means", "scales", "rotation", "colors"]
+    if bool(header.get("has_opacity", False)):
+        names.append("opacity")
+    raw_lengths = header.get("stream_raw_lengths", [])
+    streams: dict[str, dict[str, int | None]] = {}
+    off = header_end
+    for index, name in enumerate(names):
+        if off + 4 > len(blob):
+            raise ValueError(f"truncated {name} stream framing")
+        (payload_bytes,) = struct.unpack_from("<I", blob, off)
+        off += 4
+        end = off + int(payload_bytes)
+        if end > len(blob):
+            raise ValueError(f"truncated {name} stream payload")
+        streams[name] = {
+            "payload_bytes": int(payload_bytes),
+            "framing_bytes": 4,
+            "framed_bytes": 4 + int(payload_bytes),
+            "raw_bytes": int(raw_lengths[index]) if index < len(raw_lengths) else None,
+        }
+        off = end
+    if off != len(blob):
+        raise ValueError(f"unexpected {len(blob) - off} trailing codec bytes")
+    return {
+        "total_bytes": len(blob),
+        "magic_bytes": len(_MAGIC),
+        "header_length_prefix_bytes": 4,
+        "header_json_bytes": int(hlen),
+        "header_bytes": header_end,
+        "streams": streams,
+    }
+
+
 def decode_and_render(blob: bytes, device: str = "cpu") -> torch.Tensor:
     """Decode a blob and render it using the render semantics stored in its header.
 

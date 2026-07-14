@@ -74,3 +74,25 @@ The generator intentionally does not synthesize missing results. BENCH-007 must 
 
 The complete publication/readiness and panel-level plan is in
 `ara/evidence/publication-readiness-research-2026-07-14.md`.
+
+## BENCH-007 result-figure generator
+
+`benchmarks.actual_rate_phase_diagram` now implements the missing F5--F9 computations. It does not
+invent panels when cells are absent: a generated placeholder states the exact missing evidence.
+With a completed frozen run, `analyze` emits:
+
+- `f5_causal_allocation.png`: same image, Gaussian count, codec mix, and fit horizon; source-only
+  initial sites above cold-decoded reconstructions with actual rate/PSNR below;
+- `f6_actual_rate_phase_diagram.png`: raw per-image measured envelopes, image-cluster intervals,
+  exact SSPL1 header/attribute bytes, and separately styled conventional-codec context when run;
+- `f7_mechanism.png`: per-image paired edge/texture MSE, signed target-normal bleed, and effective
+  edge contributor deltas at frozen target rates;
+- `f8_resources.png`: full equal candidate-search cost, decoder timing, and equal-horizon fit
+  trajectories; and
+- `f9_qualitative_quantiles.png`: failure/median/success chosen by paired-PSNR quantiles, with crops
+  selected from target gradients and one shared error scale.
+
+Every result directory also contains the frozen manifest, append-only journals, raw/selected CSV
+and JSON, retained streams/reconstructions, statistical/gate summary, and a relative-link-only
+`index.html`. Stage-0 and Stage-1 banners remain visible on every figure so plumbing or killing-pilot
+output cannot be mistaken for held-out evidence.

@@ -17,6 +17,45 @@ The canonical four-image COCO fixture used by the matched comparison and regress
 harnesses lives in `tests/test_images/`. Keep those four files there so benchmark reruns do not
 depend on ignored `results/` artifacts.
 
+`actual_rate_phase_diagram.py` owns BENCH-007, the decision benchmark for any compression claim.
+It freezes native decoded-pixel/source hashes and one equal count/bit-mix grid before scoring,
+then independently fits all six allocation arms, writes complete SSPL1 streams, cold-decodes and
+centrally scores them, and journals every fit/candidate for safe resume. `analyze` applies integer
+byte caps, explicit missing-point semantics, nondominated envelopes, no-extrapolation BD-rate,
+image-cluster bootstrap/Holm summaries, the Stage-1 stop/go gate, F5--F9, and a portable
+`index.html`. `conventional` writes separately labeled PNG/JPEG-444/AVIF-444 context; those rows
+never enter the gate. Install the optional dependencies with `pip install -e '.[benchmark,metrics]'`.
+
+```bash
+# Stage 0b: rate calibration only (the command enforces IDs 0002/0268/0534/0800).
+PYTHONPATH=src python -m benchmarks.actual_rate_phase_diagram calibrate \
+  --data-root results/datasets/DIV2K_train_HR \
+  --images results/datasets/DIV2K_train_HR/{0002,0268,0534,0800}.png \
+  --outdir results/bench007_stage0b
+
+# Freeze before metric inspection, inspect the exact workload, then run/resume.
+PYTHONPATH=src python -m benchmarks.actual_rate_phase_diagram freeze \
+  --stage stage1 --data-root results/datasets/DIV2K_train_HR \
+  --images results/datasets/DIV2K_train_HR/{0001,0115,0229,0343,0457,0571,0685,0799}.png \
+  --bytes-per-gaussian BPG_FROM_STAGE0B --manifest results/bench007_stage1/manifest.json
+PYTHONPATH=src python -m benchmarks.actual_rate_phase_diagram plan \
+  --manifest results/bench007_stage1/manifest.json
+PYTHONPATH=src python -m benchmarks.actual_rate_phase_diagram run \
+  --manifest results/bench007_stage1/manifest.json \
+  --data-root results/datasets/DIV2K_train_HR --outdir results/bench007_stage1
+PYTHONPATH=src python -m benchmarks.actual_rate_phase_diagram status \
+  --manifest results/bench007_stage1/manifest.json --outdir results/bench007_stage1
+PYTHONPATH=src python -m benchmarks.actual_rate_phase_diagram analyze \
+  --manifest results/bench007_stage1/manifest.json \
+  --data-root results/datasets/DIV2K_train_HR --outdir results/bench007_stage1
+```
+
+The public SLIC/Sobel description omits SLIC settings and the dynamic allocation constants. The
+registered `local_slic_sobel_control` therefore freezes native SLIC at a 1,024-pixel target region
+area and the reported sparse 6:2:1 allocation, serializes every assumption, and is never labeled as
+upstream paper code. Scientific Stage-1/2 manifests enforce the preregistered image IDs; only
+Stage-0a plumbing tests may opt into a subset.
+
 `ablation.py` runs the core experiment (`ABL-001`): `{init strategy} x {budget}` on fixed images,
 scored on PSNR / MS-SSIM / LPIPS + iterations-to-target. Caveat: this is the broad init sweep, so
 keep image/budget/seed axes explicit in the output config. ABL-004 control labels are available
