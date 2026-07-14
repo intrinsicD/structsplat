@@ -2231,13 +2231,18 @@ def _plot_f6(
     axes[0].set_ylabel("Cold-decoded PSNR (dB)")
     axes[0].set_title("Measured per-image envelopes; image-cluster 95% intervals")
     axes[0].grid(True, which="both", alpha=0.22)
+    axes[0].set_ylim(
+        min(float(row["psnr"]) for row in ok) - 0.75,
+        max(float(row["psnr"]) for row in ok) + 0.75,
+    )
     conventional_path = outdir / "analysis" / "conventional.json"
     if conventional_path.exists():
         conventional = json.loads(conventional_path.read_text(encoding="utf-8"))["rows"]
+        context_axis = axes[0].inset_axes([0.55, 0.49, 0.42, 0.39])
+        context_values: list[float] = []
         for codec_name, marker, color in (
             ("jpeg_444", "s", "#111827"),
             ("avif_444", "D", "#7c3aed"),
-            ("png", "X", "#64748b"),
         ):
             codec_rows = [row for row in conventional if row["codec"] == codec_name]
             qualities = sorted({row.get("quality") for row in codec_rows}, key=lambda value: -1 if value is None else value)
@@ -2251,11 +2256,36 @@ def _plot_f6(
                     ))
             points.sort()
             if points:
-                axes[0].plot(
+                context_values.extend(point[1] for point in points)
+                context_axis.plot(
                     [point[0] for point in points], [point[1] for point in points],
                     linestyle="--", marker=marker, color=color, linewidth=1.2, markersize=4,
-                    label=f"{codec_name} (context only)",
+                    label=codec_name,
                 )
+        png_rows = [row for row in conventional if row["codec"] == "png"]
+        if context_values:
+            context_axis.set_ylim(min(context_values) - 1.0, max(context_values) + 2.5)
+        if png_rows:
+            png_x = float(np.mean([row["bpp"] for row in png_rows]))
+            png_psnr = float(np.mean([row["psnr"] for row in png_rows]))
+            context_axis.text(
+                0.98,
+                0.97,
+                f"PNG lossless: {png_x:.1f} bpp\nPSNR capped at {png_psnr:.0f} dB (off-axis)",
+                transform=context_axis.transAxes,
+                fontsize=5.7,
+                ha="right",
+                va="top",
+                color="#475569",
+                bbox={"facecolor": "white", "alpha": 0.9, "edgecolor": "#cbd5e1", "pad": 1.5},
+            )
+        context_axis.set_xscale("log", base=2)
+        context_axis.set_title("Conventional context only", fontsize=7)
+        context_axis.set_xlabel("actual bpp", fontsize=6)
+        context_axis.set_ylabel("PSNR", fontsize=6)
+        context_axis.tick_params(labelsize=6)
+        context_axis.grid(True, alpha=0.18)
+        context_axis.legend(fontsize=6, loc="lower right")
     missing_rows = [row for row in selected_rows if row.get("selection_status") != "ok"]
     if missing_rows:
         missing_summary = []
@@ -2337,7 +2367,8 @@ def _plot_f7(
         ("signed_cross_edge_bleed", "Signed bleed", 1e2),
         ("effective_count_edge_mean", "Effective contributors (edge)", 1.0),
     ]
-    figure, axes = plt.subplots(1, 4, figsize=(15.5, 4.7), constrained_layout=True)
+    figure, axes = plt.subplots(1, 4, figsize=(15.5, 4.7))
+    figure.subplots_adjust(left=0.055, right=0.99, bottom=0.16, top=0.82, wspace=0.26)
     any_values = False
     for axis, (metric, label, scale) in zip(axes, metrics):
         positions, labels = [], []
@@ -2378,7 +2409,7 @@ def _plot_f7(
         return
     figure.suptitle(
         f"F7. Mechanism deltas versus {ARMS[control]['label']} (dots: images; red: cluster mean/95%)",
-        fontsize=14,
+        fontsize=14, y=0.96,
     )
     _figure_scope_banner(figure, manifest)
     figure.savefig(path, dpi=180, facecolor="white")
@@ -2419,7 +2450,7 @@ def _plot_f8(
     axes[0].set_xticklabels([ARMS[arm]["label"] for arm in arms], rotation=28, ha="right", fontsize=8)
     axes[0].set_ylabel("Mean encoder seconds per image")
     axes[0].set_title("Full equal candidate search is charged")
-    axes[0].legend(fontsize=8)
+    axes[0].legend(fontsize=8, loc="upper left")
 
     image_id = _median_comparison_image(manifest, selected_rows, _strongest_control(analysis, manifest))
     image_entry = next(entry for entry in manifest["images"] if entry["id"] == image_id)
@@ -2520,7 +2551,8 @@ def _plot_f9(
         all_errors.extend([error_reference[crop], error_candidate[crop]])
         rendered.append((target, reference, candidate, crop))
     vmax = max(float(np.quantile(np.concatenate([value.ravel() for value in all_errors]), 0.99)), 1e-4)
-    figure, axes = plt.subplots(3, 5, figsize=(15, 9.0), constrained_layout=True)
+    figure, axes = plt.subplots(3, 5, figsize=(15, 9.0))
+    figure.subplots_adjust(left=0.02, right=0.995, bottom=0.07, top=0.90, wspace=0.03, hspace=0.04)
     for row_index, ((delta, image_id), label, values) in enumerate(zip(chosen, labels, rendered)):
         target, reference, candidate, crop = values
         panels = [target[crop], reference[crop], candidate[crop]]
@@ -2533,8 +2565,10 @@ def _plot_f9(
         axes[row_index, 4].imshow(error_candidate, cmap="magma", vmin=0.0, vmax=vmax)
         axes[row_index, 3].axis("off")
         axes[row_index, 4].axis("off")
-        axes[row_index, 0].set_ylabel(
-            f"{label}\n{image_id}\nΔ={delta:+.3f} dB", fontsize=10
+        axes[row_index, 0].text(
+            0.02, 0.98, f"{label} · {image_id} · Δ={delta:+.3f} dB",
+            transform=axes[row_index, 0].transAxes, ha="left", va="top", fontsize=9,
+            color="white", bbox={"facecolor": "black", "alpha": 0.65, "edgecolor": "none"},
         )
     titles = [
         "Target (edge-rich crop)", ARMS[control]["label"], ARMS[PRIMARY_ARM]["label"],
@@ -2545,7 +2579,7 @@ def _plot_f9(
     figure.suptitle(
         f"F9. Cases selected by paired PSNR-delta quantiles at {target_rate:g} bpp; "
         f"shared error scale [0, {vmax:.3f}]",
-        fontsize=14,
+        fontsize=14, y=0.975,
     )
     _figure_scope_banner(figure, manifest)
     figure.savefig(path, dpi=180, facecolor="white")

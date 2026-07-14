@@ -62,9 +62,15 @@ hashes.
 - These panels describe initialization and the forward operator. They are not optimized
   reconstructions, held-out comparisons, RD evidence, or a method ranking.
 
-## Figures still requiring experiments
+## Experimental status
 
-The generator intentionally does not synthesize missing results. BENCH-007 must still produce:
+The generator intentionally does not synthesize missing results. The four-image Stage-0a run has
+now exercised every panel below and validated the complete figure pipeline, including missing-cell
+handling and the separately scaled conventional-codec inset. Its visible `plumbing_only` banner is
+part of the claim guard: those plots are layout/implementation evidence, not paper results.
+
+Publication-grade BENCH-007 evidence must still produce the following on the preregistered Stage-1
+pilot and, only if its gate passes, the untouched Stage-2 confirmation set:
 
 1. equal-count/rate causal allocation comparisons and zooms;
 2. actual-rate RD curves with per-image points, intervals, and component bytes;
@@ -96,3 +102,8 @@ Every result directory also contains the frozen manifest, append-only journals, 
 and JSON, retained streams/reconstructions, statistical/gate summary, and a relative-link-only
 `index.html`. Stage-0 and Stage-1 banners remain visible on every figure so plumbing or killing-pilot
 output cannot be mistaken for held-out evidence.
+
+The completed Stage-0a audit is recorded in
+`ara/evidence/bench007-stage0a-plumbing-2026-07-14/run.md`; the large streams, reconstructions, and
+figures remain under the ignored `results/bench007_stage0a_20260714/` run directory with committed
+artifact hashes in that evidence note.
