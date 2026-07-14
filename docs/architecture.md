@@ -47,6 +47,9 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
   scientific runs may freeze the parity-checked owned exact-CUDA implementation explicitly.
   Persisted-stream parity is checked on decoded field state before a single cold render; two CUDA
   renders are not used as an equality oracle because atomic accumulation is not bit-reproducible.
+  Result-figure stream replay uses the validated analysis device, so CUDA-frozen semantics are not
+  silently forced through CPU tensors. The completed Stage-1 gate is negative; this substrate is
+  reusable, but Stage 2 is not authorized for the current tensor-WSE claim.
 
 ## Stage-search (ABL-002, protocol in ADR-0010)
 `benchmarks/stage_search.py` sweeps configurations across every swappable stage — tensor operator,

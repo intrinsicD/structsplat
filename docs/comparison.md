@@ -1,15 +1,15 @@
 # StructSplat and the 2D Gaussian image frontier
 
-**Updated:** 2026-07-13
+**Updated:** 2026-07-14
 
 **Scope:** primary papers/official pages plus provenance-checked local executions.
-**Detailed audit:** `ara/evidence/storage-budget-168k-sota-audit-2026-07-13.md`.
+**Detailed audits:** `ara/evidence/storage-budget-168k-sota-audit-2026-07-13.md` and
+`ara/evidence/bench007-stage1-killing-pilot-2026-07-14/run.md`.
 
 ## Bottom line
 
-StructSplat is not currently established as a state-of-the-art image codec. Its strongest evidence
-is a controlled causal harness for a training-free tensor/WSE prior under a normalized Gaussian
-renderer. The completed 168 KiB experiment is high-rate local-policy evidence:
+StructSplat is not established as a state-of-the-art image codec. The completed 168 KiB experiment
+is high-rate local-policy evidence:
 
 - 40 methods × four COCO training images × two seeds = 320 completed cells;
 - 71.68–81.15 analytical bpp at the prepared resolutions;
@@ -17,9 +17,11 @@ renderer. The completed 168 KiB experiment is high-rate local-policy evidence:
 - about 17.99 bpp for the corresponding lossless target PNGs;
 - mostly local paper-inspired controls rather than native external executions.
 
-The next defensible question is not whether “structure helps.” It is whether **tensor-metric
-blue-noise placement** contributes rate-distortion value beyond direct SLIC/Sobel, gradient,
-uniform-WSE, and random controls at a self-contained 0.25–4 bpp. BENCH-007 owns that experiment.
+BENCH-007 has now answered the narrower development question negatively. Tensor-metric blue-noise
+placement beats the strongest local gradient control at 0.5 bpp but ties it at 1.0 bpp, misses the
+frozen BD-rate magnitude, costs 47.5% more, and violates the texture guard. Stage 2 was not
+authorized. The strongest current output is the controlled actual-rate benchmark and bounded
+negative result, not a positive tensor-WSE compression method.
 
 ## Current primary-source map
 
@@ -69,7 +71,7 @@ Use one StructSplat representation, renderer, fitter, codec, candidate search, a
 definition. Change exactly one allocation mechanism. This lane answers causal questions and must
 label transplants `local_<mechanism>_control`.
 
-BENCH-007 predeclares:
+BENCH-007 completed:
 
 - tensor/on-edge WSE;
 - shipped quadtree-WSE;
@@ -78,8 +80,9 @@ BENCH-007 predeclares:
 - uniform Euclidean WSE;
 - random placement.
 
-Primary data are DIV2K validation; Kodak-24 is a development-exposed replication. Primary
-endpoints are PSNR BD-rate and paired PSNR at 0.5/1.0 actual bpp, with image-cluster intervals.
+The eight-image DIV2K-train killing pilot completed 288 fits and 1,152 validated streams. The local
+gradient arm was the strongest direct control and the promotion gate failed. DIV2K validation and
+Kodak confirmation remain unrun because the gate denied Stage 2.
 
 ### Native-authentic lane
 
@@ -92,8 +95,8 @@ Keep these rate columns distinct:
 - checkpoint bytes;
 - null when no complete stream exists.
 
-BENCH-008 may cross fields/renderers to study interactions, but those interventions never replace
-native-authentic rows.
+BENCH-008 is not authorized by the negative Stage-1 result. A future field/renderer interaction
+study would need a new question and cannot replace native-authentic rows.
 
 ## Claim boundary
 
@@ -111,4 +114,6 @@ Not established:
 - boundary or hybrid-primitive novelty without Contour-Aware 2DGS/WIPES controls;
 - actual-rate superiority from Gaussian count, float payload, analytical BPP, or checkpoint size.
 
-The claim may expand only after BENCH-007 passes its preregistered held-out actual-rate gate.
+The current tensor-WSE compression claim is closed. Any expansion requires a materially new
+mechanism, null, disjoint development screen, and later held-out confirmation; the failed pilot and
+untouched Stage-2 set cannot be used for post-hoc rescue.

@@ -1,6 +1,13 @@
 # BENCH-008 — Common/native causal bridge
 
-**Status:** blocked on BENCH-007 Stage 1 and native field-schema feasibility.
+**Status:** not authorized — BENCH-007 Stage 1 failed its promotion gate and did not establish the
+renderer/objective interaction required to open this task.
+
+## 2026-07-14 gate decision
+
+BENCH-007 completed negatively. Do not execute this crossed matrix as a rescue study. Reopening
+requires a materially new question, null, and disjoint development screen; native-authentic
+BENCH-005 work may continue independently.
 
 ## Decision this task owns
 

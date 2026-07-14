@@ -1,7 +1,8 @@
 # CORE-007: Segmentation-free responsibility boundary flux
 
-**Status: needs re-scope before implementation.** The original broad gate formulation is directly
-threatened by Contour-Aware 2DGS and must not be implemented as an unqualified novelty claim.
+**Status: design-only, not authorized by BENCH-007.** The original broad gate formulation is
+directly threatened by Contour-Aware 2DGS, and the actual-rate pilot did not establish a qualifying
+cross-boundary failure that survives its strongest direct control.
 
 ## Context
 Normalized Gaussian weights can blend colors across strong boundaries. Contour-Aware 2DGS already
@@ -22,7 +23,8 @@ per-splat boundary metadata.
    `local_contour_gate_control`.
 3. Compare a no-new-parameter flux penalty with a tensor-derived soft half-plane control. Count
    every gate parameter or boundary representation in actual stream bytes.
-4. Run only after BENCH-007 identifies an edge-band failure at 0.5/1.0 bpp. Keep the feature opt-in.
+4. Run only after a future independent task identifies an edge-band failure at 0.5/1.0 bpp. The
+   completed BENCH-007 gate does not provide that authorization. Keep the feature opt-in.
 
 ## Acceptance criteria
 - [ ] BENCH-007 establishes a reproducible cross-boundary failure at actual low rate.

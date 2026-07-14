@@ -64,22 +64,24 @@ hashes.
 
 ## Experimental status
 
-The generator intentionally does not synthesize missing results. The four-image Stage-0a run has
-now exercised every panel below and validated the complete figure pipeline, including missing-cell
-handling and the separately scaled conventional-codec inset. Its visible `plumbing_only` banner is
-part of the claim guard: those plots are layout/implementation evidence, not paper results.
+The generator intentionally does not synthesize missing results. The four-image Stage-0a run
+validated missing-cell handling and the complete panel pipeline under a visible `plumbing_only`
+guard. BENCH-007 Stage 1 has now produced the real eight-image development bundle: equal-count
+allocation anatomy, actual-rate curves and byte components, mechanism deltas, charged resources,
+and preregistered qualitative quantiles. All five final panels were inspected; F8 was revised to
+give encoder time, decoder latency, and convergence their own unobscured panels.
 
-Publication-grade BENCH-007 evidence must still produce the following on the preregistered Stage-1
-pilot and, only if its gate passes, the untouched Stage-2 confirmation set:
+The visual queue is therefore complete for the Stage-1 killing pilot, but the method paper is not.
+The gate failed: tensor-WSE's 0.5-bpp gain disappears at 1.0 bpp, its BD-rate magnitude misses the
+threshold, it costs 47.5% more, and its texture regression exceeds the guard. Stage 2 was not
+authorized, so no held-out F5--F9 bundle exists or should be synthesized. The final Stage-1 panels
+must retain their `development_killing_pilot` banner and cannot be presented as confirmation or
+compression-SOTA evidence.
 
-1. equal-count/rate causal allocation comparisons and zooms;
-2. actual-rate RD curves with per-image points, intervals, and component bytes;
-3. edge/texture errors and signed cross-edge bleed at matched rate;
-4. convergence/search/encode/decode resource curves; and
-5. predeclared success, median, and failure examples.
-
-The complete publication/readiness and panel-level plan is in
-`ara/evidence/publication-readiness-research-2026-07-14.md`.
+The pre-result panel plan remains in
+`ara/evidence/publication-readiness-research-2026-07-14.md`; the measured result, artifact hashes,
+and visual-QA record are in
+`ara/evidence/bench007-stage1-killing-pilot-2026-07-14/run.md`.
 
 ## BENCH-007 result-figure generator
 
@@ -106,4 +108,7 @@ output cannot be mistaken for held-out evidence.
 The completed Stage-0a audit is recorded in
 `ara/evidence/bench007-stage0a-plumbing-2026-07-14/run.md`; the large streams, reconstructions, and
 figures remain under the ignored `results/bench007_stage0a_20260714/` run directory with committed
-artifact hashes in that evidence note.
+artifact hashes in that evidence note. The completed Stage-1 negative audit is recorded in
+`ara/evidence/bench007-stage1-killing-pilot-2026-07-14/run.md`; its ignored local bundle is
+`results/bench007_stage1_20260714/index.html`, and the compact final figures/tables are tracked under
+`ara/evidence/bench007-stage1-killing-pilot-2026-07-14/`.

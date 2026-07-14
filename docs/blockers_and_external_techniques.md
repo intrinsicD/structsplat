@@ -1,8 +1,8 @@
 # Current blockers and external techniques
 
-**Updated:** 2026-07-13. This replaces the 2026-07-02 recommendation to tune residual
-densification: that family has now been extensively screened, the exact CUDA renderer exists, and
-the main blocker has moved from local optimizer quality to actual-rate scientific validity.
+**Updated:** 2026-07-14. BENCH-007 has now supplied the actual-rate decision and rejected the
+current tensor-WSE compression claim at its development gate. The main blocker is no longer
+missing plumbing; it is the absence of a promotable mechanism and held-out evidence.
 
 ## Current signal
 
@@ -18,31 +18,29 @@ the main blocker has moved from local optimizer quality to actual-rate scientifi
   provenance-aware, but still limited to small/bounded or mismatched protocols.
 - Current literature directly occupies broad structure-aware allocation, normalized ownership,
   progressive coding, learned initialization, boundary gating, and clustered quantization.
+- BENCH-007 completed 288 fits and 1,152 latest validated SSPL1 candidates. Tensor-WSE gained at
+  0.5 bpp but tied the strongest gradient control at 1.0 bpp, missed the BD-rate magnitude, cost
+  47.5% more, and failed the texture guard. Stage 2 is prohibited by the frozen gate.
 
 ## Blocking issues
 
-### 1. No held-out actual-rate decision benchmark
+### 1. No positive held-out actual-rate evidence
 
-The current RD script emits real SSPL1 bytes but sweeps counts/bit mixes rather than targeting byte
-caps with equal encoder search. The fixed-storage lane normalizes neither bytes by original pixels
-nor capacity by rate. BENCH-007 must add:
+BENCH-007 now provides exact byte caps, complete streams, original-pixel denominators, independent
+equal-search fits, persisted-stream validation, nondominated curves, and no-extrapolation BD-rate.
+Its Stage-1 gate failed, so the untouched DIV2K validation/Kodak confirmation was correctly not
+run. The infrastructure is decision-grade; the current tensor-WSE method is not promotable.
 
-- target rates 0.25/0.5/1/2/4 bpp;
-- complete-stream bytes and original-pixel denominators;
-- independently fitted candidate counts with equal QAT/bit-mix search;
-- cold-decode validation;
-- robust nondominated curves and no-extrapolation BD-rate;
-- held-out DIV2K validation, with Kodak only as a replication set.
-
-Until then, no compression ranking is decision-grade.
-
-### 2. The closest direct handcrafted baseline is missing
+### 2. The native closest handcrafted baseline is still missing
 
 [Structure-Guided Allocation](https://arxiv.org/abs/2512.24018) already couples SLIC/Sobel
 structure classes to allocation, geometry regularization, and adaptive covariance precision. A
 random/grid/GaussianImage analogue is no longer the strongest control for the tensor/WSE claim.
-BENCH-007 needs a mechanism-faithful common-renderer SLIC/Sobel arm, and BENCH-005 should run the
-official method if code is available.
+BENCH-007 now includes an explicitly local, assumption-frozen SLIC/Sobel transplant plus a stronger
+local gradient control. Tensor-WSE beats the SLIC/Sobel transplant, but the gradient arm is the
+frozen strongest direct control and defeats promotion. BENCH-005 should still run the official
+Structure-Guided method if code becomes available, but that independent native lane cannot rescue
+the failed common-renderer claim.
 
 ### 3. Count, parameter BPP, and actual rate are mixed across the field
 
@@ -55,8 +53,8 @@ forbid substitutions. Header, ranges, codebooks, masks, base layers, and side in
 
 Paper-inspired rows inside StructSplat isolate mechanisms under one renderer/fitter. Native
 executions preserve external validity but confound initialization, representation, loss,
-optimizer, schedule, and code. BENCH-008 should cross fields and renderers only if BENCH-007 shows
-a meaningful interaction; native-authentic results remain separate.
+optimizer, schedule, and code. BENCH-007 did not identify a promotable renderer/objective
+interaction, so BENCH-008 is not authorized. Native-authentic results remain a separate lane.
 
 ### 5. The representation frontier has moved
 
@@ -75,10 +73,9 @@ features.
 ### 6. Structural regularity does not yet reduce transmitted bits
 
 Progressive WSE improves geometric prefixes, but SSPL1 Morton reordering discards that order and the
-codec does not derive geometry at the decoder. COMP-005 is the high-risk follow-up only if
-BENCH-007 first proves the structural mechanism at actual rate: derive enhancement geometry
-deterministically from an already transmitted base layer and measure whether layout bytes fall
-after all side information is counted.
+codec does not derive geometry at the decoder. BENCH-007 did not establish a surviving structural
+mechanism or layout bytes as the binding loss, so COMP-005 is not authorized. Decoder-synchronized
+geometry may reappear only under a materially new question and evidence program.
 
 ### 7. Native coverage is incomplete
 
@@ -100,18 +97,21 @@ must stay “not run,” not be replaced by a local analogue under the native na
   remains unproved.
 - **More high-rate proxy search:** BENCH-006 completed it. Further policy mining at 22+ bpp is not
   the priority.
+- **Actual-rate decision plumbing:** BENCH-007 completed exact-cap RDO, equal search, cold-stream
+  validation, statistics, conventional context, and F5--F9. The result is negative, not missing.
+- **Common-renderer direct controls:** local SLIC/Sobel, gradient, uniform-WSE, and random controls
+  are complete. The native official-method lane remains separate.
 
 ## Recommended execution order
 
-1. Implement BENCH-007's tested target-rate substrate and freeze its Stage-1 manifest.
-2. Run the eight-image 0.5/1.0 bpp killing pilot and apply the preregistered gate.
-3. If it passes, run full DIV2K validation plus Kodak replication and expand native actual-RD
-   controls.
-4. Enter BENCH-008 only for a measured renderer/objective interaction.
-5. Enter COMP-005 only when tensor structure survives and explicit layout bytes are the binding
-   rate cost.
-6. Keep CORE-007/008 closed until BENCH-007 mechanism maps and direct prior-art controls justify
-   them.
+1. Freeze the BENCH-007 negative result. Do not tune its eight images or run Stage 2 as rescue.
+2. Close the exact tensor-WSE compression claim and keep BENCH-008/COMP-005 unauthorized.
+3. If research continues, run a new ideation/prior-art pass around a materially different
+   hypothesis, null, compute/texture guards, and disjoint development set before implementation.
+4. Continue native actual-RD coverage only as an independent BENCH-005 benchmark/external-validity
+   lane.
+5. Keep CORE-007/008 design-only until a new question and direct Contour-Aware 2DGS/WIPES controls
+   justify them.
 
 The exact executable handoff is in
 `ara/prompts/continue-structsplat-actual-rate-research.md`.

@@ -26,6 +26,11 @@ image-cluster bootstrap/Holm summaries, the Stage-1 stop/go gate, F5--F9, and a 
 `index.html`. `conventional` writes separately labeled PNG/JPEG-444/AVIF-444 context; those rows
 never enter the gate. Install the optional dependencies with `pip install -e '.[benchmark,metrics]'`.
 
+The frozen 2026-07-14 Stage-1 run is complete and negative: 288/288 fits and 1,152/1,152 latest
+validated candidates, but tensor-WSE fails the quality-at-both-rates, time, and texture guards
+against the strongest local gradient control. Stage 2 is not authorized. The result and artifact
+hashes are in `ara/evidence/bench007-stage1-killing-pilot-2026-07-14/run.md`.
+
 ```bash
 # Stage 0b: rate calibration only (the command enforces IDs 0002/0268/0534/0800).
 PYTHONPATH=src python -m benchmarks.actual_rate_phase_diagram calibrate \

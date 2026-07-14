@@ -1,0 +1,38 @@
+{
+  "argv": [
+    "/home/alex/Documents/structsplat/benchmarks/actual_rate_phase_diagram.py",
+    "run",
+    "--manifest",
+    "results/bench007_stage1_20260714/manifest.json",
+    "--data-root",
+    "results/datasets/DIV2K_train_HR",
+    "--outdir",
+    "results/bench007_stage1_20260714",
+    "--device",
+    "cuda",
+    "--retry-failed",
+    "--revalidate-candidates"
+  ],
+  "cuda": "12.6",
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "manifest_sha256": "ad16c5df6888d5d76afdeb51cf1a297b898d3fa7bf3b8e9f2bed473cca748f83",
+  "runtime_environment": {
+    "numpy": "2.2.4",
+    "pillow": "11.0.0",
+    "platform": "Linux-6.8.0-117-generic-x86_64-with-glibc2.35",
+    "python": "3.11.15 | packaged by conda-forge | (main, Mar  5 2026, 16:45:40) [GCC 14.3.0]",
+    "scikit_image": "0.25.2",
+    "scipy": "1.15.2"
+  },
+  "runtime_repository": {
+    "branch": "bench/007-actual-rate-phase-diagram",
+    "commit": "8e9b5b5e48abbd1758a6402c7ad1ac602bca40a8",
+    "dirty": false,
+    "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "untracked_file_sha256": {}
+  },
+  "schema": "structsplat.bench007.v1",
+  "started_or_resumed_at": "2026-07-14T14:14:46.384019+00:00",
+  "torch": "2.7.0+cu126"
+}

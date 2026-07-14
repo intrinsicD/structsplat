@@ -1,9 +1,10 @@
 # ADR-0005: Anisotropy via a Mahalanobis metric inside Weighted Sample Elimination
 
-**2026-07-13 scope update:** the sampler decision remains accepted, but its original broad novelty
-rationale is superseded. Structure-Guided Allocation, Image-GS, P-GSVC, and related work occupy
-structure-aware/progressive Gaussian territory. The unresolved claim is the specific tensor-metric
-WSE relationship at held-out actual rate (BENCH-007).
+**2026-07-14 scope update:** the sampler decision remains accepted as an interpretable engineering
+option, but its original broad novelty rationale is superseded. Structure-Guided Allocation,
+Image-GS, P-GSVC, and related work occupy structure-aware/progressive Gaussian territory, and the
+specific tensor-metric WSE actual-rate formulation failed BENCH-007's development gate. No
+held-out compression claim follows from this ADR.
 
 ## Context
 Isotropic blue noise wants equal spacing in all directions, which fights edges (we want dense

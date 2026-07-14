@@ -1,0 +1,328 @@
+{
+  "arms": [
+    {
+      "density_mode": "structure",
+      "label": "Tensor-metric WSE",
+      "name": "tensor_wse",
+      "orientation_mode": "tensor",
+      "role": "candidate",
+      "sampling_mode": "wse",
+      "strategy": "aniso_onedge"
+    },
+    {
+      "density_mode": "structure",
+      "label": "Quadtree WSE",
+      "name": "quadtree_wse",
+      "orientation_mode": "tensor",
+      "role": "engineering_control",
+      "sampling_mode": "wse",
+      "strategy": "quadtree_wse"
+    },
+    {
+      "density_mode": "uniform",
+      "label": "Local SLIC/Sobel control",
+      "name": "local_slic_sobel_control",
+      "orientation_mode": "zero",
+      "role": "direct_control",
+      "sampling_mode": "wse",
+      "strategy": "local_slic_sobel_control"
+    },
+    {
+      "density_mode": "gradient",
+      "label": "Local gradient control",
+      "name": "local_gradient_control",
+      "orientation_mode": "zero",
+      "role": "direct_control",
+      "sampling_mode": "density_random",
+      "strategy": "iso_blue_noise"
+    },
+    {
+      "density_mode": "uniform",
+      "label": "Uniform Euclidean WSE",
+      "name": "uniform_wse",
+      "orientation_mode": "zero",
+      "role": "direct_control",
+      "sampling_mode": "wse",
+      "strategy": "iso_blue_noise"
+    },
+    {
+      "density_mode": "uniform",
+      "label": "Seeded random",
+      "name": "random",
+      "orientation_mode": "zero",
+      "role": "direct_control",
+      "sampling_mode": "density_random",
+      "strategy": "random"
+    }
+  ],
+  "bit_mixes": [
+    [
+      16,
+      8,
+      8,
+      8
+    ],
+    [
+      12,
+      8,
+      6,
+      8
+    ],
+    [
+      12,
+      6,
+      6,
+      6
+    ],
+    [
+      10,
+      5,
+      5,
+      5
+    ]
+  ],
+  "candidate_formula": {
+    "absolute_count_ceiling": null,
+    "bytes_per_gaussian": 8.614970513660953,
+    "estimate": "target_bpp*original_pixels/(8*bytes_per_gaussian)",
+    "max_gaussians_per_pixel": 0.25,
+    "min_gaussians": 64,
+    "multipliers": [
+      0.75,
+      1.0,
+      1.3333333333333333
+    ],
+    "rounding": "floor(multiplier*estimate+0.5)"
+  },
+  "central_scoring": {
+    "clamp_decoded_rgb": true,
+    "cold_parity_atol": 1e-06,
+    "lpips_on_selected": true,
+    "ms_ssim": true,
+    "psnr": true,
+    "ssim": true
+  },
+  "codec_config": {
+    "color_delta": true,
+    "means_byte_planar": true,
+    "morton_reorder": true,
+    "rot_circular": true,
+    "stream_codec": "zlib",
+    "zlib_level": 9
+  },
+  "environment": {
+    "numpy": "2.2.4",
+    "pillow": "11.0.0",
+    "platform": "Linux-6.8.0-117-generic-x86_64-with-glibc2.35",
+    "python": "3.11.15 | packaged by conda-forge | (main, Mar  5 2026, 16:45:40) [GCC 14.3.0]",
+    "scikit_image": "0.25.2",
+    "scipy": "1.15.2"
+  },
+  "fit_config": {
+    "checkpoint_policy": "best_psnr_final_count",
+    "compute_lpips": false,
+    "iters": 1500,
+    "render_chunk": 512,
+    "renderer": "cuda"
+  },
+  "frozen_at": "2026-07-14T11:42:00.834626+00:00",
+  "images": [
+    {
+      "candidate_counts": [
+        15584,
+        20779,
+        27705,
+        31168,
+        41558,
+        55411
+      ],
+      "decoded_rgb_sha256": "827c2cef932fa6ae8df2d662db2d0128d38c3e70d7459eee817e26fcc6e972cb",
+      "height": 1404,
+      "id": "0001",
+      "path": "0001.png",
+      "pixel_count": 2864160,
+      "source_sha256": "cdb20d7a462744c269d8e197f735c7bc42e7cda367a940a9b7bc27803b1c8619",
+      "width": 2040
+    },
+    {
+      "candidate_counts": [
+        17049,
+        22733,
+        30310,
+        34099,
+        45465,
+        60620
+      ],
+      "decoded_rgb_sha256": "d447815ffeed3d41ff366700aba354d060555e3fef9fac6c84f95fd908b91693",
+      "height": 1536,
+      "id": "0115",
+      "path": "0115.png",
+      "pixel_count": 3133440,
+      "source_sha256": "b08214ed8a205d5ff148eb14541de6117f282350bc3e4fc46d2efa8c848073e1",
+      "width": 2040
+    },
+    {
+      "candidate_counts": [
+        14385,
+        19181,
+        25574,
+        28771,
+        38361,
+        51148
+      ],
+      "decoded_rgb_sha256": "b3e76c6221aad22dafdafc7953b761f3f02f75b1c5888b3b9ec495ff2ef4b9b4",
+      "height": 1296,
+      "id": "0229",
+      "path": "0229.png",
+      "pixel_count": 2643840,
+      "source_sha256": "e985cdadc0861ae47a76ae66a46290b7aa322b4d2596727634b144cb205c2d18",
+      "width": 2040
+    },
+    {
+      "candidate_counts": [
+        13320,
+        17760,
+        23680,
+        26640,
+        35520,
+        47359
+      ],
+      "decoded_rgb_sha256": "58ee53e367c52afaa06745f0301286b02be1f95ee09e740044119a6408323e33",
+      "height": 1200,
+      "id": "0343",
+      "path": "0343.png",
+      "pixel_count": 2448000,
+      "source_sha256": "f70f775deb82a5744fae0640b5b095e35374f7228893dead5750a4b9d7ef8781",
+      "width": 2040
+    },
+    {
+      "candidate_counts": [
+        12920,
+        17227,
+        22969,
+        25840,
+        34454,
+        45939
+      ],
+      "decoded_rgb_sha256": "489fc4b0590fc674be22182cb315d88214547b0053d32e1343df5864b3a61a8d",
+      "height": 2040,
+      "id": "0457",
+      "path": "0457.png",
+      "pixel_count": 2374560,
+      "source_sha256": "565bb5b65c50abd4b0715b9318851de400cae1475db9c44a138a3bae275d2a05",
+      "width": 1164
+    },
+    {
+      "candidate_counts": [
+        15051,
+        20069,
+        26758,
+        30103,
+        40137,
+        53516
+      ],
+      "decoded_rgb_sha256": "d119b6715d9b217c623344aa66f19d813e60a978fffd9077953bea19409865f4",
+      "height": 1356,
+      "id": "0571",
+      "path": "0571.png",
+      "pixel_count": 2766240,
+      "source_sha256": "6de58e0706300b3496f538dca3b80d478062f4c4396990b3b5e6479300ed71ef",
+      "width": 2040
+    },
+    {
+      "candidate_counts": [
+        11988,
+        15984,
+        21312,
+        23976,
+        31968,
+        42623
+      ],
+      "decoded_rgb_sha256": "0a3fa493fd3ce199c36ad085fc68a33c6ef9cf9c79dcc68781a77be3b2aeaadb",
+      "height": 1080,
+      "id": "0685",
+      "path": "0685.png",
+      "pixel_count": 2203200,
+      "source_sha256": "c42e9a8e92f57ed8ebff3ba247c7578aa85b59785021123f673c56d895e63364",
+      "width": 2040
+    },
+    {
+      "candidate_counts": [
+        15051,
+        20069,
+        26758,
+        30103,
+        40137,
+        53516
+      ],
+      "decoded_rgb_sha256": "c0e297a3cc2a698059713022ca60155d9cf72e8bf80c72fe551051c71487912a",
+      "height": 1356,
+      "id": "0799",
+      "path": "0799.png",
+      "pixel_count": 2766240,
+      "source_sha256": "ad42d7e2fe2ee15461e6999e7673a1f96b1be791b4be8c01baca26812f5667db",
+      "width": 2040
+    }
+  ],
+  "init_common": {
+    "candidate_oversample": 6.0,
+    "color_mode": "bilinear",
+    "opacity_mode": "none",
+    "scale_mode": "spacing",
+    "seed": 0
+  },
+  "manifest_sha256": "ad16c5df6888d5d76afdeb51cf1a297b898d3fa7bf3b8e9f2bed473cca748f83",
+  "mechanism_protocol": {
+    "bleed": "mean_abs_target_contrast_minus_aligned_prediction_at_1.5px_normal_offsets",
+    "edge_band": "top_positive_decile_target_sobel_dilated_radius_2",
+    "luma": "rec709",
+    "texture_band": "top_quartile_5x5_target_luma_variance_excluding_edge_band",
+    "texture_failure_relative_threshold": 0.05
+  },
+  "qat_iters": 0,
+  "renderer_protocol": {
+    "cuda_is_equation_preserving": true,
+    "equation": "normalized_weighted_sum",
+    "implementation": "owned_exact_cuda",
+    "required_cold_parity_atol": 1e-06
+  },
+  "repository": {
+    "branch": "bench/007-actual-rate-phase-diagram",
+    "commit": "31837269aa892694c697b9d45c55d8bd78aa2374",
+    "dirty": false,
+    "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "untracked_file_sha256": {}
+  },
+  "schema": "structsplat.bench007.manifest.v1",
+  "scientific_scope": "development_killing_pilot",
+  "seed": 0,
+  "slic_sobel_control": {
+    "algorithm_source": "https://arxiv.org/abs/2512.24018",
+    "allocation_schedule": "fixed_sparse_6_2_1",
+    "category_ratios": [
+      6,
+      2,
+      1
+    ],
+    "compactness": 10.0,
+    "convert2lab": true,
+    "enforce_connectivity": true,
+    "fidelity": "local_control_not_upstream_code",
+    "grayscale": "rec709",
+    "implementation": "local_skimage_slic_numpy_sobel_v1",
+    "sigma": 1.0,
+    "sobel_padding": "reflect",
+    "target_superpixel_area": 1024,
+    "unresolved_upstream_details": [
+      "SLIC hyperparameters",
+      "dynamic allocation constants k and alpha",
+      "exact category boundary convention"
+    ]
+  },
+  "stage": "stage1",
+  "stage_ids_enforced": true,
+  "targets_bpp": [
+    0.5,
+    1.0
+  ]
+}

@@ -1,6 +1,7 @@
 # BENCH-007 — Actual-rate structure phase diagram
 
-**Status:** in-progress — preregistered 2026-07-13; implementation started 2026-07-14.
+**Status:** completed negative — preregistered 2026-07-13; Stage-1 gate failed 2026-07-14;
+Stage 2 was not authorized and was not run.
 
 ## Decision this task owns
 
@@ -129,12 +130,28 @@ Reject or reframe the compression claim if the gain:
 - is caused by unequal candidate search, resize denominators, or a renderer/fitter mismatch; or
 - does not survive the full held-out confirmation.
 
+## Measured decision — 2026-07-14
+
+Stage 1 completed 288/288 independent fits and 1,152/1,152 latest validated SSPL1 candidates on
+the frozen eight-image matrix. The local gradient arm was the strongest direct control. Relative
+to it, tensor-WSE achieved `+0.3457 dB` at 0.5 bpp (95% CI `[+0.1426, +0.5662]`) but only
+`+0.0089 dB` at 1.0 bpp (95% CI `[-0.1718, +0.1738]`). Its mean BD-rate was `-4.5417%`, short of
+the required `-10%`; fit-plus-search time was `1.4752x`, above the `1.10x` ceiling. Edge MSE and
+signed bleed improved, but texture MSE increased `7.2883%`, above the frozen 5% guard.
+
+The executable gate therefore returns `pass=false` and `stage2_authorized=false`. The exact
+tensor-WSE actual-rate compression claim is closed without post-hoc rescue, and untouched DIV2K
+validation remains untouched. See
+`ara/evidence/bench007-stage1-killing-pilot-2026-07-14/run.md` for the complete result, integrity
+audit, artifact hashes, and F5--F9 visual QA.
+
 ## Deliverables
 
 - A rate-targeted, resumable benchmark with dry-run planning, per-cell journals, explicit missing
   and failed rows, stream validation, and tests for byte caps, denominators, RDO selection,
   monotone envelopes, and BD-rate edge cases.
-- Frozen Stage 1 and Stage 2 manifests with source hashes.
+- Frozen Stage-1 manifest with source hashes and, only if authorized, a separately frozen Stage-2
+  manifest. The gate denied Stage 2, so intentionally no Stage-2 manifest exists.
 - Raw CSV/JSON, central metrics, per-image curves, component byte tables, statistical summaries,
   resource telemetry, and a portable HTML index.
 - ARA evidence and a bounded claim update. Negative results are a valid completion.
@@ -160,8 +177,10 @@ Reject or reframe the compression claim if the gain:
 - [x] Complete Stage-0b calibration on the four preregistered DIV2K training IDs. All 8/8 cells
   completed and froze the median `8.614970513660953 B/G`; see
   `ara/evidence/bench007-stage0b-calibration-2026-07-14/run.md`.
-- [ ] Freeze and complete Stage 1; obey its stop/go decision without post-hoc rescue.
-- [ ] Freeze and run Stage 2 only if the Stage-1 gate authorizes it.
+- [x] Freeze and complete Stage 1; obey its stop/go decision without post-hoc rescue. The clean
+  288-fit/1,152-candidate matrix failed the preregistered quality, time, and mechanism gate.
+- [x] Resolve Stage 2 according to the frozen gate. It was not authorized and was not run; this is
+  the required negative terminal action, not a missing experiment.
 
 ## Non-goals
 

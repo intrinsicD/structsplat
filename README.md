@@ -87,7 +87,7 @@ python scripts/render_paper_figures.py tests/test_images/COCO_train2014_00000000
 The bundle includes a vector encoder/decoder overview, individual PNGs, raw NPZ maps, resolved
 config, hashes/provenance, and a labeled montage. It is initialization-only explanatory output, not
 optimized or comparative evidence. See `docs/publication_figures.md` for panel semantics and the
-missing BENCH-007 result-figure queue.
+completed negative BENCH-007 Stage-1 F5--F9 bundle status.
 
 ## Agentic workflow (Claude Code)
 This repo is built to be implemented *with* Claude Code, mirroring the IntrinsicEngine setup.
@@ -151,15 +151,20 @@ has not converged, while at 5k it is roughly PSNR-competitive, higher in proxy M
 AUC, and worse in LPIPS than the checkpoint candidate. Full-resolution, multi-budget/time-envelope,
 native codec/RD, and learned Instant-GI tracks remain open.
 
-**Current research boundary (2026-07-13).** The completed
-`storage_budget_168k_external_present` run is a strong local optimizer/policy diagnostic, but its
-nominal payload is 71.68–81.15 bpp at the prepared sizes and its SSPL1 streams are about 22 bpp.
-It is not compression-SOTA evidence. Current work already covers broad structure-guided
-allocation/orientation/precision, normalized ownership, progressive Gaussian streams, learned
-initialization, boundary gating, and clustered quantization. BENCH-007 therefore asks the narrower
-question: does tensor-WSE beat SLIC/Sobel, gradient, uniform-WSE, and random controls at
-0.25–4.0 **actual** bpp on held-out images? See
-`ara/evidence/storage-budget-168k-sota-audit-2026-07-13.md`.
+**Current actual-rate verdict (2026-07-14).** BENCH-007 completed its preregistered eight-image
+DIV2K development killing pilot with 288/288 independent fits and 1,152/1,152 validated complete
+SSPL1 candidates. Against the strongest direct control (`local_gradient_control`), tensor-WSE
+gained `+0.3457 dB` at 0.5 bpp but only `+0.0089 dB` at 1.0 bpp; mean BD-rate was `-4.5417%`
+rather than the required `-10%`, fit-plus-search time was `1.4752x`, and texture MSE regressed
+`7.2883%` beyond the 5% guard. The frozen gate failed. Stage 2 was not authorized or run, and the
+exact tensor-WSE compression claim is closed without post-hoc tuning. See
+`ara/evidence/bench007-stage1-killing-pilot-2026-07-14/run.md`.
+
+The actual-rate harness, direct controls, cold-stream validation, conventional context, and F5--F9
+figures are reusable research infrastructure, but Stage 1 is not held-out evidence and does not
+support a compression-SOTA claim. Further method work needs a materially new question and disjoint
+development screen; untouched DIV2K validation must not be consumed as a rescue set. The older
+`storage_budget_168k_external_present` lane remains only a high-rate optimizer/policy diagnostic.
 
 FIT-015 adds opt-in `checkpoint_policy=best_psnr_final_count`. It selects only post-transition
 states with the terminal Gaussian count and writes a same-trajectory audit. On COCO4 x seeds 0/1,

@@ -10,6 +10,17 @@
 
 **Assumed contribution bar:** a top graphics/vision conference paper; no target venue was given.
 
+## Post-audit execution update
+
+The audit's recommended substrate, direct controls, Stage-0 validation, Stage-0b calibration, and
+Stage-1 killing pilot were subsequently implemented and executed on 2026-07-14. BENCH-007 completed
+288/288 fits and 1,152/1,152 latest validated candidates, but the preregistered gate failed:
+tensor-WSE gained at 0.5 bpp, tied the strongest gradient control at 1.0 bpp, achieved only
+`-4.5417%` BD-rate versus the required `-10%`, cost `1.4752x`, and exceeded the texture guard.
+Stage 2 was not authorized. The exact proposed claim below is therefore closed rather than merely
+blocked; see `ara/evidence/bench007-stage1-killing-pilot-2026-07-14/run.md`. The remainder of this
+document preserves the pre-execution research audit and rationale.
+
 ## Executive verdict
 
 StructSplat is **not publication-ready**. The newly implemented figures make the method inspectable,
