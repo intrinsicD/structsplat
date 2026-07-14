@@ -33,6 +33,9 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
   and gsplat comparator, sharing one accumulator where semantics match), `metrics`, `init`
   (bridge), `fit` (selectable loss/optimizer/LR-schedule/split-mode), `pyramid`, `codec`
   (post-fit quantization, ADR-0007).
+- **read-only diagnostics:** `visualize` calls the production NumPy analysis/initialization and
+  torch normalized renderer, then exports raw tensor/field/responsibility maps plus deterministic
+  explanatory panels. It never fits or changes a field and is not benchmark evidence (DOCS-002).
 - **entry:** `cli` (`structsplat fit` / `ablation` / `stage-search`).
 
 ## Stage-search (ABL-002, protocol in ADR-0010)

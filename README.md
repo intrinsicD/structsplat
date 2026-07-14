@@ -72,6 +72,21 @@ Renderers: `normalized`, `additive`, `cuda`, `cuda_additive`, `gsplat`. `cuda`/`
 are exact StructSplat semantics; `gsplat` is a GaussianImage++-style alpha/sum comparator.
 Scale caps: `none`, `hard`, `feature` (ADR-0012).
 
+## Publication method figures
+
+Generate deterministic structure-tensor, tensor-metric sampling, initialized Gaussian, and
+normalized-responsibility panels from a real image:
+
+```bash
+python scripts/render_paper_figures.py tests/test_images/COCO_train2014_000000000030.jpg \
+  --outdir results/paper_method_figure --max-side 256 --num-gaussians 384 --seed 0
+```
+
+The bundle includes a vector encoder/decoder overview, individual PNGs, raw NPZ maps, resolved
+config, hashes/provenance, and a labeled montage. It is initialization-only explanatory output, not
+optimized or comparative evidence. See `docs/publication_figures.md` for panel semantics and the
+missing BENCH-007 result-figure queue.
+
 ## Agentic workflow (Claude Code)
 This repo is built to be implemented *with* Claude Code, mirroring the IntrinsicEngine setup.
 
@@ -94,7 +109,7 @@ enter the normal task/method/benchmark loop.
 ## Layout
 ```
 src/structsplat/   structure_tensor, density, sampling (NumPy) · gaussians, render, metrics,
-                   init, fit, pyramid, codec, cli (torch)
+                   init, fit, pyramid, codec, visualize, cli (torch)
 tests/             pytest (NumPy tests run anywhere; torch tests skip without torch)
 benchmarks/        ablation.py (ABL-001), stage_search.py (ABL-002), rate_distortion.py
                    (COMP-001), coco_fit_compare.py, cross_repo_matrix_compare.py,

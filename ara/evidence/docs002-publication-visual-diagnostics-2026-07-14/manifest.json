@@ -1,0 +1,300 @@
+{
+  "claim_limit": "Initialization diagnostics only \u2014 not optimized, held-out, or comparative evidence.",
+  "conventions": {
+    "dominant_owner": "smallest Gaussian index wins exact weight ties",
+    "effective_count": "(sum_i w_i)^2 / sum_i w_i^2",
+    "gaussian_panel": "actual initialized RS covariance at one standard deviation",
+    "image": "(H,W,3) float32 RGB in [0,1] after optional crop/resize",
+    "position": "(x,y) pixel coordinates; integer coordinates are pixel centers",
+    "responsibility_entropy": "-sum_i r_i log(r_i), r_i=w_i/sum_j w_j",
+    "rotation": "theta is the sx axis; tensor-aligned sx follows the edge tangent",
+    "sampling_metric_panel": "ellipses show the unit-area local tensor metric shape at a fixed display scale; they are not Gaussian support ellipses or transmitted geometry"
+  },
+  "diagnostic_checks": {
+    "covered_pixel_fraction": 1.0,
+    "field_count": 384,
+    "glyph_count": 111,
+    "max_effective_count_bound_violation": 0.0,
+    "max_entropy_bound_violation_nats": 0.0,
+    "max_responsibility_sum_error_on_covered": 0.0
+  },
+  "display_scaling": {
+    "coverage_denominator": {
+      "display_clamp": "[0,1] after reference scaling",
+      "reference_percentile": 99.0,
+      "reference_value": 9.391352415084839,
+      "transform": "log1p(gain=9)"
+    },
+    "effective_contributors": {
+      "display_clamp": "[0,1] after reference scaling",
+      "reference_percentile": 99.0,
+      "reference_value": 19.036335468292236,
+      "transform": "linear"
+    },
+    "note": "display transforms affect PNGs only; diagnostics.npz stores raw arrays",
+    "responsibility_entropy": {
+      "display_clamp": "[0,1] after reference scaling",
+      "reference_percentile": 99.0,
+      "reference_value": 3.1767887473106384,
+      "transform": "linear"
+    },
+    "sampling_density": {
+      "display_clamp": "[0,1] after reference scaling",
+      "reference_percentile": 99.0,
+      "reference_value": 0.00015857037143110172,
+      "transform": "log1p(gain=9)"
+    },
+    "tensor_energy": {
+      "display_clamp": "[0,1] after reference scaling",
+      "reference_percentile": 99.0,
+      "reference_value": 0.013453301507979631,
+      "transform": "log1p(gain=9)"
+    }
+  },
+  "environment": {
+    "numpy": "2.2.4",
+    "pillow": "11.0.0",
+    "python": "3.11.15",
+    "structsplat": "0.1.0",
+    "torch": "2.7.0+cu126"
+  },
+  "implementation_sources": {
+    "src/structsplat/config.py": {
+      "bytes": 33724,
+      "sha256": "13f4e8c38c2ad29473fd4e0080151ff679bd1c7529b73e9d567fc9b874a9a6fc"
+    },
+    "src/structsplat/density.py": {
+      "bytes": 7296,
+      "sha256": "045cc5b69167755c5746c3bdff353e03634542150712da5c32a469ed47a90873"
+    },
+    "src/structsplat/gaussians.py": {
+      "bytes": 15154,
+      "sha256": "26d8ddf03740c8ed44ae9c97d2bb75438dd5a992327fe70cbd3c91f2e5e6fefe"
+    },
+    "src/structsplat/init.py": {
+      "bytes": 38627,
+      "sha256": "d331be83aa8a2658a249c63c7f1ff8b5c5f3cb69aeb78ae7f8078a9511c99b88"
+    },
+    "src/structsplat/render.py": {
+      "bytes": 19671,
+      "sha256": "5e1268c59dbb052cf0df12acecadfd43bab7c34497592af855d34486e924e593"
+    },
+    "src/structsplat/sampling.py": {
+      "bytes": 23449,
+      "sha256": "5f34e455a2a30bb5eceb8fc13e13fc667ba2160b199c3d1bef821d6963881240"
+    },
+    "src/structsplat/structure_tensor.py": {
+      "bytes": 7888,
+      "sha256": "05a6b1a77290c5cf70209b11b1c0c95e7e8bee7f0c92142124354c06556ba405"
+    },
+    "src/structsplat/visualize.py": {
+      "bytes": 45383,
+      "sha256": "cb3d09bf0867ba71cc68a9fe5712a20d02b1bce6b4ad388c75af5053a82181ef"
+    }
+  },
+  "label_legend": {
+    "corner": {
+      "id": 2,
+      "rgb": [
+        86,
+        180,
+        233
+      ]
+    },
+    "edge": {
+      "id": 1,
+      "rgb": [
+        230,
+        159,
+        0
+      ]
+    },
+    "flat": {
+      "id": 0,
+      "rgb": [
+        105,
+        105,
+        105
+      ]
+    }
+  },
+  "outputs": {
+    "config.json": {
+      "bytes": 2113,
+      "sha256": "38ea94f2fa755b19a421d68729aca98df8408f42656f747e853ad73663e162ef"
+    },
+    "coverage_denominator.png": {
+      "bytes": 38667,
+      "sha256": "c88b624c636159b81c60c31c19d1b3f16b52f9569e0b7f30b7aadf5f253d87af"
+    },
+    "diagnostics.npz": {
+      "bytes": 2216171,
+      "sha256": "364c21d9345f58ee217e197c4a7a9141552062db045cd954cdca3031c8c8d34d"
+    },
+    "dominant_owner.png": {
+      "bytes": 12413,
+      "sha256": "5cc44a764fe88da54addc9f5713df1fae2c2d70e4e4649a8fd0c756320177b46"
+    },
+    "effective_contributors.png": {
+      "bytes": 41030,
+      "sha256": "d315d4ab986d98b806531ffad875e116493ee05d37fe9e237c862463ac3f53b5"
+    },
+    "gaussian_ellipses.png": {
+      "bytes": 91553,
+      "sha256": "fe41661310ff525d54b071b417981a599261bddab022fc0f060794c0fd4eaf79"
+    },
+    "initial_abs_error.png": {
+      "bytes": 52099,
+      "sha256": "26af00153d3f19d0852ac361abf20f7ccc09ee401d2f80a6f3589f3d2180cf1a"
+    },
+    "initial_reconstruction.png": {
+      "bytes": 31345,
+      "sha256": "d15e9a3ec6d2b97832141bcafe98f29440ba0f379d42e80bf7a0061478152298"
+    },
+    "input.png": {
+      "bytes": 69855,
+      "sha256": "9afbffab21c0f211d65eb8e7dfd4bfe0f147cb12f92e96cbfc84bce6b2976077"
+    },
+    "method_diagnostics_montage.png": {
+      "bytes": 722110,
+      "sha256": "330047ae605a19e48b269f0444441479fc7ffe51426949cddfcaf9a7d10aafac"
+    },
+    "method_overview.svg": {
+      "bytes": 6314,
+      "sha256": "dfb30bbab79bf20ddff04dc6645e5a2a041bd6f964893f27f51891fa91972858"
+    },
+    "responsibility_entropy.png": {
+      "bytes": 37999,
+      "sha256": "37dd7323a0d8166bd7047749eb085ff13f3bd09e617e558cfc392ccda81ac799"
+    },
+    "sampling_density.png": {
+      "bytes": 40004,
+      "sha256": "e3c9ee31461bcccaf73cebabde1cbdeba5f72d85ec40712c8e1cc7c252ee40a1"
+    },
+    "sampling_sites.png": {
+      "bytes": 64369,
+      "sha256": "9c5bba502c7c0a2f0aaa78ddf4ee02e964dfa1b624b6f39ec928fcaa646041ea"
+    },
+    "tensor_coherence.png": {
+      "bytes": 82756,
+      "sha256": "5122b7c10a9017ce542b4084d0f95093c951a0838a6cf974ba62de385ede2e46"
+    },
+    "tensor_energy.png": {
+      "bytes": 44532,
+      "sha256": "3d7c1585b083fa2c29c6065839e2b0f6d2f6db6d388279475728474b0b206cac"
+    },
+    "tensor_labels.png": {
+      "bytes": 2800,
+      "sha256": "7b4bfe5072674a5006fd2c0d1982b378e3a7bc7b4439c80c6eb523731f285888"
+    },
+    "tensor_tangents.png": {
+      "bytes": 75782,
+      "sha256": "760383a459e6db8978b0335e977a0f3226f3846de33a193f612db828ee8a40ab"
+    }
+  },
+  "purpose": "explanatory initialization and normalized-renderer diagnostics",
+  "repository": {
+    "commit": "14a9ad452455491ad12113b9c2543562880d4b2f",
+    "tracked_diff_sha256": "5481165ea74bc2817beac66c367f8943722b9e43290f261a5efa88c982b6ddac",
+    "tracked_tree_dirty": true
+  },
+  "resolved_config": {
+    "figure": {
+      "candidate_oversample": 4.0,
+      "coherence_power": 1.0,
+      "color_space": "luma",
+      "corner_frac": 0.15,
+      "crop": null,
+      "density_base": 0.05,
+      "density_mode": "structure",
+      "density_power": 1.0,
+      "ellipse_limit": 220,
+      "flat_frac": 0.02,
+      "glyph_length": 8.0,
+      "glyph_min_coherence": 0.1,
+      "glyph_spacing": 18,
+      "grad_sigma": 1.0,
+      "gradient_operator": "central",
+      "init_scale_mult": 1.0,
+      "max_axis_ratio": 6.0,
+      "max_side": 256,
+      "metric_ellipse_limit": 72,
+      "montage_columns": 4,
+      "num_gaussians": 384,
+      "seed": 0,
+      "sigma_cutoff": 3.0,
+      "strategy": "aniso_onedge",
+      "tensor_sigma": 2.0
+    },
+    "initializer": {
+      "background_fraction": 0.0,
+      "background_grid": 0,
+      "candidate_oversample": 4.0,
+      "coherence_power": 1.0,
+      "color_mode": "bilinear",
+      "color_radius": 1.5,
+      "density_base": 0.05,
+      "density_mode": "structure",
+      "density_power": 1.0,
+      "flank_offset_frac": 0.0,
+      "init_opacity": 0.9,
+      "init_scale_mult": 1.0,
+      "max_axis_ratio": 6.0,
+      "num_gaussians": 384,
+      "opacity_mode": "none",
+      "orientation_mode": "tensor",
+      "predictor_checkpoint": null,
+      "predictor_fallback_strategy": "quadtree_wse",
+      "sampling_mode": "wse",
+      "scale_cap_max": null,
+      "scale_cap_mode": "none",
+      "scale_feature_energy_frac": 0.25,
+      "scale_feature_min": 0.75,
+      "scale_feature_rel_across": 1.0,
+      "scale_feature_rel_along": 4.0,
+      "scale_feature_rel_flat_mult": null,
+      "scale_feature_rel_min": 0.5,
+      "scale_feature_rel_quantile": 0.4,
+      "scale_feature_sigma": 3.0,
+      "scale_mode": "spacing",
+      "seed": 0,
+      "strategy": "aniso_onedge",
+      "wse_progressive_order": false
+    },
+    "renderer": {
+      "device": "cpu",
+      "field_state": "initialization_only_no_fit",
+      "mode": "normalized",
+      "sigma_cutoff": 3.0,
+      "support_fade": false
+    },
+    "schema_version": 1,
+    "structure_tensor": {
+      "color_space": "luma",
+      "corner_frac": 0.15,
+      "flat_frac": 0.02,
+      "grad_sigma": 1.0,
+      "gradient_operator": "central",
+      "tensor_sigma": 2.0
+    }
+  },
+  "schema_version": 1,
+  "source": {
+    "crop_xywh": null,
+    "cropped_size": [
+      640,
+      428
+    ],
+    "processed_size": [
+      256,
+      171
+    ],
+    "resize_filter": "Pillow LANCZOS",
+    "source_oriented_size": [
+      640,
+      428
+    ],
+    "source_path": "tests/test_images/COCO_train2014_000000000030.jpg",
+    "source_sha256": "0444b10826d376ad9075805061405f6071a62b80eda29c5f284ed77b093d5b1d"
+  }
+}

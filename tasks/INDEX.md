@@ -79,6 +79,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | COMP-002 | Codec / metrics / CLI correctness and protocol fixes | `done/COMP-002-codec-correctness.md` |
 | COMP-004 | QAT + entropy-aware fitting | `done/COMP-004-entropy-aware-fitting.md` |
 | DOCS-001 | Docs-sync backfill (stale status, missing ADRs, ara scaffold) | `done/DOCS-001-docs-sync-backfill.md` |
+| DOCS-002 | Publication visual diagnostics | `done/DOCS-002-publication-visual-diagnostics.md` |
 
 Retired tasks remain valid dependency IDs. They describe completed reference/correctness work; the
 performance and scale follow-ups stay active under PORT/FIT/INIT/BENCH/ABL tasks.
