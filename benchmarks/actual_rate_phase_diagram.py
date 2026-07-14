@@ -2551,7 +2551,10 @@ def _plot_f8(
         decode_values.append(float(np.mean([row["decode_seconds"] for row in candidates])) if candidates else 0.0)
         render_values.append(float(np.mean([row["render_seconds"] for row in candidates])) if candidates else 0.0)
 
-    figure, axes = plt.subplots(1, 2, figsize=(14, 5.1), constrained_layout=True)
+    figure, axes = plt.subplots(
+        1, 3, figsize=(18, 5.2), constrained_layout=True,
+        gridspec_kw={"width_ratios": [1.1, 1.0, 1.7]},
+    )
     x = np.arange(len(arms))
     axes[0].bar(x, fit_values, label="init + fit", color="#2563eb")
     axes[0].bar(x, search_values, bottom=fit_values, label="QAT + codec search", color="#f59e0b")
@@ -2560,6 +2563,23 @@ def _plot_f8(
     axes[0].set_ylabel("Mean encoder seconds per image")
     axes[0].set_title("Full equal candidate search is charged")
     axes[0].legend(fontsize=8, loc="upper left")
+
+    width = 0.36
+    axes[1].barh(
+        x - width / 2, np.asarray(decode_values) * 1e3, width,
+        label="decode", color="#2563eb",
+    )
+    axes[1].barh(
+        x + width / 2, np.asarray(render_values) * 1e3, width,
+        label="render", color="#f97316",
+    )
+    axes[1].set_yticks(x)
+    axes[1].set_yticklabels([ARMS[arm]["label"] for arm in arms], fontsize=8)
+    axes[1].invert_yaxis()
+    axes[1].set_xlabel("Mean latency per candidate (ms)")
+    axes[1].set_title("Cold decoder components")
+    axes[1].grid(True, axis="x", alpha=0.2)
+    axes[1].legend(fontsize=8, loc="lower right")
 
     image_id = _median_comparison_image(manifest, selected_rows, _strongest_control(analysis, manifest))
     image_entry = next(entry for entry in manifest["images"] if entry["id"] == image_id)
@@ -2575,22 +2595,15 @@ def _plot_f8(
             continue
         history = json.loads((outdir / row["history_path"]).read_text(encoding="utf-8"))
         if history.get("iter") and history.get("psnr"):
-            axes[1].plot(
+            axes[2].plot(
                 history["iter"], history["psnr"], label=ARMS[arm]["label"],
                 color=plt.get_cmap("tab10")(arm_index % 10),
             )
-    axes[1].set_xlabel("Optimizer iteration")
-    axes[1].set_ylabel("Fit PSNR (raw render, dB)")
-    axes[1].set_title(f"Equal-horizon trajectories: image {image_id}, N={count:,}")
-    axes[1].grid(True, alpha=0.2)
-    axes[1].legend(fontsize=8)
-    inset = axes[0].inset_axes([0.55, 0.52, 0.42, 0.42])
-    width = 0.38
-    inset.bar(x - width / 2, np.asarray(decode_values) * 1e3, width, label="decode")
-    inset.bar(x + width / 2, np.asarray(render_values) * 1e3, width, label="render")
-    inset.set_title("Mean decoder ms", fontsize=8)
-    inset.set_xticks([])
-    inset.legend(fontsize=6)
+    axes[2].set_xlabel("Optimizer iteration")
+    axes[2].set_ylabel("Fit PSNR (raw render, dB)")
+    axes[2].set_title(f"Equal-horizon trajectories: image {image_id}, N={count:,}")
+    axes[2].grid(True, alpha=0.2)
+    axes[2].legend(fontsize=8)
     figure.suptitle("F8. Optimization and resource accounting", fontsize=15)
     _figure_scope_banner(figure, manifest)
     figure.savefig(path, dpi=180, facecolor="white")
