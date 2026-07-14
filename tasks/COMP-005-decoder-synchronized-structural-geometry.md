@@ -1,6 +1,13 @@
 # COMP-005 — Decoder-synchronized structural geometry
 
-**Status:** research spike — blocked on BENCH-007 Stage 1; novelty remains provisional.
+**Status:** not authorized — BENCH-007 Stage 1 failed, tensor structure did not survive the
+strongest actual-rate control, and explicit layout bytes were not established as the binding loss.
+
+## 2026-07-14 gate decision
+
+Do not run the eight-image spike below as a post-hoc rescue. Decoder-synchronized geometry may be
+reconsidered only under a materially new claim, refreshed prior-art audit, new null, and disjoint
+development screen.
 
 ## Candidate claim
 

@@ -15,8 +15,8 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | PORT-001 | CUDA tile rasterizer → IntrinsicEngine RHI pass | partial | CORE-001 |
 | ABL-004 | Killer controls + full ABL-001 run + committed evidence | partial | BENCH-002, ABL-003, FIT-004 |
 | COMP-003 | Compression-ratio ladder (scale ranges → planes → LSQ → VQ → entropy) | partial | COMP-002, BENCH-002 |
-| CORE-007 | Segmentation-free responsibility boundary flux | needs re-scope before implementation — broad gating is directly threatened by Contour-Aware 2DGS | INIT-004, CORE-001, BENCH-007 |
-| CORE-008 | Hybrid Gaussian + frequency-bearing primitive control | needs prior-art-controlled spike — WIPES is the direct primitive baseline | CORE-001, INIT-001, FIT-001, BENCH-007 |
+| CORE-007 | Segmentation-free responsibility boundary flux | design-only — BENCH-007 did not authorize the old structure/compression path; any reopening needs a new prior-art-controlled question | INIT-004, CORE-001, BENCH-007 |
+| CORE-008 | Hybrid Gaussian + frequency-bearing primitive control | design-only — WIPES remains the direct primitive baseline and BENCH-007 supplies no promotion signal | CORE-001, INIT-001, FIT-001, BENCH-007 |
 | INIT-009 | Progressive WSE survivor ordering | implemented/confirmed — 32/32 uniform Euclidean prefix wins with identical terminal sets; opt-in for compatibility | INIT-003/005/006, BENCH-002 |
 | PORT-002 | GPU-native tile index + fused loss/backward | todo | PORT-001, FIT-003 |
 | PORT-003 | Avoid atomics in tiled backward | todo | PORT-001 |
@@ -29,9 +29,9 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | FIT-016 | Coarse-to-full loss-target curriculum | implemented/screened — rejected by 500-step guard (−0.1645 dB selected PSNR); default off | FIT-015, HIER-003/004, ABL-004, BENCH-002 |
 | FIT-017 | Kernel-matched signed-residual densification | implemented/screened — wider scores improve immediate PSNR but lose post-20/post-100; default legacy score retained | FIT-004, FIT-009, BENCH-002, ABL-004 |
 | BENCH-006 | Fixed-storage all-method convergence lane | completed as a 320-cell high-rate local-policy diagnostic; superseded for compression decisions by BENCH-007 | BENCH-001/002/003/004, COMP-002, ABL-004 |
-| BENCH-007 | Actual-rate structure phase diagram | todo — preregistered; highest priority | BENCH-001/002/003/004/006, COMP-001/002/004, INIT-003/009 |
-| BENCH-008 | Common/native causal bridge | blocked on BENCH-007 Stage 1 and schema feasibility | BENCH-005/007, CORE-001/003/005, COMP-002 |
-| COMP-005 | Decoder-synchronized structural geometry | research spike; blocked on BENCH-007 Stage 1 | BENCH-007, COMP-001/002/003/004, INIT-001/003/009 |
+| BENCH-007 | Actual-rate structure phase diagram | completed negative — Stage-1 gate failed; Stage 2 prohibited and not run | BENCH-001/002/003/004/006, COMP-001/002/004, INIT-003/009 |
+| BENCH-008 | Common/native causal bridge | not authorized — BENCH-007 found no promotable renderer/objective interaction | BENCH-005/007, CORE-001/003/005, COMP-002 |
+| COMP-005 | Decoder-synchronized structural geometry | not authorized — tensor structure failed the actual-rate gate and layout bytes were not established as the binding loss | BENCH-007, COMP-001/002/003/004, INIT-001/003/009 |
 
 ## Retired Done Tasks
 
@@ -79,28 +79,30 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | COMP-002 | Codec / metrics / CLI correctness and protocol fixes | `done/COMP-002-codec-correctness.md` |
 | COMP-004 | QAT + entropy-aware fitting | `done/COMP-004-entropy-aware-fitting.md` |
 | DOCS-001 | Docs-sync backfill (stale status, missing ADRs, ara scaffold) | `done/DOCS-001-docs-sync-backfill.md` |
+| DOCS-002 | Publication visual diagnostics | `done/DOCS-002-publication-visual-diagnostics.md` |
 
 Retired tasks remain valid dependency IDs. They describe completed reference/correctness work; the
 performance and scale follow-ups stay active under PORT/FIT/INIT/BENCH/ABL tasks.
 
-## Current priority (from the 2026-07-13 SOTA and actual-rate audit)
+## Current priority after the 2026-07-14 actual-rate decision
 
-The completed 168 KiB lane is an overcomplete convergence study: its nominal payload is
-71.68–81.15 bpp at the prepared resolutions, and its SSPL1 streams are about 22 bpp. Current
-structure-aware, ownership-based, learned, progressive, and entropy-coded methods occupy the broad
-claims this repository originally targeted. The queue is therefore:
+BENCH-007 is complete. Tensor-WSE showed a bounded 0.5-bpp gain over the strongest local gradient
+control, but the effect vanished at 1.0 bpp, reached only `-4.5417%` BD-rate versus the required
+`-10%`, cost `1.4752x`, and exceeded the texture guard. The preregistered gate failed, so Stage 2,
+BENCH-008, and COMP-005 are not authorized. The queue is therefore:
 
-1. **BENCH-007:** implement and run the frozen actual-byte Stage-1 phase diagram. The decision is
-   tensor-WSE versus SLIC/Sobel and other direct controls at 0.5/1.0 bpp, not another high-rate
-   leaderboard search.
-2. **BENCH-008 only if BENCH-007 identifies a renderer/objective interaction:** separate
-   initialization from representation and optimizer effects, while preserving native-authentic
-   results as a distinct lane.
-3. **COMP-005 only if tensor structure survives actual-rate controls and layout bytes bind:**
-   test decoder-synchronized geometry as the high-risk rate-saving mechanism.
-4. Keep CORE-007/008 design-only until their direct Contour-Aware 2DGS and WIPES controls are
-   available. Do not implement the old broad formulations as if the novelty boundary were
-   unchanged.
+1. Preserve the BENCH-007 negative result and do not tune the eight Stage-1 images or consume
+   untouched DIV2K validation as a rescue set.
+2. Close the current tensor-WSE compression-paper claim. F5--F9 and the actual-rate harness are
+   reusable infrastructure, not held-out method evidence.
+3. If method research continues, begin a fresh `structsplat-research-ideation` pass around a
+   materially different question, null, hard compute/texture guards, and a disjoint development
+   screen. The low-rate edge/bleed signal may motivate that search but cannot preselect a rescue
+   formulation on the failed pilot.
+4. Continue BENCH-005's native-authentic coverage only as an independent external-validity or
+   benchmark lane; it cannot retroactively promote tensor-WSE.
+5. Keep CORE-007/008 design-only until a new question and their direct Contour-Aware 2DGS/WIPES
+   controls justify implementation.
 
 The dated priority sections below are retained as execution history, not as the current queue.
 

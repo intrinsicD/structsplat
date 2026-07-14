@@ -28,12 +28,28 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
   the inverse-CDF warp for low-discrepancy samplers), `sampling` (WSE blue noise, Poisson-disk
   dart throwing, farthest-point, CVT/Lloyd, Halton, and opt-in terminal-set-preserving progressive
   WSE order), `config`.
+- **benchmark-only structural controls:** `structural_controls` lazily calls SLIC and keeps the
+  SLIC/Sobel complexity ranking, exact-N 6:2:1 allocation, and unresolved upstream-fidelity
+  assumptions explicit. `init` registers `local_slic_sobel_control`, but it is not a shipped
+  default or an upstream-paper implementation.
 - **torch, autograd:** `gaussians` (RS + optional opacity + optional per-Gaussian scale caps,
   ADR-0012), `render` (normalized default + additive, ADR-0006, exact CUDA variants, ADR-0011,
   and gsplat comparator, sharing one accumulator where semantics match), `metrics`, `init`
   (bridge), `fit` (selectable loss/optimizer/LR-schedule/split-mode), `pyramid`, `codec`
   (post-fit quantization, ADR-0007).
+- **read-only diagnostics:** `visualize` calls the production NumPy analysis/initialization and
+  torch normalized renderer, then exports raw tensor/field/responsibility maps plus deterministic
+  explanatory panels. It never fits or changes a field and is not benchmark evidence (DOCS-002).
 - **entry:** `cli` (`structsplat fit` / `ablation` / `stage-search`).
+- **decision benchmark:** `benchmarks.actual_rate_phase_diagram` owns frozen actual-rate manifests,
+  SSPL1 cold scoring, exact-cap RDO/statistics, and result figures for BENCH-007. Its manifest
+  distinguishes the normalized weighted-sum equation from the selected implementation; native
+  scientific runs may freeze the parity-checked owned exact-CUDA implementation explicitly.
+  Persisted-stream parity is checked on decoded field state before a single cold render; two CUDA
+  renders are not used as an equality oracle because atomic accumulation is not bit-reproducible.
+  Result-figure stream replay uses the validated analysis device, so CUDA-frozen semantics are not
+  silently forced through CPU tensors. The completed Stage-1 gate is negative; this substrate is
+  reusable, but Stage 2 is not authorized for the current tensor-WSE claim.
 
 ## Stage-search (ABL-002, protocol in ADR-0010)
 `benchmarks/stage_search.py` sweeps configurations across every swappable stage — tensor operator,

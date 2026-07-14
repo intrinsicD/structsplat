@@ -392,19 +392,41 @@ reference renderer is memory-bound. See `ara/evidence/core005-render-checkpoint-
   normalized local ownership, progressive Gaussian coding, segmentation-gated boundaries, learned
   initialization, and generic clustered quantization are directly covered or threatened by
   Structure-Guided Allocation, Image-GS/SAD, P-GSVC, Contour-Aware 2DGS, Instant-GI and later
-  learned samplers, and CGVQ. The remaining provisional claim is narrower: whether a training-free
-  tensor-metric/WSE relationship yields held-out actual-rate or robustness value beyond direct
-  controls.
-- **Status**: supported as a prior-art boundary; the narrow positive claim is unresolved
+  learned samplers, and CGVQ. The narrower training-free tensor-metric/WSE actual-rate claim has
+  now failed its preregistered development gate; any future positive claim must use a materially
+  different question and disjoint evidence program.
+- **Status**: supported as a prior-art boundary; the current narrow positive claim is rejected
 - **Provenance**: ai-suggested
 - **Crystallized via**: prior-art-audit
 - **Falsification criteria**: A primary-source audit shows that one named threat lacks the attributed
   mechanism, or a more specific StructSplat claim is demonstrated to predate or be irreducible to
-  those mechanisms. Search cannot prove global novelty, so the narrow claim remains provisional
-  even if BENCH-007 succeeds.
+  those mechanisms, or independent evidence establishes a materially different StructSplat
+  mechanism. Search cannot prove global novelty, and BENCH-007's failed current formulation does
+  not rule out every possible future mechanism.
 - **Proof**: [`ara/evidence/storage-budget-168k-sota-audit-2026-07-13.md`,
   `ara/evidence/research-portfolio-2026-07-13.md`,
+  `ara/evidence/bench007-stage1-killing-pilot-2026-07-14/run.md`,
   `tasks/BENCH-007-actual-rate-structure-phase-diagram.md`]
 - **Dependencies**: [C05, C25, C26]
 - **Tags**: novelty-boundary, prior-art, structure, actual-rate, research-scope
 - **From staging**: 2026-07-13 primary-source research audit
+
+## C28: The current tensor-WSE actual-rate formulation fails its development promotion gate
+
+- **Statement**: On the frozen eight-image DIV2K Stage-1 matrix, tensor-WSE beats the strongest
+  local gradient control by `+0.3457 dB` at 0.5 bpp but only `+0.0089 dB` at 1.0 bpp, reaches
+  `-4.5417%` mean PSNR BD-rate rather than the required `-10%`, costs `1.4752x` fit plus equal
+  search time, and increases texture MSE by `7.2883%` beyond the 5% guard. The preregistered gate
+  fails; Stage 2 is not authorized.
+- **Status**: supported development-set negative decision; not held-out evidence
+- **Provenance**: ai-suggested
+- **Crystallized via**: adversarial-experiment-design
+- **Falsification criteria**: The source-bound latest-cell analysis is incomplete or incorrect, a
+  frozen gate is shown to have been misapplied, or an exact independent rerun of the same manifest
+  materially changes the gate outcome. A new formulation or dataset does not falsify this bounded
+  result; it answers a new question.
+- **Proof**: [`ara/evidence/bench007-stage1-killing-pilot-2026-07-14/run.md`,
+  `tasks/BENCH-007-actual-rate-structure-phase-diagram.md`]
+- **Dependencies**: [C26, C27]
+- **Tags**: actual-rate, tensor-wse, negative-result, development-gate, claim-boundary
+- **From staging**: 2026-07-14 BENCH-007 Stage-1 decision

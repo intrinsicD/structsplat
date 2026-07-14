@@ -1,5 +1,10 @@
 # Continuation prompt — StructSplat actual-rate research
 
+**Execution status (2026-07-14): complete.** BENCH-007 Stage 1 failed its preregistered gate;
+Stage 2, BENCH-008, and COMP-005 were not authorized. Preserve this prompt as the executed
+contract, not as an instruction to rerun or tune the failed pilot. The terminal evidence is
+`ara/evidence/bench007-stage1-killing-pilot-2026-07-14/run.md`.
+
 Copy the prompt below into the next coding/research session. It is intentionally specific: “fix
 everything” is not a measurable terminal condition, while this prompt defines the scientific
 decision, authorized work, killing gates, and handoff artifacts.

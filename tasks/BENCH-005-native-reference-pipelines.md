@@ -179,9 +179,9 @@ StructSplat matched-policy default-promotion gate.
 
 ## Next actions
 
-1. Use BENCH-007 to establish self-contained StructSplat RD targets before expanding external
-   comparisons. Native methods must be evaluated at their real rate definitions, not forced into
-   the 168 KiB proxy.
+1. Treat BENCH-007's completed negative Stage-1 actual-rate result as a claim boundary, not a native
+   leaderboard target. Native methods must still be evaluated at their real rate definitions, not
+   forced into the 168 KiB proxy; this lane cannot retroactively promote tensor-WSE.
 2. Add native Structure-Guided Allocation first if official code is available; it is the direct
    handcrafted structure baseline. Then prioritize SAD and WIPES as representation controls.
 3. Expand GaussianImage++ across multiple native-resolution rates and an iteration/time envelope;

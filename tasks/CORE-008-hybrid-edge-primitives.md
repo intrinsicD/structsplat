@@ -1,7 +1,8 @@
 # CORE-008: Hybrid Gaussian + frequency-bearing primitive control
 
-**Status: needs prior-art-controlled spike.** WIPES is the direct frequency-bearing primitive
-baseline; the old “Gaussian + edge primitive” idea is not ready for implementation.
+**Status: design-only, not authorized by BENCH-007.** WIPES is the direct frequency-bearing
+primitive baseline. BENCH-007's texture regression is allocation-specific—the same Gaussian basis
+under the gradient control performs better—so it does not establish a primitive-family failure.
 
 ## Context
 Some high-frequency edges and textures are inefficient for blob-only Gaussian bases. WIPES already
@@ -15,7 +16,8 @@ degrees of freedom, after controlling for parameter count, actual stream bytes, 
 compute, and WIPES/native wavelet evidence.
 
 ## Approach
-1. Wait for BENCH-007 mechanism maps to show a repeatable texture/thin-line failure at <=1 bpp.
+1. Require a future independent mechanism study to show a repeatable basis-limited texture or
+   thin-line failure at <=1 bpp; BENCH-007 did not isolate one.
 2. Reproduce or run WIPES first where official code permits. Record native evidence separately.
 3. Build a synthetic linear-dictionary oracle: pure Gaussian, Gaussian derivative, Gabor, and
    localized wavelet atoms under exact coefficient/metadata costs. This is the cheapest killing

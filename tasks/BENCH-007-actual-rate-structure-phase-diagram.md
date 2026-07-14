@@ -1,6 +1,7 @@
 # BENCH-007 — Actual-rate structure phase diagram
 
-**Status:** todo — preregistered 2026-07-13; highest-priority research task.
+**Status:** completed negative — preregistered 2026-07-13; Stage-1 gate failed 2026-07-14;
+Stage 2 was not authorized and was not run.
 
 ## Decision this task owns
 
@@ -38,8 +39,10 @@ Common-renderer arms:
 5. uniform Euclidean WSE;
 6. seeded random placement.
 
-All arms use the same constant-color RS field, normalized renderer, optimizer steps, checkpoint
-rule, QAT allowance, bit-mix/count candidate grid, and SSPL1 encoder. Paper-name labels are
+All arms use the same constant-color RS field, normalized weighted-sum renderer equation,
+optimizer steps, checkpoint rule, QAT allowance, bit-mix/count candidate grid, and SSPL1 encoder.
+Native-resolution scientific runs freeze the owned parity-checked exact-CUDA implementation of
+that equation; the PyTorch implementation remains the oracle. Paper-name labels are
 forbidden unless the native implementation is actually executed; common-renderer transplants must
 be labeled `local_<mechanism>_control`.
 
@@ -127,15 +130,57 @@ Reject or reframe the compression claim if the gain:
 - is caused by unequal candidate search, resize denominators, or a renderer/fitter mismatch; or
 - does not survive the full held-out confirmation.
 
+## Measured decision — 2026-07-14
+
+Stage 1 completed 288/288 independent fits and 1,152/1,152 latest validated SSPL1 candidates on
+the frozen eight-image matrix. The local gradient arm was the strongest direct control. Relative
+to it, tensor-WSE achieved `+0.3457 dB` at 0.5 bpp (95% CI `[+0.1426, +0.5662]`) but only
+`+0.0089 dB` at 1.0 bpp (95% CI `[-0.1718, +0.1738]`). Its mean BD-rate was `-4.5417%`, short of
+the required `-10%`; fit-plus-search time was `1.4752x`, above the `1.10x` ceiling. Edge MSE and
+signed bleed improved, but texture MSE increased `7.2883%`, above the frozen 5% guard.
+
+The executable gate therefore returns `pass=false` and `stage2_authorized=false`. The exact
+tensor-WSE actual-rate compression claim is closed without post-hoc rescue, and untouched DIV2K
+validation remains untouched. See
+`ara/evidence/bench007-stage1-killing-pilot-2026-07-14/run.md` for the complete result, integrity
+audit, artifact hashes, and F5--F9 visual QA.
+
 ## Deliverables
 
 - A rate-targeted, resumable benchmark with dry-run planning, per-cell journals, explicit missing
   and failed rows, stream validation, and tests for byte caps, denominators, RDO selection,
   monotone envelopes, and BD-rate edge cases.
-- Frozen Stage 1 and Stage 2 manifests with source hashes.
+- Frozen Stage-1 manifest with source hashes and, only if authorized, a separately frozen Stage-2
+  manifest. The gate denied Stage 2, so intentionally no Stage-2 manifest exists.
 - Raw CSV/JSON, central metrics, per-image curves, component byte tables, statistical summaries,
   resource telemetry, and a portable HTML index.
 - ARA evidence and a bounded claim update. Negative results are a valid completion.
+
+## Implementation ledger
+
+- [x] Exact-N local SLIC/Sobel control with frozen fidelity assumptions and strategy tests.
+- [x] Complete SSPL1 header/stream component accounting with malformed-stream tests.
+- [x] Frozen source/pixel hashes, resolution-normalized equal candidate ladders, dry-run planning,
+  append-only fit/candidate/error journals, hash-checked resume, and resource telemetry.
+- [x] Exact integer byte caps, cold decode/parity, central scoring, RDO selection, explicit missing
+  rows, nondominated envelopes, and no-extrapolation BD-rate edge cases.
+- [x] Predeclared edge/texture/bleed/contributor metrics, image-cluster bootstrap, Holm adjustment,
+  strongest-direct-control rule, and executable Stage-1 gate.
+- [x] Automatic F5--F9, retained selected streams/reconstructions, raw CSV/JSON, and portable HTML.
+- [x] Separately labeled lossless PNG, JPEG-444, and AVIF-444 context sweep.
+- [x] Complete Stage-0a plumbing validation on all four pinned COCO fixtures. The clean-commit
+  run completed 144/144 fits, 576/576 cold-encoded candidates, and 48/48 exact-cap selections
+  with no failed cell; see `ara/evidence/bench007-stage0a-plumbing-2026-07-14/run.md`.
+- [x] Validate persisted-stream cold parity at the decoded-field boundary rather than comparing
+  duplicate exact-CUDA renders whose atomic accumulation order is not bit-reproducible; retain the
+  frozen `1e-6` tolerance and provide candidate-only revalidation without refitting.
+- [x] Complete Stage-0b calibration on the four preregistered DIV2K training IDs. All 8/8 cells
+  completed and froze the median `8.614970513660953 B/G`; see
+  `ara/evidence/bench007-stage0b-calibration-2026-07-14/run.md`.
+- [x] Freeze and complete Stage 1; obey its stop/go decision without post-hoc rescue. The clean
+  288-fit/1,152-candidate matrix failed the preregistered quality, time, and mechanism gate.
+- [x] Resolve Stage 2 according to the frozen gate. It was not authorized and was not run; this is
+  the required negative terminal action, not a missing experiment.
 
 ## Non-goals
 

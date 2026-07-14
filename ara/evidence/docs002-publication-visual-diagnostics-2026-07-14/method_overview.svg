@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="560" viewBox="0 0 1440 560" role="img" aria-labelledby="title desc">
+  <title id="title">StructSplat encoder and decoder overview</title>
+  <desc id="desc">The source-visible encoder computes a structure tensor, initializes and fits a Gaussian field, and writes an SSPL1 stream. The stream-only decoder reconstructs the field and applies the normalized renderer. Tensor maps are not transmitted.</desc>
+  <defs>
+    <style>
+      .title { font-family: sans-serif; font-size: 25px; font-weight: bold; fill: #111827; }
+      .lane { font-family: sans-serif; font-size: 16px; font-weight: bold; letter-spacing: 1px; fill: #334155; }
+      .head { font-family: sans-serif; font-size: 17px; font-weight: bold; fill: #111827; }
+      .body { font-family: sans-serif; font-size: 14px; fill: #334155; }
+      .small { font-family: sans-serif; font-size: 13px; fill: #475569; }
+      .box { stroke-width: 2; rx: 12; ry: 12; }
+      .flow { font-family: sans-serif; font-size: 28px; font-weight: bold; fill: #334155; }
+    </style>
+  </defs>
+  <rect width="1440" height="560" fill="#ffffff"/>
+  <text x="40" y="38" class="title">StructSplat: source-derived initialization, transmitted Gaussian state</text>
+
+  <rect x="28" y="62" width="1384" height="232" rx="18" fill="#f4f8ff" stroke="#bfdbfe"/>
+  <text x="48" y="91" class="lane">ENCODER · SOURCE VISIBLE</text>
+
+  <rect class="box" x="45" y="116" width="145" height="100" fill="#ffffff" stroke="#64748b"/>
+  <text x="117" y="148" text-anchor="middle" class="head">Input image</text>
+  <text x="117" y="174" text-anchor="middle" class="body">RGB target</text>
+  <text x="117" y="196" text-anchor="middle" class="small">not transmitted</text>
+
+  <text x="202" y="175" class="flow">→</text>
+  <rect class="box" x="230" y="116" width="195" height="100" fill="#e0f2fe" stroke="#0284c7"/>
+  <text x="327" y="143" text-anchor="middle" class="head">Structure tensor</text>
+  <text x="327" y="169" text-anchor="middle" class="body">energy · coherence</text>
+  <text x="327" y="191" text-anchor="middle" class="body">labels · tangent</text>
+
+  <text x="437" y="175" class="flow">→</text>
+  <rect class="box" x="465" y="108" width="225" height="116" fill="#e0f2fe" stroke="#0284c7"/>
+  <text x="577" y="137" text-anchor="middle" class="head">Tensor/WSE initialization</text>
+  <text x="577" y="163" text-anchor="middle" class="body">density + unit-area metric</text>
+  <text x="577" y="185" text-anchor="middle" class="body">exact-N sites + tangent RS</text>
+  <text x="577" y="207" text-anchor="middle" class="small">training-free starting field</text>
+
+  <text x="702" y="175" class="flow">→</text>
+  <rect class="box" x="730" y="116" width="170" height="100" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="815" y="147" text-anchor="middle" class="head">Fit field</text>
+  <text x="815" y="173" text-anchor="middle" class="body">normalized render</text>
+  <text x="815" y="195" text-anchor="middle" class="body">+ image loss</text>
+
+  <text x="912" y="175" class="flow">→</text>
+  <rect class="box" x="940" y="116" width="170" height="100" fill="#fef3c7" stroke="#d97706"/>
+  <text x="1025" y="147" text-anchor="middle" class="head">Codec</text>
+  <text x="1025" y="173" text-anchor="middle" class="body">quantize attributes</text>
+  <text x="1025" y="195" text-anchor="middle" class="body">+ pack stream</text>
+
+  <text x="1122" y="175" class="flow">→</text>
+  <rect class="box" x="1150" y="116" width="205" height="100" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="1252" y="148" text-anchor="middle" class="head">SSPL1 bytes</text>
+  <text x="1252" y="174" text-anchor="middle" class="body">decoder-complete state</text>
+  <text x="1252" y="196" text-anchor="middle" class="small">actual rate = file bytes</text>
+
+  <text x="48" y="260" class="small">Encoder-only tensor, density, and WSE analysis is discarded; the decoder receives no source-derived maps.</text>
+
+  <rect x="28" y="316" width="1384" height="208" rx="18" fill="#fafafa" stroke="#d1d5db"/>
+  <text x="48" y="346" class="lane">DECODER · STREAM ONLY</text>
+  <polyline points="1252,216 1252,280 250,280 250,365" stroke="#ea580c" stroke-width="2.5" stroke-dasharray="7 5" fill="none"/>
+
+  <rect class="box" x="145" y="378" width="210" height="92" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="250" y="411" text-anchor="middle" class="head">SSPL1 bytes</text>
+  <text x="250" y="439" text-anchor="middle" class="body">cold-decode input</text>
+
+  <text x="371" y="433" class="flow">→</text>
+  <rect class="box" x="415" y="378" width="205" height="92" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="517" y="411" text-anchor="middle" class="head">Decoded RS field</text>
+  <text x="517" y="439" text-anchor="middle" class="body">position · scale · angle · color</text>
+
+  <text x="636" y="433" class="flow">→</text>
+  <rect class="box" x="680" y="378" width="210" height="92" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="785" y="411" text-anchor="middle" class="head">Normalized renderer</text>
+  <text x="785" y="439" text-anchor="middle" class="body">local clipped support</text>
+
+  <text x="906" y="433" class="flow">→</text>
+  <rect class="box" x="950" y="378" width="170" height="92" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="1035" y="411" text-anchor="middle" class="head">Decoded image</text>
+  <text x="1035" y="439" text-anchor="middle" class="body">RGB reconstruction</text>
+
+  <rect x="1155" y="368" width="225" height="112" rx="10" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="1267" y="397" text-anchor="middle" class="head">Forward equation</text>
+  <text x="1267" y="426" text-anchor="middle" class="body">I-hat(p) = sum w_i c_i</text>
+  <line x1="1192" y1="434" x2="1342" y2="434" stroke="#64748b"/>
+  <text x="1267" y="456" text-anchor="middle" class="body">sum w_i + epsilon</text>
+
+  <rect x="48" y="492" width="14" height="14" fill="#e0f2fe" stroke="#0284c7"/>
+  <text x="70" y="504" class="small">source-only analysis</text>
+  <rect x="215" y="492" width="14" height="14" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="237" y="504" class="small">transmitted state</text>
+  <rect x="365" y="492" width="14" height="14" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="387" y="504" class="small">shared method</text>
+</svg>
