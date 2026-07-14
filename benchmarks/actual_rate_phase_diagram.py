@@ -868,6 +868,41 @@ def _render_decoded_field(field: Any, header: dict[str, Any]) -> Any:
     )
 
 
+def _decoded_field_state_sha256(field: Any) -> str:
+    """Hash the transmitted, decoded field state independently of renderer execution order."""
+    digest = hashlib.sha256()
+    for name in ("means", "log_scales", "rotations", "colors", "opacities"):
+        value = getattr(field, name)
+        digest.update(name.encode("utf-8") + b"\0")
+        if value is None:
+            digest.update(b"none\0")
+            continue
+        array = np.ascontiguousarray(value.detach().cpu().numpy())
+        digest.update(str(array.dtype).encode("ascii") + b"\0")
+        digest.update(_canonical_json(list(array.shape)) + b"\0")
+        digest.update(array.tobytes(order="C"))
+    return digest.hexdigest()
+
+
+def _decoded_field_state_max_abs(reference: Any, cold: Any) -> float:
+    """Compare two decoded SSPL1 fields without invoking a nondeterministic CUDA render."""
+    maximum = 0.0
+    for name in ("means", "log_scales", "rotations", "colors", "opacities"):
+        expected = getattr(reference, name)
+        actual = getattr(cold, name)
+        if (expected is None) != (actual is None):
+            raise RuntimeError(f"decoded field optional-state mismatch for {name}")
+        if expected is None:
+            continue
+        if expected.shape != actual.shape:
+            raise RuntimeError(
+                f"decoded field shape mismatch for {name}: {expected.shape} != {actual.shape}"
+            )
+        if expected.numel():
+            maximum = max(maximum, float((expected - actual).abs().max().cpu()))
+    return maximum
+
+
 def _central_metrics(prediction: Any, target: Any) -> dict[str, float]:
     from structsplat import metrics
 
@@ -935,6 +970,7 @@ def run_manifest(
     only_images: Sequence[str] | None = None,
     max_new_fits: int | None = None,
     retry_failed: bool = False,
+    revalidate_candidates: bool = False,
     verbose: bool = True,
 ) -> dict[str, Any]:
     """Execute or resume a frozen BENCH-007 manifest, journaling each fit/candidate."""
@@ -1106,17 +1142,21 @@ def run_manifest(
                         and stream_path.is_file()
                         and prior_candidate.get("stream_sha256") == sha256_file(stream_path)
                     )
-                    if reusable_candidate:
+                    if reusable_candidate and not revalidate_candidates:
                         completed_candidates += 1
                         continue
                     if (
                         prior_candidate
                         and prior_candidate.get("status") == "failed"
                         and not retry_failed
+                        and not revalidate_candidates
                     ):
                         continue
                     try:
                         _reset_gpu_peak(torch, device)
+                        previous_stream_sha256 = (
+                            sha256_file(stream_path) if stream_path.is_file() else None
+                        )
                         candidate_field = field.detached()
                         codec_config = codec.CodecConfig(
                             bits_means=int(mix[0]),
@@ -1147,27 +1187,45 @@ def run_manifest(
                         ):
                             raise RuntimeError("cold stream header does not match frozen target")
 
+                        in_memory_decode_start = time.perf_counter()
+                        in_memory_decoded_field = codec.decode(blob, device=device)
+                        _gpu_sync(torch, device)
+                        in_memory_decode_seconds = time.perf_counter() - in_memory_decode_start
+
+                        # Validate the persisted stream against the in-memory encoded bytes at the
+                        # decoded-field boundary. Rendering the same field twice with the exact
+                        # CUDA implementation is not a valid parity oracle: atomic accumulation
+                        # order can differ by a few float32 ulps between identical launches.
+                        cold_start = time.perf_counter()
+                        cold_blob = stream_path.read_bytes()
+                        if cold_blob != blob:
+                            raise RuntimeError("persisted stream bytes differ from encoded bytes")
                         decode_start = time.perf_counter()
-                        decoded_field = codec.decode(blob, device=device)
+                        cold_decoded_field = codec.decode(cold_blob, device=device)
                         _gpu_sync(torch, device)
                         decode_seconds = time.perf_counter() - decode_start
-                        render_start = time.perf_counter()
-                        in_memory_render = _render_decoded_field(decoded_field, header)
-                        _gpu_sync(torch, device)
-                        render_seconds = time.perf_counter() - render_start
-                        cold_start = time.perf_counter()
-                        cold_render = codec.decode_and_render(blob, device=device)
-                        _gpu_sync(torch, device)
-                        cold_decode_render_seconds = time.perf_counter() - cold_start
-                        parity_max_abs = float((cold_render - in_memory_render).abs().max().cpu())
+                        reference_field_sha256 = _decoded_field_state_sha256(
+                            in_memory_decoded_field
+                        )
+                        cold_field_sha256 = _decoded_field_state_sha256(cold_decoded_field)
+                        parity_max_abs = _decoded_field_state_max_abs(
+                            in_memory_decoded_field, cold_decoded_field
+                        )
                         parity_atol = float(
                             manifest["central_scoring"].get("cold_parity_atol", 1e-6)
                         )
-                        if parity_max_abs > parity_atol:
+                        if parity_max_abs > parity_atol or (
+                            reference_field_sha256 != cold_field_sha256
+                        ):
                             raise RuntimeError(
-                                "cold/in-memory decoded render mismatch: "
-                                f"{parity_max_abs} > {parity_atol}"
+                                "cold/in-memory decoded field mismatch: "
+                                f"max_abs={parity_max_abs} > {parity_atol} or state hash differs"
                             )
+                        render_start = time.perf_counter()
+                        cold_render = _render_decoded_field(cold_decoded_field, header)
+                        _gpu_sync(torch, device)
+                        render_seconds = time.perf_counter() - render_start
+                        cold_decode_render_seconds = time.perf_counter() - cold_start
                         display_render = cold_render.clamp(0.0, 1.0)
                         scores = _central_metrics(display_render, target)
                         prediction_np = display_render.detach().cpu().numpy().astype(np.float32)
@@ -1193,15 +1251,25 @@ def run_manifest(
                             "bpp": actual_bpp(stream_bytes, height, width),
                             "stream_path": str(stream_path.relative_to(output)),
                             "stream_sha256": sha256_file(stream_path),
+                            "previous_stream_sha256": previous_stream_sha256,
+                            "stream_reencoded_identical": (
+                                previous_stream_sha256 is None
+                                or previous_stream_sha256 == sha256_file(stream_path)
+                            ),
                             "stream_components": components,
                             "encode_seconds": encode_seconds,
                             "qat_seconds": qat_seconds,
+                            "in_memory_decode_seconds": in_memory_decode_seconds,
                             "decode_seconds": decode_seconds,
                             "render_seconds": render_seconds,
                             "cold_decode_render_seconds": cold_decode_render_seconds,
                             "render_fps": 1.0 / max(render_seconds, 1e-12),
                             "cold_parity_max_abs": parity_max_abs,
                             "cold_parity_atol": parity_atol,
+                            "cold_parity_domain": "persisted_stream_decoded_field_state",
+                            "in_memory_decoded_field_sha256": reference_field_sha256,
+                            "cold_decoded_field_sha256": cold_field_sha256,
+                            "candidate_revalidated": bool(revalidate_candidates),
                             "fit_plus_search_seconds": float(fit_row["fit_plus_init_seconds"])
                             + qat_seconds + encode_seconds,
                             **scores,
@@ -1219,7 +1287,12 @@ def run_manifest(
                                 f"{row['psnr']:.3f} dB ({stream_bytes} B)",
                                 flush=True,
                             )
-                        del decoded_field, in_memory_render, cold_render, display_render
+                        del (
+                            in_memory_decoded_field,
+                            cold_decoded_field,
+                            cold_render,
+                            display_render,
+                        )
                     except Exception as exc:
                         failed = {
                             "schema": SCHEMA,
@@ -2799,6 +2872,11 @@ def _build_parser() -> argparse.ArgumentParser:
     run.add_argument("--images", nargs="+")
     run.add_argument("--max-new-fits", type=int)
     run.add_argument("--retry-failed", action="store_true")
+    run.add_argument(
+        "--revalidate-candidates",
+        action="store_true",
+        help="re-encode and revalidate every candidate without refitting fields",
+    )
 
     analyze = subparsers.add_parser("analyze", help="RDO-select, test gate, and generate F5--F9")
     analyze.add_argument("--manifest", required=True)
@@ -2878,6 +2956,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             only_images=args.images,
             max_new_fits=args.max_new_fits,
             retry_failed=args.retry_failed,
+            revalidate_candidates=args.revalidate_candidates,
         ), indent=2))
     elif args.command == "analyze":
         print(json.dumps(analyze_manifest(

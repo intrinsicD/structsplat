@@ -45,6 +45,8 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
   SSPL1 cold scoring, exact-cap RDO/statistics, and result figures for BENCH-007. Its manifest
   distinguishes the normalized weighted-sum equation from the selected implementation; native
   scientific runs may freeze the parity-checked owned exact-CUDA implementation explicitly.
+  Persisted-stream parity is checked on decoded field state before a single cold render; two CUDA
+  renders are not used as an equality oracle because atomic accumulation is not bit-reproducible.
 
 ## Stage-search (ABL-002, protocol in ADR-0010)
 `benchmarks/stage_search.py` sweeps configurations across every swappable stage — tensor operator,

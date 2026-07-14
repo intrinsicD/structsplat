@@ -154,6 +154,9 @@ Reject or reframe the compression claim if the gain:
 - [x] Complete Stage-0a plumbing validation on all four pinned COCO fixtures. The clean-commit
   run completed 144/144 fits, 576/576 cold-encoded candidates, and 48/48 exact-cap selections
   with no failed cell; see `ara/evidence/bench007-stage0a-plumbing-2026-07-14/run.md`.
+- [x] Validate persisted-stream cold parity at the decoded-field boundary rather than comparing
+  duplicate exact-CUDA renders whose atomic accumulation order is not bit-reproducible; retain the
+  frozen `1e-6` tolerance and provide candidate-only revalidation without refitting.
 - [ ] Complete Stage-0b calibration on the four preregistered DIV2K training IDs.
 - [ ] Freeze and complete Stage 1; obey its stop/go decision without post-hoc rescue.
 - [ ] Freeze and run Stage 2 only if the Stage-1 gate authorizes it.

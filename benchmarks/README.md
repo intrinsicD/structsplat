@@ -63,6 +63,14 @@ equation and implementation in its manifest, requires CUDA for a CUDA-frozen run
 same `1e-6` cold-field parity tolerance. The slower `renderer=normalized` reference remains
 available for portability and oracle checks.
 
+Cold parity is evaluated at the decoded-field boundary: the in-memory encoded blob and the bytes
+read back from the persisted SSPL1 file must produce identical decoded-state hashes and satisfy the
+frozen maximum-absolute tolerance. The cold field is then rendered once for central scoring. Do not
+compare two exact-CUDA renders as the parity oracle, because independent atomic accumulation orders
+can differ by a few float32 ulps even for identical fields. After a validator change,
+`run --revalidate-candidates --retry-failed` re-encodes and revalidates every saved-field candidate
+without refitting.
+
 `ablation.py` runs the core experiment (`ABL-001`): `{init strategy} x {budget}` on fixed images,
 scored on PSNR / MS-SSIM / LPIPS + iterations-to-target. Caveat: this is the broad init sweep, so
 keep image/budget/seed axes explicit in the output config. ABL-004 control labels are available

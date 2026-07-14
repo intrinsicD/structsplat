@@ -115,6 +115,30 @@ def test_jsonl_resume_ignores_only_an_incomplete_final_append(tmp_path):
         B.read_jsonl(path)
 
 
+def test_decoded_field_state_parity_is_renderer_independent():
+    torch = pytest.importorskip("torch")
+    from structsplat.gaussians import GaussianField
+
+    reference = GaussianField(
+        torch.tensor([[1.0, 2.0]]),
+        torch.tensor([[0.0, 0.5]]),
+        torch.tensor([0.25]),
+        torch.tensor([[0.1, 0.2, 0.3]]),
+    )
+    identical = reference.detached()
+    assert B._decoded_field_state_max_abs(reference, identical) == 0.0
+    assert B._decoded_field_state_sha256(reference) == B._decoded_field_state_sha256(identical)
+
+    changed = reference.detached()
+    changed.colors[0, 0] += 1e-4
+    assert B._decoded_field_state_max_abs(reference, changed) == pytest.approx(1e-4, abs=1e-8)
+    assert B._decoded_field_state_sha256(reference) != B._decoded_field_state_sha256(changed)
+
+    changed.opacities = torch.tensor([0.0])
+    with pytest.raises(RuntimeError, match="optional-state mismatch"):
+        B._decoded_field_state_max_abs(reference, changed)
+
+
 def test_frozen_stage0a_manifest_hashes_sources_and_equal_arm_counts(tmp_path):
     root = Path(__file__).resolve().parents[1]
     images = sorted((root / "tests" / "test_images").glob("*.jpg"))
@@ -212,10 +236,25 @@ def test_tiny_run_is_cold_scored_journaled_and_resumable(tmp_path):
     candidate = B.read_jsonl(outdir / "journals" / "candidates.jsonl")[-1]
     assert candidate["status"] == "ok"
     assert candidate["cold_parity_max_abs"] <= candidate["cold_parity_atol"]
+    assert candidate["cold_parity_domain"] == "persisted_stream_decoded_field_state"
+    assert candidate["in_memory_decoded_field_sha256"] == candidate["cold_decoded_field_sha256"]
     assert candidate["bytes"] == (outdir / candidate["stream_path"]).stat().st_size
     second = B.run_manifest(manifest_path, tmp_path, outdir, device="cpu", verbose=False)
     assert second["new_fits"] == 0
     assert second["completed_candidates"] == 1
+    third = B.run_manifest(
+        manifest_path,
+        tmp_path,
+        outdir,
+        device="cpu",
+        revalidate_candidates=True,
+        verbose=False,
+    )
+    assert third["new_fits"] == 0
+    assert third["completed_candidates"] == 1
+    revalidated = B.read_jsonl(outdir / "journals" / "candidates.jsonl")[-1]
+    assert revalidated["candidate_revalidated"] is True
+    assert revalidated["stream_reencoded_identical"] is True
     analysis = B.analyze_manifest(
         manifest_path, tmp_path, outdir, device="cpu", make_figures=False
     )
