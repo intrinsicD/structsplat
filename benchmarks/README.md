@@ -31,13 +31,14 @@ never enter the gate. Install the optional dependencies with `pip install -e '.[
 PYTHONPATH=src python -m benchmarks.actual_rate_phase_diagram calibrate \
   --data-root results/datasets/DIV2K_train_HR \
   --images results/datasets/DIV2K_train_HR/{0002,0268,0534,0800}.png \
-  --outdir results/bench007_stage0b
+  --outdir results/bench007_stage0b --renderer cuda --device cuda
 
 # Freeze before metric inspection, inspect the exact workload, then run/resume.
 PYTHONPATH=src python -m benchmarks.actual_rate_phase_diagram freeze \
   --stage stage1 --data-root results/datasets/DIV2K_train_HR \
   --images results/datasets/DIV2K_train_HR/{0001,0115,0229,0343,0457,0571,0685,0799}.png \
-  --bytes-per-gaussian BPG_FROM_STAGE0B --manifest results/bench007_stage1/manifest.json
+  --bytes-per-gaussian BPG_FROM_STAGE0B --renderer cuda \
+  --manifest results/bench007_stage1/manifest.json
 PYTHONPATH=src python -m benchmarks.actual_rate_phase_diagram plan \
   --manifest results/bench007_stage1/manifest.json
 PYTHONPATH=src python -m benchmarks.actual_rate_phase_diagram run \
@@ -55,6 +56,12 @@ registered `local_slic_sobel_control` therefore freezes native SLIC at a 1,024-p
 area and the reported sparse 6:2:1 allocation, serializes every assumption, and is never labeled as
 upstream paper code. Scientific Stage-1/2 manifests enforce the preregistered image IDs; only
 Stage-0a plumbing tests may opt into a subset.
+
+`renderer=cuda` is StructSplat's owned exact implementation of the normalized weighted-sum
+equation, not the semantically different alpha/additive comparator. BENCH-007 freezes both the
+equation and implementation in its manifest, requires CUDA for a CUDA-frozen run, and retains the
+same `1e-6` cold-field parity tolerance. The slower `renderer=normalized` reference remains
+available for portability and oracle checks.
 
 `ablation.py` runs the core experiment (`ABL-001`): `{init strategy} x {budget}` on fixed images,
 scored on PSNR / MS-SSIM / LPIPS + iterations-to-target. Caveat: this is the broad init sweep, so

@@ -42,7 +42,9 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
   explanatory panels. It never fits or changes a field and is not benchmark evidence (DOCS-002).
 - **entry:** `cli` (`structsplat fit` / `ablation` / `stage-search`).
 - **decision benchmark:** `benchmarks.actual_rate_phase_diagram` owns frozen actual-rate manifests,
-  SSPL1 cold scoring, exact-cap RDO/statistics, and result figures for BENCH-007.
+  SSPL1 cold scoring, exact-cap RDO/statistics, and result figures for BENCH-007. Its manifest
+  distinguishes the normalized weighted-sum equation from the selected implementation; native
+  scientific runs may freeze the parity-checked owned exact-CUDA implementation explicitly.
 
 ## Stage-search (ABL-002, protocol in ADR-0010)
 `benchmarks/stage_search.py` sweeps configurations across every swappable stage — tensor operator,

@@ -130,11 +130,15 @@ def test_frozen_stage0a_manifest_hashes_sources_and_equal_arm_counts(tmp_path):
         bit_mixes=((10, 5, 5, 5),),
         arms=("tensor_wse", "random"),
         iters=1,
+        renderer="cuda",
         compute_lpips=False,
     )
     loaded = B.load_manifest(path)
     assert loaded["manifest_sha256"] == manifest["manifest_sha256"]
     assert {image["id"] for image in loaded["images"]} == set(B.STAGE_IDS["stage0a"])
+    assert loaded["fit_config"]["renderer"] == "cuda"
+    assert loaded["renderer_protocol"]["equation"] == "normalized_weighted_sum"
+    assert loaded["renderer_protocol"]["implementation"] == "owned_exact_cuda"
     assert B.dry_run_plan(loaded)["fits"] == 8
     B.validate_manifest_sources(loaded, root)
     tampered = json.loads(path.read_text())

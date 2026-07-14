@@ -61,6 +61,7 @@ STAGE_IDS = {
 }
 DEFAULT_MULTIPLIERS = (0.75, 1.0, 4.0 / 3.0)
 DEFAULT_BIT_MIXES = ((16, 8, 8, 8), (12, 8, 6, 8), (12, 6, 6, 6), (10, 5, 5, 5))
+BENCHMARK_RENDERERS = ("normalized", "cuda")
 PRIMARY_ARM = "tensor_wse"
 ARMS: dict[str, dict[str, Any]] = {
     "tensor_wse": {
@@ -317,6 +318,7 @@ def freeze_manifest(
     seed: int = 0,
     iters: int = 1500,
     qat_iters: int = 0,
+    renderer: str = "normalized",
     render_chunk: int = 512,
     min_gaussians: int = 64,
     max_gaussians_per_pixel: float = 0.25,
@@ -325,6 +327,10 @@ def freeze_manifest(
 ) -> dict[str, Any]:
     if stage not in ("stage0a", "stage1", "stage2"):
         raise ValueError("freeze stage must be stage0a, stage1, or stage2")
+    if renderer not in BENCHMARK_RENDERERS:
+        raise ValueError(
+            f"BENCH-007 renderer must be one of {BENCHMARK_RENDERERS}, got {renderer!r}"
+        )
     targets = tuple(float(value) for value in (targets or STAGE_TARGETS[stage]))
     unknown = [arm for arm in arms if arm not in ARMS]
     if unknown:
@@ -405,10 +411,18 @@ def freeze_manifest(
         },
         "fit_config": {
             "iters": int(iters),
-            "renderer": "normalized",
+            "renderer": renderer,
             "render_chunk": int(render_chunk),
             "checkpoint_policy": "best_psnr_final_count",
             "compute_lpips": False,
+        },
+        "renderer_protocol": {
+            "equation": "normalized_weighted_sum",
+            "implementation": (
+                "pytorch_reference" if renderer == "normalized" else "owned_exact_cuda"
+            ),
+            "cuda_is_equation_preserving": renderer == "cuda",
+            "required_cold_parity_atol": 1e-6,
         },
         "codec_config": {
             "stream_codec": "zlib",
@@ -935,6 +949,8 @@ def run_manifest(
     manifest = load_manifest(manifest_path)
     validate_manifest_sources(manifest, data_root)
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+    if manifest["fit_config"]["renderer"] == "cuda" and not str(device).startswith("cuda"):
+        raise ValueError("a manifest frozen with renderer='cuda' requires a CUDA device")
     output = Path(outdir)
     _write_run_snapshot(manifest, manifest_path, output, device)
     fit_journal = output / "journals" / "fits.jsonl"
@@ -1877,6 +1893,7 @@ def calibrate_bytes_per_gaussian(
     iters: int = 50,
     bit_mix: Sequence[int] = (16, 8, 8, 8),
     device: str | None = None,
+    renderer: str = "normalized",
     render_chunk: int = 512,
 ) -> dict[str, Any]:
     """Stage-0b-only rate calibration; it never compares arm quality."""
@@ -1890,6 +1907,12 @@ def calibrate_bytes_per_gaussian(
     output = Path(outdir)
     output.mkdir(parents=True, exist_ok=True)
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+    if renderer not in BENCHMARK_RENDERERS:
+        raise ValueError(
+            f"BENCH-007 renderer must be one of {BENCHMARK_RENDERERS}, got {renderer!r}"
+        )
+    if renderer == "cuda" and not str(device).startswith("cuda"):
+        raise ValueError("Stage-0b renderer='cuda' requires a CUDA device")
     entries = []
     for raw_path in sorted({str(Path(path)) for path in image_paths}):
         path = Path(raw_path)
@@ -1919,7 +1942,14 @@ def calibrate_bytes_per_gaussian(
         "iters": int(iters),
         "bit_mix": list(map(int, bit_mix)),
         "seed": 0,
-        "renderer": "normalized",
+        "renderer": renderer,
+        "renderer_protocol": {
+            "equation": "normalized_weighted_sum",
+            "implementation": (
+                "pytorch_reference" if renderer == "normalized" else "owned_exact_cuda"
+            ),
+            "cuda_is_equation_preserving": renderer == "cuda",
+        },
         "render_chunk": int(render_chunk),
         "repository": repository_provenance(),
         "environment": environment_provenance(),
@@ -1950,7 +1980,7 @@ def calibrate_bytes_per_gaussian(
             init_seconds = time.perf_counter() - start
             fcfg = FitConfig(
                 iters=int(iters),
-                renderer="normalized",
+                renderer=renderer,
                 render_chunk=int(render_chunk),
                 checkpoint_policy="best_psnr_final_count",
             )
@@ -2747,6 +2777,7 @@ def _build_parser() -> argparse.ArgumentParser:
     freeze.add_argument("--seed", type=int, default=0)
     freeze.add_argument("--iters", type=int, default=1500)
     freeze.add_argument("--qat-iters", type=int, default=0)
+    freeze.add_argument("--renderer", choices=BENCHMARK_RENDERERS, default="normalized")
     freeze.add_argument("--render-chunk", type=int, default=512)
     freeze.add_argument("--min-gaussians", type=int, default=64)
     freeze.add_argument("--max-gaussians-per-pixel", type=float, default=0.25)
@@ -2798,6 +2829,7 @@ def _build_parser() -> argparse.ArgumentParser:
     calibrate.add_argument("--iters", type=int, default=50)
     calibrate.add_argument("--bit-mix", type=_parse_bit_mix, default=(16, 8, 8, 8))
     calibrate.add_argument("--device")
+    calibrate.add_argument("--renderer", choices=BENCHMARK_RENDERERS, default="normalized")
     calibrate.add_argument("--render-chunk", type=int, default=512)
 
     status = subparsers.add_parser("status", help="inspect durable journal progress")
@@ -2822,6 +2854,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             seed=args.seed,
             iters=args.iters,
             qat_iters=args.qat_iters,
+            renderer=args.renderer,
             render_chunk=args.render_chunk,
             min_gaussians=args.min_gaussians,
             max_gaussians_per_pixel=args.max_gaussians_per_pixel,
@@ -2880,6 +2913,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             iters=args.iters,
             bit_mix=args.bit_mix,
             device=args.device,
+            renderer=args.renderer,
             render_chunk=args.render_chunk,
         )
         print(json.dumps({

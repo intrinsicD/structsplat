@@ -38,8 +38,10 @@ Common-renderer arms:
 5. uniform Euclidean WSE;
 6. seeded random placement.
 
-All arms use the same constant-color RS field, normalized renderer, optimizer steps, checkpoint
-rule, QAT allowance, bit-mix/count candidate grid, and SSPL1 encoder. Paper-name labels are
+All arms use the same constant-color RS field, normalized weighted-sum renderer equation,
+optimizer steps, checkpoint rule, QAT allowance, bit-mix/count candidate grid, and SSPL1 encoder.
+Native-resolution scientific runs freeze the owned parity-checked exact-CUDA implementation of
+that equation; the PyTorch implementation remains the oracle. Paper-name labels are
 forbidden unless the native implementation is actually executed; common-renderer transplants must
 be labeled `local_<mechanism>_control`.
 
