@@ -139,6 +139,28 @@ def test_decoded_field_state_parity_is_renderer_independent():
         B._decoded_field_state_max_abs(reference, changed)
 
 
+def test_figure_stream_reconstruction_uses_the_analysis_device(tmp_path, monkeypatch):
+    torch = pytest.importorskip("torch")
+    from structsplat import codec
+
+    stream = tmp_path / "candidate.sspl1"
+    stream.write_bytes(b"frozen stream")
+    calls = []
+
+    def fake_decode_and_render(blob, device):
+        calls.append((blob, device))
+        return torch.full((2, 3, 3), 1.25)
+
+    monkeypatch.setattr(codec, "decode_and_render", fake_decode_and_render)
+    prediction = B._load_stream_reconstruction(
+        {"stream_path": stream.name}, tmp_path, device="cuda"
+    )
+
+    assert calls == [(b"frozen stream", "cuda")]
+    assert prediction.shape == (2, 3, 3)
+    assert np.all(prediction == 1.0)
+
+
 def test_frozen_stage0a_manifest_hashes_sources_and_equal_arm_counts(tmp_path):
     root = Path(__file__).resolve().parents[1]
     images = sorted((root / "tests" / "test_images").glob("*.jpg"))

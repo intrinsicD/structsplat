@@ -1844,7 +1844,8 @@ def analyze_manifest(
     _write_csv(output / "analysis" / "selected.csv", selected_rows)
     if make_figures:
         generate_publication_figures(
-            manifest, Path(data_root), output, candidate_rows, selected_rows, analysis
+            manifest, Path(data_root), output, candidate_rows, selected_rows, analysis,
+            device=device,
         )
     generate_html_index(manifest, output, selected_rows, analysis)
     return analysis
@@ -2167,11 +2168,15 @@ def _strongest_control(analysis: dict[str, Any], manifest: dict[str, Any]) -> st
     return available[0] if available else None
 
 
-def _load_stream_reconstruction(row: dict[str, Any], outdir: Path) -> np.ndarray:
+def _load_stream_reconstruction(
+    row: dict[str, Any], outdir: Path, *, device: str
+) -> np.ndarray:
     from structsplat import codec
 
     blob = (outdir / row["stream_path"]).read_bytes()
-    prediction = codec.decode_and_render(blob, device="cpu").clamp(0.0, 1.0)
+    # Exact-CUDA stream semantics require CUDA tensors. Reuse the validated analysis device
+    # instead of silently forcing the F5 replay onto CPU.
+    prediction = codec.decode_and_render(blob, device=device).clamp(0.0, 1.0)
     return prediction.detach().cpu().numpy()
 
 
@@ -2204,6 +2209,7 @@ def _plot_f5(
     candidate_rows: Sequence[dict[str, Any]],
     selected_rows: Sequence[dict[str, Any]],
     analysis: dict[str, Any],
+    device: str,
     path: Path,
 ) -> None:
     import matplotlib.pyplot as plt
@@ -2259,7 +2265,7 @@ def _plot_f5(
             points[:, 0], points[:, 1], s=2.0, c="#f8fafc", alpha=0.72, linewidths=0
         )
         axes[0, column].set_title(ARMS[arm]["label"], fontsize=10)
-        reconstruction = _load_stream_reconstruction(row, outdir)
+        reconstruction = _load_stream_reconstruction(row, outdir, device=device)
         axes[1, column].imshow(reconstruction)
         axes[1, column].set_title(
             f"{row['bpp']:.3f} bpp · {row['psnr']:.2f} dB", fontsize=9
@@ -2696,12 +2702,14 @@ def generate_publication_figures(
     candidate_rows: Sequence[dict[str, Any]],
     selected_rows: Sequence[dict[str, Any]],
     analysis: dict[str, Any],
+    *,
+    device: str,
 ) -> None:
     """Generate F5--F9 from measured rows; missing evidence becomes an explicit panel."""
     figure_dir = outdir / "figures"
     figure_dir.mkdir(parents=True, exist_ok=True)
     _plot_f5(
-        manifest, data_root, outdir, candidate_rows, selected_rows, analysis,
+        manifest, data_root, outdir, candidate_rows, selected_rows, analysis, device,
         figure_dir / "f5_causal_allocation.png",
     )
     _plot_f6(
