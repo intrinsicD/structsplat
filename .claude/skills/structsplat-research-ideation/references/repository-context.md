@@ -50,8 +50,10 @@ port target rather than an implemented backend in this tree (`README.md`,
   factorial and one-factor-at-a-time influence modes. The harness records
   quality, convergence, timing, count/budget, seed, errors, and resumable
   machine-readable rows. BENCH-005 adds isolated native external-reference
-  pipelines; BENCH-006 adds a fixed-storage convergence lane. Treat matched
-  policy analogues and native external runs as different evidence classes.
+  pipelines. BENCH-006 is a completed high-rate, fixed-storage local-policy
+  diagnostic; BENCH-007's actual-rate phase diagram supersedes it for
+  compression decisions. Treat matched policy analogues, actual-rate results,
+  and native external runs as different evidence classes.
 - **Research record:** bounded work lives in `tasks/` and `tasks/INDEX.md`;
   hard-to-reverse decisions live in `docs/adr/`; reproducible run artifacts and
   negative results live under `ara/evidence/`. The existing `core`,
@@ -60,25 +62,39 @@ port target rather than an implemented backend in this tree (`README.md`,
 
 ## High-value research surface (grounded in the active task index)
 
-The active frontier spans unfinished core experiments and stage/fitter evidence
-(ABL-001/002/004/005), boundary-gated and hybrid edge primitives (CORE-007/008),
-quantization and the compression ladder (COMP-001/003), SDS and VSD/multi-particle
-generation (GEN-001/003), exact-CUDA tiling and backward reductions
-(PORT-001/002/003), native-reference comparisons (BENCH-005), and fixed-storage
-convergence (BENCH-006). Several implemented FIT candidates remain opt-in,
-rejected, or promotion-blocked; read their current task status and evidence
+The current frontier begins with a negative result, not a promotable method.
+BENCH-007 found a bounded tensor-WSE gain at 0.5 bpp, but the effect vanished at
+1.0 bpp, reached only `-4.5417%` BD-rate against a preregistered `-10%` gate,
+cost `1.4752x`, and exceeded the texture guard. Stage 2 was therefore prohibited:
+BENCH-008 and COMP-005 are not authorized, and CORE-007/008 remain design-only.
+Do not retune the eight exposed Stage-1 images, consume the untouched DIV2K
+validation split as a rescue set, or treat the F5--F9 figure/actual-rate
+infrastructure as held-out method evidence.
+
+Any new method direction must start from a materially different question, null,
+and disjoint development screen with explicit compute and texture guards.
+BENCH-005 may continue native-authentic coverage as independent external-validity
+infrastructure, but it cannot retroactively promote tensor-WSE. The remaining
+independent lanes are unfinished ablation evidence (ABL-001/002/004/005), the
+partial FIT-013 regularization candidate, the screened/confirmed FIT-014--017
+evidence set, the general quantization/compression ladder (COMP-001/003), and
+SDS and VSD/multi-particle generation (GEN-001/003). Exact CUDA tiled
+forward/backward already exists; remaining PORT-001/002/003 work covers
+tiled-path acceleration, tighter culling, backward reductions, and the
+IntrinsicEngine RHI port. Several implemented candidates are
+opt-in, rejected, or promotion-blocked; read their task status and evidence
 instead of assuming that implemented means preferred.
 
 Especially fertile given this substrate:
 
-- new primitives or support rules that improve discontinuities without hiding
-  extra capacity or changing the renderer semantics silently;
+- materially different representation, ownership, or support questions that do
+  not merely rescue the failed tensor-WSE compression claim;
 - convergence mechanisms whose benefit survives equal-final-count, equal-budget,
   and matched-horizon controls;
 - diagnostics and experimental designs that distinguish initialization,
   optimization, representation, selection, and implementation effects;
-- rate-distortion formulations that connect analytical payload, actual streams,
-  perceptual quality, and convergence without mixing those quantities;
+- rate-distortion formulations with complete-stream byte accounting and strong
+  direct controls, not analytical payload alone;
 - exact or bounded-error GPU formulations whose forward and backward behavior can
   be tested against the reference, including alternatives to atomic reductions;
 - generative and learned initialization ideas that can be isolated from the
