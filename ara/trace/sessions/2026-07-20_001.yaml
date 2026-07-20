@@ -1,0 +1,163 @@
+session:
+  id: "2026-07-20_001"
+  date: "2026-07-20"
+  started: "2026-07-20T10:04+0200"
+  last_turn: "2026-07-20T10:04+0200"
+  turn_count: 1
+  summary: "Audited and published the complete hard-frontier research batch to main after 1,792 tests, portable visual replay, and independent claim/package review; no held-out method improvement is claimed."
+
+events_logged:
+  - turn: 1
+    type: decision
+    id: N190
+    routing: direct
+    provenance: user
+    summary: "Publish the complete audited worktree and all proof dependencies directly to main."
+  - turn: 1
+    type: claim
+    id: C38
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Revised the exposed two-cell gain to display-rounded approximate precision without broadening its scope."
+  - turn: 1
+    type: claim
+    id: C39
+    routing: crystallized
+    provenance: ai-executed
+    summary: "BENCH-009 causal recovery remains unavailable under its frozen calibration and projector gates."
+  - turn: 1
+    type: claim
+    id: C40
+    routing: crystallized
+    provenance: ai-executed
+    summary: "Corrected BENCH-011 nested extensions fail all four frozen calibration strata."
+  - turn: 1
+    type: claim
+    id: C41
+    routing: crystallized
+    provenance: ai-executed
+    summary: "BENCH-012 stops at preflight and produces no topology-policy scientific outcome."
+  - turn: 1
+    type: claim
+    id: C42
+    routing: crystallized
+    provenance: ai-executed
+    summary: "BENCH-013 local-linear reproduction fails its procedural Stage-0 gates."
+  - turn: 1
+    type: claim
+    id: C43
+    routing: crystallized
+    provenance: ai-executed
+    summary: "BENCH-014 explicit affine carriers fail complete-byte and convergence gates."
+  - turn: 1
+    type: claim
+    id: C44
+    routing: crystallized
+    provenance: ai-executed
+    summary: "BENCH-015 decoder-synchronized affine lift fails no-harm, convergence, and cold-decode gates."
+  - turn: 1
+    type: claim
+    id: C45
+    routing: crystallized
+    provenance: ai-executed
+    summary: "Native SAD fails the joint BENCH-016 two-rate development frontier."
+  - turn: 1
+    type: claim
+    id: C46
+    routing: crystallized
+    provenance: ai-executed
+    summary: "COMP-007 log-SPD covariance coding fails seven of eight complete-stream gates."
+  - turn: 1
+    type: claim
+    id: C47
+    routing: crystallized
+    provenance: ai-executed
+    summary: "COMP-008 supports only an optimistic entropy-oracle lead, not actual compression."
+  - turn: 1
+    type: claim
+    id: C48
+    routing: crystallized
+    provenance: ai-executed
+    summary: "COMP-009 SSP2E v1 fails actual-rate and spatial-attribution gates."
+  - turn: 1
+    type: claim
+    id: C49
+    routing: crystallized
+    provenance: ai-executed
+    summary: "PORT-004 backward reduction stays benchmark-only after stability and grid-direction failure."
+
+ai_actions:
+  - turn: 1
+    action: "Completed an adversarial audit of the accumulated code, task, evidence, claim, exact-stream, and visual-report changes; corrected every blocking portability and precision issue."
+    provenance: ai-executed
+    files_changed:
+      - "ara/logic/claims.md"
+      - "ara/evidence/README.md"
+      - "tasks/INDEX.md"
+      - "ara/evidence/comp007-gauge-free-covariance-2026-07-16/run.md"
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/build_visual_assets.py"
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/visual/metrics.json"
+  - turn: 1
+    action: "Validated the repository with the full test suite, Ruff, compile checks, frozen-task hashes, CUDA parity, archive/hash/link checks, exact visual cold decode, and two independent final GO reviews."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 1
+    action: "Committed all 746 authorized paths, fast-forwarded main, pushed origin/main, and verified the local and remote commit hashes are identical."
+    provenance: ai-executed
+    files_changed: []
+
+claims_touched:
+  - id: C38
+    action: revised
+    turn: 1
+  - id: C39
+    action: crystallized
+    turn: 1
+  - id: C40
+    action: crystallized
+    turn: 1
+  - id: C41
+    action: crystallized
+    turn: 1
+  - id: C42
+    action: crystallized
+    turn: 1
+  - id: C43
+    action: crystallized
+    turn: 1
+  - id: C44
+    action: crystallized
+    turn: 1
+  - id: C45
+    action: crystallized
+    turn: 1
+  - id: C46
+    action: crystallized
+    turn: 1
+  - id: C47
+    action: crystallized
+    turn: 1
+  - id: C48
+    action: crystallized
+    turn: 1
+  - id: C49
+    action: crystallized
+    turn: 1
+
+key_context:
+  - turn: 1
+    excerpt: "The user instructed: commit all changes accordingly, then merge into main and push to remote."
+  - turn: 1
+    excerpt: "Publication authorization was treated as a repository decision, not scientific affirmation of any ai-suggested claim."
+  - turn: 1
+    excerpt: "The final remote handoff preserves the boundary that no new held-out, convergence, performance, compression-isolation, expressiveness, default, or state-of-the-art improvement has been established."
+
+open_threads:
+  - "Complete COMP-012 lifecycle orchestration, frozen gates, runtime/transcript caps, and preflight before any protected or held-out execution."
+  - "Keep confirmation data sealed until a genuinely new, source-bound protocol and independent development gate authorize access."
+  - "Choose and preregister one constrained multi-edit, local trust-region/line-search, non-dyadic, or representation-level follow-up without tuning on the exposed m16 result."
+  - "Resolve whether the two exposed m12 gains transfer across independent images and precision regimes under exact bytes and conservative repeated CUDA metrics."
+
+ai_suggestions_pending:
+  - "Prefer a small auditable multi-edit/trust-region proposal over another fixed scalar surrogate."
+  - "Treat richer codec-native atoms as a separate representation hypothesis, not a rescue of the failed origin-gradient bundle."

@@ -3818,3 +3818,24 @@ tree:
       - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/run.md"
     also_depends_on: [N182]
     status: resolved
+  - id: N190
+    type: decision
+    title: "Publish the audited hard-frontier research batch to main"
+    provenance: user
+    timestamp: "2026-07-20T10:04+0200"
+    choice: >
+      Commit the complete authorized worktree, including every clean-clone evidence dependency;
+      fast-forward it into main; and push main to origin after full validation and independent
+      claim/package review.
+    alternatives:
+      - "Leave the accumulated research changes uncommitted or only on a local feature branch."
+      - "Publish a feature branch or pull request instead of directly updating main."
+      - "Omit untracked evidence roots and leave the new claim proofs unresolved in a clean clone."
+    evidence:
+      - "commit d15f809f33c7c768a8ff8ce13f5e17e67ce2fb62"
+      - "pytest: 1792 passed"
+      - "ara/logic/claims.md"
+      - "tasks/INDEX.md"
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/index.html"
+    also_depends_on: [N177, N181, N182, N189]
+    status: resolved

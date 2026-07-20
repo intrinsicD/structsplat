@@ -90,3 +90,10 @@ sessions:
     events_count: 11
     claims_touched: [C38]
     open_threads: 4
+  - id: "2026-07-20_001"
+    date: "2026-07-20"
+    summary: "Audited and published the complete hard-frontier research batch to main after 1,792 tests, portable visual replay, and independent claim/package review; no held-out method improvement is claimed."
+    turn_count: 1
+    events_count: 13
+    claims_touched: [C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49]
+    open_threads: 4
