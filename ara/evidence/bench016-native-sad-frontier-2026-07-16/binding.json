@@ -1,0 +1,641 @@
+{
+  "binding_sha256": "37d3711522ea805159a2e6b306d27b805fe1fd3b0e99556d2070c12e77a2bd20",
+  "created_before_any_scientific_target_access": false,
+  "created_before_v6_scientific_execution": true,
+  "environment": {
+    "cmake": "cmake version 3.28.3",
+    "cxx": "c++ (Ubuntu 14.2.0-4ubuntu2~24.04.1) 14.2.0",
+    "machine": "x86_64",
+    "monitoring_packages": {
+      "nvidia-ml-py": "13.610.43",
+      "psutil": "7.2.2"
+    },
+    "nvcc": "nvcc: NVIDIA (R) Cuda compiler driver",
+    "nvidia_smi": "Thu Jul 16 12:15:53 2026       ",
+    "packages": {
+      "cuda_available": true,
+      "cuda_current_device": 0,
+      "cuda_devices": [
+        {
+          "compute_capability": [
+            8,
+            6
+          ],
+          "index": 0,
+          "multi_processor_count": 20,
+          "name": "NVIDIA GeForce RTX 3050",
+          "total_memory": 8199143424,
+          "uuid": "4cee065a-aab7-97b8-40be-55d516d2a53c"
+        }
+      ],
+      "cudnn": 91002,
+      "lpips": "0.1.4",
+      "numpy": "2.1.3",
+      "nvidia_driver_versions": [
+        "590.48.01"
+      ],
+      "pillow": "12.0.0",
+      "python": "3.12.9 | packaged by Anaconda, Inc. | (main, Feb  6 2025, 18:56:27) [GCC 11.2.0]",
+      "python_executable": "/home/alex/miniconda3/bin/python3.12",
+      "pytorch_msssim": "1.0.0",
+      "structsplat": "0.1.0",
+      "torch": "2.9.0+cu128",
+      "torch_cuda": "12.8",
+      "torchvision": "0.24.0"
+    },
+    "platform": "Linux-6.14.0-37-generic-x86_64-with-glibc2.39",
+    "processor": "x86_64",
+    "python": "3.12.9 | packaged by Anaconda, Inc. | (main, Feb  6 2025, 18:56:27) [GCC 11.2.0]",
+    "python_executable": "/home/alex/miniconda3/bin/python3.12",
+    "repository": {
+      "commit": "5dc649397c40e69cf3e96bd27df2c5e2812d003d",
+      "dirty": true,
+      "root": "/home/alex/Documents/structsplat",
+      "tracked_diff_sha256": "d22cfb67ac182067822c7f5a8198fe2bddb4f386016643abf93704a5cb23b51f",
+      "untracked_files": [
+        ".agents/skills/structsplat-results-audit",
+        ".claude/skills/structsplat-results-audit/",
+        "ara/evidence/comp006-marginal-cold-stream-rd-2026-07-15/",
+        "ara/evidence/fit018-responsibility-guard-2026-07-15/",
+        "ara/evidence/fit019-opacity-gauge-2026-07-15/",
+        "ara/evidence/fit020-response-spectroscopy-2026-07-15/",
+        "ara/evidence/research-portfolio-2026-07-15.md",
+        "ara/evidence/topk-responsibility-oracle-2026-07-15/",
+        "ara/logic/concepts.md",
+        "ara/trace/sessions/2026-07-15_001.yaml",
+        "benchmarks/affine_carrier_assay.py",
+        "benchmarks/affine_carrier_core.py",
+        "benchmarks/decoder_synchronized_lift_assay.py",
+        "benchmarks/decoder_synchronized_lift_core.py",
+        "benchmarks/div2k_subset_acquire.py",
+        "benchmarks/exact_backward_profile.py",
+        "benchmarks/gauge_equivalence_audit.py",
+        "benchmarks/gauge_free_covariance_analysis.py",
+        "benchmarks/gauge_free_covariance_assay.py",
+        "benchmarks/gauge_free_covariance_codec.py",
+        "benchmarks/gauge_free_covariance_core.py",
+        "benchmarks/local_linear_reproducing_assay.py",
+        "benchmarks/local_linear_reproducing_core.py",
+        "benchmarks/local_linear_reproducing_downstream_core.py",
+        "benchmarks/local_linear_reproducing_full_assay.py",
+        "benchmarks/marginal_cold_stream_rd.py",
+        "benchmarks/native_sad_frontier.py",
+        "benchmarks/nested_residual_extension_diagnostic.py",
+        "benchmarks/perturb_recover_spectroscopy.py",
+        "benchmarks/residual_tangent_auction.py",
+        "benchmarks/residual_tangent_auction_matrixfree.py",
+        "benchmarks/residual_tangent_auction_stage1.py",
+        "benchmarks/residual_tangent_auction_stage1_analysis.py",
+        "benchmarks/residual_tangent_auction_stage1_causal_audit.py",
+        "benchmarks/residual_tangent_auction_stage1_core.py",
+        "benchmarks/residual_tangent_auction_stage1_recovery.py",
+        "benchmarks/residual_tangent_auction_stage1_runner.py",
+        "benchmarks/residual_tangent_auction_stage1_science.py",
+        "benchmarks/responsibility_split_compare.py",
+        "benchmarks/topk_responsibility_oracle.py",
+        "benchmarks/topology_policy_value.py",
+        "benchmarks/topology_policy_value_core.py",
+        "docs/adr/0014-keep-opacity-gauge-groups-benchmark-only.md",
+        "docs/adr/0015-keep-response-bend-selector-benchmark-only.md",
+        "docs/adr/0016-keep-marginal-cold-stream-birth-benchmark-only.md",
+        "docs/prompts/",
+        "docs/research/",
+        "tasks/BENCH-009-residual-tangent-auction.md",
+        "tasks/BENCH-011-nested-residual-extension-diagnostic.md",
+        "tasks/BENCH-012-topology-policy-value.md",
+        "tasks/BENCH-013-local-linear-reproducing-compositor.md",
+        "tasks/BENCH-014-explicit-affine-carrier.md",
+        "tasks/BENCH-015-decoder-synchronized-affine-lift.md",
+        "tasks/BENCH-016-native-sad-frontier.md",
+        "tasks/COMP-006-marginal-cold-stream-rd.md",
+        "tasks/COMP-007-gauge-free-covariance-codec.md",
+        "tasks/FIT-018-responsibility-error-density.md",
+        "tasks/FIT-019-opacity-gauge-equivalence.md",
+        "tasks/FIT-020-perturb-recover-spectroscopy.md",
+        "tasks/PORT-004-exact-backward-block-reduction.md",
+        "tests/test_affine_carrier_assay.py",
+        "tests/test_affine_carrier_core.py",
+        "tests/test_decoder_synchronized_lift_assay.py",
+        "tests/test_decoder_synchronized_lift_core.py",
+        "tests/test_div2k_subset_acquire.py",
+        "tests/test_exact_backward_profile.py",
+        "tests/test_gauge_equivalence_audit.py",
+        "tests/test_gauge_free_covariance_analysis.py",
+        "tests/test_gauge_free_covariance_assay.py",
+        "tests/test_gauge_free_covariance_codec.py",
+        "tests/test_gauge_free_covariance_core.py",
+        "tests/test_local_linear_reproducing_assay.py",
+        "tests/test_local_linear_reproducing_core.py",
+        "tests/test_local_linear_reproducing_downstream_core.py",
+        "tests/test_local_linear_reproducing_full_assay.py",
+        "tests/test_marginal_cold_stream_rd.py",
+        "tests/test_native_sad_frontier.py",
+        "tests/test_nested_residual_extension_diagnostic.py",
+        "tests/test_perturb_recover_spectroscopy.py",
+        "tests/test_residual_tangent_auction.py",
+        "tests/test_residual_tangent_auction_matrixfree.py",
+        "tests/test_residual_tangent_auction_stage1.py",
+        "tests/test_residual_tangent_auction_stage1_analysis.py",
+        "tests/test_residual_tangent_auction_stage1_causal_audit.py",
+        "tests/test_residual_tangent_auction_stage1_core.py",
+        "tests/test_residual_tangent_auction_stage1_recovery.py",
+        "tests/test_residual_tangent_auction_stage1_runner.py",
+        "tests/test_residual_tangent_auction_stage1_science.py",
+        "tests/test_responsibility_density.py",
+        "tests/test_responsibility_split_compare.py",
+        "tests/test_topk_responsibility_oracle.py",
+        "tests/test_topology_policy_value.py",
+        "tests/test_topology_policy_value_core.py"
+      ]
+    }
+  },
+  "executed_source_files": {
+    "adapter": {
+      "bytes": 185814,
+      "path": "/home/alex/Documents/structsplat/benchmarks/native_sad_frontier.py",
+      "sha256": "6fbc13dbc0e601e6cb47959ecf4b76666bc31ffba72a4c51144a40d6edef6a10"
+    },
+    "adapter_tests": {
+      "bytes": 29811,
+      "path": "/home/alex/Documents/structsplat/tests/test_native_sad_frontier.py",
+      "sha256": "04f063ca6681caff8a618d9e3041727f57b57e8049cbb804a2708ef453e53a9b"
+    },
+    "benchmark_common": {
+      "bytes": 12544,
+      "path": "/home/alex/Documents/structsplat/benchmarks/common.py",
+      "sha256": "cd446f42fb217d7aa87814256ce706dc08c3e207e27213ebb48aa168e108afa9"
+    },
+    "benchmark_util": {
+      "bytes": 7502,
+      "path": "/home/alex/Documents/structsplat/benchmarks/_util.py",
+      "sha256": "d092d65534674b5e25ec9b356ba8191d7d64d8007288c0f655e4befd8deb04ce"
+    },
+    "benchmarks_package_init": {
+      "bytes": 0,
+      "path": "/home/alex/Documents/structsplat/benchmarks/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "codec": {
+      "bytes": 25939,
+      "path": "/home/alex/Documents/structsplat/src/structsplat/codec.py",
+      "sha256": "779e73e77be998697073960bde8e55ff8f36ee5514b819a101938f08d35ac2e7"
+    },
+    "config": {
+      "bytes": 34559,
+      "path": "/home/alex/Documents/structsplat/src/structsplat/config.py",
+      "sha256": "4e5e1752e8ae4d64201bd9246855abad58ab438547d6ad7ccf528d169bbd3bef"
+    },
+    "cuda_render": {
+      "bytes": 9747,
+      "path": "/home/alex/Documents/structsplat/src/structsplat/cuda_render.py",
+      "sha256": "1a3be3a92520511c703c0d5d9d7f5a60dbf230d5131fc23899c716a835783a62"
+    },
+    "cuda_render_cpp": {
+      "bytes": 8648,
+      "path": "/home/alex/Documents/structsplat/src/structsplat/cuda/render_ext.cpp",
+      "sha256": "eec0e011189a34d3489c6f719d15528a3511758b79b5cfad145f91323ef5e356"
+    },
+    "cuda_render_cu": {
+      "bytes": 27145,
+      "path": "/home/alex/Documents/structsplat/src/structsplat/cuda/render_ext.cu",
+      "sha256": "5493130d56cdf24dd67d54111eb14a701f5e2b143173cdee27a90a7fa988e150"
+    },
+    "density": {
+      "bytes": 7296,
+      "path": "/home/alex/Documents/structsplat/src/structsplat/density.py",
+      "sha256": "045cc5b69167755c5746c3bdff353e03634542150712da5c32a469ed47a90873"
+    },
+    "div2k_subset_acquire": {
+      "bytes": 16549,
+      "path": "/home/alex/Documents/structsplat/benchmarks/div2k_subset_acquire.py",
+      "sha256": "047ff94c5e06d9f47d742c6a5a95869126aa1902e56c2204f5229c8fcfed280f"
+    },
+    "fair_density": {
+      "bytes": 173408,
+      "path": "/home/alex/Documents/structsplat/benchmarks/fair_density_control_compare.py",
+      "sha256": "68bd27502a9a044353d322d39339416be902f3dffc9c21c45f8422f642dcec71"
+    },
+    "fit": {
+      "bytes": 122072,
+      "path": "/home/alex/Documents/structsplat/src/structsplat/fit.py",
+      "sha256": "96ae1ae8991b7b9690a0fc76a82416eae61a84732f076a88607639ac089d0424"
+    },
+    "gaussians": {
+      "bytes": 15154,
+      "path": "/home/alex/Documents/structsplat/src/structsplat/gaussians.py",
+      "sha256": "26d8ddf03740c8ed44ae9c97d2bb75438dd5a992327fe70cbd3c91f2e5e6fefe"
+    },
+    "init": {
+      "bytes": 39088,
+      "path": "/home/alex/Documents/structsplat/src/structsplat/init.py",
+      "sha256": "9e5861f0e3666483d4308a952403460cb8c30c66c9b709da2682f92232221133"
+    },
+    "metrics": {
+      "bytes": 6989,
+      "path": "/home/alex/Documents/structsplat/src/structsplat/metrics.py",
+      "sha256": "8d9963efa6d3e7b687e349398079ff058326653eeaac47fdf5d1b4778ce8a8b7"
+    },
+    "render": {
+      "bytes": 20144,
+      "path": "/home/alex/Documents/structsplat/src/structsplat/render.py",
+      "sha256": "af26dd0f3d1eb6389c50e4baca8fa6e2ddf754c248c856f87e9c0d49863063f9"
+    },
+    "sampling": {
+      "bytes": 23449,
+      "path": "/home/alex/Documents/structsplat/src/structsplat/sampling.py",
+      "sha256": "5f34e455a2a30bb5eceb8fc13e13fc667ba2160b199c3d1bef821d6963881240"
+    },
+    "storage_budget": {
+      "bytes": 7700,
+      "path": "/home/alex/Documents/structsplat/benchmarks/storage_budget.py",
+      "sha256": "781d07026a337e7f83b3cbb4bb3fefd8f67863a69214f67cc344f3f1c1e376e2"
+    },
+    "structsplat_package_init": {
+      "bytes": 335,
+      "path": "/home/alex/Documents/structsplat/src/structsplat/__init__.py",
+      "sha256": "813c146144dfe15a802bf7483e72c0935b80ab7377a0203ca4f04b15d37c09bf"
+    },
+    "structure_tensor": {
+      "bytes": 7888,
+      "path": "/home/alex/Documents/structsplat/src/structsplat/structure_tensor.py",
+      "sha256": "05a6b1a77290c5cf70209b11b1c0c95e7e8bee7f0c92142124354c06556ba405"
+    },
+    "task": {
+      "bytes": 24235,
+      "path": "/home/alex/Documents/structsplat/tasks/BENCH-016-native-sad-frontier.md",
+      "sha256": "d0cc9038af643fd67c600024f3bdaed8d00a013a187394bb3d07cbf7774e6cfb"
+    }
+  },
+  "metric_weight_assets": {
+    "lpips_alex_v0_1": {
+      "bytes": 6009,
+      "path": "/home/alex/miniconda3/lib/python3.12/site-packages/lpips/weights/v0.1/alex.pth",
+      "sha256": "df73285e35b22355a2df87cdb6b70b343713b667eddbda73e1977e0c860835c0"
+    },
+    "torchvision_alexnet": {
+      "bytes": 244408911,
+      "path": "/home/alex/.cache/torch/hub/checkpoints/alexnet-owt-7be5be79.pth",
+      "sha256": "7be5be791159472b1fbf3c69796f7cb30dca7ad8466c2df70058c37116cdee02"
+    }
+  },
+  "prebuilt_structsplat_cuda_extension": {
+    "bytes": 397376,
+    "path": "/home/alex/.cache/torch_extensions/py312_cu128/structsplat_render_ext/structsplat_render_ext.so",
+    "sha256": "8ad8a640ad9af29fce5c2d4841fc85495ebe6fd1f5c22ae13950fd454b6c6075"
+  },
+  "predecessor_v4_invalidity": {
+    "binding": {
+      "bytes": 22370,
+      "path": "/home/alex/Documents/structsplat/results/bench016_native_sad_frontier_v4_2026-07-16/binding.json",
+      "sha256": "473f458ec5d3729829dd34b371ab7e6b82f5d87f2e0d57e140afb1b69c65ce71"
+    },
+    "bundle_file_count": 45,
+    "bundle_total_bytes": 6950227,
+    "fresh_v6_rows_imported": 0,
+    "invalidity": {
+      "bytes": 4148,
+      "path": "/home/alex/Documents/structsplat/results/bench016_native_sad_frontier_v4_2026-07-16/invalidity.json",
+      "sha256": "a3b9c696ed0fc0d574f4e177353ffec6eb5ba2600aafca640425a33a35d2f447"
+    },
+    "invalidity_bundle_manifest": {
+      "bytes": 7821,
+      "path": "/home/alex/Documents/structsplat/results/bench016_native_sad_frontier_v4_2026-07-16/invalidity_bundle_manifest.json",
+      "sha256": "338220bc9b1cf8a96508bb5be7d23a8c6f2217b1dd3aeab3b9ae0ff7bdf9f1f0"
+    },
+    "protocol": "bench016-native-sad-frontier-v4",
+    "scientific_gate_evaluation_performed": false,
+    "scientific_target_access_occurred": true,
+    "status": "invalid_no_decision"
+  },
+  "predecessor_v5_invalidity": {
+    "binding": {
+      "bytes": 24419,
+      "path": "/home/alex/Documents/structsplat/results/bench016_native_sad_frontier_v5_2026-07-16/binding.json",
+      "sha256": "a87aeed30594bf12f7fe711df332ef794c13e589c38fe7ff103fa90fe8b1b6f3"
+    },
+    "bundle_file_count": 165,
+    "bundle_total_bytes": 31140605,
+    "fresh_v6_rows_imported": 0,
+    "invalidity": {
+      "bytes": 6983,
+      "path": "/home/alex/Documents/structsplat/results/bench016_native_sad_frontier_v5_2026-07-16/invalidity.json",
+      "sha256": "333bd6eeb13bc4931e46808f3dbb10e4fa63ddeafe03481378002b07abce39b4"
+    },
+    "invalidity_bundle_manifest": {
+      "bytes": 30946,
+      "path": "/home/alex/Documents/structsplat/results/bench016_native_sad_frontier_v5_2026-07-16/invalidity_bundle_manifest.json",
+      "sha256": "8eac6e6210de179c1a39251051f38102238d9a5634489a160709b106a5e664c7"
+    },
+    "protocol": "bench016-native-sad-frontier-v5",
+    "scientific_gate_evaluation_performed": false,
+    "scientific_target_access_occurred": true,
+    "status": "invalid_no_decision"
+  },
+  "prior_scientific_target_access_disclosed": true,
+  "protocol": "bench016-native-sad-frontier-v6",
+  "protocol_spec": {
+    "analysis": {
+      "all_arm_repeat_scalar_aggregation": "arithmetic mean",
+      "all_arm_time_memory_aggregation": "median",
+      "all_arm_trace_aggregation": "linear interpolation on union progress grid then mean",
+      "auc_scope": "internal_training_state_normalized_iteration",
+      "bootstrap_replicates": 10000,
+      "bootstrap_rng": "numpy.PCG64",
+      "bootstrap_seed": 0,
+      "common_auc_interval": [
+        0.00025,
+        1.0
+      ],
+      "native_progress_rule": "stdout k is post-update (k+1)/4000",
+      "structsplat_progress_rule": "history k is pre-update k/4000; separately recorded trajectory-terminal at 1"
+    },
+    "claims": {
+      "compression_tested": false,
+      "production_authorized": false,
+      "sad_compressed_representation": false,
+      "sad_deployable": false,
+      "sad_recipient_replayable": true,
+      "sad_self_contained": false,
+      "sota_claim_authorized": false
+    },
+    "decision_scope": "development_external_validity_not_sota",
+    "fresh_execution": {
+      "required_native_rows": 48,
+      "required_structsplat_rows": 96,
+      "required_total_rows": 144,
+      "v4_scientific_row_imports_allowed": false,
+      "v5_scientific_row_imports_allowed": false
+    },
+    "further_structurally_distinct_integrity_failure_action": "terminate BENCH-016 as invalid/no-decision; no v7 repair",
+    "preregistration_scope": "v6 outcome-responsive integrity repair frozen after v4 and v5 DIV2K access; data, methods, rates, repeats, horizon, quality estimator, aggregation, and scientific gates remain unchanged",
+    "protocol": "bench016-native-sad-frontier-v6",
+    "resize": {
+      "dimension_rule": "round(native_dimension * 768 / max(native_dimensions))",
+      "library": "Pillow",
+      "max_side": 768,
+      "mode": "RGB",
+      "pixel_hash_rule": "sha256(shape<int64-le> || contiguous RGB8 bytes)",
+      "resampling": "Image.Resampling.LANCZOS"
+    },
+    "sad": {
+      "backend": "cuda",
+      "bytes_per_site_nominal": 16,
+      "commit": "0eeb7e1e72b81e550f90db8ebbf432cdc57383ed",
+      "compressed_txt_diagnostic": "gzip level=9 mtime=0",
+      "config": "training_config.json",
+      "iterations": 4000,
+      "log_frequency": 20,
+      "quality_reconstruction": "role-fixed first fresh official saved-TXT replay, invoked once without retry or selection; training-process and 53 timing-replay PNGs are diagnostic",
+      "rates_bpp": [
+        0.5,
+        2.0
+      ],
+      "recipient_replay_scope": "saved TXT plus pinned official decoder/config; recipient-replayable only, not deployable, self-contained, or compressed",
+      "repeats": [
+        0,
+        1,
+        2
+      ],
+      "repo": "/home/alex/Documents/structsplat/results/native_envs/sad_official",
+      "trainable_scalars_per_site": 10
+    },
+    "schema_version": 6,
+    "sealed_validation_ids": "0801--0900",
+    "source_dir_declared": "/home/alex/Documents/structsplat/results/datasets/bench016_div2k_train_hr/source",
+    "structsplat": {
+      "base_fit": {
+        "aa_dilation": 0.0,
+        "absgrad_decay": 1.0,
+        "adaptive_continue_after_stop": false,
+        "adaptive_count": false,
+        "adaptive_growth_count": 64,
+        "adaptive_growth_every": 50,
+        "adaptive_min_delta_psnr": 0.02,
+        "adaptive_patience": 2,
+        "adaptive_split_mode": "residual_tensor_add",
+        "charbonnier_eps": 0.001,
+        "checkpoint_policy": "terminal",
+        "color_basis": "constant",
+        "color_grad_l2": 0.0001,
+        "color_solve_every": null,
+        "color_solve_lambda": 0.0001,
+        "color_solve_maxiter": 32,
+        "color_solve_schedule": "every",
+        "compute_lpips": false,
+        "covariance_filter_alpha": 28.274333882308138,
+        "covariance_filter_max_variance": 300.0,
+        "covariance_filter_mode": "none",
+        "densify_coherence_power": 1.0,
+        "densify_max_axis_ratio": 6.0,
+        "early_stop_min_delta": 0.0,
+        "early_stop_min_iters": 0,
+        "early_stop_patience": null,
+        "geometry_loss_every": 1,
+        "geometry_loss_weight": 0.0,
+        "iters": 4000,
+        "lambda_rate": 0.0,
+        "log_every": 20,
+        "loss_target_downsample": 1,
+        "loss_target_full_frac": 0.0,
+        "loss_warmup_iters": 0,
+        "loss_warmup_pixel_loss": "l2",
+        "loss_weight_beta": 1.0,
+        "loss_weighting": "none",
+        "lr_color": 0.03,
+        "lr_cosine_start_frac": 0.0,
+        "lr_decay_every": null,
+        "lr_decay_gamma": 0.5,
+        "lr_means": 0.05,
+        "lr_opacity": 0.01,
+        "lr_rot": 0.01,
+        "lr_scales": 0.03,
+        "lr_schedule": "none",
+        "max_gaussians": null,
+        "new_row_temper_iters": 0,
+        "new_row_temper_start": 0.25,
+        "optimizer": "adam",
+        "pixel_loss": "l1",
+        "prune_every": null,
+        "prune_keep_min": 16,
+        "prune_min_activity": 0.0,
+        "qat_bits_colors": 8,
+        "qat_bits_means": 16,
+        "qat_bits_opacity": 8,
+        "qat_bits_rot": 8,
+        "qat_bits_scales": 8,
+        "qat_mode": "off",
+        "refine_nms": "off",
+        "refine_primitive": "duplicate",
+        "refine_site": "residual",
+        "relocate_at_split": false,
+        "relocate_count": 0,
+        "relocate_every": null,
+        "relocate_init_opacity": 0.05,
+        "relocate_residual_downsample": 1,
+        "render_checkpoint": false,
+        "render_chunk": 512,
+        "renderer": "cuda",
+        "responsibility_mass_alpha": 0.7,
+        "sampled_add_score": "legacy_abs",
+        "seed_new_row_optimizer_state": false,
+        "sigma_cutoff": 3.0,
+        "split_color_init": "target",
+        "split_count": 0,
+        "split_every": null,
+        "split_min_spacing": 0.0,
+        "split_mode": "duplicate",
+        "split_oversample": 1.0,
+        "split_scale": 0.7,
+        "split_schedule_stops_at_max": false,
+        "ssim_backend": "builtin",
+        "ssim_weight": 0.3,
+        "support_fade": false,
+        "support_fade_crossfade_iters": 10,
+        "support_fade_until_frac": null,
+        "target_bpp": null,
+        "target_ms_ssim": null,
+        "target_psnr": null,
+        "target_psnrs": []
+      },
+      "checkpoint_policy": "best_psnr_final_count",
+      "codec_config": {
+        "bits_colors": 8,
+        "bits_means": 16,
+        "bits_opacity": 8,
+        "bits_rot": 8,
+        "bits_scales": 8,
+        "color_delta": true,
+        "color_hi": null,
+        "color_lo": null,
+        "means_byte_planar": true,
+        "morton_reorder": true,
+        "rot_circular": true,
+        "scale_hi": null,
+        "scale_lo": null,
+        "stream_codec": "zlib",
+        "zlib_level": 9
+      },
+      "equal_terminal_coordinates": "ceil(10 * max(final_sad_sites) / 8)",
+      "execution_repeats": [
+        0,
+        1,
+        2
+      ],
+      "feature_cap": 12.0,
+      "feature_cap_reference_side": 160.0,
+      "growth_contract": "five nonempty additions reach cap; scheduled opportunity at update 3996 is a cap no-op",
+      "growth_waves": 5,
+      "method": "structsplat_best_checkpoint",
+      "pixel_loss": "l1",
+      "renderer": "cuda",
+      "same_n": "max(final_sad_sites over repeats)",
+      "seed": 0,
+      "split_count_rule": "ceil((final_count - start_count) / 5)",
+      "split_every": 666,
+      "split_schedule_stops_at_max": false,
+      "ssim_weight": 0.3,
+      "start_count_rule": "max(16, round(0.5 * final_count))",
+      "start_fraction": 0.5,
+      "trainable_scalars_per_gaussian": 8
+    },
+    "target_ids": [
+      "0057",
+      "0171",
+      "0285",
+      "0399",
+      "0513",
+      "0627",
+      "0741",
+      "0785"
+    ],
+    "target_source_url": "https://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_train_HR.zip",
+    "timing": {
+      "render_samples": 51,
+      "render_warmups": 2,
+      "sad_output_semantics": "all 53 timing invocations retain ordered unique outputs and exact command, site-count, dimensions, saved-path, process-boundary, byte/pixel-hash, and stdout semantics; pixel variation from the role-fixed primary replay is threshold-free diagnostic evidence",
+      "sad_prepared_sample": "upstream CUDA event Render field, candidate build excluded",
+      "sad_primary_replay_non_kernel_residual_upper_bound": "max(0, fresh process wall - Candidate build CUDA event - Render CUDA event); includes process startup, configuration, CUDA context, TXT parse/upload, and PNG output",
+      "structsplat_cold": "persisted SSPL1 read + decode + exact render wall clock",
+      "structsplat_prepared_sample": "CUDA event exact-render field",
+      "summary": "median"
+    }
+  },
+  "required_ld_preload": {
+    "bytes": 2592224,
+    "cxxabi_symbols": [
+      "CXXABI_1.3",
+      "CXXABI_1.3.1",
+      "CXXABI_1.3.10",
+      "CXXABI_1.3.11",
+      "CXXABI_1.3.12",
+      "CXXABI_1.3.13",
+      "CXXABI_1.3.14",
+      "CXXABI_1.3.15",
+      "CXXABI_1.3.2",
+      "CXXABI_1.3.3",
+      "CXXABI_1.3.4",
+      "CXXABI_1.3.5",
+      "CXXABI_1.3.6",
+      "CXXABI_1.3.7",
+      "CXXABI_1.3.8",
+      "CXXABI_1.3.9",
+      "CXXABI_FLOAT128",
+      "CXXABI_TM_1"
+    ],
+    "path": "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33",
+    "sha256": "1fd75fe70354a416d75aef22bcae68c47bd25d20e2d0568c30b1a9838cf62f11"
+  },
+  "schema_version": 6,
+  "upstream": {
+    "binary_bytes": 3057168,
+    "binary_sha256": "3c9ee7cbfab466b78a9083b3b75891d6eb0b6bd51520fcb34da206f983012e52",
+    "config_bytes": 844,
+    "config_sha256": "745733a34bb1a67d54df9218649e55428963609474252e76c0bf474071e06920",
+    "git": {
+      "clean": true,
+      "commit": "0eeb7e1e72b81e550f90db8ebbf432cdc57383ed",
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "origin": "https://github.com/LuckyIYI/SAD.git",
+      "status": [],
+      "tree": "1e500b6256f36937e0db550e3de51eb5fc8cab3a"
+    },
+    "resolved_config": {
+      "BETA1": 0.9,
+      "BETA2": 0.999,
+      "CAND_DOWNSCALE": 1,
+      "CAND_HILBERT_PROBES": 1,
+      "CAND_HILBERT_WINDOW": 32,
+      "CAND_INJECT_COUNT": 4,
+      "CAND_RADIUS_PROBES": 0,
+      "CAND_RADIUS_SCALE": 64.0,
+      "CAND_UPDATE_FREQ": 8,
+      "CAND_UPDATE_PASSES": 1,
+      "DEFAULT_ITERS": 4000,
+      "DEFAULT_MAX_SITES": 128000,
+      "DEFAULT_SITES": 128000,
+      "DEFAULT_TARGET_BPP": 1.0,
+      "DENSIFY_END": 3000,
+      "DENSIFY_FREQ": 20,
+      "DENSIFY_PERCENTILE": 0.01,
+      "DENSIFY_SCORE_ALPHA": 0.7,
+      "DENSIFY_START": 20,
+      "EPS": 1e-08,
+      "INIT_LOG_TAU": 5.0,
+      "INIT_RADIUS": 4.0,
+      "LR_ANISO_BASE": 0.025,
+      "LR_COLOR_BASE": 0.01,
+      "LR_DIR_BASE": 0.0025,
+      "LR_POS_BASE": 0.025,
+      "LR_RADIUS_BASE": 0.01,
+      "LR_TAU_BASE": 0.01,
+      "MAX_DIM": 12000,
+      "PRUNE_DURING_DENSIFY": true,
+      "PRUNE_END": 3000,
+      "PRUNE_FREQ": 40,
+      "PRUNE_PERCENTILE": 0.033,
+      "PRUNE_START": 100
+    },
+    "run_script_sha256": "5b980f3cc4f57aec86b6a9a43bc2610a27e98dc6864c8896ce205a8affe3588a"
+  },
+  "v6_scientific_target_files_opened": false
+}

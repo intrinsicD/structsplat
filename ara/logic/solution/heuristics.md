@@ -92,3 +92,90 @@
 - **Sensitivity**: high
 - **Code ref**: [`src/structsplat/init.py`, `src/structsplat/sampling.py`, `tests/test_init_stages.py`, `tests/test_sampling.py`]
 - **From staging**: O51
+
+## H10: Make Mechanism Guards Deterministic and Source-Bound
+
+- **Rationale**: A CPU device label does not guarantee repeatable optimization trajectories;
+  parallel reduction order produced small FIT-018 drift before the final guard. Pin the relevant
+  thread count and deterministic-algorithm mode, hash every input plus tracked and untracked
+  source file that defines the intervention, record the dirty snapshot and environment, and replay
+  the frozen run before treating small deltas as evidence. Keep timing comparisons separate from
+  exact non-timing replay checks.
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Sensitivity**: high
+- **Code ref**: [`benchmarks/responsibility_split_compare.py`,
+  `tests/test_responsibility_split_compare.py`,
+  `ara/evidence/fit018-responsibility-guard-2026-07-15/config.json`,
+  `ara/evidence/fit018-responsibility-guard-2026-07-15/rerun_aggregate.json`]
+- **From staging**: O54
+
+## H11: Certify Exact Equivalence Before Grouping Allocator State
+
+- **Rationale**: A group-level allocator is representation-invariant only when every asserted
+  member has identical geometry/color/filter attributes and compatible background/detail role,
+  and the renderer-relevant weight differs solely by fractions that sum to the original. Aggregate
+  additive sufficient statistics such as responsibility mass/error before applying a nonlinear
+  exponent or top-k. Keep group IDs outside production state until approximate families show
+  separate utility; ordinary split lineage changes geometry and is not an exact gauge class.
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Sensitivity**: high
+- **Code ref**: [`benchmarks/gauge_equivalence_audit.py`,
+  `tests/test_gauge_equivalence_audit.py`,
+  `tasks/FIT-019-opacity-gauge-equivalence.md`,
+  `docs/adr/0014-keep-opacity-gauge-groups-benchmark-only.md`]
+- **From staging**: O59
+
+## H12: Recover Output-Only Benchmark Failures From Frozen Measurements
+
+- **Rationale**: If every expensive measurement is already present in an immutable journal/row
+  table and failure occurs only while serializing a heterogeneous derived table, do not recompute
+  or silently overwrite the run. Aggregate with the captured source snapshot, assert exact equality
+  between frozen and repaired aggregation, repair only the serializer using a union schema, record
+  the finalization hashes, then run a measurement-equivalent replay. Replay reports must name every
+  excluded timing/provenance field and expected source difference rather than claim literal
+  untouched-source identity.
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Sensitivity**: high
+- **Code ref**: [`benchmarks/perturb_recover_spectroscopy.py`,
+  `tests/test_perturb_recover_spectroscopy.py`,
+  `results/fit020_response_spectroscopy_v1_2026-07-15/finalization.json`,
+  `results/fit020_response_spectroscopy_v1_2026-07-15/replay_comparison.json`,
+  `tasks/FIT-020-perturb-recover-spectroscopy.md`]
+- **From staging**: O63
+
+## H13: Select Context-Dependent Stream Edits by Integer Cap, Not Local Byte Ratio
+
+- **Rationale**: A heterogeneous edit can change Morton order, dynamic ranges, headers, and the
+  compression context of every attribute stream. Its independently encoded complete-container
+  delta may be negative or non-monotone, so distortion divided by delta bytes is undefined or
+  misleading and deltas cannot be added into a sequential budget. Persist and cold-validate every
+  self-contained counterfactual, count all syntax/side streams, and select feasible candidates by
+  integer cap plus stable Pareto/tie order. Treat the result as an operational oracle until a
+  separately validated local price model reproduces it.
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Sensitivity**: high
+- **Code ref**: [`benchmarks/marginal_cold_stream_rd.py`,
+  `tests/test_marginal_cold_stream_rd.py`,
+  `tasks/COMP-006-marginal-cold-stream-rd.md`,
+  `docs/adr/0016-keep-marginal-cold-stream-birth-benchmark-only.md`]
+- **From staging**: O66
+
+## H14: Recompute Exact Worker Capabilities From Sealed Authorities
+
+- **Rationale**: A valid sandbox attestation and a self-consistent persisted request prove only
+  what capability was granted, not that the operation needed exactly that capability. For every
+  protected-stage worker, derive the permitted command, config identity, source, environment, cwd,
+  read-only/read-write inventories, launcher, denied probes, and timeout from sealed upstream and
+  artifact authorities; require exact equality and reject coherently resealed extras. Keep this
+  check alongside OS isolation, regenerated replay, immutable publication, and terminal-journal
+  enforcement rather than relying on worker-reported no-access flags.
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Sensitivity**: high
+- **Code ref**: [`benchmarks/ssp2v_actual_run.py`, `benchmarks/ssp2v_landlock.py`,
+  `tests/test_ssp2v_actual_run_preflight_policy.py`]
+- **From staging**: O80

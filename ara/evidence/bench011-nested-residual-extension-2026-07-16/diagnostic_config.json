@@ -1,0 +1,95 @@
+{
+  "binding": {
+    "claim_boundary": {
+      "compression_claim_authorized": false,
+      "convergence_claim_authorized": false,
+      "method_promotion_authorized": false,
+      "new_data_claim": false,
+      "performance_claim_authorized": false,
+      "quality_claim_authorized": false,
+      "spent_data_diagnostic_only": true
+    },
+    "execution_environment": {
+      "device": "cpu",
+      "git_branch": "main",
+      "git_commit": "5dc649397c40e69cf3e96bd27df2c5e2812d003d",
+      "git_dirty": true,
+      "git_porcelain_sha256": "83382f2a09033213c60b0820191bcfbabb863f729a7b7f46d8a22a5b4c6b4444",
+      "numpy_version": "2.1.3",
+      "platform": "Linux-6.14.0-37-generic-x86_64-with-glibc2.39",
+      "python_executable": "/home/alex/miniconda3/bin/python3.12",
+      "python_version": "3.12.9",
+      "torch_num_interop_threads": 8,
+      "torch_num_threads": 8,
+      "torch_version": "2.9.0+cu128"
+    },
+    "frozen_axes": {
+      "candidates": [
+        "affine6",
+        "carrier6"
+      ],
+      "damping": 0.001,
+      "expected_native_renders": 96,
+      "expected_units": 24,
+      "factorization_seed_source": "exact BENCH-009 crossfit unit ID over target_id, seed, parent_horizon, selection_scope, heldout_fold",
+      "families": [
+        "ramp_shading",
+        "step_junction",
+        "thin_curve",
+        "stationary_sinusoid",
+        "chirp",
+        "natural_texture"
+      ],
+      "folds": [
+        0,
+        1
+      ],
+      "parent_horizon": "near_plateau",
+      "parent_iterations": 160,
+      "rcond": 1e-05,
+      "seeds": [
+        101,
+        211
+      ],
+      "trust_radii": [
+        0.25,
+        0.75
+      ]
+    },
+    "input_sha256": {
+      "completed_units.jsonl": "a5da9476e16f3663dcf76140596b8a8851025da2ad70858af3ad893a90b5b28e",
+      "diagnostic_scores.jsonl": "e3098a2ae540cbfebd62f9a41dadf04609c979d54b197469b60dd5707d07a007",
+      "immediate_cells.jsonl": "9cce1730bd0d649f24e211051248d73f17d07e611cdce61b005e0313e61f77ee",
+      "parents.jsonl": "5003324d49b4a7fc428eac04bb8f598bec795817f22ae99187983d587b90b555",
+      "runner_config.json": "c3a4a5c851138cd64276f23122679cd08054c085a13e8df97937057be97de15b",
+      "science_config.json": "cf6b1d47d17906449bfa34ad083d104aa6cdeb129bf9aca95c011c55194a52a1"
+    },
+    "protocol": "BENCH-011 nested residual-extension spent-data diagnostic v2",
+    "runner_binding_sha256": "c952500f0a5e33c8f5413fd91584b5330cc6375b68a1f3a96f82e6df1239ba4f",
+    "science_binding_sha256": "ad899016ffe276a667a553928474fe9f218a00784d15eb859a711d76a065bcc5",
+    "scope": "spent_bench009_near_plateau_current_identities_only",
+    "source_sha256": {
+      "benchmarks/nested_residual_extension_diagnostic.py": "108c0b081fd0975913c62dadab2869fd28b3eb3624d264217130b28d79d7bf15",
+      "benchmarks/residual_tangent_auction_matrixfree.py": "54a08d1227b72ba26c07c550a344cb5dfec4442fa2a09312b70aa404b2a32e0f",
+      "benchmarks/residual_tangent_auction_stage1.py": "3de52ec39be613ff95041d21e5a889bd7d188c91be2e42f6eec480ba3974b174",
+      "benchmarks/residual_tangent_auction_stage1_core.py": "c3385c59380ec82299eaed268e10bba0b28be8dbac1ac06db480d66b6edbef27",
+      "benchmarks/residual_tangent_auction_stage1_runner.py": "5069ca9f65f83348332e8fd2c8f4806904c2d89a22acc9fa2db488bf042e9202",
+      "benchmarks/residual_tangent_auction_stage1_science.py": "70cec50996bbcc1137152c8fc79fdb700366c8aade497b981c19ef4a7f709f28",
+      "pyproject.toml": "c94047d507dac541782f129f72d2870a4cd90d0397392e1b7fc8a155d5d83153",
+      "src/structsplat/gaussians.py": "26d8ddf03740c8ed44ae9c97d2bb75438dd5a992327fe70cbd3c91f2e5e6fefe",
+      "src/structsplat/render.py": "af26dd0f3d1eb6389c50e4baca8fa6e2ddf754c248c856f87e9c0d49863063f9",
+      "tasks/BENCH-011-nested-residual-extension-diagnostic.md": "1a464ab4bb28da47e087b837a10d971711fcb3b53360f4c1fb2cd6e5c513e84e",
+      "tests/test_nested_residual_extension_diagnostic.py": "aa5f16a6012fa72394bcf223c90335906b09f2d5855bbc73a301562c80a90322"
+    }
+  },
+  "binding_sha256": "3c16c92e1de8c2bc005533f1a59465f8cacf77d5c7255be52cc5abe1c3aa5f61",
+  "invocation": {
+    "merged_at": "2026-07-15T22:49:52.025545+00:00",
+    "shard_dirs": [
+      "/home/alex/Documents/structsplat/results/bench011_nested_extension_diag_v2_shard_0",
+      "/home/alex/Documents/structsplat/results/bench011_nested_extension_diag_v2_shard_1",
+      "/home/alex/Documents/structsplat/results/bench011_nested_extension_diag_v2_shard_2",
+      "/home/alex/Documents/structsplat/results/bench011_nested_extension_diag_v2_shard_3"
+    ]
+  }
+}

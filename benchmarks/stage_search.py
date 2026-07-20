@@ -118,8 +118,8 @@ INFLUENCE_DEFAULTS: dict[str, tuple[str, ...]] = {
     "optimizers": ("adam", "adamw", "adan"),
     "lr_schedules": ("none", "cosine", "step"),
     "refine_sites": (
-        "none", "residual", "residual_tensor", "support", "ranked", "absgrad",
-        "freq_violation",
+        "none", "residual", "residual_tensor", "support", "responsibility", "ranked",
+        "absgrad", "freq_violation",
     ),
     "refine_primitives": ("fp", "duplicate", "moment_preserving", "sampled_add"),
     "refine_nms_modes": ("off", "on"),
@@ -196,7 +196,10 @@ def _one(x):
 
 
 def _config_label(c: dict[str, Any]) -> str:
-    return "|".join(f"{k}={c[k]}" for k in STAGE_KEYS)
+    label = "|".join(f"{k}={c[k]}" for k in STAGE_KEYS)
+    if c.get("refine_site") == "responsibility":
+        label += f"|responsibility_mass_alpha={c.get('responsibility_mass_alpha', 0.7):g}"
+    return label
 
 
 def _canonicalize(cfg: dict[str, Any], canonical: dict[str, str]) -> dict[str, Any]:
@@ -359,7 +362,8 @@ def _normalize_refine_config(cfg: dict[str, Any]) -> dict[str, Any]:
 
 def _refine_kwargs_from_config(cfg: dict[str, Any], split_every: int | None,
                                split_count: int, prune_every: int | None,
-                               prune_min_activity: float) -> dict[str, Any]:
+                               prune_min_activity: float,
+                               responsibility_mass_alpha: float = 0.7) -> dict[str, Any]:
     refine_cfg = _normalize_refine_config(cfg)
     out: dict[str, Any] = {}
     if refine_cfg["refine_prune"] == "on":
@@ -389,6 +393,10 @@ def _refine_kwargs_from_config(cfg: dict[str, Any], split_every: int | None,
         })
         if refine_cfg["refine_nms"] == "on":
             out.update({"split_min_spacing": 1.0, "split_oversample": 8.0})
+        if refine_cfg["refine_site"] == "responsibility":
+            out["responsibility_mass_alpha"] = float(
+                refine_cfg.get("responsibility_mass_alpha", responsibility_mass_alpha)
+            )
     return out
 
 
@@ -664,7 +672,8 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
              target_psnr, target_psnrs, target_ms_ssim, target_bpp, adaptive_count,
              adaptive_growth_every, adaptive_growth_count, adaptive_split_mode,
              adaptive_min_delta_psnr, adaptive_patience, early_stop_patience,
-             early_stop_min_delta, early_stop_min_iters, log_every, verbose):
+             early_stop_min_delta, early_stop_min_iters, log_every,
+             responsibility_mass_alpha, verbose):
     from structsplat import init as _init
     from structsplat import structure_tensor as _st
     from structsplat.fit import fit
@@ -704,7 +713,8 @@ def _run_one(img, target, cfg, *, budget, seed, iters, render_chunk, ssim_weight
         seed=seed,
     )
     refine = _refine_kwargs_from_config(
-        cfg, split_every, split_count, prune_every, prune_min_activity
+        cfg, split_every, split_count, prune_every, prune_min_activity,
+        responsibility_mass_alpha,
     )
     fcfg = FitConfig(
         iters=iters,
@@ -916,6 +926,7 @@ def run_stage_search(
     refine_nms_modes=None,
     refine_color_inits=None,
     refine_score_modes=None,
+    responsibility_mass_alpha: float = 0.7,
     refine_prune_modes=None,
     refine_relocate_modes=None,
     state_seed_modes=None,
@@ -978,6 +989,13 @@ def run_stage_search(
 
     if mode not in ("factorial", "influence"):
         raise ValueError(f"unknown mode {mode!r}; expected factorial or influence")
+    if not math.isfinite(responsibility_mass_alpha) or not (
+        0.0 < responsibility_mass_alpha <= 1.0
+    ):
+        raise ValueError(
+            "responsibility_mass_alpha must be finite and in (0, 1], "
+            f"got {responsibility_mass_alpha}"
+        )
     explicit_refine = (
         refine_sites, refine_primitives, refine_nms_modes, refine_color_inits,
         refine_score_modes,
@@ -1052,6 +1070,7 @@ def run_stage_search(
         "render_chunk": render_chunk, "ssim_weight": ssim_weight, "split_every": split_every,
         "ssim_backend": ssim_backend,
         "split_count": split_count, "prune_every": prune_every,
+        "responsibility_mass_alpha": responsibility_mass_alpha,
         "prune_min_activity": prune_min_activity, "max_gaussians": max_gaussians,
         "pyramid_levels": pyramid_levels, "pyramid_fractions": list(pyramid_fractions),
         "pyramid_iters_per_level": pyramid_iters_per_level,
@@ -1075,11 +1094,13 @@ def run_stage_search(
     }, device=device))
 
     canonical = _normalize_refine_config({_AXIS_TO_KEY[a]: vals[0] for a, vals in axes.items()})
+    canonical["responsibility_mass_alpha"] = float(responsibility_mass_alpha)
     raw = _influence_configs(axes) if mode == "influence" else _iter_configs(axes)
     configs, seen = [], set()
     n_dropped = 0
     for cfg in raw:
         normalized = _normalize_refine_config(cfg)
+        normalized["responsibility_mass_alpha"] = float(responsibility_mass_alpha)
         c = _canonicalize(normalized, canonical) if dedupe else normalized
         c["label"] = _config_label(c)
         if c["label"] in seen:
@@ -1098,6 +1119,7 @@ def run_stage_search(
     baseline_label = None
     if mode == "influence":
         base = _normalize_refine_config({_AXIS_TO_KEY[a]: vals[0] for a, vals in axes.items()})
+        base["responsibility_mass_alpha"] = float(responsibility_mass_alpha)
         base = _canonicalize(base, canonical)
         baseline_label = _config_label(base)
 
@@ -1202,7 +1224,9 @@ def run_stage_search(
                             early_stop_patience=early_stop_patience,
                             early_stop_min_delta=early_exit_min_delta,
                             early_stop_min_iters=early_stop_min_iters_resolved,
-                            log_every=log_every, verbose=verbose,
+                            log_every=log_every,
+                            responsibility_mass_alpha=responsibility_mass_alpha,
+                            verbose=verbose,
                         )
                         row = {**base_row, "status": "ok", **metrics}
                     except Exception as exc:  # one broken arm must not void the whole sweep
@@ -1223,7 +1247,12 @@ def run_stage_search(
 
 def _config_key(row):
     r = _normalize_refine_config(row)
-    return tuple(r[k] for k in STAGE_KEYS) + (row["budget"],)
+    responsibility_alpha = (
+        float(r.get("responsibility_mass_alpha", 0.7))
+        if r["refine_site"] == "responsibility"
+        else None
+    )
+    return tuple(r[k] for k in STAGE_KEYS) + (responsibility_alpha, row["budget"])
 
 
 def _fmt(v, spec=".4f"):
@@ -1505,7 +1534,13 @@ def _write_index_html(rows: list[dict[str, Any]], outdir: Path, *, mode: str,
     rows = [_normalize_refine_config(r) for r in rows]
     ok_rows = [r for r in rows if r.get("status") != "error"]
     error_rows = [r for r in rows if r.get("status") == "error"]
-    configs = {_config_label({k: r[k] for k in STAGE_KEYS}) for r in rows} if rows else set()
+    configs = {
+        str(r.get("config_label") or _config_label({
+            **{k: r[k] for k in STAGE_KEYS},
+            "responsibility_mass_alpha": r.get("responsibility_mass_alpha", 0.7),
+        }))
+        for r in rows
+    }
     images = sorted({str(r.get("image", "")) for r in rows if r.get("image")})
     budgets = sorted({r.get("budget") for r in rows if r.get("budget") is not None})
     seeds = sorted({r.get("seed") for r in rows if r.get("seed") is not None})
@@ -1789,7 +1824,8 @@ def main():
     p.add_argument("--refine-modes", nargs="+", default=None,
                    help="legacy flat refine aliases; prefer the explicit refine axes")
     p.add_argument("--refine-sites", nargs="+", default=None,
-                   help="none, residual, residual_tensor, support, ranked, absgrad, freq_violation")
+                   help="none, residual, residual_tensor, support, responsibility, ranked, "
+                        "absgrad, freq_violation")
     p.add_argument("--refine-primitives", nargs="+", default=None,
                    help="duplicate, fp, moment_preserving, sampled_add")
     p.add_argument("--refine-nms-modes", nargs="+", default=None,
@@ -1798,6 +1834,12 @@ def main():
                    help="target or residual")
     p.add_argument("--refine-score-modes", nargs="+", default=None,
                    help="legacy_abs, gaussian_abs, or signed_gaussian; sampled-add only")
+    p.add_argument(
+        "--responsibility-mass-alpha",
+        type=float,
+        default=0.7,
+        help="fixed ownership-mass exponent for responsibility refinement cells",
+    )
     p.add_argument("--refine-prune-modes", nargs="+", default=None,
                    help="off or on")
     p.add_argument("--refine-relocate-modes", nargs="+", default=None,
@@ -1882,6 +1924,7 @@ def main():
         refine_nms_modes=a.refine_nms_modes,
         refine_color_inits=a.refine_color_inits,
         refine_score_modes=a.refine_score_modes,
+        responsibility_mass_alpha=a.responsibility_mass_alpha,
         refine_prune_modes=a.refine_prune_modes,
         refine_relocate_modes=a.refine_relocate_modes,
         state_seed_modes=a.state_seed_modes,

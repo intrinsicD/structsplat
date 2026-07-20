@@ -1,0 +1,149 @@
+{
+  "environment": {
+    "compute_capability": [
+      8,
+      6
+    ],
+    "cuda_available": true,
+    "device_index": 0,
+    "device_name": "NVIDIA GeForce RTX 3050",
+    "ld_library_path": "/home/alex/Documents/vulkansdk-linux-x86_64-1.4.309.0/1.4.309.0/x86_64/lib",
+    "ld_preload": "/lib/x86_64-linux-gnu/libstdc++.so.6",
+    "multiprocessor_count": 20,
+    "nvcc": {
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2023 NVIDIA Corporation\nBuilt on Fri_Jan__6_16:45:21_PST_2023\nCuda compilation tools, release 12.0, V12.0.140\nBuild cuda_12.0.r12.0/compiler.32267302_0\n"
+    },
+    "nvidia_smi": {
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "590.48.01, GPU-4cee065a-aab7-97b8-40be-55d516d2a53c, 8192\n"
+    },
+    "platform": "Linux-6.14.0-37-generic-x86_64-with-glibc2.39",
+    "python": "3.12.9",
+    "torch": "2.9.0+cu128",
+    "torch_cuda_runtime": "12.8",
+    "total_memory_bytes": 8199143424
+  },
+  "grid": {
+    "arm_order": "alternated_by_frozen_cell_index",
+    "counts": [
+      512,
+      2048
+    ],
+    "modes": [
+      "cuda",
+      "cuda_block_reduce"
+    ],
+    "repeats": 15,
+    "requested_support_overlaps": [
+      4.0,
+      16.0
+    ],
+    "resolutions": [
+      128,
+      256
+    ],
+    "seed": 0,
+    "warmup": 5
+  },
+  "loss_scope": "FitConfig-default 0.7*L1 + 0.3*(1-builtin SSIM)",
+  "memory_method": "PyTorch CUDA allocator max_memory_allocated/max_memory_reserved after warmup; not whole-device VRAM",
+  "ncu_evidence": {
+    "collected": false,
+    "probe": {
+      "available_noninteractive": false,
+      "executable": "/usr/bin/ncu",
+      "query": {
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "Device NVIDIA GeForce RTX 3050 (GA106)\n==ERROR== ERR_NVGPUCTRPERM - The user does not have permission to access NVIDIA GPU Performance Counters on the target device. For instructions on enabling permissions and to get more information see https://developer.nvidia.com/ERR_NVGPUCTRPERM\n\n"
+      },
+      "status": "unavailable_gpu_performance_counter_permission_denied",
+      "version": {
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "NVIDIA (R) Nsight Compute Command Line Profiler\nCopyright (c) 2018-2023 NVIDIA Corporation\nVersion 2022.4.1.0 (build 32308335) (public-release)\n"
+      }
+    },
+    "reason": "Nsight Compute counters were not accessible noninteractively.",
+    "status": "unavailable_gpu_performance_counter_permission_denied"
+  },
+  "optimizer_scope": "Adam with FitConfig default learning rates; parameters restored after step",
+  "preregistered_gate": {
+    "baseline_renderer": "cuda",
+    "candidate_renderer": "cuda_block_reduce",
+    "default_flip_authorized": false,
+    "maximum_peak_incremental_allocator_memory_regression_fraction": 0.05,
+    "maximum_representative_timing_cv": 0.05,
+    "minimum_exact_backward_reduction_fraction": 0.1,
+    "minimum_representative_step_reduction_fraction": 0.03,
+    "parity_atol": 0.0005,
+    "parity_rtol": 0.0005,
+    "pass_scope": "source_device_bound_microprofile_only_selector_remains_opt_in",
+    "quality_or_compression_claim_authorized": false,
+    "registered_before_optimized_measurement": true,
+    "representative_cell": {
+      "height": 256,
+      "n_gaussians": 2048,
+      "requested_support_overlap": 16.0,
+      "width": 256
+    },
+    "stability_statistic": "population standard deviation / mean over raw CUDA-event repeats"
+  },
+  "protocol": "exact-normalized-CUDA-backward-block-reduce-v1",
+  "provenance": {
+    "critical_source_hash_mode": "raw_worktree_bytes_independent_of_git_index",
+    "critical_sources": {
+      "benchmarks/exact_backward_profile.py": {
+        "kind": "file_bytes",
+        "sha256": "7a39ea77c6f7cf22e1970e645b72a388a7aa876fe56b159cb963ee4c3ae8ce23",
+        "size_bytes": 48754
+      },
+      "src/structsplat/cuda/render_ext.cpp": {
+        "kind": "file_bytes",
+        "sha256": "eec0e011189a34d3489c6f719d15528a3511758b79b5cfad145f91323ef5e356",
+        "size_bytes": 8648
+      },
+      "src/structsplat/cuda/render_ext.cu": {
+        "kind": "file_bytes",
+        "sha256": "5493130d56cdf24dd67d54111eb14a701f5e2b143173cdee27a90a7fa988e150",
+        "size_bytes": 27145
+      },
+      "src/structsplat/cuda_render.py": {
+        "kind": "file_bytes",
+        "sha256": "1a3be3a92520511c703c0d5d9d7f5a60dbf230d5131fc23899c716a835783a62",
+        "size_bytes": 9747
+      },
+      "src/structsplat/fit.py": {
+        "kind": "file_bytes",
+        "sha256": "188fa81397d66f2484c54e12bfe9c2165463c252474b128d8db20199634937c2",
+        "size_bytes": 122097
+      },
+      "src/structsplat/gaussians.py": {
+        "kind": "file_bytes",
+        "sha256": "26d8ddf03740c8ed44ae9c97d2bb75438dd5a992327fe70cbd3c91f2e5e6fefe",
+        "size_bytes": 15154
+      },
+      "src/structsplat/metrics.py": {
+        "kind": "file_bytes",
+        "sha256": "8d9963efa6d3e7b687e349398079ff058326653eeaac47fdf5d1b4778ce8a8b7",
+        "size_bytes": 6989
+      },
+      "src/structsplat/render.py": {
+        "kind": "file_bytes",
+        "sha256": "af26dd0f3d1eb6389c50e4baca8fa6e2ddf754c248c856f87e9c0d49863063f9",
+        "size_bytes": 20144
+      }
+    },
+    "git_branch": "main",
+    "git_commit": "5dc649397c40e69cf3e96bd27df2c5e2812d003d",
+    "git_dirty": true,
+    "git_status_porcelain_sha256": "9b8d5904ff516f10d518646a245fb8411717076b0289ac0d687f0fb8f2f19adb",
+    "tracked_diff_sha256": "d7d8c8c045045f6228096d487c671c1d8d0007350e53ae965e53fb944b070ab3",
+    "tracked_diff_size_bytes": 165236
+  },
+  "timing_method": "current-stream torch.cuda.Event(enable_timing=True), synchronized per sample, median over repeats after warmup",
+  "work_scope": "synthetic_microfit_cuda_event_device_timeline_only"
+}

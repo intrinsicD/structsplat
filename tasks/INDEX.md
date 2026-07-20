@@ -4,6 +4,10 @@ Active work stays in `tasks/`; retired completed work lives in `tasks/done/`. Ar
 FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked up via the
 `task-workflow` skill.
 
+The table below is the current outcome authority. Executed tasks whose protocol text is bound by
+an artifact may intentionally retain a pre-execution `Status` section so its frozen hash remains
+replay-valid; do not rewrite those task bytes merely to duplicate this table.
+
 ## Active Tasks
 
 | ID | Title | Status | Depends on |
@@ -20,6 +24,7 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | INIT-009 | Progressive WSE survivor ordering | implemented/confirmed — 32/32 uniform Euclidean prefix wins with identical terminal sets; opt-in for compatibility | INIT-003/005/006, BENCH-002 |
 | PORT-002 | GPU-native tile index + fused loss/backward | todo | PORT-001, FIT-003 |
 | PORT-003 | Avoid atomics in tiled backward | todo | PORT-001 |
+| PORT-004 | Exact-backward block reduction | implemented/screened — large N=2048 microprofile gains, but all-grid direction and independent CV guards fail; benchmark-only, not CLI/default | PORT-001/003, ADR-0011, BENCH-002 |
 | GEN-003 | VSD / multi-particle distillation | todo | GEN-001 |
 | ABL-005 | Fitter-knob influence pass at the fair regime | partial — CUDA-native fair shard started; color-solve and broader Kodak cells pending | ADR-0010, FIT-005/006/007, CORE-006 |
 | BENCH-005 | Native external-reference pipelines and paired central metrics | partial — GI++/Image-GS/GaussianImage adapters plus bounded native GaussianImage/AIR evidence complete; full-resolution actual-RD and remaining 2026 methods open | BENCH-001/002/003, ABL-004 |
@@ -28,10 +33,27 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 | FIT-015 | Same-final-count best-PSNR checkpoint selection | implemented/confirmed — +0.4884 dB pooled across 72 Kodak trajectories; opt-in for sparse/moderate-density long fits | FIT-001/002, ABL-004, BENCH-005 |
 | FIT-016 | Coarse-to-full loss-target curriculum | implemented/screened — rejected by 500-step guard (−0.1645 dB selected PSNR); default off | FIT-015, HIER-003/004, ABL-004, BENCH-002 |
 | FIT-017 | Kernel-matched signed-residual densification | implemented/screened — wider scores improve immediate PSNR but lose post-20/post-100; default legacy score retained | FIT-004, FIT-009, BENCH-002, ABL-004 |
+| FIT-018 | Responsibility-normalized error-density densification | implemented/screened — SAD alpha-0.7 transfer rejected (−0.0198 dB post-20, 4/8 wins); opt-in control only | FIT-004, FIT-009, FIT-017, BENCH-002, ADR-0010 |
+| FIT-019 | Opacity-split gauge-equivalence audit | implemented/screened — exact commutation confirmed, recovery utility rejected; no production quotient/lineage state | FIT-007, FIT-009, FIT-018, BENCH-002 |
+| FIT-020 | Ranked deduplication response spectroscopy | implemented/screened — signal strong, but bend prediction and screening rejected; close lineage, no production selector | FIT-007, FIT-009, FIT-018/019, BENCH-002 |
 | BENCH-006 | Fixed-storage all-method convergence lane | completed as a 320-cell high-rate local-policy diagnostic; superseded for compression decisions by BENCH-007 | BENCH-001/002/003/004, COMP-002, ABL-004 |
 | BENCH-007 | Actual-rate structure phase diagram | completed negative — Stage-1 gate failed; Stage 2 prohibited and not run | BENCH-001/002/003/004/006, COMP-001/002/004, INIT-003/009 |
 | BENCH-008 | Common/native causal bridge | not authorized — BENCH-007 found no promotable renderer/objective interaction | BENCH-005/007, CORE-001/003/005, COMP-002 |
+| BENCH-009 | Rate/DOF-priced residual tangent-space auction | completed negative/unavailable — exact Stage-1/recovery ledgers complete; causal calibration and projector validity failed; no method/expressiveness claim | CORE-001/006, FIT-005/017/020, BENCH-002, COMP-006 |
+| BENCH-011 | Nested residual-extension spent-data diagnostic | completed negative — corrected v2 exactly reproduces BENCH-009 bases and all 96 rows; all four calibration strata fail; close without retuning | BENCH-009 |
+| BENCH-012 | Spatial-connectivity policy value for finite reallocation | completed unavailable — topology core passed, but first preflight cell had only 2/4 required untruncated equal-work actions; no selector or recovery outcome scored | BENCH-009/011, FIT-004/017/020, COMP-006 |
+| COMP-007 | Gauge-free log-Euclidean covariance codec | completed negative — v4 audit replayed all 12,096 streams; log-SPD failed 7/8 frozen gates and confirmation stayed sealed | COMP-006, BENCH-012 |
+| COMP-008 | Mean-conditioned entropy-oracle killing test | completed inconclusive — both fixed tuples survived the necessary-condition lower-bound screen; this authorized COMP-009 only, not an actual compression claim | BENCH-016, COMP-006/007 |
+| COMP-009 | Exact SSP2E actual-coder development test | completed negative — both tuples failed actual-rate and spatial-attribution gates; frozen decision `ABANDON_FIXED_SSP2E_V1`, confirmation sealed | COMP-008 |
+| COMP-010 | SSP2E captured-replay relocation repair | completed provenance GO — captured-source replay confirms COMP-009's frozen negative decision; no new rate, quality, convergence, or performance evidence | COMP-009 |
+| COMP-011 | Complete-stream RGB VQ/RVQ | terminal invalid/no-decision — candidate-byte replay passed, but one original decision-relevant LPIPS constituent is inside the frozen replay exclusion band; no SSP2V/SSP2L confirmation | COMP-008/009/010 |
+| COMP-012 | Exact-byte RGB coordinate RDO with unchanged SSP2F | repaired draft/pre-data — objective/search/oracle/operator/paired-adapter cores implemented and hostile-tested; lifecycle orchestration, runtime/transcript caps, frozen gates, and preflight remain before any target access | COMP-011 provenance audit, COMP-009 SSP2F |
+| BENCH-013 | Local-linear reproducing compositor | completed negative — affine reproduction passed, but signed local leverage/ringing killed 82/108 forward cells | COMP-007, CORE-006 |
+| BENCH-014 | Explicit affine carrier | completed negative — strong synthetic quality/rank/cost, but complete-byte and terminal-convergence gates failed | BENCH-013, CORE-006 |
+| BENCH-015 | Decoder-synchronized affine lift | completed negative — equal-byte smooth quality passed; no-harm, convergence, and cold-decode gates failed; Stage 1/local successor prohibited | BENCH-014, COMP-007 |
+| BENCH-016 | Pinned native SAD frontier screen | completed negative development screen — valid 144-row v6 matrix; 0.5-bpp gates passed, 2.0-bpp quality/LPIPS guards failed; decision `abandon SAD reuse` | BENCH-005/007/015, FIT-018 |
 | COMP-005 | Decoder-synchronized structural geometry | not authorized — tensor structure failed the actual-rate gate and layout bytes were not established as the binding loss | BENCH-007, COMP-001/002/003/004, INIT-001/003/009 |
+| COMP-006 | Marginal cold-stream rate--distortion attribution | completed negative — exact replay matched; birth lost `-1.0714 dB` to the strongest actual-byte control and confirmation remains sealed | COMP-001/002/003/004, BENCH-002/007, FIT-004/017 |
 
 ## Retired Done Tasks
 
@@ -84,7 +106,40 @@ FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked u
 Retired tasks remain valid dependency IDs. They describe completed reference/correctness work; the
 performance and scale follow-ups stay active under PORT/FIT/INIT/BENCH/ABL tasks.
 
-## Current priority after the 2026-07-14 actual-rate decision
+## Current priority after the 2026-07-15 recovery and marginal-RD assays
+
+FIT-018--020 completed the recovery branch requested after BENCH-007, and COMP-006 completed its
+next exact-rate screen. Responsibility-density transfer, opacity-gauge quotient allocation, the
+frozen response bend, and one-extra-standard-row at a complete-stream byte cap all failed their
+promotion gates. Their exact grouping, response logging, and cold-stream selection machinery
+remain benchmark oracles, not production features. The queue is therefore:
+
+1. Preserve the FIT-018--020 and COMP-006 negative results; do not retune their fixtures, splits,
+   alphas, bends, horizons, caps, actions, bit box, or exposed held-out targets.
+2. Preserve BENCH-009's completed v3 ledgers and failed causal decision. Do not reinterpret its
+   negative incremental projector rows, late carrier recovery, objective mismatch, or provisional
+   packet bytes as expressiveness, convergence, performance, or compression evidence.
+3. Preserve BENCH-011 v1 as an audited invalid run and corrected v2 as the valid negative. V2
+   reproduces BENCH-009's exact base seeds/ranks and all `96` rows, but all four calibration strata
+   fail. Close the local-linear extension formulation without retuning or disjoint-data spending.
+4. Preserve BENCH-012 as an unavailable preflight, not a topology result. Do not relax its
+   equal-work/untruncated candidate filter, move the exposed targets, shrink its inherited action,
+   or reinterpret the 2/4 feasibility failure as quality, convergence, or allocation evidence.
+5. Preserve PORT-004's opt-in exact-backward block-reduction prototype as benchmark-only. It
+   repeats large `N=2048` representative gains, but fails the governing all-grid direction rule
+   and an independent run's `5%` stability guard; do not open end-to-end or default promotion.
+6. Preserve COMP-007 v2/v3 as pre-scoring unavailable artifacts and v4 as the valid negative. Do
+   not retune the log-SPD chart or expose the odd Kodak IDs; its `0.3426%` zstd median movement is
+   below the frozen effect and seven of eight gates fail.
+7. Preserve BENCH-013--015 as the closed first-order-reproduction lineage. The local-linear
+   compositor, transmitted affine carrier, and decoder-synchronized lift each failed their frozen
+   gate; do not run Stage 1 or retune a local successor on these artifacts.
+8. Explore existing-grammar attribute/rate co-design—per-group QAT, real context/range coding, and
+   `R + lambda D`—as a separate task that retains COMP-006's exact-byte gate.
+9. Continue BENCH-005 native-authentic coverage only as external-validity infrastructure; it cannot
+   retroactively promote a failed local mechanism.
+
+## Dated priority after the 2026-07-14 actual-rate decision
 
 BENCH-007 is complete. Tensor-WSE showed a bounded 0.5-bpp gain over the strongest local gradient
 control, but the effect vanished at 1.0 bpp, reached only `-4.5417%` BD-rate versus the required

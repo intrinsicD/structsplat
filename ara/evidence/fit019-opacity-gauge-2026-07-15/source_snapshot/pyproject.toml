@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "structsplat"
+version = "0.1.0"
+description = "Hierarchical, feature-aware, anisotropic blue-noise 2D Gaussian image representation."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Alex" }]
+dependencies = [
+    "torch>=2.1",
+    "numpy>=1.24",
+    "pillow>=10.0",
+    "imageio>=2.31",
+]
+
+[project.optional-dependencies]
+# Perceptual metric + faster SSIM. The repo runs without these (PSNR/SSIM are built in).
+metrics = ["lpips>=0.1.4", "pytorch-msssim>=1.0"]
+gen = ["diffusers>=0.35", "transformers>=4.53", "accelerate>=1.8", "safetensors>=0.4"]
+benchmark = [
+    "scikit-image>=0.22",
+    "scipy>=1.10",
+    "matplotlib>=3.7",
+    "pillow-avif-plugin>=1.4",
+]
+dev = ["pytest>=7.4", "ruff>=0.4"]
+
+[project.scripts]
+structsplat = "structsplat.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+structsplat = ["cuda/*.cpp", "cuda/*.cu"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

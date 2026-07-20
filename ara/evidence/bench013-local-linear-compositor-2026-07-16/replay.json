@@ -1,0 +1,42 @@
+{
+  "artifact_audit_passed": true,
+  "binding_sha256": "2ff71a04472d061532f2b18dbf8619bf92cbc523aff9b50c96a3a6240be74adf",
+  "checks": {
+    "clarified_task_hash": true,
+    "config_binding": true,
+    "current_source_hashes": true,
+    "effective_raw_replay": true,
+    "exact_counts": true,
+    "executed_source_archive": true,
+    "forward_raw_replay": true,
+    "gradient_raw_replay": true,
+    "infrastructure_recovery": true,
+    "input_fields": true,
+    "lifecycle_schema": true,
+    "parent_binding": true,
+    "permutation_raw_replay": true,
+    "plumbing_controls": true,
+    "predecessor_verified_in_replay": true,
+    "recovery_equivalence": true,
+    "replay_validation": true,
+    "target_arrays": true,
+    "target_formulas": true
+  },
+  "counts": {
+    "effective_fields": 63,
+    "forward_cells": 108,
+    "forward_pixels": 442368,
+    "gradient_cells": 1,
+    "gradient_rows": 1,
+    "logical_fields": 63,
+    "permutation_rows": 432
+  },
+  "outcome_ledgers_interpreted": true,
+  "recovery_equivalence": {
+    "equivalence_pass": true,
+    "file_sha256": "025ee96169aad12eadab4334b5be37a2718378318038e828d1ded3cbe317cbb1",
+    "path": "recovery_equivalence.json",
+    "recomputed_record_sha256": "e7b3878f046d0a55b6454b966b851785a9ea202da004cefdaeb06ae6d7729d0c"
+  },
+  "schema": "bench013-stage0-full-replay-v3"
+}

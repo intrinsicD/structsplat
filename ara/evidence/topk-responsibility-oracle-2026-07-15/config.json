@@ -1,0 +1,63 @@
+{
+  "protocol": "topk_responsibility_oracle_v1",
+  "claim_scope": "single-field mechanism audit; oracle work ceiling, not measured speed",
+  "image": "tests/test_images/COCO_train2014_000000000009.jpg",
+  "image_sha256": "35cdfe8259aca40d564baf33ee749d82ce852446bd9574f0c47551d8bfffda99",
+  "field": "results/coco4_current_20k_500/COCO_train2014_000000000009_aniso_flanking_20k_500.npz",
+  "field_sha256": "3da2d93ea9ce18b1bb1683679e7631eb355d19541fb394ee47f4c143be940031",
+  "width": 640,
+  "height": 480,
+  "n_gaussians": 20000,
+  "ks": [
+    1,
+    2,
+    4,
+    8,
+    16
+  ],
+  "tile_size": 16,
+  "sigma_cutoff": 3.0,
+  "support_fade": false,
+  "aa_dilation": 0.0,
+  "validation_renderer": "cuda",
+  "parity_max_abs": 2e-05,
+  "responsibility_definition": "w_i(p) / sum_j w_j(p); ordering equals unnormalized w_i(p) ordering",
+  "support_definition": "exact renderer rounded/clipped rectangles; no added q cutoff; positive count excludes numerically zero float32 weights",
+  "reproduction_command": "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 PYTHONPATH=src TORCH_EXTENSIONS_DIR=/tmp/structsplat_torch_extensions python -m benchmarks.topk_responsibility_oracle --image tests/test_images/COCO_train2014_000000000009.jpg --field results/coco4_current_20k_500/COCO_train2014_000000000009_aniso_flanking_20k_500.npz --outdir results/topk_responsibility_oracle_2026-07-15 --device cuda --validation-renderer cuda --ks 1 2 4 8 16 --tile-size 16 --sigma-cutoff 3.0 --aa-dilation 0.0 --parity-max-abs 2e-05",
+  "source": {
+    "git_commit": "5dc649397c40e69cf3e96bd27df2c5e2812d003d",
+    "relevant_sources_dirty": true,
+    "relevant_source_status": [
+      "?? benchmarks/topk_responsibility_oracle.py"
+    ],
+    "combined_sha256": "f4f69da4ede522f1eb61654d524da7f9f897c0b77c9d257b776253a24f70e6e5",
+    "files": {
+      "benchmarks/topk_responsibility_oracle.py": "dda82d64fc8e4b3a9f38a087224c71189d6d02520b8fe2643a966639c075c5df",
+      "benchmarks/common.py": "cd446f42fb217d7aa87814256ce706dc08c3e207e27213ebb48aa168e108afa9",
+      "src/structsplat/cuda_render.py": "474d355ab5bbcb77540d5422aa31c1c63780260fe3bca2728167573fbbc4d694",
+      "src/structsplat/gaussians.py": "26d8ddf03740c8ed44ae9c97d2bb75438dd5a992327fe70cbd3c91f2e5e6fefe",
+      "src/structsplat/metrics.py": "8d9963efa6d3e7b687e349398079ff058326653eeaac47fdf5d1b4778ce8a8b7",
+      "src/structsplat/render.py": "5e1268c59dbb052cf0df12acecadfd43bab7c34497592af855d34486e924e593"
+    }
+  },
+  "environment": {
+    "platform": "Linux-6.14.0-37-generic-x86_64-with-glibc2.39",
+    "python": "3.12.9 | packaged by Anaconda, Inc. | (main, Feb  6 2025, 18:56:27) [GCC 11.2.0]",
+    "python_executable": "/home/alex/miniconda3/bin/python",
+    "torch": "2.9.0+cu128",
+    "torch_cuda": "12.8",
+    "numpy": "2.1.3",
+    "device": "cuda",
+    "environment": {
+      "CUDA_VISIBLE_DEVICES": null,
+      "LD_PRELOAD": "/usr/lib/x86_64-linux-gnu/libstdc++.so.6",
+      "PYTHONPATH": "src",
+      "TORCH_EXTENSIONS_DIR": "/tmp/structsplat_torch_extensions"
+    },
+    "cuda_device_name": "NVIDIA GeForce RTX 3050",
+    "cuda_capability": [
+      8,
+      6
+    ]
+  }
+}

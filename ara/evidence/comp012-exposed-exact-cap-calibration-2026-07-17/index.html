@@ -1,0 +1,835 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>StructSplat equal-byte RGB RDO — visual comparison</title>
+  <style>
+    :root {
+      --bg: #f3f5f7;
+      --surface: #ffffff;
+      --surface-soft: #f7f8fa;
+      --ink: #17191d;
+      --muted: #606771;
+      --line: #d9dde3;
+      --accent: #1769e0;
+      --accent-soft: #e9f1ff;
+      --good: #08784f;
+      --good-soft: #e7f6ef;
+      --shadow: 0 16px 44px rgb(25 32 46 / 9%);
+      --radius: 18px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0e1116;
+        --surface: #171b22;
+        --surface-soft: #1d222b;
+        --ink: #f4f6f8;
+        --muted: #a8b0bc;
+        --line: #343b47;
+        --accent: #78aaff;
+        --accent-soft: #1b3154;
+        --good: #69d9aa;
+        --good-soft: #173b30;
+        --shadow: 0 18px 50px rgb(0 0 0 / 28%);
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 90% -10%, rgb(23 105 224 / 12%), transparent 32rem),
+        var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.5;
+    }
+
+    a { color: var(--accent); }
+
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .page {
+      width: min(1500px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 48px 0 72px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(280px, .55fr);
+      gap: 28px;
+      align-items: end;
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--accent);
+      font-size: .76rem;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 900px;
+      margin: 0;
+      font-size: clamp(2.25rem, 5vw, 4.9rem);
+      font-weight: 780;
+      letter-spacing: -.055em;
+      line-height: .98;
+    }
+
+    .lede {
+      max-width: 780px;
+      margin: 20px 0 0;
+      color: var(--muted);
+      font-size: clamp(1rem, 1.4vw, 1.18rem);
+    }
+
+    .scope {
+      padding: 18px 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: color-mix(in srgb, var(--surface) 88%, transparent);
+      box-shadow: var(--shadow);
+    }
+
+    .scope strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: .9rem;
+    }
+
+    .scope p {
+      margin: 0;
+      color: var(--muted);
+      font-size: .88rem;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 5px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface-soft);
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 700;
+    }
+
+    .pill.good {
+      border-color: color-mix(in srgb, var(--good) 28%, var(--line));
+      background: var(--good-soft);
+      color: var(--good);
+    }
+
+    .cell {
+      margin-top: 26px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .cell-head {
+      display: flex;
+      gap: 24px;
+      align-items: start;
+      justify-content: space-between;
+      padding: 26px 28px 22px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .cell h2 {
+      margin: 0;
+      font-size: clamp(1.45rem, 2.5vw, 2.2rem);
+      letter-spacing: -.03em;
+    }
+
+    .cell-id {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .8rem;
+    }
+
+    .headline-delta {
+      min-width: 230px;
+      padding: 11px 14px;
+      border-radius: 13px;
+      background: var(--good-soft);
+      color: var(--good);
+      text-align: right;
+    }
+
+    .headline-delta strong {
+      display: block;
+      font-size: 1.04rem;
+    }
+
+    .headline-delta span {
+      display: block;
+      margin-top: 2px;
+      font-size: .76rem;
+    }
+
+    .metrics-wrap {
+      padding: 0 28px 24px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 780px;
+      border-collapse: collapse;
+    }
+
+    caption {
+      padding: 18px 0 8px;
+      color: var(--muted);
+      font-size: .78rem;
+      text-align: left;
+    }
+
+    th,
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    th:first-child,
+    td:first-child { text-align: left; }
+
+    thead th {
+      color: var(--muted);
+      font-size: .73rem;
+      font-weight: 800;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    tbody th {
+      font-size: .9rem;
+      font-weight: 720;
+    }
+
+    tbody td { font-size: .88rem; }
+
+    .delta-row {
+      background: var(--good-soft);
+      color: var(--good);
+    }
+
+    .delta-row th,
+    .delta-row td { border-bottom-color: transparent; }
+
+    .metric-note {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: .76rem;
+    }
+
+    .triptych {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1px;
+      padding: 1px;
+      background: var(--line);
+    }
+
+    figure {
+      min-width: 0;
+      margin: 0;
+      background: var(--surface);
+    }
+
+    figure a {
+      display: block;
+      overflow: hidden;
+      background: #0b0d11;
+    }
+
+    figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 3 / 2;
+      object-fit: cover;
+      transition: transform 180ms ease;
+    }
+
+    figure a:hover img { transform: scale(1.012); }
+
+    figcaption {
+      min-height: 92px;
+      padding: 14px 16px 16px;
+    }
+
+    figcaption strong {
+      display: block;
+      font-size: .94rem;
+    }
+
+    figcaption span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: .77rem;
+    }
+
+    .wipe-section {
+      padding: 26px 28px 30px;
+      border-top: 1px solid var(--line);
+    }
+
+    .wipe-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px 22px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .wipe-head h3 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .mode-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    button {
+      min-height: 36px;
+      padding: 7px 11px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--surface-soft);
+      color: var(--ink);
+      cursor: pointer;
+      font: inherit;
+      font-size: .76rem;
+      font-weight: 700;
+    }
+
+    button[aria-pressed="true"] {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .wipe {
+      position: relative;
+      isolation: isolate;
+      width: min(100%, 1100px);
+      margin: 0 auto;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: #0b0d11;
+      aspect-ratio: 3 / 2;
+      touch-action: pan-y;
+    }
+
+    .wipe img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .wipe .left-image { clip-path: inset(0 50% 0 0); }
+
+    .divider {
+      position: absolute;
+      z-index: 3;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 2px;
+      background: #fff;
+      box-shadow: 0 0 0 1px rgb(0 0 0 / 35%);
+      pointer-events: none;
+    }
+
+    .divider::after {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 32px;
+      height: 32px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      background: rgb(0 0 0 / 52%);
+      content: "↔";
+      color: #fff;
+      font: 700 15px/28px system-ui, sans-serif;
+      text-align: center;
+      transform: translate(-50%, -50%);
+    }
+
+    .wipe-label {
+      position: absolute;
+      z-index: 4;
+      top: 12px;
+      max-width: calc(50% - 18px);
+      padding: 5px 8px;
+      border-radius: 7px;
+      background: rgb(0 0 0 / 68%);
+      color: #fff;
+      font-size: .72rem;
+      font-weight: 750;
+      pointer-events: none;
+    }
+
+    .wipe-label.left { left: 12px; }
+    .wipe-label.right { right: 12px; text-align: right; }
+
+    .slider-row {
+      display: grid;
+      grid-template-columns: auto minmax(180px, 650px) auto;
+      gap: 11px;
+      align-items: center;
+      justify-content: center;
+      margin-top: 13px;
+      color: var(--muted);
+      font-size: .74rem;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    footer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 22px;
+      justify-content: space-between;
+      margin-top: 24px;
+      padding: 0 4px;
+      color: var(--muted);
+      font-size: .78rem;
+    }
+
+    @media (max-width: 880px) {
+      .page { width: min(100% - 20px, 1500px); padding-top: 28px; }
+      .hero { grid-template-columns: 1fr; }
+      .triptych { grid-template-columns: 1fr; }
+      .triptych figure {
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) minmax(180px, .65fr);
+      }
+      figcaption { min-height: 0; }
+      .cell-head { flex-direction: column; }
+      .headline-delta { width: 100%; text-align: left; }
+    }
+
+    @media (max-width: 580px) {
+      .cell-head,
+      .metrics-wrap,
+      .wipe-section { padding-left: 16px; padding-right: 16px; }
+      .triptych figure { display: block; }
+      .slider-row { grid-template-columns: 1fr; gap: 4px; }
+      .slider-row span:last-child { text-align: right; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      figure img { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">StructSplat · exact-stream calibration</p>
+        <h1>Equal bytes.<br>Cleaner reconstructions.</h1>
+        <p class="lede">
+          Target, frozen SSP2E cell incumbent, and target-guided SSP2F candidate for the two
+          exposed 12-bit cells where every authoritative quality metric improved.
+        </p>
+        <div class="legend" aria-label="Comparison facts">
+          <span class="pill">768 × 512 RGB</span>
+          <span class="pill">8,192 Gaussians</span>
+          <span class="pill">bits [12, 6, 6, 8]</span>
+          <span class="pill good">exactly equal complete bytes</span>
+        </div>
+      </div>
+      <aside class="scope">
+        <strong>Scope: exposed development calibration</strong>
+        <p>
+          These are same-data, nonterminal candidates—not held-out evidence, a default change,
+          a same-decoder complexity result, or a state-of-the-art claim.
+        </p>
+      </aside>
+    </header>
+
+    <section class="cell" id="jason" aria-labelledby="jason-title">
+      <header class="cell-head">
+        <div>
+          <h2 id="jason-title">Jason Briscoe</h2>
+          <p class="cell-id">jason-briscoe-149782 · m12_s6_r6_c8</p>
+        </div>
+        <div class="headline-delta">
+          <strong>+0.931405 dB at +0 bytes</strong>
+          <span>audited conservative three-repeat PSNR delta</span>
+        </div>
+      </header>
+
+      <div class="metrics-wrap">
+        <table>
+          <caption>
+            Fresh frozen-CUDA visual snapshot. Quality metrics use the pre-PNG float render;
+            target is an unscored reference.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">State</th>
+              <th scope="col">Format</th>
+              <th scope="col">Complete bytes</th>
+              <th scope="col">bpp</th>
+              <th scope="col">PSNR ↑</th>
+              <th scope="col">MS-SSIM ↑</th>
+              <th scope="col">LPIPS ↓</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Target</th>
+              <td>Reference</td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <th scope="row">Frozen SSP2E cell incumbent</th>
+              <td>SSP2E</td>
+              <td>51,549</td>
+              <td>1.048767</td>
+              <td>36.332668</td>
+              <td>0.99385530</td>
+              <td>0.02565970</td>
+            </tr>
+            <tr>
+              <th scope="row">Equal-byte candidate</th>
+              <td>SSP2F</td>
+              <td>51,549</td>
+              <td>1.048767</td>
+              <td>37.264074</td>
+              <td>0.99405193</td>
+              <td>0.02521082</td>
+            </tr>
+            <tr class="delta-row">
+              <th scope="row">Candidate − baseline</th>
+              <td>—</td>
+              <td>0</td>
+              <td>0</td>
+              <td>+0.931405</td>
+              <td>+0.00019664</td>
+              <td>−0.00044888</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="metric-note">
+          Audited conservative three-repeat delta: +0.931405480 dB PSNR,
+          +0.000196278 MS-SSIM, −0.000448857 LPIPS.
+        </p>
+      </div>
+
+      <div class="triptych" aria-label="Jason target and fitted images">
+        <figure>
+          <a href="visual/jason-target.png">
+            <img src="visual/jason-target.png" width="768" height="512"
+              alt="Jason target photograph: a swimmer in a pool at sunset">
+          </a>
+          <figcaption>
+            <strong>Target</strong>
+            <span>Original RGB reference · click for full resolution</span>
+          </figcaption>
+        </figure>
+        <figure>
+          <a href="visual/jason-baseline.png">
+            <img src="visual/jason-baseline.png" width="768" height="512"
+              alt="Jason reconstruction produced by the frozen SSP2E cell incumbent">
+          </a>
+          <figcaption>
+            <strong>Frozen cell incumbent · SSP2E</strong>
+            <span>51,549 bytes · 36.332668 dB</span>
+          </figcaption>
+        </figure>
+        <figure>
+          <a href="visual/jason-candidate.png">
+            <img src="visual/jason-candidate.png" width="768" height="512"
+              alt="Jason reconstruction produced by the equal-byte SSP2F RDO candidate">
+          </a>
+          <figcaption>
+            <strong>Equal-byte candidate · SSP2F</strong>
+            <span>51,549 bytes · 37.264074 dB</span>
+          </figcaption>
+        </figure>
+      </div>
+
+      <div class="wipe-section">
+        <div class="wipe-head">
+          <h3>Wipe comparison</h3>
+          <div class="mode-buttons" role="group" aria-label="Jason comparison pair">
+            <button type="button" data-left="target" data-right="baseline"
+              aria-pressed="false">Target ↔ baseline</button>
+            <button type="button" data-left="target" data-right="candidate"
+              aria-pressed="false">Target ↔ candidate</button>
+            <button type="button" data-left="baseline" data-right="candidate"
+              aria-pressed="true">Baseline ↔ candidate</button>
+          </div>
+        </div>
+        <div class="wipe" data-wipe
+          data-target="visual/jason-target.png"
+          data-baseline="visual/jason-baseline.png"
+          data-candidate="visual/jason-candidate.png">
+          <img class="right-image" src="visual/jason-candidate.png" alt="">
+          <img class="left-image" src="visual/jason-baseline.png" alt="">
+          <span class="wipe-label left">Frozen cell incumbent</span>
+          <span class="wipe-label right">Equal-byte candidate</span>
+          <span class="divider" aria-hidden="true"></span>
+        </div>
+        <div class="slider-row">
+          <span>More right image</span>
+          <input type="range" min="0" max="100" value="50"
+            aria-label="Jason wipe position">
+          <span>More left image</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="cell" id="nomao" aria-labelledby="nomao-title">
+      <header class="cell-head">
+        <div>
+          <h2 id="nomao-title">Nomao Saeki</h2>
+          <p class="cell-id">nomao-saeki-33553 · m12_s6_r6_c8</p>
+        </div>
+        <div class="headline-delta">
+          <strong>+0.860618 dB at +0 bytes</strong>
+          <span>audited conservative three-repeat PSNR delta</span>
+        </div>
+      </header>
+
+      <div class="metrics-wrap">
+        <table>
+          <caption>
+            Fresh frozen-CUDA visual snapshot. Quality metrics use the pre-PNG float render;
+            target is an unscored reference.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">State</th>
+              <th scope="col">Format</th>
+              <th scope="col">Complete bytes</th>
+              <th scope="col">bpp</th>
+              <th scope="col">PSNR ↑</th>
+              <th scope="col">MS-SSIM ↑</th>
+              <th scope="col">LPIPS ↓</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Target</th>
+              <td>Reference</td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <th scope="row">Frozen SSP2E cell incumbent</th>
+              <td>SSP2E</td>
+              <td>52,223</td>
+              <td>1.062480</td>
+              <td>35.222070</td>
+              <td>0.98480374</td>
+              <td>0.11292171</td>
+            </tr>
+            <tr>
+              <th scope="row">Equal-byte candidate</th>
+              <td>SSP2F</td>
+              <td>52,223</td>
+              <td>1.062480</td>
+              <td>36.082689</td>
+              <td>0.98497486</td>
+              <td>0.11017951</td>
+            </tr>
+            <tr class="delta-row">
+              <th scope="row">Candidate − baseline</th>
+              <td>—</td>
+              <td>0</td>
+              <td>0</td>
+              <td>+0.860618</td>
+              <td>+0.00017112</td>
+              <td>−0.00274220</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="metric-note">
+          Audited conservative three-repeat delta: +0.860618088 dB PSNR,
+          +0.000171006 MS-SSIM, −0.002742201 LPIPS.
+        </p>
+      </div>
+
+      <div class="triptych" aria-label="Nomao target and fitted images">
+        <figure>
+          <a href="visual/nomao-target.png">
+            <img src="visual/nomao-target.png" width="768" height="512"
+              alt="Nomao target photograph: a Japanese macaque resting in a hot spring">
+          </a>
+          <figcaption>
+            <strong>Target</strong>
+            <span>Original RGB reference · click for full resolution</span>
+          </figcaption>
+        </figure>
+        <figure>
+          <a href="visual/nomao-baseline.png">
+            <img src="visual/nomao-baseline.png" width="768" height="512"
+              alt="Nomao reconstruction produced by the frozen SSP2E cell incumbent">
+          </a>
+          <figcaption>
+            <strong>Frozen cell incumbent · SSP2E</strong>
+            <span>52,223 bytes · 35.222070 dB</span>
+          </figcaption>
+        </figure>
+        <figure>
+          <a href="visual/nomao-candidate.png">
+            <img src="visual/nomao-candidate.png" width="768" height="512"
+              alt="Nomao reconstruction produced by the equal-byte SSP2F RDO candidate">
+          </a>
+          <figcaption>
+            <strong>Equal-byte candidate · SSP2F</strong>
+            <span>52,223 bytes · 36.082689 dB</span>
+          </figcaption>
+        </figure>
+      </div>
+
+      <div class="wipe-section">
+        <div class="wipe-head">
+          <h3>Wipe comparison</h3>
+          <div class="mode-buttons" role="group" aria-label="Nomao comparison pair">
+            <button type="button" data-left="target" data-right="baseline"
+              aria-pressed="false">Target ↔ baseline</button>
+            <button type="button" data-left="target" data-right="candidate"
+              aria-pressed="false">Target ↔ candidate</button>
+            <button type="button" data-left="baseline" data-right="candidate"
+              aria-pressed="true">Baseline ↔ candidate</button>
+          </div>
+        </div>
+        <div class="wipe" data-wipe
+          data-target="visual/nomao-target.png"
+          data-baseline="visual/nomao-baseline.png"
+          data-candidate="visual/nomao-candidate.png">
+          <img class="right-image" src="visual/nomao-candidate.png" alt="">
+          <img class="left-image" src="visual/nomao-baseline.png" alt="">
+          <span class="wipe-label left">Frozen cell incumbent</span>
+          <span class="wipe-label right">Equal-byte candidate</span>
+          <span class="divider" aria-hidden="true"></span>
+        </div>
+        <div class="slider-row">
+          <span>More right image</span>
+          <input type="range" min="0" max="100" value="50"
+            aria-label="Nomao wipe position">
+          <span>More left image</span>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <span>
+        Metrics: frozen persisted-CUDA PSNR, five-scale MS-SSIM, and AlexNet LPIPS.
+        CUDA accumulation may vary in the last digits.
+      </span>
+      <span>
+        <a href="visual/metrics.json">Machine-readable metrics</a>
+        · <a href="run.md">Evidence and limitations</a>
+      </span>
+    </footer>
+  </main>
+
+  <script>
+    (() => {
+      const labels = {
+        target: "Target",
+        baseline: "Frozen cell incumbent",
+        candidate: "Equal-byte candidate"
+      };
+
+      document.querySelectorAll(".wipe-section").forEach((section) => {
+        const wipe = section.querySelector("[data-wipe]");
+        const slider = section.querySelector('input[type="range"]');
+        const leftImage = wipe.querySelector(".left-image");
+        const rightImage = wipe.querySelector(".right-image");
+        const leftLabel = wipe.querySelector(".wipe-label.left");
+        const rightLabel = wipe.querySelector(".wipe-label.right");
+        const divider = wipe.querySelector(".divider");
+        const buttons = section.querySelectorAll("button[data-left]");
+
+        const setPosition = (value) => {
+          const position = Math.max(0, Math.min(100, Number(value)));
+          leftImage.style.clipPath = `inset(0 ${100 - position}% 0 0)`;
+          divider.style.left = `${position}%`;
+        };
+
+        const setPair = (button) => {
+          const left = button.dataset.left;
+          const right = button.dataset.right;
+          leftImage.src = wipe.dataset[left];
+          rightImage.src = wipe.dataset[right];
+          leftLabel.textContent = labels[left];
+          rightLabel.textContent = labels[right];
+          buttons.forEach((item) => {
+            item.setAttribute("aria-pressed", String(item === button));
+          });
+        };
+
+        slider.addEventListener("input", () => setPosition(slider.value));
+        buttons.forEach((button) => {
+          button.addEventListener("click", () => setPair(button));
+        });
+        setPosition(slider.value);
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,370 @@
+{
+  "binding_sha256": "2ff71a04472d061532f2b18dbf8619bf92cbc523aff9b50c96a3a6240be74adf",
+  "clarified_task_sha256": "b40b9075262c8c2dc07212490a1178b0168b6da9e433cb4ca23a10957bb1d0ad",
+  "cohorts": [
+    "target_conditioned",
+    "shared_constant"
+  ],
+  "counts": [
+    28,
+    56,
+    112
+  ],
+  "dimensions": {
+    "all_pixels_scored": true,
+    "height": 64,
+    "width": 64
+  },
+  "expected": {
+    "forward_cells": 108,
+    "forward_pixels": 442368,
+    "gradient_cells": 1,
+    "gradient_rows": "13_if_completed_else_1",
+    "logical_fields": 63,
+    "permutation_rows": 432
+  },
+  "gates": {
+    "a1_max": 4.0,
+    "a1_p99": 1.5,
+    "float32_affine_max_abs": 2e-05,
+    "float32_partition_and_moment": 2e-05,
+    "float32_same_state_max_abs": 2e-05,
+    "float32_same_state_rmse": 2e-06,
+    "float64_affine_max_abs": 1e-10,
+    "float64_constant_max_abs": 1e-12,
+    "float64_partition_and_moment": 1e-10,
+    "gradient_cross_abs": 2e-05,
+    "gradient_cross_rel": 0.002,
+    "gradient_fd_abs": 1e-08,
+    "gradient_fd_rel": 0.0001,
+    "gradient_full_abs": 2e-05,
+    "gradient_full_rel": 0.002,
+    "permutation_float32_max_abs": 2e-05,
+    "permutation_float64_max_abs": 1e-12,
+    "step_excursion": 0.00784313725490196
+  },
+  "gradient": {
+    "blocks": [
+      "means_over_l",
+      "log_scales",
+      "rotations_over_pi",
+      "colors"
+    ],
+    "cell_id": "target_conditioned__affine_xy__n0056__s0",
+    "seed": 20260716014,
+    "step": 0.000244140625
+  },
+  "infrastructure_recovery": {
+    "incidental_status_exposure": "not_reached_preregistered_base_forward_failure",
+    "lifecycle_only_changes": [
+      "source_archive_metadata_scope",
+      "candidate_spectral_replay_binding",
+      "candidate_solve_backward_error_replay",
+      "top_level_lifecycle_schema_v3",
+      "predecessor_equivalence_gate"
+    ],
+    "predecessor": {
+      "binding_sha256": "6817380d2599ff2d5d8a0a22d244b36fb5e9cb76ae4b220777d40d87b6a5e7d4",
+      "inventory_algorithm": "python_path_component_order_relative_posix_tab_size_tab_sha256_lf_no_trailing_lf",
+      "inventory_sha256": "111c0680df375e753ef6578847e1b80769e4e5f1a9bed09ebb9e5c9f05231ab9",
+      "path": "results/bench013_local_linear_stage0_full_2026-07-16"
+    },
+    "preflight_verification": {
+      "expected_binding_sha256": "6817380d2599ff2d5d8a0a22d244b36fb5e9cb76ae4b220777d40d87b6a5e7d4",
+      "expected_inventory_sha256": "111c0680df375e753ef6578847e1b80769e4e5f1a9bed09ebb9e5c9f05231ab9",
+      "inventory": {
+        "algorithm": "python_path_component_order_relative_posix_tab_size_tab_sha256_lf_no_trailing_lf",
+        "file_count": 358,
+        "payload_bytes": 45140,
+        "sha256": "111c0680df375e753ef6578847e1b80769e4e5f1a9bed09ebb9e5c9f05231ab9",
+        "total_bytes": 1141773631
+      },
+      "lifecycle": {
+        "analysis_absent": true,
+        "artifact_manifest_absent": true,
+        "completion_absent": true,
+        "config_binding_sha256": "6817380d2599ff2d5d8a0a22d244b36fb5e9cb76ae4b220777d40d87b6a5e7d4",
+        "config_protocol": "bench013-local-linear-reproducing-stage0-full-v2",
+        "config_recomputed_binding_sha256": "6817380d2599ff2d5d8a0a22d244b36fb5e9cb76ae4b220777d40d87b6a5e7d4",
+        "config_schema": "bench013-stage0-full-config-v2",
+        "config_task_sha256": "9d74511c95786592b5071b5f9b61434983b95bb0a28a97377903b45327cebb09",
+        "parent_binding_sha256": "394323650251ba129eab8b5e03ac2139ab2e348e1571fc4863646b3c777c13ab",
+        "replay_artifact_audit_passed": false,
+        "replay_binding_sha256": "6817380d2599ff2d5d8a0a22d244b36fb5e9cb76ae4b220777d40d87b6a5e7d4",
+        "replay_check_count": 14,
+        "replay_failed_checks": [
+          "forward_raw_replay"
+        ],
+        "replay_pass_count": 13,
+        "replay_schema": "bench013-stage0-full-replay-v2"
+      },
+      "path": "results/bench013_local_linear_stage0_full_2026-07-16",
+      "schema": "bench013-stage0-recovery-predecessor-verification-v1",
+      "verified": true
+    },
+    "previous_clarified_task_sha256": "9d74511c95786592b5071b5f9b61434983b95bb0a28a97377903b45327cebb09",
+    "scientific_metric_and_gate_ledgers_uninterpreted_before_repair": true,
+    "scientific_protocol_unchanged": true
+  },
+  "parent": {
+    "binding_sha256": "394323650251ba129eab8b5e03ac2139ab2e348e1571fc4863646b3c777c13ab",
+    "critical_hashes": {
+      "analysis.json": "5207065843161bccbf4512b6a385848717259a44151e83a180830cea53ae149d",
+      "artifact_manifest.json": "f3c5363f085566e129b595421e93eba8e23c8d95ea2fa7edfd101a3da09f26a0",
+      "completion.json": "70ee49fbe38a1c2700aabca8c60d26e68b5553a8a47d0146629b4749fb492bd8",
+      "executed_sources.tar": "861cfcf6cacdf263afe6cd362a29843b1e3b913a07eb441addb1e4e9f273f5aa",
+      "replay.json": "00708bc516c7f6bdf0d1062809ff5f9d2d19e4f490827a55da69b1a276a178c8"
+    },
+    "downstream_task_sha256": "9d74511c95786592b5071b5f9b61434983b95bb0a28a97377903b45327cebb09",
+    "manifest_file_count": 154,
+    "manifest_payload_sha256": "07f2097d895afd962d82e78313ac5d8cccf32acbe30bfc7b4b2eb2e043502b21",
+    "parent_task_sha256": "cc5506f1536771d77a8ade9e8c076520d772d984287124db70d0c5c3ae8aeb11"
+  },
+  "paths": {
+    "cand32": "stored_state_15_channel_index_add_centered_cholesky",
+    "math64": "promoted_parameters_recomputed_conics_exact_colors_active_qr",
+    "same64": "promoted_persisted_conics_and_stored_target_colors_active_qr"
+  },
+  "per_pixel_diagnostics": "one deterministic NPZ table per cell, incrementally ledgered in forward_cells.jsonl",
+  "permutation": {
+    "global_stream": true,
+    "lexical_cells": true,
+    "orders": [
+      "identity",
+      "reverse",
+      "pcg64_0",
+      "pcg64_1"
+    ],
+    "permuted_before_enumeration": true,
+    "seed": 20260716013
+  },
+  "plumbing_controls": {
+    "height": 9,
+    "negatives": [
+      "three collinear",
+      "one node"
+    ],
+    "new_downstream_core": true,
+    "positive": "four corners affine reproduction",
+    "width": 9
+  },
+  "protocol": "bench013-local-linear-reproducing-stage0-full-v3",
+  "replay_validation": {
+    "candidate_condition_from_persisted_eigenvalues": "exact_float32",
+    "candidate_eigen_atol": 2e-08,
+    "candidate_eigen_rtol": 2e-06,
+    "candidate_solve_componentwise_backward_error_eps32_multiplier": 128.0,
+    "recovery_equivalence": {
+      "binding_normalization": "drop_top_level_binding_sha256_only",
+      "binding_normalized_json": [
+        "controls.json",
+        "gradient.json"
+      ],
+      "binding_normalized_jsonl": [
+        "input_fields.jsonl",
+        "forward_cells.jsonl",
+        "effective_fields.jsonl",
+        "permutations.jsonl",
+        "gradient.jsonl"
+      ],
+      "expected_npz_count": 344,
+      "npz_comparison": "recursive_relative_path_size_sha256_exact",
+      "parent_binding": "exact_bytes",
+      "science_config_drop_keys": [
+        "binding_sha256",
+        "clarified_task_sha256",
+        "infrastructure_recovery",
+        "protocol",
+        "replay_validation",
+        "schema",
+        "source_manifest"
+      ]
+    }
+  },
+  "schema": "bench013-stage0-full-config-v3",
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "source_manifest": {
+    "benchmarks/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "benchmarks/local_linear_reproducing_assay.py": "5d85346120e7e2efae0ecec05ccebd823884825c8282d4a99f9aaaee0fb20cb1",
+    "benchmarks/local_linear_reproducing_core.py": "f12b554502c85e3e6c08099f1d9eea623c765b16aba287b7733e2e55c11da706",
+    "benchmarks/local_linear_reproducing_downstream_core.py": "759f18ca7a37deb1f6ad7323145838c302bc4930fce5361856e6da1c2f1eaef2",
+    "benchmarks/local_linear_reproducing_full_assay.py": "1a707d8347e9a1e8eb2261e93d01724ae13277d0a7f9b3e69430c644f39af542",
+    "pyproject.toml": "17bd0084dcb3e918227529835b50d5a7c3ad2c9f9afdf87f1eb2a4bb48d46610",
+    "src/structsplat/__init__.py": "813c146144dfe15a802bf7483e72c0935b80ab7377a0203ca4f04b15d37c09bf",
+    "src/structsplat/config.py": "4e5e1752e8ae4d64201bd9246855abad58ab438547d6ad7ccf528d169bbd3bef",
+    "src/structsplat/density.py": "045cc5b69167755c5746c3bdff353e03634542150712da5c32a469ed47a90873",
+    "src/structsplat/gaussians.py": "26d8ddf03740c8ed44ae9c97d2bb75438dd5a992327fe70cbd3c91f2e5e6fefe",
+    "src/structsplat/init.py": "9e5861f0e3666483d4308a952403460cb8c30c66c9b709da2682f92232221133",
+    "src/structsplat/render.py": "af26dd0f3d1eb6389c50e4baca8fa6e2ddf754c248c856f87e9c0d49863063f9",
+    "src/structsplat/sampling.py": "5f34e455a2a30bb5eceb8fc13e13fc667ba2160b199c3d1bef821d6963881240",
+    "src/structsplat/structural_controls.py": "03894a4050c845ef3f8175892f3a636d08ad64bee6908b08bbff4b0144c20269",
+    "src/structsplat/structure_tensor.py": "05a6b1a77290c5cf70209b11b1c0c95e7e8bee7f0c92142124354c06556ba405",
+    "tasks/BENCH-013-local-linear-reproducing-compositor.md": "b40b9075262c8c2dc07212490a1178b0168b6da9e433cb4ca23a10957bb1d0ad"
+  },
+  "target_arrays": {
+    "affine_xy__float32": {
+      "dtype": "float32",
+      "payload_sha256": "e263d54ae1b99961c02ff97c2d7a87b392216c63af1ddc4d8b5b7faf1d20a690",
+      "record_sha256": "3e852726d3d311b5a6c7f2b6cdd098197f4441b3adc2eb24d18070b41cde6f4c",
+      "shape": [
+        64,
+        64,
+        3
+      ]
+    },
+    "affine_xy__float64": {
+      "dtype": "float64",
+      "payload_sha256": "5468a5456d045a4fa03e45bf6f7ae313a604efe54ae81de2f31ab063707a0a2f",
+      "record_sha256": "5901ecf0ac9d0bc041d51324d17fdb694398771bb0b54f0a734bd9ad1b151d25",
+      "shape": [
+        64,
+        64,
+        3
+      ]
+    },
+    "checker8__float32": {
+      "dtype": "float32",
+      "payload_sha256": "835f6ea51ebdce62467419b7f9eb9effd083cb7169e587ed77ae0ce75f817e45",
+      "record_sha256": "922e9c030f620f5a5b5f90033b9b30283136eee7b0d765b3befa326172738de6",
+      "shape": [
+        64,
+        64,
+        3
+      ]
+    },
+    "checker8__float64": {
+      "dtype": "float64",
+      "payload_sha256": "a49323ae690cc9993ae520c73004abc629639442623369b5ad6c31011c3ada6b",
+      "record_sha256": "808fdecdc0c61be720b8a65b0278172ef9a702960e169b3aeb06fa7f150d0d5e",
+      "shape": [
+        64,
+        64,
+        3
+      ]
+    },
+    "constant__float32": {
+      "dtype": "float32",
+      "payload_sha256": "64b2b9cb4ecab7fee941db26105bda4bcbb95b39566db1ef2089033eb36875b4",
+      "record_sha256": "9dcf6d76c11d41019f779635830f0c00c474a3fdc741209e6e33728a7c7c870a",
+      "shape": [
+        64,
+        64,
+        3
+      ]
+    },
+    "constant__float64": {
+      "dtype": "float64",
+      "payload_sha256": "5ca494b0d09e7fe16153b384a8954e8dde860579083707f7f2708bdee141ce74",
+      "record_sha256": "18c4ad0f707f64b71d4e226642454366d202e3124bac720f6c71cf7825e2a72d",
+      "shape": [
+        64,
+        64,
+        3
+      ]
+    },
+    "diagonal_step__float32": {
+      "dtype": "float32",
+      "payload_sha256": "22567b8630c903f38ebb918d0f79ffa321a80b15d10ddacbb5b6a69ffa30873c",
+      "record_sha256": "400ff27245421bb69ed2f067b4e91ca38b9a6599f195abb92598664511c51ee7",
+      "shape": [
+        64,
+        64,
+        3
+      ]
+    },
+    "diagonal_step__float64": {
+      "dtype": "float64",
+      "payload_sha256": "187c727811c37750caf01470f577675e4cc0bea2a7bd54efb6c491c7da16f6af",
+      "record_sha256": "ea0bb152ccebf8996bfd73001668aeb1d5361d037ca8556980df1732a0a60e42",
+      "shape": [
+        64,
+        64,
+        3
+      ]
+    },
+    "quadratic__float32": {
+      "dtype": "float32",
+      "payload_sha256": "e665ce30d284155631d65cb52ba9d4c1e639ccb39b3f1403c5687f58653b2e2e",
+      "record_sha256": "f2a3ed1e13cb4fa79240a2f8a73931da8b137013aecb1b92903d180956f885b1",
+      "shape": [
+        64,
+        64,
+        3
+      ]
+    },
+    "quadratic__float64": {
+      "dtype": "float64",
+      "payload_sha256": "440ecab480b9149d05eef02ed7cb4e385314a2d8d53b994b21c9ab227e788542",
+      "record_sha256": "14c85aeb47fb3f9fd391e027c30ca6f3c9d602dd1a5d14688e445e299063bd3f",
+      "shape": [
+        64,
+        64,
+        3
+      ]
+    },
+    "vertical_step__float32": {
+      "dtype": "float32",
+      "payload_sha256": "426267168627528b5841270271b4eb3e9ecee65908f6b9e3e78c929c862c5e3b",
+      "record_sha256": "543304cdababb57a4f2d0d3c009498c15a5f377cf42b138b974a57929336ed29",
+      "shape": [
+        64,
+        64,
+        3
+      ]
+    },
+    "vertical_step__float64": {
+      "dtype": "float64",
+      "payload_sha256": "2603a0d224fc726724a29106a60411712c123dbfff682f0d579a26d361a51ed4",
+      "record_sha256": "11c80567426a83f015fc6d68d2b533e9e3b21b436a64939b2f174d62cf977cbd",
+      "shape": [
+        64,
+        64,
+        3
+      ]
+    }
+  },
+  "target_formulas": {
+    "affine_xy": {
+      "formula": "(0.10+0.35u+0.25v,0.80-0.30u-0.20v,0.20+0.20u+0.40v)",
+      "formula_sha256": "e28f8728da1d455d8ec553b4b4fce196ffeb276f42ae06422ba7064e9d25a7d7",
+      "parent_formula_sha256": "e28f8728da1d455d8ec553b4b4fce196ffeb276f42ae06422ba7064e9d25a7d7"
+    },
+    "checker8": {
+      "formula": "(floor(x/8)+floor(y/8))mod2 using vertical_step colors",
+      "formula_sha256": "47a4b6262af7f645c4eecd671b19c4110ab2a83840e67429e36f25810901f494",
+      "parent_formula_sha256": "47a4b6262af7f645c4eecd671b19c4110ab2a83840e67429e36f25810901f494"
+    },
+    "constant": {
+      "formula": "(0.25,0.50,0.75)",
+      "formula_sha256": "eba1addfb8d815ca9824f9c8fee28e5c66acdd4a859b73a44f4224120f07b741",
+      "parent_formula_sha256": "eba1addfb8d815ca9824f9c8fee28e5c66acdd4a859b73a44f4224120f07b741"
+    },
+    "diagonal_step": {
+      "formula": "u+v<1?(0.10,0.65,0.25):(0.90,0.20,0.75)",
+      "formula_sha256": "8acd1bdffd6461a11730bd4f89ca067f74ba6213aa5e0b73df30899f131c62b8",
+      "parent_formula_sha256": "8acd1bdffd6461a11730bd4f89ca067f74ba6213aa5e0b73df30899f131c62b8"
+    },
+    "quadratic": {
+      "formula": "(0.15+0.45u^2+0.15v,0.75-0.30v^2-0.15u,0.20+0.40uv)",
+      "formula_sha256": "9fe16893847021381b2de98ace69d26771fe1da9ba7135156c6e81eb6df9a5ad",
+      "parent_formula_sha256": "9fe16893847021381b2de98ace69d26771fe1da9ba7135156c6e81eb6df9a5ad"
+    },
+    "vertical_step": {
+      "formula": "u<0.5?(0.15,0.30,0.75):(0.85,0.70,0.20)",
+      "formula_sha256": "93b3c41dded2f3f2525df3417c2a2a4a136b69403b0f00a9c5f5b3a1b42a9427",
+      "parent_formula_sha256": "93b3c41dded2f3f2525df3417c2a2a4a136b69403b0f00a9c5f5b3a1b42a9427"
+    }
+  },
+  "targets": [
+    "constant",
+    "affine_xy",
+    "quadratic",
+    "vertical_step",
+    "diagonal_step",
+    "checker8"
+  ]
+}

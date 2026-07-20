@@ -560,3 +560,381 @@ observations:
     promoted_to: "logic/solution/heuristics.md:H09"
     crystallized_via: artifact-commitment
     stale: false
+  - id: O52
+    timestamp: "2026-07-15T11:41+0200"
+    provenance: ai-suggested
+    content: "At FIT-018's deterministic COCO4 x seeds{0,1}, 64->80 shared-start guard, SAD-style alpha-0.7 responsibility-density parent selection changes post-20/post-100 PSNR by -0.0198/-0.0411 dB versus the preselected support comparator and wins only 4/8 post-20 pairs; this exact transfer is refuted under the frozen gate."
+    context: "The responsibility scorer was implemented against StructSplat's exact normalized-renderer support/opacity/AA/fade semantics, and the source-frozen replay matched all non-timing aggregates."
+    potential_type: claim
+    bound_to: [N115, N116]
+    promoted: true
+    promoted_to: "logic/claims.md:C29"
+    crystallized_via: empirical-resolution
+    stale: false
+  - id: O53
+    timestamp: "2026-07-15T11:41+0200"
+    provenance: ai-suggested
+    content: "On one saved 20,000-Gaussian 640x480 field, exact top-16 responsibility truncation loses 0.04966 dB, retains mean/p05 mass 0.996064/0.977087, and exposes ideal reductions of 49.59% of positive contributions or 61.50% of rectangle visits; it is an oracle ceiling, not a measured speedup."
+    context: "The full oracle passed exact-CUDA parity at 1.344e-5 maximum absolute error; K<=8 lost at least 1.18945 dB and was rejected for near-lossless use."
+    potential_type: claim
+    bound_to: [N117, N118]
+    promoted: true
+    promoted_to: "logic/claims.md:C30"
+    crystallized_via: empirical-resolution
+    stale: false
+  - id: O54
+    timestamp: "2026-07-15T11:41+0200"
+    provenance: ai-suggested
+    content: "Small mechanism guards must explicitly pin deterministic execution and bind untracked benchmark/input sources: a CPU device label alone allowed small parallel-reduction trajectory drift, while one thread, deterministic algorithms, source hashes, and a replay produced exact non-timing aggregates."
+    context: "The first FIT-018 draft exposed small CPU reduction-order drift; the finalized harness records thread/determinism settings, image hashes, relevant source hashes, and a second replay."
+    potential_type: heuristic
+    bound_to: [N115]
+    promoted: true
+    promoted_to: "logic/solution/heuristics.md:H10"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O55
+    timestamp: "2026-07-15T11:41+0200"
+    provenance: ai-suggested
+    content: "Normalized splatting has a representation gauge under exact opacity splitting: each balanced child's responsibility-mass score scales by `2^(alpha-1)`, making alpha=1 invariant while alpha=0.7 scales by about 0.812; useful allocation/pruning operators may need to act on equivalence classes rather than individual parameter rows."
+    context: "FIT-018's alpha diagnostics and algebra expose the gauge, but no dedicated exact-split synthetic experiment has yet tested whether group-level operators improve recovery or compression."
+    potential_type: concept
+    bound_to: [N115, N119]
+    promoted: true
+    promoted_to: "logic/concepts.md:opacity-split-gauge-equivalence"
+    crystallized_via: empirical-resolution
+    stale: false
+  - id: O56
+    timestamp: "2026-07-15T11:41+0200"
+    provenance: ai-suggested
+    content: "The strongest near-term performance transfer is likely an exact per-Gaussian backward plus fused optimizer, as in Faster-GS, before approximate top-K rendering: the current top-K audit proves only a contribution ceiling and performs all candidate work up front."
+    context: "Primary-literature audit plus the single-field K audit separates an exact optimizer/backward opportunity from an approximate renderer path that still lacks deployable winner search and multi-field evidence."
+    potential_type: architecture
+    bound_to: [N117, N119]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O57
+    timestamp: "2026-07-15T13:05+0200"
+    provenance: ai-suggested
+    content: "On FIT-019's deterministic eight-family x two-seed procedural suite, exact half-opacity refinement preserves normalized rendering within 8.345e-7, aggregate-first responsibility scores match within 2.747e-6 relative error, and both-alpha quotient top-8 actions match all 16 canonical checkpoints; raw alpha-1 physical-group multisets change on both seeds for all 8 families."
+    context: "The audit-corrected v2 primary/replay passed every preregistered algebra, commutation, count, finiteness, source, and exact-replay gate."
+    potential_type: claim
+    bound_to: [N124]
+    promoted: true
+    promoted_to: "logic/claims.md:C31"
+    crystallized_via: empirical-resolution
+    stale: false
+  - id: O58
+    timestamp: "2026-07-15T13:05+0200"
+    provenance: ai-suggested
+    content: "FIT-019's quotient alpha-1 allocator fails its frozen restart-recovery utility guard: it wins only 5/8 families at post-20, changes post-100 PSNR by -0.600711 dB versus raw gauge-row alpha 1, and misses canonical support by -0.066534 dB at post-20."
+    context: "Exact commutation passed, but target-breadth, late-retention, and support-floor gates failed identically in the v2 primary and replay."
+    potential_type: claim
+    bound_to: [N124, N125]
+    promoted: true
+    promoted_to: "logic/claims.md:C32"
+    crystallized_via: empirical-resolution
+    stale: false
+  - id: O59
+    timestamp: "2026-07-15T13:05+0200"
+    provenance: ai-suggested
+    content: "A gauge-invariant allocator must certify identical non-opacity attributes and compatible row roles, aggregate additive sufficient statistics before nonlinear scoring, and keep exact groups external until approximate family semantics earn separate utility evidence; ordinary split ancestry is not sufficient."
+    context: "FIT-019 validation, algebra, action replay, and ADR-0014 commit to this boundary while leaving production GaussianField and codec state unchanged."
+    potential_type: heuristic
+    bound_to: [N124, N127]
+    promoted: true
+    promoted_to: "logic/solution/heuristics.md:H11"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O60
+    timestamp: "2026-07-15T13:05+0200"
+    provenance: ai-suggested
+    content: "In FIT-019's 16 quotient-minus-raw paired cells, post-20 and post-100 effect signs reverse in 7 cells, median effects are +0.0390/-0.0117 dB, and the apparent Pearson horizon relation (-0.593) is not rank-robust (Spearman -0.182); endpoint means are strongly target-composition-sensitive."
+    context: "A read-only post-hoc response audit motivated dense perturb--recover spectroscopy; the result is descriptive and does not establish a general inverse early/late relation."
+    potential_type: claim
+    bound_to: [N124, N126]
+    promoted: true
+    promoted_to: "logic/claims.md:C33"
+    crystallized_via: empirical-resolution
+    stale: false
+  - id: O61
+    timestamp: "2026-07-15T17:09+0200"
+    provenance: ai-suggested
+    content: "On FIT-020's frozen 36-cell held-out target-variant table, adding the preregistered response bend to static and step-10 controls changes RMSE from 2.961624 to 2.964081 dB, leaves sign accuracy at 25/36, improves only 2/6 family RMSEs, retains -1.045524 dB mean prediction-minus-observation bias, and changes no selected action; this exact predictor is refuted under the frozen gates."
+    context: "FIT-020 completed 432 deterministic trajectories with strong treatment variation, grouped train-only CV, a single held-out evaluation, bootstrap uncertainty, and a measurement-equivalent post-writer-fix replay."
+    potential_type: claim
+    bound_to: [N130, N131]
+    promoted: true
+    promoted_to: "logic/claims.md:C34"
+    crystallized_via: empirical-resolution
+    stale: false
+  - id: O62
+    timestamp: "2026-07-15T17:09+0200"
+    provenance: ai-suggested
+    content: "FIT-020's ranked ticket-deduplication path has large but family-sensitive descriptive late effects: held-out C5/C6/C7 minus C8 means are +1.8758/+2.2487/+1.6424 dB, but excluding sinusoid and chirp yields -0.2808/+0.4294/+0.4087 dB; fixed C6 and step-10 policies were not preregistered promotion claims."
+    context: "Independent protocol and literature audits separated the strong intervention signal from the failed response claim and rejected post-hoc C6 promotion, pure-coverage language, and natural-image generalization."
+    potential_type: claim
+    bound_to: [N130, N131, N132]
+    promoted: true
+    promoted_to: "logic/claims.md:C35"
+    crystallized_via: empirical-resolution
+    stale: false
+  - id: O63
+    timestamp: "2026-07-15T17:09+0200"
+    provenance: ai-suggested
+    content: "When a benchmark finishes immutable measurements but fails in heterogeneous-table serialization, preserve the measurement journal/rows, aggregate with the frozen source snapshot, assert exact aggregate equality after an output-only union-schema repair, and run a measurement-equivalent replay whose compared-field exclusions and source differences are explicit."
+    context: "FIT-020's first paired CSV header omitted held-out-only fields; finalization repaired only the writer, proved the aggregate unchanged, and replayed with zero mismatches among compared non-timing measurement fields."
+    potential_type: heuristic
+    bound_to: [N130, N132]
+    promoted: true
+    promoted_to: "logic/solution/heuristics.md:H12"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O64
+    timestamp: "2026-07-15T18:59+0200"
+    provenance: ai-suggested
+    content: "On COMP-006's frozen 18-target development suite, the best of 16 standard births at recovery step 20 and base SSPL1 +16 bytes loses -1.071442 dB mean and -0.953260 dB median PSNR to the strongest no-edit/replacement/precision control; bootstrap CI is [-1.287276,-0.841740] dB, all 18 target means and 6/6 family means are negative, and exact replay passes."
+    context: "The primary and same-source replay each completed 36 cells and 33,840 cold-validated streams; the preregistered development gate failed and confirmation remained sealed."
+    potential_type: claim
+    bound_to: [N136, N137]
+    promoted: true
+    promoted_to: "logic/claims.md:C36"
+    crystallized_via: empirical-resolution
+    stale: false
+  - id: O65
+    timestamp: "2026-07-15T18:59+0200"
+    provenance: ai-suggested
+    content: "In COMP-006's primary +16-byte cells, complete-stream and nominal-raw-bit oracles select the same row in 14/36; actual selection gains +0.213081 dB mean PSNR, but all 22 disagreements are control-allocation choices, branch class agrees in 34/36, and structural-birth selection never changes."
+    context: "Post-decision audit separated useful exact-rate precision allocation from the refuted structural-birth claim; every proxy winner was also feasible under the actual cap."
+    potential_type: claim
+    bound_to: [N136, N137, N138]
+    promoted: true
+    promoted_to: "logic/claims.md:C37"
+    crystallized_via: empirical-resolution
+    stale: false
+  - id: O66
+    timestamp: "2026-07-15T18:59+0200"
+    provenance: ai-suggested
+    content: "For context-dependent compressed containers, heterogeneous edit audits should encode independent self-contained streams and select by integer caps/Pareto order; negative and non-monotone byte deltas prohibit distortion-per-byte ratios, additive per-row prices, and sequential-budget interpretations."
+    context: "COMP-006 complete SSPL1 component accounting found selected controls from -25 to +15 bytes; the task, validator, report, and ADR commit to complete-stream counterfactual semantics."
+    potential_type: heuristic
+    bound_to: [N135, N136, N138]
+    promoted: true
+    promoted_to: "logic/solution/heuristics.md:H13"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O67
+    timestamp: "2026-07-15T18:59+0200"
+    provenance: ai-suggested
+    content: "COMP-006's post-hoc precision winners suggest an existing-grammar attribute/rate direction: 19/23 selected precision controls use 10 mean bits and 17/23 use 8 color bits, trading compressed geometry bytes for appearance/shape precision. Per-group QAT and real context/range coding may exploit this better than structural birth."
+    context: "This pattern was observed only after the frozen negative decision; no per-mix QAT, learned entropy model, deployable selector, or disjoint confirmation has tested it."
+    potential_type: claim
+    bound_to: [N136, N139]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O68
+    timestamp: "2026-07-15T19:11+0200"
+    provenance: ai-suggested
+    content: "StructSplat appears locally mature within its current constant-RGB Gaussian, normalized-renderer, per-image fit/QAT, and SSPL1 grammar, so isolated scalar or heuristic transfers face a strong optimizer-and-control baseline; this is not evidence of global optimality because exact GPU backward/fusion, learned or contextual entropy/rate co-design, richer codec-native atoms, and broad native external validation remain open."
+    context: "Interpretation of the repeated frozen negative screens through COMP-006; no new experiment was run in this turn."
+    potential_type: claim
+    bound_to: [N136, N137, N139, N140]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O69
+    timestamp: "2026-07-15T19:13+0200"
+    provenance: ai-suggested
+    content: >
+      BENCH-007's failed development gate and reported +0.0089 dB mean at 1.0 bpp are
+      consistent with the audited summaries, but C28's verb "beats" should be read as
+      a reported mean difference rather than inferential superiority because the
+      interval [-0.1718,+0.1738] crosses zero.
+    context: "Bounded forward test of the repository-specific results-audit rubric; raw rows and bootstrap inputs were not independently replayed."
+    potential_type: claim
+    bound_to: [N141]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O70
+    timestamp: "2026-07-15T19:23+0200"
+    provenance: ai-suggested
+    content: "The strongest smooth-replacement hypothesis for StructSplat's main fitter is a compact C1/C2 support taper: current sparse membership changes on detached rounded means and ceiled radii, while the optional max(raw-tail,0) fade is only C0. A taper whose value and derivative vanish before membership changes could improve gradient continuity without softplus leakage or more support pixels."
+    context: "Read-only audit of reconstruction, renderer, CUDA, prior support-fade evidence, and task-specific learning paths; no fit-quality experiment of a C1/C2 taper has run."
+    potential_type: architecture
+    bound_to: [N142, N143]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O71
+    timestamp: "2026-07-15T19:23+0200"
+    provenance: ai-suggested
+    content: "Hard post-optimizer scale projection is active in saved StructSplat fields, but it is projected optimization under no_grad rather than an autograd dead zone; before replacing it with softplus, sigmoid, or a smooth barrier, measure bound occupancy, outward-gradient frequency, and optimizer chatter because bounded sigmoids can introduce worse saturation."
+    context: "Saved-field diagnostic found exact lower/upper-bound occupancy; per-Gaussian feature caps remain default-off but the global [0.35,max(H,W)] projection is always present."
+    potential_type: heuristic
+    bound_to: [N142, N143]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O72
+    timestamp: "2026-07-15T20:16+0200"
+    provenance: ai-suggested
+    content: "The CVPR SMU variants do not preserve StructSplat renderer-support semantics as direct replacements for max(z,0): erf-SMU is negative for z<0, while square-root SMU-1 has positive tie bias and exterior leakage. Exact nonnegative compact support therefore requires a recipient-specific C1/C2 hinge or taper; the paper's neural-activation results do not establish renderer quality, convergence, compression, or throughput gains."
+    context: "Primary-source SMU formula audit plus repository mapping of active differentiated, detached, post-step, and optional hard operators; no SMU or compact-hinge fit experiment ran."
+    potential_type: constraint
+    bound_to: [N142, N143, N144]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O73
+    timestamp: "2026-07-15T23:56+0200"
+    provenance: ai-suggested
+    content: "BENCH-009's complete immediate/score ledgers cannot support the proposed causal outside-J classification: global all-eight-action calibration has Spearman 0.268549 and fails multiple causal strata, while the saved joint-minus-full-J projector increments contain negative values for affine and carrier at both rconds. Relative-rcond re-SVD/truncation of [J,A] can break retained-subspace nesting even when joint rank does not decrease, so these negatives are protocol invalidity for a literal projector delta, not negative capacity and not grounds for a tolerance or clamp."
+    context: "Standalone post-run audit implementation and read-only aggregate science check; recovery execution was still incomplete, so the final combined audit remains pending and every causal classification is unavailable."
+    potential_type: constraint
+    bound_to: [N145, N147]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O74
+    timestamp: "2026-07-17T00:11+0200"
+    provenance: ai-suggested
+    content: "Correct nested projector algebra is necessary but not sufficient for a useful local extension action: BENCH-011 removes BENCH-009's negative-energy invalidity yet all four affine/carrier calibration strata still fail, with finite curvature dominating before dynamic-support changes."
+    context: "BENCH-009 final audit and corrected spent-data BENCH-011 diagnostic closed the fixed identity/bank/radius/damping formulation without disjoint data or retuning."
+    potential_type: constraint
+    bound_to: [N148, N150, N151]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O75
+    timestamp: "2026-07-17T00:11+0200"
+    provenance: ai-suggested
+    content: "Removing rotation--scale gauge with three log-SPD covariance coordinates does not yield a robust StructSplat complete-stream rate--distortion gain under COMP-007's 84-allocation, two-coder development matrix; seven of eight promotion gates fail despite acceptable codec overhead."
+    context: "Valid v4 audited all 12,096 streams after v2/v3 were rejected for identity and source-closure defects; confirmation stayed sealed."
+    potential_type: claim
+    bound_to: [N154]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O76
+    timestamp: "2026-07-17T00:11+0200"
+    provenance: ai-suggested
+    content: "Affine reproduction is a real synthetic signal but the tested delivery mechanisms are not robust methods: explicit coefficients improve same-count quality yet lose complete bytes and convergence, while the zero-byte decoder-synchronized lift improves static quality yet loses no-harm, terminal convergence, and cold-decode cost."
+    context: "BENCH-013 killed the signed per-pixel correction, BENCH-014 isolated explicit affine value/cost, and BENCH-015 tested a same-rank decoder-derived alternative."
+    potential_type: claim
+    bound_to: [N156, N157, N158, N159]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O77
+    timestamp: "2026-07-17T00:11+0200"
+    provenance: ai-suggested
+    content: "Native SAD defines a rate-dependent development frontier against the equal-terminal-coordinate StructSplat control: it is dramatically better and faster at nominal 0.5 bpp, but fails the frozen 2.0-bpp median, worst-image, and LPIPS gates; this is not a SAD compression or isolated-primitive result."
+    context: "BENCH-016 v6 completed after v4/v5 fail-closed repairs exposed unexported candidate-map state and fresh-process CUDA races."
+    potential_type: claim
+    bound_to: [N160, N161, N162]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O78
+    timestamp: "2026-07-17T00:11+0200"
+    provenance: ai-suggested
+    content: "COMP-008's exact per-cell entropy lower bound overstates transferable headroom for the fixed post-hoc spatial model: actual SSP2E saves only about 1.3% versus the strongest factorized arithmetic control, although position beats shuffled assignments and factorized arithmetic framing is 3.6--4.6% smaller than SSPL1 on development data."
+    context: "The oracle authorized COMP-009; exact finite-CDF arithmetic coding, complete framing, native cold decode, and captured replay then produced a valid negative spatial-model decision."
+    potential_type: claim
+    bound_to: [N163, N164, N165, N166]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O79
+    timestamp: "2026-07-17T00:11+0200"
+    provenance: ai-suggested
+    content: "Implicit structured RGB quantizers can remove enough codebook cost to dominate selected explicit VQ points when source colors follow regular correlated or diffuse coordinate structure, but explicit RVQ is decisively better for palette-like clusters; a fixed union needs a target-blind source selector and real complete-stream evidence."
+    context: "Target-free 8,192-row feasibility proof with native coding, a palette counterexample, independent accounting audit, and no COMP-011 payload access."
+    potential_type: claim
+    bound_to: [N168, N169]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O80
+    timestamp: "2026-07-17T00:11+0200"
+    provenance: ai-suggested
+    content: "For a staged codec experiment with protected target order, persisted no-access flags are insufficient: candidate production must be OS-isolated, each attestation must bind the exact launch/allowlist/denied probes, replay must recompute decisions from regenerated artifacts, and immutable publication plus the terminal journal must survive or fail closed under interruption."
+    context: "Hostile COMP-011 lifecycle audit found parent-process production, recursive target reopening, original-evidence replay, and crash-publication gaps; target-free hardening is incomplete but 231 focused tests currently pass."
+    potential_type: heuristic
+    bound_to: [N167, N170]
+    promoted: true
+    promoted_to: "logic/solution/heuristics.md:H14"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O81
+    timestamp: "2026-07-17T16:12+0200"
+    provenance: ai-suggested
+    content: "The newest compression/renderer-aware research has not yet produced an end-to-end StructSplat improvement: fixed RGB VQ fails complete-rate gates, while the one-cell coordinate probe shows unusually large distortion headroom at nearly unchanged bytes but lacks target metrics, multi-image evidence, source-bound replay, and usable encoder performance."
+    context: "The user asked whether any actual improvements had emerged; an adversarial results audit separated supported historical bounded gains from the new isolated coordinate signal."
+    potential_type: claim
+    bound_to: [N177, N179, N180]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O82
+    timestamp: "2026-07-17T17:17+0200"
+    provenance: ai-suggested
+    content: "For exact-stream alphabet-release attribution, sharing only an upper byte cap is insufficient: the released alphabet must match or beat the terminal coarse stream's actual complete bytes, and a direct fine start plus strongest target-blind feasible lattice is required to separate alphabet value, unused headroom, and nested schedule effects."
+    context: "Independent hostile review rejected the initial COMP-012 sketch before task or code freeze; no new development target was opened."
+    potential_type: constraint
+    bound_to: [N179, N180, N181]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O83
+    timestamp: "2026-07-17T17:17+0200"
+    provenance: ai-suggested
+    content: "Generic coordinate descent, hard rate caps, decoder-compatible quantized-index optimization, renderer-aware RDO, and target-guided encoder optimization are already covered by nearby prior art; any defensible COMP-012 contribution must be the StructSplat-specific exact-stream causal evidence protocol and resulting empirical relation, not a generic optimizer novelty claim."
+    context: "A parallel nearest-prior-art threat review was combined with the hostile COMP-012 preregistration audit; implementation and empirical resolution remain pending."
+    potential_type: claim
+    bound_to: [N180, N181]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O84
+    timestamp: "2026-07-18T07:35+0200"
+    provenance: ai-suggested
+    content: "Two already-exposed m12 exact-cap cells show simultaneous PSNR, MS-SSIM, and LPIPS gains from target-guided RGB coordinate search, but the nonterminal same-data calibration does not establish held-out transfer, a default change, convergence, speed, compression advantage, expressiveness, or state-of-the-art improvement."
+    context: "Exact-byte calibration, three-repeat persisted-CUDA scoring, and adversarial evidence audit separated the two positive m12 cells from the m16 perceptual counterexample."
+    potential_type: claim
+    bound_to: [N182]
+    promoted: true
+    promoted_to: "logic/claims.md:C38"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O85
+    timestamp: "2026-07-18T07:35+0200"
+    provenance: ai-suggested
+    content: "For discrete context-coded RGB RDO, a positive first-order differentiable-metric prediction is not sufficient for acceptance: under the tested m16 origin, every exact-scored feasible dyadic prefix lowered actual MS-SSIM, so actual metric evaluation and conservative constraints must remain authoritative."
+    context: "The stable actual-MS harness reconciled the renderer/operator exactly, ranked only positive predicted moves, and committed zero edits after exact prefix scoring."
+    potential_type: heuristic
+    bound_to: [N185, N186]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

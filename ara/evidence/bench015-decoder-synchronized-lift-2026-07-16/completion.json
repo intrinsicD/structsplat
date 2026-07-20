@@ -1,0 +1,11 @@
+{
+  "analysis_sha256": "62f42f280efaa0e2d0857da55c3ea7f02b507a09ea3eaa95f1bf139c038a88be",
+  "artifact_manifest_sha256": "01a4f19bd22d07a856f41e6ed9a4ecac747e9873e8adf3a4f817c91d8df4770c",
+  "artifact_manifest_validated": true,
+  "binding_sha256": "be733865b77570d2cfb8244bde6805aee3020d6b92eaa1b406ae2ca3ed3b3c46",
+  "complete": true,
+  "decision": "kill",
+  "replay_sha256": "55d22739e29c28915ad253bfd1d65a4ef340f059c155beff0873203e143e571e",
+  "schema": "bench015-completion-v1",
+  "written_last_after_independent_replay": true
+}

@@ -1,0 +1,165 @@
+{
+  "algebra_valid": true,
+  "all_frozen_calibration_strata_pass": false,
+  "binding_sha256": "3c16c92e1de8c2bc005533f1a59465f8cacf77d5c7255be52cc5abe1c3aa5f61",
+  "calibration_strata": {
+    "candidate=affine6|trust_radius=0.25": {
+      "eligible_row_count": 16,
+      "enough_non_tied_eligible_rows": true,
+      "excluded_at_or_below_floor_count": 8,
+      "excluded_row_ids": [
+        "db10d56650812b57d2e72c8ac1bbe8e2039ba9a334e51d9c3b59b319f3030e72",
+        "fd8fdbb185acc497f9da49eb90bc48013dffa1a0506d5a4cca5513b8c4747369",
+        "0c578a390dfee9d3743766eb04f3be2d5d48a56c7459c25c88a6c07b171d760d",
+        "103fc567bb531c299680b0f06082a2518a18fb1a2fcadf3ed172d0ad37d42c82",
+        "e9c4bdd39f21a37f77136ae3c522f084aeb00f5d275f90ef31da69d7f0e706a8",
+        "6ff3e19f92184302da328ca5d9a826d7aefaadadd1780a3a942efc30f3f492aa",
+        "ef2a8508976661692fcd86de2cfb86b00c386a2b54c71f6891c99e8a3d2cd795",
+        "826b313a117f8eb5dded346219e4737269214f0a615c02051ed5a22f7d28f095"
+      ],
+      "gain_ratio_bounds": [
+        0.5,
+        2.0
+      ],
+      "gate_pass": false,
+      "median_realized_over_predicted": 0.20710844528260658,
+      "negative_realized_gain_count": 14,
+      "raw_row_count": 24,
+      "spearman": 0.4,
+      "spearman_minimum": 0.8
+    },
+    "candidate=affine6|trust_radius=0.75": {
+      "eligible_row_count": 14,
+      "enough_non_tied_eligible_rows": true,
+      "excluded_at_or_below_floor_count": 10,
+      "excluded_row_ids": [
+        "b4ff23cfa405505cfae970eeca0ec408a88595ae680d9a1c1c6b75bbe6a3615c",
+        "f7c82e03e3613e15961b97a7c2538668733f24a28f81e40d650b7d2bd7556baf",
+        "2a6ae5624f7e7b1ed1fcb6b8b58b67fb83e26b06da628b0acb8ebbe0337e0718",
+        "12454988e29a40174d89cfa33afd0cfe7b68bf48a84a793a6f242252bbe6bebe",
+        "2130f7529da4b81b2e7e19210bc7f7b72c5b47cf6ecd60370dda302f95f6f4e6",
+        "81f451446c089f598d600dfddca1e1b2ce7545b67f950564b5edae3ad33b6dc4",
+        "9da9114b91aa16dba607240bae684679e8c7bf295e46ef3e7ed24947f93017d1",
+        "fa7a846381ebbe02011403ed343332b4bc9d161a2b61c4ffc4981dfa76cb2147",
+        "55712f1dbac3816a208653d829e6f669cd313052374bdc07ca8b34bcb6b388a0",
+        "d961c972cbb5fba2adb400345f9daf5245ba91d08f25f6bdc81d5bb0aaec87a4"
+      ],
+      "gain_ratio_bounds": [
+        0.5,
+        2.0
+      ],
+      "gate_pass": false,
+      "median_realized_over_predicted": -21.54401761407342,
+      "negative_realized_gain_count": 24,
+      "raw_row_count": 24,
+      "spearman": -0.3054945054945055,
+      "spearman_minimum": 0.8
+    },
+    "candidate=carrier6|trust_radius=0.25": {
+      "eligible_row_count": 16,
+      "enough_non_tied_eligible_rows": true,
+      "excluded_at_or_below_floor_count": 8,
+      "excluded_row_ids": [
+        "669a60378c345d5fc7cb826b6aa4de1acd5a5cf71d63c0b2d4e842027c5bc4f6",
+        "530d47f6b9f573cfd4f1229f43c8b1e924170c667a3d1721eb337107dcf02219",
+        "a1132d25abcbb25ca2684aa59324dabd1acd974ffe1be5eeab831e383f76c0a7",
+        "5b9a0707c53047b8dc505e4644859283bf8f6fb79142dceb7868202909dd8778",
+        "fc699b36e90991712accbb1f07c4ccff19f4615176e3a02bde809ccb632fd16f",
+        "a40e7437fb710fc42aa0fffd8599334732d8fd594d6bf28b4efc0c40cbcf01ac",
+        "a9e29299960f9876340e3b3b833d6485af42adfb0d5a431337fff9c7c8d16241",
+        "cb3aa3621c7789f2b179f8d9570291dfbcff09f419a58fb3d7b09d0a9f5398e1"
+      ],
+      "gain_ratio_bounds": [
+        0.5,
+        2.0
+      ],
+      "gate_pass": false,
+      "median_realized_over_predicted": -0.17225730559917293,
+      "negative_realized_gain_count": 16,
+      "raw_row_count": 24,
+      "spearman": 0.38529411764705884,
+      "spearman_minimum": 0.8
+    },
+    "candidate=carrier6|trust_radius=0.75": {
+      "eligible_row_count": 14,
+      "enough_non_tied_eligible_rows": true,
+      "excluded_at_or_below_floor_count": 10,
+      "excluded_row_ids": [
+        "63f04ce2da9a849ea97532cf75fc6ce881ca2de09b80bb339b3a4856cef04612",
+        "d4a98aff90eb9eba80ae0c9fee4a7d2c954e403caf8fc9ecd01745d8f021e920",
+        "aac383429645c3ae08a32352bb6424a32115ac1d0d565d8a719cddb9b46edabd",
+        "7d9ffa3482d7b96fa71d815a0633b54b5a1c24cdaba4122671040283afa8de79",
+        "ef1d3a40ce62e66ba69b80ec045644488b96fe16b2941c1e482c51a4f95644b6",
+        "985ae5e5421940296afa196b54d85ee008b2835d85063e3c0ba141146fc5e04f",
+        "87410cc0c9693caada5b8352830a499b68c5e3c00a98c574ad9b104c4b62dbad",
+        "539981c276c48386f687a9a7b49228633e4f5876db97b325d8aa255cf8711d0d",
+        "066e91f5b3ceae7a6fae9b4abcf7cc2937444741f8de5bf19b6639fb58d0fd22",
+        "18d5bf67ede75f2db9c22a6445ee48353e122d627f4d2e01b14a369330b4c6d4"
+      ],
+      "gain_ratio_bounds": [
+        0.5,
+        2.0
+      ],
+      "gate_pass": false,
+      "median_realized_over_predicted": -25.230322569722333,
+      "negative_realized_gain_count": 24,
+      "raw_row_count": 24,
+      "spearman": -0.2043956043956044,
+      "spearman_minimum": 0.8
+    }
+  },
+  "claim_boundary": {
+    "compression_claim_authorized": false,
+    "convergence_claim_authorized": false,
+    "method_promotion_authorized": false,
+    "performance_claim_authorized": false,
+    "quality_claim_authorized": false,
+    "spent_data_diagnostic_only": true
+  },
+  "classification": "diagnostic_fail",
+  "errors": [],
+  "family_means_descriptive_only": {
+    "chirp": {
+      "mean_nested_delta": 0.03262431177291225,
+      "mean_predicted_mse_gain": 3.0822608891867276e-06,
+      "mean_realized_mse_gain": -0.0004161611119570807,
+      "row_count": 16
+    },
+    "natural_texture": {
+      "mean_nested_delta": 0.09861149528337464,
+      "mean_predicted_mse_gain": -1.827353480621241e-05,
+      "mean_realized_mse_gain": -3.746771835722029e-05,
+      "row_count": 16
+    },
+    "ramp_shading": {
+      "mean_nested_delta": 1.9881698410147033e-08,
+      "mean_predicted_mse_gain": 7.56963230025276e-06,
+      "mean_realized_mse_gain": -7.042585437488924e-06,
+      "row_count": 16
+    },
+    "stationary_sinusoid": {
+      "mean_nested_delta": 0.0017474053886222046,
+      "mean_predicted_mse_gain": 1.1635588236913463e-05,
+      "mean_realized_mse_gain": -0.0002005964270210825,
+      "row_count": 16
+    },
+    "step_junction": {
+      "mean_nested_delta": 0.008179907867763203,
+      "mean_predicted_mse_gain": -2.213310835941229e-06,
+      "mean_realized_mse_gain": -6.656117329839617e-05,
+      "row_count": 16
+    },
+    "thin_curve": {
+      "mean_nested_delta": 0.00096508184682,
+      "mean_predicted_mse_gain": -2.518428414077789e-05,
+      "mean_realized_mse_gain": -4.9022831035472336e-05,
+      "row_count": 16
+    }
+  },
+  "no_rescue_rule": "close_without_retuning",
+  "protocol": "BENCH-011 nested residual-extension spent-data diagnostic v2",
+  "row_count": 96,
+  "schema": "structsplat.bench011.nested_extension_analysis.v2",
+  "status": "available",
+  "unit_count": 24
+}

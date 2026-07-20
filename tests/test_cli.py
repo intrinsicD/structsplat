@@ -174,7 +174,9 @@ def test_stage_search_cli_forwards_sharding_and_factored_axes(monkeypatch):
             "influence",
             "--refine-sites",
             "none",
-            "residual_tensor",
+            "responsibility",
+            "--responsibility-mass-alpha",
+            "0.65",
             "--refine-primitives",
             "duplicate",
             "moment_preserving",
@@ -211,7 +213,8 @@ def test_stage_search_cli_forwards_sharding_and_factored_axes(monkeypatch):
 
     assert captured["images"] == ["images"]
     assert captured["mode"] == "influence"
-    assert captured["refine_sites"] == ["none", "residual_tensor"]
+    assert captured["refine_sites"] == ["none", "responsibility"]
+    assert captured["responsibility_mass_alpha"] == pytest.approx(0.65)
     assert captured["refine_primitives"] == ["duplicate", "moment_preserving"]
     assert captured["refine_nms_modes"] == ["off", "on"]
     assert captured["refine_color_inits"] == ["target", "residual"]

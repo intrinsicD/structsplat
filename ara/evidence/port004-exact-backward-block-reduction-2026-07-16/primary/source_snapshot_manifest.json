@@ -1,0 +1,60 @@
+{
+  "manifest_version": 1,
+  "scope": "exact executed block-reduction experiment critical-source snapshot",
+  "protocol": "exact-normalized-CUDA-backward-block-reduce-v1",
+  "artifact": "results/bench010_exact_backward_block_reduce",
+  "git_commit": "5dc649397c40e69cf3e96bd27df2c5e2812d003d",
+  "git_branch": "main",
+  "git_dirty": true,
+  "tracked_diff_sha256": "d7d8c8c045045f6228096d487c671c1d8d0007350e53ae965e53fb944b070ab3",
+  "files": {
+    "benchmarks/exact_backward_profile.py": {
+      "kind": "file_bytes",
+      "sha256": "7a39ea77c6f7cf22e1970e645b72a388a7aa876fe56b159cb963ee4c3ae8ce23",
+      "size_bytes": 48754,
+      "snapshot_path": "source_snapshot/benchmarks/exact_backward_profile.py"
+    },
+    "src/structsplat/cuda/render_ext.cpp": {
+      "kind": "file_bytes",
+      "sha256": "eec0e011189a34d3489c6f719d15528a3511758b79b5cfad145f91323ef5e356",
+      "size_bytes": 8648,
+      "snapshot_path": "source_snapshot/src/structsplat/cuda/render_ext.cpp"
+    },
+    "src/structsplat/cuda/render_ext.cu": {
+      "kind": "file_bytes",
+      "sha256": "5493130d56cdf24dd67d54111eb14a701f5e2b143173cdee27a90a7fa988e150",
+      "size_bytes": 27145,
+      "snapshot_path": "source_snapshot/src/structsplat/cuda/render_ext.cu"
+    },
+    "src/structsplat/cuda_render.py": {
+      "kind": "file_bytes",
+      "sha256": "1a3be3a92520511c703c0d5d9d7f5a60dbf230d5131fc23899c716a835783a62",
+      "size_bytes": 9747,
+      "snapshot_path": "source_snapshot/src/structsplat/cuda_render.py"
+    },
+    "src/structsplat/fit.py": {
+      "kind": "file_bytes",
+      "sha256": "188fa81397d66f2484c54e12bfe9c2165463c252474b128d8db20199634937c2",
+      "size_bytes": 122097,
+      "snapshot_path": "source_snapshot/src/structsplat/fit.py"
+    },
+    "src/structsplat/gaussians.py": {
+      "kind": "file_bytes",
+      "sha256": "26d8ddf03740c8ed44ae9c97d2bb75438dd5a992327fe70cbd3c91f2e5e6fefe",
+      "size_bytes": 15154,
+      "snapshot_path": "source_snapshot/src/structsplat/gaussians.py"
+    },
+    "src/structsplat/metrics.py": {
+      "kind": "file_bytes",
+      "sha256": "8d9963efa6d3e7b687e349398079ff058326653eeaac47fdf5d1b4778ce8a8b7",
+      "size_bytes": 6989,
+      "snapshot_path": "source_snapshot/src/structsplat/metrics.py"
+    },
+    "src/structsplat/render.py": {
+      "kind": "file_bytes",
+      "sha256": "af26dd0f3d1eb6389c50e4baca8fa6e2ddf754c248c856f87e9c0d49863063f9",
+      "size_bytes": 20144,
+      "snapshot_path": "source_snapshot/src/structsplat/render.py"
+    }
+  }
+}

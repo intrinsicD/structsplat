@@ -1,0 +1,12 @@
+{
+  "artifact_audit_passed": true,
+  "check_count": 2,
+  "checks": {
+    "analysis_exact": true,
+    "artifact_manifest": true
+  },
+  "failed_checks": [],
+  "outcome_ledgers_interpreted": true,
+  "pass_count": 2,
+  "protocol": "bench016-native-sad-frontier-v6"
+}

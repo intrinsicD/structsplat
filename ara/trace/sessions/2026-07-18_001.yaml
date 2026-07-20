@@ -1,0 +1,141 @@
+session:
+  id: "2026-07-18_001"
+  date: "2026-07-18"
+  started: "2026-07-18T07:35+0200"
+  last_turn: "2026-07-18T10:48+0200"
+  turn_count: 2
+  summary: "Two exposed m12 exact-cap gains now have a referee-approved visual report, while the exposed m16 fixed repairs remain negative; no held-out method improvement is claimed."
+
+events_logged:
+  - turn: 1
+    type: experiment
+    id: N182
+    routing: direct
+    provenance: ai-executed
+    summary: "Exact-cap target-MSE RDO improves all metrics on two exposed m12 cells but trades PSNR against perception on exposed m16."
+  - turn: 1
+    type: dead_end
+    id: N183
+    routing: direct
+    provenance: ai-executed
+    summary: "Fixed source proximity and four-neighbor gradient repair worsen the m16 perceptual tradeoff."
+  - turn: 1
+    type: experiment
+    id: N184
+    routing: direct
+    provenance: ai-executed
+    summary: "None of 11 saved m16 path checkpoints improves PSNR, MS-SSIM, and LPIPS together."
+  - turn: 1
+    type: experiment
+    id: N185
+    routing: direct
+    provenance: ai-executed
+    summary: "The audited actual-MS origin-gradient run selects no dyadic prefix and leaves the start blob unchanged."
+  - turn: 1
+    type: dead_end
+    id: N186
+    routing: direct
+    provenance: ai-executed
+    summary: "The fixed actual-MS origin-gradient/dyadic-prefix bundle fails on the exposed m16 cell."
+  - turn: 1
+    type: experiment
+    id: N187
+    routing: direct
+    provenance: ai-executed
+    summary: "Exact-byte RDO core/operator/paired-adapter validation passes 93 focused tests and lint."
+  - turn: 1
+    type: question
+    id: N188
+    routing: direct
+    provenance: ai-suggested
+    summary: "Open whether nonlocal or representation-level proposals can cross the exact-rate perceptual barrier."
+  - turn: 1
+    type: observation
+    id: O84
+    routing: staged
+    provenance: ai-suggested
+    summary: "Two exposed positive cells are a mechanism lead, not held-out method evidence."
+  - turn: 1
+    type: observation
+    id: O85
+    routing: staged
+    provenance: ai-suggested
+    summary: "Exact metric acceptance remains necessary when first-order discrete predictions fail."
+  - turn: 2
+    type: experiment
+    id: N189
+    routing: direct
+    provenance: ai-executed
+    summary: "Fresh cold-decode snapshots bind exact streams, metrics, and six visual assets for the two exposed m12 cells."
+  - turn: 2
+    type: claim
+    id: O84
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the two-cell all-metric gain and its strict exposed-development boundary as C38 via visual-artifact commitment."
+
+ai_actions:
+  - turn: 1
+    action: "Implemented and hostile-tested exact-byte objective, coordinate-search, size-oracle, source-bound operator, and crash-safe paired-adapter components."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/ssp2f_coordinate_rdo.py"
+      - "benchmarks/ssp2f_rdo_objective.py"
+      - "benchmarks/ssp2f_size_oracle.py"
+      - "benchmarks/ssp2f_rdo_operator.py"
+      - "benchmarks/ssp2f_rdo_adapter.py"
+  - turn: 1
+    action: "Ran exposed exact-cap calibration, two fixed repair assays, a saved-checkpoint diagnostic, and one predeclared actual-MS-SSIM repair with fresh persisted-CUDA falsifiers."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 1
+    action: "Recorded exact hashes/metrics and narrowed every result through independent adversarial audits."
+    provenance: ai-executed
+    files_changed:
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/run.md"
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/actual_ms_repair_readout.json"
+      - "ara/evidence/README.md"
+  - turn: 2
+    action: "Cold-decoded four exact streams in fresh frozen-CUDA workers, scored the float renders, saved six lossless RGB comparison assets plus a machine-readable manifest, and built a responsive local visual report."
+    provenance: ai-executed
+    files_changed:
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/index.html"
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/visual/metrics.json"
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/visual/jason-target.png"
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/visual/jason-baseline.png"
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/visual/jason-candidate.png"
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/visual/nomao-target.png"
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/visual/nomao-baseline.png"
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/visual/nomao-candidate.png"
+  - turn: 2
+    action: "Validated hashes, actual bytes/bpp, metric transcription, image modes/dimensions, responsive layout, live wipe interactions, relative links, and scope; corrected reversed slider endpoint captions found by an independent referee."
+    provenance: ai-executed
+    files_changed:
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/index.html"
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/run.md"
+      - "ara/evidence/README.md"
+
+claims_touched:
+  - id: C38
+    action: crystallized
+    turn: 2
+
+key_context:
+  - turn: 1
+    excerpt: "The user asked whether anything from the continued research was worth mentioning."
+  - turn: 1
+    excerpt: "The strongest positive result remains two exposed equal-byte m12 cells; the newly audited actual-MS repair is a clean negative on one exposed m16 cell."
+  - turn: 2
+    excerpt: "The user requested a focused index.html showing only the target, current baseline, and fitted candidate with all metrics for the two positive cells."
+  - turn: 2
+    excerpt: "The visual artifact preserves the exposed-development boundary and does not promote a held-out, compression-isolation, convergence, performance, expressiveness, default, or SOTA claim."
+
+open_threads:
+  - "Complete COMP-012 lifecycle orchestration, frozen gates, runtime/transcript caps, and preflight before any protected or held-out execution."
+  - "Keep confirmation data sealed until a genuinely new, source-bound protocol and independent development gate authorize access."
+  - "Choose and preregister one constrained multi-edit, local trust-region/line-search, non-dyadic, or representation-level follow-up without tuning on the exposed m16 result."
+  - "Resolve whether the two exposed m12 gains transfer across independent images and precision regimes under exact bytes and conservative repeated CUDA metrics."
+
+ai_suggestions_pending:
+  - "Prefer a small auditable multi-edit/trust-region proposal over another fixed scalar surrogate."
+  - "Treat richer codec-native atoms as a separate representation hypothesis, not a rescue of the failed origin-gradient bundle."

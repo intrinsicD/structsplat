@@ -2412,3 +2412,1409 @@ tree:
       - "443/443 pytest tests"
     also_depends_on: [N104, N107, N108, N110, N111]
     status: resolved
+  - id: N113
+    type: question
+    title: "Research current methods and test transferable improvements"
+    provenance: user
+    timestamp: "2026-07-15T11:41+0200"
+    description: >
+      Create a reusable prompt for real research with the repository's research skills, execute
+      it on StructSplat, identify how current state-of-the-art methods work from the literature,
+      and experimentally test whether their ideas can improve quality, convergence, performance,
+      compression, or expressiveness.
+    also_depends_on: [N112]
+    status: resolved
+  - id: N114
+    type: decision
+    title: "Use an evidence-first prompt and screen exact responsibility density"
+    provenance: ai-executed
+    timestamp: "2026-07-15T11:41+0200"
+    choice: >
+      Write and execute a reusable evidence-first research prompt, audit repository and primary
+      literature frontiers, downgrade responsibility-density allocation from a novelty candidate
+      to a known SAD-style transfer, and select its exact normalized-ownership form as a bounded
+      low-cost calibration experiment before pursuing larger architecture changes.
+    alternatives:
+      - "Treat responsibility density as novel without a prior-art audit."
+      - "Start with an approximate top-K production kernel before measuring its quality ceiling."
+      - "Launch a large compression or learned-initializer program without first freezing claims, controls, and stopping rules."
+    evidence:
+      - "docs/prompts/real-research.md"
+      - "ara/evidence/research-portfolio-2026-07-15.md"
+      - "tasks/FIT-018-responsibility-error-density.md"
+    also_depends_on: [N113, N108, N111]
+    status: resolved
+  - id: N115
+    type: experiment
+    title: "FIT-018 deterministic responsibility-density recovery guard"
+    provenance: ai-executed
+    timestamp: "2026-07-15T11:41+0200"
+    result: >
+      Implemented exact chunked two-pass normalized-renderer responsibility scoring, exposed
+      `responsibility_mass_alpha`, added synthetic/parity/CLI/stage coverage, and ran a
+      source-bound COCO4 x seeds{0,1} shared-start 64->80 moment-preserving split guard with one
+      CPU thread and deterministic algorithms. Against the preselected `support` comparator,
+      the SAD-style alpha-0.7 donor changed immediate/post-20/post-100 PSNR by
+      -0.0623/-0.0198/-0.0411 dB, won 4/8 post-20 pairs, and added 1.8% total-100 time. A second
+      source-frozen replay matched every non-timing aggregate exactly; the full suite passed
+      488 tests.
+    evidence:
+      - "ara/evidence/fit018-responsibility-guard-2026-07-15/"
+      - "tasks/FIT-018-responsibility-error-density.md"
+      - "benchmarks/responsibility_split_compare.py"
+    also_depends_on: [N114, N108]
+    status: resolved
+  - id: N116
+    type: dead_end
+    title: "SAD-style alpha-0.7 responsibility-density split selection"
+    provenance: ai-executed
+    timestamp: "2026-07-15T11:41+0200"
+    hypothesis: >
+      Weighting per-Gaussian reconstruction error by normalized responsibility mass to power 0.7
+      would improve equal-count recovery by at least +0.10 dB after 20 steps, win at least 6/8
+      pairs, retain post-100 quality, and remain within the frozen time guard.
+    failure_mode: >
+      The donor lost 0.0198 dB after 20 steps, won only 4/8 pairs, and lost 0.0411 dB after 100
+      steps. It passed only the non-regression tolerance, count, finiteness, and time components;
+      the preregistered promotion guard returned false.
+    lesson: >
+      Do not tune alpha or fixtures on the same eight cells. Alpha=1's near-invariance and the
+      analytical `2^(alpha-1)` opacity-split scaling expose a distinct gauge-equivalence question
+      that requires a new synthetic null and independent evidence.
+    evidence:
+      - "N115"
+      - "ara/evidence/fit018-responsibility-guard-2026-07-15/aggregate.json"
+      - "ara/evidence/fit018-responsibility-guard-2026-07-15/rows.csv"
+    also_depends_on: [N115]
+    status: resolved
+  - id: N117
+    type: experiment
+    title: "Single-field top-K responsibility oracle audit"
+    provenance: ai-executed
+    timestamp: "2026-07-15T11:41+0200"
+    result: >
+      Audited exact clipped-support top-K normalized weights on one saved 20,000-Gaussian,
+      640x480 field. The full oracle matched the owned exact-CUDA renderer to 1.344e-5 maximum
+      absolute error. K=16 retained 34.57605 dB versus 34.62571 dB full (-0.04966 dB), mean/p05
+      responsibility mass 0.996064/0.977087, and exposed ideal reductions of 49.59% of positive
+      contributions or 61.50% of rectangle visits. The audit evaluates all candidates before
+      selection, so these are oracle ceilings rather than latency or throughput measurements.
+    evidence:
+      - "ara/evidence/topk-responsibility-oracle-2026-07-15/"
+      - "benchmarks/topk_responsibility_oracle.py"
+    also_depends_on: [N114]
+    status: resolved
+  - id: N118
+    type: dead_end
+    title: "Top-8-or-smaller near-lossless responsibility truncation"
+    provenance: ai-executed
+    timestamp: "2026-07-15T11:41+0200"
+    hypothesis: >
+      A small fixed K could preserve near-full normalized-renderer quality while eliminating most
+      per-pixel Gaussian contributions on the saved dense field.
+    failure_mode: >
+      K=8 loses 1.18945 dB, and K={1,2,4} lose 20.00664, 13.51950, and 6.29097 dB respectively.
+      Only K=16 reaches the provisional 0.05 dB near-lossless boundary, and only on one field.
+    lesson: >
+      Reject K<=8 for a near-lossless kernel path. Treat K=16 as a multi-field mechanism question,
+      not a production speed claim, until winner search, latency, memory traffic, and fallback are
+      implemented and measured.
+    evidence:
+      - "N117"
+      - "ara/evidence/topk-responsibility-oracle-2026-07-15/result.json"
+      - "ara/evidence/topk-responsibility-oracle-2026-07-15/rows.csv"
+    also_depends_on: [N117]
+    status: resolved
+  - id: N119
+    type: decision
+    title: "Prioritize gauge correctness and exact performance work"
+    provenance: ai-executed
+    timestamp: "2026-07-15T11:41+0200"
+    choice: >
+      Keep FIT-018 opt-in and rejected, leave K=16 as a single-field oracle candidate, and make an
+      opacity-split gauge-equivalence audit the next novelty experiment. For performance, profile
+      and transfer Faster-GS-style per-Gaussian backward/fused optimization before approximate
+      top-K work. For compression, measure marginal self-contained bytes with context modeling;
+      for expressiveness, compare compact frequency/luminance primitives at equal actual bytes.
+    alternatives:
+      - "Promote alpha=1 from its small diagnostic advantage without a new gauge test."
+      - "Quote oracle contribution reductions as measured renderer acceleration."
+      - "Claim compression gains from Gaussian count or analytical parameter bpp alone."
+    evidence:
+      - "N116"
+      - "N117"
+      - "N118"
+      - "ara/evidence/research-portfolio-2026-07-15.md"
+    also_depends_on: [N113, N116, N117, N118]
+    status: resolved
+  - id: N120
+    type: question
+    title: "Continue the selected opacity-gauge direction"
+    provenance: user
+    timestamp: "2026-07-15T13:05+0200"
+    description: >
+      Continue the research portfolio's proposed E1/T1 direction by implementing and executing the
+      exact opacity-split gauge-equivalence audit rather than reopening the rejected FIT-018 alpha
+      sweep.
+    also_depends_on: [N119]
+    status: resolved
+  - id: N121
+    type: decision
+    title: "Freeze FIT-019 as a benchmark-only commutation and recovery guard"
+    provenance: ai-executed
+    timestamp: "2026-07-15T13:05+0200"
+    choice: >
+      Keep exact group IDs external to GaussianField, compare canonical and score-blind
+      half-opacity views on eight disjoint procedural target families, map every action back to the
+      same canonical checkpoint, and require both exact commutation and independent 20/100-step
+      recovery utility before any production follow-up.
+    alternatives:
+      - "Add production lineage metadata before establishing exact equivalence utility."
+      - "Treat ordinary moment-preserving siblings as exact gauge classes."
+      - "Reuse natural images or tune alpha/rho after FIT-018 failed."
+    evidence:
+      - "tasks/FIT-019-opacity-gauge-equivalence.md"
+      - "docs/research/2026-07-15-frontier-reuse-experiments.md"
+    also_depends_on: [N119, N120]
+    status: resolved
+  - id: N122
+    type: experiment
+    title: "FIT-019 v1 opacity-gauge pilot and replay"
+    provenance: ai-executed
+    timestamp: "2026-07-15T13:05+0200"
+    result: >
+      Implemented exact opacity refinement, aggregate-first responsibility scoring, deterministic
+      counterexamples, canonical action replay, and 18 focused tests. The 128-row v1 primary and
+      replay confirmed render/score/action commutation and rejected recovery utility. Independent
+      review then found that v1 logged but did not gate alpha-0.7 relative/top-k parity, used set
+      rather than multiset change, and checked the immediate rather than recovered count. The
+      omitted checks independently passed, but v1 was retained only as a diagnostic pilot.
+    evidence:
+      - "results/fit019_opacity_gauge_guard_v1_2026-07-15/"
+      - "results/fit019_opacity_gauge_guard_v1_replay_2026-07-15/"
+    also_depends_on: [N121]
+    status: resolved
+  - id: N123
+    type: decision
+    title: "Supersede the v1 pilot with an audit-corrected v2"
+    provenance: ai-executed
+    timestamp: "2026-07-15T13:05+0200"
+    choice: >
+      Correct only executable preregistration and archival fidelity, label the new execution v2,
+      freeze task/code/test hashes before rerunning, and preserve every v1 result instead of
+      silently treating logged-but-ungated checks as acceptance.
+    alternatives:
+      - "Declare v1 accepted because post-hoc recomputation happened to pass."
+      - "Change targets, thresholds, arms, or horizons after observing the utility failure."
+      - "Discard the v1 process defect from the research record."
+    evidence:
+      - "N122"
+      - "tasks/FIT-019-opacity-gauge-equivalence.md"
+      - "tests/test_gauge_equivalence_audit.py"
+    also_depends_on: [N121, N122]
+    status: resolved
+  - id: N124
+    type: experiment
+    title: "FIT-019 v2 audit-corrected primary and exact replay"
+    provenance: ai-executed
+    timestamp: "2026-07-15T13:05+0200"
+    result: >
+      V2 completed 128/128 target-seed-arm cells with all immediate/post-20/post-100 counts N=40
+      and finite. Equivalent renders differed by at most 8.345e-7; maximum quotient relative error
+      was 2.701e-6 at alpha 0.7 and 2.747e-6 at alpha 1; both-alpha top-8 actions matched 16/16
+      checkpoints. Raw alpha-1 physical-group multisets changed on both seeds for 8/8 target
+      families. Primary/replay algebra, source snapshots, every non-timing row, and every
+      non-timing aggregate field matched exactly. The full suite passed 512 tests; Ruff, portfolio,
+      and diff validation passed.
+    evidence:
+      - "ara/evidence/fit019-opacity-gauge-2026-07-15/"
+      - "benchmarks/gauge_equivalence_audit.py"
+      - "tasks/FIT-019-opacity-gauge-equivalence.md"
+    also_depends_on: [N123]
+    status: resolved
+  - id: N125
+    type: dead_end
+    title: "Gauge-quotient alpha-1 allocation as a recovery improvement"
+    provenance: ai-executed
+    timestamp: "2026-07-15T13:05+0200"
+    hypothesis: >
+      Aggregate-first alpha-1 group allocation would preserve canonical actions and improve
+      fresh-optimizer recovery over raw gauge-row selection while staying above the canonical
+      support floor and inside the timing/count guards.
+    failure_mode: >
+      Commutation passed, but quotient alpha 1 won only 5/8 target families at post-20, was
+      -0.600711 dB versus raw gauge-row alpha 1 at post-100, and was -0.066534 dB versus canonical
+      support at post-20. It failed the frozen breadth, late-retention, and support-floor gates.
+    lesson: >
+      Representation invariance is a correctness property, not sufficient evidence of allocation
+      utility. Repeated tickets can sometimes recover better than broader distinct-site coverage;
+      do not add production quotient/lineage state or expand this endpoint study.
+    evidence:
+      - "N124"
+      - "ara/evidence/fit019-opacity-gauge-2026-07-15/aggregate.json"
+      - "ara/evidence/fit019-opacity-gauge-2026-07-15/rows.csv"
+    also_depends_on: [N124]
+    status: resolved
+  - id: N126
+    type: pivot
+    title: "Pivot from quotient promotion to perturb--recover response spectroscopy"
+    provenance: ai-executed
+    timestamp: "2026-07-15T13:05+0200"
+    from: "E1/T1 quotient allocation endpoint promotion."
+    to: "E2 controlled distinct-site coverage with dense recovery-trajectory descriptors."
+    trigger: >
+      Quotient-minus-raw effects reversed sign between post-20 and post-100 in 7/16 cells, medians
+      were near zero, and the aggregate means were strongly target-composition-sensitive. Exact
+      commutation was resolved but did not explain late recovery.
+    also_depends_on: [N124, N125]
+    status: resolved
+  - id: N127
+    type: decision
+    title: "Keep exact opacity-gauge groups benchmark-only"
+    provenance: ai-executed
+    timestamp: "2026-07-15T13:05+0200"
+    choice: >
+      Adopt ADR-0014: retain exact refinement/group scoring as correctness oracles, make no
+      GaussianField, fitter, CLI, renderer, codec, or default change, and require a new disjoint
+      experiment before considering approximate family metadata.
+    alternatives:
+      - "Promote group state because commutation alone passed."
+      - "Treat the noisy sign-changing CPU timing as a performance gain."
+      - "Use ordinary split ancestry as an exact equivalence relation."
+    evidence:
+      - "N124"
+      - "N125"
+      - "docs/adr/0014-keep-opacity-gauge-groups-benchmark-only.md"
+      - "ara/evidence/fit019-opacity-gauge-2026-07-15/"
+    also_depends_on: [N124, N125, N126]
+    status: resolved
+  - id: N128
+    type: question
+    title: "Continue the selected perturb--recover direction"
+    provenance: user
+    timestamp: "2026-07-15T17:09+0200"
+    description: >
+      Continue the proposed E2 direction after FIT-019 by implementing, executing, reviewing, and
+      documenting the ranked-deduplication response assay rather than returning to quotient/alpha
+      endpoint tuning.
+    also_depends_on: [N126, N127]
+    status: resolved
+  - id: N129
+    type: decision
+    title: "Freeze FIT-020 as a held-out one-bend killing test"
+    provenance: ai-executed
+    timestamp: "2026-07-15T17:09+0200"
+    choice: >
+      Freeze six procedural families x six variants, train/held-out variant splits, three repeated
+      seeds, four equal-N ranked ticket-deduplication arms, a single 200-step fresh-Adam trajectory
+      per arm, grouped ridge CV, and one response bend beyond static/step-10 controls. Require both
+      prediction and branch-selection improvement before any follow-up.
+    alternatives:
+      - "Tune another FIT-019 endpoint or alpha on exposed targets."
+      - "Fit arbitrary response features without a held-out target split."
+      - "Treat distinct-site count as pure coverage despite co-varying rank/ticket lineage."
+    evidence:
+      - "tasks/FIT-020-perturb-recover-spectroscopy.md"
+      - "docs/research/2026-07-15-frontier-reuse-experiments.md"
+    also_depends_on: [N126, N128]
+    status: resolved
+  - id: N130
+    type: experiment
+    title: "FIT-020 primary and measurement-equivalent replay"
+    provenance: ai-executed
+    timestamp: "2026-07-15T17:09+0200"
+    result: >
+      Implemented the fail-closed benchmark and 28 focused tests, then completed 432/432 primary
+      trajectories and 108 seed-averaged paired rows. Integrity and signal passed: held-out
+      SD(y)=3.252924 dB and 35/36 cells had |y|>=0.10 dB. Response RMSE was 2.964081 versus
+      2.961624 dB early (ratio 1.000830); sign accuracy was 25/36 for both; response bias was
+      -1.045524 dB; response improved only 2/6 families. Early/response both selected C5 on 12/12
+      held-out targets with 1.111568 dB regret versus 0.766896 dB for observed step 10. An
+      output-only union-schema CSV repair followed immutable measurement completion; the post-fix
+      replay matched every compared non-timing measurement field, all paired rows, normalized
+      aggregate, manifest, and STOP decision. Full validation passed 540 tests and Ruff.
+    evidence:
+      - "ara/evidence/fit020-response-spectroscopy-2026-07-15/run.md"
+      - "results/fit020_response_spectroscopy_v1_2026-07-15/"
+      - "results/fit020_response_spectroscopy_v1_replay_2026-07-15/"
+      - "benchmarks/perturb_recover_spectroscopy.py"
+      - "tests/test_perturb_recover_spectroscopy.py"
+    also_depends_on: [N129]
+    status: resolved
+  - id: N131
+    type: dead_end
+    title: "One-bend early-response prediction and selection"
+    provenance: ai-executed
+    timestamp: "2026-07-15T17:09+0200"
+    hypothesis: >
+      The preregistered early response bend would reduce held-out RMSE by at least 15% versus the
+      early endpoint model, improve sign prediction and family breadth with low bias, and lower
+      branch-selection regret versus every frozen comparator.
+    failure_mode: >
+      Response/early RMSE was 1.000830 rather than at most 0.85; sign accuracy was identical at
+      69.44% and missed the 70%/+10-point gates; response improved only 2/6 family RMSEs and had
+      -1.045524 dB mean prediction-minus-observation bias. The bend changed no held-out action and
+      its 1.111568 dB regret exceeded observed step 10.
+    lesson: >
+      Early/late arm instability occurs in this assay, but this bend does not summarize it. Do not
+      rescue the lineage with another bend, horizon, ridge grid, or feature on exposed targets;
+      fixed-C6 and step-10 observations are post-hoc and family-sensitive.
+    evidence:
+      - "N130"
+      - "ara/evidence/fit020-response-spectroscopy-2026-07-15/run.md"
+      - "docs/research/2026-07-15-perturb-recover-spectroscopy.md"
+    also_depends_on: [N130, N126]
+    status: resolved
+  - id: N132
+    type: decision
+    title: "Keep the response-bend selector benchmark-only"
+    provenance: ai-executed
+    timestamp: "2026-07-15T17:09+0200"
+    choice: >
+      Adopt ADR-0015: close the exact FIT-020 bend/model/horizon/target lineage, retain dense
+      trajectory and integrity machinery only as benchmark infrastructure, and make no production
+      predictor, allocator, lineage, config, renderer, fitter, codec, or default change.
+    alternatives:
+      - "Promote C6 from an unregistered, held-out-exposed descriptive observation."
+      - "Tune the response feature or model after observing the failed gates."
+      - "Claim speed, compression, or expressiveness from equal-N instrumented trajectories."
+    evidence:
+      - "N130"
+      - "N131"
+      - "docs/adr/0015-keep-response-bend-selector-benchmark-only.md"
+      - "ara/evidence/fit020-response-spectroscopy-2026-07-15/run.md"
+    also_depends_on: [N130, N131]
+    status: resolved
+  - id: N133
+    type: pivot
+    title: "Pivot from response prediction to marginal cold-stream RD"
+    provenance: ai-executed
+    timestamp: "2026-07-15T17:09+0200"
+    from: "E2 ranked-deduplication response-bend prediction and branch selection."
+    to: "E4 marginal self-contained stream byte attribution for structural edits and richer atoms."
+    trigger: >
+      FIT-020 produced ample quality variation but no response-model or selection advantage, while
+      fixed N=40 and an unchanged atom schema left compression and expressiveness untested. Exact
+      marginal stream bytes answer the unresolved compression axis without using count as rate.
+    also_depends_on: [N131, N132, N119]
+    status: resolved
+  - id: N134
+    type: question
+    title: "Continue the selected marginal cold-stream RD direction"
+    provenance: user
+    timestamp: "2026-07-15T18:59+0200"
+    description: >
+      Continue the proposed E4 direction through literature-grounded protocol completion,
+      development execution, exact replay, failure analysis, documentation, and a decision across
+      quality, convergence, performance, compression, and expressiveness.
+    also_depends_on: [N133]
+    status: resolved
+  - id: N135
+    type: decision
+    title: "Freeze COMP-006 as a complete-stream standard-birth killing test"
+    provenance: ai-executed
+    timestamp: "2026-07-15T18:59+0200"
+    choice: >
+      Freeze 18 even-variant development targets from six new families, two repeated seeds, one
+      cold-decoded N=64 parent, 16 shared residual candidates, matched birth and fixed-donor
+      replacement branches, recovery steps 0/20, an exhaustive 875-mix precision envelope, and a
+      +16-byte complete-SSPL1 primary cap. Require all quality and exact-replay gates before
+      touching odd-variant confirmation.
+    alternatives:
+      - "Use Gaussian count or analytical payload as rate."
+      - "Add proxy-priced affine/WIPES atoms that SSPL1 cannot decode."
+      - "Tune cap, actions, bits, horizon, or targets after seeing development outcomes."
+    evidence:
+      - "tasks/COMP-006-marginal-cold-stream-rd.md"
+      - "docs/research/2026-07-15-frontier-reuse-experiments.md"
+    also_depends_on: [N133, N134]
+    status: resolved
+  - id: N136
+    type: experiment
+    title: "COMP-006 development primary and exact same-source replay"
+    provenance: ai-executed
+    timestamp: "2026-07-15T18:59+0200"
+    result: >
+      Primary and replay each completed 36 cells and 33,840 persisted/cold-validated streams.
+      Protocol, frozen source, environment, cells, streams, selections, aggregates, and decision
+      matched exactly. At recovery step 20 and base +16 bytes, birth minus strongest control was
+      -1.071442 dB mean and -0.953260 dB median; the family-bootstrap 95% interval was
+      [-1.287276,-0.841740] dB and 0/6 family means were positive. Exact/raw-bit row agreement was
+      14/36, but all disagreements concerned control allocation. Hardened validation passed all
+      frozen rows, 12 focused tests, 552 full tests, and Ruff.
+    evidence:
+      - "ara/evidence/comp006-marginal-cold-stream-rd-2026-07-15/run.md"
+      - "results/comp006_marginal_rd_dev_v1_2026-07-15/final_summary.json"
+      - "results/comp006_marginal_rd_dev_v1_replay_2026-07-15/"
+      - "benchmarks/marginal_cold_stream_rd.py"
+      - "tests/test_marginal_cold_stream_rd.py"
+    also_depends_on: [N135]
+    status: resolved
+  - id: N137
+    type: dead_end
+    title: "One extra standard Gaussian as the best use of +16 SSPL1 bytes"
+    provenance: ai-executed
+    timestamp: "2026-07-15T18:59+0200"
+    hypothesis: >
+      The oracle best of 16 residual births would beat the strongest no-edit, matched replacement,
+      and precision control by at least +0.15 dB at the complete-stream +16-byte cap after 20
+      fresh-QAT steps, with positive family-level breadth and replay integrity.
+    failure_mode: >
+      All 36 cells were feasible, but birth lost -1.071442 dB mean and -0.953260 dB median. The
+      entire bootstrap interval was negative and all 18 target means plus all six family means
+      lost. Precision reallocation was the strongest control in 23/36 cells and replacement in
+      13/36; birth was the exact overall winner in only 5 seed cells.
+    lesson: >
+      Residual signal is not the binding issue: selected birth improved no-edit by +0.926749 dB,
+      but the control improved it by +1.998191 dB. Do not tune or confirm this formulation. Exact
+      bytes remain valuable for precision allocation, while richer atoms require real codec syntax
+      and performance requires a separate kernel benchmark.
+    evidence:
+      - "N136"
+      - "ara/evidence/comp006-marginal-cold-stream-rd-2026-07-15/run.md"
+      - "docs/research/2026-07-15-marginal-cold-stream-rd.md"
+    also_depends_on: [N136]
+    status: resolved
+  - id: N138
+    type: decision
+    title: "Keep marginal cold-stream birth benchmark-only"
+    provenance: ai-executed
+    timestamp: "2026-07-15T18:59+0200"
+    choice: >
+      Adopt ADR-0016: close the frozen standard-birth/cold-SSPL1 lineage, leave confirmation
+      unscored, make no production allocator/fitter/renderer/codec/CLI/default change, and retain
+      complete-stream integer-cap selection, component accounting, and replay as benchmark
+      infrastructure for materially different hypotheses.
+    alternatives:
+      - "Promote a birth policy because exact and proxy row rankings disagree."
+      - "Run confirmation to search for a rescue despite failed development gates."
+      - "Treat negative/non-monotone container deltas as additive local row prices."
+    evidence:
+      - "N136"
+      - "N137"
+      - "docs/adr/0016-keep-marginal-cold-stream-birth-benchmark-only.md"
+      - "ara/evidence/comp006-marginal-cold-stream-rd-2026-07-15/run.md"
+    also_depends_on: [N136, N137]
+    status: resolved
+  - id: N139
+    type: pivot
+    title: "Pivot from standard birth to exact backward and real codec/atom co-design"
+    provenance: ai-executed
+    timestamp: "2026-07-15T18:59+0200"
+    from: "E4 standard residual birth under the existing SSPL1 grammar."
+    to: >
+      Independent exact per-Gaussian backward/fusion profiling, plus a new complete-stream
+      attribute/rate or richer-atom grammar with per-mix QAT and real syntax.
+    trigger: >
+      Standard birth loses decisively at actual bytes, while post-hoc precision controls mostly
+      trade geometry bits for appearance bits and exact-byte selection improves control allocation.
+      COMP-006 cannot test performance or expressiveness because it uses CPU enumeration and one
+      constant-RGB atom schema.
+    also_depends_on: [N137, N138, N117, N119]
+    status: resolved
+  - id: N140
+    type: question
+    title: "Is StructSplat already unusually difficult to improve?"
+    provenance: user
+    timestamp: "2026-07-15T19:11+0200"
+    description: >
+      Asked whether the accumulated negative transfer experiments mean StructSplat is already so
+      strong that meaningful improvement is intrinsically difficult.
+    answer: >
+      The evidence supports local maturity inside the current constant-RGB Gaussian, normalized
+      renderer, per-image optimization, QAT, and SSPL1 design box: simple initialization, recovery,
+      and one-more-standard-atom changes are increasingly hard to beat under strong controls. It
+      does not support global optimality. Exact GPU backward/fusion, real entropy/rate co-design,
+      richer deployable atoms, and broader native external validation remain material open gaps.
+    also_depends_on: [N136, N137, N139]
+    status: resolved
+  - id: N141
+    type: experiment
+    title: "Results-audit forward check of BENCH-007"
+    provenance: ai-executed
+    timestamp: "2026-07-15T19:13+0200"
+    evidence:
+      - ".claude/skills/structsplat-results-audit/SKILL.md"
+      - "ara/evidence/bench007-stage1-killing-pilot-2026-07-14/run.md"
+      - "ara/evidence/bench007-stage1-killing-pilot-2026-07-14/summary.json"
+      - "logic/claims.md:C28"
+    result: >
+      The bounded audit confirmed the development-gate failure, the prohibition on
+      Stage 2, and the reported deltas/rates/resources. At 1.0 bpp the reported mean
+      is +0.0089 dB, but its interval [-0.1718,+0.1738] crosses zero, so inferential
+      "beats" wording is not supported. Raw rows, the frozen manifest, bootstrap
+      inputs, and executed-source snapshots were outside this bounded check.
+    status: resolved
+  - id: N142
+    type: question
+    title: "Could smooth replacements improve StructSplat learning?"
+    provenance: user
+    timestamp: "2026-07-15T19:23+0200"
+    description: >
+      Asked whether any max, min, clamp, threshold, or activation in StructSplat's learning path
+      is a promising candidate for a smoother counterpart.
+    answer: >
+      Yes, but no large gain is established. The strongest core-fit candidate is a compact C1/C2
+      renderer support taper that reaches zero value and derivative before the detached sparse
+      support boundary. Hard post-step scale projection is the second candidate, pending projection
+      pressure diagnostics. L1 already has a Charbonnier alternative with mixed/negative evidence;
+      additive-noise QAT already relaxes hard quantization; most initialization and densification
+      min/max/top-k operations are outside autograd.
+    status: resolved
+  - id: N143
+    type: experiment
+    title: "Audit nonsmooth learning paths and bound occupancy"
+    provenance: ai-executed
+    timestamp: "2026-07-15T19:23+0200"
+    result: >
+      A read-only code and artifact audit separated detached/discrete construction from active
+      learning math. Main-fit nonsmooth sites are L1 residuals, detached rounded/ceiled renderer
+      support with an optional C0 ReLU-like fade, hard post-Adam scale projection, and optional
+      STE/rate-proxy paths; GEN also clamps the SDS render and the tiny FF predictor uses ReLU.
+      In one saved N=20,000 field, 2,394/40,000 scale axes equal the global 0.35 lower bound. In
+      three N=512 teacher fields, 38/3,072 axes equal 0.35 and 14/3,072 equal the 384-pixel upper
+      bound. Existing C0-fade evidence improves mean AUC by +0.1073 but loses -0.1389 dB final
+      PSNR and adds +1.67 s; existing Charbonnier evidence does not support a general promotion.
+    evidence:
+      - "src/structsplat/render.py"
+      - "src/structsplat/gaussians.py"
+      - "src/structsplat/fit.py"
+      - "src/structsplat/codec.py"
+      - "src/structsplat/generate.py"
+      - "src/structsplat/predictor.py"
+      - "results/coco4_current_20k_500/COCO_train2014_000000000009_aniso_flanking_20k_500.npz"
+      - "ara/evidence/ff001-multimage-tensor-ablation-2026-07-07/teacher/fields/"
+      - "tasks/done/CORE-005-renderer-memory-continuity.md"
+      - "tasks/ABL-005-fitter-knob-influence-fair-regime.md"
+      - "tasks/done/COMP-004-entropy-aware-fitting.md"
+    also_depends_on: [N142]
+    status: resolved
+  - id: N144
+    type: question
+    title: "Do SMU-style smooth maxima match StructSplat's hard operators?"
+    provenance: user-revised
+    timestamp: "2026-07-15T20:16+0200"
+    description: >
+      Clarified that the intended smooth replacements are specifically Smooth Maximum Unit-style
+      differentiable surrogates for max/min/ReLU, rather than smooth functions in the broad sense.
+    answer: >
+      The mapping is literal for default L1 absolute residuals, the opt-in renderer support hinge,
+      the optional rate-proxy absolute residual, GEN's live output clamp, and the experimental
+      predictor ReLUs. Charbonnier already covers L1. Vanilla SMU is unsafe for compact renderer
+      support because the erf form produces negative exterior weights and the square-root SMU-1
+      leaks positive mass; use it only as a diagnostic control against an exact-zero compact C1/C2
+      hinge. Smooth scale min/clamp helps gradients only if moved out of the no_grad post-step
+      projection into a differentiable bounded parameterization.
+    also_depends_on: [N142, N143]
+    status: resolved
+  - id: N145
+    type: decision
+    title: "Freeze BENCH-009 Stage-1 tangent-auction semantics before execution"
+    provenance: ai-executed
+    timestamp: "2026-07-15T22:25+0200"
+    choice: >
+      Bind the residual tangent auction to a parent-frozen dimensionless chart, exact parent pixel
+      membership for JVP/projector construction, native recentered/recomputed AABBs for finite
+      actions, discovery-byte hashes distinct from numerical repeatability, and one continuous
+      160-step Adam parent trajectory with exact post-step 24/160 checkpoints.
+    alternatives:
+      - "Use ad-hoc per-coordinate scales and freeze radii without exact rounded-center membership."
+      - "Evaluate finite actions on frozen support rather than the native renderer."
+      - "Fit independent 24-step and 160-step parents with reset Adam state."
+      - "Treat numerical coefficient tolerance as proof that discovery inputs are unchanged."
+    evidence:
+      - "benchmarks/residual_tangent_auction_stage1.py"
+      - "benchmarks/residual_tangent_auction_stage1_core.py"
+      - "benchmarks/residual_tangent_auction_stage1_runner.py"
+      - "tests/test_residual_tangent_auction_stage1.py"
+      - "tests/test_residual_tangent_auction_stage1_core.py"
+      - "tests/test_residual_tangent_auction_stage1_runner.py"
+    also_depends_on: [N142, N143, N144]
+    status: resolved
+  - id: N146
+    type: experiment
+    title: "BENCH-009 Stage-1 protocol implementation validation"
+    provenance: ai-executed
+    timestamp: "2026-07-15T22:25+0200"
+    result: >
+      Forty-two focused Stage-1/core/runner/matrix-free tests passed. The suite includes exact
+      post-step 24/160 parity against ordinary fit, rotated-anisotropic chart/unit checks,
+      half-pixel support-crossing accounting with added/removed/XOR hashes, native finite-action
+      parity, live critical-source hash rejection, and held-out discovery-hash guards. Ruff,
+      compileall, and git diff whitespace validation also passed; no parent or candidate phase ran.
+    evidence:
+      - "tests/test_residual_tangent_auction_stage1.py"
+      - "tests/test_residual_tangent_auction_stage1_core.py"
+      - "tests/test_residual_tangent_auction_stage1_runner.py"
+      - "tests/test_residual_tangent_auction_matrixfree.py"
+    also_depends_on: [N145]
+    status: resolved
+  - id: N147
+    type: experiment
+    title: "BENCH-009 standalone causal-ledger audit validation"
+    provenance: ai-executed
+    timestamp: "2026-07-15T23:56+0200"
+    result: >
+      Implemented a post-run auditor outside every Stage-1 source binding and passed Ruff,
+      compilation, four focused tests, and the source-bound science toy preflight. A read-only
+      aggregate check found exactly 4,608 immediate rows, 1,152 diagnostic scores, and 2,304
+      matched immediate projections. The frozen all-eight-action calibration already fails
+      (global Spearman 0.268549), and literal joint-minus-full-J increments are negative in
+      4/4 affine and 3/4 carrier cross-fit units at rcond 1e-5/1e-4 respectively; minima range
+      from -5.21541e-8 to -4.73112e-7. Recovery remained incomplete, so every final causal
+      classification stayed unavailable and no tolerance, clamp, or rescue was introduced.
+    evidence:
+      - "benchmarks/residual_tangent_auction_stage1_causal_audit.py"
+      - "tests/test_residual_tangent_auction_stage1_causal_audit.py"
+      - "results/bench009_tangent_auction_stage1_science_v3_shard_0/"
+      - "results/bench009_tangent_auction_stage1_science_v3_shard_1/"
+      - "results/bench009_tangent_auction_stage1_science_v3_shard_2/"
+      - "results/bench009_tangent_auction_stage1_science_v3_shard_3/"
+      - "results/bench009_tangent_auction_stage1_science_v3_shard_4/"
+      - "results/bench009_tangent_auction_stage1_science_v3_shard_5/"
+      - "results/bench009_tangent_auction_stage1_science_v3_shard_6/"
+      - "results/bench009_tangent_auction_stage1_science_v3_shard_7/"
+    also_depends_on: [N145, N146]
+    status: resolved
+  - id: N148
+    type: experiment
+    title: "BENCH-009 complete recovery and independent results audit"
+    provenance: ai-executed
+    timestamp: "2026-07-16T00:30+0200"
+    result: >
+      Completed and audited the frozen Stage-1 ledgers: 4,608 immediate rows, 816 recovery
+      trajectories, and 2,448 checkpoints are internally exact. Global causal calibration is
+      0.268549 Spearman, independently truncated joint projectors violate nonnegative incremental
+      energy, and affine/carrier both fail the two-radius/two-horizon utility rule. No quality,
+      convergence, performance, compression, or expressiveness promotion is authorized.
+    evidence:
+      - "docs/research/2026-07-16-bench009-results-audit.md"
+      - "results/bench009_tangent_auction_stage1_causal_audit_v3/"
+    also_depends_on: [N145, N146, N147]
+    status: resolved
+  - id: N149
+    type: decision
+    title: "Close BENCH-009 v3 and test only a nested spent-data repair"
+    provenance: ai-executed
+    timestamp: "2026-07-16T00:30+0200"
+    choice: >
+      Withhold disjoint targets and allow only BENCH-011's fixed float64 nested-extension
+      diagnostic on already-spent parents; prohibit a tolerance, clamp, radius rescue, or v3
+      causal claim.
+    alternatives:
+      - "Retune rank thresholds or clamp negative projector increments."
+      - "Treat late carrier recovery as a method win."
+      - "Consume disjoint targets before repairing the causal instrument."
+    evidence: ["N148", "tasks/BENCH-011-nested-residual-extension-diagnostic.md"]
+    also_depends_on: [N148]
+    status: resolved
+  - id: N150
+    type: experiment
+    title: "BENCH-011 corrected nested-extension diagnostic"
+    provenance: ai-executed
+    timestamp: "2026-07-16T00:59+0200"
+    result: >
+      Corrected the v1 seed mismatch and completed 24 units and 96 native held-out rows. The
+      nested algebra is nonnegative and well conditioned, but all four candidate-by-radius strata
+      fail the frozen calibration gates: Spearman ranges from -0.30549 to 0.4000 and two median
+      realized/predicted ratios are below -21.5. The corrected formulation is a valid negative.
+    evidence:
+      - "docs/research/2026-07-16-bench011-nested-diagnostic.md"
+      - "results/bench011_nested_residual_extension_v2/"
+    also_depends_on: [N149]
+    status: resolved
+  - id: N151
+    type: dead_end
+    title: "Close the local affine/carrier tangent-action formulation"
+    provenance: ai-executed
+    timestamp: "2026-07-16T00:59+0200"
+    hypothesis: >
+      A correctly nested local extension-energy statistic will predict native finite affine or
+      carrier improvement strongly enough to authorize a disjoint objective-aligned assay.
+    failure_mode: >
+      Every corrected calibration stratum fails despite exact nested algebra; finite curvature
+      dominates before support changes become the main error.
+    lesson: >
+      Algebraic capacity and a coherent local projector do not establish realizable finite action
+      value. Close this identity/bank/radius/damping formulation without retuning.
+    evidence: ["N150", "docs/research/2026-07-16-bench011-nested-diagnostic.md"]
+    also_depends_on: [N150]
+    status: resolved
+  - id: N152
+    type: experiment
+    title: "BENCH-012 topology-policy preflight stops before scoring"
+    provenance: ai-executed
+    timestamp: "2026-07-16T01:24+0200"
+    result: >
+      The deterministic topology core passed, but the first source-bound cell had only 2 of the
+      required 4 untruncated equal-work residual candidates because 14 inherited supports clipped
+      at the image boundary. No ACPD selector, replacement, render, or recovery was evaluated;
+      the scientific topology outcome is unavailable.
+    evidence:
+      - "docs/research/2026-07-16-bench012-preflight.md"
+      - "results/bench012_topology_policy_preflight_v1/"
+    also_depends_on: [N151]
+    status: resolved
+  - id: N153
+    type: decision
+    title: "Close the unavailable BENCH-012 formulation without rescue"
+    provenance: ai-executed
+    timestamp: "2026-07-16T01:24+0200"
+    choice: >
+      Preserve the availability failure and do not move targets, shrink scales, relax equal-work,
+      or lower the candidate minimum on exposed cells.
+    alternatives:
+      - "Repair margins or candidate geometry after seeing the failed cell."
+      - "Interpret preflight unavailability as evidence against topology."
+    evidence: ["N152"]
+    also_depends_on: [N152]
+    status: resolved
+  - id: N154
+    type: experiment
+    title: "COMP-007 gauge-free log-SPD codec valid negative"
+    provenance: ai-executed
+    timestamp: "2026-07-16T02:59+0200"
+    result: >
+      Audited 24 fields and 12,096 complete streams over 84 covariance allocations, two coders,
+      and three charts. Log-SPD passes codec overhead but fails seven of eight conjunctive gates;
+      whole-container change is -0.4053% with zlib and +0.3426% with zstd, without robust
+      direction or matched-distortion benefit. Confirmation remains sealed.
+    evidence:
+      - "docs/research/2026-07-16-comp007-gauge-free-covariance.md"
+      - "results/comp007_gauge_free_covariance_dev_v4/"
+    status: resolved
+  - id: N155
+    type: decision
+    title: "Pivot from covariance coordinates to zero-state affine reproduction"
+    provenance: ai-executed
+    timestamp: "2026-07-16T02:59+0200"
+    choice: >
+      Close the frozen log-SPD branch and test whether the normalized compositor can reproduce
+      local affine fields before opening natural-image data.
+    alternatives:
+      - "Promote the post-hoc canonical rotation-scale size clue."
+      - "Retune log-SPD predictors or allocations on development data."
+    evidence: ["N154", "tasks/BENCH-013-local-linear-reproducing-compositor.md"]
+    also_depends_on: [N154]
+    status: resolved
+  - id: N156
+    type: dead_end
+    title: "No-state per-pixel local-linear compositor rings"
+    provenance: ai-executed
+    timestamp: "2026-07-16T07:39+0200"
+    hypothesis: >
+      A local-linear/moving-least-squares correction can reproduce affine fields with no extra
+      Gaussian state while retaining stable compact-support rendering.
+    failure_mode: >
+      BENCH-013 v3 replay records 82 failures among 108 forward cells and 49 failures among 63
+      effective-weight fields. Independent moment constraints create signed extrapolating weights
+      and boundary/sparse-neighborhood ringing.
+    lesson: >
+      Preserve affine reproduction as a signal, but do not implement it through this exact
+      no-ghost per-pixel signed correction.
+    evidence:
+      - "docs/research/2026-07-16-local-linear-reproducing-compositor.md"
+      - "results/bench013_local_linear_stage0_full_v3_2026-07-16/"
+    also_depends_on: [N155]
+    status: resolved
+  - id: N157
+    type: experiment
+    title: "BENCH-014 explicit affine carrier is quality-positive but rate-negative"
+    provenance: ai-executed
+    timestamp: "2026-07-16T07:39+0200"
+    result: >
+      The six-scalar explicit affine carrier passes synthetic same-count quality, boundary,
+      rank/expressiveness, stability, gradient, permutation, and prepared CPU-render gates. Every
+      complete-byte gate fails and three terminal color-convergence cells fail; residual-color
+      entropy adds up to 184 bytes, invalidating nominal scalar pricing.
+    evidence:
+      - "docs/research/2026-07-16-explicit-affine-carrier.md"
+      - "results/bench014_affine_carrier_stage0_v1_2026-07-16/"
+    also_depends_on: [N156]
+    status: resolved
+  - id: N158
+    type: experiment
+    title: "BENCH-015 decoder-synchronized affine lift fails robust promotion"
+    provenance: ai-executed
+    timestamp: "2026-07-16T09:30+0200"
+    result: >
+      A same-stream trend-plus-residual lift gives large smooth static synthetic gains with
+      unchanged rank and bytes, but fails no-harm, terminal color convergence, and cold-decode
+      cost: median decode+derive+render is 1.624762x and smooth final loss median is 1.058438x.
+      All 27 replay checks pass.
+    evidence:
+      - "docs/research/2026-07-16-decoder-synchronized-affine-lift.md"
+      - "results/bench015_decoder_synchronized_lift_stage0_v1_2026-07-16/"
+    also_depends_on: [N157]
+    status: resolved
+  - id: N159
+    type: decision
+    title: "Close the frozen affine-reproduction lineage"
+    provenance: ai-executed
+    timestamp: "2026-07-16T09:30+0200"
+    choice: >
+      Kill explicit transmission and the global decoder-synchronized lift; do not authorize the
+      prewritten local-confidence rescue because convergence and cost gates failed.
+    alternatives:
+      - "Promote static quality while ignoring complete bytes or optimization."
+      - "Retune robust loss, confidence thresholds, or derive iterations on the exposed matrix."
+    evidence: ["N157", "N158"]
+    also_depends_on: [N157, N158]
+    status: resolved
+  - id: N160
+    type: dead_end
+    title: "BENCH-016 v4/v5 exact saved-state invariants are invalid"
+    provenance: ai-executed
+    timestamp: "2026-07-16T11:45+0200"
+    hypothesis: >
+      SAD's saved TXT replay can be required to match the in-training export and every fresh
+      prepared replay exactly.
+    failure_mode: >
+      V4 exposed unexported history-dependent candidate-map state; v5 then exposed nondeterministic
+      CUDA seed collisions across fresh processes. Both protocols stopped before a scientific
+      decision, and neither row set was imported.
+    lesson: >
+      Use the role-fixed first official replay for quality, preserve replay variability as a
+      threshold-free diagnostic, and never fit a tolerance from observed decoder races.
+    evidence:
+      - "docs/research/2026-07-16-native-sad-v4-invalidity.md"
+      - "docs/research/2026-07-16-native-sad-v5-invalidity.md"
+    status: resolved
+  - id: N161
+    type: experiment
+    title: "BENCH-016 v6 native SAD frontier is rate-dependent"
+    provenance: ai-executed
+    timestamp: "2026-07-16T15:25+0200"
+    result: >
+      On eight DIV2K development images and one RTX 3050, native SAD passes every 0.5-bpp gate
+      with +5.473608 dB median PSNR and much lower training/render time, but fails the 2.0-bpp
+      conjunctive gate with +0.428143 dB median, -1.587153 dB worst image, and slightly worse
+      median LPIPS. SAD compression and isolated expressiveness remain untested.
+    evidence:
+      - "docs/research/2026-07-16-native-sad-frontier.md"
+      - "results/bench016_native_sad_frontier_v6_2026-07-16/"
+    also_depends_on: [N160]
+    status: resolved
+  - id: N162
+    type: decision
+    title: "Abandon the fixed SAD transplant and test entropy headroom"
+    provenance: ai-executed
+    timestamp: "2026-07-16T15:25+0200"
+    choice: >
+      Do not run the SAD reach/temperature/top-8 bridge because both rates were required to pass;
+      instead test the cheaper SGI-inspired conditional-entropy necessary condition.
+    alternatives:
+      - "Promote SAD reuse from the strong low-rate cell."
+      - "Retune or drop the failed high-rate gate."
+    evidence: ["N161", "tasks/COMP-008-mean-conditioned-entropy-oracle.md"]
+    also_depends_on: [N161]
+    status: resolved
+  - id: N163
+    type: experiment
+    title: "COMP-008 entropy oracle survives as a necessary condition"
+    provenance: ai-executed
+    timestamp: "2026-07-16T17:24+0200"
+    result: >
+      On eight extracted CLIC development images, the exact per-cell conditional-entropy lower
+      bound has geometric-mean SSPL1 ratios 0.827114 and 0.824496 with 8/8 wins for both bit
+      tuples. The oracle omits model error, finite-CDF loss, termination, and decoder cost, so it
+      authorizes only an exact coder implementation; eight confirmation payloads remain sealed.
+    evidence:
+      - "docs/research/2026-07-16-sgi-entropy-oracle.md"
+      - "results/comp008_sgi_entropy_oracle_dev_v3_2026-07-16/"
+    also_depends_on: [N162]
+    status: resolved
+  - id: N164
+    type: decision
+    title: "Implement the exact SSP2E coder before interpreting oracle headroom"
+    provenance: ai-executed
+    timestamp: "2026-07-16T17:24+0200"
+    choice: >
+      Freeze COMP-009 with complete framing, finite CDFs, native arithmetic decode, factorized and
+      shuffled controls, exact source-bound replay, and both bit tuples; keep confirmation sealed.
+    alternatives:
+      - "Promote the 17-percent optimistic lower bound as compression."
+      - "Skip directly to a richer learned context model."
+    evidence: ["N163", "tasks/COMP-009-ssp2e-actual-coder.md"]
+    also_depends_on: [N163]
+    status: resolved
+  - id: N165
+    type: experiment
+    title: "COMP-009 exact spatial coder is a valid negative"
+    provenance: ai-executed
+    timestamp: "2026-07-16T20:35+0200"
+    result: >
+      SSP2E losslessly reproduces the quantized field and passes decode-resource gates, but saves
+      only about 1.3% versus the strongest exact factorized control and misses every material 10%
+      promotion gate on both tuples. Separately, factorized arithmetic framing is 3.6--4.6%
+      smaller than SSPL1 on all eight development images; that baseline clue remains unconfirmed.
+    evidence:
+      - "docs/research/2026-07-16-ssp2e-actual-coder.md"
+      - "results/comp009_ssp2e_actual_dev_v1_2026-07-16/"
+      - "results/comp010_ssp2e_captured_replay_repair_v2r2_2026-07-16/"
+    also_depends_on: [N164]
+    status: resolved
+  - id: N166
+    type: decision
+    title: "Close SSP2E v1 and freeze complete-stream RGB VQ"
+    provenance: ai-executed
+    timestamp: "2026-07-16T20:35+0200"
+    choice: >
+      Abandon the fixed 16x16/rank-8 spatial model without enlarging its grid, head, or starts;
+      retain it as an exact comparator and select COMP-011's post-hoc flat/RVQ complete-stream
+      color assay on disjoint development data.
+    alternatives:
+      - "Retune SSP2E on exposed cells."
+      - "Promote the factorized control without a separately frozen confirmation decision."
+    evidence: ["N165", "tasks/COMP-011-complete-stream-rgb-vq.md"]
+    also_depends_on: [N165]
+    status: resolved
+  - id: N167
+    type: decision
+    title: "Require physically enforced COMP-011 lifecycle before data access"
+    provenance: ai-executed
+    timestamp: "2026-07-17T00:04+0200"
+    choice: >
+      Keep official preflight and payload access blocked until fit/encode runs in a Landlock/seccomp
+      child, stage verification cannot reopen targets out of scope, replay derives decisions from
+      regenerated evidence, immutable publication survives interruption, and final journal state
+      is exact.
+    alternatives:
+      - "Rely on parent-process flags and attestations without OS isolation."
+      - "Run development data after unit tests but before hostile lifecycle review."
+    evidence:
+      - "benchmarks/ssp2v_actual_run.py"
+      - "benchmarks/ssp2v_landlock.py"
+      - "tests/test_ssp2v_actual_run.py"
+      - "tests/test_ssp2v_landlock.py"
+    also_depends_on: [N166]
+    status: resolved
+  - id: N168
+    type: experiment
+    title: "Target-free implicit RGB quantizer feasibility proof"
+    provenance: ai-executed
+    timestamp: "2026-07-17T00:04+0200"
+    result: >
+      A deterministic 8,192-row synthetic proof finds syntax-specific implicit RGB/YCoCg-R points
+      that dominate selected explicit flat/RVQ points on correlated and uniform fixtures, while an
+      RVQ point exactly dominates the palette-like counterexample. Evidence digest
+      5f1585b5...260a reproduced twice; 9 tests and an exhaustive 16,777,216-color YCoCg round trip
+      pass. This is mechanism evidence only, not a complete-stream or real-image improvement.
+    evidence:
+      - "benchmarks/implicit_lattice_rgb_proof.py"
+      - "tests/test_implicit_lattice_rgb_proof.py"
+      - "docs/research/2026-07-16-implicit-lattice-rgb-proof.md"
+    also_depends_on: [N166]
+    status: resolved
+  - id: N169
+    type: decision
+    title: "Keep implicit/explicit union conditional on COMP-011 failure mechanism"
+    provenance: ai-executed
+    timestamp: "2026-07-17T00:04+0200"
+    choice: >
+      Run no lattice screen now. If and only if quality-qualified COMP-011 arms miss rate because
+      explicit model/codebook bytes bind, preregister a new-data target-blind union with fixed
+      source-error guards and complete-byte selection. If quality binds, use the distinct
+      renderer-Gram branch; otherwise close post-hoc color VQ.
+    alternatives:
+      - "Add lattice arms to the already frozen COMP-011 menu."
+      - "Claim the synthetic proof as a real codec result."
+      - "Use target metrics to select representation family."
+    evidence:
+      - "N168"
+      - "docs/research/2026-07-16-renderer-aware-color-quantization-frontier.md"
+      - "docs/research/2026-07-16-implicit-lattice-rgb-proof.md"
+    also_depends_on: [N167, N168]
+    status: resolved
+  - id: N170
+    type: experiment
+    title: "COMP-011 target-free lifecycle regression checkpoint"
+    provenance: ai-executed
+    timestamp: "2026-07-17T00:08+0200"
+    result: >
+      Added deterministic pending-publication recovery and three partial/complete/link-window
+      regressions. The current runner suite passes 61 tests and the full SSP2V target-free suite
+      passes 231 tests in 157.35 seconds. GO remains blocked by missing producer-attestation
+      mutation/integration coverage, replay scratch-decoding/semantic verification, candidate and
+      stage hard-kill tests, and exact final-journal enforcement; no COMP-011 payload was opened.
+    evidence:
+      - "benchmarks/ssp2v_actual_run.py"
+      - "tests/test_ssp2v_actual_run.py"
+    also_depends_on: [N167, N169]
+    status: resolved
+  - id: N171
+    type: experiment
+    title: "Synthetic exact-policy mutations expose an import-stream verifier gap"
+    provenance: ai-executed
+    timestamp: "2026-07-17T01:13+0200"
+    result: >
+      A target-free synthetic policy suite passes 16 focused-proof positive, coherent-mutation,
+      protected-workspace, and source-inventory cases. Two integration/red checks fail as intended:
+      the new test is not yet in the focused source closure, and verify_import_streams accepts a
+      coherently sealed extra protected-target read allowlist because generic policy
+      self-consistency is not an operation-specific exact policy. No protected data was opened.
+    evidence:
+      - "tests/test_ssp2v_actual_run_preflight_policy.py"
+      - "pytest: 16 passed, 2 failed in 0.30 seconds"
+    also_depends_on: [N167, N170]
+    status: resolved
+  - id: N172
+    type: experiment
+    title: "Operation-specific import policy closes the coherent capability gap"
+    provenance: ai-executed
+    timestamp: "2026-07-17T01:25+0200"
+    result: >
+      The import verifier now recomputes its exact command, sealed config digest, authorized source,
+      environment, cwd, read-only/read-write inventories, launcher, denied target probe, and timeout
+      from sealed authorities. A positive exact-policy case and 11 coherently resealed mutations all
+      behave correctly; the combined source-gate slice passes 31 tests, with compile and Ruff clean.
+      No protected payload was opened.
+    evidence:
+      - "benchmarks/ssp2v_actual_run.py"
+      - "tests/test_ssp2v_actual_run_preflight_policy.py"
+      - "pytest: 31 passed, 58 deselected in 4.31 seconds"
+    also_depends_on: [N167, N170, N171]
+    status: resolved
+  - id: N173
+    type: experiment
+    title: "Focused proof isolates Landlock directory-anchor denial"
+    provenance: ai-executed
+    timestamp: "2026-07-17T02:15+0200"
+    result: >
+      A minimal target-free source-replica run reproduced the focused proof failure before native
+      loading: ssp2v_decode_worker opened the filesystem root with an O_RDONLY directory
+      descriptor, which Landlock denied. An in-memory O_PATH substitution for directory-only
+      no-follow traversal passed all seven first-fixture formats and 36 non-CLI decode-worker
+      tests; verified memfd loading succeeded and an out-of-sandbox README remained unreadable.
+      No COMP-011 development or confirmation payload was opened and no production file changed.
+    evidence:
+      - "benchmarks/ssp2v_decode_worker.py:_directory_flags"
+      - "sandbox diagnostic: 7 passed in 2.47 seconds"
+      - "sandbox diagnostic: 36 passed, 2 subprocess CLI tests deselected in 3.27 seconds"
+      - "sandbox diagnostic: allowed replica module read; denied original README with EACCES"
+    also_depends_on: [N167, N170, N172]
+    status: resolved
+  - id: N174
+    type: experiment
+    title: "Captured focused proof passes after composability repairs"
+    provenance: ai-executed
+    timestamp: "2026-07-17T02:30+0200"
+    result: >
+      The target-free focused proof now uses O_PATH directory anchors, a byte-bound private
+      AlexNet cache, exact source/dependency post-rehashing, a synthetic producer-policy
+      attestation fixture, and a transparent five-node split for recursively sandboxed tests.
+      One sealed rehearsal returned zero with 446 stdout bytes, 71 captured source files, and
+      focused dependency seal fc9086f3cc052149b982f4aaeb67446e7ea615ed3d30ece0eca8687e9304220b.
+      Independent affected-surface tests passed 186/186; the final dependency/source-count policy
+      slice passed 38/38 with compile and Ruff clean. Because the 38-test additions changed the
+      source after the rehearsal, a complete current-hash regression and fresh official preflight
+      remain mandatory before development-stream access. No protected payload was opened.
+    evidence:
+      - "benchmarks/ssp2v_actual_run.py"
+      - "benchmarks/ssp2v_decode_worker.py"
+      - "tests/test_ssp2v_actual_run_preflight_policy.py"
+      - "tests/test_ssp2v_actual_run_producer.py"
+      - "pytest: 186 passed in 27.59 seconds"
+      - "pytest: 38 passed in 2.09 seconds"
+      - "current source manifest: bb2caac9a202089e85688319cd577fdb7e8c5f2d2d985600cd53a006adea098c (71 files)"
+    also_depends_on: [N167, N170, N172, N173]
+    status: resolved
+  - id: N175
+    type: experiment
+    title: "Minimal Landlock import bridge preserves repository denial"
+    provenance: ai-executed
+    timestamp: "2026-07-17T02:41+0200"
+    result: >
+      A target-free ABI-6 Landlock probe imported benchmarks.ssp2v_actual_run with return code
+      zero and empty stderr through a private directory containing exactly one symlink,
+      benchmarks -> ROOT/benchmarks. The read-only policy granted the private directory and
+      ROOT/benchmarks but never ROOT; both the launch attestation and a post-import worker read
+      denied ROOT/README.md with errno 13. Negative controls proved that neither the bridge grant
+      without target authority nor target authority without the bridge was sufficient. A narrower
+      real package directory with symlinks and individual grants for the exact 16-file import
+      closure also passed without granting ROOT/benchmarks as a directory; a one-file package-path
+      stub passed with the target-directory grant. No protected payload or repository source was
+      modified.
+    evidence:
+      - "directory bridge: returncode 0, stderr empty, attested and post-import README errno 13"
+      - "negative bridge-only control: PermissionError on symlinked benchmarks/__init__.py"
+      - "negative target-only control: ModuleNotFoundError for benchmarks"
+      - "16-file symlink closure: returncode 0, no ROOT or target-directory grant, README errno 13"
+    also_depends_on: [N167, N170, N174]
+    status: resolved
+  - id: N176
+    type: experiment
+    title: "Live import bridge overgrants unsealed benchmark sources"
+    provenance: ai-executed
+    timestamp: "2026-07-17T02:48+0200"
+    result: >
+      A target-free authority-inventory audit reproduced the package-parent failure under
+      Landlock: PYTHONPATH=ROOT:ROOT/src with only ROOT/benchmarks and ROOT/src read grants
+      raised ModuleNotFoundError, while an in-memory package-path bootstrap imported a real
+      benchmark submodule without granting ROOT. However, the proposed persistent package stub
+      would still point at the live ROOT/benchmarks directory. The sealed COMP-011 source
+      manifest currently contains 71 total files, whereas that directory grant exposes 92
+      non-pycache benchmark files, 67 of them outside the sealed closure. The audit therefore
+      rejected the live-tree bridge as the official executed-source authority and recommended a
+      byte-verified artifact-local replica extracted from the deterministic source snapshot.
+      No protected payload or repository source was modified.
+    evidence:
+      - "baseline Landlock import: returncode 1, ModuleNotFoundError: benchmarks"
+      - "in-memory package-path bootstrap: returncode 0"
+      - "source inventory: 71 sealed total files; 92 live benchmark files; 67 unsealed benchmark files"
+    also_depends_on: [N167, N174, N175]
+    status: resolved
+  - id: N177
+    type: experiment
+    title: "COMP-011 fixed complete-stream RGB VQ fails the development rate gate"
+    provenance: ai-executed
+    timestamp: "2026-07-17T16:12+0200"
+    result: >
+      The source-bound COMP-011 development science stages repeatedly produced the same valid
+      method failure. At m12/s6/r6/c8, selected VQ streams pass conservative quality, prescribed
+      Lloyd fixed-point, operational-bundle, and decode-resource gates, but win only 3/8 images;
+      geometric-mean V/Q is 0.9930826 and the worst ratio is 1.0485035. At m16/s8/r8/c8, the
+      corresponding values are 3/8, 0.9952001, and 1.0368798. The decision is
+      ABANDON_FIXED_SSP2V_V1_UNDER_COMP011_V2. The separate SSP2L arm is smaller than SSPL1 but
+      fails decode time by about 5.2x and 24.7x at the two tuples. Captured replay remains
+      incomplete, so this is stable development science evidence rather than a promoted claim.
+    evidence:
+      - "results/comp011_ssp2v_actual_dev_v2r28_2026-07-17/analysis.json"
+      - "results/comp011_ssp2v_actual_dev_v2r28_2026-07-17/actual_rows.jsonl"
+      - "tasks/COMP-011-complete-stream-rgb-vq.md"
+    also_depends_on: [N166, N167]
+    status: resolved
+  - id: N178
+    type: experiment
+    title: "Frozen replay inventory repair closes nested Landlock enumeration drift"
+    provenance: ai-executed
+    timestamp: "2026-07-17T16:12+0200"
+    result: >
+      v2r27 and v2r28 replay failed after the scientific decision because nested Landlock hid
+      dynamic /sys leaves from live globbing, changing exact worker launch authority. The repair
+      snapshots canonical system-read-only and GPU-read-write inventories once outside the
+      sandbox, binds the same lists into both replay phases, and reuses them inside captured
+      workers. Targeted policy, replay/recovery, real nested-Landlock, compile, and Ruff checks
+      pass, and an independent hostile audit found no blocking issue. Because source changed after
+      v2r28, a fresh v2r29 full source-bound replay is still mandatory.
+    evidence:
+      - "benchmarks/ssp2v_actual_run.py"
+      - "tests/test_ssp2v_actual_run_preflight_policy.py"
+      - "tests/test_ssp2v_actual_run_replay.py"
+      - "results/comp011_ssp2v_actual_dev_v2r28_2026-07-17/"
+    also_depends_on: [N167, N177]
+    status: resolved
+  - id: N179
+    type: experiment
+    title: "Renderer-aware coordinate probe exposes large RGB distortion headroom"
+    provenance: ai-executed
+    timestamp: "2026-07-17T16:12+0200"
+    result: >
+      On one exposed jason-briscoe m12/s6/r6/c8 development cell, independent step-3 SSP2F uses
+      48,755 bytes at source-teacher SSE 69.458125. An exact-gain-ranked coordinate pass over
+      4,087 receiver rows reaches SSE 34.657495 at 48,806 bytes, a 50.10% reduction for 51 extra
+      bytes while remaining 2,743 bytes below original Q. An entropy-monotone pass reaches SSE
+      47.475661 at 48,652 bytes, saving 103 bytes versus independent s3 and 2,897 versus Q. Blob
+      hashes, sizes, result seals, symbol parity, and canonical cold decode were independently
+      checked. The ad-hoc target-blind probe took 876.696 seconds and supplies no target-quality,
+      multi-image, held-out, sandbox, convergence, or speed claim.
+    evidence:
+      - "ara/evidence/renderer-aware-coordinate-probe-2026-07-17/run.md"
+      - "/tmp/structsplat_onsq_dev_probe_20260717/adversarial_coordinate_output/m12_s6_r6_c8/result.json"
+    also_depends_on: [N177]
+    status: resolved
+  - id: N180
+    type: decision
+    title: "Select exact-Q-cap target-guided alphabet release as the next killing experiment"
+    provenance: ai-executed
+    timestamp: "2026-07-17T16:12+0200"
+    choice: >
+      After a fresh valid COMP-011 replay, implement a new source-bound joint image encoder that
+      starts from independent s3, keeps SSP2F unchanged, and accepts only strict clamp-exact
+      distortion reductions whose complete stream stays at or below incumbent Q. Exhaust a coarse
+      +/-3 lattice phase, then release +/-1 alongside +/-3; separate source-teacher and target
+      arms, retain the entropy-monotone equal-I arm, require exact size-only/full-encode parity,
+      cold decode, deterministic order controls, and scalar-neighborhood fixed-point evidence.
+    alternatives:
+      - "Promote the one-cell coordinate probe as a method improvement."
+      - "Make entropy-monotone coordinate search the primary experiment without an exact Q cap."
+      - "Move directly to pair/block search before testing the simpler scalar mechanism."
+    evidence:
+      - "N177"
+      - "N179"
+      - "ara/evidence/renderer-aware-coordinate-probe-2026-07-17/run.md"
+    also_depends_on: [N177, N179]
+    status: resolved
+  - id: N181
+    type: pivot
+    title: "Hostile pre-freeze review repairs the exact-Q causal assay"
+    provenance: ai-executed
+    timestamp: "2026-07-17T17:17+0200"
+    from: >
+      The initial COMP-012 sketch used a common incumbent-Q cap and a nested coarse-to-fine
+      primary path, while leaving the fresh roster, strongest uniform control, fixed non-RGB
+      state, terminal stationarity certificate, and production-quality transfer underspecified.
+    to: >
+      Preserve the exact-complete-byte SSP2F direction but require genuinely new hash-bound images,
+      one primary endpoint, an equal-rate F@B_C alphabet control, a direct fine start, the
+      source-best feasible uniform-lattice control, hard independent-step-3 failure, bitwise frozen
+      non-RGB state, exact terminal zero sweeps, target-denied source workers, and conservative
+      repeated CUDA PSNR/MS-SSIM/LPIPS authority.
+    trigger: >
+      An independent hostile preregistration review returned NO-GO: equal cap confounds unused byte
+      headroom, nested descent makes internal-objective nonworsening partly tautological, and the
+      original controls could not isolate alphabet release or transfer it to production quality.
+    evidence:
+      - "N179"
+      - "N180"
+      - "ara/evidence/comp012-prefreeze-hostile-review-2026-07-17/run.md"
+    also_depends_on: [N179, N180]
+    status: resolved
+  - id: N182
+    type: experiment
+    title: "Exposed exact-cap RGB search separates low- and high-precision cells"
+    provenance: ai-executed
+    timestamp: "2026-07-18T07:35+0200"
+    result: >
+      Target-MSE coordinate RDO at equal complete bytes improved frozen persisted-CUDA
+      PSNR/MS-SSIM/LPIPS on two already-exposed m12/s6/r6/c8 cells: Jason changed by
+      +0.931405480 dB, +0.000196278, and -0.000448857 LPIPS; Nomao changed by
+      +0.860618088 dB, +0.000171006, and -0.002742201 LPIPS. The exposed Jason
+      m16/s8/r8/c8 endpoint instead retained a conservative +0.461592281 dB PSNR gain
+      while changing MS-SSIM by -0.000652671 and LPIPS by +0.000356544. These are
+      nonterminal, unsealed, same-development-data calibration results; confirmation data
+      remained sealed.
+    evidence:
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/run.md"
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/actual_ms_repair_readout.json"
+    also_depends_on: [N179, N181]
+    status: resolved
+  - id: N183
+    type: dead_end
+    title: "Fixed proximity and four-neighbor repairs worsen the m16 tradeoff"
+    provenance: ai-executed
+    timestamp: "2026-07-18T07:35+0200"
+    hypothesis: >
+      A fixed source-render proximity penalty or four-neighbor residual-gradient objective can
+      retain the exact-byte PSNR gain while restoring perceptual quality on the exposed m16 cell.
+    failure_mode: >
+      Lambda 0.25 source proximity was dominated by target MSE. The fixed four-neighbor repair
+      stopped at the +0.10 dB CPU-MSE floor after 4,035 accepted edits and changed conservative
+      persisted metrics by +0.100005187 dB PSNR, -0.001703918 MS-SSIM, and +0.001610192 LPIPS.
+    lesson: >
+      Reject these exact objective/floor/schedule bundles on this cell; a static proxy sign and
+      scalar proximity penalty do not predict the constrained discrete trajectory.
+    evidence:
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/run.md"
+    also_depends_on: [N182]
+    status: resolved
+  - id: N184
+    type: experiment
+    title: "Saved m16 target-MSE checkpoints contain no three-metric repair"
+    provenance: ai-executed
+    timestamp: "2026-07-18T07:35+0200"
+    result: >
+      Deterministic replay scored the start, eight coarse checkpoints, and two fine checkpoints
+      on the exposed Jason m16 path. No saved checkpoint improves PSNR, MS-SSIM, and LPIPS
+      together. PSNR first crosses the incumbent at coarse 2 (+0.079616569 dB), where MS-SSIM
+      is already -0.002880156 and LPIPS +0.003832411; fine 2 is +0.445779503 dB,
+      -0.000766039, and +0.000544777. This kills selection among those 11 saved states only.
+    evidence:
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/run.md"
+      - "/tmp/comp012_m16_trajectory_2026-07-18/frozen_metric_readout.json"
+    also_depends_on: [N182, N183]
+    status: resolved
+  - id: N185
+    type: experiment
+    title: "Actual-MS origin-gradient repair selects no legal prefix"
+    provenance: ai-executed
+    timestamp: "2026-07-18T07:35+0200"
+    result: >
+      One predeclared, twice-audited exposed run used the exact five-scale CPU MS-SSIM gradient
+      only to rank legal RGB moves under a 64,662-byte cap and +0.10 dB CPU-MSE floor. The origin
+      scored 0.994461715221405; the best of ten evaluated dyadic prefixes contained one edit and
+      scored 0.9944531917572021. No prefix strictly improved, so the final blob was bit-identical
+      to the start. Thirteen of the 226 allowed metric calls were used, and fresh persisted-CUDA
+      repeats reproduced the m16 PSNR/perceptual tradeoff. Independent result audit returned GO
+      after narrowing the wording to this fixed cell and policy.
+    evidence:
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/run.md"
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/actual_ms_repair_readout.json"
+      - "/tmp/comp012_actual_ms_repair_jason_m16_2026-07-18/result.json"
+    also_depends_on: [N182, N184]
+    status: resolved
+  - id: N186
+    type: dead_end
+    title: "Fixed actual-MS origin-gradient/dyadic policy fails on exposed m16"
+    provenance: ai-executed
+    timestamp: "2026-07-18T07:35+0200"
+    hypothesis: >
+      First-order actual-MS-SSIM ranking plus exact dyadic-prefix scoring can repair the exposed
+      m16 perceptual losses without giving up the fixed PSNR floor or complete-byte cap.
+    failure_mode: >
+      Every selectable dyadic prefix reduced actual CPU MS-SSIM relative to the origin; zero
+      edits were committed and the independent CUDA/LPIPS falsifier remained unfavorable.
+    lesson: >
+      Reject this fixed origin-gradient/dyadic-prefix bundle on the exposed cell. The result does
+      not distinguish constrained multi-edit proposals from local trust-region, line-search,
+      non-dyadic, or representation-level alternatives.
+    evidence:
+      - "N185"
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/run.md"
+    also_depends_on: [N185]
+    status: resolved
+  - id: N187
+    type: experiment
+    title: "Exact-byte RDO core and paired adapter pass focused validation"
+    provenance: ai-executed
+    timestamp: "2026-07-18T07:35+0200"
+    result: >
+      Implemented the objective/search core, exact size oracle, source-bound renderer operator,
+      and crash-safe paired objective/rate adapter with permanent poison semantics for one-sided
+      failures. The focused coordinate/objective/size/operator/adapter/bridge suite passes
+      93 tests in 15.74 seconds; Ruff and git diff whitespace checks pass. Lifecycle
+      orchestration, frozen preflight/gates, transcript/runtime caps, and held-out execution
+      remain incomplete.
+    evidence:
+      - "benchmarks/ssp2f_coordinate_rdo.py"
+      - "benchmarks/ssp2f_rdo_objective.py"
+      - "benchmarks/ssp2f_size_oracle.py"
+      - "benchmarks/ssp2f_rdo_operator.py"
+      - "benchmarks/ssp2f_rdo_adapter.py"
+      - "pytest: 93 passed in 15.74 seconds"
+    also_depends_on: [N181, N182]
+    status: resolved
+  - id: N188
+    type: question
+    title: "Can nonlocal proposals cross the exact-rate perceptual barrier?"
+    provenance: ai-suggested
+    timestamp: "2026-07-18T07:35+0200"
+    description: >
+      Test whether constrained multi-edit exchanges, trust-region/line-search variants, or a
+      more expressive codec-native representation can reach a jointly favorable quality state
+      that scalar target-MSE and the fixed actual-MS origin-gradient policy miss, without
+      weakening exact bytes, cold-decode parity, independent frozen metrics, or confirmation
+      isolation.
+    status: open
+  - id: N189
+    type: experiment
+    title: "Exact-stream visual snapshots bind the two exposed m12 comparisons"
+    provenance: ai-executed
+    timestamp: "2026-07-18T10:48+0200"
+    result: >
+      Four fresh frozen-CUDA cold-decode workers rendered and scored the SSP2E baseline and
+      equal-byte SSP2F candidate once for each exposed m12 cell before lossless PNG conversion.
+      Jason reproduced +0.931405443 dB PSNR, +0.000196636 MS-SSIM, and -0.000448875 LPIPS
+      at 51,549 versus 51,549 complete bytes; Nomao reproduced +0.860618169 dB,
+      +0.000171125, and -0.002742201 at 52,223 versus 52,223 bytes. The resulting focused
+      HTML contains only target/baseline/candidate images and exact metrics for those two cells.
+      Hash, rate, transcription, desktop/mobile rendering, and live wipe behavior passed local
+      validation; an independent referee returned GO after one reversed endpoint-caption defect
+      was corrected. This remains exposed, unsealed visual calibration rather than held-out
+      method evidence.
+    evidence:
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/index.html"
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/visual/metrics.json"
+      - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/run.md"
+    also_depends_on: [N182]
+    status: resolved

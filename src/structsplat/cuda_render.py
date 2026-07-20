@@ -66,6 +66,7 @@ class _ExactRenderCuda(Function):
         tile_size,
         support_fade,
         sigma_cutoff,
+        backward_variant,
     ):
         ext = _load_extension()
         means = means.contiguous()
@@ -98,6 +99,7 @@ class _ExactRenderCuda(Function):
         ctx.tile_size = int(tile_size)
         ctx.support_fade = bool(support_fade)
         ctx.sigma_cutoff = float(sigma_cutoff)
+        ctx.backward_variant = str(backward_variant)
         return out
 
     @staticmethod
@@ -108,10 +110,10 @@ class _ExactRenderCuda(Function):
         )
         # forward signature:
         # means, conics, colors, radii, opacities, height, width, normalize, eps, tiled, tile_size,
-        # support_fade, sigma_cutoff
+        # support_fade, sigma_cutoff, backward_variant
         need_means, need_conics, need_colors, _, need_opac = ctx.needs_input_grad[:5]
         if not (need_means or need_conics or need_colors or need_opac):
-            return (None,) * 13
+            return (None,) * 14
         ext = _load_extension()
         if ctx.tiled:
             grad_means, grad_conics, grad_colors, grad_opacities = ext.backward_tiled(
@@ -120,8 +122,14 @@ class _ExactRenderCuda(Function):
                 tile_gids, tile_offsets, ctx.normalize, ctx.eps, ctx.tile_size,
                 ctx.support_fade, ctx.sigma_cutoff,
             )
-        else:
+        elif ctx.backward_variant == "baseline":
             grad_means, grad_conics, grad_colors, grad_opacities = ext.backward(
+                grad_out.contiguous(),
+                means, conics, colors, radii, opacities, den.contiguous(), out.contiguous(),
+                ctx.normalize, ctx.eps, ctx.support_fade, ctx.sigma_cutoff,
+            )
+        else:
+            grad_means, grad_conics, grad_colors, grad_opacities = ext.backward_block_reduce(
                 grad_out.contiguous(),
                 means, conics, colors, radii, opacities, den.contiguous(), out.contiguous(),
                 ctx.normalize, ctx.eps, ctx.support_fade, ctx.sigma_cutoff,
@@ -134,6 +142,7 @@ class _ExactRenderCuda(Function):
             grad_colors if need_colors else None,
             None,
             grad_opacities,
+            None,
             None,
             None,
             None,
@@ -200,7 +209,8 @@ def _build_tile_index(means: torch.Tensor, radii: torch.Tensor, H: int, W: int,
 def render_cuda_exact(means, conics, colors, radii, H: int, W: int,
                       opacities=None, normalize: bool = True, eps: float = 1e-8,
                       tiled: bool = False, tile_size: int = 16,
-                      support_fade: bool = False, sigma_cutoff: float = 3.0):
+                      support_fade: bool = False, sigma_cutoff: float = 3.0,
+                      backward_variant: str = "baseline"):
     """Render with StructSplat's exact normalized/additive math on CUDA.
 
     Args mirror ``render_field``. Only float32 CUDA tensors are supported; CPU or non-float32
@@ -210,9 +220,16 @@ def render_cuda_exact(means, conics, colors, radii, H: int, W: int,
         raise RuntimeError("StructSplat CUDA renderer requires CUDA tensors; pass device='cuda'.")
     if means.dtype != torch.float32 or conics.dtype != torch.float32 or colors.dtype != torch.float32:
         raise RuntimeError("StructSplat CUDA renderer currently supports float32 tensors only.")
+    if backward_variant not in ("baseline", "block_reduce"):
+        raise ValueError(
+            "backward_variant must be baseline or block_reduce, "
+            f"got {backward_variant!r}"
+        )
+    if tiled and backward_variant != "baseline":
+        raise ValueError("block_reduce backward is experimental and untiled-only")
     if opacities is None:
         opacities = means.new_empty(0)
     return _ExactRenderCuda.apply(
         means, conics, colors, radii, opacities, H, W, normalize, eps, tiled, tile_size,
-        support_fade, sigma_cutoff
+        support_fade, sigma_cutoff, backward_variant
     )

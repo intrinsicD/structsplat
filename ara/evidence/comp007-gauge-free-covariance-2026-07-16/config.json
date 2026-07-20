@@ -1,0 +1,1051 @@
+{
+  "binding_sha256": "d0091a1a5be164b7dbe80fdbbd97c839e3e1c7bc23c74340bbe1f34d80fc3454",
+  "command": [
+    "/home/alex/Documents/structsplat/benchmarks/gauge_free_covariance_assay.py",
+    "run",
+    "--outdir",
+    "results/comp007_gauge_free_covariance_dev_v4",
+    "--split",
+    "development",
+    "--device",
+    "cuda"
+  ],
+  "environment": {
+    "created_at": "2026-07-16T00:38:42.399146+00:00",
+    "cublas_workspace_config": ":4096:8",
+    "cuda": {
+      "compute_capability": [
+        8,
+        6
+      ],
+      "cuda_runtime": "12.8",
+      "driver": "590.48.01",
+      "name": "NVIDIA GeForce RTX 3050",
+      "renderer_extension": {
+        "filename": "structsplat_render_ext.so",
+        "sha256": "8ad8a640ad9af29fce5c2d4841fc85495ebe6fd1f5c22ae13950fd454b6c6075",
+        "size_bytes": 397376
+      },
+      "total_memory": 8199143424
+    },
+    "device": "cuda",
+    "git": {
+      "branch": "main",
+      "commit": "5dc649397c40e69cf3e96bd27df2c5e2812d003d",
+      "dirty": true,
+      "status_sha256": "05c29b3f1601fc24763b280afae70e95d9ed969004b6766da9671f5d515cd0e3",
+      "tracked_diff_sha256": "99cb391d84050e80410a198ffbb92bdad99106405699b409ad26db5ffbc398a5"
+    },
+    "ld_preload": "/usr/lib/x86_64-linux-gnu/libstdc++.so.6",
+    "numpy": "2.1.3",
+    "pillow": "12.0.0",
+    "platform": "Linux-6.14.0-37-generic-x86_64-with-glibc2.39",
+    "python": "3.12.9",
+    "torch": "2.9.0+cu128",
+    "torch_num_threads": 1,
+    "zlib_compile": "1.2.13",
+    "zlib_runtime": "1.2.13",
+    "zstandard": "0.23.0"
+  },
+  "executed_source_archive": {
+    "members": {
+      "benchmarks/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "benchmarks/_util.py": "d092d65534674b5e25ec9b356ba8191d7d64d8007288c0f655e4befd8deb04ce",
+      "benchmarks/common.py": "cd446f42fb217d7aa87814256ce706dc08c3e207e27213ebb48aa168e108afa9",
+      "benchmarks/gauge_free_covariance_analysis.py": "e0dcca01621e49f7e43acf3e946c2d6d606586cc9ac9436a14ff8fa01d30971a",
+      "benchmarks/gauge_free_covariance_assay.py": "8d72647435bd3b8ba34680d2563349340d0cb8c47e72ace48ae72b935fdfb298",
+      "benchmarks/gauge_free_covariance_codec.py": "28540e3045d1221036ae71f9289fcfedb3c18013dff225ab6425daa448906989",
+      "benchmarks/gauge_free_covariance_core.py": "fcb8861aca184890d49e5940f0d2c9df4086c0f15fc1c7cca62f7241a0b029c9",
+      "pyproject.toml": "17bd0084dcb3e918227529835b50d5a7c3ad2c9f9afdf87f1eb2a4bb48d46610",
+      "src/structsplat/__init__.py": "813c146144dfe15a802bf7483e72c0935b80ab7377a0203ca4f04b15d37c09bf",
+      "src/structsplat/cli.py": "ef0756d3d6902d534e3182dee2e0dae817b5db50f4b9beb550b102afa301af98",
+      "src/structsplat/codec.py": "779e73e77be998697073960bde8e55ff8f36ee5514b819a101938f08d35ac2e7",
+      "src/structsplat/config.py": "4e5e1752e8ae4d64201bd9246855abad58ab438547d6ad7ccf528d169bbd3bef",
+      "src/structsplat/cuda/__init__.py": "d3e087adc92fc2505f4c6c8b9982de3884638d57c947e2fbb58e2a26f92084f9",
+      "src/structsplat/cuda/render_ext.cpp": "eec0e011189a34d3489c6f719d15528a3511758b79b5cfad145f91323ef5e356",
+      "src/structsplat/cuda/render_ext.cu": "5493130d56cdf24dd67d54111eb14a701f5e2b143173cdee27a90a7fa988e150",
+      "src/structsplat/cuda_render.py": "1a3be3a92520511c703c0d5d9d7f5a60dbf230d5131fc23899c716a835783a62",
+      "src/structsplat/density.py": "045cc5b69167755c5746c3bdff353e03634542150712da5c32a469ed47a90873",
+      "src/structsplat/fit.py": "96ae1ae8991b7b9690a0fc76a82416eae61a84732f076a88607639ac089d0424",
+      "src/structsplat/gaussians.py": "26d8ddf03740c8ed44ae9c97d2bb75438dd5a992327fe70cbd3c91f2e5e6fefe",
+      "src/structsplat/generate.py": "67b98bfc4e3368ae644e4c25df7cfb92098322f03772e39213be0578279995af",
+      "src/structsplat/init.py": "9e5861f0e3666483d4308a952403460cb8c30c66c9b709da2682f92232221133",
+      "src/structsplat/metrics.py": "8d9963efa6d3e7b687e349398079ff058326653eeaac47fdf5d1b4778ce8a8b7",
+      "src/structsplat/predictor.py": "c3cccdd6703dba192c0e5c805bd682c920d5e8592c9b5b6480e716102066f727",
+      "src/structsplat/pyramid.py": "8b436276694e36ed3140c029d0d80e6a191e55ceb3cf6a2b1bbaeffd8e163b70",
+      "src/structsplat/render.py": "af26dd0f3d1eb6389c50e4baca8fa6e2ddf754c248c856f87e9c0d49863063f9",
+      "src/structsplat/sampling.py": "5f34e455a2a30bb5eceb8fc13e13fc667ba2160b199c3d1bef821d6963881240",
+      "src/structsplat/structural_controls.py": "03894a4050c845ef3f8175892f3a636d08ad64bee6908b08bbff4b0144c20269",
+      "src/structsplat/structure_tensor.py": "05a6b1a77290c5cf70209b11b1c0c95e7e8bee7f0c92142124354c06556ba405",
+      "src/structsplat/visualize.py": "cb3d09bf0867ba71cc68a9fe5712a20d02b1bce6b4ad388c75af5053a82181ef",
+      "tasks/COMP-007-gauge-free-covariance-codec.md": "7f18c4748f2a8e53248b37bd6d2355fcd174541ce7683764f2115051262c663b",
+      "tests/test_gauge_free_covariance_analysis.py": "afa08fc7b80a16f6da8622920890700b06a45ffd89733487eb2f06189ef37a98",
+      "tests/test_gauge_free_covariance_assay.py": "c42ae72ddf57b3ee3e750cc4de485416b56e589955bc5676d550575184744296",
+      "tests/test_gauge_free_covariance_codec.py": "71b6fc4c41b914f2c482d5a52e3c9dd312bee8d88d20cd9d1370d2e629d0914b",
+      "tests/test_gauge_free_covariance_core.py": "e015e1efa28a4f7a8a1846d07060af169b08e24a6a3bd0fb0523746a66097739"
+    },
+    "path": "executed_sources_v3.tar",
+    "sha256": "cb6d0d8eb77b6b98328dd66290d8a514a746e00de07c10a2d23cc62959eb9753"
+  },
+  "schema": "comp007-config-v3",
+  "science": {
+    "allocations": [
+      [
+        3,
+        3,
+        6
+      ],
+      [
+        3,
+        4,
+        5
+      ],
+      [
+        3,
+        5,
+        4
+      ],
+      [
+        3,
+        6,
+        3
+      ],
+      [
+        4,
+        3,
+        5
+      ],
+      [
+        4,
+        4,
+        4
+      ],
+      [
+        4,
+        5,
+        3
+      ],
+      [
+        5,
+        3,
+        4
+      ],
+      [
+        5,
+        4,
+        3
+      ],
+      [
+        6,
+        3,
+        3
+      ],
+      [
+        3,
+        5,
+        10
+      ],
+      [
+        3,
+        6,
+        9
+      ],
+      [
+        3,
+        7,
+        8
+      ],
+      [
+        3,
+        8,
+        7
+      ],
+      [
+        3,
+        9,
+        6
+      ],
+      [
+        3,
+        10,
+        5
+      ],
+      [
+        4,
+        4,
+        10
+      ],
+      [
+        4,
+        5,
+        9
+      ],
+      [
+        4,
+        6,
+        8
+      ],
+      [
+        4,
+        7,
+        7
+      ],
+      [
+        4,
+        8,
+        6
+      ],
+      [
+        4,
+        9,
+        5
+      ],
+      [
+        4,
+        10,
+        4
+      ],
+      [
+        5,
+        3,
+        10
+      ],
+      [
+        5,
+        4,
+        9
+      ],
+      [
+        5,
+        5,
+        8
+      ],
+      [
+        5,
+        6,
+        7
+      ],
+      [
+        5,
+        7,
+        6
+      ],
+      [
+        5,
+        8,
+        5
+      ],
+      [
+        5,
+        9,
+        4
+      ],
+      [
+        5,
+        10,
+        3
+      ],
+      [
+        6,
+        3,
+        9
+      ],
+      [
+        6,
+        4,
+        8
+      ],
+      [
+        6,
+        5,
+        7
+      ],
+      [
+        6,
+        6,
+        6
+      ],
+      [
+        6,
+        7,
+        5
+      ],
+      [
+        6,
+        8,
+        4
+      ],
+      [
+        6,
+        9,
+        3
+      ],
+      [
+        7,
+        3,
+        8
+      ],
+      [
+        7,
+        4,
+        7
+      ],
+      [
+        7,
+        5,
+        6
+      ],
+      [
+        7,
+        6,
+        5
+      ],
+      [
+        7,
+        7,
+        4
+      ],
+      [
+        7,
+        8,
+        3
+      ],
+      [
+        8,
+        3,
+        7
+      ],
+      [
+        8,
+        4,
+        6
+      ],
+      [
+        8,
+        5,
+        5
+      ],
+      [
+        8,
+        6,
+        4
+      ],
+      [
+        8,
+        7,
+        3
+      ],
+      [
+        9,
+        3,
+        6
+      ],
+      [
+        9,
+        4,
+        5
+      ],
+      [
+        9,
+        5,
+        4
+      ],
+      [
+        9,
+        6,
+        3
+      ],
+      [
+        10,
+        3,
+        5
+      ],
+      [
+        10,
+        4,
+        4
+      ],
+      [
+        10,
+        5,
+        3
+      ],
+      [
+        4,
+        10,
+        10
+      ],
+      [
+        5,
+        9,
+        10
+      ],
+      [
+        5,
+        10,
+        9
+      ],
+      [
+        6,
+        8,
+        10
+      ],
+      [
+        6,
+        9,
+        9
+      ],
+      [
+        6,
+        10,
+        8
+      ],
+      [
+        7,
+        7,
+        10
+      ],
+      [
+        7,
+        8,
+        9
+      ],
+      [
+        7,
+        9,
+        8
+      ],
+      [
+        7,
+        10,
+        7
+      ],
+      [
+        8,
+        6,
+        10
+      ],
+      [
+        8,
+        7,
+        9
+      ],
+      [
+        8,
+        8,
+        8
+      ],
+      [
+        8,
+        9,
+        7
+      ],
+      [
+        8,
+        10,
+        6
+      ],
+      [
+        9,
+        5,
+        10
+      ],
+      [
+        9,
+        6,
+        9
+      ],
+      [
+        9,
+        7,
+        8
+      ],
+      [
+        9,
+        8,
+        7
+      ],
+      [
+        9,
+        9,
+        6
+      ],
+      [
+        9,
+        10,
+        5
+      ],
+      [
+        10,
+        4,
+        10
+      ],
+      [
+        10,
+        5,
+        9
+      ],
+      [
+        10,
+        6,
+        8
+      ],
+      [
+        10,
+        7,
+        7
+      ],
+      [
+        10,
+        8,
+        6
+      ],
+      [
+        10,
+        9,
+        5
+      ],
+      [
+        10,
+        10,
+        4
+      ]
+    ],
+    "bootstrap_replicates": 20000,
+    "bootstrap_seed": 20260716,
+    "charts": [
+      "current_rs",
+      "canonical_rs",
+      "log_spd"
+    ],
+    "coders": [
+      "zlib9",
+      "zstd9"
+    ],
+    "confirmation_ids": [
+      1,
+      3,
+      5,
+      7,
+      9,
+      11,
+      13,
+      15,
+      17,
+      19,
+      21,
+      23
+    ],
+    "counts": [
+      640,
+      2560
+    ],
+    "development_ids": [
+      2,
+      4,
+      6,
+      8,
+      10,
+      12,
+      14,
+      16,
+      18,
+      20,
+      22,
+      24
+    ],
+    "fit_config": {
+      "aa_dilation": 0.0,
+      "absgrad_decay": 1.0,
+      "adaptive_continue_after_stop": false,
+      "adaptive_count": false,
+      "adaptive_growth_count": 64,
+      "adaptive_growth_every": 50,
+      "adaptive_min_delta_psnr": 0.02,
+      "adaptive_patience": 2,
+      "adaptive_split_mode": "residual_tensor_add",
+      "charbonnier_eps": 0.001,
+      "checkpoint_policy": "terminal",
+      "color_basis": "constant",
+      "color_grad_l2": 0.0001,
+      "color_solve_every": null,
+      "color_solve_lambda": 0.0001,
+      "color_solve_maxiter": 32,
+      "color_solve_schedule": "every",
+      "compute_lpips": false,
+      "covariance_filter_alpha": 28.274333882308138,
+      "covariance_filter_max_variance": 300.0,
+      "covariance_filter_mode": "none",
+      "densify_coherence_power": 1.0,
+      "densify_max_axis_ratio": 6.0,
+      "early_stop_min_delta": 0.0,
+      "early_stop_min_iters": 0,
+      "early_stop_patience": null,
+      "geometry_loss_every": 1,
+      "geometry_loss_weight": 0.0,
+      "iters": 500,
+      "lambda_rate": 0.0,
+      "log_every": 500,
+      "loss_target_downsample": 1,
+      "loss_target_full_frac": 0.0,
+      "loss_warmup_iters": 0,
+      "loss_warmup_pixel_loss": "l2",
+      "loss_weight_beta": 1.0,
+      "loss_weighting": "none",
+      "lr_color": 0.03,
+      "lr_cosine_start_frac": 0.0,
+      "lr_decay_every": null,
+      "lr_decay_gamma": 0.5,
+      "lr_means": 0.05,
+      "lr_opacity": 0.01,
+      "lr_rot": 0.01,
+      "lr_scales": 0.03,
+      "lr_schedule": "none",
+      "max_gaussians": null,
+      "new_row_temper_iters": 0,
+      "new_row_temper_start": 0.25,
+      "optimizer": "adam",
+      "pixel_loss": "l1",
+      "prune_every": null,
+      "prune_keep_min": 16,
+      "prune_min_activity": 0.0,
+      "qat_bits_colors": 8,
+      "qat_bits_means": 16,
+      "qat_bits_opacity": 8,
+      "qat_bits_rot": 8,
+      "qat_bits_scales": 8,
+      "qat_mode": "off",
+      "refine_nms": "off",
+      "refine_primitive": "duplicate",
+      "refine_site": "residual",
+      "relocate_at_split": false,
+      "relocate_count": 0,
+      "relocate_every": null,
+      "relocate_init_opacity": 0.05,
+      "relocate_residual_downsample": 1,
+      "render_checkpoint": false,
+      "render_chunk": 512,
+      "renderer": "cuda_tiled",
+      "responsibility_mass_alpha": 0.7,
+      "sampled_add_score": "legacy_abs",
+      "seed_new_row_optimizer_state": false,
+      "sigma_cutoff": 3.0,
+      "split_color_init": "target",
+      "split_count": 0,
+      "split_every": null,
+      "split_min_spacing": 0.0,
+      "split_mode": "duplicate",
+      "split_oversample": 1.0,
+      "split_scale": 0.7,
+      "split_schedule_stops_at_max": false,
+      "ssim_backend": "builtin",
+      "ssim_weight": 0.3,
+      "support_fade": false,
+      "support_fade_crossfade_iters": 10,
+      "support_fade_until_frac": null,
+      "target_bpp": null,
+      "target_ms_ssim": null,
+      "target_psnr": null,
+      "target_psnrs": []
+    },
+    "fit_seed": 0,
+    "independent_unit": "source_image",
+    "init_config": {
+      "background_fraction": 0.0,
+      "background_grid": 0,
+      "candidate_oversample": 6.0,
+      "coherence_power": 1.0,
+      "color_mode": "bilinear",
+      "color_radius": 1.5,
+      "density_base": 0.05,
+      "density_mode": "structure",
+      "density_power": 1.0,
+      "flank_offset_frac": 0.0,
+      "init_opacity": 0.9,
+      "init_scale_mult": 1.0,
+      "max_axis_ratio": 6.0,
+      "num_gaussians": 640,
+      "opacity_mode": "none",
+      "orientation_mode": "tensor",
+      "predictor_checkpoint": null,
+      "predictor_fallback_strategy": "quadtree_wse",
+      "sampling_mode": "wse",
+      "scale_cap_max": null,
+      "scale_cap_mode": "none",
+      "scale_feature_energy_frac": 0.25,
+      "scale_feature_min": 0.75,
+      "scale_feature_rel_across": 1.0,
+      "scale_feature_rel_along": 4.0,
+      "scale_feature_rel_flat_mult": null,
+      "scale_feature_rel_min": 0.5,
+      "scale_feature_rel_quantile": 0.4,
+      "scale_feature_sigma": 3.0,
+      "scale_mode": "spacing",
+      "seed": 0,
+      "strategy": "quadtree_wse",
+      "wse_progressive_order": false
+    },
+    "predictors": [
+      "absolute",
+      "modular_delta"
+    ],
+    "protocol": "comp007-gauge-free-covariance-codec-v3",
+    "source_manifest": {
+      "benchmarks/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "benchmarks/_util.py": "d092d65534674b5e25ec9b356ba8191d7d64d8007288c0f655e4befd8deb04ce",
+      "benchmarks/common.py": "cd446f42fb217d7aa87814256ce706dc08c3e207e27213ebb48aa168e108afa9",
+      "benchmarks/gauge_free_covariance_analysis.py": "e0dcca01621e49f7e43acf3e946c2d6d606586cc9ac9436a14ff8fa01d30971a",
+      "benchmarks/gauge_free_covariance_assay.py": "8d72647435bd3b8ba34680d2563349340d0cb8c47e72ace48ae72b935fdfb298",
+      "benchmarks/gauge_free_covariance_codec.py": "28540e3045d1221036ae71f9289fcfedb3c18013dff225ab6425daa448906989",
+      "benchmarks/gauge_free_covariance_core.py": "fcb8861aca184890d49e5940f0d2c9df4086c0f15fc1c7cca62f7241a0b029c9",
+      "pyproject.toml": "17bd0084dcb3e918227529835b50d5a7c3ad2c9f9afdf87f1eb2a4bb48d46610",
+      "src/structsplat/__init__.py": "813c146144dfe15a802bf7483e72c0935b80ab7377a0203ca4f04b15d37c09bf",
+      "src/structsplat/cli.py": "ef0756d3d6902d534e3182dee2e0dae817b5db50f4b9beb550b102afa301af98",
+      "src/structsplat/codec.py": "779e73e77be998697073960bde8e55ff8f36ee5514b819a101938f08d35ac2e7",
+      "src/structsplat/config.py": "4e5e1752e8ae4d64201bd9246855abad58ab438547d6ad7ccf528d169bbd3bef",
+      "src/structsplat/cuda/__init__.py": "d3e087adc92fc2505f4c6c8b9982de3884638d57c947e2fbb58e2a26f92084f9",
+      "src/structsplat/cuda/render_ext.cpp": "eec0e011189a34d3489c6f719d15528a3511758b79b5cfad145f91323ef5e356",
+      "src/structsplat/cuda/render_ext.cu": "5493130d56cdf24dd67d54111eb14a701f5e2b143173cdee27a90a7fa988e150",
+      "src/structsplat/cuda_render.py": "1a3be3a92520511c703c0d5d9d7f5a60dbf230d5131fc23899c716a835783a62",
+      "src/structsplat/density.py": "045cc5b69167755c5746c3bdff353e03634542150712da5c32a469ed47a90873",
+      "src/structsplat/fit.py": "96ae1ae8991b7b9690a0fc76a82416eae61a84732f076a88607639ac089d0424",
+      "src/structsplat/gaussians.py": "26d8ddf03740c8ed44ae9c97d2bb75438dd5a992327fe70cbd3c91f2e5e6fefe",
+      "src/structsplat/generate.py": "67b98bfc4e3368ae644e4c25df7cfb92098322f03772e39213be0578279995af",
+      "src/structsplat/init.py": "9e5861f0e3666483d4308a952403460cb8c30c66c9b709da2682f92232221133",
+      "src/structsplat/metrics.py": "8d9963efa6d3e7b687e349398079ff058326653eeaac47fdf5d1b4778ce8a8b7",
+      "src/structsplat/predictor.py": "c3cccdd6703dba192c0e5c805bd682c920d5e8592c9b5b6480e716102066f727",
+      "src/structsplat/pyramid.py": "8b436276694e36ed3140c029d0d80e6a191e55ceb3cf6a2b1bbaeffd8e163b70",
+      "src/structsplat/render.py": "af26dd0f3d1eb6389c50e4baca8fa6e2ddf754c248c856f87e9c0d49863063f9",
+      "src/structsplat/sampling.py": "5f34e455a2a30bb5eceb8fc13e13fc667ba2160b199c3d1bef821d6963881240",
+      "src/structsplat/structural_controls.py": "03894a4050c845ef3f8175892f3a636d08ad64bee6908b08bbff4b0144c20269",
+      "src/structsplat/structure_tensor.py": "05a6b1a77290c5cf70209b11b1c0c95e7e8bee7f0c92142124354c06556ba405",
+      "src/structsplat/visualize.py": "cb3d09bf0867ba71cc68a9fe5712a20d02b1bce6b4ad388c75af5053a82181ef"
+    },
+    "split": "development",
+    "structure_tensor_config": {
+      "color_space": "luma",
+      "corner_frac": 0.15,
+      "flat_frac": 0.02,
+      "grad_sigma": 1.0,
+      "gradient_operator": "central",
+      "tensor_sigma": 2.0
+    },
+    "target_manifest": [
+      {
+        "image_id": "01",
+        "relative_path": "results/datasets/abl004/kodak24/kodim01.png",
+        "source_png_sha256": "a56e27cbf5f843c048b6af1d6e090760e9c92fadba88b7dee0205918a37523bd",
+        "source_size_bytes": 736501,
+        "split": "confirmation",
+        "target_float32_sha256": "798c84c5a3f038ace95af94e1d9ace9670b6bc0f9fc1b2892809e0ce1f81280e",
+        "target_shape": [
+          107,
+          160,
+          3
+        ]
+      },
+      {
+        "image_id": "02",
+        "relative_path": "results/datasets/abl004/kodak24/kodim02.png",
+        "source_png_sha256": "4f4b74a79237e311d72cad958237b5f7088d8bce1c82305ebefe1a70e3022dfd",
+        "source_size_bytes": 617995,
+        "split": "development",
+        "target_float32_sha256": "86662ed7e3e0776c4344faff406086c7e2e89236407bdfac7a2c0531a3269b0c",
+        "target_shape": [
+          107,
+          160,
+          3
+        ]
+      },
+      {
+        "image_id": "03",
+        "relative_path": "results/datasets/abl004/kodak24/kodim03.png",
+        "source_png_sha256": "e25ca1ff2f0c0cb5fdfd5f9b0a0bb21ac4c3de3c84a67f35b09a85d3306249db",
+        "source_size_bytes": 502888,
+        "split": "confirmation",
+        "target_float32_sha256": "45b3bacc82c3126ebe4c8b4cfddaaa8f23ab35cf7941288a6d3a39ebbb216640",
+        "target_shape": [
+          107,
+          160,
+          3
+        ]
+      },
+      {
+        "image_id": "04",
+        "relative_path": "results/datasets/abl004/kodak24/kodim04.png",
+        "source_png_sha256": "e3b946107c5d3441c022f678d0c3caf1e224d81b1604ba840a4f88e562de61aa",
+        "source_size_bytes": 637432,
+        "split": "development",
+        "target_float32_sha256": "511d7239985e08c00a6df2be0b5e0a45ebf0227725ab390f0426358ba1259c8e",
+        "target_shape": [
+          160,
+          107,
+          3
+        ]
+      },
+      {
+        "image_id": "05",
+        "relative_path": "results/datasets/abl004/kodak24/kodim05.png",
+        "source_png_sha256": "10349e963c5c813d327852f82c1795fa4148d69fedffc4c589bee458e3ac3d53",
+        "source_size_bytes": 785610,
+        "split": "confirmation",
+        "target_float32_sha256": "35e4cee9e4d5bee65c80e3293ac4937c23a060e394811928cdec78ec04df4d31",
+        "target_shape": [
+          107,
+          160,
+          3
+        ]
+      },
+      {
+        "image_id": "06",
+        "relative_path": "results/datasets/abl004/kodak24/kodim06.png",
+        "source_png_sha256": "363510303b715d4cbc384e1ce227e466b613a09e1b71ae985882bf8e7fbd9b18",
+        "source_size_bytes": 618959,
+        "split": "development",
+        "target_float32_sha256": "354545938e55d5efe3caeec4a0aa087ab110a3d758b7935334a69db462e10a9c",
+        "target_shape": [
+          107,
+          160,
+          3
+        ]
+      },
+      {
+        "image_id": "07",
+        "relative_path": "results/datasets/abl004/kodak24/kodim07.png",
+        "source_png_sha256": "b77d3f006f42414bb242222e0482e750c0fb9e5ee8d4bed2f6f11c5605fe54a4",
+        "source_size_bytes": 566322,
+        "split": "confirmation",
+        "target_float32_sha256": "d8187a18ac6987e50f9026723760449771f9e0155a555a072d6ae2178ed606ac",
+        "target_shape": [
+          107,
+          160,
+          3
+        ]
+      },
+      {
+        "image_id": "08",
+        "relative_path": "results/datasets/abl004/kodak24/kodim08.png",
+        "source_png_sha256": "ba23983c76b4832ee0e8af0592664756841a16779acd69f792e268fb6d13d6e7",
+        "source_size_bytes": 788470,
+        "split": "development",
+        "target_float32_sha256": "fae02cacc6e49663235354b4799547ab979f6a36be47cc7c2bd23728003e0b5c",
+        "target_shape": [
+          107,
+          160,
+          3
+        ]
+      },
+      {
+        "image_id": "09",
+        "relative_path": "results/datasets/abl004/kodak24/kodim09.png",
+        "source_png_sha256": "6a4361c2fc194feb4edaa9f9a4a0620fb9943e460ac7fdf037fb0f6dd6607a7d",
+        "source_size_bytes": 582899,
+        "split": "confirmation",
+        "target_float32_sha256": "212f306b40d2b40bb473f4faf6dd9f11bc6f000e241ecb54810c56c83655ee86",
+        "target_shape": [
+          160,
+          107,
+          3
+        ]
+      },
+      {
+        "image_id": "10",
+        "relative_path": "results/datasets/abl004/kodak24/kodim10.png",
+        "source_png_sha256": "9dfb70f5867c29ff9ed6313683f19b3d867849e40fbc0c4c54a4a89df341cf23",
+        "source_size_bytes": 593463,
+        "split": "development",
+        "target_float32_sha256": "e2890f63def20aa38a865eacc457b15f5701e9c027e6ab96fb67142909024e74",
+        "target_shape": [
+          160,
+          107,
+          3
+        ]
+      },
+      {
+        "image_id": "11",
+        "relative_path": "results/datasets/abl004/kodak24/kodim11.png",
+        "source_png_sha256": "7936814b58b5387fce2e4e2488b4ec830dadd95fa9520f358ddb30990b50f2b6",
+        "source_size_bytes": 621023,
+        "split": "confirmation",
+        "target_float32_sha256": "1a8d890417b0bceaf84e08cea7f8cf0c71dacea8c8f7db714c12ca28bd44ef1d",
+        "target_shape": [
+          107,
+          160,
+          3
+        ]
+      },
+      {
+        "image_id": "12",
+        "relative_path": "results/datasets/abl004/kodak24/kodim12.png",
+        "source_png_sha256": "d78c37c2f04f23761ed2367dd77e2db584ddd4c3950833fecf89f199a8126980",
+        "source_size_bytes": 531024,
+        "split": "development",
+        "target_float32_sha256": "955603778e1d9cdceaccf317fea0e219beb2f43b5a6d229a2def7fdac94c71fd",
+        "target_shape": [
+          107,
+          160,
+          3
+        ]
+      },
+      {
+        "image_id": "13",
+        "relative_path": "results/datasets/abl004/kodak24/kodim13.png",
+        "source_png_sha256": "bc34a3ce58dea09dce1704c997171602de90cb34d0c8503a988b77f473d39b08",
+        "source_size_bytes": 822712,
+        "split": "confirmation",
+        "target_float32_sha256": "aeabe01f3116c56ee0ead2e663bc3185b9ba8a5a1ca74c685dda88af5788a9eb",
+        "target_shape": [
+          107,
+          160,
+          3
+        ]
+      },
+      {
+        "image_id": "14",
+        "relative_path": "results/datasets/abl004/kodak24/kodim14.png",
+        "source_png_sha256": "55a94550ff18f3246c4074fd32b77b0c74447c26b6ad274d564d999c0450ba6e",
+        "source_size_bytes": 692201,
+        "split": "development",
+        "target_float32_sha256": "f8db211d1015aba8b2cc650aa8bcd773e4a49ea41350680a97ef4e91fc259522",
+        "target_shape": [
+          107,
+          160,
+          3
+        ]
+      },
+      {
+        "image_id": "15",
+        "relative_path": "results/datasets/abl004/kodak24/kodim15.png",
+        "source_png_sha256": "7538cbb80cb9103606c48b806eae57d56c885c7f90b9b3be70a41160f9cbb683",
+        "source_size_bytes": 612582,
+        "split": "confirmation",
+        "target_float32_sha256": "dc8b4a1d55e833537b581bdbe9537446de7f2f76c7c45af44e02cfa7d4e54b20",
+        "target_shape": [
+          107,
+          160,
+          3
+        ]
+      },
+      {
+        "image_id": "16",
+        "relative_path": "results/datasets/abl004/kodak24/kodim16.png",
+        "source_png_sha256": "a89c7268ccd4718ba424a99fc4643c572cf692ca6eae887185ceb4e9f11d2e54",
+        "source_size_bytes": 534247,
+        "split": "development",
+        "target_float32_sha256": "836e2ca3a61b4d53b97e4f3368db14dfc445fdfa635f492a21b61763b85522da",
+        "target_shape": [
+          107,
+          160,
+          3
+        ]
+      },
+      {
+        "image_id": "17",
+        "relative_path": "results/datasets/abl004/kodak24/kodim17.png",
+        "source_png_sha256": "37afcc89fbdcb76d9518e04b2fc011027e2f4cd14b3b2f83cefd721641a47c5b",
+        "source_size_bytes": 602078,
+        "split": "confirmation",
+        "target_float32_sha256": "e9bb300904279f523c497d00d9489ba16de8b50e016862ab7084688ddce64d29",
+        "target_shape": [
+          160,
+          107,
+          3
+        ]
+      },
+      {
+        "image_id": "18",
+        "relative_path": "results/datasets/abl004/kodak24/kodim18.png",
+        "source_png_sha256": "1a9258c365988961d87a0598725b609139c303ad48a5aad6c503c3b1a87849aa",
+        "source_size_bytes": 780947,
+        "split": "development",
+        "target_float32_sha256": "d9ea9104fab13aee71ea8a28c3880dd62ec83ecffa239cc3b79c1e003040d964",
+        "target_shape": [
+          160,
+          107,
+          3
+        ]
+      },
+      {
+        "image_id": "19",
+        "relative_path": "results/datasets/abl004/kodak24/kodim19.png",
+        "source_png_sha256": "b7450b264b1b0a411390d8931b112c27905a992520fc90569dc4b920aa32bbdc",
+        "source_size_bytes": 671476,
+        "split": "confirmation",
+        "target_float32_sha256": "6a48bd76d27ec75eb139c35ebd7b1f287936cc4316ea0d46ea708158c068a5c5",
+        "target_shape": [
+          160,
+          107,
+          3
+        ]
+      },
+      {
+        "image_id": "20",
+        "relative_path": "results/datasets/abl004/kodak24/kodim20.png",
+        "source_png_sha256": "3b46c71e3b92a563820ba32936be8330c586c41f938efd94be938386aae4328a",
+        "source_size_bytes": 492462,
+        "split": "development",
+        "target_float32_sha256": "b01b705777405acd4675da7d76d6d9a06efdb863a7e7e5c2d5dee26a8afe0921",
+        "target_shape": [
+          107,
+          160,
+          3
+        ]
+      },
+      {
+        "image_id": "21",
+        "relative_path": "results/datasets/abl004/kodak24/kodim21.png",
+        "source_png_sha256": "ac958597c82073f6bb65129c68f72b651db5b9efd82e11547d07350214bc268b",
+        "source_size_bytes": 637051,
+        "split": "confirmation",
+        "target_float32_sha256": "ad3bd37577c42ef3fc35f26be1d62576a91bdd1915965f457fc03257f3f582c1",
+        "target_shape": [
+          107,
+          160,
+          3
+        ]
+      },
+      {
+        "image_id": "22",
+        "relative_path": "results/datasets/abl004/kodak24/kodim22.png",
+        "source_png_sha256": "1cee58eb1f2d9c7ebb254d208a03c783ce6cf2c4d8c2cf45e235dd23b4ce1b29",
+        "source_size_bytes": 701970,
+        "split": "development",
+        "target_float32_sha256": "641d9b55a8738e20b1931b79e0f1723f37408deec194580ca5fc39b8de1cf3b0",
+        "target_shape": [
+          107,
+          160,
+          3
+        ]
+      },
+      {
+        "image_id": "23",
+        "relative_path": "results/datasets/abl004/kodak24/kodim23.png",
+        "source_png_sha256": "e3111a2fd4da24af15d6459ef9eacfe54106b38e27b4a21821b75c3f5d2d5baf",
+        "source_size_bytes": 557596,
+        "split": "confirmation",
+        "target_float32_sha256": "2ddbabaa11058aebe1a4f3b3a3eeb2b53862f2c6a45eb3e6e21108efc0494050",
+        "target_shape": [
+          107,
+          160,
+          3
+        ]
+      },
+      {
+        "image_id": "24",
+        "relative_path": "results/datasets/abl004/kodak24/kodim24.png",
+        "source_png_sha256": "1071c68372cc5a01435c2c225a5cf7d4bb803846ec08bb6b3d6721b156d7cb96",
+        "source_size_bytes": 706397,
+        "split": "development",
+        "target_float32_sha256": "f1a97d3c00ff923302caac21289dd6ab00c9eb21a47dbb1a09a3b2e1db5203dc",
+        "target_shape": [
+          107,
+          160,
+          3
+        ]
+      }
+    ],
+    "target_max_side": 160,
+    "task_protocol_sha256": "7f18c4748f2a8e53248b37bd6d2355fcd174541ce7683764f2115051262c663b",
+    "timing_repeats": 5
+  }
+}

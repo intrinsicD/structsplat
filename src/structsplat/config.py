@@ -8,8 +8,8 @@ DEFAULT_INIT_STRATEGY = "quadtree_wse"
 DEFAULT_PREDICTOR_FALLBACK_STRATEGY = DEFAULT_INIT_STRATEGY
 
 REFINE_SITES = (
-    "none", "residual", "residual_tensor", "support", "absgrad", "ranked",
-    "freq_violation",
+    "none", "residual", "residual_tensor", "support", "responsibility", "absgrad",
+    "ranked", "freq_violation",
 )
 REFINE_PRIMITIVES = ("duplicate", "fp", "moment_preserving", "sampled_add")
 REFINE_NMS_MODES = ("off", "on")
@@ -259,7 +259,7 @@ class FitConfig:
     split_every: int | None = None
     split_count: int = 0
     split_mode: str = "duplicate"      # legacy alias for refine_site/primitive/nms
-    # none/residual/residual_tensor/support/absgrad/ranked/freq
+    # none/residual/residual_tensor/support/responsibility/absgrad/ranked/freq
     refine_site: str | None = None
     refine_primitive: str | None = None  # duplicate/fp/moment_preserving/sampled_add
     refine_nms: str | None = None      # off/on; on applies sampled-add spacing defaults
@@ -270,6 +270,8 @@ class FitConfig:
     split_color_init: str = "target"    # target or residual; additive renderers force residual
     # sampled-add site score; signed_gaussian is FIT-017's coherent-error hypothesis
     sampled_add_score: str = "legacy_abs"  # legacy_abs, gaussian_abs, or signed_gaussian
+    # FIT-018: responsibility-weighted squared error divided by ownership mass**alpha.
+    responsibility_mass_alpha: float = 0.7
     seed_new_row_optimizer_state: bool = False  # seed split children from parent/median moments
     new_row_temper_iters: int = 0        # post-insert update ramp length; 0 disables
     new_row_temper_start: float = 0.25   # first-step update multiplier for young rows
@@ -477,6 +479,20 @@ class FitConfig:
         self.refine_primitive = primitive
         self.refine_nms = nms
         self.split_mode = refine_axes_to_alias(site, primitive, nms)
+        if not math.isfinite(self.responsibility_mass_alpha) or not (
+            0.0 < self.responsibility_mass_alpha <= 1.0
+        ):
+            raise ValueError(
+                "responsibility_mass_alpha must be finite and in (0, 1], "
+                f"got {self.responsibility_mass_alpha}"
+            )
+        if self.refine_site == "responsibility" and self.renderer not in (
+            "normalized", "cuda", "cuda_normalized", "cuda_tiled", "cuda_tiled_normalized",
+        ):
+            raise ValueError(
+                "refine_site='responsibility' requires normalized renderer semantics, "
+                f"got renderer={self.renderer!r}"
+            )
         if self.refine_nms == "on":
             if self.split_min_spacing == 0.0:
                 self.split_min_spacing = 1.0

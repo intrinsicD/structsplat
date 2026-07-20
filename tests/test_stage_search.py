@@ -5,6 +5,7 @@ import pytest
 torch = pytest.importorskip("torch")
 
 from PIL import Image
+from structsplat.config import FitConfig
 
 from benchmarks.stage_search import (
     INFLUENCE_DEFAULTS,
@@ -14,6 +15,7 @@ from benchmarks.stage_search import (
     _background_kwargs,
     _canonicalize,
     _color_solve_kwargs,
+    _config_key,
     _legacy_refine_config,
     _loss_weight_kwargs,
     _refine_kwargs,
@@ -26,6 +28,37 @@ from benchmarks.stage_search import (
     _write_index_html,
     summarize,
 )
+
+
+def test_responsibility_alpha_is_part_of_grouping_key_and_html_label(tmp_path):
+    base = {key: "fixed" for key in STAGE_KEYS}
+    base.update({
+        "refine_site": "responsibility",
+        "budget": 16,
+        "status": "ok",
+        "image": "toy",
+        "seed": 0,
+        "psnr": 10.0,
+        "ms_ssim": 0.5,
+        "auc_psnr": 9.0,
+        "init_seconds": 0.1,
+        "fit_seconds": 0.2,
+        "is_baseline": False,
+    })
+    rows = []
+    for alpha in (0.7, 1.0):
+        label = f"responsibility|responsibility_mass_alpha={alpha:g}"
+        rows.append({
+            **base,
+            "responsibility_mass_alpha": alpha,
+            "config_label": label,
+        })
+
+    assert _config_key(rows[0]) != _config_key(rows[1])
+    _write_index_html(rows, tmp_path, mode="factorial")
+    html = (tmp_path / "index.html").read_text(encoding="utf-8")
+    assert "responsibility_mass_alpha=0.7" in html
+    assert "responsibility_mass_alpha=1" in html
 
 
 def _write_toy(path):
@@ -309,6 +342,57 @@ def test_legacy_refine_alias_table_covers_all_influence_modes():
             assert kwargs["refine_site"] == cfg["refine_site"]
             assert kwargs["refine_primitive"] == cfg["refine_primitive"]
             assert kwargs["refine_nms"] == cfg["refine_nms"]
+
+
+def test_responsibility_site_is_exposed_with_logged_mass_alpha():
+    assert "responsibility" in INFLUENCE_DEFAULTS["refine_sites"]
+    cfg = {
+        "refine_site": "responsibility",
+        "refine_primitive": "moment_preserving",
+        "refine_nms": "off",
+        "refine_color": "target",
+        "refine_score": "legacy_abs",
+        "refine_prune": "off",
+        "refine_relocate": "off",
+    }
+    kwargs = _refine_kwargs_from_config(
+        cfg, 5, 7, None, 0.0, responsibility_mass_alpha=0.65
+    )
+
+    assert kwargs["refine_site"] == "responsibility"
+    assert kwargs["refine_primitive"] == "moment_preserving"
+    assert kwargs["responsibility_mass_alpha"] == pytest.approx(0.65)
+    resolved = FitConfig(renderer="normalized", **kwargs)
+    assert resolved.responsibility_mass_alpha == pytest.approx(0.65)
+
+
+def test_stage_search_responsibility_smoke_records_alpha_and_split_event(tmp_path):
+    img_path = tmp_path / "toy.png"
+    _write_toy(img_path)
+    rows = run_stage_search(
+        [str(img_path)], budgets=[16], seeds=[0], iters=2, max_side=None,
+        strategies=["aniso_flanking"], tensor_operators=["central"],
+        tensor_colors=["luma"], density_modes=["structure"],
+        sampling_modes=["density_random"], orientation_modes=["tensor"],
+        color_modes=["bilinear"], scale_modes=["spacing"], scale_cap_modes=["none"],
+        background_modes=["off"], opacity_modes=["none"], renderers=["normalized"],
+        aa_dilations=[0.0], color_basis_modes=["constant"], color_solve_modes=["none"],
+        pixel_losses=["l1"], loss_weight_modes=["none"], optimizers=["adam"],
+        lr_schedules=["none"], refine_sites=["responsibility"],
+        refine_primitives=["moment_preserving"], refine_nms_modes=["off"],
+        refine_color_inits=["target"], refine_score_modes=["legacy_abs"],
+        refine_prune_modes=["off"], refine_relocate_modes=["off"],
+        state_seed_modes=["off"], row_temper_modes=["off"], support_fade_modes=["off"],
+        pyramid_modes=["single"], split_every=1, split_count=2,
+        responsibility_mass_alpha=0.65, render_chunk=8,
+        outdir=str(tmp_path / "responsibility"), device="cpu",
+    )
+
+    assert len(rows) == 1
+    assert rows[0]["status"] == "ok"
+    assert rows[0]["responsibility_mass_alpha"] == pytest.approx(0.65)
+    assert rows[0]["split_event_count"] == 1
+    assert "responsibility_mass_alpha=0.65" in rows[0]["config_label"]
 
 
 def test_aa_dilation_is_stage_axis(tmp_path):

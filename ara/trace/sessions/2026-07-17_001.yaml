@@ -1,0 +1,403 @@
+session:
+  id: "2026-07-17_001"
+  date: "2026-07-17"
+  started: "2026-07-17T00:11+0200"
+  last_turn: "2026-07-17T17:17+0200"
+  turn_count: 9
+  summary: "No new end-to-end compression win exists; COMP-011 remains a stable development rate failure, the one-cell coordinate signal remains unvalidated, and hostile review repaired the proposed exact-Q assay before freeze."
+
+events_logged:
+  - turn: 1
+    type: experiment
+    id: N148
+    routing: direct
+    provenance: ai-executed
+    summary: "BENCH-009 recovery/audit completed; causal validity and utility fail."
+  - turn: 1
+    type: decision
+    id: N149
+    routing: direct
+    provenance: ai-executed
+    summary: "Closed v3 causal interpretation and allowed only a spent-data nested repair."
+  - turn: 1
+    type: experiment
+    id: N150
+    routing: direct
+    provenance: ai-executed
+    summary: "Corrected BENCH-011 nested algebra passes but all calibration strata fail."
+  - turn: 1
+    type: dead_end
+    id: N151
+    routing: direct
+    provenance: ai-executed
+    summary: "Closed the fixed local affine/carrier tangent-action formulation."
+  - turn: 1
+    type: experiment
+    id: N152
+    routing: direct
+    provenance: ai-executed
+    summary: "BENCH-012 topology assay stopped unavailable at equal-work preflight."
+  - turn: 1
+    type: decision
+    id: N153
+    routing: direct
+    provenance: ai-executed
+    summary: "Preserved topology preflight failure without margin/scale rescue."
+  - turn: 1
+    type: experiment
+    id: N154
+    routing: direct
+    provenance: ai-executed
+    summary: "COMP-007 log-SPD codec failed seven of eight complete-stream gates."
+  - turn: 1
+    type: decision
+    id: N155
+    routing: direct
+    provenance: ai-executed
+    summary: "Pivoted from covariance coordinates to no-state affine reproduction."
+  - turn: 1
+    type: dead_end
+    id: N156
+    routing: direct
+    provenance: ai-executed
+    summary: "BENCH-013 per-pixel signed local-linear correction rings."
+  - turn: 1
+    type: experiment
+    id: N157
+    routing: direct
+    provenance: ai-executed
+    summary: "BENCH-014 explicit affine carrier passes quality/rank but fails bytes/convergence."
+  - turn: 1
+    type: experiment
+    id: N158
+    routing: direct
+    provenance: ai-executed
+    summary: "BENCH-015 same-stream affine lift fails no-harm, convergence, and cold-decode gates."
+  - turn: 1
+    type: decision
+    id: N159
+    routing: direct
+    provenance: ai-executed
+    summary: "Closed the frozen affine-reproduction lineage without local-confidence rescue."
+  - turn: 1
+    type: dead_end
+    id: N160
+    routing: direct
+    provenance: ai-executed
+    summary: "BENCH-016 v4/v5 exact saved-state assumptions invalidated by hidden state and CUDA races."
+  - turn: 1
+    type: experiment
+    id: N161
+    routing: direct
+    provenance: ai-executed
+    summary: "BENCH-016 v6 shows strong low-rate SAD advantage but fails high-rate gates."
+  - turn: 1
+    type: decision
+    id: N162
+    routing: direct
+    provenance: ai-executed
+    summary: "Abandoned the fixed SAD transplant and selected entropy headroom."
+  - turn: 1
+    type: experiment
+    id: N163
+    routing: direct
+    provenance: ai-executed
+    summary: "COMP-008 optimistic entropy oracle survives both necessary-condition gates."
+  - turn: 1
+    type: decision
+    id: N164
+    routing: direct
+    provenance: ai-executed
+    summary: "Required an exact SSP2E coder before interpreting oracle headroom."
+  - turn: 1
+    type: experiment
+    id: N165
+    routing: direct
+    provenance: ai-executed
+    summary: "COMP-009 spatial coder fails; exact factorized arithmetic is a development-only positive clue."
+  - turn: 1
+    type: decision
+    id: N166
+    routing: direct
+    provenance: ai-executed
+    summary: "Closed SSP2E v1 and selected complete-stream RGB VQ."
+  - turn: 1
+    type: decision
+    id: N167
+    routing: direct
+    provenance: ai-executed
+    summary: "Required physical lifecycle enforcement before COMP-011 data access."
+  - turn: 1
+    type: experiment
+    id: N168
+    routing: direct
+    provenance: ai-executed
+    summary: "Synthetic implicit RGB quantizer proof finds distribution-dependent syntax headroom."
+  - turn: 1
+    type: decision
+    id: N169
+    routing: direct
+    provenance: ai-executed
+    summary: "Kept an implicit/explicit union conditional on measured COMP-011 model cost."
+  - turn: 1
+    type: experiment
+    id: N170
+    routing: direct
+    provenance: ai-executed
+    summary: "Target-free COMP-011 suite passes 231 tests; GO remains blocked."
+  - turn: 1
+    type: observation
+    id: O74
+    routing: staged
+    provenance: ai-suggested
+    summary: "Nested capacity does not imply calibrated finite local action value."
+  - turn: 1
+    type: observation
+    id: O75
+    routing: staged
+    provenance: ai-suggested
+    summary: "Log-SPD gauge removal has no robust complete-stream RD gain in COMP-007."
+  - turn: 1
+    type: observation
+    id: O76
+    routing: staged
+    provenance: ai-suggested
+    summary: "Affine reproduction signal survives while tested delivery mechanisms fail."
+  - turn: 1
+    type: observation
+    id: O77
+    routing: staged
+    provenance: ai-suggested
+    summary: "Native SAD is rate-dependent and not a compression comparison."
+  - turn: 1
+    type: observation
+    id: O78
+    routing: staged
+    provenance: ai-suggested
+    summary: "Fixed spatial entropy model realizes little oracle headroom; factorized framing remains a clue."
+  - turn: 1
+    type: observation
+    id: O79
+    routing: staged
+    provenance: ai-suggested
+    summary: "Implicit versus explicit color coding is source-distribution dependent."
+  - turn: 1
+    type: observation
+    id: O80
+    routing: staged
+    provenance: ai-suggested
+    summary: "Protected staged experiments need physical access, replay, publication, and journal enforcement."
+  - turn: 2
+    type: experiment
+    id: N171
+    routing: direct
+    provenance: ai-executed
+    summary: "Exact focused-policy mutations pass; coherent extra import target access is still accepted."
+  - turn: 3
+    type: experiment
+    id: N172
+    routing: direct
+    provenance: ai-executed
+    summary: "Exact import launch policy rejects 11 coherently resealed capability mutations."
+  - turn: 3
+    type: heuristic
+    id: H14
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Recompute operation-specific worker capabilities from sealed authorities."
+  - turn: 4
+    type: experiment
+    id: N173
+    routing: direct
+    provenance: ai-executed
+    summary: "Focused proof failure is O_RDONLY root traversal; O_PATH preserves confinement and passes in-process decode tests."
+  - turn: 5
+    type: experiment
+    id: N174
+    routing: direct
+    provenance: ai-executed
+    summary: "Captured focused proof passes after source, dependency, and recursive-sandbox composability repairs; current-hash preflight remains pending."
+  - turn: 6
+    type: experiment
+    id: N175
+    routing: direct
+    provenance: ai-executed
+    summary: "Minimal directory and exact-file import bridges work without granting repository-root read authority."
+  - turn: 7
+    type: experiment
+    id: N176
+    routing: direct
+    provenance: ai-executed
+    summary: "Live package bridge exposes 67 benchmark files outside the sealed closure; captured source replica remains the sound authority."
+  - turn: 8
+    type: experiment
+    id: N177
+    routing: direct
+    provenance: ai-executed
+    summary: "COMP-011 fixed RGB VQ passes quality/convergence/resources but fails both complete-rate tuple gates."
+  - turn: 8
+    type: experiment
+    id: N178
+    routing: direct
+    provenance: ai-executed
+    summary: "Frozen replay inventories repair nested Landlock launch drift; fresh v2r29 remains required."
+  - turn: 8
+    type: experiment
+    id: N179
+    routing: direct
+    provenance: ai-executed
+    summary: "One exposed cell shows 50.10% teacher-SSE reduction for +51 SSP2F bytes; entropy-monotone search also improves SSE while saving 103 bytes."
+  - turn: 8
+    type: decision
+    id: N180
+    routing: direct
+    provenance: ai-executed
+    summary: "Selected source-bound exact-Q-cap target-guided alphabet release as the next killing experiment."
+  - turn: 8
+    type: observation
+    id: O81
+    routing: staged
+    provenance: ai-suggested
+    summary: "New coordinate evidence is a strong mechanism signal, not yet an end-to-end StructSplat improvement."
+  - turn: 9
+    type: pivot
+    id: N181
+    routing: direct
+    provenance: ai-executed
+    summary: "Rejected the initial COMP-012 freeze and required equal-rate, direct-start, lattice, exact-oracle, isolated-worker, and CUDA-quality repairs."
+  - turn: 9
+    type: observation
+    id: O82
+    routing: staged
+    provenance: ai-suggested
+    summary: "Equal cap alone cannot causally attribute alphabet release; equal-rate and nonnested controls are required."
+  - turn: 9
+    type: observation
+    id: O83
+    routing: staged
+    provenance: ai-suggested
+    summary: "Nearby prior art removes generic RDO novelty; only a StructSplat-specific exact-stream evidence contribution may survive."
+
+ai_actions:
+  - turn: 1
+    action: "Created and applied adversarial real-research prompts, primary-literature maps, frozen tasks, and result reports across the hard-frontier sequence."
+    provenance: ai-executed
+    files_changed:
+      - "docs/prompts/real-research.md"
+      - "docs/prompts/hard-frontier-research.md"
+      - "docs/research/"
+      - "tasks/"
+  - turn: 1
+    action: "Implemented, executed, replayed, and independently audited BENCH-011 through BENCH-016 and COMP-007 through COMP-010 under their recorded boundaries."
+    provenance: ai-executed
+    files_changed: ["benchmarks/", "tests/", "docs/research/"]
+  - turn: 1
+    action: "Implemented COMP-011 exact VQ/container/coder/quality/lifecycle infrastructure and hardened its Landlock/seccomp producer and decoder boundaries without opening protected payloads."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/ssp2v_actual_run.py"
+      - "benchmarks/ssp2v_landlock.py"
+      - "tests/test_ssp2v_actual_run.py"
+      - "tests/test_ssp2v_landlock.py"
+  - turn: 1
+    action: "Implemented and adversarially audited a deterministic target-free implicit RGB/YCoCg-R quantizer feasibility proof."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/implicit_lattice_rgb_proof.py"
+      - "tests/test_implicit_lattice_rgb_proof.py"
+      - "docs/research/2026-07-16-implicit-lattice-rgb-proof.md"
+  - turn: 1
+    action: "Fixed pending immutable-publication recovery and added partial, complete, and post-link interruption regressions."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/ssp2v_actual_run.py"
+      - "tests/test_ssp2v_actual_run.py"
+  - turn: 1
+    action: "Ran the final target-free SSP2V regression sweep: 231 tests passed in 157.35 seconds."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 2
+    action: "Added and ran a fast synthetic exact preflight-policy test suite without production edits or protected-data access."
+    provenance: ai-executed
+    files_changed:
+      - "tests/test_ssp2v_actual_run_preflight_policy.py"
+  - turn: 3
+    action: "Implemented exact import-stream launch-policy recomputation, registered its hostile tests in the focused source closure, and ran the source-gate slice."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/ssp2v_actual_run.py"
+      - "tests/test_ssp2v_actual_run_preflight_policy.py"
+  - turn: 4
+    action: "Reproduced the focused-proof native-fixture failure under the exact sealed source-replica sandbox and validated an in-memory O_PATH traversal repair without repository edits or protected-data access."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 5
+    action: "Adversarially audited the focused source replica, identified recursive-sandbox false positives and launch-seal/dependency binding gaps, and validated the repaired affected surface and focused policy."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/ssp2v_actual_run.py"
+      - "benchmarks/ssp2v_decode_worker.py"
+      - "tests/test_ssp2v_actual_run_preflight_policy.py"
+      - "tests/test_ssp2v_actual_run_producer.py"
+  - turn: 5
+    action: "Ran 186 affected target-free tests, 38 final focused-policy tests, compile/Ruff checks, and reviewed one zero-return sealed focused-proof rehearsal."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 6
+    action: "Ran requested directory-symlink, negative-control, exact-file-symlink, and package-path-stub import probes under the existing Landlock launcher."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 7
+    action: "Adversarially compared the minimal package-path bridge with a persistent captured-source replica and quantified the live benchmark-directory overgrant."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 8
+    action: "Completed and independently audited COMP-011 development science stages across replay attempts; the stable decision is a valid fixed-SSP2V method failure."
+    provenance: ai-executed
+    files_changed: ["results/comp011_ssp2v_actual_dev_v2r27_2026-07-17/", "results/comp011_ssp2v_actual_dev_v2r28_2026-07-17/"]
+  - turn: 8
+    action: "Implemented and tested globally frozen replay system/GPU inventories after nested Landlock enumeration drift."
+    provenance: ai-executed
+    files_changed: ["benchmarks/ssp2v_actual_run.py", "tests/test_ssp2v_actual_run_preflight_policy.py", "tests/test_ssp2v_actual_run_replay.py"]
+  - turn: 8
+    action: "Ran and independently audited the isolated renderer-aware coordinate probe, including complete-stream sizes, seals, blob hashes, symbol parity, and cold decoding."
+    provenance: ai-executed
+    files_changed: ["ara/evidence/renderer-aware-coordinate-probe-2026-07-17/run.md"]
+  - turn: 8
+    action: "Performed an adversarial results-status audit to distinguish historical bounded gains, the new coordinate signal, and absent end-to-end improvement."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 9
+    action: "Rechecked the actual-improvement status against the supported FIT-015 claim, COMP-011 analysis, and bounded coordinate-probe evidence."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 9
+    action: "Completed an adversarial COMP-012 preregistration and novelty-threat review and preserved its pre-freeze corrections."
+    provenance: ai-executed
+    files_changed:
+      - "ara/evidence/comp012-prefreeze-hostile-review-2026-07-17/run.md"
+
+claims_touched: []
+
+key_context:
+  - turn: 1
+    excerpt: "User requested the hard research program continue autonomously until midnight, with adversarial direction selection and no preference for low-hanging incremental changes."
+  - turn: 1
+    excerpt: "No new real StructSplat improvement was claimed; synthetic mechanism evidence and infrastructure validation remained explicitly separate."
+  - turn: 8
+    excerpt: "The user asked whether any experiment had produced an actual improvement yet."
+  - turn: 8
+    excerpt: "The audited answer is yes for historical bounded policies, but no for a new end-to-end compression/renderer-aware method; the coordinate result remains isolated mechanics evidence."
+  - turn: 9
+    excerpt: "The user repeated the actual-improvement status question; the evidence boundary is unchanged, and the next exact-Q protocol was tightened rather than presented as a win."
+
+open_threads:
+  - "Complete the active source-frozen COMP-011 v2r30 quality, benchmark, analyze, and captured-replay sequence without source edits."
+  - "Independently audit the replay-complete COMP-011 artifact before promoting the stable development failure."
+  - "Repair and freeze COMP-012 with genuinely new hash-bound images, one primary endpoint, equal-rate/direct-start/lattice controls, exact clamp distortion, and a proven complete-stream size oracle."
+  - "Test the repaired arm across independent development images with conservative CUDA PSNR/MS-SSIM/LPIPS, exact bytes, cold decode/re-encode, stationarity, runtime/RSS, order robustness, and confirmation isolation."
+
+ai_suggestions_pending:
+  - "Use target-guided scalar alphabet release as the primary next assay only after adding the equal-rate F@B_C gate, direct-fine and strongest feasible uniform-lattice controls, and a production-CUDA quality endpoint."
+  - "Attempt pair/block exchanges only if the scalar fixed point exposes material rate barriers; do not skip the simpler causal experiment."
+  - "Treat the one-cell coordinate result as mechanics evidence until a source-bound multi-image target-quality assay resolves it."

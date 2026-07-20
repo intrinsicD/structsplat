@@ -1,0 +1,252 @@
+{
+  "checks": {
+    "analysis": true,
+    "cells": true,
+    "environment_sha256": true,
+    "protocol_sha256": true,
+    "source_combined_sha256": true,
+    "streams": true
+  },
+  "decision": "stop",
+  "environment_sha256": "efa05bc74f417a66e4c32a586649a6b102a3ab91fe4336be99c378b59ec71d47",
+  "gates": {
+    "at_least_four_positive_families": false,
+    "bootstrap_lower_bound_above_zero": false,
+    "feasible_cells_at_least_90pct": true,
+    "integrity": true,
+    "mean_advantage_at_least_0_15_db": false,
+    "median_advantage_at_least_0_10_db": false,
+    "replay_integrity": true
+  },
+  "primary": {
+    "bootstrap": {
+      "ci95": [
+        -1.2872764070828757,
+        -0.8417404002613492
+      ],
+      "mean": -1.071442445119222,
+      "replicates": 10000,
+      "seed": 20260715
+    },
+    "family_means": {
+      "annular_sectors": -1.2658240000406902,
+      "bezier_strokes": -0.3920246760050456,
+      "curved_step": -1.4031683603922527,
+      "hard_disks": -1.366442362467448,
+      "quadratic_patch": -0.566644032796224,
+      "three_region_junction": -1.4345512390136719
+    },
+    "feasible_cells": 36,
+    "feasible_fraction": 1.0,
+    "mean_birth_advantage_psnr": -1.071442445119222,
+    "median_birth_advantage_psnr": -0.9532604217529297,
+    "positive_family_means": 0,
+    "raw_proxy_top1_agreement": 0.3888888888888889,
+    "target_rows": [
+      {
+        "birth_advantage_mse": -8.685634384164587e-05,
+        "birth_advantage_psnr": -1.7318859100341797,
+        "birth_delta_bytes": 13.0,
+        "control_delta_bytes": 9.5,
+        "family": "annular_sectors",
+        "feasible_seed_count": 2,
+        "raw_proxy_agreement": 0.0,
+        "target": "annular_sectors_v0",
+        "variant": 0
+      },
+      {
+        "birth_advantage_mse": -4.1642735595814884e-05,
+        "birth_advantage_psnr": -1.5662994384765625,
+        "birth_delta_bytes": 11.0,
+        "control_delta_bytes": 10.0,
+        "family": "annular_sectors",
+        "feasible_seed_count": 2,
+        "raw_proxy_agreement": 0.0,
+        "target": "annular_sectors_v2",
+        "variant": 2
+      },
+      {
+        "birth_advantage_mse": -2.3184329620562494e-05,
+        "birth_advantage_psnr": -0.4992866516113281,
+        "birth_delta_bytes": 5.0,
+        "control_delta_bytes": -1.0,
+        "family": "annular_sectors",
+        "feasible_seed_count": 2,
+        "raw_proxy_agreement": 0.0,
+        "target": "annular_sectors_v4",
+        "variant": 4
+      },
+      {
+        "birth_advantage_mse": -6.98293442837894e-05,
+        "birth_advantage_psnr": -0.14879322052001953,
+        "birth_delta_bytes": 5.5,
+        "control_delta_bytes": -5.5,
+        "family": "bezier_strokes",
+        "feasible_seed_count": 2,
+        "raw_proxy_agreement": 0.5,
+        "target": "bezier_strokes_v0",
+        "variant": 0
+      },
+      {
+        "birth_advantage_mse": -2.2724445443600416e-05,
+        "birth_advantage_psnr": -0.3540992736816406,
+        "birth_delta_bytes": 14.0,
+        "control_delta_bytes": -1.5,
+        "family": "bezier_strokes",
+        "feasible_seed_count": 2,
+        "raw_proxy_agreement": 0.5,
+        "target": "bezier_strokes_v2",
+        "variant": 2
+      },
+      {
+        "birth_advantage_mse": -0.00024649655097164214,
+        "birth_advantage_psnr": -0.6731815338134766,
+        "birth_delta_bytes": 7.5,
+        "control_delta_bytes": 6.5,
+        "family": "bezier_strokes",
+        "feasible_seed_count": 2,
+        "raw_proxy_agreement": 0.0,
+        "target": "bezier_strokes_v4",
+        "variant": 4
+      },
+      {
+        "birth_advantage_mse": -7.959136382851284e-06,
+        "birth_advantage_psnr": -1.2009048461914062,
+        "birth_delta_bytes": 11.0,
+        "control_delta_bytes": 4.5,
+        "family": "curved_step",
+        "feasible_seed_count": 2,
+        "raw_proxy_agreement": 0.5,
+        "target": "curved_step_v0",
+        "variant": 0
+      },
+      {
+        "birth_advantage_mse": -1.1022208127542399e-05,
+        "birth_advantage_psnr": -1.9944229125976562,
+        "birth_delta_bytes": 11.5,
+        "control_delta_bytes": 0.0,
+        "family": "curved_step",
+        "feasible_seed_count": 2,
+        "raw_proxy_agreement": 0.5,
+        "target": "curved_step_v2",
+        "variant": 2
+      },
+      {
+        "birth_advantage_mse": -7.402482879115269e-06,
+        "birth_advantage_psnr": -1.0141773223876953,
+        "birth_delta_bytes": 11.0,
+        "control_delta_bytes": 9.5,
+        "family": "curved_step",
+        "feasible_seed_count": 2,
+        "raw_proxy_agreement": 0.5,
+        "target": "curved_step_v4",
+        "variant": 4
+      },
+      {
+        "birth_advantage_mse": -3.0102755772531964e-05,
+        "birth_advantage_psnr": -1.5442581176757812,
+        "birth_delta_bytes": 7.5,
+        "control_delta_bytes": 12.5,
+        "family": "hard_disks",
+        "feasible_seed_count": 2,
+        "raw_proxy_agreement": 0.0,
+        "target": "hard_disks_v0",
+        "variant": 0
+      },
+      {
+        "birth_advantage_mse": -2.6363848519395106e-05,
+        "birth_advantage_psnr": -2.1612987518310547,
+        "birth_delta_bytes": 8.0,
+        "control_delta_bytes": -8.5,
+        "family": "hard_disks",
+        "feasible_seed_count": 2,
+        "raw_proxy_agreement": 0.0,
+        "target": "hard_disks_v2",
+        "variant": 2
+      },
+      {
+        "birth_advantage_mse": -1.367701952403877e-05,
+        "birth_advantage_psnr": -0.3937702178955078,
+        "birth_delta_bytes": 14.0,
+        "control_delta_bytes": 0.5,
+        "family": "hard_disks",
+        "feasible_seed_count": 2,
+        "raw_proxy_agreement": 0.5,
+        "target": "hard_disks_v4",
+        "variant": 4
+      },
+      {
+        "birth_advantage_mse": -1.9150795651512453e-06,
+        "birth_advantage_psnr": -0.8923435211181641,
+        "birth_delta_bytes": 7.5,
+        "control_delta_bytes": 0.0,
+        "family": "quadratic_patch",
+        "feasible_seed_count": 2,
+        "raw_proxy_agreement": 1.0,
+        "target": "quadratic_patch_v0",
+        "variant": 0
+      },
+      {
+        "birth_advantage_mse": -1.7824340829974972e-06,
+        "birth_advantage_psnr": -0.41373252868652344,
+        "birth_delta_bytes": 12.0,
+        "control_delta_bytes": 5.5,
+        "family": "quadratic_patch",
+        "feasible_seed_count": 2,
+        "raw_proxy_agreement": 1.0,
+        "target": "quadratic_patch_v2",
+        "variant": 2
+      },
+      {
+        "birth_advantage_mse": -9.855984899331816e-07,
+        "birth_advantage_psnr": -0.3938560485839844,
+        "birth_delta_bytes": 4.5,
+        "control_delta_bytes": -1.0,
+        "family": "quadratic_patch",
+        "feasible_seed_count": 2,
+        "raw_proxy_agreement": 1.0,
+        "target": "quadratic_patch_v4",
+        "variant": 4
+      },
+      {
+        "birth_advantage_mse": -2.659524034243077e-05,
+        "birth_advantage_psnr": -1.8922901153564453,
+        "birth_delta_bytes": 7.5,
+        "control_delta_bytes": 9.0,
+        "family": "three_region_junction",
+        "feasible_seed_count": 2,
+        "raw_proxy_agreement": 0.0,
+        "target": "three_region_junction_v0",
+        "variant": 0
+      },
+      {
+        "birth_advantage_mse": -3.8489113649120554e-05,
+        "birth_advantage_psnr": -1.709329605102539,
+        "birth_delta_bytes": 10.5,
+        "control_delta_bytes": -2.5,
+        "family": "three_region_junction",
+        "feasible_seed_count": 2,
+        "raw_proxy_agreement": 0.5,
+        "target": "three_region_junction_v2",
+        "variant": 2
+      },
+      {
+        "birth_advantage_mse": -1.558129588374868e-05,
+        "birth_advantage_psnr": -0.7020339965820312,
+        "birth_delta_bytes": 13.0,
+        "control_delta_bytes": 0.0,
+        "family": "three_region_junction",
+        "feasible_seed_count": 2,
+        "raw_proxy_agreement": 0.5,
+        "target": "three_region_junction_v4",
+        "variant": 4
+      }
+    ],
+    "total_cells": 36
+  },
+  "protocol_sha256": "137359fbe8447dad5e585d27f0b2b1fe58bc8ec89b0f31e92cd37c2fa543acf2",
+  "schema": "comp006-final-v1",
+  "source_combined_sha256": "e92c6aed8b57bc4382fb0ebc452bdecf2ef41c0d1521a0b87654695c0d20e175",
+  "split": "development",
+  "task": "COMP-006"
+}

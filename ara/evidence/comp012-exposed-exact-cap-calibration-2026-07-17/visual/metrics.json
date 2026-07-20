@@ -1,0 +1,502 @@
+{
+  "archive_path_base": "evidence_bundle_root",
+  "runtime_dependency": {
+    "kind": "frozen_comp011_metric_runtime",
+    "persisted_path": false,
+    "provided_via": "--runtime-root"
+  },
+  "bit_tuple": [
+    12,
+    6,
+    6,
+    8
+  ],
+  "cells": {
+    "jason": {
+      "candidate_minus_baseline_conservative": {
+        "lpips": -0.0004488751292228699,
+        "ms_ssim": 0.00019663572311401367,
+        "psnr": 0.9314054427236158
+      },
+      "candidate_minus_baseline_mean": {
+        "lpips": -0.0004488751292228699,
+        "ms_ssim": 0.00019663572311401367,
+        "psnr": 0.9314054427236158
+      },
+      "display_name": "Jason Briscoe",
+      "height": 512,
+      "historical_three_repeat_conservative_delta": {
+        "lpips": -0.000448857,
+        "ms_ssim": 0.000196278,
+        "psnr": 0.93140548
+      },
+      "image_id": "jason-briscoe-149782",
+      "methods": {
+        "baseline": {
+          "blob_sha256": "11f695461712e21eee5a5f7a9f8c3611d8d64a80766046905aef74aa5212e799",
+          "archived_relative_path": "streams/jason-baseline.ssp2e",
+          "bpp": 1.04876708984375,
+          "complete_bytes": 51549,
+          "format": "ssp2e",
+          "metric_aggregate": {
+            "lpips": {
+              "max": 0.025659698992967606,
+              "mean": 0.025659698992967606,
+              "min": 0.025659698992967606,
+              "spread": 0.0,
+              "values": [
+                0.025659698992967606
+              ]
+            },
+            "ms_ssim": {
+              "max": 0.9938552975654602,
+              "mean": 0.9938552975654602,
+              "min": 0.9938552975654602,
+              "spread": 0.0,
+              "values": [
+                0.9938552975654602
+              ]
+            },
+            "psnr": {
+              "max": 36.33266814796782,
+              "mean": 36.33266814796782,
+              "min": 36.33266814796782,
+              "spread": 0.0,
+              "values": [
+                36.33266814796782
+              ]
+            },
+            "repetitions": 1
+          },
+          "metric_rows": [
+            {
+              "blob": {
+                "complete_bytes": 51549,
+                "path": "streams/jason-baseline.ssp2e",
+                "sha256": "11f695461712e21eee5a5f7a9f8c3611d8d64a80766046905aef74aa5212e799"
+              },
+              "boundary_state_sha256": "6be6ea173458a070e7be300035be3f1d7b7d93f1859888eacd04fe533273c3e7",
+              "candidate_tensor": {
+                "bytes": 4718592,
+                "dtype": "torch.float32",
+                "sha256": "a5b5998ffea1713734922887af33068cfa02eb1c665418a37842b2492b5d66c4",
+                "shape": [
+                  1,
+                  3,
+                  512,
+                  768
+                ]
+              },
+              "lpips_state_sha256": "a52b7367d9d082a8988b25abcbae343cd1ad25c9c72c1fe592f571d00e470fc6",
+              "metrics": {
+                "lpips": 0.025659698992967606,
+                "ms_ssim": 0.9938552975654602,
+                "psnr": 36.33266814796782
+              },
+              "png": {
+                "bytes": 268281,
+                "conversion": "rint(clamp(float32_render,0,1)*255)_to_uint8",
+                "mode": "RGB",
+                "relative_path": "jason-baseline.png",
+                "sha256": "5dbf67e7bc35bfdc027d4d5949ce1287d57ae10bad3a6ab9d1637a1d595705e3",
+                "size": [
+                  768,
+                  512
+                ]
+              },
+              "renderer_sha256": "a18b09c160abd7d509c0886f898456f2b59042b10a0cb778a2bd21ba0ce328b3",
+              "repetition": 1,
+              "target_tensor": {
+                "bytes": 4718592,
+                "dtype": "torch.float32",
+                "sha256": "6ddd4a971f0fc306c3f3a8cdef249bc738f85805c11cf004b4e9a1037096425d",
+                "shape": [
+                  1,
+                  3,
+                  512,
+                  768
+                ]
+              }
+            }
+          ],
+          "visual": {
+            "bytes": 268281,
+            "conversion": "rint(clamp(float32_render,0,1)*255)_to_uint8",
+            "mode": "RGB",
+            "relative_path": "jason-baseline.png",
+            "sha256": "5dbf67e7bc35bfdc027d4d5949ce1287d57ae10bad3a6ab9d1637a1d595705e3",
+            "size": [
+              768,
+              512
+            ]
+          }
+        },
+        "candidate": {
+          "blob_sha256": "3a904052197bdf0b7291fab82707f5ff5b8c6cd8aa3b43a636535544e84b8c6e",
+          "archived_relative_path": "streams/jason-candidate.ssp2f",
+          "bpp": 1.04876708984375,
+          "complete_bytes": 51549,
+          "format": "ssp2f",
+          "metric_aggregate": {
+            "lpips": {
+              "max": 0.025210823863744736,
+              "mean": 0.025210823863744736,
+              "min": 0.025210823863744736,
+              "spread": 0.0,
+              "values": [
+                0.025210823863744736
+              ]
+            },
+            "ms_ssim": {
+              "max": 0.9940519332885742,
+              "mean": 0.9940519332885742,
+              "min": 0.9940519332885742,
+              "spread": 0.0,
+              "values": [
+                0.9940519332885742
+              ]
+            },
+            "psnr": {
+              "max": 37.26407359069144,
+              "mean": 37.26407359069144,
+              "min": 37.26407359069144,
+              "spread": 0.0,
+              "values": [
+                37.26407359069144
+              ]
+            },
+            "repetitions": 1
+          },
+          "metric_rows": [
+            {
+              "blob": {
+                "complete_bytes": 51549,
+                "path": "streams/jason-candidate.ssp2f",
+                "sha256": "3a904052197bdf0b7291fab82707f5ff5b8c6cd8aa3b43a636535544e84b8c6e"
+              },
+              "boundary_state_sha256": "e5123a32f5bdeb9b1316317ed97280181ba47393bb7314a79df26b5183d797ce",
+              "candidate_tensor": {
+                "bytes": 4718592,
+                "dtype": "torch.float32",
+                "sha256": "bc020ef6772aa72ab6f2b10b1168fcffd7cce41c47bc9ed42497c1af97af3c7c",
+                "shape": [
+                  1,
+                  3,
+                  512,
+                  768
+                ]
+              },
+              "lpips_state_sha256": "a52b7367d9d082a8988b25abcbae343cd1ad25c9c72c1fe592f571d00e470fc6",
+              "metrics": {
+                "lpips": 0.025210823863744736,
+                "ms_ssim": 0.9940519332885742,
+                "psnr": 37.26407359069144
+              },
+              "png": {
+                "bytes": 280630,
+                "conversion": "rint(clamp(float32_render,0,1)*255)_to_uint8",
+                "mode": "RGB",
+                "relative_path": "jason-candidate.png",
+                "sha256": "9f16c04f7ffa7f174d4d69b4a811007a26038944da960040c5d7b0b91549914f",
+                "size": [
+                  768,
+                  512
+                ]
+              },
+              "renderer_sha256": "a18b09c160abd7d509c0886f898456f2b59042b10a0cb778a2bd21ba0ce328b3",
+              "repetition": 1,
+              "target_tensor": {
+                "bytes": 4718592,
+                "dtype": "torch.float32",
+                "sha256": "6ddd4a971f0fc306c3f3a8cdef249bc738f85805c11cf004b4e9a1037096425d",
+                "shape": [
+                  1,
+                  3,
+                  512,
+                  768
+                ]
+              }
+            }
+          ],
+          "visual": {
+            "bytes": 280630,
+            "conversion": "rint(clamp(float32_render,0,1)*255)_to_uint8",
+            "mode": "RGB",
+            "relative_path": "jason-candidate.png",
+            "sha256": "9f16c04f7ffa7f174d4d69b4a811007a26038944da960040c5d7b0b91549914f",
+            "size": [
+              768,
+              512
+            ]
+          }
+        }
+      },
+      "pixels": 393216,
+      "target": {
+        "bytes": 385861,
+        "mode": "RGB",
+        "relative_path": "jason-target.png",
+        "sha256": "28bfbd8a839cb1d2945ebe5fe8fc63d6545e3467a0b9cf3f5c18be15856b2523",
+        "size": [
+          768,
+          512
+        ],
+        "source_path": "visual/jason-target.png",
+        "source_sha256": "28bfbd8a839cb1d2945ebe5fe8fc63d6545e3467a0b9cf3f5c18be15856b2523"
+      },
+      "width": 768
+    },
+    "nomao": {
+      "candidate_minus_baseline_conservative": {
+        "lpips": -0.002742201089859009,
+        "ms_ssim": 0.00017112493515014648,
+        "psnr": 0.8606181687968402
+      },
+      "candidate_minus_baseline_mean": {
+        "lpips": -0.002742201089859009,
+        "ms_ssim": 0.00017112493515014648,
+        "psnr": 0.8606181687968402
+      },
+      "display_name": "Nomao Saeki",
+      "height": 512,
+      "historical_three_repeat_conservative_delta": {
+        "lpips": -0.002742201,
+        "ms_ssim": 0.000171006,
+        "psnr": 0.860618088
+      },
+      "image_id": "nomao-saeki-33553",
+      "methods": {
+        "baseline": {
+          "blob_sha256": "0fb494bbae298e695fca45fa16fd900f0e6bb2d6f1b84aa9151d7c2662743c52",
+          "archived_relative_path": "streams/nomao-baseline.ssp2e",
+          "bpp": 1.0624796549479167,
+          "complete_bytes": 52223,
+          "format": "ssp2e",
+          "metric_aggregate": {
+            "lpips": {
+              "max": 0.11292171478271484,
+              "mean": 0.11292171478271484,
+              "min": 0.11292171478271484,
+              "spread": 0.0,
+              "values": [
+                0.11292171478271484
+              ]
+            },
+            "ms_ssim": {
+              "max": 0.9848037362098694,
+              "mean": 0.9848037362098694,
+              "min": 0.9848037362098694,
+              "spread": 0.0,
+              "values": [
+                0.9848037362098694
+              ]
+            },
+            "psnr": {
+              "max": 35.222070344544505,
+              "mean": 35.222070344544505,
+              "min": 35.222070344544505,
+              "spread": 0.0,
+              "values": [
+                35.222070344544505
+              ]
+            },
+            "repetitions": 1
+          },
+          "metric_rows": [
+            {
+              "blob": {
+                "complete_bytes": 52223,
+                "path": "streams/nomao-baseline.ssp2e",
+                "sha256": "0fb494bbae298e695fca45fa16fd900f0e6bb2d6f1b84aa9151d7c2662743c52"
+              },
+              "boundary_state_sha256": "1781a2e8f54786552dbdbe5418637337ca007b0a1c8f4d9ba2ff441cb0a253af",
+              "candidate_tensor": {
+                "bytes": 4718592,
+                "dtype": "torch.float32",
+                "sha256": "a1e0677f1327ee914d6619db69b64df9240d53f2515dfd850957c58a108f4a11",
+                "shape": [
+                  1,
+                  3,
+                  512,
+                  768
+                ]
+              },
+              "lpips_state_sha256": "a52b7367d9d082a8988b25abcbae343cd1ad25c9c72c1fe592f571d00e470fc6",
+              "metrics": {
+                "lpips": 0.11292171478271484,
+                "ms_ssim": 0.9848037362098694,
+                "psnr": 35.222070344544505
+              },
+              "png": {
+                "bytes": 380919,
+                "conversion": "rint(clamp(float32_render,0,1)*255)_to_uint8",
+                "mode": "RGB",
+                "relative_path": "nomao-baseline.png",
+                "sha256": "c72451ecc4e396bb4706794657fb3c13b1d5f9f4421901c19f691a91d69cf83f",
+                "size": [
+                  768,
+                  512
+                ]
+              },
+              "renderer_sha256": "a18b09c160abd7d509c0886f898456f2b59042b10a0cb778a2bd21ba0ce328b3",
+              "repetition": 1,
+              "target_tensor": {
+                "bytes": 4718592,
+                "dtype": "torch.float32",
+                "sha256": "c6d829c3cf5f1d5f05c920619c738f3472c276a116bcb5b9f885360f4928a0d5",
+                "shape": [
+                  1,
+                  3,
+                  512,
+                  768
+                ]
+              }
+            }
+          ],
+          "visual": {
+            "bytes": 380919,
+            "conversion": "rint(clamp(float32_render,0,1)*255)_to_uint8",
+            "mode": "RGB",
+            "relative_path": "nomao-baseline.png",
+            "sha256": "c72451ecc4e396bb4706794657fb3c13b1d5f9f4421901c19f691a91d69cf83f",
+            "size": [
+              768,
+              512
+            ]
+          }
+        },
+        "candidate": {
+          "blob_sha256": "73ce43478766b34c4c81c6facc565765df0369cd389b6441717308c2593fe6cd",
+          "archived_relative_path": "streams/nomao-candidate.ssp2f",
+          "bpp": 1.0624796549479167,
+          "complete_bytes": 52223,
+          "format": "ssp2f",
+          "metric_aggregate": {
+            "lpips": {
+              "max": 0.11017951369285583,
+              "mean": 0.11017951369285583,
+              "min": 0.11017951369285583,
+              "spread": 0.0,
+              "values": [
+                0.11017951369285583
+              ]
+            },
+            "ms_ssim": {
+              "max": 0.9849748611450195,
+              "mean": 0.9849748611450195,
+              "min": 0.9849748611450195,
+              "spread": 0.0,
+              "values": [
+                0.9849748611450195
+              ]
+            },
+            "psnr": {
+              "max": 36.082688513341346,
+              "mean": 36.082688513341346,
+              "min": 36.082688513341346,
+              "spread": 0.0,
+              "values": [
+                36.082688513341346
+              ]
+            },
+            "repetitions": 1
+          },
+          "metric_rows": [
+            {
+              "blob": {
+                "complete_bytes": 52223,
+                "path": "streams/nomao-candidate.ssp2f",
+                "sha256": "73ce43478766b34c4c81c6facc565765df0369cd389b6441717308c2593fe6cd"
+              },
+              "boundary_state_sha256": "04b7b664b009e7db643ef8afa0d16ebf9bcb0a571ac7700909ae1a06335db81e",
+              "candidate_tensor": {
+                "bytes": 4718592,
+                "dtype": "torch.float32",
+                "sha256": "aa14c4bdd75e5aa36901012bbc1266ab28316ab2e9e9aae1e8abf78cca1dcfef",
+                "shape": [
+                  1,
+                  3,
+                  512,
+                  768
+                ]
+              },
+              "lpips_state_sha256": "a52b7367d9d082a8988b25abcbae343cd1ad25c9c72c1fe592f571d00e470fc6",
+              "metrics": {
+                "lpips": 0.11017951369285583,
+                "ms_ssim": 0.9849748611450195,
+                "psnr": 36.082688513341346
+              },
+              "png": {
+                "bytes": 386753,
+                "conversion": "rint(clamp(float32_render,0,1)*255)_to_uint8",
+                "mode": "RGB",
+                "relative_path": "nomao-candidate.png",
+                "sha256": "b864b66076df7c5384f6cf8d20d18d44d77f1961aee1eb8451b733526e85f217",
+                "size": [
+                  768,
+                  512
+                ]
+              },
+              "renderer_sha256": "a18b09c160abd7d509c0886f898456f2b59042b10a0cb778a2bd21ba0ce328b3",
+              "repetition": 1,
+              "target_tensor": {
+                "bytes": 4718592,
+                "dtype": "torch.float32",
+                "sha256": "c6d829c3cf5f1d5f05c920619c738f3472c276a116bcb5b9f885360f4928a0d5",
+                "shape": [
+                  1,
+                  3,
+                  512,
+                  768
+                ]
+              }
+            }
+          ],
+          "visual": {
+            "bytes": 386753,
+            "conversion": "rint(clamp(float32_render,0,1)*255)_to_uint8",
+            "mode": "RGB",
+            "relative_path": "nomao-candidate.png",
+            "sha256": "b864b66076df7c5384f6cf8d20d18d44d77f1961aee1eb8451b733526e85f217",
+            "size": [
+              768,
+              512
+            ]
+          }
+        }
+      },
+      "pixels": 393216,
+      "target": {
+        "bytes": 582474,
+        "mode": "RGB",
+        "relative_path": "nomao-target.png",
+        "sha256": "b5db359139833a7fc4913122b94529b651ded1f6679b55e98614a7f5d57b9e22",
+        "size": [
+          768,
+          512
+        ],
+        "source_path": "visual/nomao-target.png",
+        "source_sha256": "b5db359139833a7fc4913122b94529b651ded1f6679b55e98614a7f5d57b9e22"
+      },
+      "width": 768
+    }
+  },
+  "claim_boundary": "Visual report for two already-exposed calibration cells. No held-out, convergence, performance, compression-isolation, expressiveness, default, or state-of-the-art claim.",
+  "metric_direction": {
+    "lpips": "lower",
+    "ms_ssim": "higher",
+    "psnr": "higher"
+  },
+  "metric_names": [
+    "psnr",
+    "ms_ssim",
+    "lpips"
+  ],
+  "repetitions_per_fitted_image": 1,
+  "schema": "structsplat.comp012.visual-comparison.v1",
+  "scope": "already_exposed_development_calibration_only",
+  "script": {
+    "path": "build_visual_assets.py",
+    "sha256": "75027b0d2a2c18c8041dd029527da2beff1c257b98ba67e09bfff6f37287d7af"
+  }
+}

@@ -45,6 +45,20 @@ std::vector<torch::Tensor> structsplat_render_backward_cuda(
     bool support_fade,
     double sigma_cutoff);
 
+std::vector<torch::Tensor> structsplat_render_backward_block_reduce_cuda(
+    torch::Tensor grad_out,
+    torch::Tensor means,
+    torch::Tensor conics,
+    torch::Tensor colors,
+    torch::Tensor radii,
+    torch::Tensor opacities,
+    torch::Tensor den,
+    torch::Tensor out,
+    bool normalize,
+    double eps,
+    bool support_fade,
+    double sigma_cutoff);
+
 std::vector<torch::Tensor> structsplat_render_backward_tiled_cuda(
     torch::Tensor grad_out,
     torch::Tensor means,
@@ -184,6 +198,34 @@ std::vector<torch::Tensor> backward(
       support_fade, sigma_cutoff);
 }
 
+std::vector<torch::Tensor> backward_block_reduce(
+    torch::Tensor grad_out,
+    torch::Tensor means,
+    torch::Tensor conics,
+    torch::Tensor colors,
+    torch::Tensor radii,
+    torch::Tensor opacities,
+    torch::Tensor den,
+    torch::Tensor out,
+    bool normalize,
+    double eps,
+    bool support_fade,
+    double sigma_cutoff) {
+  check_inputs(means, conics, colors, radii, opacities);
+  CHECK_CUDA(grad_out);
+  CHECK_CUDA(den);
+  CHECK_CUDA(out);
+  CHECK_CONTIGUOUS(grad_out);
+  CHECK_CONTIGUOUS(den);
+  CHECK_CONTIGUOUS(out);
+  CHECK_FLOAT(grad_out);
+  CHECK_FLOAT(den);
+  CHECK_FLOAT(out);
+  return structsplat_render_backward_block_reduce_cuda(
+      grad_out, means, conics, colors, radii, opacities, den, out, normalize, eps,
+      support_fade, sigma_cutoff);
+}
+
 std::vector<torch::Tensor> backward_tiled(
     torch::Tensor grad_out,
     torch::Tensor means,
@@ -222,5 +264,9 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("forward", &forward, "StructSplat exact render forward (CUDA)");
   m.def("forward_tiled", &forward_tiled, "StructSplat exact tiled render forward (CUDA)");
   m.def("backward", &backward, "StructSplat exact render backward (CUDA)");
+  m.def(
+      "backward_block_reduce",
+      &backward_block_reduce,
+      "StructSplat exact block-reduced render backward (CUDA)");
   m.def("backward_tiled", &backward_tiled, "StructSplat exact tiled render backward (CUDA)");
 }

@@ -1,0 +1,108 @@
+{
+  "resolved": {
+    "protocol": "fit018_shared_start_responsibility_guard",
+    "images": [
+      "tests/test_images/COCO_train2014_000000000009.jpg",
+      "tests/test_images/COCO_train2014_000000000025.jpg",
+      "tests/test_images/COCO_train2014_000000000030.jpg",
+      "tests/test_images/COCO_train2014_000000000034.jpg"
+    ],
+    "image_sha256": {
+      "tests/test_images/COCO_train2014_000000000009.jpg": "35cdfe8259aca40d564baf33ee749d82ce852446bd9574f0c47551d8bfffda99",
+      "tests/test_images/COCO_train2014_000000000025.jpg": "d8f12a26d8803701cabac80494b080f998e5ed9bafaf61a2825ce6212c85487a",
+      "tests/test_images/COCO_train2014_000000000030.jpg": "0444b10826d376ad9075805061405f6071a62b80eda29c5f284ed77b093d5b1d",
+      "tests/test_images/COCO_train2014_000000000034.jpg": "2c46871034fa901ae795a8bb916ba7f2f728507cab9e511cced0986bd083d193"
+    },
+    "seeds": [
+      0,
+      1
+    ],
+    "max_side": 64,
+    "start_count": 64,
+    "split_count": 16,
+    "final_count": 80,
+    "pre_iters": 40,
+    "recovery_horizons": [
+      20,
+      100
+    ],
+    "arms": [
+      "residual",
+      "support",
+      "responsibility_alpha1",
+      "responsibility_alpha0.7"
+    ],
+    "responsibility_mass_alphas": [
+      1.0,
+      0.7
+    ],
+    "renderer": "normalized",
+    "strategy": "quadtree_wse",
+    "refine_primitive": "moment_preserving",
+    "render_chunk": 512,
+    "torch_num_threads": 1,
+    "torch_deterministic_algorithms": true
+  },
+  "device": "cpu",
+  "versions": {
+    "python": "3.12.9 | packaged by Anaconda, Inc. | (main, Feb  6 2025, 18:56:27) [GCC 11.2.0]",
+    "python_executable": "/home/alex/miniconda3/bin/python3.12",
+    "torch": "2.9.0+cu128",
+    "torch_cuda": "12.8",
+    "cudnn": 91002,
+    "cuda_available": true,
+    "cuda_devices": [
+      {
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 3050",
+        "uuid": "4cee065a-aab7-97b8-40be-55d516d2a53c",
+        "total_memory": 8199143424,
+        "compute_capability": [
+          8,
+          6
+        ],
+        "multi_processor_count": 20
+      }
+    ],
+    "cuda_current_device": 0,
+    "nvidia_driver_versions": [
+      "590.48.01"
+    ],
+    "numpy": "2.1.3",
+    "lpips": "0.1.4",
+    "pillow": "12.0.0",
+    "pytorch_msssim": "1.0.0",
+    "torchvision": "0.24.0",
+    "structsplat": "0.1.0"
+  },
+  "repository": {
+    "root": "/home/alex/Documents/structsplat",
+    "commit": "5dc649397c40e69cf3e96bd27df2c5e2812d003d",
+    "dirty": true,
+    "tracked_diff_sha256": "7dbb3a827ddf33fa6060f9ff5725272fbe8b06be01e83fd8d1a834b5f635b6d7",
+    "untracked_files": [
+      "benchmarks/responsibility_split_compare.py",
+      "benchmarks/topk_responsibility_oracle.py",
+      "docs/prompts/",
+      "docs/research/",
+      "tasks/FIT-018-responsibility-error-density.md",
+      "tests/test_responsibility_density.py",
+      "tests/test_responsibility_split_compare.py",
+      "tests/test_topk_responsibility_oracle.py"
+    ]
+  },
+  "source": {
+    "combined_sha256": "32035c6988e66c3ec8a0c9a088433ab4a0833a66c2d5adc6a95dcd66b67d992b",
+    "files": {
+      "benchmarks/responsibility_split_compare.py": "3b0d36a7afe98d1eac23b9fd7d6f04a10c77e42fe38b21a86c8bbdde51d51e4e",
+      "benchmarks/common.py": "cd446f42fb217d7aa87814256ce706dc08c3e207e27213ebb48aa168e108afa9",
+      "src/structsplat/config.py": "609d662f942c5831c9bd29cf04360a98a75e22d03eb43c4dc6d13f889f849915",
+      "src/structsplat/fit.py": "96ae1ae8991b7b9690a0fc76a82416eae61a84732f076a88607639ac089d0424",
+      "src/structsplat/gaussians.py": "26d8ddf03740c8ed44ae9c97d2bb75438dd5a992327fe70cbd3c91f2e5e6fefe",
+      "src/structsplat/init.py": "9e5861f0e3666483d4308a952403460cb8c30c66c9b709da2682f92232221133",
+      "src/structsplat/metrics.py": "8d9963efa6d3e7b687e349398079ff058326653eeaac47fdf5d1b4778ce8a8b7",
+      "src/structsplat/render.py": "5e1268c59dbb052cf0df12acecadfd43bab7c34497592af855d34486e924e593"
+    }
+  },
+  "reproduction_command": "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 PYTHONPATH=src:. python -m benchmarks.responsibility_split_compare --images tests/test_images/COCO_train2014_000000000009.jpg tests/test_images/COCO_train2014_000000000025.jpg tests/test_images/COCO_train2014_000000000030.jpg tests/test_images/COCO_train2014_000000000034.jpg --outdir results/fit018_responsibility_split_guard --seeds 0 1 --max-side 64 --start-count 64 --split-count 16 --pre-iters 40 --device cpu --render-chunk 512"
+}

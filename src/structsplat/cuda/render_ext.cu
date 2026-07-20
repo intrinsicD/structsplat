@@ -324,6 +324,151 @@ __global__ void backward_kernel(
   }
 }
 
+__device__ __forceinline__ float warp_reduce_sum(float value) {
+  #pragma unroll
+  for (int offset = 16; offset > 0; offset >>= 1) {
+    value += __shfl_down_sync(0xffffffffu, value, offset);
+  }
+  return value;
+}
+
+// Experimental untiled backward: preserve one block per Gaussian and the baseline thread-local
+// pixel accumulation, then reduce the 8/9 gradient components within the block. Because no other
+// block owns Gaussian i, thread 0 can write each result directly instead of issuing 256 contended
+// atomicAdds per component. The baseline kernel remains available and is still the default.
+__global__ void backward_block_reduce_kernel(
+    const float* __restrict__ grad_out,
+    const float* __restrict__ means,
+    const float* __restrict__ conics,
+    const float* __restrict__ colors,
+    const int64_t* __restrict__ radii,
+    const float* __restrict__ opacities,
+    const float* __restrict__ den,
+    const float* __restrict__ out,
+    int n,
+    int height,
+    int width,
+    bool has_opacity,
+    bool normalize,
+    float eps,
+    bool support_fade,
+    float tail,
+    float* __restrict__ grad_means,
+    float* __restrict__ grad_conics,
+    float* __restrict__ grad_colors,
+    float* __restrict__ grad_opacities) {
+  int i = blockIdx.x;
+  if (i >= n) {
+    return;
+  }
+  int x0, y0, tx, ty;
+  support_bounds(means, radii, i, height, width, x0, y0, tx, ty);
+  int total = tx * ty;
+  if (total <= 0) {
+    return;
+  }
+
+  float mx = means[i * 2 + 0];
+  float my = means[i * 2 + 1];
+  float a = conics[i * 3 + 0];
+  float b = conics[i * 3 + 1];
+  float c = conics[i * 3 + 2];
+  float op = has_opacity ? opacities[i] : 1.0f;
+  float cr = colors[i * 3 + 0];
+  float cg = colors[i * 3 + 1];
+  float cb = colors[i * 3 + 2];
+
+  float gradients[9] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+  for (int t = threadIdx.x; t < total; t += blockDim.x) {
+    int px = x0 + (t % tx);
+    int py = y0 + (t / tx);
+    int flat = py * width + px;
+    float dx = static_cast<float>(px) - mx;
+    float dy = static_cast<float>(py) - my;
+    float q = a * dx * dx + 2.0f * b * dx * dy + c * dy * dy;
+    float raw = expf(-0.5f * q);
+    float base = visible_weight(raw, support_fade, tail);
+    float weight = base * op;
+
+    float gr = grad_out[flat * 3 + 0];
+    float gg = grad_out[flat * 3 + 1];
+    float gbch = grad_out[flat * 3 + 2];
+    float dw;
+    if (normalize) {
+      float denom = den[flat] + eps;
+      float dnum_r = gr / denom;
+      float dnum_g = gg / denom;
+      float dnum_b = gbch / denom;
+      float dden = -(
+          gr * out[flat * 3 + 0] +
+          gg * out[flat * 3 + 1] +
+          gbch * out[flat * 3 + 2]) / denom;
+      gradients[5] += dnum_r * weight;
+      gradients[6] += dnum_g * weight;
+      gradients[7] += dnum_b * weight;
+      dw = dnum_r * cr + dnum_g * cg + dnum_b * cb + dden;
+    } else {
+      gradients[5] += gr * weight;
+      gradients[6] += gg * weight;
+      gradients[7] += gbch * weight;
+      dw = gr * cr + gg * cg + gbch * cb;
+    }
+
+    float dbase = dw * op;
+    if (has_opacity) {
+      gradients[8] += dw * base;
+    }
+    float dq = dvisible_dq(raw, support_fade, tail) * dbase;
+    gradients[0] += dq * (-2.0f * a * dx - 2.0f * b * dy);
+    gradients[1] += dq * (-2.0f * b * dx - 2.0f * c * dy);
+    gradients[2] += dq * dx * dx;
+    gradients[3] += dq * 2.0f * dx * dy;
+    gradients[4] += dq * dy * dy;
+  }
+
+  constexpr int kGradientComponents = 9;
+  constexpr int kWarpsPerBlock = 8;
+  __shared__ float warp_sums[kGradientComponents * kWarpsPerBlock];
+  int lane = threadIdx.x & 31;
+  int warp = threadIdx.x >> 5;
+  #pragma unroll
+  for (int component = 0; component < kGradientComponents; ++component) {
+    gradients[component] = warp_reduce_sum(gradients[component]);
+    if (lane == 0) {
+      warp_sums[component * kWarpsPerBlock + warp] = gradients[component];
+    }
+  }
+  __syncthreads();
+
+  if (warp == 0) {
+    #pragma unroll
+    for (int component = 0; component < kGradientComponents; ++component) {
+      float value = lane < kWarpsPerBlock
+          ? warp_sums[component * kWarpsPerBlock + lane]
+          : 0.0f;
+      value = warp_reduce_sum(value);
+      if (lane == 0) {
+        warp_sums[component * kWarpsPerBlock] = value;
+      }
+    }
+  }
+  __syncthreads();
+
+  if (threadIdx.x == 0) {
+    grad_means[i * 2 + 0] = warp_sums[0 * kWarpsPerBlock];
+    grad_means[i * 2 + 1] = warp_sums[1 * kWarpsPerBlock];
+    grad_conics[i * 3 + 0] = warp_sums[2 * kWarpsPerBlock];
+    grad_conics[i * 3 + 1] = warp_sums[3 * kWarpsPerBlock];
+    grad_conics[i * 3 + 2] = warp_sums[4 * kWarpsPerBlock];
+    grad_colors[i * 3 + 0] = warp_sums[5 * kWarpsPerBlock];
+    grad_colors[i * 3 + 1] = warp_sums[6 * kWarpsPerBlock];
+    grad_colors[i * 3 + 2] = warp_sums[7 * kWarpsPerBlock];
+    if (has_opacity) {
+      grad_opacities[i] = warp_sums[8 * kWarpsPerBlock];
+    }
+  }
+}
+
 __global__ void tiled_backward_kernel(
     const float* __restrict__ grad_out,
     const float* __restrict__ means,
@@ -566,6 +711,58 @@ std::vector<torch::Tensor> structsplat_render_backward_cuda(
     constexpr int threads = 256;
     float tail = expf(-0.5f * static_cast<float>(sigma_cutoff * sigma_cutoff));
     backward_kernel<<<n, threads, 0, stream>>>(
+        grad_out.data_ptr<float>(),
+        means.data_ptr<float>(),
+        conics.data_ptr<float>(),
+        colors.data_ptr<float>(),
+        radii.data_ptr<int64_t>(),
+        opacities.numel() ? opacities.data_ptr<float>() : nullptr,
+        den.data_ptr<float>(),
+        out.data_ptr<float>(),
+        n,
+        h,
+        w,
+        opacities.numel() > 0,
+        normalize,
+        static_cast<float>(eps),
+        support_fade,
+        tail,
+        grad_means.data_ptr<float>(),
+        grad_conics.data_ptr<float>(),
+        grad_colors.data_ptr<float>(),
+        grad_opacities.numel() ? grad_opacities.data_ptr<float>() : nullptr);
+    C10_CUDA_KERNEL_LAUNCH_CHECK();
+  }
+  return {grad_means, grad_conics, grad_colors, grad_opacities};
+}
+
+std::vector<torch::Tensor> structsplat_render_backward_block_reduce_cuda(
+    torch::Tensor grad_out,
+    torch::Tensor means,
+    torch::Tensor conics,
+    torch::Tensor colors,
+    torch::Tensor radii,
+    torch::Tensor opacities,
+    torch::Tensor den,
+    torch::Tensor out,
+    bool normalize,
+    double eps,
+    bool support_fade,
+    double sigma_cutoff) {
+  int n = static_cast<int>(means.size(0));
+  int h = static_cast<int>(out.size(0));
+  int w = static_cast<int>(out.size(1));
+  auto grad_means = torch::zeros_like(means);
+  auto grad_conics = torch::zeros_like(conics);
+  auto grad_colors = torch::zeros_like(colors);
+  auto grad_opacities = opacities.numel()
+      ? torch::zeros_like(opacities)
+      : torch::empty({0}, means.options());
+  if (n > 0 && h > 0 && w > 0) {
+    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+    constexpr int threads = 256;
+    float tail = expf(-0.5f * static_cast<float>(sigma_cutoff * sigma_cutoff));
+    backward_block_reduce_kernel<<<n, threads, 0, stream>>>(
         grad_out.data_ptr<float>(),
         means.data_ptr<float>(),
         conics.data_ptr<float>(),

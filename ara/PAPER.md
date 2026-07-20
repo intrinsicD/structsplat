@@ -10,6 +10,7 @@ Root manifest for the live research artifact.
 ## Layer Index
 - `logic/problem.md`
 - `logic/claims.md`
+- `logic/concepts.md`
 - `logic/solution/heuristics.md`
 - `trace/exploration_tree.yaml`
 - `trace/sessions/session_index.yaml`

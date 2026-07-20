@@ -3,6 +3,7 @@
 Normalized: I_hat(p) = sum_i c_i o_i G_i(p) / (sum_i o_i G_i(p) + eps)
 Additive  : I_hat(p) = sum_i c_i o_i G_i(p)              (opt-in, ADR-0006)
 CUDA      : exact normalized/additive CUDA extension      (opt-in)
+cuda_block_reduce: exact CUDA forward + experimental block-reduced backward (opt-in)
 cuda_tiled: exact tiled/culling CUDA extension             (opt-in)
 gsplat    : optional GaussianImage++ alpha/sum renderer   (experimental)
 with G_i(p) = exp(-1/2 (p-mu_i)^T Sigma_i^-1 (p-mu_i)) and optional per-Gaussian opacity o_i.
@@ -23,7 +24,9 @@ import torch
 
 _EPS = 1e-8
 _ELEMENTS_PER_RENDER_CHUNK = 4096
-_NORMALIZED_CUDA_MODES = ("cuda", "cuda_normalized", "cuda_tiled", "cuda_tiled_normalized")
+_NORMALIZED_CUDA_MODES = (
+    "cuda", "cuda_normalized", "cuda_block_reduce", "cuda_tiled", "cuda_tiled_normalized",
+)
 _ADDITIVE_CUDA_MODES = ("cuda_additive", "cuda_tiled_additive")
 
 
@@ -365,6 +368,13 @@ def render_field(means, conics, colors, radii, H: int, W: int,
         return render_cuda_exact(means, conics, colors, radii, H, W, opacities=opacities,
                                  normalize=True, eps=_EPS, support_fade=fade_alpha > 0.0,
                                  sigma_cutoff=sigma_cutoff)
+    if mode == "cuda_block_reduce":
+        from .cuda_render import render_cuda_exact
+        return render_cuda_exact(
+            means, conics, colors, radii, H, W, opacities=opacities,
+            normalize=True, eps=_EPS, support_fade=fade_alpha > 0.0,
+            sigma_cutoff=sigma_cutoff, backward_variant="block_reduce",
+        )
     if mode == "cuda_additive":
         from .cuda_render import render_cuda_exact
         return render_cuda_exact(means, conics, colors, radii, H, W, opacities=opacities,
@@ -385,7 +395,7 @@ def render_field(means, conics, colors, radii, H: int, W: int,
             raise ValueError("renderer='gsplat' requires scales and rotations")
         return render_cuda_sum(means, scales, rotations, colors, H, W, opacities=opacities)
     raise ValueError(
-        f"unknown renderer {mode!r}; expected normalized, additive, cuda, "
+        f"unknown renderer {mode!r}; expected normalized, additive, cuda, cuda_block_reduce, "
         "cuda_additive, cuda_tiled, cuda_tiled_additive, or gsplat"
     )
 

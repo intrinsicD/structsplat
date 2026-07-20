@@ -69,3 +69,24 @@ sessions:
     events_count: 11
     claims_touched: [C24, C25]
     open_threads: 3
+  - id: "2026-07-15_001"
+    date: "2026-07-15"
+    summary: "Implemented BENCH-009's fail-closed causal audit; complete science ledgers already fail global calibration and literal projector nonnegativity while recovery remains pending."
+    turn_count: 10
+    events_count: 58
+    claims_touched: [C28, C29, C30, C31, C32, C33, C34, C35, C36, C37]
+    open_threads: 8
+  - id: "2026-07-17_001"
+    date: "2026-07-17"
+    summary: "No new end-to-end compression win exists; hostile review repaired the exact-Q assay before freeze while COMP-011 replay completion remains active."
+    turn_count: 9
+    events_count: 45
+    claims_touched: []
+    open_threads: 4
+  - id: "2026-07-18_001"
+    date: "2026-07-18"
+    summary: "Two exposed m12 exact-cap gains now have a referee-approved visual report, while exposed m16 fixed repairs remain negative; no held-out method improvement is claimed."
+    turn_count: 2
+    events_count: 11
+    claims_touched: [C38]
+    open_threads: 4

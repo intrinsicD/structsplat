@@ -1,0 +1,57 @@
+{
+  "binding_sha256": "d0091a1a5be164b7dbe80fdbbd97c839e3e1c7bc23c74340bbe1f34d80fc3454",
+  "candidate_count": 12096,
+  "candidates_sha256": "c16be1e17b6a67a87077c3bb2169c4dd730eb593b192a8844ada628c85e83164",
+  "config_sha256": "fbf1846492a930faf556c3ce9b8c98927c32bb1a20055ac91cc30ed9f52113f9",
+  "decision_ready": true,
+  "environment_signature": {
+    "cublas_workspace_config": ":4096:8",
+    "cuda": {
+      "compute_capability": [
+        8,
+        6
+      ],
+      "cuda_runtime": "12.8",
+      "driver": "590.48.01",
+      "name": "NVIDIA GeForce RTX 3050",
+      "renderer_extension": {
+        "filename": "structsplat_render_ext.so",
+        "sha256": "8ad8a640ad9af29fce5c2d4841fc85495ebe6fd1f5c22ae13950fd454b6c6075",
+        "size_bytes": 397376
+      },
+      "total_memory": 8199143424
+    },
+    "device": "cuda",
+    "ld_preload": "/usr/lib/x86_64-linux-gnu/libstdc++.so.6",
+    "numpy": "2.1.3",
+    "pillow": "12.0.0",
+    "platform": "Linux-6.14.0-37-generic-x86_64-with-glibc2.39",
+    "python": "3.12.9",
+    "torch": "2.9.0+cu128",
+    "torch_num_threads": 1,
+    "zlib_compile": "1.2.13",
+    "zlib_runtime": "1.2.13",
+    "zstandard": "0.23.0"
+  },
+  "errors": [],
+  "executed_source_archive": {
+    "member_count": 34,
+    "members_match": true,
+    "path": "executed_sources_v3.tar",
+    "sha256": "cb6d0d8eb77b6b98328dd66290d8a514a746e00de07c10a2d23cc62959eb9753"
+  },
+  "field_count": 24,
+  "fields_sha256": "a8d0c60a5cb5dd8b5bb1027f284386bb6261bb1f722460638d8f88a694f7f40a",
+  "passes": true,
+  "quality_replay_tolerances": {
+    "ms_ssim": 1e-06,
+    "mse": 1e-08,
+    "psnr": 1e-05,
+    "ssim": 1e-06
+  },
+  "render_hash_differences_diagnostic_only": 0,
+  "render_hash_matches": 12096,
+  "rerendered": true,
+  "schema": "comp007-audit-v2",
+  "split": "development"
+}

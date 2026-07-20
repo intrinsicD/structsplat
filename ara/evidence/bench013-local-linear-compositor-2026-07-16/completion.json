@@ -1,0 +1,20 @@
+{
+  "binding_sha256": "2ff71a04472d061532f2b18dbf8619bf92cbc523aff9b50c96a3a6240be74adf",
+  "complete": true,
+  "counts": {
+    "effective_fields": 63,
+    "forward_cells": 108,
+    "forward_pixels": 442368,
+    "gradient_cells": 1,
+    "gradient_rows": 1,
+    "logical_fields": 63,
+    "permutation_rows": 432
+  },
+  "recovery_equivalence": {
+    "equivalence_pass": true,
+    "file_sha256": "025ee96169aad12eadab4334b5be37a2718378318038e828d1ded3cbe317cbb1",
+    "path": "recovery_equivalence.json"
+  },
+  "schema": "bench013-stage0-full-completion-v3",
+  "written_after_independent_replay": true
+}

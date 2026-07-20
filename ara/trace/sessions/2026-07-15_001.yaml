@@ -1,0 +1,572 @@
+session:
+  id: "2026-07-15_001"
+  date: "2026-07-15"
+  started: "2026-07-15T11:41+0200"
+  last_turn: "2026-07-15T23:56+0200"
+  turn_count: 10
+  summary: "Implemented BENCH-009's fail-closed post-run causal audit; complete science ledgers already fail global calibration and literal projector nonnegativity while recovery remains pending."
+
+events_logged:
+  - turn: 1
+    type: question
+    id: "N113"
+    routing: direct
+    provenance: user
+    summary: "Requested a reusable real-research prompt, current literature analysis, and repository experiments across quality, convergence, performance, compression, and expressiveness."
+  - turn: 1
+    type: decision
+    id: "N114"
+    routing: direct
+    provenance: ai-executed
+    summary: "Executed the evidence-first workflow and selected exact responsibility density as a prior-art-bounded transfer calibration."
+  - turn: 1
+    type: experiment
+    id: "N115"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented FIT-018 and ran a deterministic source-bound eight-pair shared-start recovery guard plus exact replay."
+  - turn: 1
+    type: dead_end
+    id: "N116"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rejected alpha-0.7 responsibility-density selection after it missed the post-20 magnitude and sign-agreement gates."
+  - turn: 1
+    type: experiment
+    id: "N117"
+    routing: direct
+    provenance: ai-executed
+    summary: "Measured the exact K={1,2,4,8,16} responsibility oracle quality/work ceiling on one saved 20k field."
+  - turn: 1
+    type: dead_end
+    id: "N118"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rejected K<=8 as near-lossless truncation; retained K=16 only as a multi-field mechanism question."
+  - turn: 1
+    type: decision
+    id: "N119"
+    routing: direct
+    provenance: ai-executed
+    summary: "Prioritized gauge-equivalence evidence, exact per-Gaussian backward, actual-byte context coding, and equal-byte expressiveness tests."
+  - turn: 1
+    type: claim
+    id: "O52"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the failed alpha-0.7 recovery hypothesis as refuted claim C29 via empirical resolution."
+  - turn: 1
+    type: claim
+    id: "O53"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the bounded K=16 single-field oracle result as C30 via empirical resolution."
+  - turn: 1
+    type: heuristic
+    id: "O54"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized deterministic, source-bound mechanism guards as H10 via artifact commitment."
+  - turn: 1
+    type: concept
+    id: "O55"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged opacity-split gauge equivalence and group-level operators pending a dedicated synthetic experiment."
+  - turn: 1
+    type: architecture
+    id: "O56"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged exact per-Gaussian backward/fused optimization as the strongest literature-led performance direction."
+  - turn: 2
+    type: question
+    id: "N120"
+    routing: direct
+    provenance: user
+    summary: "Requested continuation of the selected opacity-gauge research direction."
+  - turn: 2
+    type: decision
+    id: "N121"
+    routing: direct
+    provenance: ai-executed
+    summary: "Froze FIT-019 as a benchmark-only exact-commutation and procedural restart-recovery guard."
+  - turn: 2
+    type: experiment
+    id: "N122"
+    routing: direct
+    provenance: ai-executed
+    summary: "Ran v1 primary/replay, retained its result, and downgraded it to a pilot after independent review found logged-but-ungated checks."
+  - turn: 2
+    type: decision
+    id: "N123"
+    routing: direct
+    provenance: ai-executed
+    summary: "Superseded v1 with a frozen audit-corrected v2 without changing targets, arms, thresholds, actions, or horizons."
+  - turn: 2
+    type: experiment
+    id: "N124"
+    routing: direct
+    provenance: ai-executed
+    summary: "Completed 128/128 v2 cells and an exact non-timing replay with verified source snapshots and all commutation/count gates passing."
+  - turn: 2
+    type: dead_end
+    id: "N125"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rejected quotient alpha-1 recovery utility after it missed breadth, post-100 retention, and the post-20 support floor."
+  - turn: 2
+    type: pivot
+    id: "N126"
+    routing: direct
+    provenance: ai-executed
+    summary: "Pivoted from quotient endpoint promotion to controlled perturb--recover response spectroscopy."
+  - turn: 2
+    type: decision
+    id: "N127"
+    routing: direct
+    provenance: ai-executed
+    summary: "Adopted ADR-0014 and kept exact gauge groups benchmark-only with no production state/default change."
+  - turn: 2
+    type: concept
+    id: "O55"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized opacity-split gauge equivalence via FIT-019 empirical resolution."
+  - turn: 2
+    type: claim
+    id: "O57"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized exact opacity-refinement allocation non-commutation as supported claim C31."
+  - turn: 2
+    type: claim
+    id: "O58"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized failed quotient recovery utility as refuted claim C32."
+  - turn: 2
+    type: heuristic
+    id: "O59"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized exact-equivalence certification and aggregate-first scoring as H11."
+  - turn: 2
+    type: claim
+    id: "O60"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized bounded horizon/target sensitivity as descriptive claim C33."
+  - turn: 3
+    type: question
+    id: "N128"
+    routing: direct
+    provenance: user
+    summary: "Requested continuation of the selected perturb--recover response direction."
+  - turn: 3
+    type: decision
+    id: "N129"
+    routing: direct
+    provenance: ai-executed
+    summary: "Froze FIT-020 as a held-out one-bend prediction and branch-selection killing test."
+  - turn: 3
+    type: experiment
+    id: "N130"
+    routing: direct
+    provenance: ai-executed
+    summary: "Completed 432 trajectories, a post-writer-fix measurement-equivalent replay, independent audits, and full validation."
+  - turn: 3
+    type: dead_end
+    id: "N131"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rejected the response bend after it worsened RMSE, retained large bias, missed breadth/sign gates, and changed no action."
+  - turn: 3
+    type: decision
+    id: "N132"
+    routing: direct
+    provenance: ai-executed
+    summary: "Adopted ADR-0015 and kept the response predictor/selector benchmark-only with no production changes."
+  - turn: 3
+    type: pivot
+    id: "N133"
+    routing: direct
+    provenance: ai-executed
+    summary: "Pivoted the current queue from response-feature rescue to E4 marginal cold-stream RD attribution."
+  - turn: 3
+    type: claim
+    id: "O61"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the failed FIT-020 response-prediction and screening claim as refuted C34."
+  - turn: 3
+    type: claim
+    id: "O62"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the bounded family-sensitive ranked-path effects as descriptive C35."
+  - turn: 3
+    type: heuristic
+    id: "O63"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized output-only benchmark recovery with frozen aggregation and explicit replay exclusions as H12."
+  - turn: 4
+    type: question
+    id: "N134"
+    routing: direct
+    provenance: user
+    summary: "Requested continuation of the selected E4 marginal cold-stream RD direction."
+  - turn: 4
+    type: decision
+    id: "N135"
+    routing: direct
+    provenance: ai-executed
+    summary: "Froze COMP-006 as a standard-birth versus matched replacement and exhaustive precision complete-stream killing test."
+  - turn: 4
+    type: experiment
+    id: "N136"
+    routing: direct
+    provenance: ai-executed
+    summary: "Completed 36 cells and 33,840 streams in both primary and exact replay; birth lost 1.0714 dB and all family means were negative."
+  - turn: 4
+    type: dead_end
+    id: "N137"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rejected one extra standard Gaussian as the best use of +16 complete SSPL1 bytes."
+  - turn: 4
+    type: decision
+    id: "N138"
+    routing: direct
+    provenance: ai-executed
+    summary: "Adopted ADR-0016, kept the exact-rate oracle benchmark-only, and left confirmation sealed."
+  - turn: 4
+    type: pivot
+    id: "N139"
+    routing: direct
+    provenance: ai-executed
+    summary: "Pivoted to independent exact-backward performance and real attribute/richer-atom codec tasks."
+  - turn: 4
+    type: claim
+    id: "O64"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the failed COMP-006 standard-birth RD claim as refuted C36."
+  - turn: 4
+    type: claim
+    id: "O65"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized exact-byte control-allocation benefit and structural-selection boundary as C37."
+  - turn: 4
+    type: heuristic
+    id: "O66"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized integer-cap complete-stream selection for non-additive compressed edits as H13."
+  - turn: 4
+    type: claim
+    id: "O67"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged the post-hoc geometry-to-appearance precision pattern pending a new attribute/rate experiment."
+  - turn: 5
+    type: question
+    id: "N140"
+    routing: direct
+    provenance: user
+    summary: "Asked whether the accumulated negative results mean StructSplat is already intrinsically difficult to improve."
+  - turn: 5
+    type: claim
+    id: "O68"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged the distinction between local maturity in the current design grammar and unresolved global headroom."
+  - turn: 6
+    type: experiment
+    id: "N141"
+    routing: direct
+    provenance: ai-executed
+    summary: "Forward-tested the new audit rubric against BENCH-007 and confirmed the failed development gate while identifying non-inferential 1.0 bpp wording."
+  - turn: 6
+    type: claim
+    id: "O69"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged the boundary between BENCH-007's reported +0.0089 dB mean and unsupported inferential superiority."
+  - turn: 7
+    type: question
+    id: "N142"
+    routing: direct
+    provenance: user
+    summary: "Asked whether smooth counterparts to hard learning operators could materially improve StructSplat."
+  - turn: 7
+    type: experiment
+    id: "N143"
+    routing: direct
+    provenance: ai-executed
+    summary: "Audited nonsmooth code paths and saved-field scale-bound occupancy, separating autograd sites from detached selection."
+  - turn: 7
+    type: architecture
+    id: "O70"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged compact C1/C2 renderer support tapering as the highest-priority smooth hypothesis."
+  - turn: 7
+    type: heuristic
+    id: "O71"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged projection-pressure diagnostics before any smooth scale reparameterization."
+  - turn: 8
+    type: question
+    id: "N144"
+    routing: direct
+    provenance: user-revised
+    summary: "Clarified that the target operator class is specifically SMU-style differentiable max/min/ReLU surrogates."
+  - turn: 8
+    type: constraint
+    id: "O72"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged the nonnegativity and exact-support mismatch that makes vanilla SMU unsuitable as a renderer-hinge drop-in."
+  - turn: 9
+    type: decision
+    id: "N145"
+    routing: direct
+    provenance: ai-executed
+    summary: "Froze BENCH-009's parent chart, support, native realization, leakage, and continuous-trajectory semantics before execution."
+  - turn: 9
+    type: experiment
+    id: "N146"
+    routing: direct
+    provenance: ai-executed
+    summary: "Validated the Stage-1/core/runner/matrix-free implementation with 42 focused tests plus Ruff, compileall, and diff checks."
+  - turn: 10
+    type: experiment
+    id: "N147"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented and validated a source-binding-external causal-ledger auditor; complete science ledgers fail all-eight calibration and contain negative literal projector increments."
+  - turn: 10
+    type: constraint
+    id: "O73"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged the relative-rcond subspace-nesting failure and no-tolerance/no-clamp audit boundary pending the final recovery-merged audit."
+
+ai_actions:
+  - turn: 1
+    action: "Created a reusable evidence-first research prompt and a primary-source research portfolio with repository frontier, SOTA mechanism map, anti-library, candidate cards, cross-domain transfers, novelty audit, and falsification programs."
+    provenance: ai-executed
+    files_changed:
+      - "docs/prompts/real-research.md"
+      - "docs/research/2026-07-15-frontier-reuse-experiments.md"
+      - "ara/evidence/research-portfolio-2026-07-15.md"
+  - turn: 1
+    action: "Implemented exact responsibility-density scoring, wired config/CLI/stage-search controls, added tests, and documented FIT-018 as an implemented screened rejection."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/config.py"
+      - "src/structsplat/fit.py"
+      - "src/structsplat/cli.py"
+      - "benchmarks/stage_search.py"
+      - "benchmarks/responsibility_split_compare.py"
+      - "tests/test_responsibility_density.py"
+      - "tests/test_responsibility_split_compare.py"
+      - "tasks/FIT-018-responsibility-error-density.md"
+  - turn: 1
+    action: "Ran the deterministic FIT-018 guard and source-frozen replay, curated configs/rows/aggregates, and retained the negative result without retuning the fixture."
+    provenance: ai-executed
+    files_changed:
+      - "ara/evidence/fit018-responsibility-guard-2026-07-15/"
+  - turn: 1
+    action: "Implemented and tested the exact top-K oracle audit, ran it on a saved 20k field, curated the machine-readable result, synchronized repository docs, and passed 488 tests plus Ruff, portfolio, and diff checks."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/topk_responsibility_oracle.py"
+      - "tests/test_topk_responsibility_oracle.py"
+      - "ara/evidence/topk-responsibility-oracle-2026-07-15/"
+      - "README.md"
+      - "benchmarks/README.md"
+      - "tasks/INDEX.md"
+  - turn: 2
+    action: "Implemented the FIT-019 exact-refinement/group-scoring benchmark, canonical action replay, projected top-k diagnostics, recovered-count and cell-table gates, source snapshots, and 24 focused tests without changing production modules."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/gauge_equivalence_audit.py"
+      - "tests/test_gauge_equivalence_audit.py"
+      - "tasks/FIT-019-opacity-gauge-equivalence.md"
+  - turn: 2
+    action: "Ran v1 primary/replay, commissioned adversarial method/reproducibility/response audits, corrected preregistration fidelity as v2, and completed a source-frozen v2 primary/replay with exact deterministic payloads."
+    provenance: ai-executed
+    files_changed:
+      - "ara/evidence/fit019-opacity-gauge-2026-07-15/"
+  - turn: 2
+    action: "Recorded ADR-0014, updated repository/benchmark/task/research documentation, preserved the negative result and response-spectroscopy pivot, and passed 512 tests, Ruff, portfolio validation, and diff hygiene."
+    provenance: ai-executed
+    files_changed:
+      - "docs/adr/0014-keep-opacity-gauge-groups-benchmark-only.md"
+      - "docs/research/2026-07-15-opacity-gauge-experiment.md"
+      - "docs/research/2026-07-15-frontier-reuse-experiments.md"
+      - "ara/evidence/research-portfolio-2026-07-15.md"
+      - "README.md"
+      - "benchmarks/README.md"
+      - "tasks/INDEX.md"
+  - turn: 3
+    action: "Froze and implemented FIT-020's generated target suite, ranked birth path, dense trajectory logger, grouped ridge evaluation, fail-closed integrity checks, union-schema writer, and 28 focused tests without changing production modules."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/perturb_recover_spectroscopy.py"
+      - "tests/test_perturb_recover_spectroscopy.py"
+      - "tasks/FIT-020-perturb-recover-spectroscopy.md"
+  - turn: 3
+    action: "Ran the 432-trajectory primary, repaired the output-only paired-CSV schema after immutable measurement completion, ran a measurement-equivalent replay, and commissioned independent protocol, numerical/reproducibility, and literature audits."
+    provenance: ai-executed
+    files_changed:
+      - "results/fit020_response_spectroscopy_v1_2026-07-15/"
+      - "results/fit020_response_spectroscopy_v1_replay_2026-07-15/"
+      - "ara/evidence/fit020-response-spectroscopy-2026-07-15/run.md"
+  - turn: 3
+    action: "Recorded ADR-0015, synchronized task/index/benchmark/research documentation, closed the response lineage, selected E4 as the next queue, and passed 540 tests with the documented libstdc++ preload plus Ruff, source-snapshot, link, and diff validation."
+    provenance: ai-executed
+    files_changed:
+      - "docs/adr/0015-keep-response-bend-selector-benchmark-only.md"
+      - "docs/research/2026-07-15-perturb-recover-spectroscopy.md"
+      - "docs/research/2026-07-15-frontier-reuse-experiments.md"
+      - "README.md"
+      - "benchmarks/README.md"
+      - "tasks/INDEX.md"
+      - "ara/evidence/README.md"
+  - turn: 4
+    action: "Froze and implemented COMP-006's complete-stream target/action/precision protocol, locked journals, cold validation, integer-cap analysis, exact replay, and focused regression coverage without changing production modules."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/marginal_cold_stream_rd.py"
+      - "tests/test_marginal_cold_stream_rd.py"
+      - "tasks/COMP-006-marginal-cold-stream-rd.md"
+  - turn: 4
+    action: "Ran three-shard development primary and replay executions, validated 67,680 total streams, and commissioned independent quantitative, literature/novelty, and implementation/reproducibility audits."
+    provenance: ai-executed
+    files_changed:
+      - "results/comp006_marginal_rd_dev_v1_2026-07-15/"
+      - "results/comp006_marginal_rd_dev_v1_replay_2026-07-15/"
+  - turn: 4
+    action: "Hardened post-replay validation and final overviews, recorded ADR-0016 and the dated literature/result report, synchronized repository/task/benchmark/frontier documentation, and passed 552 tests plus Ruff."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/marginal_cold_stream_rd.py"
+      - "tests/test_marginal_cold_stream_rd.py"
+      - "docs/adr/0016-keep-marginal-cold-stream-birth-benchmark-only.md"
+      - "docs/research/2026-07-15-marginal-cold-stream-rd.md"
+      - "docs/research/2026-07-15-frontier-reuse-experiments.md"
+      - "README.md"
+      - "benchmarks/README.md"
+      - "tasks/INDEX.md"
+      - "ara/evidence/comp006-marginal-cold-stream-rd-2026-07-15/run.md"
+
+  - turn: 6
+    action: "Adapted the latest results-audit pattern to StructSplat with complete-stream rate accounting, BENCH-007 stop logic, renderer comparators, cold decode parity, source/config binding, and paired-image statistics; added native routing and the Codex discovery symlink."
+    provenance: ai-executed
+    files_changed: [".claude/skills/structsplat-results-audit/SKILL.md", ".agents/skills/structsplat-results-audit", "CLAUDE.md", "README.md"]
+  - turn: 6
+    action: "Validated the skill schema, discovery symlink, routing, and whitespace, then ran the bounded BENCH-007 forward audit without executing tests or experiments."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 7
+    action: "Performed a read-only multi-agent audit of initialization, fitting, QAT, predictor, generation, and reference/CUDA renderer nonsmoothness, plus saved-field scale-bound diagnostics."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 8
+    action: "Read the primary CVPR 2022 SMU formulation and performed a read-only multi-agent transfer audit across core fitting, CUDA/reference support, rate proxy, generation clamps, and predictor activations."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 9
+    action: "Implemented the audited BENCH-009 Stage-1 chart/support split, native finite realization, detailed support hashes, exact discovery hashing, live source binding, corrected diagnostic/recovery counts and packet prices, and continuous 160-step parent checkpointing."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/residual_tangent_auction_stage1.py"
+      - "benchmarks/residual_tangent_auction_stage1_core.py"
+      - "benchmarks/residual_tangent_auction_stage1_runner.py"
+      - "tests/test_residual_tangent_auction_stage1.py"
+      - "tests/test_residual_tangent_auction_stage1_core.py"
+      - "tests/test_residual_tangent_auction_stage1_runner.py"
+  - turn: 10
+    action: "Implemented the standalone BENCH-009 causal-ledger auditor with strict JSON/config/source/manifest/recovery joins, all-eight calibration, outside-J and finite causal analyses, shared family bootstrap, fail-closed classification, and focused tests; validated it on the source-bound toy and complete immediate/score shards."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/residual_tangent_auction_stage1_causal_audit.py"
+      - "tests/test_residual_tangent_auction_stage1_causal_audit.py"
+
+claims_touched:
+  - id: C29
+    action: crystallized
+    turn: 1
+  - id: C30
+    action: crystallized
+    turn: 1
+  - id: C31
+    action: crystallized
+    turn: 2
+  - id: C32
+    action: crystallized
+    turn: 2
+  - id: C33
+    action: crystallized
+    turn: 2
+  - id: C34
+    action: crystallized
+    turn: 3
+  - id: C35
+    action: crystallized
+    turn: 3
+  - id: C36
+    action: crystallized
+    turn: 4
+  - id: C37
+    action: crystallized
+    turn: 4
+  - id: C28
+    action: confirmed
+    turn: 6
+
+key_context:
+  - turn: 1
+    excerpt: "User requested: create and use a real-research prompt, study state-of-the-art methods, and experiment with transferable gains in quality, convergence, performance, compression, and expressiveness."
+  - turn: 2
+    excerpt: "User requested: continue with your proposed direction."
+  - turn: 3
+    excerpt: "User requested: continue with your proposed direction; FIT-020 then resolved the selected perturb--recover branch as a frozen negative result."
+  - turn: 4
+    excerpt: "User requested: continue with your proposed direction; COMP-006 then resolved standard birth as a complete-stream negative result under exact replay."
+  - turn: 5
+    excerpt: "User asked whether StructSplat's repeated negative screens mean it is already unusually hard to improve."
+  - turn: 6
+    excerpt: "User requested adapting the two latest results-audit skills into StructSplat and three peer repositories."
+  - turn: 7
+    excerpt: "User asked whether max/min/clamp or activation functions in learning have promising smooth replacements."
+  - turn: 8
+    excerpt: "User clarified that Smooth Maximum Unit-style differentiable maximum operators are the intended example class."
+  - turn: 9
+    excerpt: "User authorized continued research and next experiments while away; the execution path was held until Stage-1 audit blockers were resolved."
+  - turn: 10
+    excerpt: "The strict post-run causal audit must remain unavailable on negative projector increments or failed all-eight calibration; no tolerance, clamp, or same-data rescue is permitted."
+
+open_threads:
+  - "Repeat the K=16 phase diagram across multiple saved fields, then profile/implement exact per-Gaussian backward and fused optimizer work before approximate winner search."
+  - "Create a new versioned codec task for compact luminance-slope/affine and WIPES-like controls at equal complete bytes and decode work."
+  - "Test existing-grammar attribute/rate co-design with per-mix QAT and real context/range coding on disjoint targets; treat O67 as staged until then."
+  - "Adjudicate O69 against BENCH-007 raw rows/bootstrap inputs and narrow C28's 1.0 bpp wording if the interval remains zero-crossing."
+  - "Run renderer boundary spectroscopy for hard support, current C0 fade, and a compact C1/C2 taper before any full fit benchmark."
+  - "Instrument global/per-row scale-bound occupancy, outward gradients, and optimizer chatter before testing a smooth constrained parameterization."
+  - "Regenerate the source-bound BENCH-009 preflight after all science/analysis files land, then execute the frozen parent and candidate phases."
+  - "After canonical recovery merge, run the standalone BENCH-009 causal audit once; preserve unavailable classification and move any projector redesign to a separately preregistered assay on new data."
+
+ai_suggestions_pending:
+  - "Measure exact per-Gaussian backward before claiming a renderer-side performance path."
+  - "Test the post-hoc geometry-to-appearance precision pattern with per-mix QAT and real entropy coding before promoting it."
+  - "Use 'reported mean delta' rather than inferential 'beats' for BENCH-007's 1.0 bpp cell unless an independent interval supports superiority."
+  - "Prioritize a sparse compact C1/C2 support taper over another plain L1-to-Charbonnier swap."
+  - "Do not replace hard scale projection until diagnostics show that projection dynamics, rather than useful active constraints, are limiting convergence."
+  - "Use vanilla SMU only as a diagnostic control for renderer support; preserve nonnegativity and exact compact support with a matched C1/C2 hinge."

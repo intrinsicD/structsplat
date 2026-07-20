@@ -17,11 +17,15 @@ def _benchmark_symbol(module_name: str, symbol: str):
         module = importlib.import_module(module_name)
     except ModuleNotFoundError as exc:
         top_level = module_name.partition(".")[0]
-        if exc.name != top_level:
+        if exc.name not in (top_level, module_name):
             raise
         repo_root = Path(__file__).resolve().parents[2]
         if (repo_root / top_level).is_dir() and str(repo_root) not in sys.path:
             sys.path.insert(0, str(repo_root))
+            # A failed lookup may have cached an unrelated installed namespace package
+            # (notably ``benchmarks``) before the repository root became importable.
+            sys.modules.pop(top_level, None)
+            importlib.invalidate_caches()
             module = importlib.import_module(module_name)
         else:
             raise ModuleNotFoundError(
@@ -126,11 +130,15 @@ def cmd_fit(args):
                      prune_keep_min=args.prune_keep_min,
                      split_every=args.split_every, split_count=args.split_count,
                      split_mode=args.split_mode,
+                     refine_site=args.refine_site,
+                     refine_primitive=args.refine_primitive,
+                     refine_nms=args.refine_nms,
                      split_scale=args.split_scale,
                      split_oversample=args.split_oversample,
                      split_min_spacing=args.split_min_spacing,
                      split_color_init=args.split_color_init,
                      sampled_add_score=args.sampled_add_score,
+                     responsibility_mass_alpha=args.responsibility_mass_alpha,
                      seed_new_row_optimizer_state=args.seed_new_row_optimizer_state,
                      new_row_temper_iters=args.new_row_temper_iters,
                      new_row_temper_start=args.new_row_temper_start,
@@ -210,6 +218,7 @@ def cmd_stage_search(args):
         refine_nms_modes=args.refine_nms_modes,
         refine_color_inits=args.refine_color_inits,
         refine_score_modes=args.refine_score_modes,
+        responsibility_mass_alpha=args.responsibility_mass_alpha,
         refine_prune_modes=args.refine_prune_modes,
         refine_relocate_modes=args.refine_relocate_modes,
         state_seed_modes=args.state_seed_modes,
@@ -475,6 +484,27 @@ def main():
                        "freq_violation",
                    ],
                    default="duplicate")
+    f.add_argument(
+        "--refine-site",
+        choices=[
+            "none", "residual", "residual_tensor", "support", "responsibility",
+            "absgrad", "ranked", "freq_violation",
+        ],
+        default=None,
+        help="factored refinement site; overrides the site implied by --split-mode",
+    )
+    f.add_argument(
+        "--refine-primitive",
+        choices=["duplicate", "fp", "moment_preserving", "sampled_add"],
+        default=None,
+        help="factored refinement primitive; overrides the primitive implied by --split-mode",
+    )
+    f.add_argument(
+        "--refine-nms",
+        choices=["off", "on"],
+        default=None,
+        help="factored sampled-add NMS mode; overrides the mode implied by --split-mode",
+    )
     f.add_argument("--split-scale", type=float, default=0.7)
     f.add_argument("--split-oversample", type=float, default=1.0,
                    help="candidate multiplier for residual-add spacing suppression")
@@ -486,6 +516,12 @@ def main():
                    choices=["legacy_abs", "gaussian_abs", "signed_gaussian"],
                    default="legacy_abs",
                    help="sampled-add site score; signed_gaussian is the FIT-017 experiment")
+    f.add_argument(
+        "--responsibility-mass-alpha",
+        type=float,
+        default=0.7,
+        help="ownership-mass exponent for --refine-site responsibility (0 < alpha <= 1)",
+    )
     f.add_argument("--seed-new-row-optimizer-state", action="store_true",
                    help="seed new-row optimizer moments from split parents or carried-row median")
     f.add_argument("--new-row-temper-iters", type=int, default=0,
@@ -572,7 +608,8 @@ def main():
     s.add_argument("--lr-schedules", nargs="+", default=None)
     s.add_argument("--refine-modes", nargs="+", default=None)
     s.add_argument("--refine-sites", nargs="+", default=None,
-                   help="none, residual, residual_tensor, support, ranked, absgrad, freq_violation")
+                   help="none, residual, residual_tensor, support, responsibility, ranked, "
+                        "absgrad, freq_violation")
     s.add_argument("--refine-primitives", nargs="+", default=None,
                    help="duplicate, fp, moment_preserving, sampled_add")
     s.add_argument("--refine-nms-modes", nargs="+", default=None,
@@ -581,6 +618,12 @@ def main():
                    help="target or residual")
     s.add_argument("--refine-score-modes", nargs="+", default=None,
                    help="legacy_abs, gaussian_abs, or signed_gaussian; sampled-add only")
+    s.add_argument(
+        "--responsibility-mass-alpha",
+        type=float,
+        default=0.7,
+        help="fixed ownership-mass exponent for responsibility refinement cells",
+    )
     s.add_argument("--refine-prune-modes", nargs="+", default=None,
                    help="off or on")
     s.add_argument("--refine-relocate-modes", nargs="+", default=None,

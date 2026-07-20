@@ -142,6 +142,11 @@ def test_cuda_renderer_is_explicit_about_requirements():
         render_field(g.means, g.conics(), g.colors, g.radii(3.0), 10, 10, mode="cuda")
     with pytest.raises(RuntimeError, match="requires CUDA tensors"):
         render_field(g.means, g.conics(), g.colors, g.radii(3.0), 10, 10, mode="cuda_tiled")
+    with pytest.raises(RuntimeError, match="requires CUDA tensors"):
+        render_field(
+            g.means, g.conics(), g.colors, g.radii(3.0), 10, 10,
+            mode="cuda_block_reduce",
+        )
     with pytest.raises(ValueError, match="requires scales and rotations"):
         render_field(g.means, g.conics(), g.colors, g.radii(3.0), 10, 10, mode="gsplat")
     if not torch.cuda.is_available():
@@ -287,6 +292,54 @@ def test_cuda_exact_backward_matches_reference_when_available():
         pytest.skip(str(exc))
     for got, exp in zip(cu, ref, strict=True):
         assert torch.allclose(got, exp, atol=2e-4, rtol=2e-4)
+
+
+@pytest.mark.parametrize("use_opacities", [False, True])
+def test_cuda_block_reduce_backward_matches_untiled_baseline_when_available(use_opacities):
+    if not torch.cuda.is_available():
+        pytest.skip("CUDA not available")
+    rng = np.random.default_rng(23)
+    N, H, W = 37, 23, 25
+    means = np.stack([rng.uniform(-2, W + 2, N), rng.uniform(-2, H + 2, N)], 1)
+    scales = np.exp(rng.uniform(np.log(0.7), np.log(4.0), (N, 2)))
+    angles = rng.uniform(0, np.pi, N)
+    colors = rng.random((N, 3))
+    opacities = rng.uniform(-1.0, 1.0, N) if use_opacities else None
+    target = torch.rand(H, W, 3, device="cuda")
+
+    def run(mode):
+        field = GaussianField.from_numpy(
+            means, scales, angles, colors, opacities=opacities, device="cuda"
+        ).trainable()
+        image = render_field(
+            field.means,
+            field.conics(),
+            field.colors,
+            field.radii(3.0),
+            H,
+            W,
+            mode=mode,
+            opacities=field.opacity_values(),
+            support_fade=True,
+            sigma_cutoff=3.0,
+        )
+        (image - target).square().mean().backward()
+        torch.cuda.synchronize()
+        gradients = [
+            field.means.grad,
+            field.log_scales.grad,
+            field.rotations.grad,
+            field.colors.grad,
+        ]
+        if field.opacities is not None:
+            gradients.append(field.opacities.grad)
+        return image.detach(), [gradient.detach() for gradient in gradients]
+
+    baseline_image, baseline_gradients = run("cuda")
+    reduced_image, reduced_gradients = run("cuda_block_reduce")
+    assert torch.allclose(reduced_image, baseline_image, atol=2e-5, rtol=2e-5)
+    for reduced, baseline in zip(reduced_gradients, baseline_gradients, strict=True):
+        assert torch.allclose(reduced, baseline, atol=3e-4, rtol=3e-4)
 
 
 def test_cuda_tiled_backward_matches_reference_when_available():

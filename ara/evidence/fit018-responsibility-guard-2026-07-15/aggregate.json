@@ -1,0 +1,69 @@
+{
+  "arms": {
+    "residual": {
+      "n": 8.0,
+      "immediate_psnr": 20.310525124999998,
+      "post20_psnr": 21.583496625,
+      "post100_psnr": 23.092527750000002,
+      "score_seconds": 9.575e-05,
+      "total100_seconds": 0.9962456249999999,
+      "jaccard_vs_residual": 1.0,
+      "jaccard_vs_support": 0.341079
+    },
+    "support": {
+      "n": 8.0,
+      "immediate_psnr": 20.309292,
+      "post20_psnr": 21.625506625,
+      "post100_psnr": 23.202207625,
+      "score_seconds": 0.003096875,
+      "total100_seconds": 0.9939241249999999,
+      "jaccard_vs_residual": 0.341079,
+      "jaccard_vs_support": 1.0
+    },
+    "responsibility_alpha1": {
+      "n": 8.0,
+      "immediate_psnr": 20.320962625,
+      "post20_psnr": 21.627424125,
+      "post100_psnr": 23.244383125,
+      "score_seconds": 0.005860625,
+      "total100_seconds": 0.9815415000000001,
+      "jaccard_vs_residual": 0.34012312499999997,
+      "jaccard_vs_support": 0.7398916249999999
+    },
+    "responsibility_alpha0.7": {
+      "n": 8.0,
+      "immediate_psnr": 20.2470395,
+      "post20_psnr": 21.605745125,
+      "post100_psnr": 23.1610805,
+      "score_seconds": 0.0057175,
+      "total100_seconds": 1.012152125,
+      "jaccard_vs_residual": 0.30160512500000003,
+      "jaccard_vs_support": 0.509843625
+    }
+  },
+  "comparison": {
+    "donor_arm": "responsibility_alpha0.7",
+    "stronger_existing_arm": "support",
+    "n_pairs": 8,
+    "delta_immediate_psnr": -0.0622524999999996,
+    "delta_post20_psnr": -0.01976150000000043,
+    "delta_post100_psnr": -0.041127125000000486,
+    "post20_positive_count": 4,
+    "post20_positive_fraction": 0.5,
+    "total100_overhead_fraction": 0.01833942807254041
+  },
+  "decision": {
+    "guard_survives": false,
+    "stronger_existing_arm": "support",
+    "checks": {
+      "pair_count_eq_8": true,
+      "post20_gain_ge_0.10_db": false,
+      "post20_positive_count_ge_6": false,
+      "post100_delta_ge_minus_0.05_db": true,
+      "total100_overhead_le_0.15": true,
+      "all_final_counts_eq_80": true,
+      "all_scores_finite": true,
+      "all_renders_finite": true
+    }
+  }
+}

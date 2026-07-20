@@ -1,0 +1,59 @@
+{
+  "alpha0.7": {
+    "alpha": 0.7,
+    "split_group": 2,
+    "render_max_abs": 1.7881393432617188e-07,
+    "denominator_max_abs": 5.960464477539063e-08,
+    "child_law_max_abs": 5.960464477539063e-08,
+    "group_score_max_abs": 5.960464477539063e-08,
+    "group_mass_max_abs": 7.62939453125e-06,
+    "group_error_max_abs": 9.5367431640625e-07,
+    "labels_equal": true,
+    "base_action": [
+      2,
+      0
+    ],
+    "gauge_row_action": [
+      0,
+      1
+    ],
+    "quotient_action": [
+      2,
+      0
+    ],
+    "gauge_row_changed": true,
+    "quotient_restored": true,
+    "gauge_unique_groups": 2
+  },
+  "alpha1": {
+    "alpha": 1.0,
+    "split_group": 0,
+    "render_max_abs": 1.1920928955078125e-07,
+    "denominator_max_abs": 5.960464477539063e-08,
+    "child_law_max_abs": 1.4901161193847656e-08,
+    "group_score_max_abs": 1.4901161193847656e-08,
+    "group_mass_max_abs": 3.814697265625e-06,
+    "group_error_max_abs": 0.0,
+    "labels_equal": true,
+    "base_action": [
+      0,
+      1
+    ],
+    "gauge_row_action": [
+      0,
+      0
+    ],
+    "quotient_action": [
+      0,
+      1
+    ],
+    "gauge_row_changed": true,
+    "quotient_restored": true,
+    "gauge_unique_groups": 1
+  },
+  "positive_control": {
+    "alpha0.7_changed": true,
+    "alpha1_duplicate_ticket": true,
+    "quotient_restored_both": true
+  }
+}

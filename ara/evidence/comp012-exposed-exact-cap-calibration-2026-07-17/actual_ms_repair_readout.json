@@ -1,0 +1,72 @@
+{
+  "candidate_metric_repetitions": [
+    {
+      "lpips": 0.021815180778503418,
+      "ms_ssim": 0.9944614768028259,
+      "psnr": 38.776598885563146
+    },
+    {
+      "lpips": 0.021815169602632523,
+      "ms_ssim": 0.9944615364074707,
+      "psnr": 38.77659888782575
+    },
+    {
+      "lpips": 0.02181517891585827,
+      "ms_ssim": 0.9944613575935364,
+      "psnr": 38.77659887368822
+    }
+  ],
+  "candidate_tensor_sha256s": [
+    "02796f3f31197d723cd12c0423965624be2c54b6085dfe3c5ccc28374b9911a9",
+    "5603b6f58820f15d8ad36b8e27b0bb184f40f204709329f758b480919d79b587",
+    "6a85d802caa6f140b1bef1e97e383f883d34aea440a856ea57e89197e1b3ce8a"
+  ],
+  "complete_bytes": 64662,
+  "confirmation_accessed": false,
+  "conservative_delta": {
+    "lpips_max_candidate_minus_min_incumbent": 0.00035654380917549133,
+    "ms_ssim_min_candidate_minus_max_incumbent": -0.0006526708602905273,
+    "psnr_min_candidate_minus_max_incumbent_db": 0.46159228097652516
+  },
+  "final_blob_equals_start": true,
+  "final_blob_sha256": "b36d672455501e790fa84785952617e8907b2df672ca308072c8eb9226971bdb",
+  "frozen_config_sha256": "7f61d7edbe66e290a1030506bd02cac00a12595291675131b86471e78b18d21b",
+  "incumbent_actual_row_record_sha256": "a050d7d3da32d7424adaac80f8d17256c9ab00ff17f9c8b2cd2503479836bb7c",
+  "incumbent_metric_repetitions": [
+    {
+      "lpips": 0.021458642557263374,
+      "ms_ssim": 0.9951140284538269,
+      "psnr": 38.3150065927117
+    },
+    {
+      "lpips": 0.021458636969327927,
+      "ms_ssim": 0.9951139092445374,
+      "psnr": 38.315006578314474
+    },
+    {
+      "lpips": 0.021458648145198822,
+      "ms_ssim": 0.9951140284538269,
+      "psnr": 38.31500656362167
+    }
+  ],
+  "lpips_state_sha256": "a52b7367d9d082a8988b25abcbae343cd1ad25c9c72c1fe592f571d00e470fc6",
+  "macro_count": 1,
+  "macro_result_sha256": "563b773ea104520329cfc70958652902afe447a4b67ffcbe21012ffd571b4617",
+  "metric_evaluation_cap": 226,
+  "metric_evaluations": 13,
+  "metric_probe_sha256": "1521573868aecdf42761059f5bbab9accd1e7a0a1d8f0bf8ab1428e7578e66f4",
+  "promotable": false,
+  "renderer_sha256": "a18b09c160abd7d509c0886f898456f2b59042b10a0cb778a2bd21ba0ce328b3",
+  "result_sha256": "78c6e61c17e2426668c482725ac968306c14894722c566efca1c716dad951e2f",
+  "schema": "structsplat.comp012.exposed-actual-ms-repair-readout.v1",
+  "scope": "already_exposed_development_calibration_only",
+  "search": {
+    "best_evaluated_prefix_accepted_count": 1,
+    "best_evaluated_prefix_ms_ssim": 0.9944531917572021,
+    "origin_actual_cpu_ms_ssim": 0.994461715221405,
+    "selected_prefix_accepted_count": null,
+    "stop_reason": "no_dyadic_prefix_strictly_improves_actual_ms_ssim"
+  },
+  "search_script_sha256": "1d0108d612be44244b8897de5d9515111790310d4ed60576ec2a08831305b4e9",
+  "status": "REJECT_FIXED_ACTUAL_MS_GRADIENT_REPAIR"
+}

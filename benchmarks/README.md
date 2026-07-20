@@ -134,6 +134,257 @@ python -m benchmarks.sampled_add_score_compare \
   --seeds 0 1 --max-side 64 --start-count 64 --add-count 16 --pre-iters 40 --device cpu
 ```
 
+FIT-018 adds the opt-in normalized-ownership site `--refine-sites responsibility`, with fixed
+`--responsibility-mass-alpha` (default `0.7`). Its shared-start mechanism guard compares center
+residual, raw-support residual, responsibility alpha 1, and responsibility alpha 0.7 under the
+same moment-preserving 64->80 split and independent 20/100-step recovery replays:
+
+```bash
+python -m benchmarks.responsibility_split_compare \
+  --outdir results/fit018_responsibility_split_guard --device cpu
+```
+
+The frozen guard rejected the alpha-0.7 donor arm against the stronger `support` control:
+post-20 `-0.0198 dB`, 4/8 positive pairs, post-100 `-0.0411 dB`, and `+1.8%` total-100 time. It
+passed recovery-loss, count, numerical, and timing limits but failed both post-20 quality gates.
+Keep `responsibility` opt-in as a mechanism control and do not tune this lineage on the four
+fixtures. Alpha 1 was effectively tied at post-20 and is evidence only for a separate
+duplication-invariance question.
+
+The benchmark enforces one CPU thread and PyTorch deterministic algorithms; a second source-frozen
+replay matched every non-timing aggregate exactly. `config.json` hashes every input image and all
+relevant source files, including the otherwise-untracked benchmark module.
+
+FIT-019 is the benchmark-only opacity-gauge audit for the normalized renderer. It replaces even
+canonical rows by exact co-located half-opacity copies, compares raw-row and aggregate-first
+responsibility allocation, then maps every selected group action back to the same canonical N=32
+checkpoint for an equal eight-row moment-preserving increment. Recovery at 20 and 100 steps uses
+independent fresh Adam restarts; it is a mechanism guard, not production optimizer-state evidence.
+
+```bash
+LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 PYTHONPATH=src:. \
+  python -m benchmarks.gauge_equivalence_audit \
+    --outdir results/fit019_opacity_gauge_guard_v2_fresh
+```
+
+The audit-corrected v2 run confirms commutation: equivalent renders differ by at most `8.345e-7`,
+both-alpha quotient top-8 actions match 16/16 checkpoints, and raw alpha-1 physical-group
+multisets change on both seeds for all 8 target families. The recovery-utility guard fails.
+Quotient alpha 1 versus raw gauge-row alpha 1 is `+0.2111 dB` at post-20 but only 5/8 target-family
+wins and `-0.6007 dB` at post-100; it is also `-0.0665 dB` versus canonical support at post-20.
+Keep grouping benchmark-only. Primary and replay contain verified 24-file source snapshots and
+match exactly on every non-timing row/aggregate field. Timing varies from `+1.38%` to `-1.26%`
+overhead and is not a speedup claim.
+
+FIT-020 is the benchmark-only ranked deduplication perturb--recover assay. It freezes six
+procedural families x six variants, train/within-assay held-out procedural-variant splits (not
+confirmation or natural-image evidence), three repeated seeds, four
+equal-N birth paths C5--C8, dense 200-step recovery curves, target-grouped ridge CV, one response-
+bend feature, and prediction/selection killing gates. It identifies the whole ranked ticket-
+replacement path, not pure distinct-site coverage.
+
+```bash
+LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 PYTHONPATH=src:. \
+  python -m benchmarks.perturb_recover_spectroscopy \
+    --outdir results/fit020_response_spectroscopy_v1_fresh \
+    --size 48 --seeds 0 1 2 --start-count 32 --add-count 8 \
+    --pre-iters 40 --recovery-iters 200 --device cpu --render-chunk 512
+```
+
+The completed primary contains 432 trajectories and 108 seed-averaged pairs. Integrity and signal
+pass (`SD(y)=3.2529 dB`; 35/36 held-out cells have `|y| >= 0.10 dB`), but the response claim fails:
+response/early RMSE is `2.9641/2.9616 dB`, sign accuracy is the same `69.44%`, response improves
+only 2/6 families, bias is `-1.0455 dB`, and the bend changes no held-out action. Response regret
+is `1.1116 dB` versus `0.7669 dB` for observed step 10. The decision is **stop**; do not retune the
+bend, horizons, model, or exposed targets.
+
+Primary trajectory computation finished before an output-only paired-CSV header bug surfaced.
+Finalization used its immutable rows and frozen source snapshot, proved the aggregate unchanged,
+and repaired the writer to use the union schema. The post-fix replay is measurement-equivalent,
+not literally untouched source: every compared non-timing measurement field (excluding source
+provenance), paired row, normalized aggregate, manifest, and decision matches exactly; only the
+writer and its regression test differ in source.
+See `docs/research/2026-07-15-perturb-recover-spectroscopy.md` for the full audit. C6's descriptive
+late gain is family-sensitive and not a promoted allocator. Fixed N and missing stream bytes also
+preclude compression or expressiveness claims; dense CPU instrumentation is not a speed result.
+
+COMP-006 is the benchmark-only marginal cold-stream RD audit. It starts every branch from one
+persisted/cold-decoded N=64 SSPL1 parent, compares 16 standard births with 16 same-candidate
+birth-for-death replacements and an exhaustive 875-mix precision envelope, and selects by
+cold-decoded MSE under integer complete-stream caps. Every candidate includes headers, ranges,
+framing, all attribute streams, and zlib/Morton context; its byte delta is not an incremental patch
+or additive row price.
+
+```bash
+PYTHONPATH=src:. python -m benchmarks.marginal_cold_stream_rd run \
+  --outdir results/comp006_marginal_rd_dev_v1_2026-07-15 \
+  --split development --shard-index 0 --num-shards 3
+# Run shard-index 1 and 2, then seal all three.
+PYTHONPATH=src:. python -m benchmarks.marginal_cold_stream_rd finalize-run \
+  --outdir results/comp006_marginal_rd_dev_v1_2026-07-15 \
+  --split development --num-shards 3
+PYTHONPATH=src:. python -m benchmarks.marginal_cold_stream_rd analyze \
+  --outdir results/comp006_marginal_rd_dev_v1_2026-07-15 --split development
+PYTHONPATH=src:. python -m benchmarks.marginal_cold_stream_rd verify-replay \
+  --primary results/comp006_marginal_rd_dev_v1_2026-07-15 \
+  --replay results/comp006_marginal_rd_dev_v1_replay_2026-07-15
+```
+
+The primary and replay each contain 36 cells and 33,840 validated streams and match exactly on all
+scientific fields. At recovery step 20 and the frozen +16-byte cap, birth lost `-1.0714 dB` mean
+PSNR to the strongest control, with family-bootstrap 95% interval `[-1.2873, -0.8417] dB` and
+0/6 positive family means. The decision is **stop**; confirmation was not run. Exact and nominal-
+raw-bit oracles agreed on only 14/36 rows, so exact-rate selection remains useful infrastructure,
+but action class agreed in 34/36 and birth won only 5/36. See
+`docs/research/2026-07-15-marginal-cold-stream-rd.md`; no production code or default changes.
+
+BENCH-009 is the completed residual tangent-space auction. Stage 0's deterministic float64 CPU
+identifiability control passed, then the frozen Stage-1 development and recovery workload produced
+`4,608` immediate cells, `816` trajectories, and `2,448` logical recovery checkpoints with exact
+bindings and joins.
+
+```bash
+PYTHONPATH=src:. python -m benchmarks.residual_tangent_auction \
+  --outdir results/bench009_tangent_auction_stage0
+```
+
+The final decision is negative/unavailable. Global causal calibration is `0.268549 < 0.8`; every
+causal action-by-horizon stratum fails; and the independently truncated base/joint spaces produce
+negative “incremental” projector energies. Affine and carrier both lose immediately and at step 20
+against their stronger matched control. Carrier's later positive mean is descriptive and does not
+survive the frozen two-radius/all-horizon gate. No expressiveness, optimizer, performance,
+compression, or production claim is authorized. See
+`docs/research/2026-07-16-bench009-results-audit.md`.
+
+BENCH-011 v1 is an audited invalid run: it seeded each randomized base factorization from a
+diagnostic-unit hash rather than BENCH-009's exact cross-fit unit hash. Corrected v2 binds all 24
+exact BENCH-009 IDs and base ranks, passes algebra and bit-exact replay checks for all `96` rows,
+and fails every frozen calibration stratum. Affine/carrier Spearman correlations are `0.400/0.385`
+at radius `0.25` and negative at `0.75`; all `48` radius-`0.75` native rows lose. Close the
+current-identity local-linear formulation without retuning or disjoint-data expenditure.
+
+```bash
+PYTHONPATH=src:. python -m benchmarks.nested_residual_extension_diagnostic controls
+PYTHONPATH=src:. python -m benchmarks.nested_residual_extension_diagnostic run \
+  --runner-dir results/bench009_tangent_auction_stage1_runner_v3 \
+  --science-dir results/bench009_tangent_auction_stage1_science_v3 \
+  --outdir results/bench011_nested_extension_diag_v1 \
+  --num-shards 1 --shard-index 0
+```
+
+For parallel reproduction, write disjoint shard directories and merge them with the module's
+`merge` subcommand. V2's canonical merge returns expected exit code `2` (`diagnostic_fail`). Do not
+change the frozen identities, rank threshold, damping, radii, eligibility floor, or gates.
+
+BENCH-012 is the closed spatial-connectivity policy-value preflight. Its pure NumPy topology core
+freezes 24 rectilinear binary targets, dual 4/8 digital topology, and a target-independent anchored
+connectivity partition distance. The core/focused suite passes `17/17` tests. The first
+source-bound action cell nevertheless retained only 2 of the required 4 untruncated equal-work
+COMP-006 candidates, so the runner failed before rendering a replacement, selecting an action, or
+running recovery.
+
+```bash
+PYTHONPATH=src:. python -m benchmarks.topology_policy_value controls
+PYTHONPATH=src:. python -m benchmarks.topology_policy_value run \
+  --outdir results/bench012_topology_policy_preflight_v1 --max-cells 1
+```
+
+The second command is expected to fail closed with the recorded 2/4 feasibility error. Do not
+relax the support/work filter or retune the exposed targets/action scale. The artifact is an
+availability result only; it says nothing about topology, quality, convergence, compression, or
+expressiveness. See `docs/research/2026-07-16-bench012-preflight.md`.
+
+COMP-007 is the completed gauge-free covariance codec assay. It exhausts 84 covariance-bit
+allocations, two predictors, three covariance charts, and zlib/zstd complete-stream coders on 24
+frozen even-Kodak fields. Protocol-v3 v4 passes the full source/data/byte/re-encode audit and
+independently replays all 12,096 decoded renders. The `log_spd` chart nevertheless fails seven of
+eight gates: median whole-container change is `-0.4053%` with zlib and `+0.3426%` with zstd,
+versus the required `+1%`, with only `5/12` and `7/12` image wins. Confirmation remains sealed.
+
+```bash
+sha256sum results/comp007_gauge_free_covariance_dev_v4/{config.json,fields.jsonl,\
+candidates.jsonl,artifact_audit.json,analysis.json,executed_sources_v3.tar}
+jq '{audit_passed:.checks.artifact_audit_passed,status:.analysis.status,\
+decision:.analysis.decision,confirmation:.analysis.confirmation_authorized}' \
+  results/comp007_gauge_free_covariance_dev_v4/analysis.json
+```
+
+The expected decision is `kill` with `artifact_audit_passed=true`. V2 and v3 are immutable
+pre-scoring unavailable artifacts, and v4 is immutable: do not rerun analysis into its canonical
+directory after the status-bearing task file changes. Do not repair earlier bundles in place,
+retune the chart, or open the odd Kodak IDs. See
+`docs/research/2026-07-16-comp007-gauge-free-covariance.md`.
+
+BENCH-013 through BENCH-015 are the closed first-order-reproduction lineage. BENCH-013's
+per-pixel local-linear compositor proved affine reproduction but failed because compact irregular
+support produced signed leverage and ringing. BENCH-014's explicit affine carrier fixed that
+quality problem and added two operator columns, but its six transmitted scalars plus residual-color
+entropy failed every complete-byte gate and its convergence guard. BENCH-015 removed all added
+state by deriving a robust global plane from the ordinary decoded colors:
+
+```text
+beta = robust_fit(X_mu, c)
+r    = c - X_mu beta
+y    = X beta + W r
+```
+
+The canonical BENCH-015 artifact is
+`results/bench015_decoder_synchronized_lift_stage0_v1_2026-07-16`. It passed all `27` replay
+checks and is a valid scientific kill. Static same-stream MSE ratios are `0.670143`, `0.109768`,
+and `0.558233` on the three smooth families, with equal DSL78/NW78 complete bytes. The registered
+no-harm, convergence, and cold-decode gates fail: continuous-crease target-range excursion reaches
+`0.029832`, smooth median final-loss ratio is `1.058438` with worst `1.400686`, and cold
+decode+derive+render is `1.624762x`. Prepared rendering itself is `1.009728x` and passes.
+
+```bash
+taskset -c 14 env OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=src:. \
+  python -u benchmarks/decoder_synchronized_lift_assay.py \
+    results/bench015_decoder_synchronized_lift_stage0_v1_2026-07-16 --root . --replay
+```
+
+Do not retune this exposed robust/global confidence mechanism or run its conditional local
+successor: that branch required convergence and cost to pass. See
+`docs/research/2026-07-16-decoder-synchronized-affine-lift.md` for the exact hashes and claim
+boundary.
+
+`exact_backward_profile.py` owns PORT-004's source-bound untiled exact-normalized CUDA backward
+profiles. It records CUDA-event medians for forward, renderer backward, complete loss backward,
+Adam update, and a representative micro-fit step over a frozen resolution/count/overlap grid.
+Support visits and source atomic callsites are proxies, never measured speedups.
+
+The historical actionability artifact and exact executed-source snapshot are preserved at
+`results/bench010_exact_backward_profile/` (snapshot-manifest SHA-256
+`4b6cf8805132fbb4e1110c046cf6e785dca1b59240b7731807ae0a2244d92884`). The live module now owns
+the follow-on block-reduction comparison; do not rerun it into the historical directory.
+
+On the RTX 3050 representative `256x256`, `N=2048`, overlap-16 cell, exact backward measured
+`1.120256 ms` versus `3.377120 ms` for the representative device-side step (`33.1719%`), passing
+the frozen `>25%` actionability gate. All eight untiled/tiled parity cells passed, while tiled full
+steps were `1.084x--1.752x` the untiled time. Nsight Compute counters were permission-blocked. This
+authorizes only an opt-in block-reduction implementation experiment; no speedup, end-to-end fit,
+quality, convergence, cross-GPU, or compression claim is made.
+
+The follow-on experiment keeps `cuda` unchanged and compares it with the internal experimental
+`cuda_block_reduce` selector, which reduces each Gaussian's 8/9 gradient components within its
+own block and performs one direct write per component:
+
+```bash
+LD_PRELOAD=/lib/x86_64-linux-gnu/libstdc++.so.6 PYTHONPATH=src:. \
+  python -m benchmarks.exact_backward_profile \
+    --outdir results/bench010_exact_backward_block_reduce_rerun
+```
+
+The primary representative cell measured `-57.478%` exact-backward and `-25.288%` device-step
+time with zero allocator-memory regression and full parity. Do **not** promote the literal primary
+artifact pass: PORT-004's governing gate also requires direction retention over the entire frozen
+grid, which the executable predicate omitted. Four `N=512` exact-backward ratios were
+`1.0290/1.0100/0.9938/1.0231`, and one full-step ratio was `1.0052`. An identical independent run
+repeated the large representative reductions but also failed the unchanged repeat-stability limit
+(`5.1154%` candidate-backward CV versus `5%`). The source-bound audit and all eight ratios are in
+`results/bench010_exact_backward_block_reduce/audit.md`. Keep this path benchmark-only; it is not
+exposed in the fit CLI or broad ablation choices, and no default, end-to-end, universal-speed,
+quality, convergence, compression, expressiveness, or cross-GPU claim is authorized.
+
 FIT-009's difficult-four slice did not promote `residual_tensor x moment_preserving`; keep it as a
 searchable combination. Stretch controls also include `optimizer=adan` and the `aa` stage from
 `--aa-dilations`. CORE-006 affine colors are exposed as `--color-basis-modes affine`; keep
@@ -249,9 +500,10 @@ comparison, not a native-codec byte match.
 
 Do not use this lane for a compression or SOTA decision. At the four prepared resolutions its
 172,032-byte analytical payload is 71.68–81.15 bpp; completed SSPL1 rows are about 22 bpp, versus
-17.99 bpp average for the lossless target PNGs. BENCH-007 owns the replacement experiment:
-self-contained SSPL1 targets at 0.25/0.5/1/2/4 bpp, held-out images, equal codec search, direct
-structure controls, and BD-rate over measured overlap.
+17.99 bpp average for the lossless target PNGs. BENCH-007 owns the replacement protocol:
+self-contained SSPL1 targets at 0.25/0.5/1/2/4 bpp, equal codec search, direct structure controls,
+and BD-rate over measured overlap. Its completed Stage-1 outcome used development images, failed
+the frozen gate, and therefore prohibited the planned held-out Stage 2.
 
 ```
 LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 \

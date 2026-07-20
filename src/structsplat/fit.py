@@ -1005,6 +1005,86 @@ def _support_residual_scores(field: GaussianField, residual: torch.Tensor,
     return score / (weight + 1e-8)
 
 
+@torch.no_grad()
+def _responsibility_error_density_scores(
+    field: GaussianField,
+    target: torch.Tensor,
+    render_img: torch.Tensor,
+    cfg: FitConfig,
+    support_fade_alpha: float | None = None,
+) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
+    """Score normalized-renderer owners by responsibility-weighted squared error density.
+
+    This intentionally mirrors the reference renderer's clipped support rectangles, Gaussian
+    tail fade, opacity, AA/filter covariance, and denominator epsilon. The first pass forms the
+    global per-pixel denominator; the second scatters normalized ownership mass and error back to
+    Gaussian rows. Keeping the two passes explicit avoids treating raw support overlap as
+    ownership when several Gaussians cover the same pixel.
+    """
+    if cfg.renderer not in _NORMALIZED_COLOR_SOLVE_RENDERERS:
+        raise ValueError(
+            "responsibility error density requires normalized renderer semantics, "
+            f"got renderer={cfg.renderer!r}"
+        )
+    if target.shape != render_img.shape or target.ndim != 3 or target.shape[-1] != 3:
+        raise ValueError(
+            "target and render_img must have matching HxWx3 shapes, "
+            f"got {tuple(target.shape)} and {tuple(render_img.shape)}"
+        )
+
+    H, W = target.shape[:2]
+    dev, dt = field.means.device, field.means.dtype
+    means = field.means.detach()
+    conics = field.conics(cfg.aa_dilation).detach()
+    radii = field.radii(cfg.sigma_cutoff, cfg.aa_dilation)
+    opacities = field.opacity_values()
+    if opacities is not None:
+        opacities = opacities.detach().to(device=dev, dtype=dt)
+    x0, y0, Tx, n = _tile_bounds(means, radii, H, W)
+    budget = _element_budget(cfg.render_chunk)
+
+    denominator = torch.zeros(H * W, device=dev, dtype=dt)
+    for s, e in _flat_tile_slices(n, budget):
+        gid, px, py = _tile_coords(x0, y0, Tx, n, s, e, dev)
+        dx = px.to(dt) - means[gid, 0]
+        dy = py.to(dt) - means[gid, 1]
+        a, b, c = conics[gid, 0], conics[gid, 1], conics[gid, 2]
+        q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
+        weight = _support_weight(
+            q, cfg.sigma_cutoff, cfg.support_fade, support_fade_alpha
+        )
+        if opacities is not None:
+            weight = weight * opacities[gid]
+        denominator.index_add_(0, py * W + px, weight)
+
+    pixel_error = (render_img.detach() - target.detach()).square().mean(dim=2).reshape(-1)
+    pixel_error = pixel_error.to(device=dev, dtype=dt)
+    error = torch.zeros(field.n, device=dev, dtype=dt)
+    mass = torch.zeros(field.n, device=dev, dtype=dt)
+    for s, e in _flat_tile_slices(n, budget):
+        gid, px, py = _tile_coords(x0, y0, Tx, n, s, e, dev)
+        dx = px.to(dt) - means[gid, 0]
+        dy = py.to(dt) - means[gid, 1]
+        a, b, c = conics[gid, 0], conics[gid, 1], conics[gid, 2]
+        q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
+        weight = _support_weight(
+            q, cfg.sigma_cutoff, cfg.support_fade, support_fade_alpha
+        )
+        if opacities is not None:
+            weight = weight * opacities[gid]
+        flat = py * W + px
+        responsibility = weight / (denominator[flat] + _EPS)
+        mass.index_add_(0, gid, responsibility)
+        error.index_add_(0, gid, responsibility * pixel_error[flat])
+
+    score = error / mass.clamp_min(_EPS).pow(float(cfg.responsibility_mass_alpha))
+    return score, {
+        "mass": mass,
+        "error": error,
+        "denominator": denominator.view(H, W),
+    }
+
+
 def _luma(img: torch.Tensor) -> torch.Tensor:
     return 0.2126 * img[..., 0] + 0.7152 * img[..., 1] + 0.0722 * img[..., 2]
 
@@ -1685,29 +1765,36 @@ def _relocate_from_residual(field: GaussianField, target: torch.Tensor,
 
 
 @torch.no_grad()
-def _split_from_residual(field: GaussianField, target: torch.Tensor, render_img: torch.Tensor,
-                         cfg: FitConfig,
-                         support_fade_alpha: float | None = None
-                         ) -> tuple[GaussianField, int]:
+def _split_from_residual_with_stats(
+    field: GaussianField,
+    target: torch.Tensor,
+    render_img: torch.Tensor,
+    cfg: FitConfig,
+    support_fade_alpha: float | None = None,
+    *,
+    collect_stats: bool = True,
+) -> tuple[GaussianField, int, dict[str, float | bool]]:
     if cfg.split_count <= 0:
-        return field, 0
+        return field, 0, {}
     if cfg.max_gaussians is not None and field.n >= cfg.max_gaussians:
-        return field, 0
+        return field, 0, {}
     if cfg.refine_site == "none":
-        return field, 0
+        return field, 0, {}
     if cfg.refine_primitive == "sampled_add":
         if cfg.refine_site not in ("residual", "residual_tensor"):
             raise ValueError(
                 "refine_primitive='sampled_add' requires refine_site residual or "
                 f"residual_tensor, got {cfg.refine_site!r}")
-        return _add_from_residual(
+        grown, added = _add_from_residual(
             field,
             target,
             render_img,
             cfg,
             tensor_aligned=cfg.refine_site == "residual_tensor",
         )
+        return grown, added, {}
 
+    score_start = time.perf_counter()
     H, W = target.shape[:2]
     residual = (render_img - target).abs().mean(dim=2)
     x = torch.clamp(torch.round(field.means[:, 0]).long(), 0, W - 1)
@@ -1716,23 +1803,70 @@ def _split_from_residual(field: GaussianField, target: torch.Tensor, render_img:
         scores = _support_residual_scores(
             field, residual, cfg, support_fade_alpha=support_fade_alpha
         )
+        components = None
+    elif cfg.refine_site == "responsibility":
+        scores, components = _responsibility_error_density_scores(
+            field, target, render_img, cfg, support_fade_alpha=support_fade_alpha
+        )
     elif cfg.refine_site == "residual_tensor":
         smoothed = F.avg_pool2d(residual[None, None], 3, stride=1, padding=1)[0, 0]
         scores = (0.7 * residual + 0.3 * smoothed)[y, x]
+        components = None
     elif cfg.refine_site == "residual":
         scores = residual[y, x]
+        components = None
     else:
         raise ValueError(
-            "refine_site must be residual, residual_tensor, or support in _split_from_residual, "
+            "refine_site must be residual, residual_tensor, support, or responsibility in "
+            "_split_from_residual, "
             f"got {cfg.refine_site!r}")
+    site_score_seconds = time.perf_counter() - score_start
     room = field.n if cfg.max_gaussians is None else max(0, cfg.max_gaussians - field.n)
     k = min(cfg.split_count, _detail_count(field), room)
     if k <= 0:
-        return field, 0
+        return field, 0, {}
 
+    scores_finite = (
+        bool(torch.isfinite(scores).all().detach().cpu()) if collect_stats else False
+    )
     scores = _mask_background_scores(scores, field)
     idx = torch.topk(scores, k=k).indices
-    return _duplicate_primitive_indices(field, idx, target, render_img, cfg, H, W)
+    grown, added = _duplicate_primitive_indices(field, idx, target, render_img, cfg, H, W)
+    if not collect_stats:
+        return grown, added, {}
+    stats: dict[str, float | bool] = {
+        "site_score_mean": float(scores[idx].mean().detach().cpu()),
+        "site_score_max": float(scores[idx].max().detach().cpu()),
+        "site_scores_finite": scores_finite,
+        "site_score_seconds": float(site_score_seconds),
+    }
+    if components is not None:
+        selected_mass = components["mass"][idx]
+        selected_error = components["error"][idx]
+        stats.update({
+            "responsibility_mass_alpha": float(cfg.responsibility_mass_alpha),
+            "responsibility_mass_mean": float(selected_mass.mean().detach().cpu()),
+            "responsibility_mass_min": float(selected_mass.min().detach().cpu()),
+            "responsibility_mass_max": float(selected_mass.max().detach().cpu()),
+            "responsibility_error_mean": float(selected_error.mean().detach().cpu()),
+        })
+    return grown, added, stats
+
+
+@torch.no_grad()
+def _split_from_residual(field: GaussianField, target: torch.Tensor, render_img: torch.Tensor,
+                         cfg: FitConfig,
+                         support_fade_alpha: float | None = None
+                         ) -> tuple[GaussianField, int]:
+    grown, added, _ = _split_from_residual_with_stats(
+        field,
+        target,
+        render_img,
+        cfg,
+        support_fade_alpha=support_fade_alpha,
+        collect_stats=False,
+    )
+    return grown, added
 
 
 @torch.no_grad()
@@ -2286,6 +2420,22 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                     new_parent_idx_parts.append(
                         _take_new_parent_idx(field, added, state_seed_base_n, target.device)
                     )
+            elif cfg.refine_site == "responsibility":
+                field, added, responsibility_stats = _split_from_residual_with_stats(
+                    field, target, img, cfg, support_fade_alpha=fade_alpha
+                )
+                if added > 0:
+                    new_parent_idx_parts.append(
+                        _take_new_parent_idx(field, added, state_seed_base_n, target.device)
+                    )
+                split_event = {
+                    "iter": it,
+                    "mode": mode_label,
+                    "refine_site": cfg.refine_site,
+                    "refine_primitive": cfg.refine_primitive,
+                    "added": added,
+                    **responsibility_stats,
+                }
             elif cfg.refine_site == "ranked":
                 field, added, ranked_stats = _ranked_wave_from_residual(
                     field, target, img, cfg, support_fade_alpha=fade_alpha
@@ -2338,8 +2488,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             else:
                 raise ValueError(
                     f"unknown refine_site {cfg.refine_site!r}; expected one of "
-                    "none, residual, residual_tensor, support, ranked, absgrad, "
-                    "or freq_violation")
+                    "none, residual, residual_tensor, support, responsibility, ranked, "
+                    "absgrad, or freq_violation")
             if verbose and added > 0:
                 print(f"  split +{added} -> {field.n} gaussians")
             if added > 0:

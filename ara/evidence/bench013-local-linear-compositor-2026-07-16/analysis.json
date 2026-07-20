@@ -1,0 +1,80 @@
+{
+  "artifact_audit_passed": true,
+  "binding_sha256": "2ff71a04472d061532f2b18dbf8619bf92cbc523aff9b50c96a3a6240be74adf",
+  "claim_boundary": {
+    "compression": false,
+    "convergence": false,
+    "expressiveness": false,
+    "method_novelty": false,
+    "performance": false,
+    "quality": false
+  },
+  "clarified_task_sha256": "b40b9075262c8c2dc07212490a1178b0168b6da9e433cb4ca23a10957bb1d0ad",
+  "classification": "stage0_kill",
+  "complete": true,
+  "controls_valid": true,
+  "decision": "kill",
+  "effective_weights": {
+    "failure_fields": 49,
+    "pass": false
+  },
+  "forward": {
+    "failure_cells": 82,
+    "pass": false
+  },
+  "gradient": {
+    "binding_sha256": "2ff71a04472d061532f2b18dbf8619bf92cbc523aff9b50c96a3a6240be74adf",
+    "cell_id": "target_conditioned__affine_xy__n0056__s0",
+    "field_id": "target_conditioned__affine_xy__n0056__s0",
+    "gradient_pass": false,
+    "schema": "bench013-stage0-gradient-v2",
+    "status": "not_reached_preregistered_base_forward_failure"
+  },
+  "outcome_ledgers_interpreted": true,
+  "parent_binding_sha256": "394323650251ba129eab8b5e03ac2139ab2e348e1571fc4863646b3c777c13ab",
+  "parent_task_sha256": "cc5506f1536771d77a8ade9e8c076520d772d984287124db70d0c5c3ae8aeb11",
+  "permutation": {
+    "failure_rows": 27,
+    "pass": false
+  },
+  "recovery_equivalence": {
+    "equivalence_pass": true,
+    "file_sha256": "025ee96169aad12eadab4334b5be37a2718378318038e828d1ded3cbe317cbb1",
+    "path": "recovery_equivalence.json"
+  },
+  "schema": "bench013-stage0-full-analysis-v3",
+  "source_archive": {
+    "members": {
+      "benchmarks/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "benchmarks/local_linear_reproducing_assay.py": "5d85346120e7e2efae0ecec05ccebd823884825c8282d4a99f9aaaee0fb20cb1",
+      "benchmarks/local_linear_reproducing_core.py": "f12b554502c85e3e6c08099f1d9eea623c765b16aba287b7733e2e55c11da706",
+      "benchmarks/local_linear_reproducing_downstream_core.py": "759f18ca7a37deb1f6ad7323145838c302bc4930fce5361856e6da1c2f1eaef2",
+      "benchmarks/local_linear_reproducing_full_assay.py": "1a707d8347e9a1e8eb2261e93d01724ae13277d0a7f9b3e69430c644f39af542",
+      "pyproject.toml": "17bd0084dcb3e918227529835b50d5a7c3ad2c9f9afdf87f1eb2a4bb48d46610",
+      "src/structsplat/__init__.py": "813c146144dfe15a802bf7483e72c0935b80ab7377a0203ca4f04b15d37c09bf",
+      "src/structsplat/config.py": "4e5e1752e8ae4d64201bd9246855abad58ab438547d6ad7ccf528d169bbd3bef",
+      "src/structsplat/density.py": "045cc5b69167755c5746c3bdff353e03634542150712da5c32a469ed47a90873",
+      "src/structsplat/gaussians.py": "26d8ddf03740c8ed44ae9c97d2bb75438dd5a992327fe70cbd3c91f2e5e6fefe",
+      "src/structsplat/init.py": "9e5861f0e3666483d4308a952403460cb8c30c66c9b709da2682f92232221133",
+      "src/structsplat/render.py": "af26dd0f3d1eb6389c50e4baca8fa6e2ddf754c248c856f87e9c0d49863063f9",
+      "src/structsplat/sampling.py": "5f34e455a2a30bb5eceb8fc13e13fc667ba2160b199c3d1bef821d6963881240",
+      "src/structsplat/structural_controls.py": "03894a4050c845ef3f8175892f3a636d08ad64bee6908b08bbff4b0144c20269",
+      "src/structsplat/structure_tensor.py": "05a6b1a77290c5cf70209b11b1c0c95e7e8bee7f0c92142124354c06556ba405",
+      "tasks/BENCH-013-local-linear-reproducing-compositor.md": "b40b9075262c8c2dc07212490a1178b0168b6da9e433cb4ca23a10957bb1d0ad",
+      "tests/test_local_linear_reproducing_assay.py": "9c183bad37de31cf6ec005f041413afac260ed905daf880ddee859ed3c67531d",
+      "tests/test_local_linear_reproducing_core.py": "ebf7a99f777ea3065dd2e276c20e223adc6c14e3caffd447e7011bf2ca9d0c2d",
+      "tests/test_local_linear_reproducing_downstream_core.py": "9edd085e21a6fb7c50cc358fab26c4cf9c7312994485dcf93a759be02b0a9dd9",
+      "tests/test_local_linear_reproducing_full_assay.py": "cc1834f8936efc2bf0c506f0c20decb89ce52ef6a0f8360fbef8a539884a911d"
+    },
+    "path": "executed_sources.tar",
+    "sha256": "38569701e8a1eca60be1e47cad9a90e54e4e756765f5843953d18b5f7f1f21f3"
+  },
+  "stage1_authorized": false,
+  "timing": {
+    "diagnostic_only": true,
+    "forward_seconds": 15.857270437991247,
+    "gradient_jsonl_rows": 1,
+    "gradient_seconds": 0.0,
+    "permutation_seconds": 34.94073416800529
+  }
+}

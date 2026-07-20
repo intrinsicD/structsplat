@@ -56,7 +56,7 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
 tensor color space, density mode, sampling mode, orientation mode, init strategy, color mode,
 scale mode, opacity, renderer, loss, optimizer, LR schedule, factored refinement
 (`refine_site`, `refine_primitive`, `refine_nms`, sampled-add score, plus
-color/prune/relocate flags), pyramid — in
+the opt-in normalized-responsibility mass exponent and color/prune/relocate flags), pyramid — in
 two modes:
 **factorial** (full product, ranked, for the best complete config) and **influence**
 (one-factor-at-a-time paired deltas vs the baseline = first value of each axis; emits
@@ -81,8 +81,11 @@ init-strategy × budget sweep.
 - `render`/`conics` take an optional EWA-style `aa_dilation` (Sigma + d·I) low-pass for sub-pixel
   Gaussians — off by default; exact under RS since it only shifts the per-axis variances.
 - `renderer=cuda` and `renderer=cuda_additive` call StructSplat's owned exact CUDA extension for
-  the same clipped-support equations. `renderer=gsplat` is kept as a separate alpha/sum comparator
-  because it is not numerically equivalent to the normalized reference.
+  the same clipped-support equations. The internal `cuda_block_reduce` selector preserves the
+  exact forward equation and replaces only the untiled backward reduction; PORT-004 keeps it
+  benchmark-only after the frozen all-grid/stability gate failed. `renderer=gsplat` is kept as a
+  separate alpha/sum comparator because it is not numerically equivalent to the normalized
+  reference.
 - `scale_cap_mode=feature` gives each Gaussian a local support ceiling from the structure tensor's
   feature run length. `scale_cap_mode=feature_rel` instead derives the cap from local density
   radius / quadtree leaf side with separate along/across multipliers. The fitter clamps optimized

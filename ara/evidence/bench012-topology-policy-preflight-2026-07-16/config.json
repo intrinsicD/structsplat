@@ -1,0 +1,287 @@
+{
+  "binding_sha256": "c68c5c624d052eaa7cc989ed03dac618fb5adbfe2e3270b54f6efef5c82063d8",
+  "created_at_unix": 1784157728.9854066,
+  "environment": {
+    "device": "cpu",
+    "git": {
+      "branch": "main",
+      "commit": "5dc649397c40e69cf3e96bd27df2c5e2812d003d",
+      "dirty": true,
+      "status_sha256": "edc08e3240273d56707c2426b3ed7da06d4070a84248f94788f30f218b3c7319",
+      "tracked_diff_sha256": "0c0717cf4bcad9b3083f1dc349efaf0338f159e285f719c220d86b8fa4f922e7"
+    },
+    "numpy": "2.1.3",
+    "platform": "Linux-6.14.0-37-generic-x86_64-with-glibc2.39",
+    "python": "3.12.9",
+    "torch": "2.9.0+cu128",
+    "torch_num_threads": 1
+  },
+  "schema": "bench012-config-v1",
+  "science": {
+    "action_count": 16,
+    "count": 64,
+    "final_step": 100,
+    "gate": {
+      "changed_families_min": 4,
+      "changed_targets_min": 12,
+      "disagreement_win_fraction_min": 0.8,
+      "disagreement_wins_min": 10,
+      "family_floor_db": -0.1,
+      "mean_psnr_gain_min_db": 0.15,
+      "rollout20_floor_db": -0.05
+    },
+    "log_every": 5,
+    "objective": "0.7*rgb_l1 + 0.3*(1-builtin_ssim)",
+    "parent_steps": 600,
+    "protocol": "bench012-spatial-connectivity-policy-value-v1",
+    "renderer": "normalized_cpu_reference",
+    "rollout_step": 20,
+    "seeds": [
+      0,
+      1
+    ],
+    "size": 64,
+    "source_manifest": {
+      "benchmarks/marginal_cold_stream_rd.py": "7a7c10882e672cbd10a5febf1c993c98d99624430d1c276d6a5b982a780a15b3",
+      "benchmarks/topology_policy_value.py": "da92b44103e181f7b4ff8114d7be8b85cfb3a72a16a4f1d04af850d93c3de853",
+      "benchmarks/topology_policy_value_core.py": "676c83e410b9fa4678cb5a48bc929bc88e360b7e2dbd325d440b29e06ce42bc9",
+      "src/structsplat/config.py": "4e5e1752e8ae4d64201bd9246855abad58ab438547d6ad7ccf528d169bbd3bef",
+      "src/structsplat/fit.py": "96ae1ae8991b7b9690a0fc76a82416eae61a84732f076a88607639ac089d0424",
+      "src/structsplat/gaussians.py": "26d8ddf03740c8ed44ae9c97d2bb75438dd5a992327fe70cbd3c91f2e5e6fefe",
+      "src/structsplat/metrics.py": "8d9963efa6d3e7b687e349398079ff058326653eeaac47fdf5d1b4778ce8a8b7",
+      "src/structsplat/render.py": "af26dd0f3d1eb6389c50e4baca8fa6e2ddf754c248c856f87e9c0d49863063f9"
+    },
+    "target_manifest": {
+      "closed_frame_v0": {
+        "expected_betti": [
+          1,
+          1
+        ],
+        "family": "closed_frame",
+        "image_sha256": "207cb716066b31b39f898f97ea0fe9884473a59b3efc1f999fb18bdcb08ae3e2",
+        "variant": 0
+      },
+      "closed_frame_v1": {
+        "expected_betti": [
+          1,
+          1
+        ],
+        "family": "closed_frame",
+        "image_sha256": "04bddfc6bac9ac142b318748b223299d0169e5e0c368c31d2c8389b3d07a4217",
+        "variant": 1
+      },
+      "closed_frame_v2": {
+        "expected_betti": [
+          1,
+          1
+        ],
+        "family": "closed_frame",
+        "image_sha256": "c2fbbbc205b109719b2c00e550828e7e47f4a5e8febd4a7d68facd8ebc118153",
+        "variant": 2
+      },
+      "closed_frame_v3": {
+        "expected_betti": [
+          1,
+          1
+        ],
+        "family": "closed_frame",
+        "image_sha256": "28d27364f926b8b624cd4896fd5cde64912e5e30ebfad93a0a4e3ecbbd614f46",
+        "variant": 3
+      },
+      "connected_double_frame_v0": {
+        "expected_betti": [
+          1,
+          2
+        ],
+        "family": "connected_double_frame",
+        "image_sha256": "52321e1bd5119b8ceafd128276be21b8805cde6440570710696f67e31c6a7354",
+        "variant": 0
+      },
+      "connected_double_frame_v1": {
+        "expected_betti": [
+          1,
+          2
+        ],
+        "family": "connected_double_frame",
+        "image_sha256": "e585465c2df9a91a0507b9d9a70a59caacafa0cb8e81a7fe9b9601eca1c5a27e",
+        "variant": 1
+      },
+      "connected_double_frame_v2": {
+        "expected_betti": [
+          1,
+          2
+        ],
+        "family": "connected_double_frame",
+        "image_sha256": "1eb9efafe6a74e11a211d3d2e9b92a11ba7d308fdeb6dd6c97f6f786686b4466",
+        "variant": 2
+      },
+      "connected_double_frame_v3": {
+        "expected_betti": [
+          1,
+          2
+        ],
+        "family": "connected_double_frame",
+        "image_sha256": "e580f017f82a7d6df26949876aeae315a2a5688586f8f4fceebda4482c4dd771",
+        "variant": 3
+      },
+      "connected_dumbbell_v0": {
+        "expected_betti": [
+          1,
+          0
+        ],
+        "family": "connected_dumbbell",
+        "image_sha256": "928a4a9cda34fee7e133c3fec4a2f6722ad77083a56cf72cf0ec479bcdab2e09",
+        "variant": 0
+      },
+      "connected_dumbbell_v1": {
+        "expected_betti": [
+          1,
+          0
+        ],
+        "family": "connected_dumbbell",
+        "image_sha256": "4d893874acc3d631603b03c1290d8fdea1cd0d92d54b44a3ea76f1dc127eb10a",
+        "variant": 1
+      },
+      "connected_dumbbell_v2": {
+        "expected_betti": [
+          1,
+          0
+        ],
+        "family": "connected_dumbbell",
+        "image_sha256": "15783ee2ba51fb1de0969c1fe4d211b868c8ef215e629ccea4a8322ba072d5ea",
+        "variant": 2
+      },
+      "connected_dumbbell_v3": {
+        "expected_betti": [
+          1,
+          0
+        ],
+        "family": "connected_dumbbell",
+        "image_sha256": "e78a414ccfe005e20de06e93fdf6c549732d9394f3e148eba0e3d8dee742c744",
+        "variant": 3
+      },
+      "open_frame_v0": {
+        "expected_betti": [
+          1,
+          0
+        ],
+        "family": "open_frame",
+        "image_sha256": "ddc20caa6fbe4bc48256447099cff63858cc3f37be050997e6141e3b17613811",
+        "variant": 0
+      },
+      "open_frame_v1": {
+        "expected_betti": [
+          1,
+          0
+        ],
+        "family": "open_frame",
+        "image_sha256": "02888f1e3ce45e495ab61f56feafe3cf64fd70dcc73564a6c90ca9072c1507d9",
+        "variant": 1
+      },
+      "open_frame_v2": {
+        "expected_betti": [
+          1,
+          0
+        ],
+        "family": "open_frame",
+        "image_sha256": "eb6c43b017d4c76260fbbd16769d83b021948e34e9eefb7aeabd23b0ff425509",
+        "variant": 2
+      },
+      "open_frame_v3": {
+        "expected_betti": [
+          1,
+          0
+        ],
+        "family": "open_frame",
+        "image_sha256": "2584c1102a69b0126f7175605c2988308eeda5f9d8b9966e719093a5e0244866",
+        "variant": 3
+      },
+      "separated_pair_v0": {
+        "expected_betti": [
+          2,
+          0
+        ],
+        "family": "separated_pair",
+        "image_sha256": "bc2408e9f334035cde23face2725f038f53c3c05830b980e8c77f6c9357fed5e",
+        "variant": 0
+      },
+      "separated_pair_v1": {
+        "expected_betti": [
+          2,
+          0
+        ],
+        "family": "separated_pair",
+        "image_sha256": "426de056c9af227387294fd2ca22dc181e7a3c8a33423832d2356f3658dd6636",
+        "variant": 1
+      },
+      "separated_pair_v2": {
+        "expected_betti": [
+          2,
+          0
+        ],
+        "family": "separated_pair",
+        "image_sha256": "f14300d0b7cfc025e99496e3733f70baec72e37d284428bc8bee59dd5e7d6ef5",
+        "variant": 2
+      },
+      "separated_pair_v3": {
+        "expected_betti": [
+          2,
+          0
+        ],
+        "family": "separated_pair",
+        "image_sha256": "1c880c2516d68a1c6e02208139614281b870c35fa4a5858ad7c0acd8b99aa0bd",
+        "variant": 3
+      },
+      "theta_frame_v0": {
+        "expected_betti": [
+          1,
+          2
+        ],
+        "family": "theta_frame",
+        "image_sha256": "21cb37f98cd120836edd736c52a7d3b991e28e9f991af1fac07bc3458a5ce717",
+        "variant": 0
+      },
+      "theta_frame_v1": {
+        "expected_betti": [
+          1,
+          2
+        ],
+        "family": "theta_frame",
+        "image_sha256": "1204d947739a69172bb134b57abee5e7999ac2e2f9a163fe4d9c7fd75a6f726d",
+        "variant": 1
+      },
+      "theta_frame_v2": {
+        "expected_betti": [
+          1,
+          2
+        ],
+        "family": "theta_frame",
+        "image_sha256": "9e57ebbc824856fb488694b0bfae595c500bac9b9a2072df4e84dc7e12efbebc",
+        "variant": 2
+      },
+      "theta_frame_v3": {
+        "expected_betti": [
+          1,
+          2
+        ],
+        "family": "theta_frame",
+        "image_sha256": "57ef8dec3fb650b2c817115d8e60a495010fc51978ad549231bc6e7901ec1f91",
+        "variant": 3
+      }
+    },
+    "topology": {
+      "anchors": "{1,5,...,61}^2",
+      "dual_conventions": [
+        "foreground8_background4",
+        "foreground4_background8"
+      ],
+      "fallback": "immediate_aligned_objective",
+      "foreground_rule": "mean(rgb) >= threshold",
+      "thresholds": [
+        0.4,
+        0.5,
+        0.6
+      ]
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "analysis_sha256": "ec4aacf2a7c56e76c9e3f0e1ca97e49a43edeeba04e179fe5b61e852ee2e331c",
+  "artifact_manifest_sha256": "639578bef4e2a5aa94d83a59461ecd4aa0fa3ec435f26af596ab3541175ed38e",
+  "decision": "abandon SAD reuse",
+  "development_screen_pass": false,
+  "protocol": "bench016-native-sad-frontier-v6",
+  "replay_audit_passed": true,
+  "replay_sha256": "06231b926b495be57138094aa99e76381c43425e0efc27734c8d3f6ba4765211"
+}

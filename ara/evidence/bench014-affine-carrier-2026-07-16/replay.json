@@ -1,0 +1,27 @@
+{
+  "aggregate_sha256": "fdd95a602cafc7c2c2b7d646b192ebafdd3ed125d23dfb458803ba2e18919e24",
+  "binding_sha256": "0a4febdbd9570bcb216a8f6ec1f3461af3577553401415900be4583e5f34825c",
+  "checks": {
+    "artifact_manifest": true,
+    "beta_search_rebuild": true,
+    "binding": true,
+    "controls": true,
+    "convergence": true,
+    "decoder_call_graph": true,
+    "field_to_nw_stream_link": true,
+    "fields": true,
+    "gradient": true,
+    "ledger_contracts": true,
+    "metadata_mapping": true,
+    "permutations": true,
+    "source_archive": true,
+    "source_manifest": true,
+    "static_and_streams": true,
+    "targets": true,
+    "task_hash": true,
+    "timing": true
+  },
+  "outcome_ledgers_interpreted": true,
+  "replay_pass": true,
+  "schema": "bench014-replay-v1"
+}

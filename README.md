@@ -16,10 +16,12 @@ normalized weighted-sum rasterizer. The repository's tested structural-prior can
   embedded-codec/LOD claim.
 
 The broad ingredients and several close combinations now exist in prior work, including
-structure-guided allocation/orientation/precision and progressive Gaussian coding. The unresolved
-claim is narrower: whether tensor-metric WSE adds held-out actual-rate value beyond direct
-SLIC/Sobel, gradient, uniform, and native controls. `structsplat` is a **placeholder name** —
-rename freely (see the `docs-sync` skill).
+structure-guided allocation/orientation/precision and progressive Gaussian coding. The completed
+actual-rate development gate found that tensor-metric WSE did not add enough value beyond the
+strong gradient control; that compression claim is closed. Current research therefore treats the
+repository as an interpretable causal substrate for new representation, ownership, renderer, and
+codec hypotheses rather than as an established SOTA codec. `structsplat` is a **placeholder name**
+— rename freely (see the `docs-sync` skill).
 
 > This is a PyTorch **research reference** with an opt-in exact CUDA extension for the same
 > normalized/additive equations. The remaining production port is a tiled CUDA/Vulkan/RHI path
@@ -93,18 +95,23 @@ completed negative BENCH-007 Stage-1 F5--F9 bundle status.
 This repo is built to be implemented *with* Claude Code, mirroring the IntrinsicEngine setup.
 
 - **`CLAUDE.md`** — project guide + a skill-aware routing table.
-- **`.claude/skills/`** — seven canonical project skills: `core`, `task-workflow`, `review`,
-  `method`, `benchmark`, `docs-sync`, `structsplat-research-ideation`. They're auto-discovered
+- **`.claude/skills/`** — eight canonical project skills: `core`, `task-workflow`, `review`,
+  `method`, `benchmark`, `docs-sync`, `structsplat-research-ideation`,
+  `structsplat-results-audit`. They're auto-discovered
   inside this repo; run `scripts/install_skills.sh` to symlink them into `~/.claude/skills` for
-  global use. `.agents/skills/structsplat-research-ideation` is a relative discovery symlink to
-  the same research-ideation tree for Codex/Agent Skills, not a duplicate. The skill is a
-  first-party, MIT-licensed adaptation by Alexander Dieckmann of
-  `transformational-research-skill-kit` v1.0.0.
+  global use. The two repo-prefixed entries under `.agents/skills/` are relative discovery
+  symlinks to these same skill trees for Codex/Agent Skills, not duplicates. The ideation skill is
+  a first-party, MIT-licensed adaptation by Alexander Dieckmann of
+  `transformational-research-skill-kit` v1.0.0; the results-audit skill is its referee-side
+  companion for evidence that already exists.
 - **`tasks/`** — work items (`AREA-NNN-slug.md`) tracked in `tasks/INDEX.md`. Say *"work on
   INIT-003"* and the `task-workflow` skill drives the lifecycle.
 - **`docs/adr/`** — architecture decisions the code references by number.
+- **`docs/prompts/real-research.md`** — reusable evidence-first prompt for prior-art audit,
+  preregistration, execution, negative-result handling, and per-axis conclusions.
 
-Typical loop: `core` → `task-workflow` → `method` (if adding a component) → `review` → `docs-sync`.
+Typical loop: `core` → `task-workflow` → `method` (if adding a component) → `review` →
+`docs-sync`; results-bearing work inserts `benchmark` → `structsplat-results-audit` before review.
 Research discovery starts with `core` → `structsplat-research-ideation`; selected candidates then
 enter the normal task/method/benchmark loop.
 
@@ -166,6 +173,42 @@ support a compression-SOTA claim. Further method work needs a materially new que
 development screen; untouched DIV2K validation must not be consumed as a rescue set. The older
 `storage_budget_168k_external_present` lane remains only a high-rate optimizer/policy diagnostic.
 
+**Responsibility-transfer verdict (2026-07-15).** FIT-018 transplanted SAD's known
+responsibility error-density split score into the normalized Gaussian renderer. Its frozen COCO4 x
+two-seed shared-start guard rejected the donor `alpha=0.7`: `-0.0198 dB` versus support after 20
+recovery steps, only 4/8 positive pairs, and `-0.0411 dB` after 100. Counts, finite values, the
+post-100 floor, and the `+1.8%` timing overhead passed, but both post-20 quality gates failed. Keep
+the implementation as an opt-in causal control; do not tune this exact lineage on the fixtures.
+
+FIT-019 then tested the distinct opacity-gauge question on eight disjoint procedural families.
+Exact half-opacity refinements preserve rendering but changed raw alpha-1 physical-group selection
+on both seeds for all 8/8 families; aggregate-first group scoring restored both-alpha top-8 actions
+in 16/16 checkpoints. That correctness result did not become a better allocator: quotient alpha 1
+won only 5/8 families at post-20, was `-0.6007 dB` versus raw gauge-row alpha 1 at post-100, and
+missed the post-20 support floor. Keep exact groups as a benchmark oracle; ADR-0014 rules out
+production lineage/quotient state from this evidence. That result motivated a quality/convergence
+question about why fresh-optimizer recovery reverses across horizons.
+
+FIT-020 resolved that response question with 432 trajectories over six new procedural families.
+The signal was ample (`SD(y)=3.2529 dB`; 35/36 held-out cells exceeded `0.10 dB`), but the frozen
+response bend was slightly worse than the early baseline (`2.9641` versus `2.9616 dB` RMSE), kept
+`-1.0455 dB` bias, improved only 2/6 families, and changed none of the 12 held-out actions. Its
+selector regret was `1.1116 dB`, worse than the observed-step-10 comparator's `0.7669 dB`.
+ADR-0015 closes this bend/predictor lineage without tuning. Concentrated C5/C6 arms show a large but
+family-sensitive descriptive quality signal, not a promoted policy. No production code changed;
+all arms have N=40 and no encoded stream, so there is no speed, compression, or expressiveness
+claim.
+
+COMP-006 then completed the exact marginal cold-stream test on 18 disjoint procedural development
+targets x two seeds. At `matched no-edit + 16 bytes`, the best of 16 standard births lost
+`-1.0714 dB` mean paired PSNR to the strongest precision/no-edit plus count-neutral replacement
+envelope; the 95% family-bootstrap interval was `[-1.2873, -0.8417] dB`, all 6/6 family means were
+negative, and an exact same-source replay matched. The confirmation split remains sealed. Actual
+bytes still changed the exact selected row in 22/36 cells relative to nominal raw bits, but broad
+action class changed in only 2/36 and birth won only 5/36. ADR-0016 keeps the operational-RD oracle
+as benchmark infrastructure and closes this standard-birth formulation. Performance profiling and
+a real equal-byte richer-atom codec remain independent next lanes.
+
 FIT-015 adds opt-in `checkpoint_policy=best_psnr_final_count`. It selects only post-transition
 states with the terminal Gaussian count and writes a same-trajectory audit. On COCO4 x seeds 0/1,
 640 Gaussians, and 5k steps, 7/8 runs selected an earlier full-count state and improved their own
@@ -199,8 +242,9 @@ bound that variation. See the `benchmark` skill for the full experimental-validi
 ## Selected references
 GaussianImage (ECCV 2024) · Image-GS (SIGGRAPH 2025) · GaussianImage++ (AAAI 2026) ·
 Structure-Guided Allocation (2025) · SAD, SGI, AIR, CGVQ (2026) · P-GSVC · Contour-Aware 2DGS ·
-WIPES (ICCV 2025) · Instant-GI · Li & Wei, *Anisotropic Blue Noise Sampling* (SIGGRAPH Asia
-2010) · Yuksel, *Sample Elimination* (EGSR 2015).
+WIPES (ICCV 2025) · Instant-GI · SteepGS (CVPR 2025) · *Revising Densification in Gaussian
+Splatting* (ECCV 2024) · Li & Wei, *Anisotropic Blue Noise Sampling* (SIGGRAPH Asia 2010) ·
+Yuksel, *Sample Elimination* (EGSR 2015).
 
 ## License
 MIT.

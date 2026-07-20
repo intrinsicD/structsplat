@@ -1,0 +1,26 @@
+{
+  "checks": {
+    "explicit_nested_projector_agreement": true,
+    "inside_base_delta_zero": true,
+    "inside_base_rank_zero": true,
+    "joint_trust_scale": true,
+    "physical_solve_finite": true,
+    "sign_permutation_invariance": true,
+    "threshold_below_rejected_above_retained": true
+  },
+  "details": {
+    "explicit_increment": 1.7089934083855232,
+    "inside_base_delta": 0.0,
+    "inside_base_rank": 0,
+    "invariance_abs_error": 1.3322676295501878e-15,
+    "physical_rank": 10,
+    "reference_delta": 1.7089934083855236,
+    "scaled_linf": 0.17490801367197858,
+    "threshold_cutoff": 1e-05,
+    "threshold_rank": 2,
+    "transformed_delta": 1.7089934083855223,
+    "trust_factor": 1.0
+  },
+  "protocol": "BENCH-011 nested residual-extension spent-data diagnostic v2",
+  "status": "pass"
+}

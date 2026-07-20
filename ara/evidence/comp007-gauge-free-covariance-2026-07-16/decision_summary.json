@@ -1,0 +1,740 @@
+{
+  "schema": "structsplat.comp007.portable-decision-summary.v1",
+  "source_analysis_sha256": "115c2e272a406b1d85313496a94c76e6a4f47c59e41b79e13f951f0ff464ea27",
+  "source_schema": "comp007-analysis-v2",
+  "binding_sha256": "d0091a1a5be164b7dbe80fdbbd97c839e3e1c7bc23c74340bbe1f34d80fc3454",
+  "config_sha256": "fbf1846492a930faf556c3ce9b8c98927c32bb1a20055ac91cc30ed9f52113f9",
+  "artifact_audit_sha256": "ad1ec6c889e818e4b1af4cc63a4f99959453534951f480554471bf14fc621aa5",
+  "executed_source_archive_sha256": "cb6d0d8eb77b6b98328dd66290d8a514a746e00de07c10a2d23cc62959eb9753",
+  "checks": {
+    "artifact_audit_passed": true
+  },
+  "artifact_audit": {
+    "binding_sha256": "d0091a1a5be164b7dbe80fdbbd97c839e3e1c7bc23c74340bbe1f34d80fc3454",
+    "candidate_count": 12096,
+    "candidates_sha256": "c16be1e17b6a67a87077c3bb2169c4dd730eb593b192a8844ada628c85e83164",
+    "config_sha256": "fbf1846492a930faf556c3ce9b8c98927c32bb1a20055ac91cc30ed9f52113f9",
+    "decision_ready": true,
+    "environment_signature": {
+      "cublas_workspace_config": ":4096:8",
+      "cuda": {
+        "compute_capability": [
+          8,
+          6
+        ],
+        "cuda_runtime": "12.8",
+        "driver": "590.48.01",
+        "name": "NVIDIA GeForce RTX 3050",
+        "renderer_extension": {
+          "filename": "structsplat_render_ext.so",
+          "sha256": "8ad8a640ad9af29fce5c2d4841fc85495ebe6fd1f5c22ae13950fd454b6c6075",
+          "size_bytes": 397376
+        },
+        "total_memory": 8199143424
+      },
+      "device": "cuda",
+      "ld_preload": "/usr/lib/x86_64-linux-gnu/libstdc++.so.6",
+      "numpy": "2.1.3",
+      "pillow": "12.0.0",
+      "platform": "Linux-6.14.0-37-generic-x86_64-with-glibc2.39",
+      "python": "3.12.9",
+      "torch": "2.9.0+cu128",
+      "torch_num_threads": 1,
+      "zlib_compile": "1.2.13",
+      "zlib_runtime": "1.2.13",
+      "zstandard": "0.23.0"
+    },
+    "errors": [],
+    "executed_source_archive": {
+      "member_count": 34,
+      "members_match": true,
+      "path": "executed_sources_v3.tar",
+      "sha256": "cb6d0d8eb77b6b98328dd66290d8a514a746e00de07c10a2d23cc62959eb9753"
+    },
+    "field_count": 24,
+    "fields_sha256": "a8d0c60a5cb5dd8b5bb1027f284386bb6261bb1f722460638d8f88a694f7f40a",
+    "passes": true,
+    "quality_replay_tolerances": {
+      "ms_ssim": 0.000001,
+      "mse": 1E-8,
+      "psnr": 0.00001,
+      "ssim": 0.000001
+    },
+    "render_hash_differences_diagnostic_only": 0,
+    "render_hash_matches": 12096,
+    "rerendered": true,
+    "schema": "comp007-audit-v2",
+    "split": "development"
+  },
+  "split": "development",
+  "analysis": {
+    "protocol": {
+      "bootstrap_replicates": 20000,
+      "bootstrap_seed": 20260716,
+      "charts": [
+        "current_rs",
+        "canonical_rs",
+        "log_spd"
+      ],
+      "coders": [
+        "zlib",
+        "zstd"
+      ],
+      "counts": [
+        640,
+        2560
+      ],
+      "independent_unit": "image",
+      "minimum_overlap_db": 0.1,
+      "psnr_grid_points": 25
+    },
+    "status": "available",
+    "decision": "kill",
+    "confirmation_authorized": false,
+    "errors": [],
+    "gates": {
+      "gate_1_median_whole_container_reduction": {
+        "passes": false,
+        "per_coder": {
+          "zlib": {
+            "comparator": ">=",
+            "passes": false,
+            "threshold": 0.01,
+            "value": -0.004052767956986392
+          },
+          "zstd": {
+            "comparator": ">=",
+            "passes": false,
+            "threshold": 0.01,
+            "value": 0.0034255044047758476
+          }
+        }
+      },
+      "gate_2_bootstrap_upper_rate_ratio": {
+        "passes": false,
+        "per_coder": {
+          "zlib": {
+            "comparator": "<",
+            "passes": false,
+            "threshold": 0.995,
+            "value": 1.0076149251538904
+          },
+          "zstd": {
+            "comparator": "<",
+            "passes": false,
+            "threshold": 0.995,
+            "value": 1.0019987673283357
+          }
+        }
+      },
+      "gate_3_image_wins": {
+        "passes": false,
+        "per_coder": {
+          "zlib": {
+            "comparator": ">=",
+            "passes": false,
+            "threshold": 9,
+            "value": 5
+          },
+          "zstd": {
+            "comparator": ">=",
+            "passes": false,
+            "threshold": 9,
+            "value": 7
+          }
+        }
+      },
+      "gate_4_median_covariance_stream_reduction": {
+        "passes": false,
+        "per_coder": {
+          "zlib": {
+            "comparator": ">=",
+            "passes": false,
+            "threshold": 0.03,
+            "value": -0.016076807520873815
+          },
+          "zstd": {
+            "comparator": ">=",
+            "passes": false,
+            "threshold": 0.03,
+            "value": 0.01814534148234176
+          }
+        }
+      },
+      "gate_5_worst_envelope_psnr_shortfall_db": {
+        "passes": false,
+        "per_coder": {
+          "zlib": {
+            "comparator": "<=",
+            "passes": false,
+            "threshold": 0.05,
+            "value": 5.294537000723622
+          },
+          "zstd": {
+            "comparator": "<=",
+            "passes": false,
+            "threshold": 0.05,
+            "value": 4.607443744223595
+          }
+        }
+      },
+      "gate_6_timing_ratios": {
+        "passes": true,
+        "per_coder": {
+          "zlib": {
+            "comparator": "each <=",
+            "passes": true,
+            "threshold": {
+              "cold_decode": 1.25,
+              "encode": 1.25
+            },
+            "value": {
+              "cold_decode": 1.1028419169681958,
+              "encode": 1.0432074425383389
+            }
+          },
+          "zstd": {
+            "comparator": "each <=",
+            "passes": true,
+            "threshold": {
+              "cold_decode": 1.25,
+              "encode": 1.25
+            },
+            "value": {
+              "cold_decode": 1.103005590607478,
+              "encode": 1.0484703186503919
+            }
+          }
+        }
+      },
+      "gate_7_direction_stable_across_n": {
+        "passes": false,
+        "per_coder": {
+          "zlib": {
+            "comparator": "each <",
+            "passes": false,
+            "threshold": {
+              "2560": 1.0,
+              "640": 1.0
+            },
+            "value": {
+              "2560": 0.9941389218280415,
+              "640": 1.0137407079295433
+            }
+          },
+          "zstd": {
+            "comparator": "each <",
+            "passes": true,
+            "threshold": {
+              "2560": 1.0,
+              "640": 1.0
+            },
+            "value": {
+              "2560": 0.9934040495183563,
+              "640": 0.9961600368217709
+            }
+          }
+        }
+      },
+      "gate_8_canonical_mechanism_fraction": {
+        "passes": false,
+        "per_coder": {
+          "zlib": {
+            "comparator": "<",
+            "passes": false,
+            "threshold": 0.75,
+            "value": 1.7218062984842
+          },
+          "zstd": {
+            "comparator": "<",
+            "passes": true,
+            "threshold": 0.75,
+            "value": 0.7108231578078714
+          }
+        }
+      }
+    },
+    "per_image": [
+      {
+        "area_rate_ratio": 1.008471296825241,
+        "canonical_fraction_of_log_spd_gain": null,
+        "canonical_to_current_ratio": 0.9921589722043717,
+        "coder": "zlib",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 1.0354678683965035,
+        "image_id": "02",
+        "log_spd_to_current_ratio": 1.0005207686499535,
+        "median_cold_decode_time_ratio": 1.1368155339730077,
+        "median_encode_time_ratio": 0.7992590743295696,
+        "per_n_area_rate_ratio": {
+          "2560": 0.9914636679039507,
+          "640": 1.0257706756622247
+        },
+        "worst_envelope_psnr_shortfall_db": 2.524987052040423
+      },
+      {
+        "area_rate_ratio": 1.0031463687046618,
+        "canonical_fraction_of_log_spd_gain": null,
+        "canonical_to_current_ratio": 1.0022853893208443,
+        "coder": "zlib",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 1.0109995234363642,
+        "image_id": "04",
+        "log_spd_to_current_ratio": 1.0054716987479322,
+        "median_cold_decode_time_ratio": 1.0831964922212984,
+        "median_encode_time_ratio": 0.8728177684414808,
+        "per_n_area_rate_ratio": {
+          "2560": 0.9836814000963806,
+          "640": 1.022996507758256
+        },
+        "worst_envelope_psnr_shortfall_db": 2.7145525119536345
+      },
+      {
+        "area_rate_ratio": 1.004959167209311,
+        "canonical_fraction_of_log_spd_gain": 2.1968566149812765,
+        "canonical_to_current_ratio": 0.9907761793145465,
+        "coder": "zlib",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 1.0211540916053834,
+        "image_id": "06",
+        "log_spd_to_current_ratio": 0.9958013551623932,
+        "median_cold_decode_time_ratio": 1.1064115956724554,
+        "median_encode_time_ratio": 1.0402862740624141,
+        "per_n_area_rate_ratio": {
+          "2560": 0.9971404085907615,
+          "640": 1.0128392341308923
+        },
+        "worst_envelope_psnr_shortfall_db": 2.9898101470533085
+      },
+      {
+        "area_rate_ratio": 0.9920584982367364,
+        "canonical_fraction_of_log_spd_gain": 0.38226375617873454,
+        "canonical_to_current_ratio": 0.9949152603241648,
+        "coder": "zlib",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 0.9675212479760966,
+        "image_id": "08",
+        "log_spd_to_current_ratio": 0.9866983474272728,
+        "median_cold_decode_time_ratio": 1.0937589765207256,
+        "median_encode_time_ratio": 1.0461286110142636,
+        "per_n_area_rate_ratio": {
+          "2560": 0.985992977859939,
+          "640": 0.99816133179757
+        },
+        "worst_envelope_psnr_shortfall_db": 1.1336692945147462
+      },
+      {
+        "area_rate_ratio": 0.9967628288927154,
+        "canonical_fraction_of_log_spd_gain": 0.6366382836968687,
+        "canonical_to_current_ratio": 0.9944590874518869,
+        "coder": "zlib",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 0.9853953307867515,
+        "image_id": "10",
+        "log_spd_to_current_ratio": 0.9912966079954574,
+        "median_cold_decode_time_ratio": 1.102951802924049,
+        "median_encode_time_ratio": 1.0875316928949754,
+        "per_n_area_rate_ratio": {
+          "2560": 0.9976313349965512,
+          "640": 0.9958950788826649
+        },
+        "worst_envelope_psnr_shortfall_db": 1.2924159410198897
+      },
+      {
+        "area_rate_ratio": 1.0158536562952099,
+        "canonical_fraction_of_log_spd_gain": null,
+        "canonical_to_current_ratio": 0.9913098256892221,
+        "coder": "zlib",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 1.0706907567373964,
+        "image_id": "12",
+        "log_spd_to_current_ratio": 1.0070271222524718,
+        "median_cold_decode_time_ratio": 1.1032287347187855,
+        "median_encode_time_ratio": 0.9859437049082221,
+        "per_n_area_rate_ratio": {
+          "2560": 1.0006036095874635,
+          "640": 1.031336126634412
+        },
+        "worst_envelope_psnr_shortfall_db": 5.294537000723622
+      },
+      {
+        "area_rate_ratio": 1.006683787175544,
+        "canonical_fraction_of_log_spd_gain": null,
+        "canonical_to_current_ratio": 0.9934485997565593,
+        "coder": "zlib",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 1.024560187552871,
+        "image_id": "14",
+        "log_spd_to_current_ratio": 1.000133749261004,
+        "median_cold_decode_time_ratio": 1.1099737318470018,
+        "median_encode_time_ratio": 1.1066141843102768,
+        "per_n_area_rate_ratio": {
+          "2560": 0.9987878146717658,
+          "640": 1.0146421817281945
+        },
+        "worst_envelope_psnr_shortfall_db": 1.9640936684964352
+      },
+      {
+        "area_rate_ratio": 0.9979174471243729,
+        "canonical_fraction_of_log_spd_gain": 0.5881989872949309,
+        "canonical_to_current_ratio": 0.9970358464129061,
+        "coder": "zlib",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 0.9909756314395538,
+        "image_id": "16",
+        "log_spd_to_current_ratio": 0.9949606278638361,
+        "median_cold_decode_time_ratio": 1.1027320310123427,
+        "median_encode_time_ratio": 1.1112666318995625,
+        "per_n_area_rate_ratio": {
+          "2560": 0.9934943137479254,
+          "640": 1.002360272721093
+        },
+        "worst_envelope_psnr_shortfall_db": 1.8267757865449354
+      },
+      {
+        "area_rate_ratio": 1.0059012983871805,
+        "canonical_fraction_of_log_spd_gain": 2.350179393924244,
+        "canonical_to_current_ratio": 0.9897287996077037,
+        "coder": "zlib",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 1.021365913164381,
+        "image_id": "18",
+        "log_spd_to_current_ratio": 0.9956296100549389,
+        "median_cold_decode_time_ratio": 1.102331968822882,
+        "median_encode_time_ratio": 1.070412608812108,
+        "per_n_area_rate_ratio": {
+          "2560": 0.9947835299081577,
+          "640": 1.0171433198038897
+        },
+        "worst_envelope_psnr_shortfall_db": 2.2218963769848017
+      },
+      {
+        "area_rate_ratio": 0.9996496529679971,
+        "canonical_fraction_of_log_spd_gain": 0.970457562148564,
+        "canonical_to_current_ratio": 0.9822842561880527,
+        "coder": "zlib",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 0.9967942906535739,
+        "image_id": "20",
+        "log_spd_to_current_ratio": 0.9817449577365082,
+        "median_cold_decode_time_ratio": 1.092534725313054,
+        "median_encode_time_ratio": 1.0999329416638965,
+        "per_n_area_rate_ratio": {
+          "2560": 1.0001497634459684,
+          "640": 0.9991497925630642
+        },
+        "worst_envelope_psnr_shortfall_db": 1.6507210804844519
+      },
+      {
+        "area_rate_ratio": 0.9982277132378322,
+        "canonical_fraction_of_log_spd_gain": 0.8851379659201533,
+        "canonical_to_current_ratio": 0.9871539941407281,
+        "coder": "zlib",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 0.9907767768738054,
+        "image_id": "22",
+        "log_spd_to_current_ratio": 0.9854870016270089,
+        "median_cold_decode_time_ratio": 1.1125425998115412,
+        "median_encode_time_ratio": 0.8852157292727563,
+        "per_n_area_rate_ratio": {
+          "2560": 0.9896974362492239,
+          "640": 1.0068315133283878
+        },
+        "worst_envelope_psnr_shortfall_db": 1.8497536541639334
+      },
+      {
+        "area_rate_ratio": 1.0149473072423545,
+        "canonical_fraction_of_log_spd_gain": 3.8356932201472933,
+        "canonical_to_current_ratio": 0.9800159233997399,
+        "coder": "zlib",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 1.0606149033942347,
+        "image_id": "24",
+        "log_spd_to_current_ratio": 0.9947899700384556,
+        "median_cold_decode_time_ratio": 1.098366357753887,
+        "median_encode_time_ratio": 0.8700514680790794,
+        "per_n_area_rate_ratio": {
+          "2560": 0.9926471275334077,
+          "640": 1.0377484686206757
+        },
+        "worst_envelope_psnr_shortfall_db": 3.476701778370085
+      },
+      {
+        "area_rate_ratio": 1.0009662726373034,
+        "canonical_fraction_of_log_spd_gain": 1.128160774878352,
+        "canonical_to_current_ratio": 0.9916323977175956,
+        "coder": "zstd",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 1.0037844297773262,
+        "image_id": "02",
+        "log_spd_to_current_ratio": 0.9925829700263186,
+        "median_cold_decode_time_ratio": 1.0686302194874586,
+        "median_encode_time_ratio": 0.7864198096702537,
+        "per_n_area_rate_ratio": {
+          "2560": 0.9913343420923578,
+          "640": 1.0106917882444055
+        },
+        "worst_envelope_psnr_shortfall_db": 1.7264862060546875
+      },
+      {
+        "area_rate_ratio": 1.0123641774026613,
+        "canonical_fraction_of_log_spd_gain": null,
+        "canonical_to_current_ratio": 1.002028335085686,
+        "coder": "zstd",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 1.0500708053903858,
+        "image_id": "04",
+        "log_spd_to_current_ratio": 1.0144906554686772,
+        "median_cold_decode_time_ratio": 1.103362473995141,
+        "median_encode_time_ratio": 0.8561931258784883,
+        "per_n_area_rate_ratio": {
+          "2560": 0.9829090496196909,
+          "640": 1.0427019957591357
+        },
+        "worst_envelope_psnr_shortfall_db": 4.607443744223595
+      },
+      {
+        "area_rate_ratio": 0.993134633301874,
+        "canonical_fraction_of_log_spd_gain": 0.5863276465928561,
+        "canonical_to_current_ratio": 0.9906122426580739,
+        "coder": "zstd",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 0.9704657414359474,
+        "image_id": "06",
+        "log_spd_to_current_ratio": 0.9839888884713551,
+        "median_cold_decode_time_ratio": 1.1056653694920358,
+        "median_encode_time_ratio": 1.0354386339197474,
+        "per_n_area_rate_ratio": {
+          "2560": 0.9977062505137243,
+          "640": 0.9885839638228068
+        },
+        "worst_envelope_psnr_shortfall_db": 1.2869208913536738
+      },
+      {
+        "area_rate_ratio": 0.9872905871652522,
+        "canonical_fraction_of_log_spd_gain": 0.3072691810316004,
+        "canonical_to_current_ratio": 0.9942384572043381,
+        "coder": "zstd",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 0.9470677787090078,
+        "image_id": "08",
+        "log_spd_to_current_ratio": 0.9812492005338168,
+        "median_cold_decode_time_ratio": 1.096380441003938,
+        "median_encode_time_ratio": 1.0615020033810363,
+        "per_n_area_rate_ratio": {
+          "2560": 0.9857008456516596,
+          "640": 0.9888828926191023
+        },
+        "worst_envelope_psnr_shortfall_db": 0.39099416529718667
+      },
+      {
+        "area_rate_ratio": 1.0028410165844286,
+        "canonical_fraction_of_log_spd_gain": 2.8455331192432842,
+        "canonical_to_current_ratio": 0.9954009649328132,
+        "coder": "zstd",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 1.011687861852057,
+        "image_id": "10",
+        "log_spd_to_current_ratio": 0.9983837703254672,
+        "median_cold_decode_time_ratio": 1.1088662785667958,
+        "median_encode_time_ratio": 1.0931187364252954,
+        "per_n_area_rate_ratio": {
+          "2560": 1.0086167279860236,
+          "640": 0.9970983790366266
+        },
+        "worst_envelope_psnr_shortfall_db": 3.599038579856476
+      },
+      {
+        "area_rate_ratio": 1.0058735192362693,
+        "canonical_fraction_of_log_spd_gain": 5.224868029799656,
+        "canonical_to_current_ratio": 0.9927883482843266,
+        "coder": "zstd",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 1.0290355018386341,
+        "image_id": "12",
+        "log_spd_to_current_ratio": 0.9986197447142124,
+        "median_cold_decode_time_ratio": 1.1097398115435069,
+        "median_encode_time_ratio": 0.9730317361345455,
+        "per_n_area_rate_ratio": {
+          "2560": 1.0146999449607041,
+          "640": 0.9971238706827174
+        },
+        "worst_envelope_psnr_shortfall_db": 3.238079785676966
+      },
+      {
+        "area_rate_ratio": 1.0070220705578306,
+        "canonical_fraction_of_log_spd_gain": null,
+        "canonical_to_current_ratio": 0.9931701045897274,
+        "coder": "zstd",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 1.0256734335190103,
+        "image_id": "14",
+        "log_spd_to_current_ratio": 1.0002092858130154,
+        "median_cold_decode_time_ratio": 1.0996731462071045,
+        "median_encode_time_ratio": 1.1178245213772935,
+        "per_n_area_rate_ratio": {
+          "2560": 0.9987843348174475,
+          "640": 1.0153277491841428
+        },
+        "worst_envelope_psnr_shortfall_db": 1.9640936684964352
+      },
+      {
+        "area_rate_ratio": 0.9875972713933281,
+        "canonical_fraction_of_log_spd_gain": 0.1670878198786935,
+        "canonical_to_current_ratio": 0.9975204195311116,
+        "coder": "zstd",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 0.9488248679544099,
+        "image_id": "16",
+        "log_spd_to_current_ratio": 0.9851600166266542,
+        "median_cold_decode_time_ratio": 1.1032346950263592,
+        "median_encode_time_ratio": 1.1240656304467924,
+        "per_n_area_rate_ratio": {
+          "2560": 0.9924736225474182,
+          "640": 0.9827448793652418
+        },
+        "worst_envelope_psnr_shortfall_db": 0.3714211075912033
+      },
+      {
+        "area_rate_ratio": 0.9947779866370966,
+        "canonical_fraction_of_log_spd_gain": 0.663602563271172,
+        "canonical_to_current_ratio": 0.9899269908822408,
+        "coder": "zstd",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 0.9736623233149577,
+        "image_id": "18",
+        "log_spd_to_current_ratio": 0.9848207199982695,
+        "median_cold_decode_time_ratio": 1.0976327443695824,
+        "median_encode_time_ratio": 1.0682530079996844,
+        "per_n_area_rate_ratio": {
+          "2560": 0.9943344764892944,
+          "640": 0.9952216946069152
+        },
+        "worst_envelope_psnr_shortfall_db": 0.22497132663087172
+      },
+      {
+        "area_rate_ratio": 0.9864670717770037,
+        "canonical_fraction_of_log_spd_gain": -0.18453054813483316,
+        "canonical_to_current_ratio": 1.0021111918051386,
+        "coder": "zstd",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 0.944317808297106,
+        "image_id": "20",
+        "log_spd_to_current_ratio": 0.9885591202839975,
+        "median_cold_decode_time_ratio": 1.0982231699936342,
+        "median_encode_time_ratio": 1.112010254343934,
+        "per_n_area_rate_ratio": {
+          "2560": 0.9943498556963084,
+          "640": 0.9786467792252619
+        },
+        "worst_envelope_psnr_shortfall_db": 0.10412636923508956
+      },
+      {
+        "area_rate_ratio": 0.989380651915272,
+        "canonical_fraction_of_log_spd_gain": 0.5473084839496182,
+        "canonical_to_current_ratio": 0.9873822130659662,
+        "coder": "zstd",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 0.9540544035462536,
+        "image_id": "22",
+        "log_spd_to_current_ratio": 0.9769457494190875,
+        "median_cold_decode_time_ratio": 1.111991533728316,
+        "median_encode_time_ratio": 0.8702737300786363,
+        "per_n_area_rate_ratio": {
+          "2560": 0.9890808107581375,
+          "640": 0.9896805839696502
+        },
+        "worst_envelope_psnr_shortfall_db": 0.053700929005778164
+      },
+      {
+        "area_rate_ratio": 0.9983710045533517,
+        "canonical_fraction_of_log_spd_gain": 0.9279181736990685,
+        "canonical_to_current_ratio": 0.980339740632921,
+        "coder": "zstd",
+        "count_strata": [
+          640,
+          2560
+        ],
+        "geometry_area_rate_ratio": 0.9900469937203588,
+        "image_id": "24",
+        "log_spd_to_current_ratio": 0.9788125074771356,
+        "median_cold_decode_time_ratio": 1.102776486188597,
+        "median_encode_time_ratio": 0.8525566584321631,
+        "per_n_area_rate_ratio": {
+          "2560": 0.9921683644861579,
+          "640": 1.0046124210471887
+        },
+        "worst_envelope_psnr_shortfall_db": 0.2955702513314158
+      }
+    ]
+  }
+}
