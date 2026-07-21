@@ -46,6 +46,14 @@ CORE-001.
   `LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 PYTHONPATH=src:. pytest -q
   tests/test_render.py -k 'cuda_exact or cuda_tiled or cuda_empty or cuda_nonfinite'` passed
   14 CUDA renderer tests, and a tiny `FitConfig(renderer="cuda_tiled")` smoke completed on CUDA.
+- 2026-07-21: A pure-CUDA/Thrust port feasibility study
+  (`docs/research/2026-07-21-cuda-thrust-port-feasibility.md`) reviewed this task's remaining
+  milestones against the committed PORT-004/FIT-003/tiled evidence. Conclusion: keep the torch
+  harness for training and pursue PORT-002/003-style in-extension work (CUB binning, shared-memory
+  staging, tighter ellipse-tile bounds, shape-dispatched backward reductions, graph capture); the
+  torch-free "pure CUDA" architecture is right specifically for this task's forward-only
+  decode/RHI milestone, where the order-independent normalized sum needs no depth sort and a fixed
+  tile-list traversal gives deterministic accumulation cheaply. Analysis only — no status change.
 - 2026-07-05 fair-protocol benchmark: Ran
   `results/fair_density_control_cuda_tiled_difficult4/` on the same four fair-density finalist
   rows used for the support-fade slice, Kodak difficult-four, budgets {2000,5000,10000}, seed 0,
