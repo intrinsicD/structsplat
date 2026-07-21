@@ -25,6 +25,7 @@ import numpy as np
 from . import structure_tensor as st
 from . import density as de
 from . import sampling as sa
+from . import mask as _mask
 from .config import InitConfig, StructureTensorConfig
 from .gaussians import GaussianField
 
@@ -852,3 +853,54 @@ def build_field(img: np.ndarray, icfg: InitConfig,
             scale_max = np.asarray(scale_max)[progressive_perm]
     return GaussianField.from_numpy(pts, scales, angles[:n_out], colors, opacities,
                                     scale_max, device=device)
+
+
+def build_masked_field(img: np.ndarray, mask: np.ndarray, icfg: InitConfig,
+                       scfg: StructureTensorConfig | None = None,
+                       device: str = "cpu", *, sigma_cutoff: float = 3.0,
+                       mask_margin: float = 1.5, dilate_colors: bool = True,
+                       contain: bool = True) -> GaussianField:
+    """Initialize a mask-contained field for an alpha-masked image (CORE-010).
+
+    Any strategy works. Structure/orientation come from the (matted) image; seeds are restricted to
+    the eroded mask via a masked density; colors are sampled from a boundary-dilated copy so the
+    matte does not contaminate boundary colors (the matte *edge* is intentionally kept in the
+    structure tensor as a tangent-aligned boundary attractor). With ``contain=True`` (default) means
+    are then projected inside and effective scales capped from the signed distance, so the returned
+    field's sigma_cutoff support is already contained and ``scale_cap_mode`` must be ``none`` (mask
+    containment owns ``scale_max``; see :class:`fit._MaskConstraint`). With ``contain=False`` only
+    the masked density and dilated colors apply, leaving scales free — for the soft-penalty /
+    masked-loss-only arms.
+    """
+    if contain and icfg.scale_cap_mode != "none":
+        raise ValueError(
+            "build_masked_field(contain=True) manages scale_max; set "
+            "InitConfig.scale_cap_mode='none'")
+    inside = _mask.as_bool_mask(np.asarray(mask))
+    H, W = img.shape[:2]
+    if inside.shape != (H, W):
+        raise ValueError(f"mask shape {inside.shape} does not match image {(H, W)}")
+    scfg = scfg or StructureTensorConfig()
+    tensor = st.compute(img, scfg)
+    density = de.density_from_tensor_and_image(img, tensor, icfg, scfg)
+    erode_radius = float(mask_margin) + float(sigma_cutoff) * _mask.MIN_SCALE
+    eroded = _mask.erode(inside, erode_radius)
+    region = eroded if eroded.any() else inside  # mask thinner than the erosion radius
+    masked_density = density.astype(np.float64) * region
+    total = masked_density.sum()
+    if total > 0.0:
+        masked_density = masked_density / total
+    else:  # degenerate: place uniformly inside the raw mask
+        masked_density = region.astype(np.float64)
+        masked_density = masked_density / max(masked_density.sum(), 1.0)
+    color_img = _mask.color_dilate(img, inside) if dilate_colors else img
+    field = build_field(color_img, icfg, scfg, density=masked_density, tensor=tensor,
+                        device=device)
+    if contain:
+        from .fit import _MaskConstraint  # local import: init is torch-bridge, avoids load cycle
+
+        constraint = _MaskConstraint.from_mask(
+            inside, field.means.device, field.means.dtype, sigma_cutoff, mask_margin
+        )
+        constraint.apply(field, aa_dilation=0.0)
+    return field

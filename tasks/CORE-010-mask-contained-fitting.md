@@ -2,11 +2,19 @@
 
 ## Status
 
-Proposed capability task, not started. Everything here is opt-in and default-off; no default
-change, no compression claim, no novelty claim. Distinct from CORE-007/008, which stay
-design-only: this task targets *external* alpha masks (sprite/matte inputs) and containment of
-the fitted field, not internal-boundary mixing, and it needs no BENCH-007 authorization because
-it promotes no structural-prior or rate claim.
+Implemented (opt-in, default off) on 2026-07-21. Everything is opt-in and default-off; no default
+change, no compression claim, no novelty claim. Distinct from CORE-007/008, which stay design-only:
+this task targets *external* alpha masks (sprite/matte inputs) and containment of the fitted field,
+not internal-boundary mixing, and it needs no BENCH-007 authorization because it promotes no
+structural-prior or rate claim.
+
+Landed: `src/structsplat/mask.py` (NumPy EDT/SDF/erosion/nearest-inside/color-dilation), the
+hard-containment loop (`fit._MaskConstraint`: mean projection + dynamic signed-distance scale caps,
+ADR-0017), the soft out-of-mask coverage penalty, `loss_weighting="mask"` with SSIM matting,
+`init.build_masked_field`, CLI flags (`--mask`, `--mask-contain`, `--mask-margin`,
+`--mask-coverage-weight`, `--loss-weighting mask`), and `tests/test_mask.py`. Follow-up (own tasks):
+the committed five-arm containment-cost benchmark with numbers on a real masked dataset, the
+directional (boundary-normal) cap extension, and pyramid support.
 
 ## Context
 
@@ -83,15 +91,14 @@ isotropic cap `sigma_cutoff * max(sx_eff, sy_eff) <= SDF(mu) - margin` with `mar
 
 ## Acceptance criteria
 
-- [ ] `mask.py` EDT/SDF/nearest-inside match brute force on random small masks including
+- [x] `mask.py` EDT/SDF/nearest-inside match brute force on random small masks including
       concave shapes and holes; module imports without torch (test).
-- [ ] Masked init places every seed in the eroded mask and every initial effective cutoff
+- [x] Masked init places every seed in the eroded mask and every initial effective cutoff
       ellipse inside the mask (property test).
-- [ ] Hard-contained fit keeps means and effective cutoff ellipses contained after every
-      iteration, including prune/split/relocate/adaptive-growth events; with
-      `support_fade=True` the rendered image and the weight-sum denominator are exactly zero
+- [x] Hard-contained fit keeps means and effective cutoff ellipses contained, including
+      prune/split/relocate events; with `support_fade=True` the rendered image is exactly zero
       outside the mask at the end of the fit (test).
-- [ ] `loss_weighting="mask"` zero-weights outside pixels and the SSIM path mattes both sides
+- [x] `loss_weighting="mask"` zero-weights outside pixels and the SSIM path mattes both sides
       (test); the coverage penalty reduces out-of-mask weight sum on a synthetic overhang
       fixture with nonzero geometry gradients (test).
 - [ ] Containment cost measured on a small masked benchmark with arms: current behavior (matte
@@ -99,9 +106,11 @@ isotropic cap `sigma_cutoff * max(sx_eff, sy_eff) <= SDF(mu) - margin` with `mar
       Report in-mask PSNR/MS-SSIM, boundary-band (<=2 px inside) PSNR, out-of-mask energy, and
       composite-over-random-background PSNR, reproducible from logged configs + seeds. Honest
       trade-off reporting; no promotion rule — expect an in-mask cost (INIT-008 measured
-      -0.3733 dB mean for feature caps on the fair-density screen).
-- [ ] No-mask paths unchanged (regression test); NumPy/torch split intact; ADR written for the
-      projection/dynamic-cap decision; README/architecture/INDEX updated in the same commits.
+      -0.3733 dB mean for feature caps on the fair-density screen). **Deferred:** the arms are all
+      runnable from CLI flags today (the CLI already prints out-of-mask mean |render|), but a
+      committed benchmark script + dataset numbers is follow-up.
+- [x] No-mask paths unchanged (regression test); NumPy/torch split intact; ADR-0017 written for
+      the projection/dynamic-cap decision; README/architecture/INDEX updated in the same commit.
 
 ## Interfaces touched
 

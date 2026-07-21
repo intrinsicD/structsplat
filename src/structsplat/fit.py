@@ -26,6 +26,7 @@ from .render import (
     gaussian_activity,
     render_field,
 )
+from . import mask as _mask
 from . import metrics as M
 from . import structure_tensor as st
 
@@ -39,6 +40,113 @@ _NORMALIZED_COLOR_SOLVE_RENDERERS = (
 )
 # Shared lower bound on densified Gaussian scales (px); was duplicated as bare 0.35 literals.
 _MIN_DENSIFY_SCALE = 0.35
+
+
+class _MaskConstraint:
+    """Torch-side mask containment built from a NumPy :class:`mask.MaskGeometry` (CORE-010).
+
+    ``apply`` projects means into the eroded mask interior and overwrites ``field.scale_max`` with a
+    fresh per-row cap derived from the signed distance, so the sigma_cutoff support ellipse of the
+    *effective* covariance (base scales + filter variance + AA dilation) stays inside the mask. With
+    ``support_fade=True`` (fade_alpha=1) the renderer weight is exactly zero outside that ellipse, so
+    a contained field renders exactly zero outside the mask. ``coverage`` is a differentiable soft
+    penalty on the raw out-of-mask weight sum. Because ``apply`` overwrites ``scale_max`` each call,
+    ``mask_contain`` owns the cap and does not compose with ``scale_cap_mode``.
+    """
+
+    def __init__(self, geom: _mask.MaskGeometry, device, dtype,
+                 sigma_cutoff: float, margin: float, min_scale: float = _MIN_DENSIFY_SCALE):
+        H, W = geom.shape
+        self.H, self.W = int(H), int(W)
+        self.sigma_cutoff = float(sigma_cutoff)
+        self.margin = float(margin)
+        self.min_scale = float(min_scale)
+        self.inside = torch.as_tensor(geom.inside, device=device, dtype=torch.bool)
+        self.eroded_flat = torch.as_tensor(
+            geom.eroded.reshape(-1), device=device, dtype=torch.bool)
+        self.sdf_flat = torch.as_tensor(
+            geom.sdf.reshape(-1), device=device, dtype=dtype)
+        self.nearest_inside_flat = torch.as_tensor(
+            geom.nearest_inside_flat, device=device, dtype=torch.long)
+        self.outside_flat = torch.as_tensor(geom.outside_flat, device=device, dtype=torch.long)
+        # (H, W) 1.0 inside / 0.0 outside, for mask loss weighting and SSIM matting.
+        self.inside_weight = self.inside.to(dtype=dtype)
+
+    @classmethod
+    def from_mask(cls, mask_arr, device, dtype, sigma_cutoff: float, margin: float,
+                  aa_dilation: float = 0.0, min_scale: float = _MIN_DENSIFY_SCALE
+                  ) -> "_MaskConstraint":
+        # Reserve room for the min scale (and any global AA dilation) so a projected mean always
+        # admits a cap >= min_scale without violating containment.
+        erode_radius = float(margin) + float(sigma_cutoff) * math.sqrt(
+            float(min_scale) ** 2 + max(float(aa_dilation), 0.0)
+        )
+        geom = _mask.MaskGeometry.build(mask_arr, erode_radius)
+        return cls(geom, device, dtype, sigma_cutoff, margin, min_scale)
+
+    def _extra_variance(self, field: GaussianField, aa_dilation: float):
+        """Isotropic variance added to base scales at render time (AA dilation + filter)."""
+        extra = float(aa_dilation)
+        if field.filter_variance is not None:
+            fv = field.filter_variance.to(
+                device=field.means.device, dtype=field.means.dtype
+            ).reshape(-1)
+            return fv + extra
+        return extra
+
+    @torch.no_grad()
+    def apply(self, field: GaussianField, cfg: FitConfig | None = None,
+              aa_dilation: float | None = None) -> None:
+        if aa_dilation is None:
+            aa_dilation = 0.0 if cfg is None else float(cfg.aa_dilation)
+        H, W = self.H, self.W
+        dt = field.means.dtype
+        means = field.means
+        ix = torch.round(means[:, 0]).clamp_(0, W - 1).long()
+        iy = torch.round(means[:, 1]).clamp_(0, H - 1).long()
+        flat = iy * W + ix
+        inside_here = self.eroded_flat[flat]
+        tgt = self.nearest_inside_flat[flat].clamp_min(0)
+        tx = (tgt % W).to(dt)
+        ty = torch.div(tgt, W, rounding_mode="floor").to(dt)
+        newx = torch.where(inside_here, means[:, 0], tx).clamp_(0, W - 1)
+        newy = torch.where(inside_here, means[:, 1], ty).clamp_(0, H - 1)
+        field.means.copy_(torch.stack([newx, newy], dim=1))
+        ix2 = torch.round(field.means[:, 0]).clamp_(0, W - 1).long()
+        iy2 = torch.round(field.means[:, 1]).clamp_(0, H - 1).long()
+        d = (self.sdf_flat[iy2 * W + ix2] - self.margin).clamp_min(1e-3)
+        cap_sq = (d / self.sigma_cutoff) ** 2 - self._extra_variance(field, aa_dilation)
+        cap = torch.sqrt(cap_sq.clamp_min(self.min_scale ** 2))
+        scale_max = torch.stack([cap, cap], dim=1)
+        field.scale_max = scale_max
+        log_cap = torch.log(scale_max.clamp_min(1e-3))
+        field.log_scales.copy_(torch.minimum(field.log_scales, log_cap))
+
+    def coverage(self, field: GaussianField, cfg: FitConfig,
+                 support_fade_alpha: float | None = None) -> torch.Tensor:
+        """Differentiable mean out-of-mask unnormalized weight sum sum_i o_i G_i(p), p not in M."""
+        H, W = self.H, self.W
+        dev, dt = field.means.device, field.means.dtype
+        if self.outside_flat.numel() == 0:
+            return field.means.sum() * 0.0
+        means = field.means
+        conics = field.conics(cfg.aa_dilation)
+        radii = field.radii(cfg.sigma_cutoff, cfg.aa_dilation)
+        opacities = field.opacity_values()
+        den = torch.zeros(H * W, device=dev, dtype=dt)
+        x0, y0, Tx, n = _tile_bounds(means, radii, H, W)
+        budget = _element_budget(cfg.render_chunk)
+        for s, e in _flat_tile_slices(n, budget):
+            gid, px, py = _tile_coords(x0, y0, Tx, n, s, e, dev)
+            dx = px.to(dt) - means[gid, 0]
+            dy = py.to(dt) - means[gid, 1]
+            a, b, c = conics[gid, 0], conics[gid, 1], conics[gid, 2]
+            q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
+            w = _support_weight(q, cfg.sigma_cutoff, cfg.support_fade, support_fade_alpha)
+            if opacities is not None:
+                w = w * opacities[gid]
+            den = den.index_add(0, py * W + px, w)
+        return den[self.outside_flat].sum() / float(self.outside_flat.numel())
 
 
 def _generation_density_filter_variance(cfg: FitConfig, H: int, W: int,
@@ -458,13 +566,37 @@ def _geometry_consistent_loss(
     return discrepancy.sum(dim=2).mean()
 
 
+def _coerce_weight_map(weight, H: int, W: int, device, dtype) -> torch.Tensor:
+    """Coerce an (H,W)/(H,W,1) map to an (H,W) tensor at the target resolution."""
+    weight = torch.as_tensor(weight, device=device, dtype=dtype)
+    if weight.ndim == 3 and weight.shape[-1] == 1:
+        weight = weight[..., 0]
+    if weight.ndim != 2:
+        raise ValueError(f"loss_weight_map must have shape (H,W), got {tuple(weight.shape)}")
+    if tuple(weight.shape) != (H, W):
+        weight = F.interpolate(
+            weight[None, None], size=(H, W), mode="bilinear", align_corners=False
+        )[0, 0]
+    return weight
+
+
 def _prepare_loss_weight_map(target: torch.Tensor, cfg: FitConfig,
                              loss_weight_map=None) -> torch.Tensor | None:
     if cfg.loss_weighting == "none":
         return None
+    H, W = target.shape[:2]
+    if cfg.loss_weighting == "mask":
+        # Mask mode uses the raw indicator (zeros allowed) so out-of-mask pixels drop out of the
+        # pixel loss entirely, unlike the tensor mode's [1, 1+beta] emphasis map.
+        if loss_weight_map is None:
+            raise ValueError(
+                "loss_weighting='mask' requires a mask; pass mask= to fit()")
+        weight = _coerce_weight_map(loss_weight_map, H, W, target.device, target.dtype)
+        weight = torch.nan_to_num(weight.detach(), nan=0.0, posinf=1.0, neginf=0.0)
+        return weight.clamp(0.0, 1.0)
     if cfg.loss_weighting != "tensor":
         raise ValueError(
-            f"loss_weighting must be none or tensor, got {cfg.loss_weighting!r}")
+            f"loss_weighting must be none, tensor, or mask, got {cfg.loss_weighting!r}")
     if loss_weight_map is None:
         energy = st.compute(target.detach().cpu().numpy()).energy
         weight = torch.as_tensor(energy, device=target.device, dtype=target.dtype)
@@ -2085,7 +2217,8 @@ def _adaptive_growth_from_residual(field: GaussianField, target: torch.Tensor,
 
 
 def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: bool = True,
-        sched_offset: int = 0, sched_total: int | None = None, loss_weight_map=None) -> dict:
+        sched_offset: int = 0, sched_total: int | None = None, loss_weight_map=None,
+        mask=None) -> dict:
     checkpoint_enabled = cfg.checkpoint_policy == "best_psnr_final_count"
     if checkpoint_enabled and (
         sched_offset != 0 or (sched_total is not None and sched_total != cfg.iters)
@@ -2101,7 +2234,31 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
     )
     H, W = target.shape[0], target.shape[1]
     field = _ensure_generation_density_filter(field, cfg, H, W)
-    pixel_weight = _prepare_loss_weight_map(target, cfg, loss_weight_map)
+    # CORE-010 mask containment / coverage penalty / mask loss weighting. Built once; the EDT is
+    # the only meaningful cost and it is opt-in.
+    mask_constraint = None
+    if cfg.mask_contain or cfg.mask_coverage_weight > 0.0 or cfg.loss_weighting == "mask":
+        if mask is None:
+            raise ValueError(
+                "mask_contain, mask_coverage_weight>0, and loss_weighting='mask' require a mask; "
+                "pass mask= to fit()")
+        mask_constraint = _MaskConstraint.from_mask(
+            mask, target.device, target.dtype, cfg.sigma_cutoff, cfg.mask_margin,
+            aa_dilation=cfg.aa_dilation,
+        )
+        if tuple(mask_constraint.inside.shape) != (H, W):
+            raise ValueError(
+                f"mask shape {tuple(mask_constraint.inside.shape)} does not match target "
+                f"{(H, W)}")
+    weight_map_arg = loss_weight_map
+    if cfg.loss_weighting == "mask":
+        weight_map_arg = mask_constraint.inside_weight
+    pixel_weight = _prepare_loss_weight_map(target, cfg, weight_map_arg)
+    ssim_mask = (
+        mask_constraint.inside_weight.reshape(H, W, 1)
+        if (mask_constraint is not None and cfg.loss_weighting == "mask")
+        else None
+    )
     lowpass_loss_target = _prepare_loss_target(target, cfg.loss_target_downsample)
     target_geometry_gradients = (
         tuple(gradient.detach() for gradient in _sobel_gradients(target))
@@ -2126,6 +2283,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             "affine color coefficients are optimized with Adam"
         )
     field.trainable()
+    if mask_constraint is not None and cfg.mask_contain:
+        mask_constraint.apply(field, cfg)
     opt = _make_optimizer(field, cfg)
     base_lrs = [g["lr"] for g in opt.param_groups]
     lo, hi = math.log(0.35), math.log(max(H, W))
@@ -2287,7 +2446,13 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         if cfg.ssim_weight == 0.0:
             loss = pix
         else:
-            s = M.ssim(img, objective_target, backend=cfg.ssim_backend)
+            if ssim_mask is not None:
+                # Matte both sides so boundary SSIM windows compare consistent zeros; with hard
+                # containment the render is already ~0 outside, so this only zeroes the target.
+                s = M.ssim(img * ssim_mask, objective_target * ssim_mask,
+                           backend=cfg.ssim_backend)
+            else:
+                s = M.ssim(img, objective_target, backend=cfg.ssim_backend)
             loss = (1 - cfg.ssim_weight) * pix + cfg.ssim_weight * (1 - s)
         geometry_loss = None
         if (
@@ -2301,6 +2466,9 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             loss = loss + active_weight * geometry_loss
         if field.color_grads is not None and cfg.color_grad_l2 > 0.0:
             loss = loss + cfg.color_grad_l2 * (field.color_grads * field.color_grads).mean()
+        if mask_constraint is not None and cfg.mask_coverage_weight > 0.0:
+            loss = loss + float(cfg.mask_coverage_weight) * mask_constraint.coverage(
+                field, cfg, support_fade_alpha=fade_alpha)
         rate_bpp = None
         if cfg.lambda_rate > 0.0:
             rate_bpp = differentiable_rate_bpp(field, H, W, cfg)
@@ -2327,6 +2495,10 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             if getattr(field, "scale_max", None) is not None:
                 cap = torch.log(torch.clamp(field.scale_max, min=1e-3))
                 torch.minimum(field.log_scales, cap, out=field.log_scales)
+            if mask_constraint is not None and cfg.mask_contain:
+                # Re-contain after the optimizer moved means/scales: project drift back inside and
+                # refresh the per-row cap from the current signed distance.
+                mask_constraint.apply(field, cfg)
             if (
                 "every" in color_solve_tokens
                 and cfg.color_solve_every is not None
@@ -2600,6 +2772,10 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 new_parent_idx=new_parent_idx,
             )
             base_lrs = [g["lr"] for g in opt.param_groups]
+            if mask_constraint is not None and cfg.mask_contain:
+                # New/relocated rows inherit caps from neighbours; re-derive them from the mask so
+                # split/relocation/growth children are contained before the next render.
+                mask_constraint.apply(field, cfg)
             if "on_split" in color_solve_tokens and (added > 0 or relocated > 0):
                 run_color_solve_event(it, "on_split", fade_alpha)
 
@@ -2659,6 +2835,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 str(t): (None if int(v) < 0 else int(v)) for t, v in zip(targets, reached)
             }
         terminal_field = field
+        if mask_constraint is not None and cfg.mask_contain:
+            mask_constraint.apply(field, cfg)
         terminal_img = _render(field, cfg, H, W, support_fade_alpha=final_fade_alpha)
         terminal_psnr = M.psnr(terminal_img, target)
         terminal_ssim = float(M.ssim(terminal_img, target, backend=cfg.ssim_backend))
@@ -2682,6 +2860,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 raise RuntimeError("checkpoint selection violated the terminal-count invariant")
             if selected_record["field"] is not None:
                 field = selected_record["field"].trainable()
+                if mask_constraint is not None and cfg.mask_contain:
+                    mask_constraint.apply(field, cfg)
                 img = _render(field, cfg, H, W, support_fade_alpha=final_fade_alpha)
                 final_psnr = M.psnr(img, target)
                 final_ssim = float(M.ssim(img, target, backend=cfg.ssim_backend))
