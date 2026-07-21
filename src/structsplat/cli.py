@@ -68,16 +68,13 @@ def save_rgba(path: str, rgb: np.ndarray, alpha: np.ndarray):
     Image.fromarray(rgba, mode="RGBA").save(path)
 
 
-def cmd_fit(args):
-    import torch
-    from .config import InitConfig, FitConfig, PyramidConfig, StructureTensorConfig
-    from . import init as _init
-    from .fit import fit
-    from .pyramid import fit_pyramid
+def build_fit_configs(args):
+    """Init / structure-tensor / fit configs from parsed fit-CLI options.
 
-    device = args.device or ("cuda" if torch.cuda.is_available() else "cpu")
-    img = load_image(args.image)
-    target = torch.as_tensor(img, device=device)
+    Shared by `fit` and `batch-fit` (PORT-005) so both encode paths are reproducible from the
+    same logged option surface.
+    """
+    from .config import InitConfig, FitConfig, StructureTensorConfig
 
     icfg = InitConfig(strategy=args.strategy, num_gaussians=args.num_gaussians, seed=args.seed,
                       density_mode=args.density_mode,
@@ -178,6 +175,20 @@ def cmd_fit(args):
                      adaptive_split_mode=args.adaptive_split_mode,
                      adaptive_min_delta_psnr=args.adaptive_min_delta_psnr,
                      adaptive_patience=args.adaptive_patience)
+    return icfg, scfg, fcfg
+
+
+def cmd_fit(args):
+    import torch
+    from .config import PyramidConfig
+    from . import init as _init
+    from .fit import fit
+    from .pyramid import fit_pyramid
+
+    device = args.device or ("cuda" if torch.cuda.is_available() else "cpu")
+    img = load_image(args.image)
+    target = torch.as_tensor(img, device=device)
+    icfg, scfg, fcfg = build_fit_configs(args)
 
     mask_np = load_mask(args.mask) if args.mask else None
     if mask_np is not None and args.mask_invert:
@@ -257,6 +268,14 @@ def cmd_fit(args):
             pass
         finally:
             viewer.stop()
+
+
+def cmd_batch_fit(args):
+    from .batch import run_batch
+
+    rows = run_batch(args)
+    if any(row.get("error") for row in rows):
+        raise SystemExit(1)
 
 
 def cmd_ablation(args):
@@ -391,8 +410,10 @@ def main():
     p = argparse.ArgumentParser(prog="structsplat")
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    f = sub.add_parser("fit", help="fit a single image")
-    f.add_argument("image")
+    # Shared fit-option surface: consumed positionally by `fit` (one image) and `batch-fit`
+    # (PORT-005, many images across worker processes). Keeping one definition site keeps the
+    # two encode paths reproducible from the same logged config surface.
+    f = argparse.ArgumentParser(add_help=False)
     f.add_argument("--strategy", default=DEFAULT_INIT_STRATEGY)
     f.add_argument("--num-gaussians", type=int, default=20000, dest="num_gaussians")
     f.add_argument("--predictor-checkpoint", default=None,
@@ -648,7 +669,27 @@ def main():
     f.add_argument("--seed", type=int, default=0)
     f.add_argument("--outdir", default="runs")
     f.add_argument("--device", default=None)
-    f.set_defaults(func=cmd_fit)
+
+    fit_parser = sub.add_parser("fit", help="fit a single image", parents=[f])
+    fit_parser.add_argument("image")
+    fit_parser.set_defaults(func=cmd_fit)
+
+    b = sub.add_parser(
+        "batch-fit",
+        help="fit many images in parallel worker processes (PORT-005 encode throughput)",
+        parents=[f],
+    )
+    b.add_argument("images", nargs="+", help="image files, directories, or glob patterns")
+    b.add_argument("--devices", default=None,
+                   help="comma-separated device list to round-robin workers over "
+                        "(e.g. cuda:0,cuda:1); default: cuda if available else cpu")
+    b.add_argument("--workers", type=int, default=None,
+                   help="worker processes; default: one per device (CPU default: 1)")
+    b.add_argument("--force", action="store_true",
+                   help="re-fit images whose output .npz already exists instead of skipping")
+    b.add_argument("--torch-threads", type=int, default=None,
+                   help="torch intra-op threads per worker (CPU oversubscription guard)")
+    b.set_defaults(func=cmd_batch_fit)
 
     a = sub.add_parser("ablation", help="run the init-strategy sweep (ABL-001)")
     a.add_argument("images", nargs="+", help="image files or a directory")

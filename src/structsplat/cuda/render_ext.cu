@@ -469,6 +469,12 @@ __global__ void backward_block_reduce_kernel(
   }
 }
 
+// Tiled backward with shared-memory staging and warp-level gradient reduction (PORT-003).
+// Every warp iterates the same staged Gaussian in lockstep, so the nine per-pixel gradient
+// components can be shuffle-reduced across the 32 lanes and issued as one atomicAdd per warp
+// per component instead of one per pixel — a 32x cut in global atomic traffic. The launch pads
+// blockDim.x to a warp multiple so the full-mask shuffles below are always well defined;
+// inactive lanes contribute exact zeros.
 __global__ void tiled_backward_kernel(
     const float* __restrict__ grad_out,
     const float* __restrict__ means,
@@ -478,8 +484,8 @@ __global__ void tiled_backward_kernel(
     const float* __restrict__ opacities,
     const float* __restrict__ den,
     const float* __restrict__ out,
-    const int64_t* __restrict__ tile_gids,
-    const int64_t* __restrict__ tile_offsets,
+    const int32_t* __restrict__ tile_gids,
+    const int32_t* __restrict__ tile_offsets,
     int height,
     int width,
     int tiles_x,
@@ -493,85 +499,239 @@ __global__ void tiled_backward_kernel(
     float* __restrict__ grad_conics,
     float* __restrict__ grad_colors,
     float* __restrict__ grad_opacities) {
+  __shared__ TileStage stage;
   int tile = blockIdx.x;
   int local = threadIdx.x;
   int tile_pixels = tile_size * tile_size;
-  if (local >= tile_pixels) {
-    return;
+  int px = 0;
+  int py = 0;
+  bool active = local < tile_pixels;
+  if (active) {
+    int tile_x = tile % tiles_x;
+    int tile_y = tile / tiles_x;
+    px = tile_x * tile_size + (local % tile_size);
+    py = tile_y * tile_size + (local / tile_size);
+    active = px < width && py < height;
   }
-  int tile_x = tile % tiles_x;
-  int tile_y = tile / tiles_x;
-  int px = tile_x * tile_size + (local % tile_size);
-  int py = tile_y * tile_size + (local / tile_size);
-  if (px >= width || py >= height) {
-    return;
-  }
-  int flat = py * width + px;
-  float gr = grad_out[flat * 3 + 0];
-  float gg = grad_out[flat * 3 + 1];
-  float gbch = grad_out[flat * 3 + 2];
+  float fx = static_cast<float>(px);
+  float fy = static_cast<float>(py);
 
-  int64_t start = tile_offsets[tile];
-  int64_t end = tile_offsets[tile + 1];
-  for (int64_t p = start; p < end; ++p) {
-    int i = static_cast<int>(tile_gids[p]);
-    int x0, y0, tx, ty;
-    support_bounds(means, radii, i, height, width, x0, y0, tx, ty);
-    if (px < x0 || px >= x0 + tx || py < y0 || py >= y0 + ty) {
-      continue;
-    }
-
-    float mx = means[i * 2 + 0];
-    float my = means[i * 2 + 1];
-    float dx = static_cast<float>(px) - mx;
-    float dy = static_cast<float>(py) - my;
-    float a = conics[i * 3 + 0];
-    float b = conics[i * 3 + 1];
-    float c = conics[i * 3 + 2];
-    float op = has_opacity ? opacities[i] : 1.0f;
-    float cr = colors[i * 3 + 0];
-    float cg = colors[i * 3 + 1];
-    float cb = colors[i * 3 + 2];
-    float q = a * dx * dx + 2.0f * b * dx * dy + c * dy * dy;
-    float raw = expf(-0.5f * q);
-    float base = visible_weight(raw, support_fade, tail);
-    float weight = base * op;
-
-    float dw;
+  float gr = 0.0f;
+  float gg = 0.0f;
+  float gbch = 0.0f;
+  float dnum_r = 0.0f;
+  float dnum_g = 0.0f;
+  float dnum_b = 0.0f;
+  float dden = 0.0f;
+  if (active) {
+    int flat = py * width + px;
+    gr = grad_out[flat * 3 + 0];
+    gg = grad_out[flat * 3 + 1];
+    gbch = grad_out[flat * 3 + 2];
     if (normalize) {
       float denom = den[flat] + eps;
-      float dnum_r = gr / denom;
-      float dnum_g = gg / denom;
-      float dnum_b = gbch / denom;
-      float dden = -(
+      dnum_r = gr / denom;
+      dnum_g = gg / denom;
+      dnum_b = gbch / denom;
+      dden = -(
           gr * out[flat * 3 + 0] +
           gg * out[flat * 3 + 1] +
           gbch * out[flat * 3 + 2]) / denom;
-      atomicAdd(&grad_colors[i * 3 + 0], dnum_r * weight);
-      atomicAdd(&grad_colors[i * 3 + 1], dnum_g * weight);
-      atomicAdd(&grad_colors[i * 3 + 2], dnum_b * weight);
-      dw = dnum_r * cr + dnum_g * cg + dnum_b * cb + dden;
-    } else {
-      atomicAdd(&grad_colors[i * 3 + 0], gr * weight);
-      atomicAdd(&grad_colors[i * 3 + 1], gg * weight);
-      atomicAdd(&grad_colors[i * 3 + 2], gbch * weight);
-      dw = gr * cr + gg * cg + gbch * cb;
     }
+  }
 
-    float dbase = dw * op;
-    if (has_opacity) {
-      atomicAdd(&grad_opacities[i], dw * base);
+  int lane = threadIdx.x & 31;
+  int start = tile_offsets[tile];
+  int end = tile_offsets[tile + 1];
+  for (int batch = start; batch < end; batch += kTileStage) {
+    int m = min(kTileStage, end - batch);
+    stage_tile_batch(stage, means, conics, colors, radii, opacities, tile_gids, has_opacity,
+                     height, width, batch, m);
+    __syncthreads();
+    for (int j = 0; j < m; ++j) {
+      bool hit = active && px >= stage.x0[j] && px < stage.x1[j] && py >= stage.y0[j] &&
+          py < stage.y1[j];
+      if (!__any_sync(0xffffffffu, hit)) {
+        continue;
+      }
+      float gm0 = 0.0f;
+      float gm1 = 0.0f;
+      float ga = 0.0f;
+      float gb = 0.0f;
+      float gc = 0.0f;
+      float gcr = 0.0f;
+      float gcg = 0.0f;
+      float gcb = 0.0f;
+      float gop = 0.0f;
+      if (hit) {
+        float a = stage.a[j];
+        float b = stage.b[j];
+        float c = stage.c[j];
+        float op = stage.op[j];
+        float dx = fx - stage.mx[j];
+        float dy = fy - stage.my[j];
+        float q = a * dx * dx + 2.0f * b * dx * dy + c * dy * dy;
+        float raw = expf(-0.5f * q);
+        float base = visible_weight(raw, support_fade, tail);
+        float weight = base * op;
+
+        float dw;
+        if (normalize) {
+          gcr = dnum_r * weight;
+          gcg = dnum_g * weight;
+          gcb = dnum_b * weight;
+          dw = dnum_r * stage.cr[j] + dnum_g * stage.cg[j] + dnum_b * stage.cb[j] + dden;
+        } else {
+          gcr = gr * weight;
+          gcg = gg * weight;
+          gcb = gbch * weight;
+          dw = gr * stage.cr[j] + gg * stage.cg[j] + gbch * stage.cb[j];
+        }
+
+        float dbase = dw * op;
+        if (has_opacity) {
+          gop = dw * base;
+        }
+        float dq = dvisible_dq(raw, support_fade, tail) * dbase;
+        gm0 = dq * (-2.0f * a * dx - 2.0f * b * dy);
+        gm1 = dq * (-2.0f * b * dx - 2.0f * c * dy);
+        ga = dq * dx * dx;
+        gb = dq * 2.0f * dx * dy;
+        gc = dq * dy * dy;
+      }
+
+      gm0 = warp_reduce_sum(gm0);
+      gm1 = warp_reduce_sum(gm1);
+      ga = warp_reduce_sum(ga);
+      gb = warp_reduce_sum(gb);
+      gc = warp_reduce_sum(gc);
+      gcr = warp_reduce_sum(gcr);
+      gcg = warp_reduce_sum(gcg);
+      gcb = warp_reduce_sum(gcb);
+      if (has_opacity) {
+        gop = warp_reduce_sum(gop);
+      }
+      if (lane == 0) {
+        int i = stage.gid[j];
+        if (gm0 != 0.0f) atomicAdd(&grad_means[i * 2 + 0], gm0);
+        if (gm1 != 0.0f) atomicAdd(&grad_means[i * 2 + 1], gm1);
+        if (ga != 0.0f) atomicAdd(&grad_conics[i * 3 + 0], ga);
+        if (gb != 0.0f) atomicAdd(&grad_conics[i * 3 + 1], gb);
+        if (gc != 0.0f) atomicAdd(&grad_conics[i * 3 + 2], gc);
+        if (gcr != 0.0f) atomicAdd(&grad_colors[i * 3 + 0], gcr);
+        if (gcg != 0.0f) atomicAdd(&grad_colors[i * 3 + 1], gcg);
+        if (gcb != 0.0f) atomicAdd(&grad_colors[i * 3 + 2], gcb);
+        if (has_opacity && gop != 0.0f) atomicAdd(&grad_opacities[i], gop);
+      }
     }
-    float dq = dvisible_dq(raw, support_fade, tail) * dbase;
-    atomicAdd(&grad_means[i * 2 + 0], dq * (-2.0f * a * dx - 2.0f * b * dy));
-    atomicAdd(&grad_means[i * 2 + 1], dq * (-2.0f * b * dx - 2.0f * c * dy));
-    atomicAdd(&grad_conics[i * 3 + 0], dq * dx * dx);
-    atomicAdd(&grad_conics[i * 3 + 1], dq * 2.0f * dx * dy);
-    atomicAdd(&grad_conics[i * 3 + 2], dq * dy * dy);
+    __syncthreads();
   }
 }
 
+// Threads per tiled block: tile_size^2 rounded up to a warp multiple so the backward kernel's
+// full-mask warp shuffles are always well defined (tile_size^2 <= 1024 keeps this <= 1024).
+int tiled_block_threads(int tile_size) {
+  int tile_pixels = tile_size * tile_size;
+  return ((tile_pixels + 31) / 32) * 32;
+}
+
 }  // namespace
+
+std::vector<torch::Tensor> structsplat_build_tile_index_cuda(
+    torch::Tensor means,
+    torch::Tensor conics,
+    torch::Tensor radii,
+    int64_t height,
+    int64_t width,
+    int64_t tile_size,
+    bool ellipse_cull,
+    double sigma_cutoff) {
+  int n = static_cast<int>(means.size(0));
+  int h = static_cast<int>(height);
+  int w = static_cast<int>(width);
+  int ts = static_cast<int>(tile_size);
+  int tiles_x = (w + ts - 1) / ts;
+  int tiles_y = (h + ts - 1) / ts;
+  int64_t num_tiles64 = static_cast<int64_t>(tiles_x) * static_cast<int64_t>(tiles_y);
+  TORCH_CHECK(num_tiles64 + 1 <= INT32_MAX, "tile grid exceeds int32 tile ids");
+  int num_tiles = static_cast<int>(num_tiles64);
+
+  auto int_opts = means.options().dtype(at::kInt);
+  auto long_opts = means.options().dtype(at::kLong);
+  auto offsets = torch::zeros({num_tiles + 1}, int_opts);
+  auto empty_gids = torch::empty({0}, int_opts);
+  if (n == 0 || num_tiles == 0) {
+    return {empty_gids, offsets};
+  }
+
+  cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+  constexpr int threads = 256;
+  int gaussian_blocks = (n + threads - 1) / threads;
+
+  auto counts = torch::empty({n}, long_opts);
+  tile_count_kernel<<<gaussian_blocks, threads, 0, stream>>>(
+      means.data_ptr<float>(), radii.data_ptr<int64_t>(), n, h, w, ts,
+      counts.data_ptr<int64_t>());
+  C10_CUDA_KERNEL_LAUNCH_CHECK();
+
+  auto pair_starts = torch::zeros({n + 1}, long_opts);
+  size_t scan_bytes = 0;
+  cub::DeviceScan::InclusiveSum(
+      nullptr, scan_bytes, counts.data_ptr<int64_t>(), pair_starts.data_ptr<int64_t>() + 1, n,
+      stream);
+  auto scan_temp = torch::empty(
+      {static_cast<int64_t>(std::max<size_t>(scan_bytes, 1))},
+      means.options().dtype(at::kByte));
+  cub::DeviceScan::InclusiveSum(
+      scan_temp.data_ptr(), scan_bytes, counts.data_ptr<int64_t>(),
+      pair_starts.data_ptr<int64_t>() + 1, n, stream);
+  C10_CUDA_KERNEL_LAUNCH_CHECK();
+
+  // One intentional device->host sync per call: the pair total sizes the sort buffers. This is
+  // the same unavoidable scalar readback tile-sorted splatting rasterizers perform.
+  int64_t total = pair_starts[n].item<int64_t>();
+  TORCH_CHECK(total <= INT32_MAX, "tile index pair count exceeds int32");
+  if (total == 0) {
+    return {empty_gids, offsets};
+  }
+
+  auto keys_in = torch::empty({total}, int_opts);
+  auto vals_in = torch::empty({total}, int_opts);
+  auto keys_out = torch::empty({total}, int_opts);
+  auto vals_out = torch::empty({total}, int_opts);
+  float cutoff2 = static_cast<float>(sigma_cutoff * sigma_cutoff);
+  expand_pairs_kernel<<<gaussian_blocks, threads, 0, stream>>>(
+      means.data_ptr<float>(), conics.data_ptr<float>(), radii.data_ptr<int64_t>(), n, h, w, ts,
+      tiles_x, num_tiles, ellipse_cull, cutoff2, pair_starts.data_ptr<int64_t>(),
+      keys_in.data_ptr<int32_t>(), vals_in.data_ptr<int32_t>());
+  C10_CUDA_KERNEL_LAUNCH_CHECK();
+
+  // Keys span [0, num_tiles] (sentinel included); restrict the radix passes to the live bits.
+  int end_bit = 1;
+  while ((1LL << end_bit) < num_tiles64 + 1) {
+    ++end_bit;
+  }
+  size_t sort_bytes = 0;
+  cub::DeviceRadixSort::SortPairs(
+      nullptr, sort_bytes, keys_in.data_ptr<int32_t>(), keys_out.data_ptr<int32_t>(),
+      vals_in.data_ptr<int32_t>(), vals_out.data_ptr<int32_t>(), static_cast<int>(total), 0,
+      end_bit, stream);
+  auto sort_temp = torch::empty(
+      {static_cast<int64_t>(std::max<size_t>(sort_bytes, 1))},
+      means.options().dtype(at::kByte));
+  cub::DeviceRadixSort::SortPairs(
+      sort_temp.data_ptr(), sort_bytes, keys_in.data_ptr<int32_t>(),
+      keys_out.data_ptr<int32_t>(), vals_in.data_ptr<int32_t>(), vals_out.data_ptr<int32_t>(),
+      static_cast<int>(total), 0, end_bit, stream);
+  C10_CUDA_KERNEL_LAUNCH_CHECK();
+
+  int offset_blocks = (num_tiles + 1 + threads - 1) / threads;
+  tile_offsets_from_keys_kernel<<<offset_blocks, threads, 0, stream>>>(
+      keys_out.data_ptr<int32_t>(), total, num_tiles, offsets.data_ptr<int32_t>());
+  C10_CUDA_KERNEL_LAUNCH_CHECK();
+
+  return {vals_out, offsets};
+}
 
 std::vector<torch::Tensor> structsplat_render_forward_cuda(
     torch::Tensor means,
@@ -658,7 +818,7 @@ std::vector<torch::Tensor> structsplat_render_forward_tiled_cuda(
   auto den = torch::zeros({pixels}, means.options());
   if (pixels > 0 && num_tiles > 0) {
     cudaStream_t stream = at::cuda::getCurrentCUDAStream();
-    int threads = ts * ts;
+    int threads = tiled_block_threads(ts);
     float tail = expf(-0.5f * static_cast<float>(sigma_cutoff * sigma_cutoff));
     tiled_forward_kernel<<<num_tiles, threads, 0, stream>>>(
         means.data_ptr<float>(),
@@ -666,8 +826,8 @@ std::vector<torch::Tensor> structsplat_render_forward_tiled_cuda(
         colors.data_ptr<float>(),
         radii.data_ptr<int64_t>(),
         opacities.numel() ? opacities.data_ptr<float>() : nullptr,
-        tile_gids.data_ptr<int64_t>(),
-        tile_offsets.data_ptr<int64_t>(),
+        tile_gids.data_ptr<int32_t>(),
+        tile_offsets.data_ptr<int32_t>(),
         h,
         w,
         tiles_x,
@@ -821,7 +981,7 @@ std::vector<torch::Tensor> structsplat_render_backward_tiled_cuda(
       : torch::empty({0}, means.options());
   if (n > 0 && h > 0 && w > 0 && num_tiles > 0) {
     cudaStream_t stream = at::cuda::getCurrentCUDAStream();
-    int threads = ts * ts;
+    int threads = tiled_block_threads(ts);
     float tail = expf(-0.5f * static_cast<float>(sigma_cutoff * sigma_cutoff));
     tiled_backward_kernel<<<num_tiles, threads, 0, stream>>>(
         grad_out.data_ptr<float>(),
@@ -832,8 +992,8 @@ std::vector<torch::Tensor> structsplat_render_backward_tiled_cuda(
         opacities.numel() ? opacities.data_ptr<float>() : nullptr,
         den.data_ptr<float>(),
         out.data_ptr<float>(),
-        tile_gids.data_ptr<int64_t>(),
-        tile_offsets.data_ptr<int64_t>(),
+        tile_gids.data_ptr<int32_t>(),
+        tile_offsets.data_ptr<int32_t>(),
         h,
         w,
         tiles_x,

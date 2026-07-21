@@ -67,6 +67,8 @@ class _ExactRenderCuda(Function):
         support_fade,
         sigma_cutoff,
         backward_variant,
+        tile_index_backend,
+        tile_ellipse_cull,
     ):
         ext = _load_extension()
         means = means.contiguous()
@@ -75,16 +77,32 @@ class _ExactRenderCuda(Function):
         radii = radii.contiguous()
         opacities = opacities.contiguous()
         if tiled:
-            tile_gids, tile_offsets = _build_tile_index(means, radii, int(height), int(width),
-                                                        int(tile_size))
+            # Exact ellipse culling drops (tile, Gaussian) pairs whose weight is provably zero
+            # everywhere in the tile. That zero is exact only under support fade, where the
+            # visible weight is max(exp(-q/2) - tail, 0); without fade every in-rectangle pixel
+            # keeps a positive weight, so culling would change the rendered result and is
+            # disabled regardless of the requested flag.
+            cull = bool(tile_ellipse_cull) and bool(support_fade)
+            if tile_index_backend == "cuda":
+                tile_gids, tile_offsets = ext.build_tile_index(
+                    means, conics.detach(), radii, int(height), int(width), int(tile_size),
+                    cull, float(sigma_cutoff),
+                )
+            else:
+                tile_gids, tile_offsets = _build_tile_index(means, radii, int(height),
+                                                            int(width), int(tile_size))
+                if tile_gids.numel() >= 2 ** 31 or tile_offsets.numel() >= 2 ** 31:
+                    raise RuntimeError("tile index exceeds int32; reduce N or image size")
+                tile_gids = tile_gids.to(torch.int32)
+                tile_offsets = tile_offsets.to(torch.int32)
             out, den = ext.forward_tiled(
                 means, conics, colors, radii, opacities, tile_gids, tile_offsets,
                 int(height), int(width), bool(normalize), float(eps), int(tile_size),
                 bool(support_fade), float(sigma_cutoff),
             )
         else:
-            tile_gids = means.new_empty(0, dtype=torch.long)
-            tile_offsets = means.new_empty(0, dtype=torch.long)
+            tile_gids = means.new_empty(0, dtype=torch.int32)
+            tile_offsets = means.new_empty(0, dtype=torch.int32)
             out, den = ext.forward(
                 means, conics, colors, radii, opacities,
                 int(height), int(width), bool(normalize), float(eps),
@@ -110,10 +128,10 @@ class _ExactRenderCuda(Function):
         )
         # forward signature:
         # means, conics, colors, radii, opacities, height, width, normalize, eps, tiled, tile_size,
-        # support_fade, sigma_cutoff, backward_variant
+        # support_fade, sigma_cutoff, backward_variant, tile_index_backend, tile_ellipse_cull
         need_means, need_conics, need_colors, _, need_opac = ctx.needs_input_grad[:5]
         if not (need_means or need_conics or need_colors or need_opac):
-            return (None,) * 14
+            return (None,) * 16
         ext = _load_extension()
         if ctx.tiled:
             grad_means, grad_conics, grad_colors, grad_opacities = ext.backward_tiled(
@@ -142,6 +160,8 @@ class _ExactRenderCuda(Function):
             grad_colors if need_colors else None,
             None,
             grad_opacities,
+            None,
+            None,
             None,
             None,
             None,
@@ -210,11 +230,19 @@ def render_cuda_exact(means, conics, colors, radii, H: int, W: int,
                       opacities=None, normalize: bool = True, eps: float = 1e-8,
                       tiled: bool = False, tile_size: int = 16,
                       support_fade: bool = False, sigma_cutoff: float = 3.0,
-                      backward_variant: str = "baseline"):
+                      backward_variant: str = "baseline",
+                      tile_index_backend: str = "cuda",
+                      tile_ellipse_cull: bool = True):
     """Render with StructSplat's exact normalized/additive math on CUDA.
 
     Args mirror ``render_field``. Only float32 CUDA tensors are supported; CPU or non-float32
     callers should use the reference renderer.
+
+    ``tile_index_backend`` selects how the tiled path builds its tile-to-Gaussian index:
+    ``"cuda"`` (default) bins, CUB-sorts, and ranges entirely inside the extension;
+    ``"torch"`` keeps the original torch-op builder for parity testing. ``tile_ellipse_cull``
+    additionally drops (tile, Gaussian) pairs whose support-fade weight is exactly zero across
+    the whole tile; it is a no-op unless ``support_fade`` is on.
     """
     if not means.is_cuda:
         raise RuntimeError("StructSplat CUDA renderer requires CUDA tensors; pass device='cuda'.")
@@ -227,9 +255,13 @@ def render_cuda_exact(means, conics, colors, radii, H: int, W: int,
         )
     if tiled and backward_variant != "baseline":
         raise ValueError("block_reduce backward is experimental and untiled-only")
+    if tile_index_backend not in ("cuda", "torch"):
+        raise ValueError(
+            f"tile_index_backend must be cuda or torch, got {tile_index_backend!r}"
+        )
     if opacities is None:
         opacities = means.new_empty(0)
     return _ExactRenderCuda.apply(
         means, conics, colors, radii, opacities, H, W, normalize, eps, tiled, tile_size,
-        support_fade, sigma_cutoff, backward_variant
+        support_fade, sigma_cutoff, backward_variant, tile_index_backend, tile_ellipse_cull
     )

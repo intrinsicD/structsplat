@@ -373,6 +373,87 @@ def test_cuda_tiled_backward_matches_reference_when_available():
         assert torch.allclose(got, exp, atol=3e-4, rtol=3e-4)
 
 
+def test_cuda_tile_index_gpu_backend_matches_torch_when_available():
+    if not torch.cuda.is_available():
+        pytest.skip("CUDA not available")
+    from structsplat import cuda_render
+
+    try:
+        ext = cuda_render._load_extension()
+    except RuntimeError as exc:
+        pytest.skip(str(exc))
+    rng = np.random.default_rng(21)
+    N, H, W, ts = 40, 33, 29, 8
+    means_np = np.stack([rng.uniform(-4, W + 4, N), rng.uniform(-4, H + 4, N)], 1)
+    # Include strongly elongated Gaussians: their loose AABBs are exactly where binning bugs hide.
+    scales = np.exp(rng.uniform(np.log(0.6), np.log(6.0), (N, 2)))
+    angles = rng.uniform(0, np.pi, N)
+    colors = rng.random((N, 3))
+    g = GaussianField.from_numpy(means_np, scales, angles, colors, device="cuda")
+    means = g.means.detach().contiguous()
+    conics = g.conics().detach().contiguous()
+    radii = g.radii(3.0).contiguous()
+
+    ref_gids, ref_offsets = _build_tile_index(means, radii, H, W, ts)
+    gids, offsets = ext.build_tile_index(means, conics, radii, H, W, ts, False, 3.0)
+    torch.cuda.synchronize()
+
+    assert offsets.dtype == torch.int32 and gids.dtype == torch.int32
+    assert offsets.tolist() == ref_offsets.tolist()
+    off = offsets.tolist()
+    # Within-tile order is an implementation detail (torch argsort is unstable); the per-tile
+    # membership sets are the contract.
+    for t in range(len(off) - 1):
+        got = sorted(gids[off[t]:off[t + 1]].tolist())
+        exp = sorted(ref_gids[off[t]:off[t + 1]].tolist())
+        assert got == exp
+
+    with pytest.raises(ValueError):
+        from structsplat.cuda_render import render_cuda_exact
+        render_cuda_exact(means, conics, g.colors.detach(), radii, H, W,
+                          tiled=True, tile_index_backend="nope")
+
+
+def test_cuda_tiled_ellipse_cull_matches_unculled_when_available():
+    if not torch.cuda.is_available():
+        pytest.skip("CUDA not available")
+    from structsplat.cuda_render import render_cuda_exact
+
+    rng = np.random.default_rng(22)
+    N, H, W = 48, 40, 44
+    means_np = np.stack([rng.uniform(-3, W + 3, N), rng.uniform(-3, H + 3, N)], 1)
+    # High axis ratios make whole tiles fall inside the AABB but outside the ellipse, so the
+    # cull actually fires; correctness must be unchanged because those weights are exactly zero
+    # under support fade.
+    sx = np.exp(rng.uniform(np.log(2.0), np.log(8.0), N))
+    sy = np.exp(rng.uniform(np.log(0.5), np.log(1.2), N))
+    scales = np.stack([sx, sy], 1)
+    angles = rng.uniform(0, np.pi, N)
+    colors = rng.random((N, 3))
+    target = torch.rand(H, W, 3, device="cuda")
+
+    def run(cull: bool):
+        f = GaussianField.from_numpy(means_np, scales, angles, colors, device="cuda").trainable()
+        img = render_cuda_exact(
+            f.means, f.conics(), f.colors, f.radii(3.0), H, W,
+            tiled=True, support_fade=True, sigma_cutoff=3.0, tile_ellipse_cull=cull,
+        )
+        (img - target).square().mean().backward()
+        torch.cuda.synchronize()
+        return (
+            img.detach(), f.means.grad.detach(), f.log_scales.grad.detach(),
+            f.rotations.grad.detach(), f.colors.grad.detach(),
+        )
+
+    try:
+        unculled = run(False)
+        culled = run(True)
+    except RuntimeError as exc:
+        pytest.skip(str(exc))
+    for got, exp in zip(culled, unculled, strict=True):
+        assert torch.allclose(got, exp, atol=1e-6, rtol=1e-6)
+
+
 @pytest.mark.parametrize("normalize", [True, False])
 @pytest.mark.parametrize("use_opacities", [False, True])
 @pytest.mark.parametrize("dilation", [0.0, 0.3])
