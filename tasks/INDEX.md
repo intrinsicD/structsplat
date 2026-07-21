@@ -22,8 +22,8 @@ replay-valid; do not rewrite those task bytes merely to duplicate this table.
 | CORE-007 | Segmentation-free responsibility boundary flux | design-only — BENCH-007 did not authorize the old structure/compression path; any reopening needs a new prior-art-controlled question | INIT-004, CORE-001, BENCH-007 |
 | CORE-008 | Hybrid Gaussian + frequency-bearing primitive control | design-only — WIPES remains the direct primitive baseline and BENCH-007 supplies no promotion signal | CORE-001, INIT-001, FIT-001, BENCH-007 |
 | INIT-009 | Progressive WSE survivor ordering | implemented/confirmed — 32/32 uniform Euclidean prefix wins with identical terminal sets; opt-in for compatibility | INIT-003/005/006, BENCH-002 |
-| PORT-002 | GPU-native tile index + fused loss/backward | todo | PORT-001, FIT-003 |
-| PORT-003 | Avoid atomics in tiled backward | todo | PORT-001 |
+| PORT-002 | GPU-native tile index + fused loss/backward | implemented (unmeasured) — in-extension CUB binning, staged tiled kernels, opt-in exact ellipse cull; CUDA parity + preregistered profile pending; fused loss and graphs open | PORT-001, FIT-003 |
+| PORT-003 | Avoid atomics in tiled backward | implemented (unmeasured) — warp-reduced tiled backward atomics (32x fewer transactions); gradient parity + timings pending on hardware | PORT-001 |
 | PORT-004 | Exact-backward block reduction | implemented/screened — large N=2048 microprofile gains, but all-grid direction and independent CV guards fail; benchmark-only, not CLI/default | PORT-001/003, ADR-0011, BENCH-002 |
 | GEN-003 | VSD / multi-particle distillation | todo | GEN-001 |
 | ABL-005 | Fitter-knob influence pass at the fair regime | partial — CUDA-native fair shard started; color-solve and broader Kodak cells pending | ADR-0010, FIT-005/006/007, CORE-006 |
@@ -55,6 +55,7 @@ replay-valid; do not rewrite those task bytes merely to duplicate this table.
 | COMP-005 | Decoder-synchronized structural geometry | not authorized — tensor structure failed the actual-rate gate and layout bytes were not established as the binding loss | BENCH-007, COMP-001/002/003/004, INIT-001/003/009 |
 | COMP-006 | Marginal cold-stream rate--distortion attribution | completed negative — exact replay matched; birth lost `-1.0714 dB` to the strongest actual-byte control and confirmation remains sealed | COMP-001/002/003/004, BENCH-002/007, FIT-004/017 |
 | CORE-010 | Mask-contained fitting for alpha-masked inputs | implemented (opt-in, default off) — SDF hard containment (mean projection + dynamic caps, ADR-0017) + out-of-mask coverage penalty + masked loss; exact zero outside with support_fade; five-arm cost benchmark + directional cap + pyramid support deferred | CORE-003/005, INIT-002/003, FIT-012, ADR-0012/0017 |
+| PORT-005 | Batch encode throughput (multi-process across images) | implemented (CPU-validated) — `batch-fit` CLI with worker pool, device round-robin, resumable metrics.jsonl, failure isolation; GPU scaling row pending | FIT-001, CORE-001, ADR-0011, PORT-001 |
 
 ## Retired Done Tasks
 

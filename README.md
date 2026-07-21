@@ -43,6 +43,11 @@ structsplat fit photo.png --strategy quadtree_wse --num-gaussians 20000 --iters 
 # progressive (hierarchical) fit
 structsplat fit photo.png --pyramid --num-gaussians 20000
 
+# encode a folder in parallel worker processes, round-robin across GPUs; resumable via
+# metrics.jsonl + existing .npz outputs (PORT-005 encode throughput)
+structsplat batch-fit ./photos --num-gaussians 20000 --iters 2000 \
+    --devices cuda:0,cuda:1 --workers 2 --outdir runs/batch
+
 # the core experiment: init strategy x budget sweep (writes results/summary.md)
 structsplat ablation ./images --budgets 2000 5000 10000 20000 --iters 1500 --target-psnr 35
 

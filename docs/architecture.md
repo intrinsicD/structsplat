@@ -42,7 +42,9 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
 - **read-only diagnostics:** `visualize` calls the production NumPy analysis/initialization and
   torch normalized renderer, then exports raw tensor/field/responsibility maps plus deterministic
   explanatory panels. It never fits or changes a field and is not benchmark evidence (DOCS-002).
-- **entry:** `cli` (`structsplat fit` / `ablation` / `stage-search`).
+- **entry:** `cli` (`structsplat fit` / `batch-fit` / `ablation` / `stage-search`); `batch`
+  (PORT-005) runs the `fit` option surface across worker processes with device round-robin and
+  a resumable `metrics.jsonl`.
 - **decision benchmark:** `benchmarks.actual_rate_phase_diagram` owns frozen actual-rate manifests,
   SSPL1 cold scoring, exact-cap RDO/statistics, and result figures for BENCH-007. Its manifest
   distinguishes the normalized weighted-sum equation from the selected implementation; native
@@ -88,6 +90,13 @@ init-strategy × budget sweep.
   benchmark-only after the frozen all-grid/stability gate failed. `renderer=gsplat` is kept as a
   separate alpha/sum comparator because it is not numerically equivalent to the normalized
   reference.
+- `renderer=cuda_tiled` (opt-in, PORT-002/003, unmeasured) now builds its tile index inside the
+  extension (CUB radix sort over packed 32-bit keys; stable, so the index is deterministic),
+  stages Gaussians through shared memory in both tiled kernels, warp-reduces backward gradients
+  before atomics, and — under `support_fade` only — exactly culls (tile, Gaussian) pairs whose
+  weight is provably zero via a closed-form conic-over-rectangle minimum. Semantics are
+  unchanged; `benchmarks/tiled_render_profile.py` owns the preregistered acceleration gate, and
+  `cuda` remains the shipped GPU default until that gate passes on hardware.
 - `scale_cap_mode=feature` gives each Gaussian a local support ceiling from the structure tensor's
   feature run length. `scale_cap_mode=feature_rel` instead derives the cap from local density
   radius / quadtree leaf side with separate along/across multipliers. The fitter clamps optimized

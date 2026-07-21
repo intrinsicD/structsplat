@@ -2,6 +2,16 @@
 
 #include <vector>
 
+std::vector<torch::Tensor> structsplat_build_tile_index_cuda(
+    torch::Tensor means,
+    torch::Tensor conics,
+    torch::Tensor radii,
+    int64_t height,
+    int64_t width,
+    int64_t tile_size,
+    bool ellipse_cull,
+    double sigma_cutoff);
+
 std::vector<torch::Tensor> structsplat_render_forward_cuda(
     torch::Tensor means,
     torch::Tensor conics,
@@ -120,10 +130,40 @@ static void check_tile_index(const torch::Tensor& tile_gids,
   CHECK_CUDA(tile_offsets);
   CHECK_CONTIGUOUS(tile_gids);
   CHECK_CONTIGUOUS(tile_offsets);
-  CHECK_LONG(tile_gids);
-  CHECK_LONG(tile_offsets);
+  TORCH_CHECK(tile_gids.scalar_type() == at::kInt, "tile_gids must be int32");
+  TORCH_CHECK(tile_offsets.scalar_type() == at::kInt, "tile_offsets must be int32");
   TORCH_CHECK(tile_gids.dim() == 1, "tile_gids must be 1-D");
   TORCH_CHECK(tile_offsets.dim() == 1, "tile_offsets must be 1-D");
+}
+
+std::vector<torch::Tensor> build_tile_index(
+    torch::Tensor means,
+    torch::Tensor conics,
+    torch::Tensor radii,
+    int64_t height,
+    int64_t width,
+    int64_t tile_size,
+    bool ellipse_cull,
+    double sigma_cutoff) {
+  CHECK_CUDA(means);
+  CHECK_CUDA(conics);
+  CHECK_CUDA(radii);
+  CHECK_CONTIGUOUS(means);
+  CHECK_CONTIGUOUS(conics);
+  CHECK_CONTIGUOUS(radii);
+  CHECK_FLOAT(means);
+  CHECK_FLOAT(conics);
+  CHECK_LONG(radii);
+  TORCH_CHECK(means.dim() == 2 && means.size(1) == 2, "means must be (N, 2)");
+  TORCH_CHECK(conics.dim() == 2 && conics.size(1) == 3, "conics must be (N, 3)");
+  TORCH_CHECK(radii.dim() == 2 && radii.size(1) == 2, "radii must be (N, 2)");
+  TORCH_CHECK(conics.size(0) == means.size(0), "conics N must match means N");
+  TORCH_CHECK(radii.size(0) == means.size(0), "radii N must match means N");
+  TORCH_CHECK(height > 0 && width > 0, "height and width must be positive");
+  TORCH_CHECK(tile_size > 0 && tile_size * tile_size <= 1024,
+              "tile_size must be positive with tile_size^2 <= 1024");
+  return structsplat_build_tile_index_cuda(
+      means, conics, radii, height, width, tile_size, ellipse_cull, sigma_cutoff);
 }
 
 std::vector<torch::Tensor> forward(
@@ -261,6 +301,11 @@ std::vector<torch::Tensor> backward_tiled(
 }
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
+  m.def(
+      "build_tile_index",
+      &build_tile_index,
+      "StructSplat GPU tile binning: CUB-sorted (tile, gid) index with optional exact ellipse "
+      "culling (CUDA)");
   m.def("forward", &forward, "StructSplat exact render forward (CUDA)");
   m.def("forward_tiled", &forward_tiled, "StructSplat exact tiled render forward (CUDA)");
   m.def("backward", &backward, "StructSplat exact render backward (CUDA)");
