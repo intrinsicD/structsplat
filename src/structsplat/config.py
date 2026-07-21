@@ -196,8 +196,15 @@ class FitConfig:
     optimizer: str = "adam"            # adam, adamw, or adan
     pixel_loss: str = "l1"             # l1, l2, or charbonnier; SSIM term is mixed separately
     charbonnier_eps: float = 1e-3
-    loss_weighting: str = "none"       # none or tensor; weights only the pixel-loss term
+    loss_weighting: str = "none"       # none, tensor, or mask; weights only the pixel-loss term
     loss_weight_beta: float = 1.0      # tensor mode: w = 1 + beta * normalized tensor energy
+    # CORE-010 mask-contained fitting (opt-in; needs a mask passed to fit()). Hard containment
+    # projects means into the mask and caps effective scales from the signed distance so the
+    # sigma_cutoff support stays inside the mask; the soft coverage penalty pushes out-of-mask
+    # weight down with full-strength geometry gradients. Defaults are inert without a mask.
+    mask_contain: bool = False         # project means + cap effective scales to the mask interior
+    mask_margin: float = 1.5           # px safety margin (erosion + cap); must exceed ~0.71
+    mask_coverage_weight: float = 0.0  # weight on mean out-of-mask unnormalized weight-sum penalty
     loss_warmup_iters: int = 0
     loss_warmup_pixel_loss: str = "l2"
     # Optional frequency-ordering curriculum. A factor >1 first supervises against an
@@ -379,11 +386,16 @@ class FitConfig:
                 f"color_solve_maxiter must be > 0, got {self.color_solve_maxiter}")
         if self.qat_mode not in ("off", "ste", "noise"):
             raise ValueError(f"qat_mode must be off, ste, or noise, got {self.qat_mode!r}")
-        if self.loss_weighting not in ("none", "tensor"):
+        if self.loss_weighting not in ("none", "tensor", "mask"):
             raise ValueError(
-                f"loss_weighting must be none or tensor, got {self.loss_weighting!r}")
+                f"loss_weighting must be none, tensor, or mask, got {self.loss_weighting!r}")
         if self.loss_weight_beta < 0.0:
             raise ValueError(f"loss_weight_beta must be >= 0, got {self.loss_weight_beta}")
+        if not math.isfinite(self.mask_margin) or self.mask_margin <= 0.0:
+            raise ValueError(f"mask_margin must be finite and > 0, got {self.mask_margin}")
+        if not math.isfinite(self.mask_coverage_weight) or self.mask_coverage_weight < 0.0:
+            raise ValueError(
+                f"mask_coverage_weight must be finite and >= 0, got {self.mask_coverage_weight}")
         if (
             isinstance(self.loss_target_downsample, bool)
             or not isinstance(self.loss_target_downsample, int)

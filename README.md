@@ -60,6 +60,13 @@ structsplat stage-search ./images --mode influence --resume --max-new-cells 64 \
 
 # text-to-Gaussian MVP: sample raster -> fit -> latent SDS refine -> save .npz + PNGs
 structsplat generate "flat red calendar app icon" --n 5000 --steps 200 --outdir runs/icon
+
+# mask-contained fit for an alpha-masked object: Gaussians stay inside the mask, render is
+# exactly zero outside (needs --support-fade). Mask can be a grayscale or RGBA-alpha image.
+structsplat fit object.png --mask object_alpha.png --mask-contain --support-fade \
+    --loss-weighting mask --num-gaussians 8000 --iters 2000
+# soft alternative (no hard clamp): penalize out-of-mask coverage instead
+structsplat fit object.png --mask object_alpha.png --mask-coverage-weight 1.0 --loss-weighting mask
 ```
 Strategies: `random`, `grid`, `iso_blue_noise`, `aniso_onedge`, `aniso_flanking`.
 Additional quadtree strategies: `quadtree_aggregate`, `quadtree_hybrid`, `quadtree_wse`.
@@ -75,6 +82,10 @@ background layer, frozen background rows stay first and only the detail suffix h
 Renderers: `normalized`, `additive`, `cuda`, `cuda_additive`, `gsplat`. `cuda`/`cuda_additive`
 are exact StructSplat semantics; `gsplat` is a GaussianImage++-style alpha/sum comparator.
 Scale caps: `none`, `hard`, `feature` (ADR-0012).
+Mask-contained fitting (`--mask`, CORE-010/ADR-0017): `--mask-contain` projects means into the mask
+and caps effective scales from the signed distance so the sigma_cutoff support stays inside;
+`--support-fade` makes the render exactly zero outside; `--mask-coverage-weight` is a soft
+out-of-mask penalty; `--loss-weighting mask` drops out-of-mask pixels from the loss.
 
 ## Publication method figures
 

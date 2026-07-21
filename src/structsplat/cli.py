@@ -41,11 +41,31 @@ def load_image(path: str) -> np.ndarray:
     return np.asarray(img, dtype=np.float32) / 255.0
 
 
+def load_mask(path: str) -> np.ndarray:
+    """Load a mask as (H, W) float in [0, 1]: RGBA/LA alpha if present, else grayscale."""
+    from PIL import Image
+    im = Image.open(path)
+    if im.mode in ("RGBA", "LA") or "transparency" in im.info:
+        a = np.asarray(im.convert("RGBA"), dtype=np.float32)[..., 3]
+    else:
+        a = np.asarray(im.convert("L"), dtype=np.float32)
+    return a / 255.0
+
+
 def save_image(path: str, arr: np.ndarray):
     from PIL import Image
     # round, don't truncate: astype(uint8) floors, biasing every saved pixel down by up to 1/255
     a = np.rint(np.clip(arr, 0, 1) * 255.0)
     Image.fromarray(a.astype(np.uint8)).save(path)
+
+
+def save_rgba(path: str, rgb: np.ndarray, alpha: np.ndarray):
+    """Save an RGBA PNG with a hard alpha channel (for visualizing mask containment)."""
+    from PIL import Image
+    rgb_u8 = np.rint(np.clip(rgb, 0, 1) * 255.0).astype(np.uint8)
+    a_u8 = np.rint(np.clip(alpha, 0, 1) * 255.0).astype(np.uint8)
+    rgba = np.dstack([rgb_u8, a_u8])
+    Image.fromarray(rgba, mode="RGBA").save(path)
 
 
 def cmd_fit(args):
@@ -93,6 +113,9 @@ def cmd_fit(args):
                      pixel_loss=args.pixel_loss, ssim_weight=args.ssim_weight,
                      loss_weighting=args.loss_weighting,
                      loss_weight_beta=args.loss_weight_beta,
+                     mask_contain=args.mask_contain,
+                     mask_margin=args.mask_margin,
+                     mask_coverage_weight=args.mask_coverage_weight,
                      geometry_loss_weight=args.geometry_loss_weight,
                      geometry_loss_every=args.geometry_loss_every,
                      ssim_backend=args.ssim_backend,
@@ -156,6 +179,18 @@ def cmd_fit(args):
                      adaptive_min_delta_psnr=args.adaptive_min_delta_psnr,
                      adaptive_patience=args.adaptive_patience)
 
+    mask_np = load_mask(args.mask) if args.mask else None
+    uses_mask = mask_np is not None or fcfg.mask_contain or fcfg.mask_coverage_weight > 0.0 \
+        or fcfg.loss_weighting == "mask"
+    if uses_mask and mask_np is None:
+        raise SystemExit("--mask is required for --mask-contain / --mask-coverage-weight / "
+                         "--loss-weighting mask")
+    if uses_mask and args.pyramid:
+        raise SystemExit("mask-contained fitting does not support --pyramid yet")
+    if uses_mask and fcfg.mask_contain and not fcfg.support_fade:
+        print("note: exact zero outside the mask needs --support-fade; without it the render is "
+              "contained to the sigma_cutoff ellipse but weight can leak inside its bounding box")
+
     if args.pyramid:
         # honor --iters when --iters-per-level is not given, so the pyramid spends the
         # same total optimization budget the user asked for
@@ -165,14 +200,26 @@ def cmd_fit(args):
                              iters_per_level=per_level,
                              level_iters=args.level_iters)
         out = fit_pyramid(img, target, icfg, fcfg, pcfg, scfg)
+    elif uses_mask:
+        field = _init.build_masked_field(img, mask_np, icfg, scfg, device=device,
+                                          sigma_cutoff=fcfg.sigma_cutoff,
+                                          mask_margin=fcfg.mask_margin,
+                                          contain=fcfg.mask_contain)
+        out = fit(field, target, fcfg, mask=mask_np)
     else:
         field = _init.build_field(img, icfg, scfg, device=device)
         out = fit(field, target, fcfg)
 
     os.makedirs(args.outdir, exist_ok=True)
     base = os.path.splitext(os.path.basename(args.image))[0]
-    save_image(os.path.join(args.outdir, f"{base}_{args.strategy}.png"),
-               out["render"].detach().cpu().numpy())
+    render = out["render"].detach().cpu().numpy()
+    save_image(os.path.join(args.outdir, f"{base}_{args.strategy}.png"), render)
+    if uses_mask:
+        from . import mask as _maskmod
+        inside = _maskmod.as_bool_mask(mask_np).astype(np.float32)
+        save_rgba(os.path.join(args.outdir, f"{base}_{args.strategy}_masked.png"), render, inside)
+        outside_energy = float(np.abs(render * (1.0 - inside)[..., None]).mean())
+        print(f"  out-of-mask mean |render| = {outside_energy:.3e}")
     out["field"].save(os.path.join(args.outdir, f"{base}_{args.strategy}.npz"))
     line = (f"\n{base}: {out['n_gaussians']} gaussians | PSNR {out['psnr']:.2f} | "
             f"SSIM {out['ssim']:.4f} | MS-SSIM {out['ms_ssim']:.4f}")
@@ -422,8 +469,17 @@ def main():
                    help="iterations used to ramp scheduled support fade off")
     f.add_argument("--optimizer", choices=["adam", "adamw", "adan"], default="adam")
     f.add_argument("--pixel-loss", choices=["l1", "l2", "charbonnier"], default="l1")
-    f.add_argument("--loss-weighting", choices=["none", "tensor"], default="none")
+    f.add_argument("--loss-weighting", choices=["none", "tensor", "mask"], default="none",
+                   help="mask: drop out-of-mask pixels from the loss (requires --mask)")
     f.add_argument("--loss-weight-beta", type=float, default=1.0)
+    f.add_argument("--mask", default=None,
+                   help="binary/alpha mask image (CORE-010); enables mask-contained fitting")
+    f.add_argument("--mask-contain", action="store_true",
+                   help="project means + cap scales so the sigma_cutoff support stays in the mask")
+    f.add_argument("--mask-margin", type=float, default=1.5,
+                   help="px safety margin for mask erosion/caps (must exceed ~0.71)")
+    f.add_argument("--mask-coverage-weight", type=float, default=0.0,
+                   help="soft penalty weight on the out-of-mask unnormalized weight sum")
     f.add_argument(
         "--geometry-loss-weight",
         type=float,
