@@ -2218,7 +2218,7 @@ def _adaptive_growth_from_residual(field: GaussianField, target: torch.Tensor,
 
 def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: bool = True,
         sched_offset: int = 0, sched_total: int | None = None, loss_weight_map=None,
-        mask=None) -> dict:
+        mask=None, iteration_observer=None, observer_every: int = 0) -> dict:
     checkpoint_enabled = cfg.checkpoint_policy == "best_psnr_final_count"
     if checkpoint_enabled and (
         sched_offset != 0 or (sched_total is not None and sched_total != cfg.iters)
@@ -2787,6 +2787,17 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 it + 1,
                 _fit_support_fade_alpha(cfg, it + 1),
             )
+
+        if (
+            iteration_observer is not None
+            and observer_every > 0
+            and ((it + 1) % observer_every == 0 or it + 1 == cfg.iters)
+        ):
+            # Read-only observer of the post-step, post-restructure field (e.g. the igsv
+            # live-viewer bridge, ADR-0018). no_grad so an observer cannot extend the
+            # autograd graph; it must not mutate the field or touch RNG state.
+            with torch.no_grad():
+                iteration_observer(field, sched_offset + it + 1, float(loss.item()))
 
         if log_now:
             hist["iter"].append(it)

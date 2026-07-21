@@ -43,6 +43,9 @@ structsplat fit photo.png --strategy quadtree_wse --num-gaussians 20000 --iters 
 # progressive (hierarchical) fit
 structsplat fit photo.png --pyramid --num-gaussians 20000
 
+# watch the fit live in a browser (needs the optional igsv package; diagnostic, ADR-0018)
+structsplat fit photo.png --live --live-every 25   # then open http://127.0.0.1:8890
+
 # the core experiment: init strategy x budget sweep (writes results/summary.md)
 structsplat ablation ./images --budgets 2000 5000 10000 20000 --iters 1500 --target-psnr 35
 

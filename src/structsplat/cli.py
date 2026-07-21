@@ -193,6 +193,18 @@ def cmd_fit(args):
         print("note: exact zero outside the mask needs --support-fade; without it the render is "
               "contained to the sigma_cutoff ellipse but weight can leak inside its bounding box")
 
+    viewer = None
+    if args.live:
+        from .viewer import LiveFitViewer
+
+        viewer = LiveFitViewer((img.shape[0], img.shape[1]),
+                               host=args.live_host, port=args.live_port,
+                               token=args.live_token,
+                               name=os.path.splitext(os.path.basename(args.image))[0])
+        viewer.start()
+        print(f"live viewer: {viewer.url}")
+    observer = viewer.observer if viewer is not None else None
+
     if args.pyramid:
         # honor --iters when --iters-per-level is not given, so the pyramid spends the
         # same total optimization budget the user asked for
@@ -201,16 +213,19 @@ def cmd_fit(args):
                              level_fractions=args.level_fractions,
                              iters_per_level=per_level,
                              level_iters=args.level_iters)
-        out = fit_pyramid(img, target, icfg, fcfg, pcfg, scfg)
+        out = fit_pyramid(img, target, icfg, fcfg, pcfg, scfg,
+                          iteration_observer=observer, observer_every=args.live_every)
     elif uses_mask:
         field = _init.build_masked_field(img, mask_np, icfg, scfg, device=device,
                                           sigma_cutoff=fcfg.sigma_cutoff,
                                           mask_margin=fcfg.mask_margin,
                                           contain=fcfg.mask_contain)
-        out = fit(field, target, fcfg, mask=mask_np)
+        out = fit(field, target, fcfg, mask=mask_np,
+                  iteration_observer=observer, observer_every=args.live_every)
     else:
         field = _init.build_field(img, icfg, scfg, device=device)
-        out = fit(field, target, fcfg)
+        out = fit(field, target, fcfg,
+                  iteration_observer=observer, observer_every=args.live_every)
 
     os.makedirs(args.outdir, exist_ok=True)
     base = os.path.splitext(os.path.basename(args.image))[0]
@@ -229,6 +244,19 @@ def cmd_fit(args):
         line += f" | LPIPS {out['lpips']:.4f}"
     line += f" | iters_to_target {out['iters_to_target']}"
     print(line)
+
+    if viewer is not None:
+        import time
+
+        viewer.publish(out["field"], iteration=args.iters, psnr=float(out["psnr"]))
+        print("live viewer still serving the final field; Ctrl-C to exit")
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            pass
+        finally:
+            viewer.stop()
 
 
 def cmd_ablation(args):
@@ -417,6 +445,13 @@ def main():
                    help="max side of jittered-grid background layer; 0 disables it")
     f.add_argument("--opacity-mode", choices=["none", "constant"], default="none")
     f.add_argument("--init-opacity", type=float, default=0.9)
+    f.add_argument("--live", action="store_true",
+                   help="stream fitting to the igsv browser viewer (diagnostic; ADR-0018)")
+    f.add_argument("--live-host", default="127.0.0.1")
+    f.add_argument("--live-port", type=int, default=8890)
+    f.add_argument("--live-token", default=None)
+    f.add_argument("--live-every", type=int, default=25,
+                   help="publish a snapshot every N fit iterations")
     f.add_argument("--renderer",
                    choices=[
                        "normalized", "additive", "cuda", "cuda_additive",
