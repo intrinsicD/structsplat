@@ -180,6 +180,8 @@ def cmd_fit(args):
                      adaptive_patience=args.adaptive_patience)
 
     mask_np = load_mask(args.mask) if args.mask else None
+    if mask_np is not None and args.mask_invert:
+        mask_np = 1.0 - mask_np
     uses_mask = mask_np is not None or fcfg.mask_contain or fcfg.mask_coverage_weight > 0.0 \
         or fcfg.loss_weighting == "mask"
     if uses_mask and mask_np is None:
@@ -473,7 +475,9 @@ def main():
                    help="mask: drop out-of-mask pixels from the loss (requires --mask)")
     f.add_argument("--loss-weight-beta", type=float, default=1.0)
     f.add_argument("--mask", default=None,
-                   help="binary/alpha mask image (CORE-010); enables mask-contained fitting")
+                   help="binary/alpha mask image (CORE-010); white=inside. Enables mask fitting")
+    f.add_argument("--mask-invert", action="store_true",
+                   help="treat black as inside (invert the mask) for white=background masks")
     f.add_argument("--mask-contain", action="store_true",
                    help="project means + cap scales so the sigma_cutoff support stays in the mask")
     f.add_argument("--mask-margin", type=float, default=1.5,
