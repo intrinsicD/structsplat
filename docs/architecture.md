@@ -42,7 +42,10 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
 - **read-only diagnostics:** `visualize` calls the production NumPy analysis/initialization and
   torch normalized renderer, then exports raw tensor/field/responsibility maps plus deterministic
   explanatory panels. It never fits or changes a field and is not benchmark evidence (DOCS-002).
-- **entry:** `cli` (`structsplat fit` / `ablation` / `stage-search`).
+  `viewer` bridges a `GaussianField` to the external igsv browser viewer (optional dependency)
+  for live fit inspection via `fit(iteration_observer=..., observer_every=...)`; the embedding
+  and its diagnostic-only status are ADR-0018.
+- **entry:** `cli` (`structsplat fit` [`--live`] / `ablation` / `stage-search`).
 - **decision benchmark:** `benchmarks.actual_rate_phase_diagram` owns frozen actual-rate manifests,
   SSPL1 cold scoring, exact-cap RDO/statistics, and result figures for BENCH-007. Its manifest
   distinguishes the normalized weighted-sum equation from the selected implementation; native
