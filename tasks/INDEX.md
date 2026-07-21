@@ -54,6 +54,7 @@ replay-valid; do not rewrite those task bytes merely to duplicate this table.
 | BENCH-016 | Pinned native SAD frontier screen | completed negative development screen — valid 144-row v6 matrix; 0.5-bpp gates passed, 2.0-bpp quality/LPIPS guards failed; decision `abandon SAD reuse` | BENCH-005/007/015, FIT-018 |
 | COMP-005 | Decoder-synchronized structural geometry | not authorized — tensor structure failed the actual-rate gate and layout bytes were not established as the binding loss | BENCH-007, COMP-001/002/003/004, INIT-001/003/009 |
 | COMP-006 | Marginal cold-stream rate--distortion attribution | completed negative — exact replay matched; birth lost `-1.0714 dB` to the strongest actual-byte control and confirmation remains sealed | COMP-001/002/003/004, BENCH-002/007, FIT-004/017 |
+| CORE-010 | Mask-contained fitting for alpha-masked inputs | todo — opt-in capability (SDF hard containment + out-of-mask coverage penalty + masked loss); no default or novelty claim | CORE-003/005, INIT-002/003, FIT-012, ADR-0012 |
 
 ## Retired Done Tasks
 
