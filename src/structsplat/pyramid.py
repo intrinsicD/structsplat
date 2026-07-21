@@ -112,7 +112,8 @@ def prefix_metrics(field: GaussianField, counts: list[int], target: torch.Tensor
 def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
                 fcfg: FitConfig, pcfg: PyramidConfig,
                 scfg: StructureTensorConfig | None = None, verbose: bool = True,
-                loss_weight_map=None) -> dict:
+                loss_weight_map=None, iteration_observer=None,
+                observer_every: int = 0) -> dict:
     H, W = img.shape[:2]
     device = target.device
     total = icfg.num_gaussians
@@ -198,7 +199,8 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
             print(f"[pyramid] level {lvl}: +{new.n} -> {field.n} gaussians")
         out = fit(field, target, level_cfg, verbose=verbose,
                   sched_offset=level_offset, sched_total=sched_total,
-                  loss_weight_map=loss_weight_map)
+                  loss_weight_map=loss_weight_map,
+                  iteration_observer=iteration_observer, observer_every=observer_every)
         field = out["field"]
         counts[-1] = field.n
         h = out["history"]

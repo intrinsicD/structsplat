@@ -47,6 +47,9 @@ structsplat fit photo.png --pyramid --num-gaussians 20000
 # metrics.jsonl + existing .npz outputs (PORT-005 encode throughput)
 structsplat batch-fit ./photos --num-gaussians 20000 --iters 2000 \
     --devices cuda:0,cuda:1 --workers 2 --outdir runs/batch
+    
+# watch the fit live in a browser (needs the optional igsv package; diagnostic, ADR-0018)
+structsplat fit photo.png --live --live-every 25   # then open http://127.0.0.1:8890
 
 # the core experiment: init strategy x budget sweep (writes results/summary.md)
 structsplat ablation ./images --budgets 2000 5000 10000 20000 --iters 1500 --target-psnr 35
