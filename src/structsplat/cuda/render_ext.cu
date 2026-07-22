@@ -1,8 +1,11 @@
 #include <ATen/cuda/CUDAContext.h>
 #include <c10/cuda/CUDAException.h>
+#include <cub/cub.cuh>
 #include <torch/extension.h>
 
 #include <algorithm>
+#include <cfloat>
+#include <cstdint>
 #include <vector>
 
 namespace {
@@ -58,6 +61,213 @@ __device__ __forceinline__ float dvisible_dq(float raw, bool support_fade, float
     return 0.0f;
   }
   return -0.5f * raw;
+}
+
+__global__ void tile_count_kernel(
+    const float* __restrict__ means,
+    const int64_t* __restrict__ radii,
+    int n,
+    int height,
+    int width,
+    int tile_size,
+    int64_t* __restrict__ counts) {
+  int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i >= n) {
+    return;
+  }
+  int x0, y0, tx, ty;
+  support_bounds(means, radii, i, height, width, x0, y0, tx, ty);
+  if (tx <= 0 || ty <= 0) {
+    counts[i] = 0;
+    return;
+  }
+  int tile_x0 = x0 / tile_size;
+  int tile_y0 = y0 / tile_size;
+  int tile_x1 = (x0 + tx - 1) / tile_size;
+  int tile_y1 = (y0 + ty - 1) / tile_size;
+  counts[i] = static_cast<int64_t>(tile_x1 - tile_x0 + 1) *
+      static_cast<int64_t>(tile_y1 - tile_y0 + 1);
+}
+
+__device__ __forceinline__ float conic_q(
+    float dx, float dy, float a, float b, float c) {
+  return a * dx * dx + 2.0f * b * dx * dy + c * dy * dy;
+}
+
+// Exact continuous minimum of a positive-definite conic quadratic over an axis-aligned
+// rectangle. A continuous lower bound is conservative for the integer pixel centers evaluated
+// by the renderer: when this minimum exceeds cutoff^2, every sampled weight is exactly zero
+// under support fade.
+__device__ __forceinline__ float tile_min_q(
+    float mx,
+    float my,
+    float a,
+    float b,
+    float c,
+    float x_lo,
+    float x_hi,
+    float y_lo,
+    float y_hi) {
+  float determinant = a * c - b * b;
+  if (!(a > 0.0f && c > 0.0f && determinant > 0.0f)) {
+    return -FLT_MAX;  // malformed conic: retain the pair rather than cull unsafely
+  }
+  if (mx >= x_lo && mx <= x_hi && my >= y_lo && my <= y_hi) {
+    return 0.0f;
+  }
+
+  float best = FLT_MAX;
+  float dx = x_lo - mx;
+  float dy = fminf(fmaxf(-(b / c) * dx, y_lo - my), y_hi - my);
+  best = fminf(best, conic_q(dx, dy, a, b, c));
+  dx = x_hi - mx;
+  dy = fminf(fmaxf(-(b / c) * dx, y_lo - my), y_hi - my);
+  best = fminf(best, conic_q(dx, dy, a, b, c));
+
+  dy = y_lo - my;
+  dx = fminf(fmaxf(-(b / a) * dy, x_lo - mx), x_hi - mx);
+  best = fminf(best, conic_q(dx, dy, a, b, c));
+  dy = y_hi - my;
+  dx = fminf(fmaxf(-(b / a) * dy, x_lo - mx), x_hi - mx);
+  return fminf(best, conic_q(dx, dy, a, b, c));
+}
+
+__global__ void expand_pairs_kernel(
+    const float* __restrict__ means,
+    const float* __restrict__ conics,
+    const int64_t* __restrict__ radii,
+    int n,
+    int height,
+    int width,
+    int tile_size,
+    int tiles_x,
+    int num_tiles,
+    bool ellipse_cull,
+    float cutoff2,
+    const int64_t* __restrict__ pair_starts,
+    int32_t* __restrict__ keys,
+    int32_t* __restrict__ values) {
+  int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i >= n) {
+    return;
+  }
+  int x0, y0, tx, ty;
+  support_bounds(means, radii, i, height, width, x0, y0, tx, ty);
+  if (tx <= 0 || ty <= 0) {
+    return;
+  }
+  int tile_x0 = x0 / tile_size;
+  int tile_y0 = y0 / tile_size;
+  int tile_x1 = (x0 + tx - 1) / tile_size;
+  int tile_y1 = (y0 + ty - 1) / tile_size;
+  int tile_width = tile_x1 - tile_x0 + 1;
+  int pair_count = tile_width * (tile_y1 - tile_y0 + 1);
+  int64_t start = pair_starts[i];
+  float mx = means[i * 2 + 0];
+  float my = means[i * 2 + 1];
+  float a = conics[i * 3 + 0];
+  float b = conics[i * 3 + 1];
+  float c = conics[i * 3 + 2];
+  int support_x1 = x0 + tx - 1;
+  int support_y1 = y0 + ty - 1;
+
+  for (int local = 0; local < pair_count; ++local) {
+    int tile_x = tile_x0 + local % tile_width;
+    int tile_y = tile_y0 + local / tile_width;
+    int key = tile_y * tiles_x + tile_x;
+    if (ellipse_cull) {
+      int rect_x0 = max(x0, tile_x * tile_size);
+      int rect_y0 = max(y0, tile_y * tile_size);
+      int rect_x1 = min(support_x1, (tile_x + 1) * tile_size - 1);
+      int rect_y1 = min(support_y1, (tile_y + 1) * tile_size - 1);
+      float minimum = tile_min_q(
+          mx, my, a, b, c,
+          static_cast<float>(rect_x0), static_cast<float>(rect_x1),
+          static_cast<float>(rect_y0), static_cast<float>(rect_y1));
+      float cull_guard = 1e-5f * fmaxf(cutoff2, 1.0f);
+      if (minimum > cutoff2 + cull_guard) {
+        key = num_tiles;  // sentinel sorts after all live tile ids
+      }
+    }
+    int64_t pair = start + local;
+    keys[pair] = static_cast<int32_t>(key);
+    values[pair] = static_cast<int32_t>(i);
+  }
+}
+
+__global__ void tile_offsets_from_keys_kernel(
+    const int32_t* __restrict__ sorted_keys,
+    int64_t count,
+    int num_tiles,
+    int32_t* __restrict__ offsets) {
+  int tile = blockIdx.x * blockDim.x + threadIdx.x;
+  if (tile > num_tiles) {
+    return;
+  }
+  int64_t lo = 0;
+  int64_t hi = count;
+  while (lo < hi) {
+    int64_t mid = lo + (hi - lo) / 2;
+    if (sorted_keys[mid] < tile) {
+      lo = mid + 1;
+    } else {
+      hi = mid;
+    }
+  }
+  offsets[tile] = static_cast<int32_t>(lo);
+}
+
+constexpr int kTileStage = 256;
+
+struct TileStage {
+  float mx[kTileStage];
+  float my[kTileStage];
+  float a[kTileStage];
+  float b[kTileStage];
+  float c[kTileStage];
+  float op[kTileStage];
+  float cr[kTileStage];
+  float cg[kTileStage];
+  float cb[kTileStage];
+  int32_t gid[kTileStage];
+  int32_t x0[kTileStage];
+  int32_t x1[kTileStage];
+  int32_t y0[kTileStage];
+  int32_t y1[kTileStage];
+};
+
+__device__ __forceinline__ void stage_tile_batch(
+    TileStage& stage,
+    const float* __restrict__ means,
+    const float* __restrict__ conics,
+    const float* __restrict__ colors,
+    const int64_t* __restrict__ radii,
+    const float* __restrict__ opacities,
+    const int32_t* __restrict__ tile_gids,
+    bool has_opacity,
+    int height,
+    int width,
+    int batch,
+    int count) {
+  for (int j = threadIdx.x; j < count; j += blockDim.x) {
+    int i = tile_gids[batch + j];
+    int x0, y0, tx, ty;
+    support_bounds(means, radii, i, height, width, x0, y0, tx, ty);
+    stage.gid[j] = i;
+    stage.x0[j] = x0;
+    stage.x1[j] = x0 + tx;
+    stage.y0[j] = y0;
+    stage.y1[j] = y0 + ty;
+    stage.mx[j] = means[i * 2 + 0];
+    stage.my[j] = means[i * 2 + 1];
+    stage.a[j] = conics[i * 3 + 0];
+    stage.b[j] = conics[i * 3 + 1];
+    stage.c[j] = conics[i * 3 + 2];
+    stage.op[j] = has_opacity ? opacities[i] : 1.0f;
+    stage.cr[j] = colors[i * 3 + 0];
+    stage.cg[j] = colors[i * 3 + 1];
+    stage.cb[j] = colors[i * 3 + 2];
+  }
 }
 
 __global__ void accumulate_kernel(
@@ -142,8 +352,8 @@ __global__ void tiled_forward_kernel(
     const float* __restrict__ colors,
     const int64_t* __restrict__ radii,
     const float* __restrict__ opacities,
-    const int64_t* __restrict__ tile_gids,
-    const int64_t* __restrict__ tile_offsets,
+    const int32_t* __restrict__ tile_gids,
+    const int32_t* __restrict__ tile_offsets,
     int height,
     int width,
     int tiles_x,
@@ -155,47 +365,55 @@ __global__ void tiled_forward_kernel(
     float tail,
     float* __restrict__ out,
     float* __restrict__ den) {
+  __shared__ TileStage stage;
   int tile = blockIdx.x;
   int local = threadIdx.x;
   int tile_pixels = tile_size * tile_size;
-  if (local >= tile_pixels) {
-    return;
-  }
-  int tile_x = tile % tiles_x;
-  int tile_y = tile / tiles_x;
-  int px = tile_x * tile_size + (local % tile_size);
-  int py = tile_y * tile_size + (local / tile_size);
-  if (px >= width || py >= height) {
-    return;
+  int px = 0;
+  int py = 0;
+  bool active = local < tile_pixels;
+  if (active) {
+    int tile_x = tile % tiles_x;
+    int tile_y = tile / tiles_x;
+    px = tile_x * tile_size + (local % tile_size);
+    py = tile_y * tile_size + (local / tile_size);
+    active = px < width && py < height;
   }
 
   float nr = 0.0f;
   float ng = 0.0f;
   float nb = 0.0f;
   float d = 0.0f;
-  int64_t start = tile_offsets[tile];
-  int64_t end = tile_offsets[tile + 1];
-  for (int64_t p = start; p < end; ++p) {
-    int i = static_cast<int>(tile_gids[p]);
-    int x0, y0, tx, ty;
-    support_bounds(means, radii, i, height, width, x0, y0, tx, ty);
-    if (px < x0 || px >= x0 + tx || py < y0 || py >= y0 + ty) {
-      continue;
+  int start = tile_offsets[tile];
+  int end = tile_offsets[tile + 1];
+  for (int batch = start; batch < end; batch += kTileStage) {
+    int m = min(kTileStage, end - batch);
+    stage_tile_batch(stage, means, conics, colors, radii, opacities, tile_gids, has_opacity,
+                     height, width, batch, m);
+    __syncthreads();
+    if (active) {
+      float fx = static_cast<float>(px);
+      float fy = static_cast<float>(py);
+      for (int j = 0; j < m; ++j) {
+        if (px < stage.x0[j] || px >= stage.x1[j] ||
+            py < stage.y0[j] || py >= stage.y1[j]) {
+          continue;
+        }
+        float dx = fx - stage.mx[j];
+        float dy = fy - stage.my[j];
+        float q = conic_q(dx, dy, stage.a[j], stage.b[j], stage.c[j]);
+        float weight = visible_weight(expf(-0.5f * q), support_fade, tail) * stage.op[j];
+        nr += weight * stage.cr[j];
+        ng += weight * stage.cg[j];
+        nb += weight * stage.cb[j];
+        d += weight;
+      }
     }
-    float mx = means[i * 2 + 0];
-    float my = means[i * 2 + 1];
-    float dx = static_cast<float>(px) - mx;
-    float dy = static_cast<float>(py) - my;
-    float a = conics[i * 3 + 0];
-    float b = conics[i * 3 + 1];
-    float c = conics[i * 3 + 2];
-    float q = a * dx * dx + 2.0f * b * dx * dy + c * dy * dy;
-    float op = has_opacity ? opacities[i] : 1.0f;
-    float weight = visible_weight(expf(-0.5f * q), support_fade, tail) * op;
-    nr += weight * colors[i * 3 + 0];
-    ng += weight * colors[i * 3 + 1];
-    nb += weight * colors[i * 3 + 2];
-    d += weight;
+    __syncthreads();
+  }
+
+  if (!active) {
+    return;
   }
 
   int flat = py * width + px;

@@ -1,4 +1,4 @@
-"""Command line entry: `structsplat fit ...` and `structsplat ablation ...`.
+"""Command line entry for fitting, rendering, diagnostics, and benchmarks.
 
 Torch is imported lazily inside the commands so `--help` and the NumPy modules work without it.
 """
@@ -66,6 +66,20 @@ def save_rgba(path: str, rgb: np.ndarray, alpha: np.ndarray):
     a_u8 = np.rint(np.clip(alpha, 0, 1) * 255.0).astype(np.uint8)
     rgba = np.dstack([rgb_u8, a_u8])
     Image.fromarray(rgba, mode="RGBA").save(path)
+
+
+def save_error_heatmap(path: str, signed_error: np.ndarray, scale: float = 4.0) -> None:
+    """Save a fixed-scale heatmap of mean absolute RGB reconstruction error."""
+    from PIL import Image
+    from .visualize import scalar_heatmap
+
+    if scale <= 0.0:
+        raise ValueError("error heatmap scale must be positive")
+    error = np.asarray(signed_error, dtype=np.float32)
+    if error.ndim != 3 or error.shape[2] != 3:
+        raise ValueError(f"signed_error must have shape (H,W,3), got {error.shape}")
+    display = np.clip(np.mean(np.abs(error), axis=2) * float(scale), 0.0, 1.0)
+    Image.fromarray(scalar_heatmap(display), mode="RGB").save(path)
 
 
 def build_fit_configs(args):
@@ -276,6 +290,170 @@ def cmd_batch_fit(args):
     rows = run_batch(args)
     if any(row.get("error") for row in rows):
         raise SystemExit(1)
+
+
+def cmd_render(args):
+    """Render a native GaussianField NPZ or a self-describing SSPL1 stream."""
+    import json
+    import torch
+
+    from . import metrics as M
+    from .gaussians import GaussianField
+    from .render import render_field
+
+    source = Path(args.field)
+    if not source.is_file():
+        raise SystemExit(f"Gaussian field does not exist: {source}")
+    device = args.device or ("cuda" if torch.cuda.is_available() else "cpu")
+    reference = load_image(args.reference) if args.reference else None
+    with source.open("rb") as stream:
+        magic = stream.read(5)
+    is_sspl1 = magic == b"SSPL1"
+    blob = source.read_bytes() if is_sspl1 else b""
+
+    if reference is None and (args.error_out or args.raw_error_out or args.metrics_out):
+        raise SystemExit("--error-out, --raw-error-out, and --metrics-out require --reference")
+    if args.height is not None and args.height <= 0:
+        raise SystemExit("--height must be positive")
+    if args.width is not None and args.width <= 0:
+        raise SystemExit("--width must be positive")
+    if args.chunk is not None and args.chunk <= 0:
+        raise SystemExit("--chunk must be positive")
+    if args.aa_dilation is not None and args.aa_dilation < 0.0:
+        raise SystemExit("--aa-dilation must be non-negative")
+    if args.sigma_cutoff is not None and args.sigma_cutoff <= 0.0:
+        raise SystemExit("--sigma-cutoff must be positive")
+    if args.error_out and args.error_scale <= 0.0:
+        raise SystemExit("--error-scale must be positive")
+    if args.gaussians_out and args.ellipse_limit <= 0:
+        raise SystemExit("--ellipse-limit must be positive")
+
+    if is_sspl1:
+        from . import codec
+
+        header = codec.blob_header(blob)
+        height, width = int(header["H"]), int(header["W"])
+        if args.height is not None and args.height != height:
+            raise SystemExit(f"--height {args.height} disagrees with SSPL1 height {height}")
+        if args.width is not None and args.width != width:
+            raise SystemExit(f"--width {args.width} disagrees with SSPL1 width {width}")
+        if any(
+            value is not None
+            for value in (args.renderer, args.aa_dilation, args.sigma_cutoff, args.chunk)
+        ) or args.support_fade:
+            raise SystemExit(
+                "SSPL1 stores its renderer settings; do not pass renderer/support options"
+            )
+        field = codec.decode(blob, device=device)
+        with torch.no_grad():
+            reconstruction_t = codec.decode_and_render(blob, device=device)
+        format_name = "SSPL1"
+    else:
+        if reference is None and (args.height is None or args.width is None):
+            raise SystemExit("NPZ rendering requires --reference or both --height and --width")
+        height = int(reference.shape[0]) if reference is not None else int(args.height)
+        width = int(reference.shape[1]) if reference is not None else int(args.width)
+        if args.height is not None and args.height != height:
+            raise SystemExit(f"--height {args.height} disagrees with reference height {height}")
+        if args.width is not None and args.width != width:
+            raise SystemExit(f"--width {args.width} disagrees with reference width {width}")
+        field = GaussianField.load(str(source), device=device)
+        renderer = args.renderer or "normalized"
+        aa_dilation = 0.0 if args.aa_dilation is None else float(args.aa_dilation)
+        sigma_cutoff = 3.0 if args.sigma_cutoff is None else float(args.sigma_cutoff)
+        chunk = 512 if args.chunk is None else int(args.chunk)
+        scales = field.effective_scales(
+            aa_dilation if renderer in ("gsplat", "cuda_gsplat") else 0.0
+        )
+        with torch.no_grad():
+            reconstruction_t = render_field(
+                field.means,
+                field.conics(aa_dilation),
+                field.colors,
+                field.radii(sigma_cutoff, aa_dilation),
+                height,
+                width,
+                chunk=chunk,
+                mode=renderer,
+                opacities=field.opacity_values(),
+                scales=scales,
+                rotations=field.rotations,
+                support_fade=args.support_fade,
+                sigma_cutoff=sigma_cutoff,
+                color_grads=field.color_grads,
+            )
+        format_name = "GaussianField NPZ"
+
+    if reference is not None and reference.shape[:2] != (height, width):
+        raise SystemExit(
+            f"reference is {reference.shape[1]}x{reference.shape[0]}, "
+            f"but the render is {width}x{height}"
+        )
+    if not bool(torch.isfinite(reconstruction_t).all()):
+        raise SystemExit("renderer produced non-finite pixels")
+    reconstruction = reconstruction_t.detach().cpu().numpy().astype(np.float32, copy=False)
+    display = np.clip(reconstruction, 0.0, 1.0)
+    output = Path(args.out)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    save_image(str(output), display)
+
+    if args.gaussians_out:
+        from .visualize import gaussian_overlay
+
+        overlay_path = Path(args.gaussians_out)
+        overlay_path.parent.mkdir(parents=True, exist_ok=True)
+        background = reference if reference is not None else display
+        gaussian_overlay(background, field, limit=args.ellipse_limit).save(overlay_path)
+
+    metric_values = None
+    if reference is not None:
+        target_t = torch.as_tensor(reference, device=reconstruction_t.device)
+        display_t = reconstruction_t.clamp(0.0, 1.0)
+        signed_error = display - reference
+        metric_values = {
+            "field": str(source),
+            "format": format_name,
+            "reference": str(args.reference),
+            "width": width,
+            "height": height,
+            "n_gaussians": int(field.n),
+            "comparison": "display-referred reconstruction clamped to [0,1]",
+            "mse": float(np.mean(np.square(signed_error), dtype=np.float64)),
+            "mae": float(np.mean(np.abs(signed_error), dtype=np.float64)),
+            "max_abs_error": float(np.max(np.abs(signed_error))),
+            "psnr_db": M.psnr(display_t, target_t),
+            "ssim": float(M.ssim(display_t, target_t)),
+            "ms_ssim": None,
+        }
+        try:
+            metric_values["ms_ssim"] = M.ms_ssim(display_t, target_t)
+        except ValueError:
+            # Images below the SSIM window still have well-defined pixel/PSNR/SSIM metrics.
+            pass
+        if args.error_out:
+            error_path = Path(args.error_out)
+            error_path.parent.mkdir(parents=True, exist_ok=True)
+            save_error_heatmap(str(error_path), signed_error, args.error_scale)
+        if args.raw_error_out:
+            raw_error_path = Path(args.raw_error_out)
+            raw_error_path.parent.mkdir(parents=True, exist_ok=True)
+            with raw_error_path.open("wb") as stream:
+                np.save(stream, signed_error.astype(np.float32, copy=False))
+        if args.metrics_out:
+            metrics_path = Path(args.metrics_out)
+            metrics_path.parent.mkdir(parents=True, exist_ok=True)
+            metrics_path.write_text(
+                json.dumps(metric_values, indent=2, sort_keys=True, allow_nan=False) + "\n",
+                encoding="utf-8",
+            )
+    line = f"rendered {field.n} Gaussians from {format_name} to {output} ({width}x{height})"
+    if metric_values is not None:
+        line += (
+            f" | PSNR {metric_values['psnr_db']:.2f} dB"
+            f" | SSIM {metric_values['ssim']:.4f}"
+            f" | MAE {metric_values['mae']:.6f}"
+        )
+    print(line)
 
 
 def cmd_ablation(args):
@@ -670,9 +848,71 @@ def main():
     f.add_argument("--outdir", default="runs")
     f.add_argument("--device", default=None)
 
-    fit_parser = sub.add_parser("fit", help="fit a single image", parents=[f])
+    fit_parser = sub.add_parser(
+        "fit",
+        aliases=["image-to-gaussians2d"],
+        help="fit a single image into a native 2D GaussianField",
+        parents=[f],
+    )
     fit_parser.add_argument("image")
     fit_parser.set_defaults(func=cmd_fit)
+
+    render_parser = sub.add_parser(
+        "render",
+        aliases=["gaussians2d-to-image"],
+        help="render a GaussianField NPZ or self-describing SSPL1 stream",
+    )
+    render_parser.add_argument("field", help="GaussianField .npz or SSPL1 stream")
+    render_parser.add_argument("--out", required=True, help="output reconstruction image")
+    render_parser.add_argument(
+        "--reference",
+        help="original image; supplies NPZ dimensions and enables errors/metrics",
+    )
+    render_parser.add_argument("--height", type=int, help="NPZ canvas height without --reference")
+    render_parser.add_argument("--width", type=int, help="NPZ canvas width without --reference")
+    render_parser.add_argument(
+        "--renderer",
+        choices=[
+            "normalized", "additive", "cuda", "cuda_additive",
+            "cuda_tiled", "cuda_tiled_additive", "gsplat",
+        ],
+        default=None,
+        help="NPZ render mode (default: normalized); SSPL1 uses its stored mode",
+    )
+    render_parser.add_argument("--chunk", type=int, default=None)
+    render_parser.add_argument("--aa-dilation", type=float, default=None)
+    render_parser.add_argument("--sigma-cutoff", type=float, default=None)
+    render_parser.add_argument("--support-fade", action="store_true")
+    render_parser.add_argument(
+        "--error-out",
+        help="fixed-scale heatmap of mean absolute RGB error (requires --reference)",
+    )
+    render_parser.add_argument(
+        "--error-scale",
+        type=float,
+        default=4.0,
+        help="multiplier used only for --error-out display (default: 4)",
+    )
+    render_parser.add_argument(
+        "--raw-error-out",
+        help="signed float32 HxWx3 reconstruction-minus-reference .npy",
+    )
+    render_parser.add_argument(
+        "--metrics-out",
+        help="JSON reconstruction metrics computed before image encoding",
+    )
+    render_parser.add_argument(
+        "--gaussians-out",
+        help="one-sigma fitted-Gaussian ellipse overlay on the reference/reconstruction",
+    )
+    render_parser.add_argument(
+        "--ellipse-limit",
+        type=int,
+        default=500,
+        help="maximum evenly sampled ellipses in --gaussians-out",
+    )
+    render_parser.add_argument("--device", default=None)
+    render_parser.set_defaults(func=cmd_render)
 
     b = sub.add_parser(
         "batch-fit",

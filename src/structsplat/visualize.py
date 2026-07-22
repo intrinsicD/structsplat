@@ -455,6 +455,25 @@ def _gaussian_panel(image: np.ndarray, field: GaussianField, limit: int) -> Imag
     )
 
 
+def gaussian_overlay(
+    image: np.ndarray,
+    field: GaussianField,
+    limit: int = 500,
+) -> Image.Image:
+    """Overlay fitted Gaussian one-sigma ellipses on an RGB image.
+
+    This is a read-only display helper for decoded/fitted fields.  It complements the
+    initialization-only method bundle without recomputing or claiming source-derived tensor
+    features for a field that no longer has access to its source image.
+    """
+    image = np.asarray(image, dtype=np.float32)
+    if image.ndim != 3 or image.shape[2] != 3:
+        raise ValueError(f"image must have shape (H,W,3), got {image.shape}")
+    if limit <= 0:
+        raise ValueError("limit must be positive")
+    return _gaussian_panel(image, field, limit)
+
+
 def responsibility_diagnostics(
     field: GaussianField,
     height: int,

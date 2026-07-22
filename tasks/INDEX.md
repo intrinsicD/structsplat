@@ -22,8 +22,8 @@ replay-valid; do not rewrite those task bytes merely to duplicate this table.
 | CORE-007 | Segmentation-free responsibility boundary flux | design-only — BENCH-007 did not authorize the old structure/compression path; any reopening needs a new prior-art-controlled question | INIT-004, CORE-001, BENCH-007 |
 | CORE-008 | Hybrid Gaussian + frequency-bearing primitive control | design-only — WIPES remains the direct primitive baseline and BENCH-007 supplies no promotion signal | CORE-001, INIT-001, FIT-001, BENCH-007 |
 | INIT-009 | Progressive WSE survivor ordering | implemented/confirmed — 32/32 uniform Euclidean prefix wins with identical terminal sets; opt-in for compatibility | INIT-003/005/006, BENCH-002 |
-| PORT-002 | GPU-native tile index + fused loss/backward | implemented (unmeasured) — in-extension CUB binning, staged tiled kernels, opt-in exact ellipse cull; CUDA parity + preregistered profile pending; fused loss and graphs open | PORT-001, FIT-003 |
-| PORT-003 | Avoid atomics in tiled backward | implemented (unmeasured) — warp-reduced tiled backward atomics (32x fewer transactions); gradient parity + timings pending on hardware | PORT-001 |
+| PORT-002 | GPU-native tile index + fused loss/backward | locally correctness-validated, performance unmeasured — in-extension CUB binning, staged tiled kernels, opt-in exact ellipse cull; preregistered profile, fused loss, and graphs open | PORT-001, FIT-003 |
+| PORT-003 | Avoid atomics in tiled backward | locally gradient-validated, performance unmeasured — warp-reduced tiled backward atomics; preregistered timings pending | PORT-001 |
 | PORT-004 | Exact-backward block reduction | implemented/screened — large N=2048 microprofile gains, but all-grid direction and independent CV guards fail; benchmark-only, not CLI/default | PORT-001/003, ADR-0011, BENCH-002 |
 | GEN-003 | VSD / multi-particle distillation | todo | GEN-001 |
 | ABL-005 | Fitter-knob influence pass at the fair regime | partial — CUDA-native fair shard started; color-solve and broader Kodak cells pending | ADR-0010, FIT-005/006/007, CORE-006 |

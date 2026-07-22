@@ -1,8 +1,9 @@
 # PORT-002: GPU-native tile index + fused loss/backward
 
-**Status: implemented (unmeasured) for the index/kernel work; fused loss and CUDA graphs remain
-open.** The 2026-07-21 implementation was authored without a CUDA device, so every acceptance
-box stays unchecked until the parity tests and the preregistered profile run on real hardware.
+**Status: implemented and locally correctness-validated for the index/kernel work; performance is
+unmeasured, and fused loss plus CUDA graphs remain open.** The incomplete 2026-07-21 CUDA source
+was repaired and its parity suite passed on an RTX 4090 on 2026-07-22. The preregistered timing
+profile has not run, so no speedup or default-change claim is authorized.
 
 ## Context
 `cuda_tiled` currently builds the tile-to-Gaussian index in Python/Torch and sorts it each call.
@@ -26,9 +27,9 @@ memory traffic during training.
 4. Investigate CUDA graph capture when N, image size, and tile capacity are stable.
 
 ## Acceptance criteria
-- [ ] Tile index construction runs fully on GPU after input tensors are on device.
+- [x] Tile index construction runs fully on GPU after input tensors are on device.
 - [ ] Reuses preallocated buffers across iterations without hidden CPU synchronization.
-- [ ] Forward parity vs existing `cuda_tiled` and reference renderers.
+- [x] Forward parity vs existing `cuda_tiled` and reference renderers.
 - [ ] Fused training loss path matches unfused loss within tolerance on fixed fixtures.
 - [ ] Benchmark shows tile-index time, render time, backward time, and total fit time before/after.
 - [ ] If CUDA graphs are added, fallback path remains available for dynamic-N fits.
@@ -69,5 +70,22 @@ PORT-001, FIT-003.
     step to be ≤ 1.00x exact `cuda`, every N=8192 cell to hold that direction, GPU index build
     ≤ 15% of the tiled step, and CVs ≤ 5%. Passing authorizes only the fair-protocol end-to-end
     fit benchmark; the shipped GPU default stays `cuda`.
-  - Remaining scope for this task: fused render+L1/SSIM partial accumulation (approach item 3)
-    and CUDA graph capture with the dynamic-N fallback (approach item 4).
+- Remaining scope for this task: fused render+L1/SSIM partial accumulation (approach item 3)
+  and CUDA graph capture with the dynamic-N fallback (approach item 4).
+- 2026-07-22 correctness validation: restored the missing CUB include, per-Gaussian tile-count,
+  pair-expansion, exact conic/rectangle culling, tile-range, shared staging, and int32 tiled
+  forward pieces referenced by the 2026-07-21 wrapper. On an NVIDIA RTX 4090 with PyTorch
+  2.12.0+cu132, `pytest -q tests/test_render.py -k cuda` passed 29/29 tests, including GPU-vs-Torch
+  tile membership, tiled/reference forward and backward parity, and culled-vs-unculled equality.
+  This is correctness evidence only; the frozen CUDA-event profile remains required for timing.
+  The exact local invocation was
+  `PYTHONPATH=src /home/alex/Documents/realtime-gs/.venv-cuda/bin/python -m pytest -q
+  tests/test_render.py -k cuda`; it exercised the dirty working tree based on Git commit
+  `96641b243f9ee9e75c49b7ec2e997a4f35283b13`, not a released artifact. Critical SHA-256 inputs:
+  `render_ext.cu=507e47e34662966f75cc833c0e2dbc37bdeacd53b3cbc8e862a5405dd9fdc43a`,
+  `render_ext.cpp=532f5325881db7075ea9144db52320d48fc7eff8bd49e45bfade1d72770118ad`,
+  `cuda_render.py=aa7978596b8b2f49087c4811becacf3b43ab19ca4ebd9490788ec6dec4442082`, and
+  `tests/test_render.py=c448f581812bed0e58bd94297c67bac3c85045967a786a6be04f60c4b59a5546`.
+  GPU scheduling and atomic accumulation are not promised bitwise deterministic; the suite uses
+  its established numeric tolerances. This local run is implementation evidence, not an ARA
+  quality/rate result and not authorization for a performance claim.
