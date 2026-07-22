@@ -21,6 +21,10 @@ IntrinsicEngine as an RHI pass.
 - `init.py` (torch bridge) — the five strategies in `STRATEGIES` (the ablation variables).
 - `fit.py` (torch) — Adam fitter, L1+SSIM, records PSNR history + iters-to-target.
 - `pyramid.py` (torch) — progressive densification driven by residual structure tensor.
+- `codec.py` / `cli.py` (torch at command time) — native NPZ and self-describing SSPL1 persistence;
+  `fit`/`image-to-gaussians2d` saves native fields, while `render`/`gaussians2d-to-image`
+  reconstructs NPZ or SSPL1 with optional display-referred error metrics and read-only
+  fitted-field overlays.
 
 ## Invariants (do not break without an ADR)
 1. Init-time math stays **NumPy and importable without torch**. Autograd stays in torch modules.

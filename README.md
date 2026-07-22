@@ -77,6 +77,127 @@ structsplat fit object.png --mask object_alpha.png --mask-contain --support-fade
 structsplat fit object.png --mask object_alpha.png --mask-coverage-weight 1.0 --loss-weighting mask
 ```
 
+## Image ↔ Gaussians2D conversion and diagnostics
+
+StructSplat uses two related 2D-Gaussian artifacts in this workspace. A native
+`GaussianField` `.npz` is editable full-precision fit state; it does not contain the canvas size or
+renderer settings. A realtime-gs `gaussians2d/*.rtgsv` file is a self-contained calibrated view
+with camera, fitted window, renderer semantics, source hashes, and optional exact alpha. The two
+formats are not interchangeable, and the 168,000-byte cap applies to the complete `.rtgsv` file,
+not to a native `.npz`.
+
+### One image → native 2D Gaussian field → image
+
+`image-to-gaussians2d` is an explicit alias for `fit`. This example writes
+`runs/photo/photo_quadtree_wse.npz` (the Gaussian field) and
+`runs/photo/photo_quadtree_wse.png` (the terminal reconstruction):
+
+```bash
+structsplat image-to-gaussians2d photo.png \
+  --strategy quadtree_wse --num-gaussians 20000 --iters 2000 \
+  --outdir runs/photo
+```
+
+`gaussians2d-to-image` is an alias for `render`. Supplying the original image provides the canvas
+size and enables a fixed-scale absolute-error visualization, the raw signed error, numerical
+metrics, and a fitted-Gaussian overlay:
+
+```bash
+structsplat gaussians2d-to-image runs/photo/photo_quadtree_wse.npz \
+  --reference photo.png \
+  --out runs/photo/reconstruction.png \
+  --error-out runs/photo/absolute_error_x4.png \
+  --raw-error-out runs/photo/signed_error.npy \
+  --metrics-out runs/photo/reconstruction_metrics.json \
+  --gaussians-out runs/photo/fitted_gaussian_ellipses.png
+```
+
+The heatmap displays `4 × mean(abs(reconstruction - reference), RGB)` on a fixed `[0,1]` scale;
+it is for visual comparison and is not normalized independently per image. `signed_error.npy` is
+the float32 `(H,W,3)` array `clamped_reconstruction - reference`. The JSON records display-referred
+MSE, MAE, maximum absolute error, PSNR, SSIM, and MS-SSIM before PNG encoding. Without an original,
+give the native NPZ canvas explicitly:
+
+```bash
+structsplat render runs/photo/photo_quadtree_wse.npz \
+  --height 1080 --width 1920 --out runs/photo/reconstruction.png
+```
+
+The same render command accepts a self-describing `SSPL1` stream and then uses the dimensions and
+renderer settings stored in its header. For a native NPZ, pass the same `--renderer`,
+`--aa-dilation`, `--sigma-cutoff`, and `--support-fade` settings used during fitting whenever they
+differ from the defaults.
+
+### Janelle image + mask → capped realtime-gs `gaussians2d` views
+
+The calibrated Janelle conversion is handled by the resumable mask-contained bridge. Run it from
+this checkout with the CUDA realtime-gs environment:
+
+```bash
+cd /home/alex/Documents/structsplat
+PY=/home/alex/Documents/realtime-gs/.venv-cuda/bin/python
+"$PY" -m pip install -e . -e /home/alex/Documents/realtime-gs
+"$PY" scripts/fit_janelle_mask_contained.py convert \
+  --dataset-root /home/alex/Dropbox/Work/Janelle \
+  --realtime-root /home/alex/Documents/realtime-gs \
+  --device cuda:0
+```
+
+For each masked frame it writes `frame_*/gaussians2d/Cxxxx.rtgsv`, enforcing at most 168,000
+decimal bytes for the complete view. It also writes `fitting/Cxxxx.json`,
+`fitting/Cxxxx_history.csv`, `fitting_summary.csv`, and `run_config.json`. Those sidecars contain
+the benchmark fitting curve, target-hit iterations, selected-versus-terminal checkpoints, final
+quality, serialization backoff, per-stage wall times, and total fitting time. They also record
+staged count plateaus when `--start-gaussians` is below `--candidate-gaussians`; with the default
+direct full-candidate fit, the lower-count result is explicitly labeled as a post-fit
+activity-ranked saturation proxy rather than an independently converged smaller fit. Verified
+outputs are skipped on rerun; partial or provenance-mismatched outputs stop instead of being
+overwritten silently.
+
+To decode all `.rtgsv` fields back to images and compare them with the exact calibrated source
+pipeline, run the realtime-gs gallery utility. Point both roots at the live Janelle capture while
+the `rgb/` and `mask/` folders are still present:
+
+```bash
+cd /home/alex/Documents/realtime-gs
+.venv-cuda/bin/python scripts/render_compact_structsplat_gallery.py \
+  --compact-root /home/alex/Dropbox/Work/Janelle/2025_03_07_stage_with_fabric \
+  --source-root /home/alex/Dropbox/Work/Janelle/2025_03_07_stage_with_fabric \
+  --structsplat-root /home/alex/Documents/structsplat \
+  --out /home/alex/Documents/structsplat/runs/janelle_2d_reconstructions
+```
+
+The output includes native-resolution original crops and reconstructions, foreground previews,
+fixed-scale absolute-error heatmaps, per-view PSNR/MAE and render timing, sampled archive-query
+versus renderer parity, `manifest.json`, and an `index.html` gallery. Use the `karate` directory as
+both roots in a second invocation for that capture. Error comparison requires the original RGB;
+the compact field itself does not store source pixels.
+
+### Structure tensor and other source/representation features
+
+Yes—the existing deterministic diagnostics visualize the structure tensor directly over the
+original image and expose the other features used by initialization and normalized rendering:
+
+```bash
+cd /home/alex/Documents/structsplat
+python scripts/render_paper_figures.py photo.png \
+  --outdir runs/photo/features --max-side 0 \
+  --strategy quadtree_wse --num-gaussians 384 --seed 0
+```
+
+Useful outputs are `tensor_tangents.png` (cyan edge tangents and orange normals over the image),
+`tensor_energy.png`, `tensor_coherence.png`, `tensor_labels.png` (flat/edge/corner),
+`sampling_density.png`, `sampling_sites.png`, `gaussian_ellipses.png`,
+`initial_abs_error.png`, `coverage_denominator.png`, `effective_contributors.png`,
+`responsibility_entropy.png`, and `dominant_owner.png`. `diagnostics.npz` preserves the raw maps;
+`method_diagnostics_montage.png` and `manifest.json` provide a labeled overview and provenance.
+
+These tensor/density panels are source-derived initialization diagnostics: they are recomputed from
+the supplied image and are not transmitted in `.npz`, `SSPL1`, or `.rtgsv`. They therefore cannot
+be recovered from Gaussians alone. The fitted one-sigma Gaussian overlay from
+`gaussians2d-to-image --gaussians-out` is representation-derived and can be generated from a field.
+See `docs/publication_figures.md` for the exact panel semantics and claim limits.
+
 ## Live viewer in the sibling-repository workspace
 
 `structsplat fit --live` uses the optional `igsv` server from

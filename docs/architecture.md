@@ -49,9 +49,12 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
   `viewer` bridges a `GaussianField` to the external igsv browser viewer (optional dependency)
   for live fit inspection via `fit(iteration_observer=..., observer_every=...)`; the embedding
   and its diagnostic-only status are ADR-0018.
-- **entry:** `cli` (`structsplat fit` [`--live`] / `batch-fit` / `ablation` / `stage-search`); `batch`
-  (PORT-005) runs the `fit` option surface across worker processes with device round-robin and
-  a resumable `metrics.jsonl`.
+- **entry:** `cli` (`structsplat fit` / `image-to-gaussians2d`, `render` /
+  `gaussians2d-to-image`, `batch-fit`, `ablation`, `stage-search`); `render` cold-loads a native
+  full-precision NPZ or self-describing SSPL1 stream and can emit display-referred error/metrics
+  plus a read-only fitted-field ellipse overlay. `batch` (PORT-005) runs the `fit` option surface
+  across worker processes with device round-robin and a resumable `metrics.jsonl`. The optional
+  `fit --live` path remains diagnostic-only.
 
 - **decision benchmark:** `benchmarks.actual_rate_phase_diagram` owns frozen actual-rate manifests,
   SSPL1 cold scoring, exact-cap RDO/statistics, and result figures for BENCH-007. Its manifest
@@ -98,7 +101,8 @@ init-strategy × budget sweep.
   benchmark-only after the frozen all-grid/stability gate failed. `renderer=gsplat` is kept as a
   separate alpha/sum comparator because it is not numerically equivalent to the normalized
   reference.
-- `renderer=cuda_tiled` (opt-in, PORT-002/003, unmeasured) now builds its tile index inside the
+- `renderer=cuda_tiled` (opt-in, PORT-002/003, locally parity-validated but performance-unmeasured)
+  builds its tile index inside the
   extension (CUB radix sort over packed 32-bit keys; stable, so the index is deterministic),
   stages Gaussians through shared memory in both tiled kernels, warp-reduces backward gradients
   before atomics, and — under `support_fade` only — exactly culls (tile, Gaussian) pairs whose

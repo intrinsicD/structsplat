@@ -1,3 +1,5 @@
+import json
+
 import numpy as np
 import pytest
 
@@ -48,7 +50,7 @@ def test_fit_cli_accepts_feedforward_short_refinement(tmp_path, monkeypatch, cap
         "sys.argv",
         [
             "structsplat",
-            "fit",
+            "image-to-gaussians2d",
             str(path),
             "--strategy",
             "feedforward",
@@ -151,6 +153,121 @@ def test_fit_cli_accepts_progressive_wse_order(tmp_path, monkeypatch, capsys):
 
     assert (outdir / "toy_iso_blue_noise.npz").exists()
     assert "8 gaussians" in capsys.readouterr().out
+
+
+def test_gaussians2d_to_image_outputs_reconstruction_error_metrics_and_overlay(
+    tmp_path, monkeypatch, capsys
+):
+    pytest.importorskip("torch")
+    from structsplat.gaussians import GaussianField
+
+    height, width = 16, 18
+    field = GaussianField.from_numpy(
+        means=np.asarray([[5.0, 7.0], [12.0, 8.0]], dtype=np.float32),
+        scales=np.asarray([[6.0, 5.0], [6.0, 5.0]], dtype=np.float32),
+        angles=np.asarray([0.0, 0.3], dtype=np.float32),
+        colors=np.asarray([[0.8, 0.2, 0.1], [0.1, 0.4, 0.9]], dtype=np.float32),
+    )
+    field_path = tmp_path / "field.npz"
+    field.save(str(field_path))
+    reference = np.full((height, width, 3), 0.25, dtype=np.float32)
+    reference_path = tmp_path / "reference.png"
+    save_image(str(reference_path), reference)
+    reconstruction_path = tmp_path / "reconstruction.png"
+    error_path = tmp_path / "absolute_error.png"
+    raw_error_path = tmp_path / "signed_error.npy"
+    metrics_path = tmp_path / "metrics.json"
+    overlay_path = tmp_path / "gaussians.png"
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "structsplat",
+            "gaussians2d-to-image",
+            str(field_path),
+            "--reference",
+            str(reference_path),
+            "--out",
+            str(reconstruction_path),
+            "--error-out",
+            str(error_path),
+            "--raw-error-out",
+            str(raw_error_path),
+            "--metrics-out",
+            str(metrics_path),
+            "--gaussians-out",
+            str(overlay_path),
+            "--device",
+            "cpu",
+        ],
+    )
+
+    main()
+
+    for path in (reconstruction_path, error_path, raw_error_path, metrics_path, overlay_path):
+        assert path.is_file()
+    assert load_image(str(reconstruction_path)).shape == (height, width, 3)
+    assert np.load(raw_error_path).shape == (height, width, 3)
+    metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
+    assert metrics["format"] == "GaussianField NPZ"
+    assert metrics["n_gaussians"] == 2
+    assert metrics["width"] == width
+    assert metrics["height"] == height
+    assert metrics["mse"] >= 0.0
+    assert np.isfinite(metrics["psnr_db"])
+    assert "rendered 2 Gaussians" in capsys.readouterr().out
+
+
+def test_render_npz_without_reference_requires_canvas_dimensions(tmp_path, monkeypatch):
+    pytest.importorskip("torch")
+    from structsplat.gaussians import GaussianField
+
+    field = GaussianField.from_numpy(
+        means=np.asarray([[2.0, 2.0]], dtype=np.float32),
+        scales=np.asarray([[2.0, 2.0]], dtype=np.float32),
+        angles=np.asarray([0.0], dtype=np.float32),
+        colors=np.asarray([[1.0, 0.0, 0.0]], dtype=np.float32),
+    )
+    field_path = tmp_path / "field.npz"
+    field.save(str(field_path))
+    monkeypatch.setattr(
+        "sys.argv",
+        ["structsplat", "render", str(field_path), "--out", str(tmp_path / "out.png")],
+    )
+
+    with pytest.raises(SystemExit, match="requires --reference"):
+        main()
+
+
+def test_render_self_describing_sspl1_without_reference(tmp_path, monkeypatch):
+    pytest.importorskip("torch")
+    from structsplat import codec
+    from structsplat.gaussians import GaussianField
+
+    field = GaussianField.from_numpy(
+        means=np.asarray([[3.0, 3.0]], dtype=np.float32),
+        scales=np.asarray([[2.0, 2.0]], dtype=np.float32),
+        angles=np.asarray([0.0], dtype=np.float32),
+        colors=np.asarray([[0.25, 0.5, 0.75]], dtype=np.float32),
+    )
+    stream_path = tmp_path / "field.sspl1"
+    stream_path.write_bytes(codec.encode(field, 8, 9))
+    output_path = tmp_path / "decoded.png"
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "structsplat",
+            "render",
+            str(stream_path),
+            "--out",
+            str(output_path),
+            "--device",
+            "cpu",
+        ],
+    )
+
+    main()
+
+    assert load_image(str(output_path)).shape == (8, 9, 3)
 
 
 def test_stage_search_cli_forwards_sharding_and_factored_axes(monkeypatch):

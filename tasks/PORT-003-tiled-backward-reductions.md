@@ -1,8 +1,8 @@
 # PORT-003: Avoid atomics in tiled backward
 
-**Status: implemented (unmeasured).** The tiled backward now reduces gradients warp-level before
-touching global memory; acceptance stays open until gradients and timings are validated on a
-CUDA device (see PORT-002's 2026-07-21 note for the shared validation protocol).
+**Status: implemented and locally gradient-validated; performance is unmeasured.** The tiled backward
+reduces gradients warp-level before touching global memory. RTX 4090 parity passed on 2026-07-22;
+the preregistered timing profile remains open (see PORT-002's validation note).
 
 ## Context
 The current tiled backward directly atomically adds parameter gradients for every pixel-Gaussian
@@ -20,7 +20,7 @@ throughput without sacrificing numerical parity.
 4. Select the strategy based on measured time, memory, and occupancy, not just kernel elegance.
 
 ## Acceptance criteria
-- [ ] New backward path matches reference/CUDA autograd gradients within the established tolerance.
+- [x] New backward path matches reference/CUDA autograd gradients within the established tolerance.
 - [ ] Benchmark isolates backward time vs current direct-atomic kernel across low/high N and
       isotropic/anisotropic fields.
 - [ ] Memory overhead is bounded and logged; fallback to atomic path remains available.
@@ -53,3 +53,8 @@ PORT-001. Pairs with PORT-002.
 - Measurement (open): `python -m benchmarks.tiled_render_profile` isolates backward medians
   across the N/overlap/anisotropy grid against exact `cuda`; PORT-001's notes take the measured
   decision once run on hardware.
+- Correctness (2026-07-22): the complete CUDA renderer selection
+  (`pytest -q tests/test_render.py -k cuda`) passed 29/29 tests on an NVIDIA RTX 4090 with PyTorch
+  2.12.0+cu132, including tiled gradient parity and exact ellipse-cull parity. No performance
+  conclusion follows from this test run. The exact dirty-worktree command, base commit, source
+  hashes, numeric-tolerance caveat, and evidence scope are recorded in PORT-002's matching note.
