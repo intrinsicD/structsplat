@@ -322,6 +322,31 @@ class FitConfig:
     early_stop_patience: int | None = None  # logged evals without improvement; None disables
     early_stop_min_delta: float = 0.0       # PSNR improvement required to reset patience
     early_stop_min_iters: int = 0           # do not early-stop before this iteration
+    # FIT-021 / ADR-0020 pooled lifecycle + error-triage events. All inert unless triage_every
+    # is set. Pooled mode fixes tensor capacity for the whole fit (rows are parked/activated in
+    # place), replaces the independent split/relocate/prune timers with one triage event
+    # (park -> merge -> split -> spawn), and derives capacity from a target encoded-file byte
+    # budget (SSPL1 raw layout + alpha payload + header allowance) or an explicit pool_capacity.
+    triage_every: int | None = None
+    triage_spawn_count: int = 64        # free-row activations at masked residual peaks
+    triage_split_count: int = 16        # major-axis splits of highest attributed-error owners
+    triage_merge_count: int = 16        # envelope merges of mutual-nearest redundant pairs
+    triage_park_count: int = 16         # function-preserving donor parks per event
+    triage_park_max_responsibility: float = 0.25  # park only rows below this max responsibility
+    triage_hole_coverage_tau: float = 0.05  # raw weight sum below which a site counts as a hole
+    triage_hole_opacity: float = 0.9        # activation opacity at holes (sole cover)
+    triage_site_nms_radius: int = 3         # residual peak NMS half-window (px)
+    triage_split_shrink: float = 0.6        # major-axis scale factor for both split halves
+    triage_merge_distance_factor: float = 2.5   # allowed distance = factor * mean minor axis
+    triage_merge_distance_min: float = 1.25     # px clamp of the allowed pair distance
+    triage_merge_distance_max: float = 4.0
+    triage_merge_color_max: float = 0.18        # RGB L2 gate
+    triage_merge_log_scale_max: float = 1.0     # sorted log-scale L2 gate
+    triage_merge_angle_max: float = 0.65        # axial (pi-periodic) orientation gate, radians
+    triage_merge_envelope_inflation: float = 1.05  # extra envelope enlargement factor
+    target_file_bytes: int | None = None  # encoded SSPL1 (+alpha) byte budget -> pool capacity
+    pool_capacity: int | None = None      # explicit capacity override (rows)
+    pool_header_allowance: int = 4096     # header/framing/zlib-slack reserve inside the budget
 
     def __post_init__(self):
         # aa_dilation adds Sigma + d*I; a negative value yields negative inverse variances and
@@ -619,6 +644,83 @@ class FitConfig:
             raise ValueError(f"adaptive_patience must be > 0, got {self.adaptive_patience}")
         if self.adaptive_count and self.max_gaussians is None and self.target_bpp is None:
             raise ValueError("adaptive_count requires max_gaussians or target_bpp")
+        pooled = self.triage_every is not None
+        if not pooled and (self.target_file_bytes is not None or self.pool_capacity is not None):
+            raise ValueError(
+                "target_file_bytes/pool_capacity require pooled triage mode; set triage_every "
+                "(FIT-021)")
+        if pooled:
+            if self.triage_every <= 0:
+                raise ValueError(f"triage_every must be > 0 or None, got {self.triage_every}")
+            if self.pool_capacity is None and self.target_file_bytes is None:
+                raise ValueError(
+                    "pooled triage mode needs a capacity: set target_file_bytes or "
+                    "pool_capacity")
+            conflicts = {
+                "split_every": self.split_every,
+                "relocate_every": self.relocate_every,
+                "prune_every": self.prune_every,
+                "mask_boundary_add_every": self.mask_boundary_add_every,
+            }
+            active = [name for name, value in conflicts.items() if value is not None]
+            if self.adaptive_count:
+                active.append("adaptive_count")
+            if active:
+                raise ValueError(
+                    "pooled triage mode replaces the independent topology timers; unset "
+                    + ", ".join(active))
+            if self.qat_mode != "off" or self.lambda_rate > 0.0:
+                raise ValueError(
+                    "pooled triage mode does not support fit-time QAT / lambda_rate; park "
+                    "sentinels would corrupt quantization ranges (use post-fit QAT)")
+            if self.checkpoint_policy != "terminal":
+                raise ValueError(
+                    "pooled triage mode supports checkpoint_policy='terminal' only; snapshots "
+                    "do not carry the live mask")
+            if self.color_basis != "constant":
+                raise ValueError(
+                    "pooled triage mode supports color_basis='constant' only (codec v1 has no "
+                    "affine stream)")
+            if self.renderer not in (
+                "normalized", "cuda", "cuda_normalized", "cuda_block_reduce",
+                "cuda_tiled", "cuda_tiled_normalized",
+            ):
+                raise ValueError(
+                    "pooled triage mode requires normalized renderer semantics, "
+                    f"got renderer={self.renderer!r}")
+            for name in (
+                "triage_spawn_count", "triage_split_count", "triage_merge_count",
+                "triage_park_count", "triage_site_nms_radius",
+            ):
+                if getattr(self, name) < 0:
+                    raise ValueError(f"{name} must be >= 0, got {getattr(self, name)}")
+            if not 0.0 < self.triage_park_max_responsibility <= 1.0:
+                raise ValueError(
+                    "triage_park_max_responsibility must be in (0, 1], "
+                    f"got {self.triage_park_max_responsibility}")
+            if not 0.0 < self.triage_hole_opacity < 1.0:
+                raise ValueError(
+                    f"triage_hole_opacity must be in (0, 1), got {self.triage_hole_opacity}")
+            if self.triage_hole_coverage_tau < 0.0:
+                raise ValueError(
+                    "triage_hole_coverage_tau must be >= 0, "
+                    f"got {self.triage_hole_coverage_tau}")
+            if not 0.0 < self.triage_split_shrink <= 1.0:
+                raise ValueError(
+                    f"triage_split_shrink must be in (0, 1], got {self.triage_split_shrink}")
+            if self.triage_merge_envelope_inflation < 1.0:
+                raise ValueError(
+                    "triage_merge_envelope_inflation must be >= 1, "
+                    f"got {self.triage_merge_envelope_inflation}")
+            if self.target_file_bytes is not None and self.target_file_bytes <= 0:
+                raise ValueError(
+                    f"target_file_bytes must be > 0 when set, got {self.target_file_bytes}")
+            if self.pool_capacity is not None and self.pool_capacity <= 0:
+                raise ValueError(
+                    f"pool_capacity must be > 0 when set, got {self.pool_capacity}")
+            if self.pool_header_allowance < 0:
+                raise ValueError(
+                    f"pool_header_allowance must be >= 0, got {self.pool_header_allowance}")
 
 
 @dataclass

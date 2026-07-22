@@ -222,8 +222,18 @@ def _means_extent(means: np.ndarray, H: int, W: int) -> tuple[list[float], list[
     return lo, hi
 
 
+def alpha_stream_raw(alpha) -> bytes:
+    """Row-major uint8 alpha payload exactly as ``encode`` frames it (FIT-021 byte math)."""
+    a = np.asarray(alpha, dtype=np.float32)
+    if a.ndim == 3 and a.shape[2] == 1:
+        a = a[..., 0]
+    if a.ndim != 2:
+        raise ValueError(f"alpha must have shape (H, W), got {a.shape}")
+    return np.rint(np.clip(a, 0.0, 1.0) * 255.0).astype(np.uint8).tobytes()
+
+
 def encode(field: GaussianField, H: int, W: int, cfg: CodecConfig | None = None,
-           fcfg: FitConfig | None = None) -> bytes:
+           fcfg: FitConfig | None = None, alpha=None) -> bytes:
     _ensure_constant_color_field(field)
     cfg = cfg or CodecConfig()
     fcfg = fcfg or FitConfig()
@@ -269,6 +279,15 @@ def encode(field: GaussianField, H: int, W: int, cfg: CodecConfig | None = None,
     ]
     if opacity_p is not None:
         streams.append(_pack(_quant(opacity_p, 0.0, 1.0, cfg.bits_opacity), cfg.bits_opacity))
+    has_alpha = alpha is not None
+    if has_alpha:
+        # One extra uniform framed stream (FIT-021 / ADR-0020). Decoders that predate it read
+        # exactly 4/5 Gaussian streams by count and never touch the trailing alpha frame.
+        raw_alpha = alpha_stream_raw(alpha)
+        if len(raw_alpha) != H * W:
+            raise ValueError(
+                f"alpha shape does not match the {H}x{W} image: {len(raw_alpha)} bytes")
+        streams.append(raw_alpha)
     header_data = {
         "n": int(n), "H": int(H), "W": int(W),
         "bits": [cfg.bits_means, cfg.bits_scales, cfg.bits_rot, cfg.bits_colors],
@@ -296,6 +315,9 @@ def encode(field: GaussianField, H: int, W: int, cfg: CodecConfig | None = None,
     # and is needed only when materialization actually occurred.
     if field.filter_variance is not None:
         header_data["covariance_filter_materialized"] = True
+    # Same rule for the alpha marker (FIT-021): alpha-free blobs keep their exact legacy bytes.
+    if has_alpha:
+        header_data["has_alpha"] = True
     header = json.dumps(header_data).encode()
     blob = _MAGIC + struct.pack("<I", len(header)) + header
     for s in streams:
@@ -365,6 +387,34 @@ def decode(blob: bytes, device: str = "cpu") -> GaussianField:
                          None if opacities is None else t(opacities))
 
 
+def decode_alpha(blob: bytes) -> np.ndarray | None:
+    """Return the (H, W) float32 alpha map in [0, 1], or None for alpha-free blobs."""
+    assert blob[:5] == _MAGIC, "not a structsplat codec blob"
+    off = 5
+    (hlen,) = struct.unpack_from("<I", blob, off)
+    off += 4
+    h = json.loads(blob[off:off + hlen])
+    off += hlen
+    if not h.get("has_alpha", False):
+        return None
+    H, W = int(h["H"]), int(h["W"])
+    stream_codec = h.get("stream_codec", "zlib")
+    stream_raw_lengths = h.get("stream_raw_lengths", [])
+    alpha_index = 5 if bool(h.get("has_opacity", False)) else 4
+    for i in range(alpha_index + 1):
+        (zlen,) = struct.unpack_from("<I", blob, off)
+        off += 4
+        if i == alpha_index:
+            raw_len = (
+                int(stream_raw_lengths[i]) if i < len(stream_raw_lengths) else H * W
+            )
+            raw = _decode_stream(blob[off:off + zlen], stream_codec, raw_len)
+            a = np.frombuffer(raw, dtype=np.uint8, count=H * W).reshape(H, W)
+            return a.astype(np.float32) / 255.0
+        off += zlen
+    raise ValueError("alpha stream missing despite has_alpha header flag")
+
+
 def blob_header(blob: bytes) -> dict:
     """Parse just the JSON header of a codec blob (n, H, W, bits, render semantics, ...)."""
     assert blob[:5] == _MAGIC, "not a structsplat codec blob"
@@ -393,6 +443,8 @@ def blob_components(blob: bytes) -> dict:
     names = ["means", "scales", "rotation", "colors"]
     if bool(header.get("has_opacity", False)):
         names.append("opacity")
+    if bool(header.get("has_alpha", False)):
+        names.append("alpha")
     raw_lengths = header.get("stream_raw_lengths", [])
     streams: dict[str, dict[str, int | None]] = {}
     off = header_end

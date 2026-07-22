@@ -186,7 +186,28 @@ class _MaskConstraint:
 
     @torch.no_grad()
     def apply(self, field: GaussianField, cfg: FitConfig | None = None,
-              aa_dilation: float | None = None, refresh: bool = True) -> None:
+              aa_dilation: float | None = None, refresh: bool = True,
+              exempt: torch.Tensor | None = None) -> None:
+        """Project + cap the field; rows flagged in ``exempt`` keep their means/log-scales.
+
+        Pooled fits (FIT-021) exempt parked rows: projection would otherwise drag their
+        off-image sentinels back inside the mask and resurrect them as visible weight.
+        """
+        saved_rows = None
+        if exempt is not None and bool(exempt.any()):
+            saved_rows = exempt.nonzero(as_tuple=False).reshape(-1)
+            saved_means = field.means[saved_rows].clone()
+            saved_log_scales = field.log_scales[saved_rows].clone()
+        try:
+            self._apply_impl(field, cfg, aa_dilation, refresh)
+        finally:
+            if saved_rows is not None:
+                field.means[saved_rows] = saved_means
+                field.log_scales[saved_rows] = saved_log_scales
+
+    @torch.no_grad()
+    def _apply_impl(self, field: GaussianField, cfg: FitConfig | None = None,
+                    aa_dilation: float | None = None, refresh: bool = True) -> None:
         if aa_dilation is None:
             aa_dilation = 0.0 if cfg is None else float(cfg.aa_dilation)
         H, W = self.H, self.W
@@ -556,6 +577,27 @@ def _carry_adam_state(opt_old, field: GaussianField, cfg: FitConfig,
                 carried[key] = value
         opt_new.state[p_new] = carried
     return opt_new
+
+
+@torch.no_grad()
+def _zero_optimizer_rows(opt: torch.optim.Optimizer, rows: torch.Tensor) -> None:
+    """Zero per-row optimizer moments in place for restructured pooled rows (FIT-021).
+
+    The pooled lifecycle never resizes parameters, so events need no optimizer rebuild —
+    touched rows just restart from zero moments with the tensor's inherited step, exactly the
+    warm-Adam behavior _carry_adam_state gives fresh rows.
+    """
+    if rows.numel() == 0:
+        return
+    for group in opt.param_groups:
+        p = group["params"][0]
+        st = opt.state.get(p)
+        if not st:
+            continue
+        r = rows.to(device=p.device)
+        for value in st.values():
+            if torch.is_tensor(value) and value.shape == p.shape:
+                value[r] = 0
 
 
 def _pixel_loss_map(pred: torch.Tensor, target: torch.Tensor, kind: str,
@@ -2487,6 +2529,18 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             raise ValueError(
                 f"mask shape {tuple(mask_constraint.inside.shape)} does not match target "
                 f"{(H, W)}")
+    # FIT-021 pooled lifecycle: expand once to capacity (the fit's only resize), park the
+    # spares, and drive all topology through the triage event. Config-level knob conflicts are
+    # rejected in FitConfig.__post_init__.
+    pool_state = None
+    if cfg.triage_every is not None:
+        from . import pool as _pool
+        field, pool_state = _pool.prepare_pooled_field(field, cfg, H, W, mask_arr=mask)
+
+    def _parked_exempt():
+        # Recomputed at each use: the live mask flips as triage parks/activates rows.
+        return None if pool_state is None else ~pool_state.live
+
     weight_map_arg = loss_weight_map
     if cfg.loss_weighting == "mask":
         weight_map_arg = mask_constraint.inside_weight
@@ -2521,14 +2575,15 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         )
     field.trainable()
     if mask_constraint is not None and cfg.mask_contain:
-        mask_constraint.apply(field, cfg)
+        mask_constraint.apply(field, cfg, exempt=_parked_exempt())
     opt = _make_optimizer(field, cfg)
     base_lrs = [g["lr"] for g in opt.param_groups]
     lo, hi = math.log(0.35), math.log(max(H, W))
     hist = {
         "iter": [], "psnr": [], "loss": [], "n_gaussians": [], "elapsed": [],
         "split_events": [], "relocate_events": [], "color_solve_events": [],
-        "adaptive_events": [], "boundary_add_events": [], "qat_rate_bpp": [], "rate_loss": [],
+        "adaptive_events": [], "boundary_add_events": [], "triage_events": [],
+        "qat_rate_bpp": [], "rate_loss": [],
         "support_fade_alpha": [], "tempered_new_rows": [], "geometry_loss": [],
         "loss_target_full_weight": [],
     }
@@ -2656,7 +2711,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         )
         # count that produced this render/PSNR, before any prune/split restructures the field;
         # logging the post-restructure field.n would pair a pre-step PSNR with a post-step N.
-        n_at_render = field.n
+        # Pooled fits report live rows: field.n is the constant capacity there.
+        n_at_render = field.n if pool_state is None else pool_state.live_count
         loss_target_full_weight = _loss_target_full_weight(
             cfg,
             it,
@@ -2749,6 +2805,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 mask_constraint.apply(
                     field, cfg,
                     refresh=((it + 1) % max(int(cfg.mask_cap_refresh_every), 1) == 0),
+                    exempt=_parked_exempt(),
                 )
             if (
                 "every" in color_solve_tokens
@@ -2806,6 +2863,40 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             if keep is not None:
                 row_birth_iter = row_birth_iter[keep]
                 state_seed_base_n = field.n
+        if (pool_state is not None and not last_it
+                and (it + 1) % int(cfg.triage_every) == 0):
+            from . import triage as _triage
+            with torch.no_grad():
+                tstats = _triage.triage_event(
+                    field, pool_state, target, img, cfg, mask_constraint,
+                    support_fade_alpha=fade_alpha,
+                )
+                touched = tstats.touched
+                if touched is not None and touched.numel() > 0:
+                    # Fixed capacity: parameters and optimizer survive every event; only the
+                    # touched rows restart from zero moments (no _carry_adam_state rebuild).
+                    _zero_optimizer_rows(opt, touched)
+                    row_birth_iter[touched.to(device=row_birth_iter.device)] = it + 1
+                    if mask_constraint is not None and cfg.mask_contain:
+                        mask_constraint.apply(field, cfg, exempt=_parked_exempt())
+            hist["triage_events"].append({
+                "iter": it,
+                "parked": tstats.parked,
+                "merged": tstats.merged,
+                "merge_candidates": tstats.merge_candidates,
+                "merge_containment_rejected": tstats.merge_containment_rejected,
+                "split": tstats.split,
+                "spawned": tstats.spawned,
+                "spawned_holes": tstats.spawned_holes,
+                "live": pool_state.live_count,
+                "capacity": pool_state.capacity,
+            })
+            if verbose:
+                print(
+                    f"  triage park {tstats.parked} merge {tstats.merged} "
+                    f"split {tstats.split} spawn {tstats.spawned} "
+                    f"-> live {pool_state.live_count}/{pool_state.capacity}"
+                )
         if cfg.relocate_count > 0 and (relocate_periodic_due or relocate_split_due):
             field, relocated, reset_idx, relocate_stats = _relocate_from_residual(
                 field, target, img, cfg, support_fade_alpha=fade_alpha
@@ -3112,6 +3203,23 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             if adaptive_should_stop:
                 break
 
+    pool_summary = None
+    if pool_state is not None:
+        # Deferred destruction happens exactly here (ADR-0020): donors that never found a
+        # destination are dropped by one compaction, so every terminal metric, the returned
+        # field, and the codec all see live rows only. Parked rows rendered exactly zero, so
+        # this cannot change any terminal image.
+        live_final = pool_state.live_count
+        pool_summary = {
+            "capacity": pool_state.capacity,
+            "initial_live": pool_state.initial_live,
+            "live_n": live_final,
+            "parked_final": pool_state.capacity - live_final,
+            "budget": pool_state.budget,
+            "triage_events": len(hist["triage_events"]),
+        }
+        with torch.no_grad():
+            field = field.subset(pool_state.live).trainable()
     final_fade_alpha = _fit_support_fade_alpha(cfg, last_iter + 1)
     if "final" in color_solve_tokens:
         run_color_solve_event(last_iter, "final", final_fade_alpha)
@@ -3202,6 +3310,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             "n_gaussians": field.n,
             "background_count": field.background_count,
             "detail_count": field.n - field.background_count,
+            "pool": pool_summary,
             "fit_seconds": fit_seconds,
             "iterations_run": last_iter + 1,
             "stopped_early": stopped_early,

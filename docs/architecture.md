@@ -39,9 +39,13 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
   and gsplat comparator, sharing one accumulator where semantics match), `metrics`, `init`
   (bridge; `build_masked_field` for CORE-010), `fit` (selectable loss/optimizer/LR-schedule/
   split-mode; opt-in mask containment via `_MaskConstraint` with isotropic ADR-0017 or certified
-  anisotropic ADR-0019 caps, under-coverage penalty, boundary tangent densification), `pyramid`,
+  anisotropic ADR-0019 caps, under-coverage penalty, boundary tangent densification), `pool` +
+  `triage` (FIT-021/ADR-0020, opt-in via `triage_every`: fixed-capacity pooled row lifecycle with
+  off-image parking, byte-budgeted capacity from `target_file_bytes`, and one in-place
+  park→merge→split→spawn event replacing the independent topology timers), `pyramid`,
   `codec`
-  (post-fit quantization, ADR-0007).
+  (post-fit quantization, ADR-0007; optional in-container alpha stream for masked inputs,
+  ignored by pre-FIT-021 decoders).
 - **read-only diagnostics:** `visualize` calls the production NumPy analysis/initialization and
   torch normalized renderer, then exports raw tensor/field/responsibility maps plus deterministic
   explanatory panels. It never fits or changes a field and is not benchmark evidence (DOCS-002).
