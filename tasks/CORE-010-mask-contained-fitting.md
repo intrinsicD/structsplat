@@ -13,8 +13,10 @@ hard-containment loop (`fit._MaskConstraint`: mean projection + dynamic signed-d
 ADR-0017), the soft out-of-mask coverage penalty, `loss_weighting="mask"` with SSIM matting,
 `init.build_masked_field`, CLI flags (`--mask`, `--mask-contain`, `--mask-margin`,
 `--mask-coverage-weight`, `--loss-weighting mask`), and `tests/test_mask.py`. Follow-up (own tasks):
-the committed five-arm containment-cost benchmark with numbers on a real masked dataset, the
-directional (boundary-normal) cap extension, and pyramid support.
+the committed five-arm containment-cost benchmark with numbers on a real masked dataset (still
+deferred; CORE-011's modes become additional arms), the directional cap extension (landed
+2026-07-22 as CORE-011's certified anisotropic caps, ADR-0019, together with the boundary-band
+under-coverage penalty and boundary tangent densification), and pyramid support.
 
 ## Context
 

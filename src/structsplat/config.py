@@ -205,6 +205,23 @@ class FitConfig:
     mask_contain: bool = False         # project means + cap effective scales to the mask interior
     mask_margin: float = 1.5           # px safety margin (erosion + cap); must exceed ~0.71
     mask_coverage_weight: float = 0.0  # weight on mean out-of-mask unnormalized weight-sum penalty
+    # CORE-011 boundary coverage (opt-in extensions of CORE-010; all inert without a mask).
+    # anisotropic keeps the isotropic cap across the boundary but certifies longer tangent caps
+    # with a station-ball SDF cover (ADR-0019), so boundary Gaussians can elongate along the
+    # boundary instead of tiling it with min-scale disks.
+    mask_cap_mode: str = "isotropic"      # isotropic (ADR-0017) or anisotropic (ADR-0019)
+    mask_cap_refresh_every: int = 10      # anisotropic recertification cadence (also entry/events)
+    # Under-coverage hinge on the raw in-band weight sum: mean(max(0, tau - den)) / tau over
+    # pixels with margin < SDF <= margin + band. The in-mask twin of mask_coverage_weight.
+    mask_undercoverage_weight: float = 0.0
+    mask_undercoverage_band: float = 3.0  # px band beyond the margin that the hinge supervises
+    mask_undercoverage_tau: float = 0.1   # raw weight sum counted as "covered"
+    # Boundary tangent densification: every N iters spawn up to count tangent-aligned Gaussians
+    # at boundary-band residual peaks (band in px of SDF), spaced ~spacing px along the contour.
+    mask_boundary_add_every: int | None = None
+    mask_boundary_add_count: int = 0
+    mask_boundary_add_band: float = 4.0
+    mask_boundary_add_spacing: float = 5.0
     loss_warmup_iters: int = 0
     loss_warmup_pixel_loss: str = "l2"
     # Optional frequency-ordering curriculum. A factor >1 first supervises against an
@@ -396,6 +413,42 @@ class FitConfig:
         if not math.isfinite(self.mask_coverage_weight) or self.mask_coverage_weight < 0.0:
             raise ValueError(
                 f"mask_coverage_weight must be finite and >= 0, got {self.mask_coverage_weight}")
+        if self.mask_cap_mode not in ("isotropic", "anisotropic"):
+            raise ValueError(
+                f"mask_cap_mode must be isotropic or anisotropic, got {self.mask_cap_mode!r}")
+        if self.mask_cap_refresh_every < 1:
+            raise ValueError(
+                f"mask_cap_refresh_every must be >= 1, got {self.mask_cap_refresh_every}")
+        if (not math.isfinite(self.mask_undercoverage_weight)
+                or self.mask_undercoverage_weight < 0.0):
+            raise ValueError(
+                "mask_undercoverage_weight must be finite and >= 0, "
+                f"got {self.mask_undercoverage_weight}")
+        if not math.isfinite(self.mask_undercoverage_band) or self.mask_undercoverage_band <= 0.0:
+            raise ValueError(
+                "mask_undercoverage_band must be finite and > 0, "
+                f"got {self.mask_undercoverage_band}")
+        if not math.isfinite(self.mask_undercoverage_tau) or self.mask_undercoverage_tau <= 0.0:
+            raise ValueError(
+                "mask_undercoverage_tau must be finite and > 0, "
+                f"got {self.mask_undercoverage_tau}")
+        if self.mask_boundary_add_every is not None and self.mask_boundary_add_every <= 0:
+            raise ValueError(
+                "mask_boundary_add_every must be > 0 or None, "
+                f"got {self.mask_boundary_add_every}")
+        if self.mask_boundary_add_count < 0:
+            raise ValueError(
+                f"mask_boundary_add_count must be >= 0, got {self.mask_boundary_add_count}")
+        if (not math.isfinite(self.mask_boundary_add_band)
+                or self.mask_boundary_add_band <= 0.0):
+            raise ValueError(
+                "mask_boundary_add_band must be finite and > 0, "
+                f"got {self.mask_boundary_add_band}")
+        if (not math.isfinite(self.mask_boundary_add_spacing)
+                or self.mask_boundary_add_spacing <= 0.0):
+            raise ValueError(
+                "mask_boundary_add_spacing must be finite and > 0, "
+                f"got {self.mask_boundary_add_spacing}")
         if (
             isinstance(self.loss_target_downsample, bool)
             or not isinstance(self.loss_target_downsample, int)

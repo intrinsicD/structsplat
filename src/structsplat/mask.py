@@ -130,6 +130,45 @@ def erode(inside: np.ndarray, radius: float) -> np.ndarray:
     return d_out >= float(radius)
 
 
+def gaussian_smooth(arr: np.ndarray, sigma: float) -> np.ndarray:
+    """Separable Gaussian blur with edge-replicate padding. Pure NumPy (no scipy)."""
+    a = np.asarray(arr, dtype=np.float64)
+    if sigma <= 0.0:
+        return a.copy()
+    radius = int(np.ceil(3.0 * float(sigma)))
+    offsets = np.arange(-radius, radius + 1, dtype=np.float64)
+    w = np.exp(-0.5 * (offsets / float(sigma)) ** 2)
+    w /= w.sum()
+    H, W = a.shape
+    p = np.pad(a, ((0, 0), (radius, radius)), mode="edge")
+    out = np.zeros_like(a)
+    for k in range(2 * radius + 1):
+        out += w[k] * p[:, k:k + W]
+    p = np.pad(out, ((radius, radius), (0, 0)), mode="edge")
+    out = np.zeros_like(a)
+    for k in range(2 * radius + 1):
+        out += w[k] * p[k:k + H, :]
+    return out
+
+
+def boundary_normals(sdf: np.ndarray, smooth_sigma: float = 1.5) -> np.ndarray:
+    """(H, W, 2) unit inward normals ``(nx, ny)`` of the mask boundary, from the smoothed SDF.
+
+    The SDF increases inward, so its gradient points away from the boundary into the interior;
+    the boundary tangent is the perpendicular ``(-ny, nx)``. Where the gradient magnitude is
+    ~zero (deep interior ridges / medial axis) the normal is left as the zero vector — callers
+    must treat those rows as "no reliable orientation".
+    """
+    sdf = np.asarray(sdf, dtype=np.float64)
+    g = gaussian_smooth(sdf, smooth_sigma)
+    gy, gx = np.gradient(g)
+    mag = np.hypot(gx, gy)
+    safe = np.maximum(mag, 1e-9)
+    n = np.stack([gx / safe, gy / safe], axis=-1)
+    n[mag < 1e-6] = 0.0
+    return n.astype(np.float32)
+
+
 def nearest_inside_index(region: np.ndarray) -> np.ndarray:
     """(H, W) flat index of the nearest True pixel of ``region`` for every pixel (-1 if empty)."""
     region = np.asarray(region, dtype=bool)

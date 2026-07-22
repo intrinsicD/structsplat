@@ -170,6 +170,14 @@ Mask-contained fitting (`--mask`, CORE-010/ADR-0017): `--mask-contain` projects 
 and caps effective scales from the signed distance so the sigma_cutoff support stays inside;
 `--support-fade` makes the render exactly zero outside; `--mask-coverage-weight` is a soft
 out-of-mask penalty; `--loss-weighting mask` drops out-of-mask pixels from the loss.
+Boundary coverage (CORE-011/ADR-0019, all opt-in): `--mask-cap-mode anisotropic` certifies longer
+along-tangent caps near the boundary with station-ball SDF probes (recertified every
+`--mask-cap-refresh-every` iters), so edge Gaussians elongate instead of tiling;
+`--mask-undercoverage-weight` is a hinge on uncovered boundary-band pixels (band/tau knobs);
+`--mask-boundary-add-every/-count` spawns tangent-aligned Gaussians at boundary residual peaks
+(`-band`/`-spacing` knobs). The CLI reports boundary-band (<=2 px) PSNR next to the out-of-mask
+energy. The outermost ~`--mask-margin` px are unreachable by construction (containment reach is
+`SDF - margin`); shrink the margin toward its ~0.71 px floor when the dead band matters.
 
 ## Publication method figures
 

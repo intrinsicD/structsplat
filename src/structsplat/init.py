@@ -859,7 +859,7 @@ def build_masked_field(img: np.ndarray, mask: np.ndarray, icfg: InitConfig,
                        scfg: StructureTensorConfig | None = None,
                        device: str = "cpu", *, sigma_cutoff: float = 3.0,
                        mask_margin: float = 1.5, dilate_colors: bool = True,
-                       contain: bool = True) -> GaussianField:
+                       contain: bool = True, cap_mode: str = "isotropic") -> GaussianField:
     """Initialize a mask-contained field for an alpha-masked image (CORE-010).
 
     Any strategy works. Structure/orientation come from the (matted) image; seeds are restricted to
@@ -900,7 +900,8 @@ def build_masked_field(img: np.ndarray, mask: np.ndarray, icfg: InitConfig,
         from .fit import _MaskConstraint  # local import: init is torch-bridge, avoids load cycle
 
         constraint = _MaskConstraint.from_mask(
-            inside, field.means.device, field.means.dtype, sigma_cutoff, mask_margin
+            inside, field.means.device, field.means.dtype, sigma_cutoff, mask_margin,
+            cap_mode=cap_mode,
         )
         constraint.apply(field, aa_dilation=0.0)
     return field

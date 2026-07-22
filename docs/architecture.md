@@ -27,8 +27,9 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
   luma or Di Zenzo rgb color space), `density` (structure/gradient/variance/hybrid/uniform modes +
   the inverse-CDF warp for low-discrepancy samplers), `sampling` (WSE blue noise, Poisson-disk
   dart throwing, farthest-point, CVT/Lloyd, Halton, and opt-in terminal-set-preserving progressive
-  WSE order), `config`, `mask` (CORE-010: exact separable EDT / signed distance / erosion /
-  nearest-inside feature transform / boundary color dilation for mask-contained fitting).
+  WSE order), `config`, `mask` (CORE-010/011: exact separable EDT / signed distance / erosion /
+  nearest-inside feature transform / boundary color dilation / smoothed-SDF boundary normals for
+  mask-contained fitting and boundary coverage).
 - **benchmark-only structural controls:** `structural_controls` lazily calls SLIC and keeps the
   SLIC/Sobel complexity ranking, exact-N 6:2:1 allocation, and unresolved upstream-fidelity
   assumptions explicit. `init` registers `local_slic_sobel_control`, but it is not a shipped
@@ -37,7 +38,9 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
   ADR-0012), `render` (normalized default + additive, ADR-0006, exact CUDA variants, ADR-0011,
   and gsplat comparator, sharing one accumulator where semantics match), `metrics`, `init`
   (bridge; `build_masked_field` for CORE-010), `fit` (selectable loss/optimizer/LR-schedule/
-  split-mode; opt-in mask containment via `_MaskConstraint`, ADR-0017), `pyramid`, `codec`
+  split-mode; opt-in mask containment via `_MaskConstraint` with isotropic ADR-0017 or certified
+  anisotropic ADR-0019 caps, under-coverage penalty, boundary tangent densification), `pyramid`,
+  `codec`
   (post-fit quantization, ADR-0007).
 - **read-only diagnostics:** `visualize` calls the production NumPy analysis/initialization and
   torch normalized renderer, then exports raw tensor/field/responsibility maps plus deterministic
