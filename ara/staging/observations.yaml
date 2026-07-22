@@ -938,3 +938,14 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O86
+    timestamp: "2026-07-22T02:29+02:00"
+    provenance: ai-suggested
+    content: "Mask-contained sampled-add densification must also mask its birth-site residual: the current _add_from_residual ranks raw abs(render-target) pixels and does not consume loss_weighting=mask, so a nonmatted target can spend growth on excluded background before hard projection moves those births back inside."
+    context: "The C0001 convergence driver kept original-resolution inside pixels but matted the fit target outside the mask before five residual_tensor_add_nms waves; every cold and persisted render remained exactly zero outside."
+    potential_type: constraint
+    bound_to: [N192]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

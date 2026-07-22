@@ -76,6 +76,81 @@ structsplat fit object.png --mask object_alpha.png --mask-contain --support-fade
 # soft alternative (no hard clamp): penalize out-of-mask coverage instead
 structsplat fit object.png --mask object_alpha.png --mask-coverage-weight 1.0 --loss-weighting mask
 ```
+
+## Live viewer in the sibling-repository workspace
+
+`structsplat fit --live` uses the optional `igsv` server from
+`../interactive-gs-viewer` and serves the built WebGPU client at
+`http://127.0.0.1:8890/`. Install both editable packages into the Python
+environment that has CUDA PyTorch, then build the browser client once:
+
+```bash
+# Run from the StructSplat checkout. This workspace uses realtime-gs's CUDA venv.
+PY=../realtime-gs/.venv/bin/python
+"$PY" -m pip install -e . -e ../interactive-gs-viewer/server
+(
+  cd ../interactive-gs-viewer/web
+  npm ci
+  npm run build
+)
+```
+
+This is the tested quick live fit for the first image (`C0001`) of
+`datasets/2025_03_07_stage_with_fabric/frame_00008`. It uses the current
+high-budget PSNR initialization winner, `quadtree_wse`, and the soft boundary
+penalty. ImageMagick's `convert` makes a small diagnostic input so the portable
+reference renderer updates interactively:
+
+```bash
+RUN=runs/live_viewer_frame_00008_C0001
+mkdir -p "$RUN/input" "$RUN/output"
+convert ../datasets/2025_03_07_stage_with_fabric/frame_00008/rgb/C0001.jpg \
+  -resize '256x256>' "$RUN/input/C0001.jpg"
+convert ../datasets/2025_03_07_stage_with_fabric/frame_00008/mask/mask_C0001.png \
+  -filter point -resize '256x256>' -threshold 50% "$RUN/input/mask_C0001.png"
+
+../realtime-gs/.venv/bin/structsplat fit "$RUN/input/C0001.jpg" \
+  --mask "$RUN/input/mask_C0001.png" \
+  --strategy quadtree_wse --num-gaussians 640 --iters 300 \
+  --renderer normalized --device cuda --chunk 128 \
+  --wse-progressive-order --init-scale-mult 0.35 \
+  --loss-weighting mask --mask-coverage-weight 1.0 \
+  --ssim-weight 0.3 --checkpoint-policy best_psnr_final_count \
+  --live --live-every 10 --live-port 8890 --outdir "$RUN/output"
+```
+
+Open `http://127.0.0.1:8890/` while the command is running. After fitting, the
+process deliberately keeps the final field available; press `Ctrl-C` to stop
+the server. The `256`-pixel input, 640-Gaussian budget, and 300 iterations are a
+viewer smoke recipe, not a quality setting; the result is intentionally sparse.
+For a longer fit, point the command at the original image and mask and raise the
+budget/iterations.
+
+On this Ubuntu/NVIDIA workspace, start a hardware-backed Chrome process with:
+
+```bash
+google-chrome \
+  --user-data-dir=/tmp/igsv-chrome-webgpu \
+  --enable-unsafe-webgpu \
+  --enable-features=Vulkan,DefaultANGLEVulkan,VulkanFromANGLE \
+  --use-angle=vulkan \
+  http://127.0.0.1:8890/
+```
+
+For Firefox, open `about:config`, set `dom.webgpu.enabled` to `true`, and fully
+restart the browser. Browser version alone is insufficient on this Linux
+installation; Firefox 153 otherwise leaves WebGPU disabled. The blocklist
+override is not needed on the tested machine.
+
+`--mask-coverage-weight 1.0` is a soft penalty on Gaussian weight outside the
+mask; it does not force the displayed RGB to zero there. Add
+`--mask-contain --support-fade` when exact zero outside the mask is required.
+The command above uses `--renderer normalized` because it exercises the
+canonical equations without building the optional CUDA extension. If a
+`cuda`/`cuda_tiled` build fails, that is a renderer-toolchain problem rather
+than an `igsv` connection failure; use the reference command to test the viewer
+independently.
+
 Strategies: `random`, `grid`, `iso_blue_noise`, `aniso_onedge`, `aniso_flanking`.
 Additional quadtree strategies: `quadtree_aggregate`, `quadtree_hybrid`, `quadtree_wse`.
 `local_slic_sobel_control` is a benchmark-only, explicitly local transplant for BENCH-007; its
@@ -87,8 +162,9 @@ Pure-WSE layouts can add `--wse-progressive-order` to permute the identical term
 into Yuksel-style nested prefixes. It is opt-in because saved row order and GPU reduction order are
 part of experimental provenance; the current codec still Morton-sorts the full field. With a
 background layer, frozen background rows stay first and only the detail suffix has WSE ordering.
-Renderers: `normalized`, `additive`, `cuda`, `cuda_additive`, `gsplat`. `cuda`/`cuda_additive`
-are exact StructSplat semantics; `gsplat` is a GaussianImage++-style alpha/sum comparator.
+Renderers: `normalized`, `additive`, `cuda`, `cuda_additive`, `cuda_tiled`,
+`cuda_tiled_additive`, `gsplat`. `cuda`/`cuda_additive` and their tiled variants are exact
+StructSplat semantics; `gsplat` is a GaussianImage++-style alpha/sum comparator.
 Scale caps: `none`, `hard`, `feature` (ADR-0012).
 Mask-contained fitting (`--mask`, CORE-010/ADR-0017): `--mask-contain` projects means into the mask
 and caps effective scales from the signed distance so the sigma_cutoff support stays inside;

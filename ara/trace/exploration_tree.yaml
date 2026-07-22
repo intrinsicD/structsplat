@@ -3839,3 +3839,45 @@ tree:
       - "ara/evidence/comp012-exposed-exact-cap-calibration-2026-07-17/index.html"
     also_depends_on: [N177, N181, N182, N189]
     status: resolved
+  - id: N191
+    type: pivot
+    title: "Replace the fixed 5k mask fit with densified convergence"
+    provenance: user
+    timestamp: "2026-07-22T02:29+02:00"
+    from: >
+      The fresh mask-contained C0001 run kept a fixed 5,000-Gaussian field and was stopped
+      by user request at iteration 12,250 with its step-1/1k/5k/10k renders preserved.
+    to: >
+      Restart from seed 0, densify 5,000 -> 20,000 in five tensor-aligned residual-add waves,
+      freeze the final count, and continue until a 10,000-iteration PSNR stale window fires
+      while exporting original-resolution renders every 5,000 iterations.
+    trigger: >
+      The user explicitly revised the run direction to require complete convergence with
+      densification rather than continuing the fixed-count trajectory.
+    evidence:
+      - "runs/live_viewer_frame_00008_C0001_mask_contained_5k_10k_restart_20260722/artifacts/manifest.json"
+      - "runs/live_viewer_frame_00008_C0001_mask_contained_densified_converged_20260722/run_mask_contained_densified.py"
+    status: resolved
+  - id: N192
+    type: experiment
+    title: "C0001 mask-contained densified fit reaches audited plateau"
+    provenance: ai-executed
+    timestamp: "2026-07-22T02:29+02:00"
+    result: >
+      On the original 5,328x4,608 C0001 image, a no-resampling 3,449x935 native-pixel mask crop
+      initialized 5,000 quadtree-WSE Gaussians and added 3,000 rows at steps
+      1,000/2,000/3,000/4,000/5,000 to reach 20,000. The fit stopped cleanly after 27,901
+      iterations: the last eligible logged best was zero-based iteration 17,900 and exactly
+      200 stale evaluations x 50 steps satisfied the 10,000-step plateau rule. The retained
+      final-count checkpoint is step 5,051 with 25.227867 dB on the matted fit crop and
+      22.518759 dB display PSNR inside the mask; a cold no-mask/no-scale-cap CUDA replay differs
+      by at most 2.98e-7 and is exactly 0.0 outside the mask. Seven scheduled full-resolution
+      renders through step 25,000 are hash-bound; the audit checked 52 files with no mismatch.
+      This is single-image, single-seed procedural evidence, not a benchmark or method claim.
+    evidence:
+      - "ara/evidence/core010-c0001-densified-fit-2026-07-22/run.md"
+      - "runs/live_viewer_frame_00008_C0001_mask_contained_densified_converged_20260722/artifacts/manifest.json"
+      - "runs/live_viewer_frame_00008_C0001_mask_contained_densified_converged_20260722/artifacts/audit.json"
+      - "runs/live_viewer_frame_00008_C0001_mask_contained_densified_converged_20260722/artifacts/final_render_full.png"
+    also_depends_on: [N191]
+    status: resolved

@@ -97,3 +97,10 @@ sessions:
     events_count: 13
     claims_touched: [C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49]
     open_threads: 4
+  - id: "2026-07-22_001"
+    date: "2026-07-22"
+    summary: "Stopped the fixed 5k mask fit, completed and audited a 5k-to-20k densified C0001 convergence run, and preserved full-resolution renders plus a cold-render-reproducible bundle."
+    turn_count: 1
+    events_count: 3
+    claims_touched: []
+    open_threads: 3

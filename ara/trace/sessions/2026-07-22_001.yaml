@@ -1,0 +1,56 @@
+session:
+  id: "2026-07-22_001"
+  date: "2026-07-22"
+  started: "2026-07-22T02:29+02:00"
+  last_turn: "2026-07-22T02:29+02:00"
+  turn_count: 1
+  summary: "Stopped the fixed 5k mask fit, completed and audited a 5k-to-20k densified C0001 convergence run, and preserved full-resolution renders plus a cold-render-reproducible bundle."
+
+events_logged:
+  - turn: 1
+    type: pivot
+    id: "N191"
+    routing: direct
+    provenance: user
+    summary: "Revised the C0001 fitting direction from fixed 5k continuation to a fresh densified run with a strict post-growth convergence window."
+  - turn: 1
+    type: experiment
+    id: "N192"
+    routing: direct
+    provenance: ai-executed
+    summary: "Completed 5k->20k mask-contained fitting in 27,901 iterations; retained step 5,051 at 22.518759 dB inside-mask display PSNR with exact zero outside."
+  - turn: 1
+    type: constraint
+    id: "O86"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged the raw-residual mask-scoping requirement for sampled-add birth placement."
+
+ai_actions:
+  - turn: 1
+    action: "Stopped and preserved the fixed-count run; created the separate densified driver; executed and monitored the full GPU fit; archived every scheduled render/field plus the exact renderer binary; recomputed convergence, hashes, dimensions, containment, cold parity, and normalized-oracle parity; persisted an adversarial audit."
+    provenance: ai-executed
+    files_changed:
+      - "runs/live_viewer_frame_00008_C0001_mask_contained_5k_10k_restart_20260722/artifacts/manifest.json"
+      - "runs/live_viewer_frame_00008_C0001_mask_contained_densified_converged_20260722/"
+      - "ara/evidence/core010-c0001-densified-fit-2026-07-22/run.md"
+      - "ara/evidence/README.md"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/sessions/2026-07-22_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
+
+claims_touched: []
+
+key_context:
+  - turn: 1
+    excerpt: "The user requested stopping the fixed-count run and restarting it to converge completely with densification, retaining full-resolution rendered updates every 5,000 iterations."
+
+open_threads:
+  - "Decide whether _add_from_residual should accept the fit mask directly instead of relying on a matted run target for mask-contained sampled-add growth."
+  - "CORE-010's committed multi-arm containment-cost benchmark remains deferred; this one image cannot promote defaults or quantify general in-mask cost."
+  - "A clean rebuild that maps current CUDA source to the archived executed ELF remains unresolved, although binary-hash, oracle-parity, and cold-field checks pass."
+
+ai_suggestions_pending:
+  - "Consider a tracked mask-aware residual-site scorer with a focused regression test before reusing sampled-add densification broadly on externally masked images."
