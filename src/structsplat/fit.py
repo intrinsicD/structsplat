@@ -41,40 +41,76 @@ _NORMALIZED_COLOR_SOLVE_RENDERERS = (
 # Shared lower bound on densified Gaussian scales (px); was duplicated as bare 0.35 literals.
 _MIN_DENSIFY_SCALE = 0.35
 
+# Anisotropic mask-cap certificate (CORE-011 / ADR-0019). Candidate tangent half-extents are
+# geometric multiples of the isotropic reach; a rung is kept only if its station-ball cover
+# certifies containment. Longer rungs than the hard half-length / station budget are rejected.
+_MASK_CAP_LADDER = (1.25, 1.69, 2.28, 3.08, 4.15, 5.61, 7.57, 10.22, 13.80, 18.62)
+_MASK_CAP_MAX_HALF_LEN = 48.0   # px, longest certifiable tangent half-extent
+_MASK_CAP_MAX_STATIONS = 64     # stations per side; rungs needing more are infeasible
+
 
 class _MaskConstraint:
-    """Torch-side mask containment built from a NumPy :class:`mask.MaskGeometry` (CORE-010).
+    """Torch-side mask containment built from a NumPy :class:`mask.MaskGeometry` (CORE-010/011).
 
     ``apply`` projects means into the eroded mask interior and overwrites ``field.scale_max`` with a
     fresh per-row cap derived from the signed distance, so the sigma_cutoff support ellipse of the
     *effective* covariance (base scales + filter variance + AA dilation) stays inside the mask. With
     ``support_fade=True`` (fade_alpha=1) the renderer weight is exactly zero outside that ellipse, so
-    a contained field renders exactly zero outside the mask. ``coverage`` is a differentiable soft
-    penalty on the raw out-of-mask weight sum. Because ``apply`` overwrites ``scale_max`` each call,
-    ``mask_contain`` owns the cap and does not compose with ``scale_cap_mode``.
+    a contained field renders exactly zero outside the mask. Because ``apply`` overwrites
+    ``scale_max`` each call, ``mask_contain`` owns the cap and does not compose with
+    ``scale_cap_mode``.
+
+    ``cap_mode="isotropic"`` is the ADR-0017 ball cap. ``cap_mode="anisotropic"`` (ADR-0019) keeps
+    the isotropic cap on the short axis but certifies a longer cap for the long axis with a
+    station-ball SDF cover, so boundary Gaussians may elongate along the boundary tangent without
+    breaking the containment guarantee.
+
+    ``coverage`` is a differentiable soft penalty on the raw out-of-mask weight sum;
+    ``undercoverage`` is its in-mask twin, a hinge on the raw weight sum over the boundary band
+    that pulls Gaussians onto uncovered boundary pixels with full-strength geometry gradients.
     """
 
     def __init__(self, geom: _mask.MaskGeometry, device, dtype,
-                 sigma_cutoff: float, margin: float, min_scale: float = _MIN_DENSIFY_SCALE):
+                 sigma_cutoff: float, margin: float, min_scale: float = _MIN_DENSIFY_SCALE,
+                 cap_mode: str = "isotropic", undercoverage_band: float = 0.0):
         H, W = geom.shape
         self.H, self.W = int(H), int(W)
         self.sigma_cutoff = float(sigma_cutoff)
         self.margin = float(margin)
         self.min_scale = float(min_scale)
+        self.cap_mode = str(cap_mode)
         self.inside = torch.as_tensor(geom.inside, device=device, dtype=torch.bool)
         self.eroded_flat = torch.as_tensor(
             geom.eroded.reshape(-1), device=device, dtype=torch.bool)
         self.sdf_flat = torch.as_tensor(
             geom.sdf.reshape(-1), device=device, dtype=dtype)
+        self.sdf_grid = self.sdf_flat.view(self.H, self.W)
         self.nearest_inside_flat = torch.as_tensor(
             geom.nearest_inside_flat, device=device, dtype=torch.long)
         self.outside_flat = torch.as_tensor(geom.outside_flat, device=device, dtype=torch.long)
         # (H, W) 1.0 inside / 0.0 outside, for mask loss weighting and SSIM matting.
         self.inside_weight = self.inside.to(dtype=dtype)
+        # Unit inward boundary normals (zero where unreliable); the boundary tangent used by
+        # the anisotropic spawner is the perpendicular (-ny, nx).
+        normals = _mask.boundary_normals(geom.sdf)
+        self.normal_x_flat = torch.as_tensor(
+            normals[..., 0].reshape(-1), device=device, dtype=dtype)
+        self.normal_y_flat = torch.as_tensor(
+            normals[..., 1].reshape(-1), device=device, dtype=dtype)
+        # Under-coverage band: reachable boundary pixels, margin < SDF <= margin + band. Pixels
+        # with SDF <= margin are unreachable by construction (the cap reach is SDF - margin), so
+        # penalizing them would only press rows against the projection with no attainable zero.
+        band = float(undercoverage_band)
+        if band > 0.0:
+            band_mask = (self.sdf_flat > self.margin) & (self.sdf_flat <= self.margin + band)
+            self.band_flat = band_mask.nonzero(as_tuple=False).reshape(-1)
+        else:
+            self.band_flat = torch.zeros(0, device=device, dtype=torch.long)
 
     @classmethod
     def from_mask(cls, mask_arr, device, dtype, sigma_cutoff: float, margin: float,
-                  aa_dilation: float = 0.0, min_scale: float = _MIN_DENSIFY_SCALE
+                  aa_dilation: float = 0.0, min_scale: float = _MIN_DENSIFY_SCALE,
+                  cap_mode: str = "isotropic", undercoverage_band: float = 0.0
                   ) -> "_MaskConstraint":
         # Reserve room for the min scale (and any global AA dilation) so a projected mean always
         # admits a cap >= min_scale without violating containment.
@@ -82,7 +118,8 @@ class _MaskConstraint:
             float(min_scale) ** 2 + max(float(aa_dilation), 0.0)
         )
         geom = _mask.MaskGeometry.build(mask_arr, erode_radius)
-        return cls(geom, device, dtype, sigma_cutoff, margin, min_scale)
+        return cls(geom, device, dtype, sigma_cutoff, margin, min_scale,
+                   cap_mode=cap_mode, undercoverage_band=undercoverage_band)
 
     def _extra_variance(self, field: GaussianField, aa_dilation: float):
         """Isotropic variance added to base scales at render time (AA dilation + filter)."""
@@ -94,9 +131,62 @@ class _MaskConstraint:
             return fv + extra
         return extra
 
+    def _sample_sdf(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        """Bilinear SDF at continuous pixel coords; clamped to borders (outside stays negative)."""
+        H, W = self.H, self.W
+        g = self.sdf_grid
+        x = x.clamp(0.0, W - 1.0)
+        y = y.clamp(0.0, H - 1.0)
+        x0 = x.floor().long().clamp(0, max(W - 2, 0))
+        y0 = y.floor().long().clamp(0, max(H - 2, 0))
+        x1 = (x0 + 1).clamp(0, W - 1)
+        y1 = (y0 + 1).clamp(0, H - 1)
+        fx = (x - x0.to(x.dtype)).clamp(0.0, 1.0)
+        fy = (y - y0.to(y.dtype)).clamp(0.0, 1.0)
+        return (g[y0, x0] * (1 - fx) * (1 - fy) + g[y0, x1] * fx * (1 - fy)
+                + g[y1, x0] * (1 - fx) * fy + g[y1, x1] * fx * fy)
+
+    @torch.no_grad()
+    def _certified_long_reach(self, mu: torch.Tensor, u: torch.Tensor, d: torch.Tensor,
+                              w_src: torch.Tensor) -> torch.Tensor:
+        """Largest certified tangent half-extent (px) per row via a station-ball SDF cover.
+
+        The sigma_cutoff ellipse with along half-extent L and across half-extent w is covered by
+        2J balls centred on its long axis: stations at t_j = +-(j+0.5)*delta with delta = L/J,
+        each ball of radius r_j = sqrt(w(t_in)^2 + (delta/2)^2), where w(t) is the cross-section
+        halfwidth at the slab edge nearer the centre. SDF(c_j) >= margin + r_j at every station
+        (SDF is 1-Lipschitz; bilinear interpolation error is absorbed by margin > ~0.71 exactly
+        as in ADR-0017) implies the whole ellipse — interior included, so mask holes are covered
+        too — lies inside the mask. Probing balls instead of trusting a boundary-normal slab
+        model means corners and curvature bind the cap automatically.
+        """
+        dev, dt = mu.device, mu.dtype
+        m = torch.as_tensor(_MASK_CAP_LADDER, device=dev, dtype=dt)          # (R,)
+        L = d[:, None] * m[None, :]                                          # (A, R)
+        delta_target = (0.5 * d).clamp(0.35, 1.0)                            # (A,)
+        J_needed = torch.ceil(L / delta_target[:, None])
+        feasible = (L <= _MASK_CAP_MAX_HALF_LEN) & (J_needed <= _MASK_CAP_MAX_STATIONS)
+        J = J_needed.clamp(1.0, float(_MASK_CAP_MAX_STATIONS))
+        delta = L / J
+        j = torch.arange(_MASK_CAP_MAX_STATIONS, device=dev, dtype=dt)
+        t = (j[None, None, :] + 0.5) * delta[..., None]                      # (A, R, J)
+        valid = j[None, None, :] < J[..., None]
+        t_in = (t - 0.5 * delta[..., None]).clamp_min(0.0)
+        frac = (t_in / L[..., None].clamp_min(1e-6)).clamp(0.0, 1.0)
+        w_seg = w_src[:, None, None] * torch.sqrt((1.0 - frac * frac).clamp_min(0.0))
+        need = self.margin + torch.sqrt(
+            w_seg * w_seg + 0.25 * delta[..., None] * delta[..., None])
+        px, py = mu[:, None, None, 0], mu[:, None, None, 1]
+        ux, uy = u[:, None, None, 0], u[:, None, None, 1]
+        ok = ((self._sample_sdf(px + t * ux, py + t * uy) >= need)
+              & (self._sample_sdf(px - t * ux, py - t * uy) >= need)) | ~valid
+        rung_ok = ok.all(dim=2) & feasible                                   # (A, R)
+        best = torch.where(rung_ok, L, torch.zeros_like(L)).amax(dim=1)
+        return torch.maximum(best, d)  # never below the always-valid isotropic reach
+
     @torch.no_grad()
     def apply(self, field: GaussianField, cfg: FitConfig | None = None,
-              aa_dilation: float | None = None) -> None:
+              aa_dilation: float | None = None, refresh: bool = True) -> None:
         if aa_dilation is None:
             aa_dilation = 0.0 if cfg is None else float(cfg.aa_dilation)
         H, W = self.H, self.W
@@ -112,23 +202,65 @@ class _MaskConstraint:
         newx = torch.where(inside_here, means[:, 0], tx).clamp_(0, W - 1)
         newy = torch.where(inside_here, means[:, 1], ty).clamp_(0, H - 1)
         field.means.copy_(torch.stack([newx, newy], dim=1))
+        if (self.cap_mode == "anisotropic" and not refresh
+                and field.scale_max is not None
+                and field.scale_max.shape[0] == field.n):
+            # Cheap between-refresh path: keep the stored certified caps, only re-project means
+            # (above) and clamp scales. Entry, every restructure event, the refresh cadence, and
+            # the terminal apply all run the full recertification, so the returned field is
+            # always certified at its final parameters.
+            log_cap = torch.log(field.scale_max.clamp_min(1e-3))
+            field.log_scales.copy_(torch.minimum(field.log_scales, log_cap))
+            return
         ix2 = torch.round(field.means[:, 0]).clamp_(0, W - 1).long()
         iy2 = torch.round(field.means[:, 1]).clamp_(0, H - 1).long()
         d = (self.sdf_flat[iy2 * W + ix2] - self.margin).clamp_min(1e-3)
-        cap_sq = (d / self.sigma_cutoff) ** 2 - self._extra_variance(field, aa_dilation)
+        extra = self._extra_variance(field, aa_dilation)
+        cap_sq = (d / self.sigma_cutoff) ** 2 - extra
         cap = torch.sqrt(cap_sq.clamp_min(self.min_scale ** 2))
-        scale_max = torch.stack([cap, cap], dim=1)
+        if self.cap_mode == "anisotropic":
+            scales = torch.exp(field.log_scales)
+            extra_col = extra.reshape(-1, 1) if torch.is_tensor(extra) else extra
+            s_eff = torch.sqrt((scales.square() + extra_col).clamp_min(1e-12))
+            long_is_x = s_eff[:, 0] >= s_eff[:, 1]
+            s_long_eff = torch.where(long_is_x, s_eff[:, 0], s_eff[:, 1])
+            s_short_eff = torch.where(long_is_x, s_eff[:, 1], s_eff[:, 0])
+            iso_reach_eff = d / self.sigma_cutoff
+            cap_long = cap.clone()
+            # Certify only rows pressing near/at their isotropic reach; for everyone else the
+            # isotropic cap is far from binding and certification would be wasted probes. Rows
+            # that hit the clamp become active and get a longer certified cap next refresh.
+            active = self.sigma_cutoff * s_long_eff >= 0.8 * d
+            if bool(active.any()):
+                theta = field.rotations
+                ux = torch.where(long_is_x, torch.cos(theta), -torch.sin(theta))
+                uy = torch.where(long_is_x, torch.sin(theta), torch.cos(theta))
+                u = torch.stack([ux, uy], dim=1)
+                # The certificate assumes the across halfwidth stays at most at its own cap.
+                w_src = self.sigma_cutoff * torch.minimum(s_short_eff, iso_reach_eff)
+                reach = self._certified_long_reach(
+                    field.means[active], u[active], d[active], w_src[active])
+                extra_a = extra[active] if torch.is_tensor(extra) else extra
+                cap_eff = reach / self.sigma_cutoff
+                base = torch.sqrt(
+                    (cap_eff.square() - extra_a).clamp_min(self.min_scale ** 2))
+                cap_long[active] = torch.maximum(base, cap[active])
+            scale_max = torch.where(
+                long_is_x[:, None],
+                torch.stack([cap_long, cap], dim=1),
+                torch.stack([cap, cap_long], dim=1),
+            )
+        else:
+            scale_max = torch.stack([cap, cap], dim=1)
         field.scale_max = scale_max
         log_cap = torch.log(scale_max.clamp_min(1e-3))
         field.log_scales.copy_(torch.minimum(field.log_scales, log_cap))
 
-    def coverage(self, field: GaussianField, cfg: FitConfig,
-                 support_fade_alpha: float | None = None) -> torch.Tensor:
-        """Differentiable mean out-of-mask unnormalized weight sum sum_i o_i G_i(p), p not in M."""
+    def raw_weight_map(self, field: GaussianField, cfg: FitConfig,
+                       support_fade_alpha: float | None = None) -> torch.Tensor:
+        """Differentiable (H*W,) unnormalized opacity-weighted weight sum sum_i o_i G_i(p)."""
         H, W = self.H, self.W
         dev, dt = field.means.device, field.means.dtype
-        if self.outside_flat.numel() == 0:
-            return field.means.sum() * 0.0
         means = field.means
         conics = field.conics(cfg.aa_dilation)
         radii = field.radii(cfg.sigma_cutoff, cfg.aa_dilation)
@@ -146,7 +278,35 @@ class _MaskConstraint:
             if opacities is not None:
                 w = w * opacities[gid]
             den = den.index_add(0, py * W + px, w)
+        return den
+
+    def coverage(self, field: GaussianField, cfg: FitConfig,
+                 support_fade_alpha: float | None = None,
+                 den: torch.Tensor | None = None) -> torch.Tensor:
+        """Differentiable mean out-of-mask unnormalized weight sum sum_i o_i G_i(p), p not in M."""
+        if self.outside_flat.numel() == 0:
+            return field.means.sum() * 0.0
+        if den is None:
+            den = self.raw_weight_map(field, cfg, support_fade_alpha)
         return den[self.outside_flat].sum() / float(self.outside_flat.numel())
+
+    def undercoverage(self, field: GaussianField, cfg: FitConfig,
+                      support_fade_alpha: float | None = None,
+                      den: torch.Tensor | None = None) -> torch.Tensor:
+        """Hinge on the raw weight sum over the reachable boundary band (CORE-011).
+
+        mean over band pixels of max(0, tau - den(p)) / tau. Like ``coverage`` it acts on the
+        gauge the normalized compositor cancels, so it carries full-strength geometry/opacity
+        gradients that pull nearby Gaussians onto uncovered boundary pixels; unlike the pixel
+        loss it cannot be satisfied by recoloring.
+        """
+        if self.band_flat.numel() == 0:
+            return field.means.sum() * 0.0
+        if den is None:
+            den = self.raw_weight_map(field, cfg, support_fade_alpha)
+        tau = float(cfg.mask_undercoverage_tau)
+        deficit = torch.clamp(tau - den[self.band_flat], min=0.0)
+        return deficit.mean() / max(tau, 1e-8)
 
 
 def _generation_density_filter_variance(cfg: FitConfig, H: int, W: int,
@@ -2071,6 +2231,74 @@ def _add_from_residual(field: GaussianField, target: torch.Tensor, render_img: t
 
 
 @torch.no_grad()
+def _boundary_tangent_add(field: GaussianField, target: torch.Tensor,
+                          render_img: torch.Tensor, cfg: FitConfig,
+                          mc: "_MaskConstraint") -> tuple[GaussianField, int]:
+    """Spawn tangent-aligned Gaussians at boundary-band residual peaks (CORE-011).
+
+    Sites are per-pixel residual peaks restricted to the boundary band (0 < SDF <= band),
+    spaced by the Euclidean NMS of ``_spaced_topk_pixels`` — the band is a thin ribbon, so
+    Euclidean spacing approximates arc-length spacing along the contour. Children are projected
+    to the admissible eroded interior, oriented along the local boundary tangent (invariant 3:
+    sx along), with the across scale filling the reachable depth and the along scale seeded from
+    the spacing; the post-event ``_MaskConstraint.apply`` refresh certifies or trims the along
+    axis, so spawning alone never violates containment.
+    """
+    if cfg.mask_boundary_add_count <= 0:
+        return field, 0
+    if cfg.max_gaussians is not None and field.n >= cfg.max_gaussians:
+        return field, 0
+    H, W = target.shape[:2]
+    field = _ensure_generation_density_filter(field, cfg, H, W)
+    room = field.n if cfg.max_gaussians is None else max(0, cfg.max_gaussians - field.n)
+    band = (mc.sdf_flat > 0.0) & (mc.sdf_flat <= float(cfg.mask_boundary_add_band))
+    n_band = int(band.sum())
+    k = min(cfg.mask_boundary_add_count, room, n_band)
+    if k <= 0:
+        return field, 0
+    dt = target.dtype
+    residual = (render_img - target).abs().mean(dim=2).reshape(-1)
+    scores = torch.where(band, residual, torch.full_like(residual, -float("inf")))
+    idx = _spaced_topk_pixels(
+        scores, W, k, float(cfg.mask_boundary_add_spacing), cfg.split_oversample)
+    idx = idx[band[idx]]  # the spacing fallback may fill from outside the band; drop those
+    if idx.numel() == 0:
+        return field, 0
+    y = torch.div(idx, W, rounding_mode="floor")
+    x = idx - y * W
+    proj = mc.nearest_inside_flat[idx].clamp_min(0)
+    px = (proj % W).to(dt)
+    py = torch.div(proj, W, rounding_mode="floor").to(dt)
+    means = torch.stack([px, py], dim=1)
+    d = (mc.sdf_flat[proj] - mc.margin).clamp_min(1e-3)
+    nx = mc.normal_x_flat[proj]
+    ny = mc.normal_y_flat[proj]
+    has_normal = (nx * nx + ny * ny) > 0.25  # unit where reliable, exact zero elsewhere
+    # theta is the angle of the sx axis; the tangent is the normal rotated by 90 degrees.
+    theta = torch.where(has_normal, torch.atan2(nx, -ny), torch.zeros_like(nx))
+    count = int(idx.numel())
+    filter_variance = _new_cohort_filter_variance(field, cfg, H, W, count)
+    extra = 0.0 if filter_variance is None else filter_variance
+    s_across = torch.sqrt(
+        ((d / mc.sigma_cutoff).square() - extra).clamp_min(_MIN_DENSIFY_SCALE ** 2))
+    s_along = torch.clamp(
+        torch.full_like(s_across, 0.75 * float(cfg.mask_boundary_add_spacing)), min=s_across)
+    s_along = torch.where(has_normal, s_along, s_across)
+    log_scales = torch.log(torch.stack([s_along, s_across], dim=1))
+    colors = _residual_add_colors(target, render_img, y, x, cfg)
+    scale_max = _nearest_scale_caps(field, means)
+    log_scales = _clamp_new_log_scales(log_scales, scale_max)
+    return field.append(GaussianField(
+        means,
+        log_scales,
+        theta,
+        colors,
+        scale_max=scale_max,
+        filter_variance=filter_variance,
+    )), count
+
+
+@torch.no_grad()
 def _gaussian_residual_score_map(target: torch.Tensor, render_img: torch.Tensor,
                                  sigma_px: float, *, preserve_sign: bool) -> torch.Tensor:
     """Filter RGB residual with one planned isotropic Gaussian footprint.
@@ -2234,17 +2462,26 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
     )
     H, W = target.shape[0], target.shape[1]
     field = _ensure_generation_density_filter(field, cfg, H, W)
-    # CORE-010 mask containment / coverage penalty / mask loss weighting. Built once; the EDT is
-    # the only meaningful cost and it is opt-in.
+    # CORE-010/011 mask containment / coverage + under-coverage penalties / boundary spawning /
+    # mask loss weighting. Built once; the EDT is the only meaningful cost and it is opt-in.
     mask_constraint = None
-    if cfg.mask_contain or cfg.mask_coverage_weight > 0.0 or cfg.loss_weighting == "mask":
+    boundary_add_on = (
+        cfg.mask_boundary_add_every is not None
+        and cfg.mask_boundary_add_every > 0
+        and cfg.mask_boundary_add_count > 0
+    )
+    if (cfg.mask_contain or cfg.mask_coverage_weight > 0.0
+            or cfg.mask_undercoverage_weight > 0.0 or boundary_add_on
+            or cfg.loss_weighting == "mask"):
         if mask is None:
             raise ValueError(
-                "mask_contain, mask_coverage_weight>0, and loss_weighting='mask' require a mask; "
+                "mask_contain, mask_coverage_weight>0, mask_undercoverage_weight>0, "
+                "mask_boundary_add_every, and loss_weighting='mask' require a mask; "
                 "pass mask= to fit()")
         mask_constraint = _MaskConstraint.from_mask(
             mask, target.device, target.dtype, cfg.sigma_cutoff, cfg.mask_margin,
-            aa_dilation=cfg.aa_dilation,
+            aa_dilation=cfg.aa_dilation, cap_mode=cfg.mask_cap_mode,
+            undercoverage_band=cfg.mask_undercoverage_band,
         )
         if tuple(mask_constraint.inside.shape) != (H, W):
             raise ValueError(
@@ -2291,7 +2528,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
     hist = {
         "iter": [], "psnr": [], "loss": [], "n_gaussians": [], "elapsed": [],
         "split_events": [], "relocate_events": [], "color_solve_events": [],
-        "adaptive_events": [], "qat_rate_bpp": [], "rate_loss": [],
+        "adaptive_events": [], "boundary_add_events": [], "qat_rate_bpp": [], "rate_loss": [],
         "support_fade_alpha": [], "tempered_new_rows": [], "geometry_loss": [],
         "loss_target_full_weight": [],
     }
@@ -2466,9 +2703,18 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             loss = loss + active_weight * geometry_loss
         if field.color_grads is not None and cfg.color_grad_l2 > 0.0:
             loss = loss + cfg.color_grad_l2 * (field.color_grads * field.color_grads).mean()
-        if mask_constraint is not None and cfg.mask_coverage_weight > 0.0:
-            loss = loss + float(cfg.mask_coverage_weight) * mask_constraint.coverage(
+        if mask_constraint is not None and (
+                cfg.mask_coverage_weight > 0.0 or cfg.mask_undercoverage_weight > 0.0):
+            # One raw weight-sum accumulation feeds both penalties.
+            den_raw = mask_constraint.raw_weight_map(
                 field, cfg, support_fade_alpha=fade_alpha)
+            if cfg.mask_coverage_weight > 0.0:
+                loss = loss + float(cfg.mask_coverage_weight) * mask_constraint.coverage(
+                    field, cfg, support_fade_alpha=fade_alpha, den=den_raw)
+            if cfg.mask_undercoverage_weight > 0.0:
+                loss = loss + float(cfg.mask_undercoverage_weight) * (
+                    mask_constraint.undercoverage(
+                        field, cfg, support_fade_alpha=fade_alpha, den=den_raw))
         rate_bpp = None
         if cfg.lambda_rate > 0.0:
             rate_bpp = differentiable_rate_bpp(field, H, W, cfg)
@@ -2497,8 +2743,13 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 torch.minimum(field.log_scales, cap, out=field.log_scales)
             if mask_constraint is not None and cfg.mask_contain:
                 # Re-contain after the optimizer moved means/scales: project drift back inside and
-                # refresh the per-row cap from the current signed distance.
-                mask_constraint.apply(field, cfg)
+                # refresh the per-row cap from the current signed distance. Anisotropic
+                # recertification runs on a cadence (plus entry/events/terminal); between
+                # refreshes only the projection + clamp to the stored caps runs.
+                mask_constraint.apply(
+                    field, cfg,
+                    refresh=((it + 1) % max(int(cfg.mask_cap_refresh_every), 1) == 0),
+                )
             if (
                 "every" in color_solve_tokens
                 and cfg.color_solve_every is not None
@@ -2754,6 +3005,33 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                         )
                     added += adaptive_added
             adaptive_prev_psnr = p_now
+        boundary_add_due = (
+            not last_it and mask_constraint is not None and boundary_add_on
+            and (it + 1) % int(cfg.mask_boundary_add_every) == 0
+        )
+        if boundary_add_due:
+            field, boundary_added = _boundary_tangent_add(
+                field, target, img, cfg, mask_constraint
+            )
+            if boundary_added > 0:
+                hist["boundary_add_events"].append({
+                    "iter": it,
+                    "mode": "boundary_tangent_add",
+                    "added": boundary_added,
+                    "band": float(cfg.mask_boundary_add_band),
+                    "spacing": float(cfg.mask_boundary_add_spacing),
+                })
+                new_parent_idx_parts.append(
+                    _take_new_parent_idx(field, boundary_added, state_seed_base_n,
+                                         target.device)
+                )
+                if cfg.refine_site == "absgrad":
+                    absgrad_scores = torch.cat(
+                        [absgrad_scores, absgrad_scores.new_zeros(boundary_added)], dim=0
+                    )
+                added += boundary_added
+                if verbose:
+                    print(f"  boundary add +{boundary_added} -> {field.n} gaussians")
         if keep is not None or added > 0 or relocated > 0:
             if added > 0:
                 row_birth_iter = torch.cat([

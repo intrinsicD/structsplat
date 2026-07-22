@@ -113,6 +113,15 @@ def build_fit_configs(args):
                      mask_contain=args.mask_contain,
                      mask_margin=args.mask_margin,
                      mask_coverage_weight=args.mask_coverage_weight,
+                     mask_cap_mode=args.mask_cap_mode,
+                     mask_cap_refresh_every=args.mask_cap_refresh_every,
+                     mask_undercoverage_weight=args.mask_undercoverage_weight,
+                     mask_undercoverage_band=args.mask_undercoverage_band,
+                     mask_undercoverage_tau=args.mask_undercoverage_tau,
+                     mask_boundary_add_every=args.mask_boundary_add_every,
+                     mask_boundary_add_count=args.mask_boundary_add_count,
+                     mask_boundary_add_band=args.mask_boundary_add_band,
+                     mask_boundary_add_spacing=args.mask_boundary_add_spacing,
                      geometry_loss_weight=args.geometry_loss_weight,
                      geometry_loss_every=args.geometry_loss_every,
                      ssim_backend=args.ssim_backend,
@@ -194,9 +203,12 @@ def cmd_fit(args):
     if mask_np is not None and args.mask_invert:
         mask_np = 1.0 - mask_np
     uses_mask = mask_np is not None or fcfg.mask_contain or fcfg.mask_coverage_weight > 0.0 \
+        or fcfg.mask_undercoverage_weight > 0.0 \
+        or (fcfg.mask_boundary_add_every is not None and fcfg.mask_boundary_add_count > 0) \
         or fcfg.loss_weighting == "mask"
     if uses_mask and mask_np is None:
         raise SystemExit("--mask is required for --mask-contain / --mask-coverage-weight / "
+                         "--mask-undercoverage-weight / --mask-boundary-add-every / "
                          "--loss-weighting mask")
     if uses_mask and args.pyramid:
         raise SystemExit("mask-contained fitting does not support --pyramid yet")
@@ -230,7 +242,8 @@ def cmd_fit(args):
         field = _init.build_masked_field(img, mask_np, icfg, scfg, device=device,
                                           sigma_cutoff=fcfg.sigma_cutoff,
                                           mask_margin=fcfg.mask_margin,
-                                          contain=fcfg.mask_contain)
+                                          contain=fcfg.mask_contain,
+                                          cap_mode=fcfg.mask_cap_mode)
         out = fit(field, target, fcfg, mask=mask_np,
                   iteration_observer=observer, observer_every=args.live_every)
     else:
@@ -248,6 +261,14 @@ def cmd_fit(args):
         save_rgba(os.path.join(args.outdir, f"{base}_{args.strategy}_masked.png"), render, inside)
         outside_energy = float(np.abs(render * (1.0 - inside)[..., None]).mean())
         print(f"  out-of-mask mean |render| = {outside_energy:.3e}")
+        # Boundary-band PSNR (<= 2 px inside the mask edge): the metric the whole-image PSNR
+        # hides; the CORE-010/011 boundary work is judged here.
+        sdf = _maskmod.signed_distance(inside > 0.5)
+        band = (sdf > 0.0) & (sdf <= 2.0)
+        if band.any():
+            band_mse = float(((render - img) ** 2)[band].mean())
+            band_psnr = 10.0 * float(np.log10(1.0 / max(band_mse, 1e-12)))
+            print(f"  boundary-band (<=2 px) PSNR = {band_psnr:.2f} dB over {int(band.sum())} px")
     out["field"].save(os.path.join(args.outdir, f"{base}_{args.strategy}.npz"))
     line = (f"\n{base}: {out['n_gaussians']} gaussians | PSNR {out['psnr']:.2f} | "
             f"SSIM {out['ssim']:.4f} | MS-SSIM {out['ms_ssim']:.4f}")
@@ -540,6 +561,24 @@ def main():
                    help="px safety margin for mask erosion/caps (must exceed ~0.71)")
     f.add_argument("--mask-coverage-weight", type=float, default=0.0,
                    help="soft penalty weight on the out-of-mask unnormalized weight sum")
+    f.add_argument("--mask-cap-mode", choices=["isotropic", "anisotropic"], default="isotropic",
+                   help="anisotropic: certify longer tangent caps near the boundary (ADR-0019)")
+    f.add_argument("--mask-cap-refresh-every", type=int, default=10,
+                   help="anisotropic cap recertification cadence in iterations")
+    f.add_argument("--mask-undercoverage-weight", type=float, default=0.0,
+                   help="hinge penalty weight on uncovered boundary-band pixels (CORE-011)")
+    f.add_argument("--mask-undercoverage-band", type=float, default=3.0,
+                   help="px band beyond the margin supervised by the under-coverage hinge")
+    f.add_argument("--mask-undercoverage-tau", type=float, default=0.1,
+                   help="raw weight sum below which a band pixel counts as uncovered")
+    f.add_argument("--mask-boundary-add-every", type=int, default=None,
+                   help="spawn tangent-aligned boundary Gaussians every N iters (CORE-011)")
+    f.add_argument("--mask-boundary-add-count", type=int, default=0,
+                   help="max boundary Gaussians spawned per event")
+    f.add_argument("--mask-boundary-add-band", type=float, default=4.0,
+                   help="px SDF band whose residual peaks seed boundary spawns")
+    f.add_argument("--mask-boundary-add-spacing", type=float, default=5.0,
+                   help="px spacing between boundary spawns along the contour")
     f.add_argument(
         "--geometry-loss-weight",
         type=float,
