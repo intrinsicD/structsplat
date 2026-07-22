@@ -197,7 +197,17 @@ def build_fit_configs(args):
                      adaptive_growth_count=args.adaptive_growth_count,
                      adaptive_split_mode=args.adaptive_split_mode,
                      adaptive_min_delta_psnr=args.adaptive_min_delta_psnr,
-                     adaptive_patience=args.adaptive_patience)
+                     adaptive_patience=args.adaptive_patience,
+                     triage_every=getattr(args, "triage_every", None),
+                     triage_spawn_count=getattr(args, "triage_spawn_count", 64),
+                     triage_split_count=getattr(args, "triage_split_count", 16),
+                     triage_merge_count=getattr(args, "triage_merge_count", 16),
+                     triage_park_count=getattr(args, "triage_park_count", 16),
+                     target_file_bytes=(
+                         None if getattr(args, "target_file_kb", None) is None
+                         else int(round(float(args.target_file_kb) * 1000))
+                     ),
+                     pool_capacity=getattr(args, "pool_capacity", None))
     return icfg, scfg, fcfg
 
 
@@ -226,6 +236,8 @@ def cmd_fit(args):
                          "--loss-weighting mask")
     if uses_mask and args.pyramid:
         raise SystemExit("mask-contained fitting does not support --pyramid yet")
+    if fcfg.triage_every is not None and args.pyramid:
+        raise SystemExit("pooled triage fitting (--triage-every) does not support --pyramid")
     if uses_mask and fcfg.mask_contain and not fcfg.support_fade:
         print("note: exact zero outside the mask needs --support-fade; without it the render is "
               "contained to the sigma_cutoff ellipse but weight can leak inside its bounding box")
@@ -284,6 +296,23 @@ def cmd_fit(args):
             band_psnr = 10.0 * float(np.log10(1.0 / max(band_mse, 1e-12)))
             print(f"  boundary-band (<=2 px) PSNR = {band_psnr:.2f} dB over {int(band.sum())} px")
     out["field"].save(os.path.join(args.outdir, f"{base}_{args.strategy}.npz"))
+    if fcfg.triage_every is not None:
+        # Budgeted pooled fit: also write the SSPL1 the byte budget was derived against, with
+        # the alpha map in-container for masked inputs, and report bytes against the budget.
+        from . import codec
+
+        blob = codec.encode(out["field"], img.shape[0], img.shape[1], fcfg=fcfg,
+                            alpha=mask_np)
+        sspl_path = os.path.join(args.outdir, f"{base}_{args.strategy}.sspl")
+        with open(sspl_path, "wb") as fh:
+            fh.write(blob)
+        pool_info = out.get("pool") or {}
+        pool_line = (f"  pooled: live {pool_info.get('live_n')}/{pool_info.get('capacity')} "
+                     f"(started {pool_info.get('initial_live')}) | {sspl_path} {len(blob)} B")
+        if fcfg.target_file_bytes is not None:
+            state = "OK" if len(blob) <= fcfg.target_file_bytes else "OVER BUDGET"
+            pool_line += f" / budget {fcfg.target_file_bytes} B [{state}]"
+        print(pool_line)
     line = (f"\n{base}: {out['n_gaussians']} gaussians | PSNR {out['psnr']:.2f} | "
             f"SSIM {out['ssim']:.4f} | MS-SSIM {out['ms_ssim']:.4f}")
     if out.get("lpips") is not None:  # --lpips loaded AlexNet but the value was never surfaced
@@ -883,6 +912,19 @@ def main():
                    default="residual_tensor_add")
     f.add_argument("--adaptive-min-delta-psnr", type=float, default=0.02)
     f.add_argument("--adaptive-patience", type=int, default=2)
+    f.add_argument("--triage-every", type=int, default=None,
+                   help="FIT-021 pooled triage cadence; enables the pooled row lifecycle and "
+                        "replaces --split-every/--relocate-every/--prune-every")
+    f.add_argument("--triage-spawn-count", type=int, default=64)
+    f.add_argument("--triage-split-count", type=int, default=16)
+    f.add_argument("--triage-merge-count", type=int, default=16)
+    f.add_argument("--triage-park-count", type=int, default=16)
+    f.add_argument("--target-file-kb", type=float, default=None,
+                   help="encoded SSPL1(+alpha) budget in decimal KB (168 -> 168,000 bytes, the "
+                        "same convention as the realtime-gs .rtgsv cap); derives the pool "
+                        "capacity and writes the budgeted .sspl next to the NPZ")
+    f.add_argument("--pool-capacity", type=int, default=None,
+                   help="explicit pooled capacity in rows (overrides --target-file-kb)")
     f.add_argument("--seed", type=int, default=0)
     f.add_argument("--outdir", default="runs")
     f.add_argument("--device", default=None)

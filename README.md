@@ -128,6 +128,25 @@ renderer settings stored in its header. For a native NPZ, pass the same `--rende
 `--aa-dilation`, `--sigma-cutoff`, and `--support-fade` settings used during fitting whenever they
 differ from the defaults.
 
+### Byte-budgeted pooled fitting (FIT-021 / ADR-0020, opt-in)
+
+`--triage-every` switches the fitter to the pooled row lifecycle: tensor capacity is fixed for
+the whole fit, "pruning" only parks rows off-image as teleport/spawn donors (exactly zero render
+contribution via the CORE-003 support clip), and one triage event per cadence runs
+responsibility-gated park → envelope merge → split → spawn in place, with no optimizer rebuild.
+`--target-file-kb 168` derives the capacity so the encoded SSPL1 — including the in-container
+alpha stream for masked inputs — stays within 168,000 decimal bytes (the same convention as the
+`.rtgsv` cap), and writes the budgeted `.sspl` next to the NPZ. It replaces
+`--split-every`/`--relocate-every`/`--prune-every`/`--adaptive-count`:
+
+```bash
+structsplat image-to-gaussians2d photo.png --mask photo_mask.png \
+  --strategy quadtree_wse --num-gaussians 5000 --iters 4000 \
+  --mask-contain --support-fade --loss-weighting mask \
+  --triage-every 100 --target-file-kb 168 \
+  --outdir runs/photo_pooled
+```
+
 ### Janelle image + mask → capped realtime-gs `gaussians2d` views
 
 The calibrated Janelle conversion is handled by the resumable mask-contained bridge. Run it from
