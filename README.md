@@ -143,6 +143,19 @@ PY=/home/alex/Documents/realtime-gs/.venv-cuda/bin/python
   --device cuda:0
 ```
 
+Inspect every parameter, its resolved default, whether it is active in residual or boundary
+growth, and the current cleanup/export limitations before starting a run:
+
+```bash
+"$PY" scripts/fit_janelle_mask_contained.py convert --help
+```
+
+The help output is available without importing PyTorch, CUDA, or realtime-gs. Options are grouped
+by input, capacity/growth lifecycle, optimization/stopping, initialization/rendering, mask
+containment, and diagnostics. It explicitly distinguishes fit-time births from the independent
+activity-ranked byte-cap export; this wrapper currently exposes no fit-time pruning, relocation,
+adaptive counting, or merge operator.
+
 For each masked frame it writes `frame_*/gaussians2d/Cxxxx.rtgsv`, enforcing at most 168,000
 decimal bytes for the complete view. It also writes `fitting/Cxxxx.json`,
 `fitting/Cxxxx_history.csv`, `fitting_summary.csv`, and `run_config.json`. Those sidecars contain
@@ -153,6 +166,34 @@ direct full-candidate fit, the lower-count result is explicitly labeled as a pos
 activity-ranked saturation proxy rather than an independently converged smaller fit. Verified
 outputs are skipped on rerun; partial or provenance-mismatched outputs stop instead of being
 overwritten silently.
+
+For a single native-resolution `frame_00008/C0001` quality run that exercises the complete
+refinement lifecycle, use the dedicated diagnostic runner instead of the capped multi-view bridge:
+
+```bash
+/home/alex/miniconda3/bin/python scripts/fit_janelle_complete_refinement.py \
+  --capture-root /home/alex/Dropbox/Work/Janelle/2025_03_07_stage_with_fabric \
+  --frame frame_00008 --view-id C0001 --device cuda:0 \
+  --out runs/janelle_C0001_complete_refinement_20260722
+```
+
+It initializes exactly 5,000 rows (4,500 feature-aware quadtree-WSE plus 500 explicit
+boundary-residual rows), then stages high-error tensor births, tangent boundary births,
+moment-preserving splits, fit-time low-activity pruning, and residual relocation. Between growth
+stages, mutually-nearest redundant pairs are rewritten in a batch: one row moves to the exact pair
+midpoint and receives a 5%-enlarged covariance envelope covering both translated input covariances,
+while the other row is retained and teleported to a spaced high-error site with local feature-aware
+covariance. This merge/teleport is count-neutral. A pair is batch-rejected when its mask-containment
+cap cannot preserve the covariance envelope. Final low-rate, boundary-weighted per-pixel settle
+rounds continue until both foreground and boundary PSNR plateau or the configured round limit is
+reached; a candidate must also reduce foreground and boundary MAE before it replaces the incoming
+field.
+
+The primary result is the uncapped editable `C0001_full_refined.npz`. The runner also derives a
+168,000-byte `gaussians2d/C0001.rtgsv`, but records it separately because activity-ranked export
+backoff is not boundary-error-aware. `index.html`, `progress.csv`, `progress.json`, native final
+images, fixed-scale error maps, and per-stage NPZ/JSON checkpoints show how quality and error evolve
+through the run.
 
 To decode all `.rtgsv` fields back to images and compare them with the exact calibrated source
 pipeline, run the realtime-gs gallery utility. Point both roots at the live Janelle capture while

@@ -34,6 +34,375 @@ DEFAULT_REALTIME_ROOT = Path("/home/alex/Documents/realtime-gs")
 DEFAULT_DATASET_ROOT = Path("/home/alex/Dropbox/Work/Janelle")
 
 
+class _HelpFormatter(
+    argparse.ArgumentDefaultsHelpFormatter,
+    argparse.RawDescriptionHelpFormatter,
+):
+    """Preserve lifecycle notes while showing every resolved default."""
+
+
+def _add_common(parser: argparse.ArgumentParser) -> None:
+    inputs = parser.add_argument_group("input and execution")
+    inputs.add_argument(
+        "--dataset-root",
+        type=Path,
+        default=DEFAULT_DATASET_ROOT,
+        help=(
+            "Janelle dataset root searched by realtime-gs for calibrated frame_*/rgb and "
+            "frame_*/mask inputs. Outputs are written below each source frame's gaussians2d "
+            "directory."
+        ),
+    )
+    inputs.add_argument(
+        "--realtime-root",
+        type=Path,
+        default=DEFAULT_REALTIME_ROOT,
+        help=(
+            "realtime-gs source checkout that supplies calibrated preprocessing, compact-view "
+            "serialization, and the 168,000-byte format contract. It must match "
+            "STRUCTSPLAT_REALTIME_ROOT when that environment variable is set."
+        ),
+    )
+    inputs.add_argument(
+        "--device",
+        default="cuda:0",
+        help=(
+            "PyTorch CUDA device used for initialization, fitting, export scoring, and final "
+            "metrics. This production bridge rejects CPU devices."
+        ),
+    )
+
+    capacity = parser.add_argument_group("capacity and growth lifecycle")
+    capacity.add_argument(
+        "--candidate-gaussians",
+        type=int,
+        default=5_750,
+        help=(
+            "Working-field row ceiling before serialization. The initializer builds this many "
+            "candidate rows and growth cannot exceed it. The final .rtgsv may contain fewer rows "
+            "because export drops the lowest total-foreground-activity rows until the complete "
+            "file fits 168,000 bytes."
+        ),
+    )
+    capacity.add_argument(
+        "--start-gaussians",
+        type=int,
+        default=5_750,
+        help=(
+            "Prefix of the candidate pool present at optimizer entry. It must be at least 16 and "
+            "no larger than --candidate-gaussians. Equal values produce a fixed-count fit; a "
+            "smaller value requires the selected growth lifecycle to add the difference."
+        ),
+    )
+    capacity.add_argument(
+        "--growth-mode",
+        choices=("residual", "boundary"),
+        default="residual",
+        help=(
+            "How rows are born when start < candidate. 'residual' enables generic "
+            "residual-tensor split events controlled by --growth-waves/--growth-every. "
+            "'boundary' disables generic splits and enables tangent-aligned boundary-residual "
+            "births controlled by --mask-boundary-add-every/-count. Neither mode enables "
+            "fit-time pruning, relocation, adaptive counting, or merging."
+        ),
+    )
+    capacity.add_argument(
+        "--growth-waves",
+        type=int,
+        default=4,
+        help=(
+            "Residual mode only: number of planned addition waves. The per-wave count is "
+            "ceil((candidate - start) / waves), capped at the candidate ceiling. Accepted but "
+            "inactive in boundary mode."
+        ),
+    )
+    capacity.add_argument(
+        "--growth-every",
+        type=int,
+        default=1_000,
+        help=(
+            "Residual mode only: optimizer iterations between addition waves. Accepted but "
+            "inactive in boundary mode."
+        ),
+    )
+    capacity.add_argument(
+        "--mask-boundary-add-every",
+        type=int,
+        help=(
+            "Boundary mode only: optimizer iterations between tangent-aligned births. Boundary "
+            "mode requires this interval and a positive --mask-boundary-add-count; leaving it "
+            "unset disables boundary births in residual mode."
+        ),
+    )
+    capacity.add_argument(
+        "--mask-boundary-add-count",
+        type=int,
+        default=0,
+        help=(
+            "Boundary mode only: maximum rows born at each boundary event. The last event is "
+            "trimmed to the candidate ceiling. Zero disables boundary births and is invalid when "
+            "--growth-mode=boundary."
+        ),
+    )
+    capacity.add_argument(
+        "--mask-boundary-add-band",
+        type=float,
+        default=4.0,
+        help=(
+            "Boundary mode only: inside-mask signed-distance band, in pixels, whose residual "
+            "peaks are eligible as birth sites."
+        ),
+    )
+    capacity.add_argument(
+        "--mask-boundary-add-spacing",
+        type=float,
+        default=5.0,
+        help=(
+            "Boundary mode only: approximate minimum pixel spacing between new sites. It also "
+            "sets their initial along-boundary scale to 0.75 times this value before containment "
+            "recertification."
+        ),
+    )
+
+    optimization = parser.add_argument_group("optimization, logging, and stopping")
+    optimization.add_argument(
+        "--max-iters",
+        type=int,
+        default=50_000,
+        help=(
+            "Hard optimizer-iteration horizon for each view. A view may finish earlier under the "
+            "PSNR plateau rule."
+        ),
+    )
+    optimization.add_argument(
+        "--log-every",
+        type=int,
+        default=100,
+        help=(
+            "Iterations between PSNR/loss history rows and plateau evaluations. Early-stop "
+            "patience is counted in these logged evaluations, not optimizer steps."
+        ),
+    )
+    optimization.add_argument(
+        "--early-stop-patience",
+        type=int,
+        default=6,
+        help=(
+            "Number of eligible logged evaluations without more than "
+            "--early-stop-min-delta PSNR improvement before stopping."
+        ),
+    )
+    optimization.add_argument(
+        "--early-stop-min-delta",
+        type=float,
+        default=0.005,
+        help="Minimum PSNR improvement, in dB, that resets plateau patience.",
+    )
+    optimization.add_argument(
+        "--early-stop-min-iters",
+        type=int,
+        default=6_500,
+        help=(
+            "Iteration before which plateau stopping is forbidden. Validation requires every "
+            "planned growth event to finish before this point and this value to remain below "
+            "--max-iters."
+        ),
+    )
+
+    representation = parser.add_argument_group("initialization and rendering")
+    representation.add_argument(
+        "--strategy",
+        default="quadtree_wse",
+        help=(
+            "StructSplat initialization strategy used to build the terminal candidate pool. The "
+            "pool is always WSE-progressively ordered so --start-gaussians selects a nested "
+            "prefix. Invalid strategy names are rejected by InitConfig."
+        ),
+    )
+    representation.add_argument(
+        "--renderer",
+        default="cuda_tiled",
+        help=(
+            "StructSplat renderer used during fitting and central rescoring. Production normally "
+            "uses cuda_tiled normalized-renderer semantics; changing it changes the fitted "
+            "objective and is recorded in provenance."
+        ),
+    )
+    representation.add_argument(
+        "--init-scale-mult",
+        type=float,
+        default=0.35,
+        help=(
+            "Positive multiplier applied to initializer footprint scales. This affects the "
+            "candidate pool in both growth modes."
+        ),
+    )
+    representation.add_argument(
+        "--split-scale",
+        type=float,
+        default=0.35,
+        help=(
+            "Residual mode only: positive scale multiplier for newly added residual-tensor rows. "
+            "Accepted but inactive for boundary births, whose scales come from mask depth and "
+            "--mask-boundary-add-spacing."
+        ),
+    )
+    representation.add_argument(
+        "--seed-offset",
+        type=int,
+        default=0,
+        help=(
+            "Integer added to each source view's deterministic seed. Change it to obtain a "
+            "different but reproducible initialization; it is bound into the run contract."
+        ),
+    )
+
+    containment = parser.add_argument_group("mask containment and boundary coverage")
+    containment.add_argument(
+        "--mask-margin",
+        type=float,
+        default=1.0,
+        help=(
+            "Positive pixel safety margin used to erode the admissible mean region and cap "
+            "Gaussian support. Larger values improve separation from the mask edge but create a "
+            "wider unreachable inner boundary band."
+        ),
+    )
+    containment.add_argument(
+        "--mask-cap-mode",
+        choices=("isotropic", "anisotropic"),
+        default="isotropic",
+        help=(
+            "Scale-containment certificate. 'isotropic' caps both axes by local mask depth; "
+            "'anisotropic' retains the across-boundary cap while certifying longer tangent axes."
+        ),
+    )
+    containment.add_argument(
+        "--mask-cap-refresh-every",
+        type=int,
+        default=10,
+        help=(
+            "Iterations between full anisotropic cap recertifications. Projection and stored-cap "
+            "clamping still run every iteration, and entry/topology/terminal states always receive "
+            "a full recertification."
+        ),
+    )
+    containment.add_argument(
+        "--mask-undercoverage-weight",
+        type=float,
+        default=0.0,
+        help=(
+            "Non-negative weight of the inside-boundary undercoverage hinge. Zero disables the "
+            "term, making --mask-undercoverage-band and --mask-undercoverage-tau inactive."
+        ),
+    )
+    containment.add_argument(
+        "--mask-undercoverage-band",
+        type=float,
+        default=3.0,
+        help=(
+            "Pixel width beyond --mask-margin supervised by the undercoverage hinge. Active only "
+            "when --mask-undercoverage-weight is positive."
+        ),
+    )
+    containment.add_argument(
+        "--mask-undercoverage-tau",
+        type=float,
+        default=0.1,
+        help=(
+            "Raw Gaussian weight-sum target counted as covered by the boundary undercoverage "
+            "hinge. Active only when --mask-undercoverage-weight is positive."
+        ),
+    )
+
+    diagnostics = parser.add_argument_group("terminal diagnostics")
+    diagnostics.add_argument(
+        "--no-lpips",
+        action="store_true",
+        help=(
+            "Skip the optional AlexNet LPIPS measurement on the final serialized field. This "
+            "does not change fitting, because LPIPS is never part of the optimizer objective."
+        ),
+    )
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=_HelpFormatter,
+        epilog=(
+            "Run '%(prog)s convert --help' for every fitting parameter, resolved defaults, "
+            "lifecycle interactions, and current cleanup limitations."
+        ),
+    )
+    subparsers = parser.add_subparsers(dest="command", required=True, title="commands")
+    convert = subparsers.add_parser(
+        "convert",
+        help="discover masked views and fit resumable capped compact fields",
+        description=(
+            "Discover calibrated masked Janelle views, fit each view, and serialize a strictly "
+            "verified realtime-gs compact dataset."
+        ),
+        formatter_class=_HelpFormatter,
+        epilog=(
+            "Lifecycle limitations:\n"
+            "  * residual and boundary are birth modes; this wrapper does not expose fit-time\n"
+            "    pruning, relocation, adaptive counting, or merging.\n"
+            "  * export independently enforces the 168,000-byte complete-file cap by total\n"
+            "    foreground support activity, so serialized rows can be fewer than candidate rows.\n"
+            "  * options described as inactive are still recorded in the resolved RunSpec but do\n"
+            "    not affect that lifecycle mode."
+        ),
+    )
+    _add_common(convert)
+    selection = convert.add_argument_group("dataset selection and dry inspection")
+    selection.add_argument(
+        "--max-views",
+        type=int,
+        help=(
+            "Process only the first N discovered views. Useful for a pilot; partial runs do not "
+            "write a complete frame manifest and skip whole-dataset verification."
+        ),
+    )
+    selection.add_argument(
+        "--inventory-only",
+        action="store_true",
+        help=(
+            "Print the selected frame/view RGB and mask pairs, then exit without initializing, "
+            "fitting, or writing outputs. Honors --max-views."
+        ),
+    )
+
+    worker = subparsers.add_parser(
+        "_worker",
+        help="internal single-view subprocess used by convert",
+        description=(
+            "Internal single-view worker. Use the convert command for normal production runs."
+        ),
+        formatter_class=_HelpFormatter,
+    )
+    _add_common(worker)
+    worker_inputs = worker.add_argument_group("internal view selection")
+    worker_inputs.add_argument(
+        "--frame",
+        type=Path,
+        required=True,
+        help="Exact source frame directory containing the requested RGB and mask view.",
+    )
+    worker_inputs.add_argument(
+        "--view-id",
+        required=True,
+        help="Camera/view identifier to fit inside --frame, for example C0001.",
+    )
+    return parser
+
+
+# Help must remain available before importing CUDA, torch, or the sibling realtime-gs checkout.
+# argparse exits here after printing any top-level or subcommand help request.
+if __name__ == "__main__" and any(token in ("-h", "--help") for token in sys.argv[1:]):
+    build_parser().parse_args()
+
+
 def _prepend_source_roots(realtime_root: Path) -> None:
     roots = (REPOSITORY_ROOT / "src", realtime_root / "src")
     for root in reversed(roots):
@@ -106,6 +475,16 @@ class RunSpec:
     strategy: str = "quadtree_wse"
     renderer: str = "cuda_tiled"
     mask_margin: float = 1.0
+    mask_cap_mode: str = "isotropic"
+    mask_cap_refresh_every: int = 10
+    mask_undercoverage_weight: float = 0.0
+    mask_undercoverage_band: float = 3.0
+    mask_undercoverage_tau: float = 0.1
+    mask_boundary_add_every: int | None = None
+    mask_boundary_add_count: int = 0
+    mask_boundary_add_band: float = 4.0
+    mask_boundary_add_spacing: float = 5.0
+    growth_mode: str = "residual"
     init_scale_mult: float = 0.35
     split_scale: float = 0.35
     seed_offset: int = 0
@@ -120,7 +499,21 @@ class RunSpec:
             raise ValueError("growth_waves must be positive")
         if self.growth_every <= 0 or self.log_every <= 0:
             raise ValueError("growth_every and log_every must be positive")
-        final_growth = self.growth_every * self.growth_waves - 1
+        if self.growth_mode not in ("residual", "boundary"):
+            raise ValueError("growth_mode must be residual or boundary")
+        add_total = self.candidate_gaussians - self.start_gaussians
+        if self.growth_mode == "boundary":
+            if add_total <= 0:
+                raise ValueError("boundary growth requires start_gaussians < candidate_gaussians")
+            if self.mask_boundary_add_every is None or self.mask_boundary_add_count <= 0:
+                raise ValueError(
+                    "boundary growth requires mask_boundary_add_every and a positive "
+                    "mask_boundary_add_count"
+                )
+            events_needed = math.ceil(add_total / self.mask_boundary_add_count)
+            final_growth = self.mask_boundary_add_every * events_needed - 1
+        else:
+            final_growth = self.growth_every * self.growth_waves - 1
         if final_growth >= self.early_stop_min_iters:
             raise ValueError("all growth must finish before early-stop eligibility")
         if self.early_stop_min_iters >= self.max_iters:
@@ -234,6 +627,7 @@ def _fit_configs(
     }
     add_total = spec.candidate_gaussians - spec.start_gaussians
     split_count = int(math.ceil(add_total / spec.growth_waves)) if add_total else 0
+    boundary_growth = spec.growth_mode == "boundary"
     init_cfg = InitConfig(
         strategy=spec.strategy,
         # Build the terminal WSE pool so the start can use its progressive prefix with
@@ -261,10 +655,21 @@ def _fit_configs(
         mask_contain=True,
         mask_margin=spec.mask_margin,
         mask_coverage_weight=0.0,
+        mask_cap_mode=spec.mask_cap_mode,
+        mask_cap_refresh_every=spec.mask_cap_refresh_every,
+        mask_undercoverage_weight=spec.mask_undercoverage_weight,
+        mask_undercoverage_band=spec.mask_undercoverage_band,
+        mask_undercoverage_tau=spec.mask_undercoverage_tau,
+        mask_boundary_add_every=(spec.mask_boundary_add_every if boundary_growth else None),
+        mask_boundary_add_count=(spec.mask_boundary_add_count if boundary_growth else 0),
+        mask_boundary_add_band=spec.mask_boundary_add_band,
+        mask_boundary_add_spacing=spec.mask_boundary_add_spacing,
         support_fade=True,
         log_every=spec.log_every,
-        split_every=(spec.growth_every if add_total else None),
-        split_count=split_count,
+        split_every=(
+            spec.growth_every if add_total and spec.growth_mode == "residual" else None
+        ),
+        split_count=(split_count if spec.growth_mode == "residual" else 0),
         split_mode="residual_tensor_add",
         split_scale=spec.split_scale,
         max_gaussians=spec.candidate_gaussians,
@@ -320,7 +725,7 @@ def _contract(
             "mode": (
                 "direct_full_candidate"
                 if spec.start_gaussians == spec.candidate_gaussians
-                else "progressive_residual_growth"
+                else f"progressive_{spec.growth_mode}_growth"
             ),
             "pool_ordering": "wse_progressive_order",
         },
@@ -810,6 +1215,7 @@ def fit_one(source: Any, spec: RunSpec, device_text: str) -> dict[str, Any]:
             "converged_earlier_below_serialized_count": bool(early),
             "first_early_convergence": early[0] if early else None,
             "split_events": output["history"]["split_events"],
+            "boundary_add_events": output["history"]["boundary_add_events"],
             "checkpoint_history": output["checkpoint_history"],
             "auc_foreground_psnr_observed": _auc(history_rows, "psnr_foreground"),
             "auc_matted_crop_psnr_observed": _auc(history_rows, "psnr_matted_crop"),
@@ -888,6 +1294,16 @@ def _spec_from_args(args: argparse.Namespace) -> RunSpec:
         strategy=args.strategy,
         renderer=args.renderer,
         mask_margin=args.mask_margin,
+        mask_cap_mode=args.mask_cap_mode,
+        mask_cap_refresh_every=args.mask_cap_refresh_every,
+        mask_undercoverage_weight=args.mask_undercoverage_weight,
+        mask_undercoverage_band=args.mask_undercoverage_band,
+        mask_undercoverage_tau=args.mask_undercoverage_tau,
+        mask_boundary_add_every=args.mask_boundary_add_every,
+        mask_boundary_add_count=args.mask_boundary_add_count,
+        mask_boundary_add_band=args.mask_boundary_add_band,
+        mask_boundary_add_spacing=args.mask_boundary_add_spacing,
+        growth_mode=args.growth_mode,
         init_scale_mult=args.init_scale_mult,
         split_scale=args.split_scale,
         seed_offset=args.seed_offset,
@@ -934,6 +1350,29 @@ def _worker_command(source: Any, args: argparse.Namespace) -> list[str]:
         args.renderer,
         "--mask-margin",
         str(args.mask_margin),
+        "--mask-cap-mode",
+        args.mask_cap_mode,
+        "--mask-cap-refresh-every",
+        str(args.mask_cap_refresh_every),
+        "--mask-undercoverage-weight",
+        str(args.mask_undercoverage_weight),
+        "--mask-undercoverage-band",
+        str(args.mask_undercoverage_band),
+        "--mask-undercoverage-tau",
+        str(args.mask_undercoverage_tau),
+        "--mask-boundary-add-count",
+        str(args.mask_boundary_add_count),
+        "--mask-boundary-add-band",
+        str(args.mask_boundary_add_band),
+        "--mask-boundary-add-spacing",
+        str(args.mask_boundary_add_spacing),
+        "--growth-mode",
+        args.growth_mode,
+        *(
+            ["--mask-boundary-add-every", str(args.mask_boundary_add_every)]
+            if args.mask_boundary_add_every is not None
+            else []
+        ),
         "--init-scale-mult",
         str(args.init_scale_mult),
         "--split-scale",
@@ -980,6 +1419,7 @@ def _write_frame_outputs(frame: Any, spec: RunSpec) -> None:
                     "substantially_smaller_near_equivalent"
                 ],
                 "foreground_psnr_clamped": result["metrics"]["foreground_psnr_clamped"],
+                "boundary_psnr_raw": result["metrics"]["boundary_psnr_raw"],
                 "foreground_ssim_clamped": result["metrics"]["foreground_ssim_clamped"],
                 "matted_crop_ms_ssim_clamped": result["metrics"]["matted_crop_ms_ssim_clamped"],
                 "lpips_alex_clamped_matted_crop": result["metrics"][
@@ -1097,42 +1537,6 @@ def run(args: argparse.Namespace) -> None:
         print(f"strictly verified {sum(len(frame.views) for frame in frames)} compact views")
     else:
         print("partial run complete; frame manifests are written only when complete")
-
-
-def _add_common(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--dataset-root", type=Path, default=DEFAULT_DATASET_ROOT)
-    parser.add_argument("--realtime-root", type=Path, default=DEFAULT_REALTIME_ROOT)
-    parser.add_argument("--device", default="cuda:0")
-    parser.add_argument("--candidate-gaussians", type=int, default=5_750)
-    parser.add_argument("--start-gaussians", type=int, default=5_750)
-    parser.add_argument("--growth-waves", type=int, default=4)
-    parser.add_argument("--growth-every", type=int, default=1_000)
-    parser.add_argument("--max-iters", type=int, default=50_000)
-    parser.add_argument("--log-every", type=int, default=100)
-    parser.add_argument("--early-stop-patience", type=int, default=6)
-    parser.add_argument("--early-stop-min-delta", type=float, default=0.005)
-    parser.add_argument("--early-stop-min-iters", type=int, default=6_500)
-    parser.add_argument("--strategy", default="quadtree_wse")
-    parser.add_argument("--renderer", default="cuda_tiled")
-    parser.add_argument("--mask-margin", type=float, default=1.0)
-    parser.add_argument("--init-scale-mult", type=float, default=0.35)
-    parser.add_argument("--split-scale", type=float, default=0.35)
-    parser.add_argument("--seed-offset", type=int, default=0)
-    parser.add_argument("--no-lpips", action="store_true")
-
-
-def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description=__doc__)
-    subparsers = parser.add_subparsers(dest="command", required=True)
-    convert = subparsers.add_parser("convert")
-    _add_common(convert)
-    convert.add_argument("--max-views", type=int)
-    convert.add_argument("--inventory-only", action="store_true")
-    worker = subparsers.add_parser("_worker")
-    _add_common(worker)
-    worker.add_argument("--frame", type=Path, required=True)
-    worker.add_argument("--view-id", required=True)
-    return parser
 
 
 def main() -> None:
