@@ -39,7 +39,9 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
   and gsplat comparator, sharing one accumulator where semantics match), `metrics`, `init`
   (bridge; `build_masked_field` for CORE-010), `fit` (selectable loss/optimizer/LR-schedule/
   split-mode; opt-in mask containment via `_MaskConstraint` with isotropic ADR-0017 or certified
-  anisotropic ADR-0019 caps, under-coverage penalty, boundary tangent densification), `pool` +
+  anisotropic ADR-0019 caps, under-coverage penalty, boundary tangent densification; opt-in
+  FIT-022 coverage-matching regularizer — mass-neutral `(S−c)²` on the raw weight sum with
+  detached opacities, feature/boundary/error targets and cosine decay), `pool` +
   `triage` (FIT-021/ADR-0020, opt-in via `triage_every`: fixed-capacity pooled row lifecycle with
   off-image parking, byte-budgeted capacity from `target_file_bytes`, and one in-place
   park→merge→split→spawn event replacing the independent topology timers), `pyramid`,

@@ -347,6 +347,18 @@ class FitConfig:
     target_file_bytes: int | None = None  # encoded SSPL1 (+alpha) byte budget -> pool capacity
     pool_capacity: int | None = None      # explicit capacity override (rows)
     pool_header_allowance: int = 4096     # header/framing/zlib-slack reserve inside the budget
+    # FIT-022 coverage-matching regularizer (2026-07-23 ideation audit; default off). Penalizes
+    # mean_inside (S - c)^2 where S is the normalized compositor's raw opacity-weighted weight
+    # sum (opacities detached: transport geometry, not transparency) and c is a feature-weighted
+    # target renormalized to the current detached total mass, so the term only redistributes
+    # coverage: attraction to under-covered features + pairwise repulsion in surplus regions.
+    coverage_match_weight: float = 0.0
+    coverage_match_target: str = "tensor"  # tensor | tensor_boundary | error_blend
+    coverage_match_beta: float = 1.0       # profile = 1 + beta * normalized tensor energy
+    coverage_match_boundary_boost: float = 2.0  # tensor_boundary: extra target inside the band
+    coverage_match_boundary_band: float = 3.0   # px band of SDF > 0 receiving the boost
+    coverage_match_error_alpha: float = 0.5     # error_blend: residual share of the target
+    coverage_match_decay_frac: float = 0.0  # 0 = constant; else cosine to zero at this fraction
 
     def __post_init__(self):
         # aa_dilation adds Sigma + d*I; a negative value yields negative inverse variances and
@@ -644,6 +656,35 @@ class FitConfig:
             raise ValueError(f"adaptive_patience must be > 0, got {self.adaptive_patience}")
         if self.adaptive_count and self.max_gaussians is None and self.target_bpp is None:
             raise ValueError("adaptive_count requires max_gaussians or target_bpp")
+        if not math.isfinite(self.coverage_match_weight) or self.coverage_match_weight < 0.0:
+            raise ValueError(
+                "coverage_match_weight must be finite and >= 0, "
+                f"got {self.coverage_match_weight}")
+        if self.coverage_match_target not in ("tensor", "tensor_boundary", "error_blend"):
+            raise ValueError(
+                "coverage_match_target must be tensor, tensor_boundary, or error_blend, "
+                f"got {self.coverage_match_target!r}")
+        if not math.isfinite(self.coverage_match_beta) or self.coverage_match_beta < 0.0:
+            raise ValueError(
+                f"coverage_match_beta must be finite and >= 0, got {self.coverage_match_beta}")
+        if (not math.isfinite(self.coverage_match_boundary_boost)
+                or self.coverage_match_boundary_boost < 0.0):
+            raise ValueError(
+                "coverage_match_boundary_boost must be finite and >= 0, "
+                f"got {self.coverage_match_boundary_boost}")
+        if (not math.isfinite(self.coverage_match_boundary_band)
+                or self.coverage_match_boundary_band <= 0.0):
+            raise ValueError(
+                "coverage_match_boundary_band must be finite and > 0, "
+                f"got {self.coverage_match_boundary_band}")
+        if not 0.0 <= self.coverage_match_error_alpha <= 1.0:
+            raise ValueError(
+                "coverage_match_error_alpha must be in [0, 1], "
+                f"got {self.coverage_match_error_alpha}")
+        if not 0.0 <= self.coverage_match_decay_frac <= 1.0:
+            raise ValueError(
+                "coverage_match_decay_frac must be in [0, 1], "
+                f"got {self.coverage_match_decay_frac}")
         pooled = self.triage_every is not None
         if not pooled and (self.target_file_bytes is not None or self.pool_capacity is not None):
             raise ValueError(

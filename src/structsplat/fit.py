@@ -280,26 +280,9 @@ class _MaskConstraint:
     def raw_weight_map(self, field: GaussianField, cfg: FitConfig,
                        support_fade_alpha: float | None = None) -> torch.Tensor:
         """Differentiable (H*W,) unnormalized opacity-weighted weight sum sum_i o_i G_i(p)."""
-        H, W = self.H, self.W
-        dev, dt = field.means.device, field.means.dtype
-        means = field.means
-        conics = field.conics(cfg.aa_dilation)
-        radii = field.radii(cfg.sigma_cutoff, cfg.aa_dilation)
-        opacities = field.opacity_values()
-        den = torch.zeros(H * W, device=dev, dtype=dt)
-        x0, y0, Tx, n = _tile_bounds(means, radii, H, W)
-        budget = _element_budget(cfg.render_chunk)
-        for s, e in _flat_tile_slices(n, budget):
-            gid, px, py = _tile_coords(x0, y0, Tx, n, s, e, dev)
-            dx = px.to(dt) - means[gid, 0]
-            dy = py.to(dt) - means[gid, 1]
-            a, b, c = conics[gid, 0], conics[gid, 1], conics[gid, 2]
-            q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
-            w = _support_weight(q, cfg.sigma_cutoff, cfg.support_fade, support_fade_alpha)
-            if opacities is not None:
-                w = w * opacities[gid]
-            den = den.index_add(0, py * W + px, w)
-        return den
+        return _raw_weight_map_field(
+            field, cfg, self.H, self.W, support_fade_alpha=support_fade_alpha
+        )
 
     def coverage(self, field: GaussianField, cfg: FitConfig,
                  support_fade_alpha: float | None = None,
@@ -328,6 +311,119 @@ class _MaskConstraint:
         tau = float(cfg.mask_undercoverage_tau)
         deficit = torch.clamp(tau - den[self.band_flat], min=0.0)
         return deficit.mean() / max(tau, 1e-8)
+
+
+def _raw_weight_map_field(field: GaussianField, cfg: FitConfig, H: int, W: int,
+                          support_fade_alpha: float | None = None,
+                          detach_opacities: bool = False) -> torch.Tensor:
+    """Differentiable (H*W,) raw opacity-weighted weight sum sum_i o_i G_i(p).
+
+    The shared accumulation behind _MaskConstraint.raw_weight_map (CORE-010/011 penalties) and
+    the FIT-022 coverage-matching regularizer. ``detach_opacities`` cuts the opacity gradient
+    path only — the coverage term must transport geometry, not dim rows.
+    """
+    dev, dt = field.means.device, field.means.dtype
+    means = field.means
+    conics = field.conics(cfg.aa_dilation)
+    radii = field.radii(cfg.sigma_cutoff, cfg.aa_dilation)
+    opacities = field.opacity_values()
+    if opacities is not None and detach_opacities:
+        opacities = opacities.detach()
+    den = torch.zeros(H * W, device=dev, dtype=dt)
+    x0, y0, Tx, n = _tile_bounds(means, radii, H, W)
+    budget = _element_budget(cfg.render_chunk)
+    for s, e in _flat_tile_slices(n, budget):
+        gid, px, py = _tile_coords(x0, y0, Tx, n, s, e, dev)
+        dx = px.to(dt) - means[gid, 0]
+        dy = py.to(dt) - means[gid, 1]
+        a, b, c = conics[gid, 0], conics[gid, 1], conics[gid, 2]
+        q = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy
+        w = _support_weight(q, cfg.sigma_cutoff, cfg.support_fade, support_fade_alpha)
+        if opacities is not None:
+            w = w * opacities[gid]
+        den = den.index_add(0, py * W + px, w)
+    return den
+
+
+def _prepare_coverage_profile(target: torch.Tensor, cfg: FitConfig,
+                              mask_constraint: "_MaskConstraint | None"
+                              ) -> tuple[torch.Tensor, torch.Tensor] | None:
+    """Static part of the FIT-022 coverage target: (profile, inside) flats, both (H*W,).
+
+    ``profile`` is the unnormalized feature-weighted density target
+    ``1 + beta * normalized structure-tensor energy`` (the FIT-012 weighting form — the uniform
+    floor keeps flat regions covered, which the normalized compositor requires), optionally
+    boosted inside the mask-boundary band, and zeroed outside the mask. The per-iteration mass
+    normalization happens at evaluation time so the term only ever redistributes coverage.
+    """
+    if cfg.coverage_match_weight <= 0.0:
+        return None
+    H, W = target.shape[:2]
+    if cfg.coverage_match_target == "tensor_boundary" and mask_constraint is None:
+        raise ValueError(
+            "coverage_match_target='tensor_boundary' requires a mask; pass mask= to fit()")
+    energy = st.compute(target.detach().cpu().numpy()).energy
+    e = torch.as_tensor(energy, device=target.device, dtype=target.dtype).reshape(-1)
+    e = e / e.max().clamp_min(1e-12)
+    profile = 1.0 + float(cfg.coverage_match_beta) * e
+    if mask_constraint is not None:
+        inside = mask_constraint.inside_weight.reshape(-1)
+        if cfg.coverage_match_target == "tensor_boundary":
+            band = (mask_constraint.sdf_flat > 0.0) & (
+                mask_constraint.sdf_flat <= float(cfg.coverage_match_boundary_band)
+            )
+            profile = profile * torch.where(
+                band,
+                torch.full_like(profile, 1.0 + float(cfg.coverage_match_boundary_boost)),
+                torch.ones_like(profile),
+            )
+        profile = profile * inside
+    else:
+        inside = torch.ones(H * W, device=target.device, dtype=target.dtype)
+    return profile, inside
+
+
+def _coverage_match_factor(cfg: FitConfig, it: int, sched_offset: int = 0,
+                           sched_total: int | None = None) -> float:
+    """Cosine ramp of the coverage weight to zero at coverage_match_decay_frac of the schedule.
+
+    0 disables the decay (constant weight). The global schedule position is used so pyramid
+    stages share one ramp, mirroring _lr_factor's convention.
+    """
+    frac = float(cfg.coverage_match_decay_frac)
+    if frac <= 0.0:
+        return 1.0
+    total = sched_total if sched_total is not None else cfg.iters
+    end = frac * max(int(total), 1)
+    t = sched_offset + it
+    if t >= end:
+        return 0.0
+    return 0.5 * (1.0 + math.cos(math.pi * t / end))
+
+
+def _coverage_match_loss(field: GaussianField, cfg: FitConfig, H: int, W: int,
+                         profile: torch.Tensor, inside: torch.Tensor,
+                         render_img: torch.Tensor | None, target: torch.Tensor,
+                         support_fade_alpha: float | None = None) -> torch.Tensor:
+    """FIT-022 coverage-matching energy mean_inside (S - c)^2 with mass-neutral target c."""
+    S = _raw_weight_map_field(
+        field, cfg, H, W, support_fade_alpha=support_fade_alpha, detach_opacities=True
+    )
+    p = profile
+    if cfg.coverage_match_target == "error_blend" and render_img is not None:
+        with torch.no_grad():
+            residual = (render_img.detach() - target.detach()).abs().mean(dim=2)
+            residual = F.avg_pool2d(residual[None, None], 3, stride=1, padding=1)[0, 0]
+            residual = residual.reshape(-1) * inside
+            residual = residual / residual.sum().clamp_min(1e-12)
+            base = profile / profile.sum().clamp_min(1e-12)
+            alpha = float(cfg.coverage_match_error_alpha)
+            p = (1.0 - alpha) * base + alpha * residual
+    with torch.no_grad():
+        total_mass = (S.detach() * inside).sum()
+        c = p / p.sum().clamp_min(1e-12) * total_mass
+    inside_count = inside.sum().clamp_min(1.0)
+    return ((S - c).square() * inside).sum() / inside_count
 
 
 def _generation_density_filter_variance(cfg: FitConfig, H: int, W: int,
@@ -2541,6 +2637,9 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         # Recomputed at each use: the live mask flips as triage parks/activates rows.
         return None if pool_state is None else ~pool_state.live
 
+    # FIT-022 coverage-matching regularizer: static feature-weighted target profile (one
+    # structure-tensor pass); the mass normalization is per-evaluation.
+    coverage_profile_inside = _prepare_coverage_profile(target, cfg, mask_constraint)
     weight_map_arg = loss_weight_map
     if cfg.loss_weighting == "mask":
         weight_map_arg = mask_constraint.inside_weight
@@ -2585,7 +2684,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         "adaptive_events": [], "boundary_add_events": [], "triage_events": [],
         "qat_rate_bpp": [], "rate_loss": [],
         "support_fade_alpha": [], "tempered_new_rows": [], "geometry_loss": [],
-        "loss_target_full_weight": [],
+        "loss_target_full_weight": [], "coverage_match_loss": [],
     }
     checkpoint_history = (
         {"iter": [], "psnr": [], "n_gaussians": [], "terminal": []}
@@ -2771,6 +2870,16 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 loss = loss + float(cfg.mask_undercoverage_weight) * (
                     mask_constraint.undercoverage(
                         field, cfg, support_fade_alpha=fade_alpha, den=den_raw))
+        coverage_loss = None
+        if coverage_profile_inside is not None:
+            cm_factor = _coverage_match_factor(cfg, it, sched_offset, sched_total)
+            if cm_factor > 0.0:
+                cm_profile, cm_inside = coverage_profile_inside
+                coverage_loss = _coverage_match_loss(
+                    field, cfg, H, W, cm_profile, cm_inside, img, target,
+                    support_fade_alpha=fade_alpha,
+                )
+                loss = loss + float(cfg.coverage_match_weight) * cm_factor * coverage_loss
         rate_bpp = None
         if cfg.lambda_rate > 0.0:
             rate_bpp = differentiable_rate_bpp(field, H, W, cfg)
@@ -3187,6 +3296,9 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 None if geometry_loss is None else float(geometry_loss.detach().cpu())
             )
             hist["loss_target_full_weight"].append(float(loss_target_full_weight))
+            hist["coverage_match_loss"].append(
+                None if coverage_loss is None else float(coverage_loss.detach().cpu())
+            )
             if verbose:
                 print(f"  iter {it:5d}  psnr {p_now:6.2f}  loss {loss.item():.5f}")
             if cfg.early_stop_patience is not None and it >= cfg.early_stop_min_iters:
