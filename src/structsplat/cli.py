@@ -207,7 +207,18 @@ def build_fit_configs(args):
                          None if getattr(args, "target_file_kb", None) is None
                          else int(round(float(args.target_file_kb) * 1000))
                      ),
-                     pool_capacity=getattr(args, "pool_capacity", None))
+                     pool_capacity=getattr(args, "pool_capacity", None),
+                     coverage_match_weight=getattr(args, "coverage_match_weight", 0.0),
+                     coverage_match_target=getattr(args, "coverage_match_target", "tensor"),
+                     coverage_match_beta=getattr(args, "coverage_match_beta", 1.0),
+                     coverage_match_boundary_boost=getattr(
+                         args, "coverage_match_boundary_boost", 2.0),
+                     coverage_match_boundary_band=getattr(
+                         args, "coverage_match_boundary_band", 3.0),
+                     coverage_match_error_alpha=getattr(
+                         args, "coverage_match_error_alpha", 0.5),
+                     coverage_match_decay_frac=getattr(
+                         args, "coverage_match_decay_frac", 0.0))
     return icfg, scfg, fcfg
 
 
@@ -925,6 +936,16 @@ def main():
                         "capacity and writes the budgeted .sspl next to the NPZ")
     f.add_argument("--pool-capacity", type=int, default=None,
                    help="explicit pooled capacity in rows (overrides --target-file-kb)")
+    f.add_argument("--coverage-match-weight", type=float, default=0.0,
+                   help="FIT-022 coverage-matching regularizer weight; 0 disables")
+    f.add_argument("--coverage-match-target",
+                   choices=["tensor", "tensor_boundary", "error_blend"], default="tensor")
+    f.add_argument("--coverage-match-beta", type=float, default=1.0)
+    f.add_argument("--coverage-match-boundary-boost", type=float, default=2.0)
+    f.add_argument("--coverage-match-boundary-band", type=float, default=3.0)
+    f.add_argument("--coverage-match-error-alpha", type=float, default=0.5)
+    f.add_argument("--coverage-match-decay-frac", type=float, default=0.0,
+                   help="cosine-decay the coverage weight to zero at this schedule fraction")
     f.add_argument("--seed", type=int, default=0)
     f.add_argument("--outdir", default="runs")
     f.add_argument("--device", default=None)
