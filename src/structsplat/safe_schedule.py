@@ -134,6 +134,9 @@ class SafeScheduleConfig:
     local_neighbor_count: int = 8
     topology_neighbor_count: int = 8
     boundary_recycle_at_capacity: bool = False
+    pareto_safe_checkpoints: bool = False
+    pareto_checkpoint_every: int = 50
+    event_color_solve: bool = False
     boundary_residual_mse_threshold: float = 1e-2
     boundary_residual_component_target: int = 0
     boundary_residual_min_pixels: int = 4
@@ -215,6 +218,8 @@ class SafeScheduleConfig:
             )
         if self.boundary_residual_mse_threshold < 0.0:
             raise ValueError("boundary_residual_mse_threshold must be nonnegative")
+        if self.pareto_checkpoint_every <= 0:
+            raise ValueError("pareto_checkpoint_every must be positive")
         if (
             self.boundary_residual_component_target < 0
             or self.boundary_residual_min_pixels <= 0
@@ -867,6 +872,7 @@ def _safe_fit_block(
     schedule: SafeScheduleConfig,
     *,
     trainable_rows: torch.Tensor | None = None,
+    post_color_solve: bool = False,
     verbose: bool = False,
 ) -> tuple[GaussianField, dict | None, QualityMetrics, dict[str, Any], dict[str, Any]]:
     incoming_state = _clone_optimizer_state(optimizer_state)
@@ -881,26 +887,122 @@ def _safe_fit_block(
         trainable_row_mask=trainable_rows,
         return_optimizer_state=True,
         mask_constraint_override=constraint,
+        state_checkpoint_every=(
+            int(schedule.pareto_checkpoint_every)
+            if schedule.pareto_safe_checkpoints
+            else 0
+        ),
     )
-    candidate_field = output["field"]
-    constraint.apply(candidate_field, cfg, refresh=True)
-    candidate, _ = evaluate_quality(
-        candidate_field, target, mask, cfg, constraint, schedule.coverage_tau
-    )
-    accepted, reasons = safe_commit_decision(metrics, candidate, schedule.tolerances)
-    candidate_state = output["optimizer_state"]
-    if trainable_rows is not None:
-        candidate_state = restore_frozen_optimizer_rows(
-            candidate_state, incoming_state, trainable_rows
+    terminal_steps = int(output["iterations_run"])
+    if schedule.pareto_safe_checkpoints:
+        raw_snapshots = output["state_checkpoints"]
+        if not raw_snapshots:
+            raise RuntimeError("fit returned no state-matched Pareto checkpoints")
+    else:
+        raw_snapshots = [{
+            "iter": terminal_steps,
+            "field": output["field"],
+            "optimizer_state": output["optimizer_state"],
+            "terminal": True,
+        }]
+
+    evaluated: list[dict[str, Any]] = []
+    terminal_raw: dict[str, Any] | None = None
+    for snapshot in raw_snapshots:
+        candidate_field = snapshot["field"].detached()
+        candidate_state = _clone_optimizer_state(snapshot["optimizer_state"])
+        constraint.apply(candidate_field, cfg, refresh=True)
+        if trainable_rows is not None:
+            candidate_state = restore_frozen_optimizer_rows(
+                candidate_state, incoming_state, trainable_rows
+            )
+        candidate, _ = evaluate_quality(
+            candidate_field, target, mask, cfg, constraint, schedule.coverage_tau
         )
-    if accepted:
-        selected_field = candidate_field
-        selected_state = candidate_state
-        selected_metrics = candidate
+        accepted, reasons = safe_commit_decision(
+            metrics, candidate, schedule.tolerances
+        )
+        raw_evaluation = {
+            "iter": int(snapshot["iter"]),
+            "field": candidate_field,
+            "optimizer_state": candidate_state,
+            "metrics": candidate,
+            "accepted": bool(accepted),
+            "reasons": reasons,
+            "color_solved": False,
+            "solve_stats": None,
+        }
+        evaluated.append(raw_evaluation)
+        if bool(snapshot.get("terminal")) or int(snapshot["iter"]) == terminal_steps:
+            terminal_raw = raw_evaluation
+
+        if post_color_solve:
+            solved_field = candidate_field.detached()
+            with torch.no_grad():
+                solve_stats = _solve_colors_normalized(
+                    solved_field,
+                    target,
+                    cfg,
+                    target.shape[0],
+                    target.shape[1],
+                    support_fade_alpha=1.0,
+                )
+                constraint.apply(solved_field, cfg, refresh=True)
+            solved_metrics, _ = evaluate_quality(
+                solved_field,
+                target,
+                mask,
+                cfg,
+                constraint,
+                schedule.coverage_tau,
+            )
+            solved_accepted, solved_reasons = safe_commit_decision(
+                metrics, solved_metrics, schedule.tolerances
+            )
+            evaluated.append({
+                "iter": int(snapshot["iter"]),
+                "field": solved_field,
+                "optimizer_state": _zero_color_optimizer_state(candidate_state),
+                "metrics": solved_metrics,
+                "accepted": bool(solved_accepted),
+                "reasons": solved_reasons,
+                "color_solved": True,
+                "solve_stats": solve_stats,
+            })
+
+    if terminal_raw is None:
+        raise RuntimeError("fit checkpoint set did not contain the terminal state")
+    safe_candidates = [candidate for candidate in evaluated if candidate["accepted"]]
+    if safe_candidates:
+        selected = max(
+            safe_candidates,
+            key=lambda candidate: _trial_gain(metrics, candidate["metrics"]),
+        )
+        selected_field = selected["field"]
+        selected_state = selected["optimizer_state"]
+        selected_metrics = selected["metrics"]
+        accepted = True
+        reasons = []
+        candidate = selected_metrics
+        selected_steps = int(selected["iter"])
     else:
         selected_field = field
         selected_state = optimizer_state
         selected_metrics = metrics
+        accepted = False
+        reasons = terminal_raw["reasons"]
+        candidate = terminal_raw["metrics"]
+        selected_steps = 0
+
+    candidate_evaluations = [{
+        "iter": int(evaluation["iter"]),
+        "color_solved": bool(evaluation["color_solved"]),
+        "accepted": bool(evaluation["accepted"]),
+        "reasons": list(evaluation["reasons"]),
+        "gain": _trial_gain(metrics, evaluation["metrics"]),
+        "metrics": evaluation["metrics"].to_dict(),
+        "solve_stats": evaluation["solve_stats"],
+    } for evaluation in evaluated]
     record = _event_record(
         phase="fit_block",
         event="local_recovery" if trainable_rows is not None else "global_fit",
@@ -908,14 +1010,25 @@ def _safe_fit_block(
         before=metrics,
         candidate=candidate,
         selected=selected_metrics,
-        attempted_steps=int(output["iterations_run"]),
-        accepted_steps=int(output["iterations_run"]) if accepted else 0,
+        attempted_steps=terminal_steps,
+        accepted_steps=selected_steps,
         reasons=reasons,
         metadata={
             "fit_psnr": float(output["psnr"]),
             "trainable_rows": (
                 int(field.n) if trainable_rows is None else int(trainable_rows.sum())
             ),
+            "pareto_safe_checkpoints": bool(schedule.pareto_safe_checkpoints),
+            "pareto_checkpoint_every": int(schedule.pareto_checkpoint_every),
+            "checkpoint_candidates": candidate_evaluations,
+            "selected_iter": selected_steps if accepted else None,
+            "selected_from_pareto_checkpoint": bool(
+                accepted and selected_steps < terminal_steps
+            ),
+            "event_color_solve_enabled": bool(post_color_solve),
+            "event_color_solve_applied": bool(
+                accepted and selected["color_solved"]
+            ) if safe_candidates else False,
         },
     )
     return selected_field, selected_state, selected_metrics, record, output
@@ -991,6 +1104,7 @@ def _safe_fit_block_with_backtracking(
         attempts.append({
             "attempt": attempt_index + 1,
             "steps": ran,
+            "accepted_steps": int(record["accepted_steps"]),
             "lr_scale": trial_lr_scale,
             "accepted": bool(record["accepted"]),
             "candidate": record["candidate"],
@@ -999,7 +1113,6 @@ def _safe_fit_block_with_backtracking(
         final_record = record
         if record["accepted"]:
             record["attempted_steps"] = total_attempted
-            record["accepted_steps"] = ran
             record["metadata"]["backtracking_attempts"] = attempts
             return (
                 selected_field,
@@ -1798,12 +1911,14 @@ def _topology_auction(
                 constraint,
                 schedule,
                 trainable_rows=trainable,
+                post_color_solve=bool(schedule.event_color_solve),
                 verbose=False,
             )
             attempted_steps += int(output["iterations_run"])
             trial_metadata = {
                 **proposal.metadata,
                 "recovery_neighborhood": neighborhood,
+                "recovery": copy.deepcopy(record["metadata"]),
             }
             attempts.append({
                 "kind": kind,
@@ -1823,7 +1938,7 @@ def _topology_auction(
                     count=proposal.count,
                     metadata=trial_metadata,
                     attempted_count=count,
-                    recovery_steps=int(output["iterations_run"]),
+                    recovery_steps=int(record["accepted_steps"]),
                 ))
                 break
             next_count = count // 2

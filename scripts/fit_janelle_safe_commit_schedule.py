@@ -131,6 +131,9 @@ def build_schedule(args: argparse.Namespace) -> SafeScheduleConfig:
         local_neighbor_count=int(args.local_neighbor_count),
         topology_neighbor_count=int(args.topology_neighbor_count),
         boundary_recycle_at_capacity=bool(args.boundary_recycle_at_capacity),
+        pareto_safe_checkpoints=bool(args.pareto_safe_checkpoints),
+        pareto_checkpoint_every=int(args.pareto_checkpoint_every),
+        event_color_solve=bool(args.event_color_solve),
         boundary_residual_mse_threshold=float(
             args.boundary_residual_mse_threshold
         ),
@@ -593,6 +596,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--local-neighbor-count", type=int, default=8)
     parser.add_argument("--topology-neighbor-count", type=int, default=8)
     parser.add_argument("--boundary-recycle-at-capacity", action="store_true")
+    parser.add_argument("--pareto-safe-checkpoints", action="store_true")
+    parser.add_argument("--pareto-checkpoint-every", type=int, default=50)
+    parser.add_argument("--event-color-solve", action="store_true")
     parser.add_argument("--guard-p99", action="store_true")
     parser.add_argument(
         "--boundary-residual-mse-threshold", type=float, default=1e-2
@@ -631,6 +637,7 @@ def main() -> None:
         args.block_steps,
         args.recovery_steps,
         args.local_seed_count,
+        args.pareto_checkpoint_every,
         args.boundary_residual_min_pixels,
         args.event_min_count,
         args.coverage_loss_every,

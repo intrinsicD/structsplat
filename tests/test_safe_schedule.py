@@ -4,6 +4,7 @@ import pytest
 import torch
 
 import structsplat.fit as fit_module
+import structsplat.safe_schedule as safe_schedule_module
 from structsplat.config import FitConfig
 from structsplat.fit import _MaskConstraint, _render, fit
 from structsplat.gaussians import GaussianField
@@ -13,7 +14,9 @@ from structsplat.safe_schedule import (
     QualityMetrics,
     SafeScheduleConfig,
     _expand_spatial_neighborhood,
+    _safe_fit_block,
     adapt_optimizer_state,
+    evaluate_quality,
     propose_birth,
     propose_merge_rebirth,
     propose_split,
@@ -206,6 +209,309 @@ def test_fit_optimizer_state_and_local_row_freeze_round_trip():
             rtol=0,
             atol=0,
         )
+
+
+def test_fit_returns_state_matched_intermediate_checkpoints():
+    height = width = 24
+    mask = _mask(height, width)
+    target = torch.zeros(height, width, 3)
+    target[mask] = torch.tensor([0.2, 0.5, 0.8])
+    cfg = _base_cfg(iters=5)
+    output = fit(
+        _field(4, height, width),
+        target,
+        cfg,
+        mask=mask.numpy(),
+        verbose=False,
+        return_optimizer_state=True,
+        state_checkpoint_every=2,
+    )
+    checkpoints = output["state_checkpoints"]
+    assert [checkpoint["iter"] for checkpoint in checkpoints] == [2, 4, 5]
+    assert [checkpoint["terminal"] for checkpoint in checkpoints] == [
+        False,
+        False,
+        True,
+    ]
+    assert all(checkpoint["optimizer_state"] is not None for checkpoint in checkpoints)
+    for name in ("means", "log_scales", "rotations", "colors", "opacities"):
+        torch.testing.assert_close(
+            getattr(checkpoints[-1]["field"], name),
+            getattr(output["field"], name),
+            rtol=0,
+            atol=0,
+        )
+
+    resumed = fit(
+        checkpoints[0]["field"],
+        target,
+        _base_cfg(iters=1),
+        mask=mask.numpy(),
+        verbose=False,
+        optimizer_state=checkpoints[0]["optimizer_state"],
+        return_optimizer_state=True,
+    )
+    assert resumed["iterations_run"] == 1
+    assert resumed["state_checkpoints"] is None
+
+
+def test_state_checkpoint_observation_does_not_change_fit_trajectory():
+    height = width = 24
+    mask = _mask(height, width)
+    target = torch.zeros(height, width, 3)
+    target[mask] = torch.tensor([0.2, 0.5, 0.8])
+    initial = _field(4, height, width)
+    cfg = _base_cfg(iters=3)
+    control = fit(
+        initial.detached(),
+        target,
+        cfg,
+        mask=mask.numpy(),
+        verbose=False,
+        return_optimizer_state=True,
+    )
+    observed = fit(
+        initial.detached(),
+        target,
+        cfg,
+        mask=mask.numpy(),
+        verbose=False,
+        return_optimizer_state=True,
+        state_checkpoint_every=1,
+    )
+    assert control["state_checkpoints"] is None
+    assert len(observed["state_checkpoints"]) == 3
+    for name in ("means", "log_scales", "rotations", "colors", "opacities"):
+        torch.testing.assert_close(
+            getattr(control["field"], name),
+            getattr(observed["field"], name),
+            rtol=0,
+            atol=0,
+        )
+    assert control["psnr"] == observed["psnr"]
+
+
+def test_safe_fit_block_competes_raw_and_color_solved_checkpoints():
+    height = width = 24
+    mask = _mask(height, width)
+    target = torch.zeros(height, width, 3)
+    target[mask] = torch.tensor([0.2, 0.5, 0.8])
+    field = _field(4, height, width)
+    cfg = _base_cfg(iters=2)
+    constraint = _MaskConstraint.from_mask(
+        mask.numpy(),
+        target.device,
+        target.dtype,
+        cfg.sigma_cutoff,
+        cfg.mask_margin,
+        cap_mode=cfg.mask_cap_mode,
+        undercoverage_band=cfg.mask_undercoverage_band,
+    )
+    constraint.apply(field, cfg, refresh=True)
+    metrics, _ = evaluate_quality(
+        field, target, mask, cfg, constraint, coverage_tau=0.05
+    )
+    schedule = SafeScheduleConfig(
+        capacity=4,
+        coverage_target_gaussians=4,
+        detail_target_gaussians=4,
+        pareto_safe_checkpoints=True,
+        pareto_checkpoint_every=1,
+        event_color_solve=True,
+    )
+    _, _, _, record, output = _safe_fit_block(
+        field,
+        None,
+        metrics,
+        target,
+        mask.numpy(),
+        mask,
+        cfg,
+        constraint,
+        schedule,
+        post_color_solve=True,
+        verbose=False,
+    )
+    candidates = record["metadata"]["checkpoint_candidates"]
+    assert output["iterations_run"] == 2
+    assert [(item["iter"], item["color_solved"]) for item in candidates] == [
+        (1, False),
+        (1, True),
+        (2, False),
+        (2, True),
+    ]
+    assert record["metadata"]["pareto_safe_checkpoints"] is True
+    assert record["metadata"]["event_color_solve_enabled"] is True
+    assert record["accepted_steps"] <= record["attempted_steps"]
+
+
+def test_safe_fit_block_can_select_an_earlier_safe_checkpoint(monkeypatch):
+    height = width = 24
+    mask = _mask(height, width)
+    target = torch.zeros(height, width, 3)
+    cfg = _base_cfg(iters=2)
+    field = _field(4, height, width)
+    constraint = _MaskConstraint.from_mask(
+        mask.numpy(),
+        target.device,
+        target.dtype,
+        cfg.sigma_cutoff,
+        cfg.mask_margin,
+        cap_mode=cfg.mask_cap_mode,
+        undercoverage_band=cfg.mask_undercoverage_band,
+    )
+    early = field.detached()
+    early.colors.fill_(1.0)
+    terminal = field.detached()
+    terminal.colors.fill_(2.0)
+
+    def fake_fit(*args, **kwargs):
+        return {
+            "field": terminal,
+            "optimizer_state": None,
+            "state_checkpoints": [
+                {
+                    "iter": 1,
+                    "field": early,
+                    "optimizer_state": None,
+                    "terminal": False,
+                },
+                {
+                    "iter": 2,
+                    "field": terminal,
+                    "optimizer_state": None,
+                    "terminal": True,
+                },
+            ],
+            "iterations_run": 2,
+            "psnr": 9.0,
+        }
+
+    def fake_evaluate(candidate_field, *args, **kwargs):
+        marker = float(candidate_field.colors[0, 0])
+        if marker == 1.0:
+            candidate = _metrics(
+                foreground_mse=0.09,
+                boundary_mse=0.19,
+                cvar99_mse=0.29,
+                p99_mse=0.24,
+                interior_hole_fraction=0.09,
+                boundary_hole_fraction=0.19,
+            )
+        else:
+            candidate = _metrics(foreground_mse=0.11)
+        return candidate, target
+
+    monkeypatch.setattr(safe_schedule_module, "fit", fake_fit)
+    monkeypatch.setattr(safe_schedule_module, "evaluate_quality", fake_evaluate)
+    selected, _, selected_metrics, record, _ = _safe_fit_block(
+        field,
+        None,
+        _metrics(),
+        target,
+        mask.numpy(),
+        mask,
+        cfg,
+        constraint,
+        SafeScheduleConfig(
+            capacity=4,
+            coverage_target_gaussians=4,
+            detail_target_gaussians=4,
+            pareto_safe_checkpoints=True,
+            pareto_checkpoint_every=1,
+        ),
+    )
+    assert record["accepted"] is True
+    assert record["accepted_steps"] == 1
+    assert record["metadata"]["selected_from_pareto_checkpoint"] is True
+    assert selected_metrics.foreground_mse == 0.09
+    assert float(selected.colors[0, 0]) == 1.0
+
+
+def test_event_color_solve_zeros_selected_color_moments(monkeypatch):
+    height = width = 24
+    mask = _mask(height, width)
+    target = torch.zeros(height, width, 3)
+    cfg = _base_cfg(iters=1)
+    field = _field(4, height, width)
+    constraint = _MaskConstraint.from_mask(
+        mask.numpy(),
+        target.device,
+        target.dtype,
+        cfg.sigma_cutoff,
+        cfg.mask_margin,
+        cap_mode=cfg.mask_cap_mode,
+        undercoverage_band=cfg.mask_undercoverage_band,
+    )
+    terminal = field.detached()
+    terminal.colors.fill_(1.0)
+    state = {
+        "state": {
+            3: {
+                "step": torch.tensor(1.0),
+                "exp_avg": torch.ones_like(terminal.colors),
+                "exp_avg_sq": torch.ones_like(terminal.colors),
+            },
+        },
+        "param_groups": [
+            {"params": [0]},
+            {"params": [1]},
+            {"params": [2]},
+            {"params": [3]},
+        ],
+    }
+
+    def fake_fit(*args, **kwargs):
+        return {
+            "field": terminal,
+            "optimizer_state": state,
+            "state_checkpoints": None,
+            "iterations_run": 1,
+            "psnr": 10.0,
+        }
+
+    def fake_solve(candidate_field, *args, **kwargs):
+        candidate_field.colors.fill_(2.0)
+        return {"iterations": 1, "relative_residual": 0.0}
+
+    def fake_evaluate(candidate_field, *args, **kwargs):
+        marker = float(candidate_field.colors[0, 0])
+        candidate = _metrics(
+            foreground_mse=0.09 if marker == 1.0 else 0.08,
+            boundary_mse=0.19 if marker == 1.0 else 0.18,
+            cvar99_mse=0.29 if marker == 1.0 else 0.28,
+            p99_mse=0.24 if marker == 1.0 else 0.23,
+            interior_hole_fraction=0.09,
+            boundary_hole_fraction=0.19,
+        )
+        return candidate, target
+
+    monkeypatch.setattr(safe_schedule_module, "fit", fake_fit)
+    monkeypatch.setattr(
+        safe_schedule_module, "_solve_colors_normalized", fake_solve
+    )
+    monkeypatch.setattr(safe_schedule_module, "evaluate_quality", fake_evaluate)
+    selected, selected_state, _, record, _ = _safe_fit_block(
+        field,
+        None,
+        _metrics(),
+        target,
+        mask.numpy(),
+        mask,
+        cfg,
+        constraint,
+        SafeScheduleConfig(
+            capacity=4,
+            coverage_target_gaussians=4,
+            detail_target_gaussians=4,
+            event_color_solve=True,
+        ),
+        post_color_solve=True,
+    )
+    assert float(selected.colors[0, 0]) == 2.0
+    assert record["metadata"]["event_color_solve_applied"] is True
+    assert torch.count_nonzero(selected_state["state"][3]["exp_avg"]) == 0
+    assert torch.count_nonzero(selected_state["state"][3]["exp_avg_sq"]) == 0
 
 
 def test_fit_reuses_precomputed_mask_constraint(monkeypatch):

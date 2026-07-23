@@ -2610,7 +2610,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         optimizer_state: dict | None = None,
         trainable_row_mask: torch.Tensor | None = None,
         return_optimizer_state: bool = False,
-        mask_constraint_override: _MaskConstraint | None = None) -> dict:
+        mask_constraint_override: _MaskConstraint | None = None,
+        state_checkpoint_every: int = 0) -> dict:
     """Optimize one Gaussian field.
 
     ``optimizer_state`` and ``trainable_row_mask`` are opt-in hooks used by the transactional
@@ -2618,7 +2619,12 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
     moments across short commit blocks; a row mask performs local recovery by freezing every
     non-selected row (including its moment-driven update). ``mask_constraint_override`` reuses
     one already-built exact mask EDT across such blocks; normal one-shot callers leave it unset.
+    ``state_checkpoint_every`` additionally returns state-matched field/Adam snapshots for a
+    caller that wants to apply a multi-metric transaction gate to intermediate states. It is
+    disabled by default and therefore does not alter historical trajectories.
     """
+    if state_checkpoint_every < 0:
+        raise ValueError("state_checkpoint_every must be non-negative")
     checkpoint_enabled = cfg.checkpoint_policy == "best_psnr_final_count"
     if optimizer_state is not None and checkpoint_enabled:
         raise ValueError(
@@ -2695,6 +2701,11 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
     if cfg.triage_every is not None:
         from . import pool as _pool
         field, pool_state = _pool.prepare_pooled_field(field, cfg, H, W, mask_arr=mask)
+    if state_checkpoint_every > 0 and pool_state is not None:
+        raise ValueError(
+            "state_checkpoint_every is not supported by the pooled lifecycle because its "
+            "terminal live-row compaction would not match the pooled optimizer state"
+        )
 
     def _parked_exempt():
         # Recomputed at each use: the live mask flips as triage parks/activates rows.
@@ -2775,6 +2786,9 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         {"iter": [], "psnr": [], "n_gaussians": [], "terminal": []}
         if checkpoint_enabled
         else None
+    )
+    state_checkpoints: list[dict] | None = (
+        [] if state_checkpoint_every > 0 else None
     )
     best_checkpoints_by_count: dict[int, dict] = {}
     color_solve_tokens = _color_solve_schedule_tokens(cfg)
@@ -2858,6 +2872,21 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 "terminal": bool(terminal),
             }
         return render_img, psnr
+
+    def record_state_checkpoint(iteration: int, *, terminal: bool = False) -> None:
+        """Capture parameters and Adam moments from the same post-transition state."""
+        if state_checkpoints is None:
+            return
+        snapshot = {
+            "iter": int(iteration),
+            "field": field.detached(),
+            "optimizer_state": copy.deepcopy(opt.state_dict()),
+            "terminal": bool(terminal),
+        }
+        if state_checkpoints and int(state_checkpoints[-1]["iter"]) == int(iteration):
+            state_checkpoints[-1] = snapshot
+        else:
+            state_checkpoints.append(snapshot)
 
     if "init" in color_solve_tokens:
         run_color_solve_event(0, "init", _fit_support_fade_alpha(cfg, 0))
@@ -3380,6 +3409,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 it + 1,
                 _fit_support_fade_alpha(cfg, it + 1),
             )
+        if state_checkpoints is not None and (it + 1) % state_checkpoint_every == 0:
+            record_state_checkpoint(it + 1)
 
         if (
             iteration_observer is not None
@@ -3459,8 +3490,10 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 str(t): (None if int(v) < 0 else int(v)) for t, v in zip(targets, reached)
             }
         terminal_field = field
+        terminal_iter = last_iter + 1
         if mask_constraint is not None and cfg.mask_contain:
             mask_constraint.apply(field, cfg)
+        record_state_checkpoint(terminal_iter, terminal=True)
         terminal_img = _render(field, cfg, H, W, support_fade_alpha=final_fade_alpha)
         terminal_psnr = M.psnr(terminal_img, target)
         terminal_ssim = float(M.ssim(terminal_img, target, backend=cfg.ssim_backend))
@@ -3468,7 +3501,6 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         terminal_lpips = (
             M.LPIPS.distance(terminal_img, target) if cfg.compute_lpips else None
         )
-        terminal_iter = last_iter + 1
         terminal_n = int(field.n)
         selected_record = None
         if checkpoint_enabled:
@@ -3560,6 +3592,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             "lr_cosine_start_frac": float(cfg.lr_cosine_start_frac),
             "checkpoint_policy": cfg.checkpoint_policy,
             "checkpoint_history": checkpoint_history,
+            "state_checkpoints": state_checkpoints,
             "optimizer_state": (
                 copy.deepcopy(opt.state_dict())
                 if return_optimizer_state or optimizer_state is not None
