@@ -7,6 +7,7 @@ optional warmup), optimizer, LR schedule, renderer mode, opacity, and residual d
 Requires torch.
 """
 from __future__ import annotations
+import copy
 from dataclasses import replace
 import math
 import time
@@ -104,8 +105,12 @@ class _MaskConstraint:
         if band > 0.0:
             band_mask = (self.sdf_flat > self.margin) & (self.sdf_flat <= self.margin + band)
             self.band_flat = band_mask.nonzero(as_tuple=False).reshape(-1)
+            interior_mask = self.sdf_flat > self.margin + band
+            self.interior_flat = interior_mask.nonzero(as_tuple=False).reshape(-1)
         else:
             self.band_flat = torch.zeros(0, device=device, dtype=torch.long)
+            interior_mask = self.sdf_flat > self.margin
+            self.interior_flat = interior_mask.nonzero(as_tuple=False).reshape(-1)
 
     @classmethod
     def from_mask(cls, mask_arr, device, dtype, sigma_cutoff: float, margin: float,
@@ -311,6 +316,23 @@ class _MaskConstraint:
         tau = float(cfg.mask_undercoverage_tau)
         deficit = torch.clamp(tau - den[self.band_flat], min=0.0)
         return deficit.mean() / max(tau, 1e-8)
+
+    def interior_undercoverage(self, field: GaussianField, cfg: FitConfig,
+                               support_fade_alpha: float | None = None,
+                               den: torch.Tensor | None = None) -> torch.Tensor:
+        """One-sided raw-coverage floor over the reachable mask interior.
+
+        The boundary band has its own loss above. Keeping the two regions disjoint lets the
+        safe schedule turn their weights on and off independently without double-counting the
+        narrow contour ribbon.
+        """
+        if self.interior_flat.numel() == 0:
+            return field.means.sum() * 0.0
+        if den is None:
+            den = self.raw_weight_map(field, cfg, support_fade_alpha)
+        tau = float(cfg.mask_undercoverage_tau)
+        deficit = torch.clamp(tau - den[self.interior_flat], min=0.0)
+        return deficit.square().mean() / max(tau * tau, 1e-8)
 
 
 def _raw_weight_map_field(field: GaussianField, cfg: FitConfig, H: int, W: int,
@@ -2584,8 +2606,25 @@ def _adaptive_growth_from_residual(field: GaussianField, target: torch.Tensor,
 
 def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: bool = True,
         sched_offset: int = 0, sched_total: int | None = None, loss_weight_map=None,
-        mask=None, iteration_observer=None, observer_every: int = 0) -> dict:
+        mask=None, iteration_observer=None, observer_every: int = 0,
+        optimizer_state: dict | None = None,
+        trainable_row_mask: torch.Tensor | None = None,
+        return_optimizer_state: bool = False,
+        mask_constraint_override: _MaskConstraint | None = None) -> dict:
+    """Optimize one Gaussian field.
+
+    ``optimizer_state`` and ``trainable_row_mask`` are opt-in hooks used by the transactional
+    safe schedule. Normal callers retain the historical behavior. A supplied state carries Adam
+    moments across short commit blocks; a row mask performs local recovery by freezing every
+    non-selected row (including its moment-driven update). ``mask_constraint_override`` reuses
+    one already-built exact mask EDT across such blocks; normal one-shot callers leave it unset.
+    """
     checkpoint_enabled = cfg.checkpoint_policy == "best_psnr_final_count"
+    if optimizer_state is not None and checkpoint_enabled:
+        raise ValueError(
+            "optimizer_state requires checkpoint_policy='terminal'; an earlier parameter "
+            "checkpoint would otherwise be paired with terminal optimizer moments"
+        )
     if checkpoint_enabled and (
         sched_offset != 0 or (sched_total is not None and sched_total != cfg.iters)
     ):
@@ -2602,29 +2641,53 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
     field = _ensure_generation_density_filter(field, cfg, H, W)
     # CORE-010/011 mask containment / coverage + under-coverage penalties / boundary spawning /
     # mask loss weighting. Built once; the EDT is the only meaningful cost and it is opt-in.
-    mask_constraint = None
+    mask_constraint = mask_constraint_override
     boundary_add_on = (
         cfg.mask_boundary_add_every is not None
         and cfg.mask_boundary_add_every > 0
         and cfg.mask_boundary_add_count > 0
     )
-    if (cfg.mask_contain or cfg.mask_coverage_weight > 0.0
-            or cfg.mask_undercoverage_weight > 0.0 or boundary_add_on
-            or cfg.loss_weighting == "mask"):
+    mask_features_on = (
+        cfg.mask_contain or cfg.mask_coverage_weight > 0.0
+            or cfg.mask_undercoverage_weight > 0.0
+            or cfg.mask_interior_undercoverage_weight > 0.0 or boundary_add_on
+            or cfg.loss_weighting == "mask"
+    )
+    if mask_features_on:
         if mask is None:
             raise ValueError(
                 "mask_contain, mask_coverage_weight>0, mask_undercoverage_weight>0, "
-                "mask_boundary_add_every, and loss_weighting='mask' require a mask; "
+                "mask_interior_undercoverage_weight>0, mask_boundary_add_every, and "
+                "loss_weighting='mask' require a mask; "
                 "pass mask= to fit()")
-        mask_constraint = _MaskConstraint.from_mask(
-            mask, target.device, target.dtype, cfg.sigma_cutoff, cfg.mask_margin,
-            aa_dilation=cfg.aa_dilation, cap_mode=cfg.mask_cap_mode,
-            undercoverage_band=cfg.mask_undercoverage_band,
-        )
+        if mask_constraint is None:
+            mask_constraint = _MaskConstraint.from_mask(
+                mask, target.device, target.dtype, cfg.sigma_cutoff, cfg.mask_margin,
+                aa_dilation=cfg.aa_dilation, cap_mode=cfg.mask_cap_mode,
+                undercoverage_band=cfg.mask_undercoverage_band,
+            )
         if tuple(mask_constraint.inside.shape) != (H, W):
             raise ValueError(
                 f"mask shape {tuple(mask_constraint.inside.shape)} does not match target "
                 f"{(H, W)}")
+        if mask_constraint.inside.device != target.device:
+            raise ValueError(
+                "mask_constraint_override must be on the target device, "
+                f"got {mask_constraint.inside.device} and {target.device}"
+            )
+        if (
+            abs(float(mask_constraint.margin) - float(cfg.mask_margin)) > 1e-9
+            or abs(float(mask_constraint.sigma_cutoff) - float(cfg.sigma_cutoff)) > 1e-9
+            or str(mask_constraint.cap_mode) != str(cfg.mask_cap_mode)
+        ):
+            raise ValueError(
+                "mask_constraint_override geometry does not match mask_margin, "
+                "sigma_cutoff, or mask_cap_mode"
+            )
+    elif mask_constraint is not None:
+        raise ValueError(
+            "mask_constraint_override was provided but no mask feature is enabled"
+        )
     # FIT-021 pooled lifecycle: expand once to capacity (the fit's only resize), park the
     # spares, and drive all topology through the triage event. Config-level knob conflicts are
     # rejected in FitConfig.__post_init__.
@@ -2673,10 +2736,32 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             "affine color coefficients are optimized with Adam"
         )
     field.trainable()
+    if trainable_row_mask is not None:
+        trainable_row_mask = torch.as_tensor(
+            trainable_row_mask, device=field.means.device, dtype=torch.bool
+        ).reshape(-1)
+        if int(trainable_row_mask.numel()) != int(field.n):
+            raise ValueError(
+                "trainable_row_mask must have one entry per Gaussian, "
+                f"got {trainable_row_mask.numel()} for {field.n} rows"
+            )
+        if not bool(trainable_row_mask.any()):
+            raise ValueError("trainable_row_mask must enable at least one row")
     if mask_constraint is not None and cfg.mask_contain:
         mask_constraint.apply(field, cfg, exempt=_parked_exempt())
     opt = _make_optimizer(field, cfg)
-    base_lrs = [g["lr"] for g in opt.param_groups]
+    requested_lrs = [float(g["lr"]) for g in opt.param_groups]
+    if optimizer_state is not None:
+        opt.load_state_dict(copy.deepcopy(optimizer_state))
+        if len(opt.param_groups) != len(requested_lrs):
+            raise ValueError(
+                "optimizer_state parameter-group count does not match the current field"
+            )
+        # The state carries moments, not phase policy. Each schedule phase owns its requested
+        # learning rates even when the preceding block used different values.
+        for group, lr in zip(opt.param_groups, requested_lrs):
+            group["lr"] = lr
+    base_lrs = requested_lrs
     lo, hi = math.log(0.35), math.log(max(H, W))
     hist = {
         "iter": [], "psnr": [], "loss": [], "n_gaussians": [], "elapsed": [],
@@ -2858,17 +2943,31 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             loss = loss + active_weight * geometry_loss
         if field.color_grads is not None and cfg.color_grad_l2 > 0.0:
             loss = loss + cfg.color_grad_l2 * (field.color_grads * field.color_grads).mean()
+        floor_due = (
+            (cfg.mask_undercoverage_weight > 0.0
+             or cfg.mask_interior_undercoverage_weight > 0.0)
+            and (sched_offset + it) % int(cfg.mask_undercoverage_every) == 0
+        )
         if mask_constraint is not None and (
-                cfg.mask_coverage_weight > 0.0 or cfg.mask_undercoverage_weight > 0.0):
+                cfg.mask_coverage_weight > 0.0 or floor_due):
             # One raw weight-sum accumulation feeds both penalties.
             den_raw = mask_constraint.raw_weight_map(
                 field, cfg, support_fade_alpha=fade_alpha)
             if cfg.mask_coverage_weight > 0.0:
                 loss = loss + float(cfg.mask_coverage_weight) * mask_constraint.coverage(
                     field, cfg, support_fade_alpha=fade_alpha, den=den_raw)
-            if cfg.mask_undercoverage_weight > 0.0:
-                loss = loss + float(cfg.mask_undercoverage_weight) * (
+            # Preserve the requested average regularization strength when the expensive raw
+            # denominator floor is evaluated intermittently.
+            floor_scale = float(cfg.mask_undercoverage_every)
+            if floor_due and cfg.mask_undercoverage_weight > 0.0:
+                loss = loss + floor_scale * float(cfg.mask_undercoverage_weight) * (
                     mask_constraint.undercoverage(
+                        field, cfg, support_fade_alpha=fade_alpha, den=den_raw))
+            if floor_due and cfg.mask_interior_undercoverage_weight > 0.0:
+                loss = loss + floor_scale * float(
+                    cfg.mask_interior_undercoverage_weight
+                ) * (
+                    mask_constraint.interior_undercoverage(
                         field, cfg, support_fade_alpha=fade_alpha, den=den_raw))
         coverage_loss = None
         if coverage_profile_inside is not None:
@@ -2893,6 +2992,22 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 )
         temper_snapshot = _capture_young_row_temper_snapshots(field, row_birth_iter, it, cfg)
         _zero_background_geometry_state(field, opt)
+        if trainable_row_mask is not None:
+            frozen = ~trainable_row_mask
+            for group in opt.param_groups:
+                param = group["params"][0]
+                if param.grad is not None and param.ndim > 0 and param.shape[0] == field.n:
+                    param.grad[frozen] = 0
+                state = opt.state.get(param)
+                if not state:
+                    continue
+                for value in state.values():
+                    if (
+                        torch.is_tensor(value)
+                        and value.ndim > 0
+                        and value.shape == param.shape
+                    ):
+                        value[frozen] = 0
         opt.step()
         tempered_count = _apply_young_row_temper_snapshot(temper_snapshot)
         last_it = it == cfg.iters - 1
@@ -3445,6 +3560,11 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             "lr_cosine_start_frac": float(cfg.lr_cosine_start_frac),
             "checkpoint_policy": cfg.checkpoint_policy,
             "checkpoint_history": checkpoint_history,
+            "optimizer_state": (
+                copy.deepcopy(opt.state_dict())
+                if return_optimizer_state or optimizer_state is not None
+                else None
+            ),
             "trajectory_terminal_iter": terminal_iter,
             "trajectory_terminal_n_gaussians": terminal_n,
             "trajectory_terminal_psnr": float(terminal_psnr),

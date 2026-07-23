@@ -214,6 +214,63 @@ backoff is not boundary-error-aware. `index.html`, `progress.csv`, `progress.jso
 images, fixed-scale error maps, and per-stage NPZ/JSON checkpoints show how quality and error evolve
 through the run.
 
+For the production phase ordering with monotone accepted checkpoints, use the transactional
+safe-commit runner:
+
+```bash
+PYTHONPATH=src /home/alex/miniconda3/bin/python \
+  scripts/fit_janelle_safe_commit_schedule.py \
+  --capture-root /home/alex/Dropbox/Work/Janelle/2025_03_07_stage_with_fabric \
+  --frame frame_00008 --view-id C0001 --device cuda:0 \
+  --out runs/janelle_C0001_safe_commit_schedule_20260723
+```
+
+It uses the same 4,500 WSE + 500 boundary initialization, then runs fixed-topology bootstrap,
+coverage-first growth, detail birth/moment split, boundary closure, count-neutral redistribution,
+and low-rate polish. Optimizer blocks and topology events operate on detached trial fields. A
+trial is committed only when full-resolution foreground MSE, boundary MSE, CVaR99 error, reachable
+interior holes, reachable boundary holes, and outside-mask coverage are all nonworse and at least
+one improves. Rejected trials discard both their parameter changes and optimizer moments.
+The one-sided raw-coverage floor is evaluated intermittently (production default: every eight
+optimizer steps, with compensating weight scaling); exact hole metrics are still checked at every
+commit and topology event.
+
+Birth covariance is estimated from both the local target structure tensor and the spatial support
+of the current residual. At full capacity, merge→rebirth keeps one enlarged midpoint/envelope
+Gaussian and directly reuses its absorbed partner at a high-error site; prune→rebirth and
+donor-funded moment splits are the other count-neutral candidates. The candidates compete through
+full-render trials instead of consuming one shared free list in a fixed operator order. Rejected
+large batches are halved automatically.
+
+`index.html` contains only the accepted reconstruction/error sequence and lists rejected trials
+separately. `schedule_history.json` is the complete transition audit; the editable result is
+`C0001_safe_commit_full.npz`. The optional `.rtgsv` remains separately labeled because its legacy
+activity-ranked byte-cap backoff is not yet boundary-error-aware; pass `--no-archive` when only the
+authoritative full field is wanted.
+
+The global policy remains the reproducible baseline. An experimental late-local policy keeps
+bootstrap, coverage, and detail fitting global, then freezes unaffected rows during boundary,
+redistribution, and polish. Residual-owning rows and a batched spatial neighbourhood are selected
+for standalone local fits; topology recovery has an independent neighbour count. Boundary closure
+can continue with count-neutral boundary merge/prune→rebirth candidates after the capacity is
+full. The p99 guard is optional because it changes the Pareto gate rather than only the optimizer:
+
+```bash
+PYTHONPATH=src /home/alex/miniconda3/bin/python \
+  scripts/fit_janelle_safe_commit_schedule.py \
+  --capture-root /home/alex/Dropbox/Work/Janelle/2025_03_07_stage_with_fabric \
+  --frame frame_00008 --view-id C0001 --device cuda:0 \
+  --out runs/janelle_C0001_safe_commit_hybrid_boundary_20260723 \
+  --refinement-policy local_neighborhood --local-start-phase boundary \
+  --local-seed-count 384 --local-neighbor-count 8 \
+  --topology-neighbor-count 0 --boundary-recycle-at-capacity
+```
+
+Use `scripts/compare_janelle_safe_schedule_variants.py` with repeated
+`--run LABEL=PATH` arguments to create one source-backed comparison page. CUDA atomic accumulation
+can change close residual rankings and therefore later topology decisions; a single sequential
+pair is a mechanism test, not a deterministic or statistically replicated superiority claim.
+
 To decode all `.rtgsv` fields back to images and compare them with the exact calibrated source
 pipeline, run the realtime-gs gallery utility. Point both roots at the live Janelle capture while
 the `rgb/` and `mask/` folders are still present:
