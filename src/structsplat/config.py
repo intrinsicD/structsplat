@@ -216,6 +216,12 @@ class FitConfig:
     mask_undercoverage_weight: float = 0.0
     mask_undercoverage_band: float = 3.0  # px band beyond the margin that the hinge supervises
     mask_undercoverage_tau: float = 0.1   # raw weight sum counted as "covered"
+    mask_undercoverage_every: int = 1     # evaluate floor losses every N steps; weight scales by N
+    # Safe-schedule interior twin of the boundary-band hinge. It supervises reachable pixels
+    # deeper than ``margin + band`` and is deliberately one-sided: surplus density is not
+    # penalized, so the term cannot pull mass out of an already covered region merely to match
+    # an arbitrary density profile.
+    mask_interior_undercoverage_weight: float = 0.0
     # Boundary tangent densification: every N iters spawn up to count tangent-aligned Gaussians
     # at boundary-band residual peaks (band in px of SDF), spaced ~spacing px along the contour.
     mask_boundary_add_every: int | None = None
@@ -461,6 +467,11 @@ class FitConfig:
             raise ValueError(
                 "mask_undercoverage_weight must be finite and >= 0, "
                 f"got {self.mask_undercoverage_weight}")
+        if (not math.isfinite(self.mask_interior_undercoverage_weight)
+                or self.mask_interior_undercoverage_weight < 0.0):
+            raise ValueError(
+                "mask_interior_undercoverage_weight must be finite and >= 0, "
+                f"got {self.mask_interior_undercoverage_weight}")
         if not math.isfinite(self.mask_undercoverage_band) or self.mask_undercoverage_band <= 0.0:
             raise ValueError(
                 "mask_undercoverage_band must be finite and > 0, "
@@ -469,6 +480,10 @@ class FitConfig:
             raise ValueError(
                 "mask_undercoverage_tau must be finite and > 0, "
                 f"got {self.mask_undercoverage_tau}")
+        if self.mask_undercoverage_every <= 0:
+            raise ValueError(
+                "mask_undercoverage_every must be > 0, "
+                f"got {self.mask_undercoverage_every}")
         if self.mask_boundary_add_every is not None and self.mask_boundary_add_every <= 0:
             raise ValueError(
                 "mask_boundary_add_every must be > 0 or None, "

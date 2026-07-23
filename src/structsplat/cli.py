@@ -130,8 +130,11 @@ def build_fit_configs(args):
                      mask_cap_mode=args.mask_cap_mode,
                      mask_cap_refresh_every=args.mask_cap_refresh_every,
                      mask_undercoverage_weight=args.mask_undercoverage_weight,
+                     mask_interior_undercoverage_weight=(
+                         args.mask_interior_undercoverage_weight),
                      mask_undercoverage_band=args.mask_undercoverage_band,
                      mask_undercoverage_tau=args.mask_undercoverage_tau,
+                     mask_undercoverage_every=args.mask_undercoverage_every,
                      mask_boundary_add_every=args.mask_boundary_add_every,
                      mask_boundary_add_count=args.mask_boundary_add_count,
                      mask_boundary_add_band=args.mask_boundary_add_band,
@@ -239,12 +242,14 @@ def cmd_fit(args):
         mask_np = 1.0 - mask_np
     uses_mask = mask_np is not None or fcfg.mask_contain or fcfg.mask_coverage_weight > 0.0 \
         or fcfg.mask_undercoverage_weight > 0.0 \
+        or fcfg.mask_interior_undercoverage_weight > 0.0 \
         or (fcfg.mask_boundary_add_every is not None and fcfg.mask_boundary_add_count > 0) \
         or fcfg.loss_weighting == "mask"
     if uses_mask and mask_np is None:
         raise SystemExit("--mask is required for --mask-contain / --mask-coverage-weight / "
-                         "--mask-undercoverage-weight / --mask-boundary-add-every / "
-                         "--loss-weighting mask")
+                         "--mask-undercoverage-weight / "
+                         "--mask-interior-undercoverage-weight / "
+                         "--mask-boundary-add-every / --loss-weighting mask")
     if uses_mask and args.pyramid:
         raise SystemExit("mask-contained fitting does not support --pyramid yet")
     if fcfg.triage_every is not None and args.pyramid:
@@ -785,10 +790,14 @@ def main():
                    help="anisotropic cap recertification cadence in iterations")
     f.add_argument("--mask-undercoverage-weight", type=float, default=0.0,
                    help="hinge penalty weight on uncovered boundary-band pixels (CORE-011)")
+    f.add_argument("--mask-interior-undercoverage-weight", type=float, default=0.0,
+                   help="one-sided raw coverage-floor penalty in the reachable mask interior")
     f.add_argument("--mask-undercoverage-band", type=float, default=3.0,
                    help="px band beyond the margin supervised by the under-coverage hinge")
     f.add_argument("--mask-undercoverage-tau", type=float, default=0.1,
                    help="raw weight sum below which a band pixel counts as uncovered")
+    f.add_argument("--mask-undercoverage-every", type=int, default=1,
+                   help="evaluate one-sided coverage-floor losses every N optimizer steps")
     f.add_argument("--mask-boundary-add-every", type=int, default=None,
                    help="spawn tangent-aligned boundary Gaussians every N iters (CORE-011)")
     f.add_argument("--mask-boundary-add-count", type=int, default=0,
