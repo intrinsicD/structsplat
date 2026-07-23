@@ -1,0 +1,167 @@
+{
+  "schema": "structsplat.janelle.safe_schedule_factorial_audit.v1",
+  "status": "pass_with_scope_limits",
+  "scope": {
+    "kind": "single-image single-seed development factorial",
+    "source": "frame_00008/C0001",
+    "seed": 1559856117,
+    "device": "NVIDIA GeForce RTX 4090",
+    "torch": "2.7.0+cu126",
+    "torch_cuda": "12.6",
+    "commit": "6e3cf0d1836bebeaa1c2a72227d238a53d876445",
+    "git_status": "",
+    "held_out": false,
+    "default_promotion_authorized": false,
+    "actual_rate_claim": false
+  },
+  "inputs": {
+    "rgb_sha256": "ae24fe99d3f8edbd04cd2c85ebc4fe9bfd95abe878c22abb7691cadcfc5c411b",
+    "mask_sha256": "94dcbf7005dbeb1d183e259a569d783aa5df900255e763385bed91f02d3b80c3",
+    "calibration_sha256": "51b8fc396fc8447f24e325e0a525f2e7d422388790dd9a293e1a81804b265091"
+  },
+  "factorial_fairness": {
+    "passed": true,
+    "controlled": [
+      "input hashes and seed",
+      "initialization configuration",
+      "fit configuration",
+      "schedule configuration except the two factor booleans",
+      "renderer and runtime environment",
+      "executed source snapshot hashes"
+    ]
+  },
+  "arms": {
+    "control": {
+      "field_sha256": "35c8cd7a8b749dbf579d1890b10d990f800bb277eef0d43c0203ea572c7886a8",
+      "summary_sha256": "ce4ed2965e6c6ebba9c5ca11467afe472f0ed497a3654b77d3466527c5758749",
+      "n_gaussians": 11000,
+      "attempted_steps": 18933,
+      "accepted_steps": 1853,
+      "total_seconds": 382.5044058933854,
+      "foreground_mse": 0.0022047178354114294,
+      "boundary_mse": 0.081694096326828,
+      "cvar99_mse": 0.17226499319076538,
+      "p99_mse": 0.017763778567314148,
+      "interior_hole_fraction": 0.02544214203953743,
+      "boundary_hole_fraction": 0.31689924001693726,
+      "outside_max_abs": 0.0,
+      "outside_coverage_max": 0.0,
+      "earlier_checkpoint_commits": 0,
+      "event_color_solve_commits": 0
+    },
+    "pareto_checkpoint": {
+      "field_sha256": "a2bd39e0c6056abeb45d6a958f213464ff2a0ac624e79898c2f6cd03c653bab4",
+      "summary_sha256": "31a9f71a5d87ec2fd7c93ba1ae373bd5c81c72eee10bf6ca007bbdd95ef71515",
+      "n_gaussians": 11000,
+      "attempted_steps": 19246,
+      "accepted_steps": 1813,
+      "total_seconds": 419.2715333607048,
+      "foreground_mse": 0.0019640414975583553,
+      "boundary_mse": 0.07248596847057343,
+      "cvar99_mse": 0.15331339836120605,
+      "p99_mse": 0.01431769598275423,
+      "interior_hole_fraction": 0.014357841573655605,
+      "boundary_hole_fraction": 0.28490763902664185,
+      "outside_max_abs": 0.0,
+      "outside_coverage_max": 0.0,
+      "earlier_checkpoint_commits": 4,
+      "event_color_solve_commits": 0
+    },
+    "event_color_solve": {
+      "field_sha256": "aa5c9bcbdafdd9cfcfb2ae31f83c35b39ff67cd44b3f138e991bb4457264c30f",
+      "summary_sha256": "6e0f5782688768dcda3405de3eab1e8a6f23c67ca4b88befd5f6c2dc7e0fa5e0",
+      "n_gaussians": 11000,
+      "attempted_steps": 16385,
+      "accepted_steps": 1662,
+      "total_seconds": 412.2308333897963,
+      "foreground_mse": 0.0022572886664420366,
+      "boundary_mse": 0.083284892141819,
+      "cvar99_mse": 0.17595702409744263,
+      "p99_mse": 0.018525507301092148,
+      "interior_hole_fraction": 0.02805992402136326,
+      "boundary_hole_fraction": 0.3341292142868042,
+      "outside_max_abs": 0.0,
+      "outside_coverage_max": 0.0,
+      "earlier_checkpoint_commits": 0,
+      "event_color_solve_commits": 20
+    },
+    "combined": {
+      "field_sha256": "9e214c341aaec3a68c939ddd3facd1f4b9a66c4c7108c63e54e6806c4dab7123",
+      "summary_sha256": "9e0d36b9d497b8aff944763439c0175293518b162bf6391b951b0aaeb909e428",
+      "n_gaussians": 11000,
+      "attempted_steps": 18471,
+      "accepted_steps": 1969,
+      "total_seconds": 541.9400737527758,
+      "foreground_mse": 0.001966676441952586,
+      "boundary_mse": 0.07263829559087753,
+      "cvar99_mse": 0.1527073234319687,
+      "p99_mse": 0.014526826329529285,
+      "interior_hole_fraction": 0.014236491173505783,
+      "boundary_hole_fraction": 0.2857465445995331,
+      "outside_max_abs": 0.0,
+      "outside_coverage_max": 0.0,
+      "earlier_checkpoint_commits": 2,
+      "event_color_solve_commits": 23
+    }
+  },
+  "recalculation": {
+    "cold_field_reload": true,
+    "metrics_recomputed": [
+      "foreground_mse",
+      "boundary_mse",
+      "cvar99_mse",
+      "p99_mse",
+      "interior_hole_fraction",
+      "boundary_hole_fraction",
+      "outside_max_abs",
+      "outside_coverage_max"
+    ],
+    "observed_max_abs_delta_by_arm": {
+      "control": 0.0,
+      "pareto_checkpoint": 0.0,
+      "event_color_solve": 0.0,
+      "combined": 0.0
+    },
+    "cuda_bit_exactness_claimed": false
+  },
+  "history_integrity": {
+    "accepted_sequence_gate_failures": {
+      "control": 0,
+      "pareto_checkpoint": 0,
+      "event_color_solve": 0,
+      "combined": 0
+    },
+    "step_sums_match_top_level": true,
+    "html_missing_links_after_report": 0,
+    "native_image_size": [
+      3964,
+      1444
+    ],
+    "native_image_mode": "RGB"
+  },
+  "validation": {
+    "relevant_tests_passed": 189,
+    "relevant_tests_failed": 0,
+    "ruff_passed": true,
+    "repository_wide_test_suite_executed": false
+  },
+  "renderer_binding": {
+    "renderer": "cuda_tiled",
+    "cold_replay_cache_elf_sha256": "843b37b6046b7eeaae2fdc7c32086c6f4ab428e8428257b25f2eae123c8718d2",
+    "per_arm_elf_manifested": false,
+    "limitation": "The executed source snapshots are bound and cold replay passed, but the runner did not archive the per-process CUDA extension ELF."
+  },
+  "decision": {
+    "recommended_arm": "pareto_checkpoint",
+    "recommended_flags": [
+      "--pareto-safe-checkpoints",
+      "--pareto-checkpoint-every",
+      "50"
+    ],
+    "event_color_solve_recommended": false,
+    "combined_vs_control_preregistered_rule_passed": true,
+    "coverage_targets_reached": false,
+    "fixed_point_converged": true,
+    "claim_disposition": "confirm checkpoint mechanism on this development image; refute event-color quality/speed promotion; narrow combined viability; no general default promotion"
+  }
+}

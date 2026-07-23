@@ -271,6 +271,32 @@ Use `scripts/compare_janelle_safe_schedule_variants.py` with repeated
 can change close residual rankings and therefore later topology decisions; a single sequential
 pair is a mechanism test, not a deterministic or statistically replicated superiority claim.
 
+FIT-023 tested state-matched block checkpoints and post-topology color solves as a source-bound
+2×2 factorial on this one Janelle image. The development winner is the global schedule with
+Pareto-safe checkpoints every 50 steps:
+
+```bash
+PYTHONPATH=src /home/alex/miniconda3/bin/python \
+  scripts/fit_janelle_safe_commit_schedule.py \
+  --capture-root /home/alex/Dropbox/Work/Janelle/2025_03_07_stage_with_fabric \
+  --realtime-root /home/alex/Documents/realtime-gs \
+  --frame frame_00008 --view-id C0001 --device cuda:0 \
+  --pareto-safe-checkpoints --pareto-checkpoint-every 50 --no-archive \
+  --out runs/janelle_C0001_safe_commit_pareto_checkpoint
+```
+
+Against the clean global control it improved foreground/boundary PSNR by +0.502/+0.519 dB,
+CVaR99/p99 MSE by 11.00%/19.40%, and relative interior/boundary undercoverage by 43.57%/10.10%,
+at +9.61% total time. Four earlier checkpoints were actually committed with matching Adam
+moments. Event color solve alone was worse on every recorded quality/coverage metric and 7.8%
+slower end to end; combined was 29.3% slower than checkpoint-only and traded slightly better
+CVaR/interior coverage for worse foreground, boundary, p99, and boundary coverage. Keep event color
+solve off in the recommended schedule. This is single-image/single-seed development evidence, so
+the library defaults remain unchanged. The best arm still has 1.436% interior and 28.491% boundary
+undercoverage—fixed-point convergence did not meet the configured 0.1%/1% coverage targets.
+The full comparison, native images, histories, cold-reload audit, and report are under
+`runs/janelle_C0001_transactional_candidates_factorial_20260723/`.
+
 To decode all `.rtgsv` fields back to images and compare them with the exact calibrated source
 pipeline, run the realtime-gs gallery utility. Point both roots at the live Janelle capture while
 the `rgb/` and `mask/` folders are still present:

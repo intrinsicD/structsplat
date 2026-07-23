@@ -1,6 +1,7 @@
 # FIT-023: Transactional safe-schedule candidates
 
-**Status: in progress.** Source-bound Janelle development experiment requested 2026-07-23.
+**Status: completed (development).** Checkpoint-only wins this single-image factorial; event color
+solve is not promoted. No library-default or generality claim.
 
 ## Context
 
@@ -38,13 +39,13 @@ results are source/device-bound single-image development evidence, not a default
       containment gate and commits only the best already-safe candidate.
 - [x] A topology trial can optionally apply an exact color solve before its final gate; optimizer
       color moments match the selected solved field.
-- [ ] CLI, resolved config, history, and generated HTML expose both factors and
+- [x] CLI, resolved config, history, and generated HTML expose both factors and
       selected-checkpoint metadata.
 - [x] Tests cover default-off equivalence, earlier safe checkpoint selection, color-solve state
       handling, and argument plumbing.
-- [ ] Four full equal-budget Janelle arms complete with source/config/artifact provenance and a
+- [x] Four full equal-budget Janelle arms complete with source/config/artifact provenance and a
       common `index.html`, JSON comparison, and written verdict.
-- [ ] Results and reader-facing images are committed with the code; any negative arm is preserved.
+- [x] Results and reader-facing images are committed with the code; any negative arm is preserved.
 
 ## Decision rule
 
@@ -52,6 +53,33 @@ The combined arm is only a candidate winner if its full-field foreground MSE, bo
 CVaR99, interior-hole fraction, boundary-hole fraction, and outside-mask metrics are all nonworse
 than the clean control at the recorded precision, and it makes a material improvement in at least
 one of them. Runtime is reported separately and can block a performance claim.
+
+## Result
+
+Executed sequentially on one RTX 4090 from clean commit `6e3cf0d`, using the same
+frame_00008/C0001 source, seed, 5,000-row initialization, 11,000-row capacity, global policy,
+budgets, renderer, and gate in all arms.
+
+| arm | FG / boundary PSNR | CVaR99 / p99 MSE | interior / boundary holes | total |
+|---|---:|---:|---:|---:|
+| control | 26.566 / 10.878 dB | .172265 / .017764 | 2.544% / 31.690% | 382.5 s |
+| checkpoint | **27.068 / 11.397 dB** | .153313 / **.014318** | 1.436% / **28.491%** | 419.3 s |
+| event color | 26.464 / 10.794 dB | .175957 / .018526 | 2.806% / 33.413% | 412.2 s |
+| combined | 27.063 / 11.388 dB | **.152707** / .014527 | **1.424%** / 28.575% | 541.9 s |
+
+The combined arm passes its preregistered control rule, but checkpoint-only is the recommendation:
+it wins foreground, boundary, p99, boundary coverage, and runtime against combined. Four earlier
+state-matched checkpoints were committed. Event color was selected in 20/23 topology events in its
+two enabled arms, so its negative quality/runtime outcome is not an inactivity result.
+
+All four cold-loaded fields reproduced every audited stored metric with observed delta zero in
+the audited environment; accepted-sequence gate failures were zero. CUDA is still scoped as
+tolerance-reproducible, not generally bit-exact. Exact outside render/coverage remains zero.
+Neither 0.1% interior nor 1% boundary hole targets were reached; `converged` means final
+deterministic transaction fixed point, not total coverage.
+
+Artifacts:
+`runs/janelle_C0001_transactional_candidates_factorial_20260723/{index.html,comparison.json,report.md,audit.json}`.
 
 ## Interfaces touched
 
