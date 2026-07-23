@@ -51,6 +51,10 @@ Reference code is CPU-correct but slow at large N; use GPU and small budgets whi
 remaining production/tiled CUDA/Vulkan/RHI work is `PORT-001`/002/003; ADR-0011 owns the exact
 CUDA research renderer.
 
+## Verify
+Run `./scripts/verify.sh` before every commit: `ruff check` + `pytest -m "not slow"` +
+`scripts/docs_sync.py` (the structural docs↔code gate). CI mirrors these steps on CPU.
+
 ## Definition of done (short form)
 Acceptance criteria tested · NumPy/torch split intact · ADR for any real decision · docs updated in
 the same commit · results reproducible.
