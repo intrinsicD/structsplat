@@ -1,0 +1,276 @@
+{
+  "arms": {
+    "combined": {
+      "event_color_solve": true,
+      "label": "Kombiniert",
+      "pareto_safe_checkpoints": true
+    },
+    "control": {
+      "event_color_solve": false,
+      "label": "Kontrolle",
+      "pareto_safe_checkpoints": false
+    },
+    "event_color_solve": {
+      "event_color_solve": true,
+      "label": "Event-Color-Solve",
+      "pareto_safe_checkpoints": false
+    },
+    "pareto_checkpoint": {
+      "event_color_solve": false,
+      "label": "Pareto-Checkpoint",
+      "pareto_safe_checkpoints": true
+    }
+  },
+  "commands": {
+    "combined": [
+      "/home/alex/miniconda3/bin/python",
+      "/home/alex/Documents/structsplat/scripts/fit_janelle_safe_commit_schedule.py",
+      "--capture-root",
+      "/home/alex/Dropbox/Work/Janelle/2025_03_07_stage_with_fabric",
+      "--realtime-root",
+      "/home/alex/Documents/realtime-gs",
+      "--frame",
+      "frame_00008",
+      "--view-id",
+      "C0001",
+      "--device",
+      "cuda:0",
+      "--out",
+      "/home/alex/Documents/structsplat/runs/janelle_C0001_transactional_candidates_factorial_20260723/combined",
+      "--preview-width",
+      "1200",
+      "--pareto-checkpoint-every",
+      "50",
+      "--pareto-safe-checkpoints",
+      "--event-color-solve",
+      "--no-archive"
+    ],
+    "control": [
+      "/home/alex/miniconda3/bin/python",
+      "/home/alex/Documents/structsplat/scripts/fit_janelle_safe_commit_schedule.py",
+      "--capture-root",
+      "/home/alex/Dropbox/Work/Janelle/2025_03_07_stage_with_fabric",
+      "--realtime-root",
+      "/home/alex/Documents/realtime-gs",
+      "--frame",
+      "frame_00008",
+      "--view-id",
+      "C0001",
+      "--device",
+      "cuda:0",
+      "--out",
+      "/home/alex/Documents/structsplat/runs/janelle_C0001_transactional_candidates_factorial_20260723/control",
+      "--preview-width",
+      "1200",
+      "--pareto-checkpoint-every",
+      "50",
+      "--no-archive"
+    ],
+    "event_color_solve": [
+      "/home/alex/miniconda3/bin/python",
+      "/home/alex/Documents/structsplat/scripts/fit_janelle_safe_commit_schedule.py",
+      "--capture-root",
+      "/home/alex/Dropbox/Work/Janelle/2025_03_07_stage_with_fabric",
+      "--realtime-root",
+      "/home/alex/Documents/realtime-gs",
+      "--frame",
+      "frame_00008",
+      "--view-id",
+      "C0001",
+      "--device",
+      "cuda:0",
+      "--out",
+      "/home/alex/Documents/structsplat/runs/janelle_C0001_transactional_candidates_factorial_20260723/event_color_solve",
+      "--preview-width",
+      "1200",
+      "--pareto-checkpoint-every",
+      "50",
+      "--event-color-solve",
+      "--no-archive"
+    ],
+    "pareto_checkpoint": [
+      "/home/alex/miniconda3/bin/python",
+      "/home/alex/Documents/structsplat/scripts/fit_janelle_safe_commit_schedule.py",
+      "--capture-root",
+      "/home/alex/Dropbox/Work/Janelle/2025_03_07_stage_with_fabric",
+      "--realtime-root",
+      "/home/alex/Documents/realtime-gs",
+      "--frame",
+      "frame_00008",
+      "--view-id",
+      "C0001",
+      "--device",
+      "cuda:0",
+      "--out",
+      "/home/alex/Documents/structsplat/runs/janelle_C0001_transactional_candidates_factorial_20260723/pareto_checkpoint",
+      "--preview-width",
+      "1200",
+      "--pareto-checkpoint-every",
+      "50",
+      "--pareto-safe-checkpoints",
+      "--no-archive"
+    ]
+  },
+  "comparison": {
+    "comparison_json_sha256": "c7c5e2a34d5b45bbc62e062a21182510db5675948853e2f7348109b7eeabde3d",
+    "path": "/home/alex/Documents/structsplat/runs/janelle_C0001_transactional_candidates_factorial_20260723/index.html",
+    "sha256": "b047a48f278ed63729063b26a5255e68e67c2fd0727c4a01a50d745a621395ef"
+  },
+  "audit": {
+    "path": "/home/alex/Documents/structsplat/runs/janelle_C0001_transactional_candidates_factorial_20260723/audit.json",
+    "sha256": "51822d9d71b1ff0c271b42c79cf33a4a0f45a3419bb21832d05810854c1b9d49"
+  },
+  "report": {
+    "path": "/home/alex/Documents/structsplat/runs/janelle_C0001_transactional_candidates_factorial_20260723/report.md",
+    "sha256": "0109f13ce965b7f47324b69a5550ada809121eaeaecd3b23310833155b500a22"
+  },
+  "development_scope": "one Janelle image, one seed, one CUDA device",
+  "device": "cuda:0",
+  "frame": "frame_00008",
+  "pareto_checkpoint_every": 50,
+  "repository": {
+    "commit": "6e3cf0d1836bebeaa1c2a72227d238a53d876445",
+    "sources": [
+      {
+        "bytes": 10782,
+        "path": "/home/alex/Documents/structsplat/scripts/run_janelle_safe_schedule_factorial.py",
+        "sha256": "809ec87bb7925987d475590731c3f034b129b486d11e1ad3fe6be93915ad6edf"
+      },
+      {
+        "bytes": 26557,
+        "path": "/home/alex/Documents/structsplat/scripts/fit_janelle_safe_commit_schedule.py",
+        "sha256": "5a87e54594db9d919b2f7a261ee6f724ecb3f2959c35b5fd61aa051fd886a88d"
+      },
+      {
+        "bytes": 22889,
+        "path": "/home/alex/Documents/structsplat/scripts/compare_janelle_safe_schedule_variants.py",
+        "sha256": "df6c7b7696baa7540b0e43defb9314514dbe49e57706fba3380dd0b0fde0e0f3"
+      },
+      {
+        "bytes": 91502,
+        "path": "/home/alex/Documents/structsplat/src/structsplat/safe_schedule.py",
+        "sha256": "31d145c095732c7b12f1448485df0f61167abbb9ec38c90cb0dc6b9050820823"
+      },
+      {
+        "bytes": 167277,
+        "path": "/home/alex/Documents/structsplat/src/structsplat/fit.py",
+        "sha256": "70d1bbb57a5db91f2a82587fe5f3f27507e48ac5e9380187d9f0f928f12dbc10"
+      },
+      {
+        "bytes": 49250,
+        "path": "/home/alex/Documents/structsplat/src/structsplat/config.py",
+        "sha256": "1609659bd45233d64d5e7867387c427c84928bfd01801071bd167d7f6880af57"
+      }
+    ],
+    "status": "",
+    "status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "requested_arms": [
+    "control",
+    "pareto_checkpoint",
+    "event_color_solve",
+    "combined"
+  ],
+  "results": {
+    "combined": {
+      "accepted_steps": 1969,
+      "attempted_steps": 18471,
+      "converged": true,
+      "field_sha256": "9e214c341aaec3a68c939ddd3facd1f4b9a66c4c7108c63e54e6806c4dab7123",
+      "metrics": {
+        "boundary_hole_fraction": 0.2857465445995331,
+        "boundary_mse": 0.07263829559087753,
+        "boundary_psnr_db": 11.388343547975586,
+        "cvar99_mse": 0.1527073234319687,
+        "finite": true,
+        "foreground_mse": 0.001966676441952586,
+        "foreground_psnr_db": 27.062670844289507,
+        "interior_hole_fraction": 0.014236491173505783,
+        "n_gaussians": 11000,
+        "outside_coverage_max": 0.0,
+        "outside_max_abs": 0.0,
+        "p99_mse": 0.014526826329529285
+      },
+      "path": "/home/alex/Documents/structsplat/runs/janelle_C0001_transactional_candidates_factorial_20260723/combined",
+      "peak_gpu_memory_bytes": 2830942720,
+      "summary_sha256": "9e0d36b9d497b8aff944763439c0175293518b162bf6391b951b0aaeb909e428",
+      "total_seconds": 541.9400737527758
+    },
+    "control": {
+      "accepted_steps": 1853,
+      "attempted_steps": 18933,
+      "converged": true,
+      "field_sha256": "35c8cd7a8b749dbf579d1890b10d990f800bb277eef0d43c0203ea572c7886a8",
+      "metrics": {
+        "boundary_hole_fraction": 0.31689924001693726,
+        "boundary_mse": 0.081694096326828,
+        "boundary_psnr_db": 10.878093268864511,
+        "cvar99_mse": 0.17226499319076538,
+        "finite": true,
+        "foreground_mse": 0.0022047178354114294,
+        "foreground_psnr_db": 26.566469845930133,
+        "interior_hole_fraction": 0.02544214203953743,
+        "n_gaussians": 11000,
+        "outside_coverage_max": 0.0,
+        "outside_max_abs": 0.0,
+        "p99_mse": 0.017763778567314148
+      },
+      "path": "/home/alex/Documents/structsplat/runs/janelle_C0001_transactional_candidates_factorial_20260723/control",
+      "peak_gpu_memory_bytes": 2474412032,
+      "summary_sha256": "ce4ed2965e6c6ebba9c5ca11467afe472f0ed497a3654b77d3466527c5758749",
+      "total_seconds": 382.5044058933854
+    },
+    "event_color_solve": {
+      "accepted_steps": 1662,
+      "attempted_steps": 16385,
+      "converged": true,
+      "field_sha256": "aa5c9bcbdafdd9cfcfb2ae31f83c35b39ff67cd44b3f138e991bb4457264c30f",
+      "metrics": {
+        "boundary_hole_fraction": 0.3341292142868042,
+        "boundary_mse": 0.083284892141819,
+        "boundary_psnr_db": 10.794337723568475,
+        "cvar99_mse": 0.17595702409744263,
+        "finite": true,
+        "foreground_mse": 0.0022572886664420366,
+        "foreground_psnr_db": 26.46412898952142,
+        "interior_hole_fraction": 0.02805992402136326,
+        "n_gaussians": 11000,
+        "outside_coverage_max": 0.0,
+        "outside_max_abs": 0.0,
+        "p99_mse": 0.018525507301092148
+      },
+      "path": "/home/alex/Documents/structsplat/runs/janelle_C0001_transactional_candidates_factorial_20260723/event_color_solve",
+      "peak_gpu_memory_bytes": 2861233664,
+      "summary_sha256": "6e0f5782688768dcda3405de3eab1e8a6f23c67ca4b88befd5f6c2dc7e0fa5e0",
+      "total_seconds": 412.2308333897963
+    },
+    "pareto_checkpoint": {
+      "accepted_steps": 1813,
+      "attempted_steps": 19246,
+      "converged": true,
+      "field_sha256": "a2bd39e0c6056abeb45d6a958f213464ff2a0ac624e79898c2f6cd03c653bab4",
+      "metrics": {
+        "boundary_hole_fraction": 0.28490763902664185,
+        "boundary_mse": 0.07248596847057343,
+        "boundary_psnr_db": 11.397460541955196,
+        "cvar99_mse": 0.15331339836120605,
+        "finite": true,
+        "foreground_mse": 0.0019640414975583553,
+        "foreground_psnr_db": 27.068493403931562,
+        "interior_hole_fraction": 0.014357841573655605,
+        "n_gaussians": 11000,
+        "outside_coverage_max": 0.0,
+        "outside_max_abs": 0.0,
+        "p99_mse": 0.01431769598275423
+      },
+      "path": "/home/alex/Documents/structsplat/runs/janelle_C0001_transactional_candidates_factorial_20260723/pareto_checkpoint",
+      "peak_gpu_memory_bytes": 2243624960,
+      "summary_sha256": "31a9f71a5d87ec2fd7c93ba1ae373bd5c81c72eee10bf6ca007bbdd95ef71515",
+      "total_seconds": 419.2715333607048
+    }
+  },
+  "schema": "structsplat.janelle.safe_schedule_factorial.v1",
+  "smoke": false,
+  "view_id": "C0001",
+  "with_archive": false
+}

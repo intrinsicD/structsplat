@@ -873,3 +873,30 @@ reference renderer is memory-bound. See `ara/evidence/core005-render-checkpoint-
 - **Dependencies**: []
 - **Tags**: CUDA, backward, microprofile, performance, benchmark-only, negative-result
 - **From staging**: direct PORT-004 result audit
+
+## C50: State-matched checkpoints improve the bounded Janelle safe schedule; event color does not
+
+- **Statement**: On the clean-commit FIT-023 one-image/one-seed RTX-4090 development factorial,
+  checkpoint-only improves foreground/boundary PSNR by `+0.5020/+0.5194 dB`, CVaR99/p99 MSE by
+  `11.00%/19.40%`, and relative interior/boundary undercoverage by `43.57%/10.10%` versus the
+  matched global control at `+9.61%` total time. Four earlier state-matched field+Adam snapshots
+  are actually committed. Post-topology event color solve alone is worse than control on every
+  protected quality/coverage metric and `7.77%` slower end to end; combined is `29.26%` slower
+  than checkpoint-only and does not Pareto-dominate it. Checkpoint-only is the bounded Janelle
+  development recommendation; defaults remain unchanged.
+- **Status**: supported single-image development mechanism; event-color promotion refuted on this
+  image; general default unauthorized
+- **Provenance**: ai-executed
+- **Crystallized via**: empirical-resolution
+- **Falsification criteria**: Cold rescoring changes the stored ordering, the source/config
+  equality audit fails, or a frozen multi-image/multi-seed comparison shows checkpoint-only does
+  not retain its protected-metric advantage. A broader confirmation would strengthen or refute
+  generality without rewriting this source-bound image result.
+- **Proof**: [`ara/evidence/fit023-transactional-candidates-janelle-2026-07-23/run.md`,
+  `runs/janelle_C0001_transactional_candidates_factorial_20260723/comparison.json`,
+  `runs/janelle_C0001_transactional_candidates_factorial_20260723/audit.json`,
+  `runs/janelle_C0001_transactional_candidates_factorial_20260723/report.md`]
+- **Dependencies**: [C18, C22]
+- **Tags**: safe-schedule, checkpoint, color-solve, mask-boundary, development, negative-result,
+  claim-boundary
+- **From staging**: direct FIT-023 result audit
