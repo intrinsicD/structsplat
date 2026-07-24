@@ -419,6 +419,7 @@ Strategies: `random`, `grid`, `iso_blue_noise`, `aniso_onedge`, `aniso_flanking`
 Additional quadtree strategies: `quadtree_aggregate`, `quadtree_hybrid`, `quadtree_wse`.
 `local_slic_sobel_control` is a benchmark-only, explicitly local transplant for BENCH-007; its
 frozen SLIC assumptions are not presented as upstream Structure-Guided Allocation code.
+`feedforward` is the experimental FF-001 predictor warm-start (saved-field or tensor-prior fallback).
 Samplers: `wse` (blue noise), `floyd_steinberg` (density-map error diffusion),
 `dart_throwing` (Poisson disk), `halton`, `cvt`, `farthest_point`, `density_random`,
 `jittered_grid`.
