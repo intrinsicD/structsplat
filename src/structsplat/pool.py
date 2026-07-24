@@ -1,4 +1,4 @@
-"""Pooled GaussianField lifecycle: byte-budgeted capacity, parking, free rows (FIT-021).
+"""Fixed-capacity GaussianField storage for triage and transactional schedules.
 
 Pooled fitting (ADR-0020) allocates parameter tensors once at a fixed capacity and never
 resizes them during the fit. Rows are alive or *parked*: a parked row's mean sits at a far
@@ -12,6 +12,10 @@ Capacity is derived from a target encoded-file byte budget through the SSPL1 raw
 stream layout (ADR-0007) plus the compressed alpha payload for masked inputs and a header
 allowance. zlib stream coding only shrinks the container further and is never counted on; the
 final blob is asserted against the budget where it is written.
+
+The transactional safe schedule (ADR-0021) reuses only the storage mechanism: it keeps an
+immutable contiguous active prefix, retains its proposal auction and Pareto gate, and compacts
+once at the public output boundary. Preallocation therefore does not select a topology policy.
 
 Requires torch (fit-time module; init-time math stays NumPy per invariant 1).
 """
@@ -52,6 +56,64 @@ class PoolState:
     def free_rows(self) -> torch.Tensor:
         """Free (parked) row indices in ascending order — the deterministic spend order."""
         return (~self.live).nonzero(as_tuple=False).reshape(-1)
+
+
+@dataclass(frozen=True)
+class TransactionalPoolState:
+    """Rollback-safe fixed-capacity storage with a contiguous active prefix.
+
+    The safe schedule only grows by appending and performs redistribution in place, so it does
+    not need FIT-021's mutable arbitrary free list. Keeping ``active_n`` as an immutable scalar
+    makes a rejected proposal a cheap metadata discard; field and Adam tensors remain fixed at
+    ``capacity`` until the single output compaction.
+    """
+
+    capacity: int
+    active_n: int
+    initial_active_n: int
+
+    def validate_field(self, field: GaussianField) -> None:
+        if int(field.n) != int(self.capacity):
+            raise ValueError(
+                "transactional pool capacity does not match field storage: "
+                f"{self.capacity} versus {field.n}"
+            )
+        if not 0 < int(self.active_n) <= int(self.capacity):
+            raise ValueError(
+                f"transactional active_n must be in (0, {self.capacity}], "
+                f"got {self.active_n}"
+            )
+
+    def active_view(self, field: GaussianField) -> GaussianField:
+        self.validate_field(field)
+        return field.prefix_view(self.active_n)
+
+    def inactive_mask(self, field: GaussianField) -> torch.Tensor:
+        self.validate_field(field)
+        mask = torch.ones(
+            self.capacity, device=field.means.device, dtype=torch.bool
+        )
+        mask[:self.active_n] = False
+        return mask
+
+    def activate(self, count: int) -> tuple["TransactionalPoolState", slice]:
+        count = int(count)
+        if count < 0:
+            raise ValueError(f"activation count must be non-negative, got {count}")
+        stop = self.active_n + count
+        if stop > self.capacity:
+            raise ValueError(
+                f"cannot activate {count} rows with only "
+                f"{self.capacity - self.active_n} free"
+            )
+        return (
+            TransactionalPoolState(
+                capacity=self.capacity,
+                active_n=stop,
+                initial_active_n=self.initial_active_n,
+            ),
+            slice(self.active_n, stop),
+        )
 
 
 def _bits_itemsize(bits: int) -> int:
@@ -153,6 +215,47 @@ def prepare_pooled_field(field: GaussianField, cfg: FitConfig, H: int, W: int,
     live[:n0] = True
     return field, PoolState(live=live, capacity=int(capacity), initial_live=int(n0),
                             budget=budget)
+
+
+def prepare_transactional_pool(
+    field: GaussianField,
+    capacity: int,
+) -> tuple[GaussianField, TransactionalPoolState]:
+    """Preallocate append-only safe-schedule storage without selecting a topology policy."""
+
+    capacity = int(capacity)
+    initial_n = int(field.n)
+    if capacity < initial_n:
+        raise ValueError(
+            f"transactional pool capacity {capacity} is smaller than the initial "
+            f"field ({initial_n} rows)"
+        )
+    device = field.means.device
+    dtype = field.means.dtype
+    if field.opacities is None:
+        field = field.detached()
+        field.opacities = torch.full(
+            (initial_n,), 10.0, device=device, dtype=dtype
+        )
+    extra = capacity - initial_n
+    if extra > 0:
+        parked = GaussianField(
+            torch.full((extra, 2), POOL_PARK_COORD, device=device, dtype=dtype),
+            torch.full((extra, 2), POOL_PARK_LOG_SCALE, device=device, dtype=dtype),
+            torch.zeros(extra, device=device, dtype=dtype),
+            torch.zeros(extra, 3, device=device, dtype=dtype),
+            torch.full(
+                (extra,), POOL_PARK_OPACITY_LOGIT, device=device, dtype=dtype
+            ),
+        )
+        field = field.append(parked)
+    state = TransactionalPoolState(
+        capacity=capacity,
+        active_n=initial_n,
+        initial_active_n=initial_n,
+    )
+    state.validate_field(field)
+    return field, state
 
 
 @torch.no_grad()

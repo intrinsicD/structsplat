@@ -91,6 +91,35 @@ class GaussianField:
             None if self.filter_variance is None else self.filter_variance.detach()[idx].clone(),
         )
 
+    def prefix_view(self, count: int) -> "GaussianField":
+        """Return a zero-copy view of the first ``count`` rows.
+
+        Unlike :meth:`subset`, this deliberately preserves autograd links and shared storage.
+        It is used by fixed-capacity fitting: the optimizer owns the full preallocated leaf
+        tensors while rendering and losses see only the active prefix. Callers must not retain
+        the view after replacing the parent field's tensors.
+        """
+        count = int(count)
+        if count < 0 or count > self.n:
+            raise ValueError(
+                f"prefix view count must be in [0, {self.n}], got {count}"
+            )
+
+        def view(value):
+            return None if value is None else value[:count]
+
+        return GaussianField(
+            self.means[:count],
+            self.log_scales[:count],
+            self.rotations[:count],
+            self.colors[:count],
+            view(self.opacities),
+            view(self.scale_max),
+            view(self.color_grads),
+            view(self.background_mask),
+            view(self.filter_variance),
+        )
+
     def append(self, other: "GaussianField") -> "GaussianField":
         def cat(a, b):
             return torch.cat([a.detach(), b.detach()], dim=0).clone()

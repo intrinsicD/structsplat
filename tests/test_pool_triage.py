@@ -12,6 +12,7 @@ from structsplat.pool import (
     derive_capacity,
     gaussian_row_bytes,
     prepare_pooled_field,
+    prepare_transactional_pool,
 )
 from structsplat.render import render
 from structsplat import triage as triage_mod
@@ -105,6 +106,28 @@ def test_prepare_creates_opacities_and_rejects_small_capacity():
     assert field.opacities is not None and field.opacities.shape[0] == 30
     with pytest.raises(ValueError, match="smaller than the initial field"):
         prepare_pooled_field(_random_field(24, H, W, img), _pooled_cfg(pool_capacity=8), H, W)
+
+
+def test_transactional_pool_uses_immutable_prefix_activation():
+    H = W = 32
+    img, _ = _test_image(H, W)
+    field = _random_field(6, H, W, img, opacities=False)
+    pooled, state = prepare_transactional_pool(field, capacity=10)
+
+    assert pooled.n == state.capacity == 10
+    assert state.active_n == state.initial_active_n == 6
+    assert state.active_view(pooled).n == 6
+    assert torch.all(pooled.means[6:] == POOL_PARK_COORD)
+    assert state.inactive_mask(pooled).tolist() == (
+        [False] * 6 + [True] * 4
+    )
+
+    activated, rows = state.activate(3)
+    assert state.active_n == 6
+    assert activated.active_n == 9
+    assert rows == slice(6, 9)
+    with pytest.raises(ValueError, match="only 1 free"):
+        activated.activate(2)
 
 
 def test_pooled_config_validation():

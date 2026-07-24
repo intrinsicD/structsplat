@@ -900,3 +900,31 @@ reference renderer is memory-bound. See `ara/evidence/core005-render-checkpoint-
 - **Tags**: safe-schedule, checkpoint, color-solve, mask-boundary, development, negative-result,
   claim-boundary
 - **From staging**: direct FIT-023 result audit
+
+## C51: Transactional fixed-capacity storage is quality-neutral within the bounded Janelle A/A envelope, but not materially faster
+
+- **Statement**: On the source-snapshotted FIT-024 one-image/one-seed RTX-4090 development check,
+  fixed-capacity storage reaches `27.062902/11.399767 dB` foreground/boundary PSNR. Foreground is
+  only `0.0000031 dB` below the lower of two dynamic controls; boundary and the other protected
+  error/coverage metrics lie within or favorably beyond the dynamic span. Cold NPZ rescoring
+  matches every stored metric exactly. Fixed peak allocated GPU memory is 11.3–11.8 MiB lower,
+  but work-normalized schedule time lies inside the dynamic A/A range, so no material speedup is
+  supported. Fixed storage remains opt-in and the default stays dynamic.
+- **Status**: supported single-image development plumbing/quality result; material speedup
+  refuted on this image; general equivalence and default promotion unauthorized
+- **Provenance**: ai-executed
+- **Crystallized via**: empirical-resolution
+- **Falsification criteria**: Cold rescoring changes the stored metrics, source/config equality
+  fails, or a frozen multi-image/multi-seed comparison finds fixed storage outside an
+  independently measured dynamic A/A quality envelope. A repeated work-matched timing study may
+  strengthen or refute the bounded runtime result without rewriting this quality observation.
+- **Proof**: [`ara/evidence/fit024-transactional-fixed-capacity-janelle-2026-07-24/run.md`,
+  `ara/evidence/fit024-transactional-fixed-capacity-janelle-2026-07-24/audit.json`,
+  `runs/janelle_C0001_storage_ab_active_shape_20260724/comparison.json`,
+  `runs/janelle_C0001_storage_ab_active_shape_20260724/audit.json`,
+  `runs/janelle_C0001_storage_ab_active_shape_20260724/index.html`,
+  `tasks/FIT-024-transactional-fixed-capacity-storage.md`]
+- **Dependencies**: [C22, C50]
+- **Tags**: safe-schedule, fixed-capacity, memory, CUDA, development, negative-speed-result,
+  claim-boundary
+- **From staging**: direct FIT-024 result audit

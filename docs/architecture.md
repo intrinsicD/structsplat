@@ -44,7 +44,11 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
   detached opacities, feature/boundary/error targets and cosine decay), `pool` +
   `triage` (FIT-021/ADR-0020, opt-in via `triage_every`: fixed-capacity pooled row lifecycle with
   off-image parking, byte-budgeted capacity from `target_file_bytes`, and one in-place
-  park→merge→split→spawn event replacing the independent topology timers), `pyramid`,
+  park→merge→split→spawn event replacing the independent topology timers); `pool` also provides
+  FIT-024/ADR-0021's immutable active-prefix storage for `safe_schedule`, where preallocation is
+  independent of topology policy, state checkpoints retain full field/Adam capacity, Adam update
+  kernels use the active shape, and one terminal compaction restores the ordinary `GaussianField`
+  interface), `pyramid`,
   `codec`
   (post-fit quantization, ADR-0007; optional in-container alpha stream for masked inputs,
   ignored by pre-FIT-021 decoders).

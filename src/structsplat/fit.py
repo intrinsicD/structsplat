@@ -600,11 +600,90 @@ class _Adan(torch.optim.Optimizer):
         return loss
 
 
-def _make_optimizer(field: GaussianField, cfg: FitConfig):
+class _ActivePrefixAdam(torch.optim.Adam):
+    """Adam with capacity-sized state and active-shape update kernels.
+
+    The parameters and moment tensors retain their fixed-capacity physical shape, but Adam sees
+    contiguous prefix views. This is not only a compute optimization: CUDA kernels may take a
+    different numerical path when their tensor shape changes. Matching the dynamic path's logical
+    shape keeps fixed storage from needlessly perturbing the optimization trajectory.
+    """
+
+    def __init__(self, params, active_row_count: int):
+        self.active_row_count = int(active_row_count)
+        super().__init__(params)
+
+    @torch.no_grad()
+    def step(self, closure=None):
+        self._cuda_graph_capture_health_check()
+        loss = None
+        if closure is not None:
+            with torch.enable_grad():
+                loss = closure()
+
+        for group in self.param_groups:
+            params_with_grad = []
+            grads = []
+            exp_avgs = []
+            exp_avg_sqs = []
+            max_exp_avg_sqs = []
+            state_steps = []
+            beta1, beta2 = group["betas"]
+            has_complex = self._init_group(
+                group,
+                params_with_grad,
+                grads,
+                exp_avgs,
+                exp_avg_sqs,
+                max_exp_avg_sqs,
+                state_steps,
+            )
+
+            def active(value: torch.Tensor) -> torch.Tensor:
+                if value.ndim == 0:
+                    return value
+                return value[:self.active_row_count]
+
+            torch.optim._functional.adam(
+                [active(value) for value in params_with_grad],
+                [active(value) for value in grads],
+                [active(value) for value in exp_avgs],
+                [active(value) for value in exp_avg_sqs],
+                [active(value) for value in max_exp_avg_sqs],
+                state_steps,
+                amsgrad=group["amsgrad"],
+                has_complex=has_complex,
+                beta1=beta1,
+                beta2=beta2,
+                lr=group["lr"],
+                weight_decay=group["weight_decay"],
+                eps=group["eps"],
+                maximize=group["maximize"],
+                foreach=group["foreach"],
+                capturable=group["capturable"],
+                differentiable=group["differentiable"],
+                fused=group["fused"],
+                grad_scale=getattr(self, "grad_scale", None),
+                found_inf=getattr(self, "found_inf", None),
+            )
+        return loss
+
+
+def _make_optimizer(
+    field: GaussianField,
+    cfg: FitConfig,
+    active_row_count: int | None = None,
+):
     groups = field.parameter_groups(cfg.lr_means, cfg.lr_scales, cfg.lr_rot, cfg.lr_color,
                                     cfg.lr_opacity)
     if cfg.optimizer == "adam":
+        if active_row_count is not None:
+            return _ActivePrefixAdam(groups, active_row_count)
         return torch.optim.Adam(groups)
+    if active_row_count is not None:
+        raise ValueError(
+            "active_row_count currently supports optimizer='adam' only"
+        )
     if cfg.optimizer == "adamw":
         return torch.optim.AdamW(groups)
     if cfg.optimizer == "adan":
@@ -2611,7 +2690,8 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         trainable_row_mask: torch.Tensor | None = None,
         return_optimizer_state: bool = False,
         mask_constraint_override: _MaskConstraint | None = None,
-        state_checkpoint_every: int = 0) -> dict:
+        state_checkpoint_every: int = 0,
+        active_row_count: int | None = None) -> dict:
     """Optimize one Gaussian field.
 
     ``optimizer_state`` and ``trainable_row_mask`` are opt-in hooks used by the transactional
@@ -2622,9 +2702,50 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
     ``state_checkpoint_every`` additionally returns state-matched field/Adam snapshots for a
     caller that wants to apply a multi-metric transaction gate to intermediate states. It is
     disabled by default and therefore does not alter historical trajectories.
+
+    ``active_row_count`` is the storage-only hook for the transactional safe schedule. The
+    optimizer owns every preallocated row, while differentiable views restrict rendering and
+    losses to the contiguous active prefix. Adam state stays capacity-sized but its update kernels
+    receive active prefix views. Inactive rows are frozen and exempt from mask projection.
+    Dynamic topology inside this fit call is forbidden; the caller activates rows transactionally
+    between calls.
     """
     if state_checkpoint_every < 0:
         raise ValueError("state_checkpoint_every must be non-negative")
+    if active_row_count is not None:
+        active_row_count = int(active_row_count)
+        if not 0 < active_row_count <= int(field.n):
+            raise ValueError(
+                f"active_row_count must be in (0, {field.n}], got "
+                f"{active_row_count}"
+            )
+        topology_controls = {
+            "triage_every": cfg.triage_every,
+            "prune_every": cfg.prune_every,
+            "split_every": cfg.split_every,
+            "relocate_every": cfg.relocate_every,
+            "mask_boundary_add_every": cfg.mask_boundary_add_every,
+        }
+        active_controls = [
+            name for name, value in topology_controls.items() if value is not None
+        ]
+        if cfg.adaptive_count:
+            active_controls.append("adaptive_count")
+        if active_controls:
+            raise ValueError(
+                "active_row_count requires topology-free fit blocks; unset "
+                + ", ".join(active_controls)
+            )
+        if cfg.covariance_filter_mode != "none":
+            raise ValueError(
+                "active_row_count currently requires covariance_filter_mode='none'; "
+                "birth-cohort filtering must be assigned by the transactional caller"
+            )
+        if cfg.optimizer != "adam":
+            raise ValueError(
+                "active_row_count currently requires optimizer='adam'; "
+                "active-shape updates are needed for storage-only trajectory parity"
+            )
     checkpoint_enabled = cfg.checkpoint_policy == "best_psnr_final_count"
     if optimizer_state is not None and checkpoint_enabled:
         raise ValueError(
@@ -2707,9 +2828,22 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             "terminal live-row compaction would not match the pooled optimizer state"
         )
 
+    fixed_inactive = None
+    if active_row_count is not None:
+        fixed_inactive = torch.ones(
+            field.n, device=field.means.device, dtype=torch.bool
+        )
+        fixed_inactive[:active_row_count] = False
+
     def _parked_exempt():
         # Recomputed at each use: the live mask flips as triage parks/activates rows.
-        return None if pool_state is None else ~pool_state.live
+        if pool_state is not None:
+            # FIT-021 compacts immediately before terminal evaluation; after that boundary the
+            # capacity-length live mask no longer indexes the returned compact field.
+            if int(pool_state.live.numel()) == int(field.n):
+                return ~pool_state.live
+            return None
+        return fixed_inactive
 
     # FIT-022 coverage-matching regularizer: static feature-weighted target profile (one
     # structure-tensor pass); the mass normalization is per-evaluation.
@@ -2730,12 +2864,44 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         else None
     )
     field = _ensure_color_basis(field, cfg)
+
+    def _fit_field_view() -> GaussianField:
+        if active_row_count is None:
+            return field
+        return field.prefix_view(active_row_count)
+
+    def _apply_fit_constraint(*, refresh: bool = False) -> None:
+        active = _fit_field_view()
+        mask_constraint.apply(
+            active,
+            cfg,
+            refresh=refresh,
+            exempt=(
+                None
+                if active_row_count is not None
+                else _parked_exempt()
+            ),
+        )
+        if active_row_count is not None and active.scale_max is not None:
+            if field.scale_max is None:
+                field.scale_max = torch.full(
+                    (field.n, 2),
+                    float("inf"),
+                    device=field.means.device,
+                    dtype=field.means.dtype,
+                )
+            field.scale_max[:active_row_count] = active.scale_max
+
     if _qat_enabled(cfg) and field.color_grads is not None:
         raise ValueError(
             "fit-time QAT currently supports color_basis='constant' only; "
             "codec v1 cannot encode affine color fields"
         )
-    qat_ccfg = _make_qat_codec_config(field, cfg) if _qat_enabled(cfg) else None
+    qat_ccfg = (
+        _make_qat_codec_config(_fit_field_view(), cfg)
+        if _qat_enabled(cfg)
+        else None
+    )
     if _color_solve_enabled(cfg) and not _color_solve_renderer_supported(cfg.renderer):
         raise ValueError(
             "color_solve_every currently supports normalized renderers only; "
@@ -2758,9 +2924,20 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             )
         if not bool(trainable_row_mask.any()):
             raise ValueError("trainable_row_mask must enable at least one row")
+    if fixed_inactive is not None:
+        active_mask = ~fixed_inactive
+        trainable_row_mask = (
+            active_mask
+            if trainable_row_mask is None
+            else trainable_row_mask & active_mask
+        )
+        if not bool(trainable_row_mask.any()):
+            raise ValueError(
+                "trainable_row_mask must enable at least one active row"
+            )
     if mask_constraint is not None and cfg.mask_contain:
-        mask_constraint.apply(field, cfg, exempt=_parked_exempt())
-    opt = _make_optimizer(field, cfg)
+        _apply_fit_constraint()
+    opt = _make_optimizer(field, cfg, active_row_count=active_row_count)
     requested_lrs = [float(g["lr"]) for g in opt.param_groups]
     if optimizer_state is not None:
         opt.load_state_dict(copy.deepcopy(optimizer_state))
@@ -2798,7 +2975,12 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
     def run_color_solve_event(iter_idx: int, trigger: str,
                               support_fade_alpha: float | None = None) -> None:
         stats = _solve_colors_normalized(
-            field, target, cfg, H, W, support_fade_alpha=support_fade_alpha
+            _fit_field_view(),
+            target,
+            cfg,
+            H,
+            W,
+            support_fade_alpha=support_fade_alpha,
         )
         _reset_optimizer_state_for_param(opt, field.colors)
         hist["color_solve_events"].append({
@@ -2830,13 +3012,17 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         with torch.no_grad():
             if render_img is None:
                 render_img = _render(
-                    field, cfg, H, W, support_fade_alpha=support_fade_alpha
+                    _fit_field_view(),
+                    cfg,
+                    H,
+                    W,
+                    support_fade_alpha=support_fade_alpha,
                 )
             if psnr is None:
                 psnr = float(M.psnr(render_img, target))
             else:
                 psnr = float(psnr)
-        count = int(field.n)
+        count = int(_fit_field_view().n)
         same_state_as_last = bool(
             checkpoint_history["iter"]
             and checkpoint_history["iter"][-1] == int(iteration)
@@ -2920,12 +3106,22 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         for g, base in zip(opt.param_groups, base_lrs):
             g["lr"] = base * factor
         img = _render_loss_view(
-            field, cfg, H, W, qat_ccfg, support_fade_alpha=fade_alpha
+            _fit_field_view(),
+            cfg,
+            H,
+            W,
+            qat_ccfg,
+            support_fade_alpha=fade_alpha,
         )
         # count that produced this render/PSNR, before any prune/split restructures the field;
         # logging the post-restructure field.n would pair a pre-step PSNR with a post-step N.
         # Pooled fits report live rows: field.n is the constant capacity there.
-        n_at_render = field.n if pool_state is None else pool_state.live_count
+        if pool_state is not None:
+            n_at_render = pool_state.live_count
+        elif active_row_count is not None:
+            n_at_render = active_row_count
+        else:
+            n_at_render = field.n
         loss_target_full_weight = _loss_target_full_weight(
             cfg,
             it,
@@ -2970,8 +3166,11 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             # expensive gradient term intermittently.
             active_weight = float(cfg.geometry_loss_weight) * int(cfg.geometry_loss_every)
             loss = loss + active_weight * geometry_loss
-        if field.color_grads is not None and cfg.color_grad_l2 > 0.0:
-            loss = loss + cfg.color_grad_l2 * (field.color_grads * field.color_grads).mean()
+        fit_field = _fit_field_view()
+        if fit_field.color_grads is not None and cfg.color_grad_l2 > 0.0:
+            loss = loss + cfg.color_grad_l2 * (
+                fit_field.color_grads * fit_field.color_grads
+            ).mean()
         floor_due = (
             (cfg.mask_undercoverage_weight > 0.0
              or cfg.mask_interior_undercoverage_weight > 0.0)
@@ -2981,36 +3180,57 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 cfg.mask_coverage_weight > 0.0 or floor_due):
             # One raw weight-sum accumulation feeds both penalties.
             den_raw = mask_constraint.raw_weight_map(
-                field, cfg, support_fade_alpha=fade_alpha)
+                _fit_field_view(), cfg, support_fade_alpha=fade_alpha)
             if cfg.mask_coverage_weight > 0.0:
                 loss = loss + float(cfg.mask_coverage_weight) * mask_constraint.coverage(
-                    field, cfg, support_fade_alpha=fade_alpha, den=den_raw)
+                    _fit_field_view(),
+                    cfg,
+                    support_fade_alpha=fade_alpha,
+                    den=den_raw,
+                )
             # Preserve the requested average regularization strength when the expensive raw
             # denominator floor is evaluated intermittently.
             floor_scale = float(cfg.mask_undercoverage_every)
             if floor_due and cfg.mask_undercoverage_weight > 0.0:
                 loss = loss + floor_scale * float(cfg.mask_undercoverage_weight) * (
                     mask_constraint.undercoverage(
-                        field, cfg, support_fade_alpha=fade_alpha, den=den_raw))
+                        _fit_field_view(),
+                        cfg,
+                        support_fade_alpha=fade_alpha,
+                        den=den_raw,
+                    ))
             if floor_due and cfg.mask_interior_undercoverage_weight > 0.0:
                 loss = loss + floor_scale * float(
                     cfg.mask_interior_undercoverage_weight
                 ) * (
                     mask_constraint.interior_undercoverage(
-                        field, cfg, support_fade_alpha=fade_alpha, den=den_raw))
+                        _fit_field_view(),
+                        cfg,
+                        support_fade_alpha=fade_alpha,
+                        den=den_raw,
+                    ))
         coverage_loss = None
         if coverage_profile_inside is not None:
             cm_factor = _coverage_match_factor(cfg, it, sched_offset, sched_total)
             if cm_factor > 0.0:
                 cm_profile, cm_inside = coverage_profile_inside
                 coverage_loss = _coverage_match_loss(
-                    field, cfg, H, W, cm_profile, cm_inside, img, target,
+                    _fit_field_view(),
+                    cfg,
+                    H,
+                    W,
+                    cm_profile,
+                    cm_inside,
+                    img,
+                    target,
                     support_fade_alpha=fade_alpha,
                 )
                 loss = loss + float(cfg.coverage_match_weight) * cm_factor * coverage_loss
         rate_bpp = None
         if cfg.lambda_rate > 0.0:
-            rate_bpp = differentiable_rate_bpp(field, H, W, cfg)
+            rate_bpp = differentiable_rate_bpp(
+                _fit_field_view(), H, W, cfg
+            )
             loss = loss + float(cfg.lambda_rate) * rate_bpp
         opt.zero_grad(set_to_none=True)
         loss.backward()
@@ -3022,11 +3242,16 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         temper_snapshot = _capture_young_row_temper_snapshots(field, row_birth_iter, it, cfg)
         _zero_background_geometry_state(field, opt)
         if trainable_row_mask is not None:
-            frozen = ~trainable_row_mask
+            row_limit = (
+                field.n
+                if active_row_count is None
+                else active_row_count
+            )
+            frozen = ~trainable_row_mask[:row_limit]
             for group in opt.param_groups:
                 param = group["params"][0]
                 if param.grad is not None and param.ndim > 0 and param.shape[0] == field.n:
-                    param.grad[frozen] = 0
+                    param.grad[:row_limit][frozen] = 0
                 state = opt.state.get(param)
                 if not state:
                     continue
@@ -3036,7 +3261,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                         and value.ndim > 0
                         and value.shape == param.shape
                     ):
-                        value[frozen] = 0
+                        value[:row_limit][frozen] = 0
         opt.step()
         tempered_count = _apply_young_row_temper_snapshot(temper_snapshot)
         last_it = it == cfg.iters - 1
@@ -3046,19 +3271,22 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             and (it + 1) % int(cfg.adaptive_growth_every) == 0
         )
         with torch.no_grad():
-            field.log_scales.clamp_(lo, hi)
-            if getattr(field, "scale_max", None) is not None:
-                cap = torch.log(torch.clamp(field.scale_max, min=1e-3))
-                torch.minimum(field.log_scales, cap, out=field.log_scales)
+            fit_field = _fit_field_view()
+            fit_field.log_scales.clamp_(lo, hi)
+            if getattr(fit_field, "scale_max", None) is not None:
+                cap = torch.log(torch.clamp(fit_field.scale_max, min=1e-3))
+                torch.minimum(
+                    fit_field.log_scales,
+                    cap,
+                    out=fit_field.log_scales,
+                )
             if mask_constraint is not None and cfg.mask_contain:
                 # Re-contain after the optimizer moved means/scales: project drift back inside and
                 # refresh the per-row cap from the current signed distance. Anisotropic
                 # recertification runs on a cadence (plus entry/events/terminal); between
                 # refreshes only the projection + clamp to the stored caps runs.
-                mask_constraint.apply(
-                    field, cfg,
+                _apply_fit_constraint(
                     refresh=((it + 1) % max(int(cfg.mask_cap_refresh_every), 1) == 0),
-                    exempt=_parked_exempt(),
                 )
             if (
                 "every" in color_solve_tokens
@@ -3067,7 +3295,13 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 and (it + 1) % int(cfg.color_solve_every) == 0
             ):
                 run_color_solve_event(it, "every", fade_alpha)
-                img = _render(field, cfg, H, W, support_fade_alpha=fade_alpha)
+                img = _render(
+                    _fit_field_view(),
+                    cfg,
+                    H,
+                    W,
+                    support_fade_alpha=fade_alpha,
+                )
             mse_now = None
             if target_thresholds is not None and target_iters_device is not None:
                 mse_now = M.mse(img, target).detach().clamp_min(1e-12)
@@ -3292,7 +3526,9 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 "iter": it,
                 "psnr": p_now,
                 "n_gaussians": field.n,
-                "estimated_bpp": estimated_raw_bpp(field, H, W),
+                "estimated_bpp": estimated_raw_bpp(
+                    _fit_field_view(), H, W
+                ),
                 "marginal_psnr": marginal,
                 "stale_waves": adaptive_stale_waves,
             }
@@ -3397,7 +3633,9 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             if mask_constraint is not None and cfg.mask_contain:
                 # New/relocated rows inherit caps from neighbours; re-derive them from the mask so
                 # split/relocation/growth children are contained before the next render.
-                mask_constraint.apply(field, cfg)
+                mask_constraint.apply(
+                    field, cfg, exempt=_parked_exempt()
+                )
             if "on_split" in color_solve_tokens and (added > 0 or relocated > 0):
                 run_color_solve_event(it, "on_split", fade_alpha)
 
@@ -3421,7 +3659,11 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             # live-viewer bridge, ADR-0018). no_grad so an observer cannot extend the
             # autograd graph; it must not mutate the field or touch RNG state.
             with torch.no_grad():
-                iteration_observer(field, sched_offset + it + 1, float(loss.item()))
+                iteration_observer(
+                    _fit_field_view(),
+                    sched_offset + it + 1,
+                    float(loss.item()),
+                )
 
         if log_now:
             hist["iter"].append(it)
@@ -3492,16 +3734,22 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         terminal_field = field
         terminal_iter = last_iter + 1
         if mask_constraint is not None and cfg.mask_contain:
-            mask_constraint.apply(field, cfg)
+            _apply_fit_constraint()
         record_state_checkpoint(terminal_iter, terminal=True)
-        terminal_img = _render(field, cfg, H, W, support_fade_alpha=final_fade_alpha)
+        terminal_img = _render(
+            _fit_field_view(),
+            cfg,
+            H,
+            W,
+            support_fade_alpha=final_fade_alpha,
+        )
         terminal_psnr = M.psnr(terminal_img, target)
         terminal_ssim = float(M.ssim(terminal_img, target, backend=cfg.ssim_backend))
         terminal_ms_ssim = M.ms_ssim(terminal_img, target)
         terminal_lpips = (
             M.LPIPS.distance(terminal_img, target) if cfg.compute_lpips else None
         )
-        terminal_n = int(field.n)
+        terminal_n = int(_fit_field_view().n)
         selected_record = None
         if checkpoint_enabled:
             record_checkpoint(
@@ -3517,8 +3765,14 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             if selected_record["field"] is not None:
                 field = selected_record["field"].trainable()
                 if mask_constraint is not None and cfg.mask_contain:
-                    mask_constraint.apply(field, cfg)
-                img = _render(field, cfg, H, W, support_fade_alpha=final_fade_alpha)
+                    _apply_fit_constraint()
+                img = _render(
+                    _fit_field_view(),
+                    cfg,
+                    H,
+                    W,
+                    support_fade_alpha=final_fade_alpha,
+                )
                 final_psnr = M.psnr(img, target)
                 final_ssim = float(M.ssim(img, target, backend=cfg.ssim_backend))
                 final_ms_ssim = M.ms_ssim(img, target)
@@ -3555,6 +3809,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         if cfg.adaptive_count:
             hist["adaptive_stop_reason"] = adaptive_stop
             hist["adaptive_selected_n"] = terminal_n
+        output_field_view = _fit_field_view()
         out = {
             "field": field, "history": hist, "render": img,
             "psnr": final_psnr,
@@ -3566,20 +3821,28 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 if cfg.target_psnr is not None else None
             ),
             "iters_to_targets": iters_to_targets,
-            "n_gaussians": field.n,
-            "background_count": field.background_count,
-            "detail_count": field.n - field.background_count,
+            "n_gaussians": output_field_view.n,
+            "background_count": output_field_view.background_count,
+            "detail_count": (
+                output_field_view.n - output_field_view.background_count
+            ),
             "pool": pool_summary,
             "fit_seconds": fit_seconds,
             "iterations_run": last_iter + 1,
             "stopped_early": stopped_early,
             "stopped_at": last_iter if stopped_early else None,
             "adaptive_stop_reason": adaptive_stop if cfg.adaptive_count else None,
-            "adaptive_selected_n": field.n if cfg.adaptive_count else None,
-            "estimated_bpp": estimated_raw_bpp(field, H, W),
+            "adaptive_selected_n": (
+                output_field_view.n if cfg.adaptive_count else None
+            ),
+            "estimated_bpp": estimated_raw_bpp(output_field_view, H, W),
             "qat_mode": cfg.qat_mode,
             "lambda_rate": float(cfg.lambda_rate),
-            "qat_rate_bpp": float(differentiable_rate_bpp(field, H, W, cfg).detach().cpu())
+            "qat_rate_bpp": float(
+                differentiable_rate_bpp(
+                    output_field_view, H, W, cfg
+                ).detach().cpu()
+            )
             if cfg.lambda_rate > 0.0 else None,
             "qat_codec_config": qat_ccfg,
             "loss_weighting": cfg.loss_weighting,
@@ -3632,4 +3895,6 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
                 None if pixel_weight is None else float(pixel_weight.max().detach().cpu())
             ),
         }
+        if active_row_count is not None:
+            out["active_row_count"] = active_row_count
     return out

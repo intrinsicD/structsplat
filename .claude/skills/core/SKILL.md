@@ -19,7 +19,12 @@ IntrinsicEngine as an RHI pass.
 - `gaussians.py` (torch) — `GaussianField`, RS parameterization, conics, radii (ADR-0002).
 - `render.py` (torch) — differentiable normalized-weighted-sum rasterizer, no sort (ADR-0003).
 - `init.py` (torch bridge) — the five strategies in `STRATEGIES` (the ablation variables).
-- `fit.py` (torch) — Adam fitter, L1+SSIM, records PSNR history + iters-to-target.
+- `fit.py` (torch) — Adam fitter, L1+SSIM, records PSNR history + iters-to-target; its
+  `active_row_count` hook keeps capacity-sized field/moment storage while rendering, projection,
+  and Adam updates use a contiguous active prefix (FIT-024/ADR-0021).
+- `pool.py` / `safe_schedule.py` (torch) — fixed-capacity storage is independent of topology:
+  FIT-021 owns mutable triage/free-list policy, while FIT-024 keeps the transactional proposal
+  auction and immutable active-prefix liveness.
 - `pyramid.py` (torch) — progressive densification driven by residual structure tensor.
 - `codec.py` / `cli.py` (torch at command time) — native NPZ and self-describing SSPL1 persistence;
   `fit`/`image-to-gaussians2d` saves native fields, while `render`/`gaussians2d-to-image`

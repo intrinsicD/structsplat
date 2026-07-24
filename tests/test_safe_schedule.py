@@ -1,4 +1,5 @@
 import math
+from dataclasses import replace
 
 import pytest
 import torch
@@ -8,11 +9,13 @@ import structsplat.safe_schedule as safe_schedule_module
 from structsplat.config import FitConfig
 from structsplat.fit import _MaskConstraint, _render, fit
 from structsplat.gaussians import GaussianField
+from structsplat.pool import POOL_PARK_COORD, prepare_transactional_pool
 from structsplat.safe_schedule import (
     CommitTolerances,
     PhaseBudget,
     QualityMetrics,
     SafeScheduleConfig,
+    _detail_tail_score,
     _expand_spatial_neighborhood,
     _safe_fit_block,
     adapt_optimizer_state,
@@ -133,6 +136,28 @@ def test_p99_guard_is_explicit_and_pareto_safe():
     assert "p99_mse_regressed" in reasons
 
 
+def test_detail_tail_reserve_validation_separates_physical_and_active_limits():
+    valid = SafeScheduleConfig(
+        capacity=12,
+        storage_policy="fixed_capacity",
+        base_active_limit=10,
+        detail_tail_max_rows=2,
+        detail_tail_batch_rows=1,
+        coverage_target_gaussians=8,
+        detail_target_gaussians=10,
+        event_min_count=1,
+    )
+    valid.validate(6)
+    assert valid.resolved_base_active_limit() == 10
+
+    with pytest.raises(ValueError, match="requires storage_policy"):
+        replace(valid, storage_policy="dynamic").validate(6)
+    with pytest.raises(ValueError, match="cannot exceed capacity"):
+        replace(valid, detail_tail_max_rows=3).validate(6)
+    with pytest.raises(ValueError, match="cannot exceed base_active_limit"):
+        replace(valid, detail_target_gaussians=11).validate(6)
+
+
 def test_spatial_neighborhood_expands_seed_rows_in_one_mask():
     field = GaussianField.from_numpy(
         means=[[1.0, 1.0], [2.0, 1.0], [4.0, 1.0], [20.0, 20.0]],
@@ -208,6 +233,87 @@ def test_fit_optimizer_state_and_local_row_freeze_round_trip():
             getattr(frozen_before, name),
             rtol=0,
             atol=0,
+        )
+
+
+def test_fit_active_prefix_matches_compact_fit_within_float_tolerance():
+    height = width = 24
+    mask = _mask(height, width)
+    target = torch.zeros(height, width, 3)
+    target[mask] = torch.tensor([0.2, 0.5, 0.8])
+    field = _field(4, height, width)
+    pooled, state = prepare_transactional_pool(field.detached(), capacity=7)
+    cfg = _base_cfg(iters=3, mask_interior_undercoverage_weight=0.01)
+
+    compact = fit(
+        field.detached(),
+        target,
+        cfg,
+        mask=mask.numpy(),
+        verbose=False,
+        return_optimizer_state=True,
+    )
+    fixed = fit(
+        pooled,
+        target,
+        cfg,
+        mask=mask.numpy(),
+        verbose=False,
+        return_optimizer_state=True,
+        active_row_count=state.active_n,
+    )
+
+    assert fixed["field"].n == 7
+    assert fixed["n_gaussians"] == compact["n_gaussians"] == 4
+    assert fixed["active_row_count"] == 4
+    assert torch.all(fixed["field"].means[4:] == POOL_PARK_COORD)
+    fixed_active = fixed["field"].prefix_view(4)
+    for name in (
+        "means",
+        "log_scales",
+        "rotations",
+        "colors",
+        "opacities",
+        "scale_max",
+    ):
+        torch.testing.assert_close(
+            getattr(fixed_active, name),
+            getattr(compact["field"], name),
+            rtol=1e-6,
+            atol=1e-8,
+        )
+    torch.testing.assert_close(
+        fixed["render"], compact["render"], rtol=1e-6, atol=1e-8
+    )
+    for key, compact_param in compact["optimizer_state"]["state"].items():
+        fixed_param = fixed["optimizer_state"]["state"][key]
+        for name, compact_value in compact_param.items():
+            fixed_value = fixed_param[name]
+            if torch.is_tensor(compact_value) and compact_value.ndim > 0:
+                assert fixed_value.shape[0] == pooled.n
+                assert torch.count_nonzero(fixed_value[4:]) == 0
+                fixed_value = fixed_value[:compact_value.shape[0]]
+            torch.testing.assert_close(
+                fixed_value, compact_value, rtol=1e-6, atol=1e-8
+            )
+
+
+def test_fit_active_prefix_rejects_optimizer_without_active_shape_updates():
+    height = width = 24
+    mask = _mask(height, width)
+    target = torch.zeros(height, width, 3)
+    field, state = prepare_transactional_pool(
+        _field(4, height, width),
+        capacity=7,
+    )
+    with pytest.raises(ValueError, match="requires optimizer='adam'"):
+        fit(
+            field,
+            target,
+            replace(_base_cfg(iters=1), optimizer="adamw"),
+            mask=mask.numpy(),
+            verbose=False,
+            active_row_count=state.active_n,
         )
 
 
@@ -622,6 +728,109 @@ def test_coverage_birth_is_mask_contained_and_uses_local_covariance():
     assert torch.all(constraint.eroded_flat[iy * width + ix])
     assert torch.unique(proposal.field.log_scales[field.n:], dim=0).shape[0] > 1
 
+    pooled, state = prepare_transactional_pool(field.detached(), capacity=12)
+    fixed_proposal = propose_birth(
+        pooled,
+        target,
+        render,
+        cfg,
+        constraint,
+        replace(schedule, storage_policy="fixed_capacity"),
+        4,
+        "coverage",
+        active_n=state.active_n,
+    )
+    assert fixed_proposal is not None
+    assert fixed_proposal.field.n == 12
+    assert fixed_proposal.active_n == proposal.field.n
+    assert fixed_proposal.touched.tolist() == list(
+        range(field.n, proposal.field.n)
+    )
+    for name in (
+        "means",
+        "log_scales",
+        "rotations",
+        "colors",
+        "opacities",
+        "scale_max",
+    ):
+        torch.testing.assert_close(
+            getattr(
+                fixed_proposal.field.prefix_view(fixed_proposal.active_n),
+                name,
+            ),
+            getattr(proposal.field, name),
+            rtol=0,
+            atol=0,
+        )
+
+
+def test_detail_tail_score_excludes_holes_boundary_and_low_frequency_error():
+    height = width = 40
+    mask = torch.zeros(height, width, dtype=torch.bool)
+    mask[2:-2, 2:-2] = True
+    target = torch.zeros(height, width, 3)
+    target[16:24, 16:24] = (
+        torch.arange(8)[:, None] + torch.arange(8)[None, :]
+    ).remainder(2)[..., None]
+    render = torch.zeros_like(target)
+    field = _field(6, height, width)
+    cfg = _base_cfg(iters=1)
+    constraint = _MaskConstraint.from_mask(
+        mask.numpy(),
+        target.device,
+        target.dtype,
+        cfg.sigma_cutoff,
+        cfg.mask_margin,
+        cap_mode="anisotropic",
+        undercoverage_band=4.0,
+    )
+    schedule = SafeScheduleConfig(
+        capacity=10,
+        storage_policy="fixed_capacity",
+        base_active_limit=8,
+        detail_tail_max_rows=2,
+        detail_tail_batch_rows=1,
+        coverage_target_gaussians=7,
+        detail_target_gaussians=8,
+        event_min_count=1,
+    )
+    denominator = torch.ones(height, width)
+    denominator[19, 19] = 0.0
+    score, allowed, persistent, metadata = _detail_tail_score(
+        field,
+        target,
+        render,
+        cfg,
+        constraint,
+        schedule,
+        denominator=denominator,
+        coherence=torch.zeros(height, width),
+    )
+
+    assert metadata["eligible_pixels"] > 0
+    assert persistent[18:22, 18:22].max() > 0
+    assert not allowed[19, 19]
+    assert not torch.isfinite(score[19, 19])
+    assert not torch.isfinite(score[3, 20])
+    assert torch.isfinite(score[18, 18])
+    # A spatially constant color mismatch has no persistent high-frequency tail signal.
+    flat_render = torch.full_like(target, 0.25)
+    flat_target = torch.zeros_like(target)
+    flat_score, _, flat_persistent, flat_metadata = _detail_tail_score(
+        field,
+        flat_target,
+        flat_render,
+        cfg,
+        constraint,
+        schedule,
+        denominator=torch.ones_like(denominator),
+        coherence=torch.zeros(height, width),
+    )
+    assert flat_metadata["eligible_pixels"] == 0
+    assert flat_persistent.max() == 0
+    assert not torch.isfinite(flat_score).any()
+
 
 def test_moment_split_preserves_integrated_raw_mass_before_caps():
     height = width = 36
@@ -770,6 +979,129 @@ def test_tiny_safe_schedule_emits_monotone_selected_sequence():
         assert after["interior_hole_fraction"] <= before["interior_hole_fraction"]
         assert after["boundary_hole_fraction"] <= before["boundary_hole_fraction"]
     assert math.isfinite(result["metrics"]["foreground_psnr_db"])
+
+    fixed = run_safe_schedule(
+        field,
+        target,
+        mask,
+        _base_cfg(iters=1),
+        replace(
+            schedule,
+            capacity=11,
+            storage_policy="fixed_capacity",
+            base_active_limit=9,
+        ),
+        verbose=False,
+    )
+    assert fixed["storage"] == {
+        "policy": "fixed_capacity",
+        "capacity": 11,
+        "base_active_limit": 9,
+        "detail_tail_max_rows": 0,
+        "detail_tail_activated_rows": 0,
+        "initial_active_n": 6,
+        "final_active_n": result["field"].n,
+        "initial_physical_rows": 11,
+        "final_physical_rows": 11,
+        "fixed_shape_during_fit": True,
+        "output_compacted": True,
+    }
+    assert fixed["metrics"] == result["metrics"]
+    assert [
+        (entry["phase"], entry["event"], entry["accepted"], entry["selected"])
+        for entry in fixed["history"]
+    ] == [
+        (entry["phase"], entry["event"], entry["accepted"], entry["selected"])
+        for entry in result["history"]
+    ]
+    for name in (
+        "means",
+        "log_scales",
+        "rotations",
+        "colors",
+        "opacities",
+        "scale_max",
+    ):
+        torch.testing.assert_close(
+            getattr(fixed["field"], name),
+            getattr(result["field"], name),
+            rtol=0,
+            atol=0,
+        )
+
+
+def test_fixed_reserve_is_activated_only_by_the_late_detail_tail():
+    height = width = 32
+    mask = _mask(height, width)
+    target = torch.zeros(height, width, 3)
+    checker = (
+        torch.arange(12)[:, None] + torch.arange(12)[None, :]
+    ).remainder(2).float()
+    target[10:22, 10:22] = checker[..., None]
+    target *= mask[..., None]
+    field = _field(6, height, width)
+    one = (1e-2, 8e-3, 3e-3, 1e-2, 3e-3)
+
+    def phase(name: str, target_n: int):
+        return PhaseBudget(name, 1, 1, target_n, one, 0.001, 0.002)
+
+    schedule = SafeScheduleConfig(
+        capacity=10,
+        storage_policy="fixed_capacity",
+        base_active_limit=8,
+        detail_tail_max_rows=2,
+        detail_tail_batch_rows=1,
+        coverage_target_gaussians=7,
+        detail_target_gaussians=8,
+        event_min_count=1,
+        recovery_steps=2,
+        event_spacing_px=3.0,
+        coverage_birth_count=1,
+        detail_birth_count=1,
+        detail_split_count=1,
+        boundary_birth_count=1,
+        redistribution_count=1,
+        stale_patience=1,
+        bootstrap=phase("bootstrap", 6),
+        coverage=phase("coverage_growth", 7),
+        detail=phase("detail_growth", 8),
+        boundary=phase("boundary_closure", 8),
+        redistribution=phase("redistribution", 8),
+        polish=phase("safe_polish", 10),
+    )
+    result = run_safe_schedule(
+        field,
+        target,
+        mask,
+        _base_cfg(iters=1),
+        schedule,
+        verbose=False,
+    )
+
+    tail_records = [
+        record
+        for record in result["history"]
+        if record["phase"] == "detail_tail"
+    ]
+    assert tail_records[0]["event"] == "detail_tail_birth"
+    assert tail_records[0]["accepted"] is True
+    tail_end = tail_records[-1]["metadata"]
+    assert tail_end == {
+        "termination_reason": "no_safe_effective_winner",
+        "start_n": 8,
+        "end_n": 9,
+        "activated_rows": 1,
+        "configured_max_rows": 2,
+        "batch_rows": 1,
+        "wave_budget": 2,
+        "waves_attempted": 2,
+        "waves_accepted": 1,
+        "minimum_gain_per_row": 0.0,
+    }
+    assert result["storage"]["capacity"] == 10
+    assert result["storage"]["base_active_limit"] == 8
+    assert result["storage"]["detail_tail_activated_rows"] == 1
+    assert result["field"].n == 9
 
 
 def test_tiny_local_neighborhood_schedule_records_local_selection_and_boundary_defects():

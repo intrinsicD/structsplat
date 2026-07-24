@@ -59,6 +59,8 @@ def _source_provenance(out: Path) -> dict[str, Any]:
         Path(__file__).resolve(),
         REPOSITORY_ROOT / "src/structsplat/safe_schedule.py",
         REPOSITORY_ROOT / "src/structsplat/fit.py",
+        REPOSITORY_ROOT / "src/structsplat/gaussians.py",
+        REPOSITORY_ROOT / "src/structsplat/pool.py",
         REPOSITORY_ROOT / "src/structsplat/config.py",
         REPOSITORY_ROOT / "scripts/fit_janelle_complete_refinement.py",
         REPOSITORY_ROOT / "scripts/fit_janelle_mask_contained.py",
@@ -102,8 +104,20 @@ def _phase(
 
 def build_schedule(args: argparse.Namespace) -> SafeScheduleConfig:
     defaults = SafeScheduleConfig()
+    base_active_limit = (
+        int(args.capacity)
+        if args.base_active_limit is None
+        else int(args.base_active_limit)
+    )
     return SafeScheduleConfig(
         capacity=int(args.capacity),
+        storage_policy=str(args.storage_policy),
+        base_active_limit=base_active_limit,
+        detail_tail_max_rows=int(args.detail_tail_rows),
+        detail_tail_batch_rows=int(args.detail_tail_batch),
+        detail_tail_min_gain_per_row=float(
+            args.detail_tail_min_gain_per_row
+        ),
         coverage_target_gaussians=int(args.coverage_target),
         detail_target_gaussians=int(args.detail_target),
         coverage_tau=float(args.coverage_tau),
@@ -167,19 +181,19 @@ def build_schedule(args: argparse.Namespace) -> SafeScheduleConfig:
             defaults.boundary,
             steps=args.boundary_steps,
             block_steps=args.block_steps,
-            target=args.capacity,
+            target=base_active_limit,
         ),
         redistribution=_phase(
             defaults.redistribution,
             steps=args.redistribution_steps,
             block_steps=args.block_steps,
-            target=args.capacity,
+            target=base_active_limit,
         ),
         polish=_phase(
             defaults.polish,
             steps=args.polish_steps,
             block_steps=args.block_steps,
-            target=args.capacity,
+            target=base_active_limit + int(args.detail_tail_rows),
         ),
     )
 
@@ -565,7 +579,53 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--mask-margin", type=float, default=0.75)
     parser.add_argument("--preview-width", type=int, default=1200)
-    parser.add_argument("--capacity", type=int, default=11_000)
+    parser.add_argument(
+        "--capacity",
+        type=int,
+        default=11_000,
+        help="physical storage capacity and absolute active-row ceiling",
+    )
+    parser.add_argument(
+        "--storage-policy",
+        choices=("dynamic", "fixed_capacity"),
+        default="dynamic",
+        help=(
+            "dynamic reproduces historical row appends; fixed_capacity preallocates "
+            "--capacity rows and activates a contiguous prefix transactionally"
+        ),
+    )
+    parser.add_argument(
+        "--base-active-limit",
+        type=int,
+        default=None,
+        help=(
+            "logical row ceiling for coverage/detail/boundary/redistribution; "
+            "defaults to --capacity"
+        ),
+    )
+    parser.add_argument(
+        "--detail-tail-rows",
+        type=int,
+        default=0,
+        help=(
+            "reserved rows available only to the post-color covered-interior "
+            "detail tail (fixed_capacity only)"
+        ),
+    )
+    parser.add_argument(
+        "--detail-tail-batch",
+        type=int,
+        default=128,
+        help="maximum rows proposed by each late detail-tail transaction",
+    )
+    parser.add_argument(
+        "--detail-tail-min-gain-per-row",
+        type=float,
+        default=0.0,
+        help=(
+            "minimum realized safe-auction composite gain per activated tail row"
+        ),
+    )
     parser.add_argument("--coverage-target", type=int, default=8_000)
     parser.add_argument("--detail-target", type=int, default=10_000)
     parser.add_argument("--coverage-tau", type=float, default=0.05)
@@ -626,6 +686,12 @@ def main() -> None:
     positive = (
         args.preview_width,
         args.capacity,
+        (
+            args.capacity
+            if args.base_active_limit is None
+            else args.base_active_limit
+        ),
+        args.detail_tail_batch,
         args.coverage_target,
         args.detail_target,
         args.bootstrap_steps,
@@ -644,10 +710,42 @@ def main() -> None:
     )
     if any(value <= 0 for value in positive):
         raise ValueError("all size, step, and event-count arguments must be positive")
-    if not 5_000 <= args.coverage_target <= args.detail_target <= args.capacity:
+    base_active_limit = (
+        args.capacity
+        if args.base_active_limit is None
+        else args.base_active_limit
+    )
+    if not (
+        5_000
+        <= args.coverage_target
+        <= args.detail_target
+        <= base_active_limit
+        <= args.capacity
+    ):
         raise ValueError(
-            "expected 5000 <= --coverage-target <= --detail-target <= --capacity"
+            "expected 5000 <= --coverage-target <= --detail-target <= "
+            "--base-active-limit <= --capacity"
         )
+    if args.detail_tail_rows < 0:
+        raise ValueError("--detail-tail-rows must be nonnegative")
+    if base_active_limit + args.detail_tail_rows > args.capacity:
+        raise ValueError(
+            "--base-active-limit + --detail-tail-rows cannot exceed --capacity"
+        )
+    if args.detail_tail_min_gain_per_row < 0.0:
+        raise ValueError("--detail-tail-min-gain-per-row must be nonnegative")
+    if args.detail_tail_rows > 0:
+        if args.storage_policy != "fixed_capacity":
+            raise ValueError(
+                "--detail-tail-rows requires --storage-policy fixed_capacity"
+            )
+        if (
+            args.detail_tail_rows < args.event_min_count
+            or args.detail_tail_batch < args.event_min_count
+        ):
+            raise ValueError(
+                "detail-tail rows and batch must be at least --event-min-count"
+            )
     if not 0.0 < args.max_donor_responsibility <= 1.0:
         raise ValueError("--max-donor-responsibility must be in (0, 1]")
     if args.local_neighbor_count < 0 or args.topology_neighbor_count < 0:

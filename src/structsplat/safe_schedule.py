@@ -17,8 +17,11 @@ metric vector decides whether both parameters and optimizer moments are committe
 Topology batches are reduced geometrically after a rejected trial, so the schedule can retain
 safe members of a coarse proposal without falling back to per-Gaussian Python mutation.
 
-The module intentionally does not replace FIT-021's legacy pooled path.  It is an opt-in
-orchestration layer whose strict acceptance semantics can be tested independently.
+Fixed-capacity storage is orthogonal to that policy (FIT-024/ADR-0021). In ``fixed_capacity``
+mode, the same proposals and gates operate on a contiguous active prefix of capacity-shaped field
+and Adam tensors; only activation metadata changes at growth commits, and compaction happens once
+at the output boundary. Detached transaction/checkpoint snapshots remain capacity-shaped
+allocations. FIT-021's triage policy remains a separate legacy mode.
 """
 from __future__ import annotations
 
@@ -45,6 +48,7 @@ from .fit import (
     fit,
 )
 from .triage import _mutual_nearest_pairs, _row_covariances, attribution_pass
+from .pool import prepare_transactional_pool
 
 
 @dataclass(frozen=True)
@@ -107,6 +111,11 @@ class SafeScheduleConfig:
     """Schedule policy. Iteration budgets are ceilings; metric transitions may end earlier."""
 
     capacity: int = 11_000
+    storage_policy: str = "dynamic"
+    base_active_limit: int | None = None
+    detail_tail_max_rows: int = 0
+    detail_tail_batch_rows: int = 128
+    detail_tail_min_gain_per_row: float = 0.0
     coverage_target_gaussians: int = 8_000
     detail_target_gaussians: int = 10_000
     coverage_tau: float = 0.05
@@ -173,20 +182,65 @@ class SafeScheduleConfig:
         0.002, 0.005,
     )
 
+    def resolved_base_active_limit(self) -> int:
+        """Return the logical ceiling used before the optional detail tail."""
+
+        return (
+            int(self.capacity)
+            if self.base_active_limit is None
+            else int(self.base_active_limit)
+        )
+
     def validate(self, initial_n: int) -> None:
         if initial_n <= 0:
             raise ValueError("safe schedule needs a non-empty initial field")
+        base_active_limit = self.resolved_base_active_limit()
         if not initial_n <= self.coverage_target_gaussians <= self.detail_target_gaussians:
             raise ValueError(
                 "expected initial_n <= coverage_target_gaussians <= "
                 "detail_target_gaussians"
             )
-        if self.detail_target_gaussians > self.capacity:
-            raise ValueError("detail_target_gaussians cannot exceed capacity")
+        if self.detail_target_gaussians > base_active_limit:
+            raise ValueError(
+                "detail_target_gaussians cannot exceed base_active_limit"
+            )
         if self.capacity < initial_n:
             raise ValueError(
                 f"capacity {self.capacity} is below initial field size {initial_n}"
             )
+        if not initial_n <= base_active_limit <= self.capacity:
+            raise ValueError(
+                "base_active_limit must be between the initial field size and capacity"
+            )
+        if self.storage_policy not in ("dynamic", "fixed_capacity"):
+            raise ValueError(
+                "storage_policy must be 'dynamic' or 'fixed_capacity'"
+            )
+        if self.detail_tail_max_rows < 0:
+            raise ValueError("detail_tail_max_rows must be nonnegative")
+        if self.detail_tail_batch_rows <= 0:
+            raise ValueError("detail_tail_batch_rows must be positive")
+        if self.detail_tail_min_gain_per_row < 0.0:
+            raise ValueError(
+                "detail_tail_min_gain_per_row must be nonnegative"
+            )
+        if base_active_limit + self.detail_tail_max_rows > self.capacity:
+            raise ValueError(
+                "base_active_limit + detail_tail_max_rows cannot exceed capacity"
+            )
+        if self.detail_tail_max_rows > 0:
+            if self.storage_policy != "fixed_capacity":
+                raise ValueError(
+                    "detail tail reserve requires storage_policy='fixed_capacity'"
+                )
+            if self.detail_tail_max_rows < self.event_min_count:
+                raise ValueError(
+                    "detail_tail_max_rows must be at least event_min_count"
+                )
+            if self.detail_tail_batch_rows < self.event_min_count:
+                raise ValueError(
+                    "detail_tail_batch_rows must be at least event_min_count"
+                )
         if self.coverage_tau <= 0.0:
             raise ValueError("coverage_tau must be positive")
         if self.event_min_count <= 0 or self.recovery_steps <= 0:
@@ -251,6 +305,7 @@ class TopologyProposal:
     touched: torch.Tensor
     count: int
     metadata: dict[str, Any]
+    active_n: int | None = None
 
 
 @dataclass
@@ -263,9 +318,40 @@ class _Trial:
     metadata: dict[str, Any]
     attempted_count: int
     recovery_steps: int
+    active_n: int | None
 
 
 ScheduleObserver = Callable[[GaussianField, dict[str, Any]], None]
+
+
+def _logical_n(field: GaussianField, active_n: int | None) -> int:
+    return int(field.n if active_n is None else active_n)
+
+
+def _active_field(field: GaussianField, active_n: int | None) -> GaussianField:
+    return field if active_n is None else field.prefix_view(active_n)
+
+
+@torch.no_grad()
+def _apply_constraint(
+    field: GaussianField,
+    cfg: FitConfig,
+    constraint: _MaskConstraint,
+    active_n: int | None,
+    *,
+    refresh: bool = False,
+) -> None:
+    active = _active_field(field, active_n)
+    constraint.apply(active, cfg, refresh=refresh)
+    if active_n is not None and active.scale_max is not None:
+        if field.scale_max is None:
+            field.scale_max = torch.full(
+                (field.n, 2),
+                float("inf"),
+                device=field.means.device,
+                dtype=field.means.dtype,
+            )
+        field.scale_max[:active_n] = active.scale_max
 
 
 def _visible_boundary(mask: torch.Tensor) -> torch.Tensor:
@@ -311,13 +397,15 @@ def _expand_spatial_neighborhood(
     field: GaussianField,
     seed_rows: torch.Tensor,
     neighbor_count: int,
+    active_n: int | None = None,
 ) -> tuple[torch.Tensor, dict[str, Any]]:
     """Return seed rows plus their direct Euclidean neighbours as one batched row mask."""
 
+    active = _active_field(field, active_n)
     seeds = torch.unique(
-        seed_rows.detach().to(device=field.means.device, dtype=torch.long)
+        seed_rows.detach().to(device=active.means.device, dtype=torch.long)
     )
-    seeds = seeds[(seeds >= 0) & (seeds < field.n)]
+    seeds = seeds[(seeds >= 0) & (seeds < active.n)]
     trainable = torch.zeros(
         field.n, device=field.means.device, dtype=torch.bool
     )
@@ -329,13 +417,13 @@ def _expand_spatial_neighborhood(
         }
     trainable[seeds] = True
     requested = max(0, int(neighbor_count))
-    if requested > 0 and field.n > 1:
-        k = min(field.n, requested + 1)
+    if requested > 0 and active.n > 1:
+        k = min(active.n, requested + 1)
         try:
             import numpy as np
             from scipy.spatial import cKDTree
 
-            values = field.means.detach().cpu().numpy()
+            values = active.means.detach().cpu().numpy()
             query = values[seeds.detach().cpu().numpy()]
             tree = cKDTree(values)
             try:
@@ -351,7 +439,7 @@ def _expand_spatial_neighborhood(
             backend = "scipy_ckdtree"
         except ImportError:
             # Dependency-free fallback. Chunking bounds the temporary seed-by-field matrix.
-            means = field.means.detach()
+            means = active.means.detach()
             for chunk in seeds.split(256):
                 distances = torch.cdist(means[chunk], means)
                 neighbours = torch.topk(
@@ -361,8 +449,8 @@ def _expand_spatial_neighborhood(
             backend = "torch_cdist"
     else:
         backend = "seeds_only"
-    if field.background_mask is not None:
-        trainable &= ~field.background_mask.to(
+    if active.background_mask is not None:
+        trainable[:active.n] &= ~active.background_mask.to(
             device=trainable.device, dtype=torch.bool
         )
         # A topology event must never lose its own non-background touched rows.
@@ -383,24 +471,26 @@ def _local_residual_row_mask(
     constraint: _MaskConstraint,
     schedule: SafeScheduleConfig,
     phase_name: str,
+    active_n: int | None = None,
 ) -> tuple[torch.Tensor, dict[str, Any]]:
     """Select high-error owners and spatial neighbours while freezing the accepted remainder."""
 
+    active = _active_field(field, active_n)
     H, W = target.shape[:2]
-    render = _render(field, cfg, H, W, support_fade_alpha=1.0)
+    render = _render(active, cfg, H, W, support_fade_alpha=1.0)
     score, components = _responsibility_error_density_scores(
-        field, target, render, cfg, support_fade_alpha=1.0
+        active, target, render, cfg, support_fade_alpha=1.0
     )
     score = score.detach().clone()
     valid = torch.isfinite(score)
     boundary_only = phase_name == schedule.boundary.name
     if boundary_only:
-        means = field.means.detach()
+        means = active.means.detach()
         ix = means[:, 0].round().long().clamp(0, W - 1)
         iy = means[:, 1].round().long().clamp(0, H - 1)
         sdf = constraint.sdf_flat[iy * W + ix]
         reach = (
-            field.effective_scales(cfg.aa_dilation).detach().amax(dim=1)
+            active.effective_scales(cfg.aa_dilation).detach().amax(dim=1)
             * float(cfg.sigma_cutoff)
         )
         valid &= (
@@ -412,21 +502,21 @@ def _local_residual_row_mask(
                 + reach
             )
         )
-    if field.background_mask is not None:
-        valid &= ~field.background_mask.to(device=valid.device, dtype=torch.bool)
+    if active.background_mask is not None:
+        valid &= ~active.background_mask.to(device=valid.device, dtype=torch.bool)
     candidates = valid.nonzero(as_tuple=False).reshape(-1)
     if candidates.numel() == 0 and boundary_only:
         # A pathological thin mask may have no centre in the band even though supports overlap it.
         valid = torch.isfinite(score)
-        if field.background_mask is not None:
-            valid &= ~field.background_mask.to(device=valid.device, dtype=torch.bool)
+        if active.background_mask is not None:
+            valid &= ~active.background_mask.to(device=valid.device, dtype=torch.bool)
         candidates = valid.nonzero(as_tuple=False).reshape(-1)
     k = min(int(schedule.local_seed_count), int(candidates.numel()))
     if k <= 0:
         raise RuntimeError("local residual refinement found no trainable Gaussian rows")
     seeds = candidates[torch.topk(score[candidates], k=k).indices]
     trainable, neighborhood = _expand_spatial_neighborhood(
-        field, seeds, schedule.local_neighbor_count
+        field, seeds, schedule.local_neighbor_count, active_n=active_n
     )
     return trainable, {
         **neighborhood,
@@ -503,13 +593,15 @@ def _boundary_defect_summary(
     cfg: FitConfig,
     constraint: _MaskConstraint,
     schedule: SafeScheduleConfig,
+    active_n: int | None = None,
 ) -> dict[str, Any]:
     """Measure persistent reachable-band undercoverage and high-error components."""
 
+    active = _active_field(field, active_n)
     H, W = target.shape[:2]
-    render = _render(field, cfg, H, W, support_fade_alpha=1.0)
+    render = _render(active, cfg, H, W, support_fade_alpha=1.0)
     denominator = _raw_weight_map_field(
-        field, cfg, H, W, support_fade_alpha=1.0
+        active, cfg, H, W, support_fade_alpha=1.0
     ).reshape(H, W)
     pixel_mse = (render - target).square().mean(dim=2)
     band = torch.zeros(H * W, device=target.device, dtype=torch.bool)
@@ -547,11 +639,13 @@ def evaluate_quality(
     cfg: FitConfig,
     constraint: _MaskConstraint,
     coverage_tau: float,
+    active_n: int | None = None,
 ) -> tuple[QualityMetrics, torch.Tensor]:
     """Render and compute the complete safe-commit vector on the full target."""
 
+    active = _active_field(field, active_n)
     H, W = target.shape[:2]
-    render = _render(field, cfg, H, W, support_fade_alpha=1.0)
+    render = _render(active, cfg, H, W, support_fade_alpha=1.0)
     pixel_mse = (render - target).square().mean(dim=2)
     fg_values = pixel_mse[mask]
     boundary = _visible_boundary(mask)
@@ -564,7 +658,7 @@ def evaluate_quality(
     tail = torch.topk(fg_values.reshape(-1), k=tail_count).values
     p99 = torch.quantile(fg_values, 0.99)
     denominator = _raw_weight_map_field(
-        field, cfg, H, W, support_fade_alpha=1.0
+        active, cfg, H, W, support_fade_alpha=1.0
     ).reshape(H, W)
 
     def hole_fraction(indices: torch.Tensor) -> float:
@@ -579,7 +673,7 @@ def evaluate_quality(
     outside_render = render[~mask].abs()
     outside_den = denominator[~mask].abs()
     metrics = QualityMetrics(
-        n_gaussians=int(field.n),
+        n_gaussians=int(active.n),
         foreground_mse=float(fg_values.mean()),
         boundary_mse=float(boundary_values.mean()),
         cvar99_mse=float(tail.mean()),
@@ -825,16 +919,29 @@ def _safe_color_solve(
     base_cfg: FitConfig,
     constraint: _MaskConstraint,
     schedule: SafeScheduleConfig,
+    active_n: int | None = None,
 ) -> tuple[GaussianField, dict | None, QualityMetrics, dict[str, Any]]:
     trial = field.detached()
     with torch.no_grad():
         solve_stats = _solve_colors_normalized(
-            trial, target, base_cfg, target.shape[0], target.shape[1],
+            _active_field(trial, active_n),
+            target,
+            base_cfg,
+            target.shape[0],
+            target.shape[1],
             support_fade_alpha=1.0,
         )
-        constraint.apply(trial, base_cfg, refresh=True)
+        _apply_constraint(
+            trial, base_cfg, constraint, active_n, refresh=True
+        )
     candidate, _ = evaluate_quality(
-        trial, target, mask, base_cfg, constraint, schedule.coverage_tau
+        trial,
+        target,
+        mask,
+        base_cfg,
+        constraint,
+        schedule.coverage_tau,
+        active_n=active_n,
     )
     accepted, reasons = safe_commit_decision(metrics, candidate, schedule.tolerances)
     if accepted:
@@ -873,6 +980,7 @@ def _safe_fit_block(
     *,
     trainable_rows: torch.Tensor | None = None,
     post_color_solve: bool = False,
+    active_n: int | None = None,
     verbose: bool = False,
 ) -> tuple[GaussianField, dict | None, QualityMetrics, dict[str, Any], dict[str, Any]]:
     incoming_state = _clone_optimizer_state(optimizer_state)
@@ -892,6 +1000,7 @@ def _safe_fit_block(
             if schedule.pareto_safe_checkpoints
             else 0
         ),
+        active_row_count=active_n,
     )
     terminal_steps = int(output["iterations_run"])
     if schedule.pareto_safe_checkpoints:
@@ -911,13 +1020,21 @@ def _safe_fit_block(
     for snapshot in raw_snapshots:
         candidate_field = snapshot["field"].detached()
         candidate_state = _clone_optimizer_state(snapshot["optimizer_state"])
-        constraint.apply(candidate_field, cfg, refresh=True)
+        _apply_constraint(
+            candidate_field, cfg, constraint, active_n, refresh=True
+        )
         if trainable_rows is not None:
             candidate_state = restore_frozen_optimizer_rows(
                 candidate_state, incoming_state, trainable_rows
             )
         candidate, _ = evaluate_quality(
-            candidate_field, target, mask, cfg, constraint, schedule.coverage_tau
+            candidate_field,
+            target,
+            mask,
+            cfg,
+            constraint,
+            schedule.coverage_tau,
+            active_n=active_n,
         )
         accepted, reasons = safe_commit_decision(
             metrics, candidate, schedule.tolerances
@@ -940,14 +1057,16 @@ def _safe_fit_block(
             solved_field = candidate_field.detached()
             with torch.no_grad():
                 solve_stats = _solve_colors_normalized(
-                    solved_field,
+                    _active_field(solved_field, active_n),
                     target,
                     cfg,
                     target.shape[0],
                     target.shape[1],
                     support_fade_alpha=1.0,
                 )
-                constraint.apply(solved_field, cfg, refresh=True)
+                _apply_constraint(
+                    solved_field, cfg, constraint, active_n, refresh=True
+                )
             solved_metrics, _ = evaluate_quality(
                 solved_field,
                 target,
@@ -955,6 +1074,7 @@ def _safe_fit_block(
                 cfg,
                 constraint,
                 schedule.coverage_tau,
+                active_n=active_n,
             )
             solved_accepted, solved_reasons = safe_commit_decision(
                 metrics, solved_metrics, schedule.tolerances
@@ -1016,7 +1136,9 @@ def _safe_fit_block(
         metadata={
             "fit_psnr": float(output["psnr"]),
             "trainable_rows": (
-                int(field.n) if trainable_rows is None else int(trainable_rows.sum())
+                _logical_n(field, active_n)
+                if trainable_rows is None
+                else int(trainable_rows.sum())
             ),
             "pareto_safe_checkpoints": bool(schedule.pareto_safe_checkpoints),
             "pareto_checkpoint_every": int(schedule.pareto_checkpoint_every),
@@ -1051,6 +1173,7 @@ def _safe_fit_block_with_backtracking(
     trainable_rows: torch.Tensor | None = None,
     event: str | None = None,
     selection_metadata: dict[str, Any] | None = None,
+    active_n: int | None = None,
     verbose: bool = False,
 ) -> tuple[
     GaussianField,
@@ -1093,6 +1216,7 @@ def _safe_fit_block_with_backtracking(
             constraint,
             schedule,
             trainable_rows=trainable_rows,
+            active_n=active_n,
             verbose=verbose,
         )
         if event is not None:
@@ -1157,6 +1281,95 @@ def _local_structure(target: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
     return tangent_angle, coherence.clamp(0.0, 1.0)
 
 
+def _replicate_box_blur(value: torch.Tensor, kernel: int) -> torch.Tensor:
+    padding = int(kernel) // 2
+    return F.avg_pool2d(
+        F.pad(value, (padding, padding, padding, padding), mode="replicate"),
+        int(kernel),
+        stride=1,
+    )
+
+
+@torch.no_grad()
+def _detail_tail_score(
+    field: GaussianField,
+    target: torch.Tensor,
+    render_img: torch.Tensor,
+    cfg: FitConfig,
+    constraint: _MaskConstraint,
+    schedule: SafeScheduleConfig,
+    *,
+    denominator: torch.Tensor | None = None,
+    coherence: torch.Tensor | None = None,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, dict[str, Any]]:
+    """Score persistent fine-detail error away from holes and the visible boundary.
+
+    The tail reserve is not a second coverage phase. Sites must already have raw normalized-
+    compositor coverage, sit beyond the configured boundary band, and carry signed residual
+    energy that survives both a 3x3 and a 7x7 high-pass test. Target high-frequency energy and
+    local coherence rank structure-aligned errors without making either a hard texture gate.
+    """
+
+    H, W = target.shape[:2]
+    if denominator is None:
+        denominator = _raw_weight_map_field(
+            field, cfg, H, W, support_fade_alpha=1.0
+        ).reshape(H, W)
+    if coherence is None:
+        _, coherence = _local_structure(target)
+
+    signed_error = (render_img - target).permute(2, 0, 1)[None]
+    target_chw = target.permute(2, 0, 1)[None]
+    error_high_3 = (signed_error - _replicate_box_blur(signed_error, 3)).abs()
+    error_high_7 = (signed_error - _replicate_box_blur(signed_error, 7)).abs()
+    target_high_3 = (target_chw - _replicate_box_blur(target_chw, 3)).abs()
+    target_high_7 = (target_chw - _replicate_box_blur(target_chw, 7)).abs()
+    persistent_error = torch.minimum(error_high_3, error_high_7).mean(dim=1)[0]
+    persistent_target = torch.minimum(target_high_3, target_high_7).mean(dim=1)[0]
+
+    deep_interior = (
+        constraint.eroded_flat
+        & (constraint.sdf_flat > float(schedule.boundary_band))
+    ).reshape(H, W)
+    well_covered = denominator >= float(schedule.coverage_tau)
+    allowed = deep_interior & well_covered
+    negative = torch.full_like(persistent_error, -float("inf"))
+    eligible_count = int(allowed.sum())
+    if eligible_count <= 0:
+        return negative, allowed, persistent_error, {
+            "eligible_pixels": 0,
+            "deep_interior_pixels": int(deep_interior.sum()),
+            "well_covered_pixels": int(well_covered.sum()),
+            "persistent_error_p95": 0.0,
+            "target_detail_p95": 0.0,
+            "score_rule": (
+                "persistent signed residual high-pass; covered interior only"
+            ),
+        }
+
+    error_ref = torch.quantile(
+        persistent_error[allowed], 0.95
+    ).clamp_min(1e-8)
+    target_ref = torch.quantile(
+        persistent_target[allowed], 0.95
+    ).clamp_min(1e-8)
+    error_n = (persistent_error / error_ref).clamp(0.0, 4.0)
+    target_n = (persistent_target / target_ref).clamp(0.0, 4.0)
+    score = error_n * (1.0 + 0.35 * target_n + 0.25 * coherence)
+    score = torch.where(allowed & (persistent_error > 0.0), score, negative)
+    return score, allowed, persistent_error, {
+        "eligible_pixels": int(torch.isfinite(score).sum()),
+        "deep_interior_pixels": int(deep_interior.sum()),
+        "well_covered_pixels": int(well_covered.sum()),
+        "persistent_error_p95": float(error_ref),
+        "target_detail_p95": float(target_ref),
+        "score_rule": (
+            "min(abs(residual-highpass3), abs(residual-highpass7)) "
+            "x target-detail/coherence; covered interior only"
+        ),
+    }
+
+
 def _error_region_scale(
     residual: torch.Tensor,
     y: torch.Tensor,
@@ -1209,6 +1422,7 @@ def _birth_components(
     residual_n = (residual / residual_ref).clamp(0.0, 4.0)
     tangent, coherence = _local_structure(target)
     deficit = ((float(schedule.coverage_tau) - den) / float(schedule.coverage_tau)).clamp(0, 1)
+    tail_metadata: dict[str, Any] = {}
 
     if mode == "boundary":
         allowed = (
@@ -1224,6 +1438,17 @@ def _birth_components(
                 + 0.20 * residual_n + 0.10 * coherence
         elif mode == "detail":
             score = residual_n * (1.0 + 0.5 * coherence) + 2.0 * deficit
+        elif mode == "detail_tail":
+            score, allowed, residual, tail_metadata = _detail_tail_score(
+                field,
+                target,
+                render_img,
+                cfg,
+                constraint,
+                schedule,
+                denominator=den,
+                coherence=coherence,
+            )
         else:
             raise ValueError(f"unknown birth mode {mode!r}")
     negative = torch.full_like(score, -float("inf"))
@@ -1315,6 +1540,7 @@ def _birth_components(
         "mean_axis_ratio": float(ratio.mean()),
         "site_mode": mode,
         "covariance_rule": "local residual support scale + local structure tensor",
+        **tail_metadata,
     }
     return components, metadata
 
@@ -1329,17 +1555,45 @@ def propose_birth(
     schedule: SafeScheduleConfig,
     count: int,
     mode: str,
+    active_n: int | None = None,
 ) -> TopologyProposal | None:
-    room = max(0, int(schedule.capacity) - int(field.n))
+    logical_n = _logical_n(field, active_n)
+    active = _active_field(field, active_n)
+    room = max(0, int(schedule.capacity) - logical_n)
     components, metadata = _birth_components(
-        field, target, render_img, cfg, constraint, schedule, min(int(count), room), mode
+        active,
+        target,
+        render_img,
+        cfg,
+        constraint,
+        schedule,
+        min(int(count), room),
+        mode,
     )
     if components is None or components.n == 0:
         return None
-    trial = field.detached().append(components)
-    constraint.apply(trial, cfg, refresh=True)
-    touched = torch.arange(
-        field.n, trial.n, device=field.means.device, dtype=torch.long
+    if active_n is None:
+        trial = field.detached().append(components)
+        proposal_active_n = None
+        touched = torch.arange(
+            field.n, trial.n, device=field.means.device, dtype=torch.long
+        )
+    else:
+        if int(field.n) != int(schedule.capacity):
+            raise ValueError(
+                "fixed-capacity proposal storage must equal schedule.capacity"
+            )
+        trial = field.detached()
+        proposal_active_n = logical_n + int(components.n)
+        touched = torch.arange(
+            logical_n,
+            proposal_active_n,
+            device=field.means.device,
+            dtype=torch.long,
+        )
+        _replace_rows(trial, touched, components)
+    _apply_constraint(
+        trial, cfg, constraint, proposal_active_n, refresh=True
     )
     return TopologyProposal(
         kind=f"{mode}_birth",
@@ -1347,6 +1601,7 @@ def propose_birth(
         touched=touched,
         count=int(components.n),
         metadata=metadata,
+        active_n=proposal_active_n,
     )
 
 
@@ -1359,29 +1614,60 @@ def propose_split(
     constraint: _MaskConstraint,
     schedule: SafeScheduleConfig,
     count: int,
+    active_n: int | None = None,
+    detail_tail_only: bool = False,
 ) -> TopologyProposal | None:
-    room = max(0, int(schedule.capacity) - int(field.n))
-    k = min(int(count), room, int(field.n))
+    logical_n = _logical_n(field, active_n)
+    active = _active_field(field, active_n)
+    room = max(0, int(schedule.capacity) - logical_n)
+    k = min(int(count), room, logical_n)
     if k <= 0:
         return None
     scores, components = _responsibility_error_density_scores(
-        field, target, render_img, cfg, support_fade_alpha=1.0
+        active, target, render_img, cfg, support_fade_alpha=1.0
     )
     # A split is for a broad, error-owning primitive. Tiny owners are left to sampled births.
-    footprint = field.scales().detach().prod(dim=1)
+    footprint = active.scales().detach().prod(dim=1)
     score = scores * torch.sqrt(
         footprint / torch.quantile(footprint, 0.75).clamp_min(1e-8)
     )
-    if field.background_mask is not None:
-        score = score.masked_fill(field.background_mask, -float("inf"))
+    if active.background_mask is not None:
+        score = score.masked_fill(active.background_mask, -float("inf"))
+    tail_metadata: dict[str, Any] = {}
+    if detail_tail_only:
+        tail_score, _, _, tail_metadata = _detail_tail_score(
+            active,
+            target,
+            render_img,
+            cfg,
+            constraint,
+            schedule,
+        )
+        H, W = target.shape[:2]
+        ix = active.means.detach()[:, 0].round().long().clamp(0, W - 1)
+        iy = active.means.detach()[:, 1].round().long().clamp(0, H - 1)
+        parent_tail_score = tail_score[iy, ix]
+        eligible = torch.isfinite(parent_tail_score)
+        score = torch.where(
+            eligible,
+            score * (1.0 + parent_tail_score.clamp(0.0, 4.0)),
+            torch.full_like(score, -float("inf")),
+        )
+        k = min(k, int(torch.isfinite(score).sum()))
+        if k <= 0:
+            return None
     parents = torch.topk(score, k=k).indices
 
-    means = field.means.detach().clone()
-    log_scales = field.log_scales.detach().clone()
-    rotations = field.rotations.detach().clone()
-    colors = field.colors.detach().clone()
-    color_grads = None if field.color_grads is None else field.color_grads.detach().clone()
-    scales = field.scales().detach()[parents]
+    means = active.means.detach().clone()
+    log_scales = active.log_scales.detach().clone()
+    rotations = active.rotations.detach().clone()
+    colors = active.colors.detach().clone()
+    color_grads = (
+        None
+        if active.color_grads is None
+        else active.color_grads.detach().clone()
+    )
+    scales = active.scales().detach()[parents]
     theta = rotations[parents]
     use_x = scales[:, 0] >= scales[:, 1]
     c, s = torch.cos(theta), torch.sin(theta)
@@ -1409,13 +1695,18 @@ def propose_split(
     child_log[row, axis_index] += math.log(shrink)
     log_scales[parents] = parent_log
 
-    if field.opacities is None:
+    if active.opacities is None:
         opacities = torch.full(
-            (field.n,), 10.0, device=field.means.device, dtype=field.means.dtype
+            (logical_n,),
+            10.0,
+            device=active.means.device,
+            dtype=active.means.dtype,
         )
-        parent_opacity = torch.ones(k, device=field.means.device, dtype=field.means.dtype)
+        parent_opacity = torch.ones(
+            k, device=active.means.device, dtype=active.means.dtype
+        )
     else:
-        opacities = field.opacities.detach().clone()
+        opacities = active.opacities.detach().clone()
         parent_opacity = torch.sigmoid(opacities[parents])
     # Integral(o * G) is proportional to opacity * sx * sy. Shrinking one axis by
     # ``shrink`` therefore needs o_child = o_parent / (2*shrink), not o_parent/2, for the two
@@ -1428,12 +1719,16 @@ def propose_split(
         theta.clone(),
         colors[parents].clone(),
         _logit(child_opacity),
-        None if field.scale_max is None else field.scale_max.detach()[parents].clone(),
+        (
+            None
+            if active.scale_max is None
+            else active.scale_max.detach()[parents].clone()
+        ),
         None if color_grads is None else color_grads[parents].clone(),
         filter_variance=(
             None
-            if field.filter_variance is None
-            else field.filter_variance.detach()[parents].clone()
+            if active.filter_variance is None
+            else active.filter_variance.detach()[parents].clone()
         ),
     )
     parent_field = GaussianField(
@@ -1442,17 +1737,56 @@ def propose_split(
         rotations,
         colors,
         opacities,
-        None if field.scale_max is None else field.scale_max.detach().clone(),
+        None if active.scale_max is None else active.scale_max.detach().clone(),
         color_grads,
-        None if field.background_mask is None else field.background_mask.detach().clone(),
-        None if field.filter_variance is None else field.filter_variance.detach().clone(),
+        (
+            None
+            if active.background_mask is None
+            else active.background_mask.detach().clone()
+        ),
+        (
+            None
+            if active.filter_variance is None
+            else active.filter_variance.detach().clone()
+        ),
     )
-    trial = parent_field.append(child)
-    constraint.apply(trial, cfg, refresh=True)
-    children = torch.arange(field.n, trial.n, device=parents.device)
+    if active_n is None:
+        trial = parent_field.append(child)
+        proposal_active_n = None
+        children = torch.arange(field.n, trial.n, device=parents.device)
+    else:
+        if int(field.n) != int(schedule.capacity):
+            raise ValueError(
+                "fixed-capacity proposal storage must equal schedule.capacity"
+            )
+        trial = field.detached()
+        trial.means[:logical_n] = parent_field.means
+        trial.log_scales[:logical_n] = parent_field.log_scales
+        trial.rotations[:logical_n] = parent_field.rotations
+        trial.colors[:logical_n] = parent_field.colors
+        if trial.opacities is None:
+            trial.opacities = torch.full(
+                (field.n,),
+                10.0,
+                device=field.means.device,
+                dtype=field.means.dtype,
+            )
+        trial.opacities[:logical_n] = parent_field.opacities
+        proposal_active_n = logical_n + k
+        children = torch.arange(
+            logical_n, proposal_active_n, device=parents.device
+        )
+        _replace_rows(trial, children, child)
+    _apply_constraint(
+        trial, cfg, constraint, proposal_active_n, refresh=True
+    )
     touched = torch.unique(torch.cat([parents, children]))
     return TopologyProposal(
-        kind="moment_preserving_split",
+        kind=(
+            "detail_tail_split"
+            if detail_tail_only
+            else "moment_preserving_split"
+        ),
         field=trial,
         touched=touched,
         count=k,
@@ -1462,7 +1796,10 @@ def propose_split(
             "responsibility_mass_mean": float(components["mass"][parents].mean()),
             "split_shrink": shrink,
             "mass_rule": "opacity divided by 2*axis_shrink (integrated raw mass preserving)",
+            "detail_tail_only": bool(detail_tail_only),
+            **tail_metadata,
         },
+        active_n=proposal_active_n,
     )
 
 
@@ -1503,13 +1840,17 @@ def propose_prune_rebirth(
     schedule: SafeScheduleConfig,
     count: int,
     birth_mode: str = "detail",
+    active_n: int | None = None,
 ) -> TopologyProposal | None:
-    stats = attribution_pass(field, target, render_img, cfg, support_fade_alpha=1.0)
+    active = _active_field(field, active_n)
+    stats = attribution_pass(
+        active, target, render_img, cfg, support_fade_alpha=1.0
+    )
     eligible = stats["max_responsibility"] < float(
         schedule.redistribution_min_responsibility
     )
-    if field.background_mask is not None:
-        eligible &= ~field.background_mask
+    if active.background_mask is not None:
+        eligible &= ~active.background_mask
     candidates = eligible.nonzero(as_tuple=False).reshape(-1)
     k = min(int(count), int(candidates.numel()))
     if k <= 0:
@@ -1517,7 +1858,14 @@ def propose_prune_rebirth(
     donor_score = stats["activity"][candidates] + stats["error"][candidates]
     donors = candidates[torch.argsort(donor_score)[:k]]
     births, metadata = _birth_components(
-        field, target, render_img, cfg, constraint, schedule, k, birth_mode
+        active,
+        target,
+        render_img,
+        cfg,
+        constraint,
+        schedule,
+        k,
+        birth_mode,
     )
     if births is None:
         return None
@@ -1525,7 +1873,7 @@ def propose_prune_rebirth(
     donors = donors[:k]
     trial = field.detached()
     _replace_rows(trial, donors, births.subset(slice(0, k)))
-    constraint.apply(trial, cfg, refresh=True)
+    _apply_constraint(trial, cfg, constraint, active_n, refresh=True)
     return TopologyProposal(
         kind=(
             "prune_rebirth"
@@ -1543,6 +1891,7 @@ def propose_prune_rebirth(
             "donor_activity_mean": float(stats["activity"][donors].mean()),
             "count_neutral": True,
         },
+        active_n=active_n,
     )
 
 
@@ -1556,22 +1905,32 @@ def propose_merge_rebirth(
     schedule: SafeScheduleConfig,
     count: int,
     birth_mode: str = "detail",
+    active_n: int | None = None,
 ) -> TopologyProposal | None:
     """Batch midpoint/envelope merge with the absorbed row directly reborn at high error."""
 
-    if field.n < 4 or count <= 0:
+    active = _active_field(field, active_n)
+    if active.n < 4 or count <= 0:
         return None
-    stats = attribution_pass(field, target, render_img, cfg, support_fade_alpha=1.0)
-    first, second, distance = _production_mutual_nearest_pairs(field.means.detach())
+    stats = attribution_pass(
+        active, target, render_img, cfg, support_fade_alpha=1.0
+    )
+    first, second, distance = _production_mutual_nearest_pairs(
+        active.means.detach()
+    )
     if first.numel() == 0:
         return None
-    colors = field.colors.detach()
+    colors = active.colors.detach()
     color_delta = torch.linalg.norm(colors[first] - colors[second], dim=1)
-    sorted_scales = torch.sort(field.scales().detach(), dim=1).values.clamp_min(1e-6)
+    sorted_scales = torch.sort(
+        active.scales().detach(), dim=1
+    ).values.clamp_min(1e-6)
     scale_delta = torch.linalg.norm(
         torch.log(sorted_scales[first]) - torch.log(sorted_scales[second]), dim=1
     )
-    angle_delta = field.rotations.detach()[first] - field.rotations.detach()[second]
+    angle_delta = (
+        active.rotations.detach()[first] - active.rotations.detach()[second]
+    )
     axial_delta = 0.5 * torch.abs(
         torch.atan2(torch.sin(2 * angle_delta), torch.cos(2 * angle_delta))
     )
@@ -1579,7 +1938,9 @@ def propose_merge_rebirth(
     allowed_distance = torch.clamp(
         2.5 * minor, min=1.25, max=4.0
     )
-    midpoint = 0.5 * (field.means.detach()[first] + field.means.detach()[second])
+    midpoint = 0.5 * (
+        active.means.detach()[first] + active.means.detach()[second]
+    )
     mx = torch.round(midpoint[:, 0]).long().clamp(0, constraint.W - 1)
     my = torch.round(midpoint[:, 1]).long().clamp(0, constraint.H - 1)
     redundant = torch.maximum(
@@ -1609,7 +1970,14 @@ def propose_merge_rebirth(
     keep = first[selected]
     rebirth = second[selected]
     births, birth_metadata = _birth_components(
-        field, target, render_img, cfg, constraint, schedule, k, birth_mode
+        active,
+        target,
+        render_img,
+        cfg,
+        constraint,
+        schedule,
+        k,
+        birth_mode,
     )
     if births is None:
         return None
@@ -1618,7 +1986,7 @@ def propose_merge_rebirth(
     births = births.subset(slice(0, k))
 
     trial = field.detached()
-    means = field.means.detach()
+    means = active.means.detach()
     if trial.opacities is None:
         trial.opacities = torch.full(
             (field.n,), 10.0, device=means.device, dtype=means.dtype
@@ -1627,8 +1995,8 @@ def propose_merge_rebirth(
     wa, wb = amplitude[keep], amplitude[rebirth]
     total = (wa + wb).clamp_min(1e-6)
     merged_mean = 0.5 * (means[keep] + means[rebirth])
-    cov_a = _row_covariances(field, keep)
-    cov_b = _row_covariances(field, rebirth)
+    cov_a = _row_covariances(active, keep)
+    cov_b = _row_covariances(active, rebirth)
     da = means[keep] - merged_mean
     db = means[rebirth] - merged_mean
     spatial_a = cov_a + da[:, :, None] * da[:, None, :]
@@ -1658,19 +2026,19 @@ def propose_merge_rebirth(
     )
     trial.rotations[keep] = torch.atan2(major[:, 1], major[:, 0])
     trial.colors[keep] = (
-        wa[:, None] * field.colors.detach()[keep]
-        + wb[:, None] * field.colors.detach()[rebirth]
+        wa[:, None] * active.colors.detach()[keep]
+        + wb[:, None] * active.colors.detach()[rebirth]
     ) / total[:, None]
     combined = (1.0 - (1.0 - wa) * (1.0 - wb)).clamp(1e-4, 1.0 - 1e-4)
     trial.opacities[keep] = _logit(combined)
     if trial.color_grads is not None:
-        gradients = field.color_grads.detach()
+        gradients = active.color_grads.detach()
         trial.color_grads[keep] = (
             wa[:, None, None] * gradients[keep]
             + wb[:, None, None] * gradients[rebirth]
         ) / total[:, None, None]
     if trial.filter_variance is not None:
-        variance = field.filter_variance.detach()
+        variance = active.filter_variance.detach()
         trial.filter_variance[keep] = (
             wa * variance[keep] + wb * variance[rebirth]
         ) / total
@@ -1679,9 +2047,9 @@ def propose_merge_rebirth(
     # Atomic identity: each absorbed partner is now the corresponding high-error birth. It is
     # never exposed through a shared free/teleport list.
     _replace_rows(trial, rebirth, births)
-    constraint.apply(trial, cfg, refresh=True)
+    _apply_constraint(trial, cfg, constraint, active_n, refresh=True)
 
-    certified = _row_covariances(trial, keep)
+    certified = _row_covariances(_active_field(trial, active_n), keep)
     cvalues, cvectors = torch.linalg.eigh(certified)
     cinv = (
         cvectors
@@ -1696,10 +2064,10 @@ def propose_merge_rebirth(
     rejected = int((~good).sum())
     if rejected:
         bad_rows = torch.cat([keep[~good], rebirth[~good]])
-        original = field.subset(bad_rows)
+        original = active.subset(bad_rows)
         _replace_rows(trial, bad_rows, original)
         keep, rebirth = keep[good], rebirth[good]
-        constraint.apply(trial, cfg, refresh=True)
+        _apply_constraint(trial, cfg, constraint, active_n, refresh=True)
     if keep.numel() == 0:
         return None
     touched = torch.unique(torch.cat([keep, rebirth]))
@@ -1719,6 +2087,7 @@ def propose_merge_rebirth(
             "count_neutral": True,
             "merge_rule": "exact midpoint + covariance envelope + direct partner rebirth",
         },
+        active_n=active_n,
     )
 
 
@@ -1731,18 +2100,22 @@ def propose_funded_split(
     constraint: _MaskConstraint,
     schedule: SafeScheduleConfig,
     count: int,
+    active_n: int | None = None,
 ) -> TopologyProposal | None:
     """Count-neutral moment split funded by low-responsibility donor rows."""
 
-    stats = attribution_pass(field, target, render_img, cfg, support_fade_alpha=1.0)
+    active = _active_field(field, active_n)
+    stats = attribution_pass(
+        active, target, render_img, cfg, support_fade_alpha=1.0
+    )
     donors_ok = stats["max_responsibility"] < float(
         schedule.redistribution_min_responsibility
     )
-    if field.background_mask is not None:
-        donors_ok &= ~field.background_mask
+    if active.background_mask is not None:
+        donors_ok &= ~active.background_mask
     donors_all = donors_ok.nonzero(as_tuple=False).reshape(-1)
     scores, _ = _responsibility_error_density_scores(
-        field, target, render_img, cfg, support_fade_alpha=1.0
+        active, target, render_img, cfg, support_fade_alpha=1.0
     )
     scores = scores.masked_fill(donors_ok, -float("inf"))
     finite_parents = torch.isfinite(scores).nonzero(as_tuple=False).reshape(-1)
@@ -1758,8 +2131,8 @@ def propose_funded_split(
         trial.opacities = torch.full(
             (field.n,), 10.0, device=field.means.device, dtype=field.means.dtype
         )
-    scales = field.scales().detach()[parents]
-    theta = field.rotations.detach()[parents]
+    scales = active.scales().detach()[parents]
+    theta = active.rotations.detach()[parents]
     use_x = scales[:, 0] >= scales[:, 1]
     c, s = torch.cos(theta), torch.sin(theta)
     direction = torch.where(
@@ -1772,31 +2145,33 @@ def propose_funded_split(
     offset = direction * (
         axis_scale * math.sqrt(max(1.0 - shrink * shrink, 0.0))
     )[:, None]
-    original_means = field.means.detach()[parents]
+    original_means = active.means.detach()[parents]
     trial.means[parents] = original_means - offset
     trial.means[donors] = original_means + offset
-    parent_log = field.log_scales.detach()[parents].clone()
+    parent_log = active.log_scales.detach()[parents].clone()
     axis = torch.where(use_x, 0, 1)
     row = torch.arange(k, device=parents.device)
     parent_log[row, axis] += math.log(shrink)
     trial.log_scales[parents] = parent_log
     trial.log_scales[donors] = parent_log
     trial.rotations[donors] = theta
-    trial.colors[donors] = field.colors.detach()[parents]
-    parent_opacity = torch.sigmoid(field.opacities.detach()[parents]) \
-        if field.opacities is not None else torch.full(
-            (k,), 1.0, device=parents.device, dtype=field.means.dtype
+    trial.colors[donors] = active.colors.detach()[parents]
+    parent_opacity = torch.sigmoid(active.opacities.detach()[parents]) \
+        if active.opacities is not None else torch.full(
+            (k,), 1.0, device=parents.device, dtype=active.means.dtype
         )
     child_opacity = (parent_opacity / (2.0 * shrink)).clamp(1e-4, 1.0 - 1e-4)
     trial.opacities[parents] = _logit(child_opacity)
     trial.opacities[donors] = _logit(child_opacity)
     if trial.color_grads is not None:
-        trial.color_grads[donors] = field.color_grads.detach()[parents]
+        trial.color_grads[donors] = active.color_grads.detach()[parents]
     if trial.filter_variance is not None:
-        trial.filter_variance[donors] = field.filter_variance.detach()[parents]
+        trial.filter_variance[donors] = (
+            active.filter_variance.detach()[parents]
+        )
     if trial.scale_max is not None:
         trial.scale_max[torch.cat([parents, donors])] = float("inf")
-    constraint.apply(trial, cfg, refresh=True)
+    _apply_constraint(trial, cfg, constraint, active_n, refresh=True)
     return TopologyProposal(
         kind="funded_split",
         field=trial,
@@ -1812,6 +2187,7 @@ def propose_funded_split(
                 stats["max_responsibility"][donors].mean()
             ),
         },
+        active_n=active_n,
     )
 
 
@@ -1846,9 +2222,19 @@ def _topology_auction(
     schedule: SafeScheduleConfig,
     factories: list[tuple[str, int, Callable[[int, torch.Tensor], TopologyProposal | None]]],
     *,
+    active_n: int | None = None,
     expand_neighborhood: bool | None = None,
+    minimum_gain_per_row: float | None = None,
     verbose: bool,
-) -> tuple[GaussianField, dict | None, QualityMetrics, dict[str, Any], int, int]:
+) -> tuple[
+    GaussianField,
+    dict | None,
+    QualityMetrics,
+    dict[str, Any],
+    int,
+    int,
+    int | None,
+]:
     """Evaluate operator batches transactionally and commit the best Pareto-safe trial."""
 
     safe_trials: list[_Trial] = []
@@ -1857,7 +2243,13 @@ def _topology_auction(
     # Every operator competes against the same accepted state. Render it once; trials never
     # mutate ``field`` before the winner is selected.
     _, current_render = evaluate_quality(
-        field, target, mask, fit_cfg, constraint, schedule.coverage_tau
+        field,
+        target,
+        mask,
+        fit_cfg,
+        constraint,
+        schedule.coverage_tau,
+        active_n=active_n,
     )
     for kind, requested, factory in factories:
         count = max(0, int(requested))
@@ -1883,6 +2275,7 @@ def _topology_auction(
                     proposal.field,
                     proposal.touched,
                     schedule.topology_neighbor_count,
+                    active_n=proposal.active_n,
                 )
             else:
                 trainable = torch.zeros(
@@ -1912,6 +2305,7 @@ def _topology_auction(
                 schedule,
                 trainable_rows=trainable,
                 post_color_solve=bool(schedule.event_color_solve),
+                active_n=proposal.active_n,
                 verbose=False,
             )
             attempted_steps += int(output["iterations_run"])
@@ -1920,16 +2314,40 @@ def _topology_auction(
                 "recovery_neighborhood": neighborhood,
                 "recovery": copy.deepcopy(record["metadata"]),
             }
+            gain = (
+                _trial_gain(metrics, recovered_metrics)
+                if record["accepted"]
+                else None
+            )
+            gain_per_row = (
+                None
+                if gain is None
+                else float(gain) / max(int(proposal.count), 1)
+            )
+            effective = bool(
+                record["accepted"]
+                and (
+                    minimum_gain_per_row is None
+                    or gain_per_row >= float(minimum_gain_per_row)
+                )
+            )
+            reasons = list(record["reasons"])
+            if record["accepted"] and not effective:
+                reasons.append("gain_per_row_below_minimum")
             attempts.append({
                 "kind": kind,
                 "requested": count,
                 "proposed": proposal.count,
-                "accepted": bool(record["accepted"]),
-                "reasons": record["reasons"],
+                "accepted": effective,
+                "safe_gate_accepted": bool(record["accepted"]),
+                "gain": gain,
+                "gain_per_row": gain_per_row,
+                "minimum_gain_per_row": minimum_gain_per_row,
+                "reasons": reasons,
                 "candidate": record["candidate"],
                 "metadata": trial_metadata,
             })
-            if record["accepted"]:
+            if effective:
                 safe_trials.append(_Trial(
                     kind=proposal.kind,
                     field=recovered,
@@ -1939,6 +2357,7 @@ def _topology_auction(
                     metadata=trial_metadata,
                     attempted_count=count,
                     recovery_steps=int(record["accepted_steps"]),
+                    active_n=proposal.active_n,
                 ))
                 break
             next_count = count // 2
@@ -1959,9 +2378,18 @@ def _topology_auction(
             reasons=["no_safe_topology_trial"],
             metadata={"attempts": attempts},
         )
-        return field, optimizer_state, metrics, record, attempted_steps, 0
+        return (
+            field,
+            optimizer_state,
+            metrics,
+            record,
+            attempted_steps,
+            0,
+            active_n,
+        )
 
     winner = max(safe_trials, key=lambda trial: _trial_gain(metrics, trial.metrics))
+    winner_gain = _trial_gain(metrics, winner.metrics)
     record = _event_record(
         phase="topology",
         event=winner.kind,
@@ -1974,7 +2402,9 @@ def _topology_auction(
         metadata={
             "winner_count": winner.count,
             "winner_requested_count": winner.attempted_count,
-            "winner_gain": _trial_gain(metrics, winner.metrics),
+            "winner_gain": winner_gain,
+            "winner_gain_per_row": winner_gain / max(winner.count, 1),
+            "minimum_gain_per_row": minimum_gain_per_row,
             "winner_metadata": winner.metadata,
             "attempts": attempts,
         },
@@ -1993,6 +2423,7 @@ def _topology_auction(
         record,
         attempted_steps,
         winner.recovery_steps,
+        winner.active_n,
     )
 
 
@@ -2010,6 +2441,7 @@ def run_safe_schedule(
 
     schedule = SafeScheduleConfig() if schedule is None else schedule
     schedule.validate(initial_field.n)
+    base_active_limit = schedule.resolved_base_active_limit()
     mask_cpu = (
         mask.detach().cpu().numpy()
         if torch.is_tensor(mask)
@@ -2058,9 +2490,23 @@ def run_safe_schedule(
         field.opacities = torch.full(
             (field.n,), 10.0, device=field.means.device, dtype=field.means.dtype
         )
-    constraint.apply(field, cfg, refresh=True)
+    initial_n = int(field.n)
+    active_n: int | None = None
+    if schedule.storage_policy == "fixed_capacity":
+        field, pool_state = prepare_transactional_pool(
+            field, schedule.capacity
+        )
+        active_n = pool_state.active_n
+    initial_physical_n = int(field.n)
+    _apply_constraint(field, cfg, constraint, active_n, refresh=True)
     metrics, _ = evaluate_quality(
-        field, target, mask_tensor, cfg, constraint, schedule.coverage_tau
+        field,
+        target,
+        mask_tensor,
+        cfg,
+        constraint,
+        schedule.coverage_tau,
+        active_n=active_n,
     )
     optimizer_state: dict | None = None
     history: list[dict[str, Any]] = []
@@ -2078,7 +2524,7 @@ def run_safe_schedule(
         record["elapsed_seconds"] = time.perf_counter() - started
         history.append(record)
         if observer is not None:
-            observer(field, record)
+            observer(_active_field(field, active_n), record)
 
     emit(_event_record(
         phase="initialization",
@@ -2093,7 +2539,15 @@ def run_safe_schedule(
 
     # Remove color-fixable error before allocating any new topology.
     field, optimizer_state, metrics, color_record = _safe_color_solve(
-        field, optimizer_state, metrics, target, mask_tensor, cfg, constraint, schedule
+        field,
+        optimizer_state,
+        metrics,
+        target,
+        mask_tensor,
+        cfg,
+        constraint,
+        schedule,
+        active_n=active_n,
     )
     emit(color_record)
 
@@ -2130,7 +2584,7 @@ def run_safe_schedule(
         exit_condition: Callable[[], bool],
         diagnostics: Callable[[], dict[str, Any]] | None = None,
     ) -> None:
-        nonlocal field, optimizer_state, metrics
+        nonlocal field, optimizer_state, metrics, active_n
         phase_steps = 0
         stale = 0
         block_index = 0
@@ -2159,6 +2613,7 @@ def run_safe_schedule(
                     constraint,
                     schedule,
                     phase.name,
+                    active_n=active_n,
                 )
                 fit_event = "local_residual_fit"
             (
@@ -2184,6 +2639,7 @@ def run_safe_schedule(
                 trainable_rows=trainable_rows,
                 event=fit_event,
                 selection_metadata=selection_metadata,
+                active_n=active_n,
                 verbose=False,
             )
             block_record["phase"] = phase.name
@@ -2206,6 +2662,7 @@ def run_safe_schedule(
                         topology_record,
                         _auction_attempted,
                         _auction_accepted,
+                        active_n,
                     ) = _topology_auction(
                         field,
                         optimizer_state,
@@ -2217,6 +2674,7 @@ def run_safe_schedule(
                         constraint,
                         schedule,
                         factories,
+                        active_n=active_n,
                         expand_neighborhood=local_refinement,
                         verbose=verbose,
                     )
@@ -2237,7 +2695,8 @@ def run_safe_schedule(
                 break
             if verbose:
                 print(
-                    f"[{phase.name}] block={block_index} n={field.n} "
+                    f"[{phase.name}] block={block_index} "
+                    f"n={_logical_n(field, active_n)} "
                     f"fg={metrics.foreground_psnr_db:.3f}dB "
                     f"boundary={metrics.boundary_psnr_db:.3f}dB "
                     f"holes={100*metrics.interior_hole_fraction:.2f}%/"
@@ -2277,13 +2736,25 @@ def run_safe_schedule(
     )
 
     def coverage_factories(phase_cfg: FitConfig):
-        room = max(0, schedule.coverage_target_gaussians - field.n)
+        room = max(
+            0,
+            schedule.coverage_target_gaussians
+            - _logical_n(field, active_n),
+        )
         count = min(schedule.coverage_birth_count, room)
         return [(
             "coverage_birth",
             count,
             lambda k, image: propose_birth(
-                field, target, image, phase_cfg, constraint, schedule, k, "coverage"
+                field,
+                target,
+                image,
+                phase_cfg,
+                constraint,
+                schedule,
+                k,
+                "coverage",
+                active_n=active_n,
             ),
         )] if count > 0 else []
 
@@ -2291,7 +2762,8 @@ def run_safe_schedule(
         schedule.coverage,
         topology=coverage_factories,
         exit_condition=lambda: (
-            field.n >= schedule.coverage_target_gaussians
+            _logical_n(field, active_n)
+            >= schedule.coverage_target_gaussians
             or (
                 metrics.interior_hole_fraction <= schedule.interior_hole_target
                 and metrics.boundary_hole_fraction <= schedule.boundary_hole_target
@@ -2300,7 +2772,11 @@ def run_safe_schedule(
     )
 
     def detail_factories(phase_cfg: FitConfig):
-        room = max(0, schedule.detail_target_gaussians - field.n)
+        room = max(
+            0,
+            schedule.detail_target_gaussians
+            - _logical_n(field, active_n),
+        )
         if room <= 0:
             return []
         return [
@@ -2308,21 +2784,44 @@ def run_safe_schedule(
                 "detail_birth",
                 min(schedule.detail_birth_count, room),
                 lambda k, image: propose_birth(
-                    field, target, image, phase_cfg, constraint, schedule, k, "detail"
+                    field,
+                    target,
+                    image,
+                    phase_cfg,
+                    constraint,
+                    schedule,
+                    k,
+                    "detail",
+                    active_n=active_n,
                 ),
             ),
             (
                 "moment_preserving_split",
                 min(schedule.detail_split_count, room),
                 lambda k, image: propose_split(
-                    field, target, image, phase_cfg, constraint, schedule, k
+                    field,
+                    target,
+                    image,
+                    phase_cfg,
+                    constraint,
+                    schedule,
+                    k,
+                    active_n=active_n,
                 ),
             ),
             (
                 "coverage_birth",
                 min(schedule.detail_birth_count, room),
                 lambda k, image: propose_birth(
-                    field, target, image, phase_cfg, constraint, schedule, k, "coverage"
+                    field,
+                    target,
+                    image,
+                    phase_cfg,
+                    constraint,
+                    schedule,
+                    k,
+                    "coverage",
+                    active_n=active_n,
                 ),
             ),
         ]
@@ -2330,11 +2829,16 @@ def run_safe_schedule(
     run_phase(
         schedule.detail,
         topology=detail_factories,
-        exit_condition=lambda: field.n >= schedule.detail_target_gaussians,
+        exit_condition=lambda: (
+            _logical_n(field, active_n)
+            >= schedule.detail_target_gaussians
+        ),
     )
 
     def boundary_factories(phase_cfg: FitConfig):
-        room = max(0, schedule.capacity - field.n)
+        room = max(
+            0, base_active_limit - _logical_n(field, active_n)
+        )
         count = min(schedule.boundary_birth_count, room)
         if count > 0:
             factories = [
@@ -2350,6 +2854,7 @@ def run_safe_schedule(
                         schedule,
                         k,
                         "boundary",
+                        active_n=active_n,
                     ),
                 ),
             ]
@@ -2366,6 +2871,7 @@ def run_safe_schedule(
                         schedule,
                         k,
                         "detail",
+                        active_n=active_n,
                     ),
                 )
             )
@@ -2386,6 +2892,7 @@ def run_safe_schedule(
                     schedule,
                     k,
                     birth_mode="boundary",
+                    active_n=active_n,
                 ),
             ),
             (
@@ -2400,17 +2907,26 @@ def run_safe_schedule(
                     schedule,
                     k,
                     birth_mode="boundary",
+                    active_n=active_n,
                 ),
             ),
         ]
 
     def boundary_diagnostics() -> dict[str, Any]:
         return _boundary_defect_summary(
-            field, target, cfg, constraint, schedule
+            field,
+            target,
+            cfg,
+            constraint,
+            schedule,
+            active_n=active_n,
         )
 
     def boundary_target_reached() -> bool:
-        if not schedule.boundary_recycle_at_capacity and field.n >= schedule.capacity:
+        if (
+            not schedule.boundary_recycle_at_capacity
+            and _logical_n(field, active_n) >= base_active_limit
+        ):
             return True
         if metrics.boundary_hole_fraction > schedule.boundary_hole_target:
             return False
@@ -2428,28 +2944,54 @@ def run_safe_schedule(
     )
 
     def redistribution_factories(phase_cfg: FitConfig):
-        room = max(0, schedule.capacity - field.n)
+        room = max(
+            0, base_active_limit - _logical_n(field, active_n)
+        )
         if room > 0:
             return [
                 (
                     "coverage_birth",
                     min(schedule.detail_birth_count, room),
                     lambda k, image: propose_birth(
-                        field, target, image, phase_cfg, constraint, schedule, k, "coverage"
+                        field,
+                        target,
+                        image,
+                        phase_cfg,
+                        constraint,
+                        schedule,
+                        k,
+                        "coverage",
+                        active_n=active_n,
                     ),
                 ),
                 (
                     "boundary_birth",
                     min(schedule.boundary_birth_count, room),
                     lambda k, image: propose_birth(
-                        field, target, image, phase_cfg, constraint, schedule, k, "boundary"
+                        field,
+                        target,
+                        image,
+                        phase_cfg,
+                        constraint,
+                        schedule,
+                        k,
+                        "boundary",
+                        active_n=active_n,
                     ),
                 ),
                 (
                     "detail_birth",
                     min(schedule.detail_birth_count, room),
                     lambda k, image: propose_birth(
-                        field, target, image, phase_cfg, constraint, schedule, k, "detail"
+                        field,
+                        target,
+                        image,
+                        phase_cfg,
+                        constraint,
+                        schedule,
+                        k,
+                        "detail",
+                        active_n=active_n,
                     ),
                 ),
             ]
@@ -2459,21 +3001,42 @@ def run_safe_schedule(
                 "merge_rebirth",
                 count,
                 lambda k, image: propose_merge_rebirth(
-                    field, target, image, phase_cfg, constraint, schedule, k
+                    field,
+                    target,
+                    image,
+                    phase_cfg,
+                    constraint,
+                    schedule,
+                    k,
+                    active_n=active_n,
                 ),
             ),
             (
                 "prune_rebirth",
                 count,
                 lambda k, image: propose_prune_rebirth(
-                    field, target, image, phase_cfg, constraint, schedule, k
+                    field,
+                    target,
+                    image,
+                    phase_cfg,
+                    constraint,
+                    schedule,
+                    k,
+                    active_n=active_n,
                 ),
             ),
             (
                 "funded_split",
                 max(schedule.event_min_count, count // 2),
                 lambda k, image: propose_funded_split(
-                    field, target, image, phase_cfg, constraint, schedule, k
+                    field,
+                    target,
+                    image,
+                    phase_cfg,
+                    constraint,
+                    schedule,
+                    k,
+                    active_n=active_n,
                 ),
             ),
         ]
@@ -2494,6 +3057,7 @@ def run_safe_schedule(
                         schedule,
                         k,
                         birth_mode="boundary",
+                        active_n=active_n,
                     ),
                 ),
                 (
@@ -2508,6 +3072,7 @@ def run_safe_schedule(
                         schedule,
                         k,
                         birth_mode="boundary",
+                        active_n=active_n,
                     ),
                 ),
             ])
@@ -2521,15 +3086,197 @@ def run_safe_schedule(
 
     # A second safe color solve separates final color error before the low-LR polish.
     field, optimizer_state, metrics, color_record = _safe_color_solve(
-        field, optimizer_state, metrics, target, mask_tensor, cfg, constraint, schedule
+        field,
+        optimizer_state,
+        metrics,
+        target,
+        mask_tensor,
+        cfg,
+        constraint,
+        schedule,
+        active_n=active_n,
     )
     color_record["phase"] = "pre_polish_color_solve"
     emit(color_record)
+
+    tail_start_n = _logical_n(field, active_n)
+    tail_limit = min(
+        int(schedule.capacity),
+        int(base_active_limit) + int(schedule.detail_tail_max_rows),
+        int(tail_start_n) + int(schedule.detail_tail_max_rows),
+    )
+    tail_wave_budget = (
+        0
+        if schedule.detail_tail_max_rows <= 0
+        else math.ceil(
+            int(schedule.detail_tail_max_rows)
+            / int(schedule.detail_tail_batch_rows)
+        )
+    )
+    tail_waves_attempted = 0
+    tail_waves_accepted = 0
+    tail_termination_reason = "disabled"
+    if schedule.detail_tail_max_rows > 0:
+        tail_termination_reason = "wave_budget"
+        tail_fit_cfg = _phase_fit_config(
+            cfg,
+            schedule.polish,
+            schedule.recovery_steps,
+        )
+        while (
+            _logical_n(field, active_n) < tail_limit
+            and tail_waves_attempted < tail_wave_budget
+        ):
+            tail_waves_attempted += 1
+            room = tail_limit - _logical_n(field, active_n)
+            requested = min(int(schedule.detail_tail_batch_rows), int(room))
+            factories = [
+                (
+                    "detail_tail_birth",
+                    requested,
+                    lambda k, image: propose_birth(
+                        field,
+                        target,
+                        image,
+                        tail_fit_cfg,
+                        constraint,
+                        schedule,
+                        k,
+                        "detail_tail",
+                        active_n=active_n,
+                    ),
+                ),
+                (
+                    "detail_tail_split",
+                    requested,
+                    lambda k, image: propose_split(
+                        field,
+                        target,
+                        image,
+                        tail_fit_cfg,
+                        constraint,
+                        schedule,
+                        k,
+                        active_n=active_n,
+                        detail_tail_only=True,
+                    ),
+                ),
+            ]
+            (
+                field,
+                optimizer_state,
+                metrics,
+                topology_record,
+                _auction_attempted,
+                _auction_accepted,
+                active_n,
+            ) = _topology_auction(
+                field,
+                optimizer_state,
+                metrics,
+                target,
+                mask_cpu,
+                mask_tensor,
+                tail_fit_cfg,
+                constraint,
+                schedule,
+                factories,
+                active_n=active_n,
+                expand_neighborhood=False,
+                minimum_gain_per_row=float(
+                    schedule.detail_tail_min_gain_per_row
+                ),
+                verbose=verbose,
+            )
+            topology_record["phase"] = "detail_tail"
+            topology_record["metadata"].update({
+                "wave": tail_waves_attempted,
+                "wave_budget": tail_wave_budget,
+                "tail_start_n": tail_start_n,
+                "tail_limit": tail_limit,
+            })
+            emit(topology_record)
+            if not topology_record["accepted"]:
+                tail_termination_reason = "no_safe_effective_winner"
+                break
+            tail_waves_accepted += 1
+        else:
+            if _logical_n(field, active_n) >= tail_limit:
+                tail_termination_reason = "row_budget"
+
+    tail_end_n = _logical_n(field, active_n)
+    emit(_event_record(
+        phase="detail_tail",
+        event="phase_end",
+        accepted=True,
+        before=metrics,
+        candidate=metrics,
+        selected=metrics,
+        attempted_steps=0,
+        accepted_steps=0,
+        metadata={
+            "termination_reason": tail_termination_reason,
+            "start_n": tail_start_n,
+            "end_n": tail_end_n,
+            "activated_rows": tail_end_n - tail_start_n,
+            "configured_max_rows": int(schedule.detail_tail_max_rows),
+            "batch_rows": int(schedule.detail_tail_batch_rows),
+            "wave_budget": tail_wave_budget,
+            "waves_attempted": tail_waves_attempted,
+            "waves_accepted": tail_waves_accepted,
+            "minimum_gain_per_row": float(
+                schedule.detail_tail_min_gain_per_row
+            ),
+        },
+    ))
+    if tail_waves_accepted > 0:
+        field, optimizer_state, metrics, color_record = _safe_color_solve(
+            field,
+            optimizer_state,
+            metrics,
+            target,
+            mask_tensor,
+            cfg,
+            constraint,
+            schedule,
+            active_n=active_n,
+        )
+        color_record["phase"] = "post_detail_tail_color_solve"
+        emit(color_record)
+
     run_phase(
         schedule.polish,
         topology=None,
         exit_condition=lambda: False,
     )
+
+    final_active_n = _logical_n(field, active_n)
+    physical_capacity = int(field.n)
+    storage_record = {
+        "policy": schedule.storage_policy,
+        "capacity": int(schedule.capacity),
+        "base_active_limit": int(base_active_limit),
+        "detail_tail_max_rows": int(schedule.detail_tail_max_rows),
+        "detail_tail_activated_rows": int(tail_end_n - tail_start_n),
+        "initial_active_n": initial_n,
+        "final_active_n": final_active_n,
+        "initial_physical_rows": initial_physical_n,
+        "final_physical_rows": physical_capacity,
+        "fixed_shape_during_fit": active_n is not None,
+        "output_compacted": active_n is not None,
+    }
+    if active_n is not None:
+        empty = torch.empty(
+            0, device=field.means.device, dtype=torch.long
+        )
+        optimizer_state = adapt_optimizer_state(
+            optimizer_state,
+            field.n,
+            final_active_n,
+            empty,
+        )
+        field = field.subset(slice(0, final_active_n))
+        active_n = None
 
     return {
         "field": field,
@@ -2538,6 +3285,7 @@ def run_safe_schedule(
         "attempted_steps": attempted_steps,
         "accepted_steps": accepted_steps,
         "optimizer_state": optimizer_state,
+        "storage": storage_record,
         "schedule": asdict(schedule),
         "fit_config": asdict(cfg),
         "converged": bool(

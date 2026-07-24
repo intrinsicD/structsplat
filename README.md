@@ -242,6 +242,34 @@ donor-funded moment splits are the other count-neutral candidates. The candidate
 full-render trials instead of consuming one shared free list in a fixed operator order. Rejected
 large batches are halved automatically.
 
+The safe schedule can use the same topology policy with fixed-capacity storage:
+
+```bash
+PYTHONPATH=src /home/alex/miniconda3/bin/python \
+  scripts/fit_janelle_safe_commit_schedule.py \
+  --storage-policy fixed_capacity --capacity 11000 \
+  --pareto-safe-checkpoints --pareto-checkpoint-every 50 \
+  --capture-root /home/alex/Dropbox/Work/Janelle/2025_03_07_stage_with_fabric \
+  --frame frame_00008 --view-id C0001 --device cuda:0 \
+  --out runs/janelle_C0001_safe_commit_fixed_capacity
+```
+
+This establishes capacity-shaped field and Adam state before growth, renders/optimizes only a
+contiguous active prefix, writes accepted births into reserved rows without append/pad resizing,
+and compacts once for export. Transactional proposals and Pareto checkpoints still clone
+capacity-shaped scratch state; this is not a persistent no-allocation arena. It does not enable
+FIT-021 triage or change the proposal auction, recovery fits, commit gate, or Pareto rollback.
+Adam update kernels also receive the active shape, avoiding capacity-dependent arithmetic and work
+on inactive rows. `dynamic` remains the default for historical reproduction.
+On the source-bound Janelle check, fixed capacity matched the two-run dynamic quality span to
+reported precision (27.063 dB foreground, 11.400 dB boundary; exact foreground was 0.0000031 dB
+below the lower dynamic endpoint and every other protected metric was within or favorable to the
+span), used 2,130 MiB peak versus 2,142 MiB for both dynamic controls, and was effectively
+runtime-neutral after accounting for different safe-auction paths. The CUDA renderer is last-bit
+nondeterministic even for repeated renders of one field, so event-sequence identity is not a valid
+parity requirement; multi-image evidence is still required before a default change or broad speed
+claim.
+
 `index.html` contains only the accepted reconstruction/error sequence and lists rejected trials
 separately. `schedule_history.json` is the complete transition audit; the editable result is
 `C0001_safe_commit_full.npz`. The optional `.rtgsv` remains separately labeled because its legacy

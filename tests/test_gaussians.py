@@ -159,3 +159,26 @@ def test_background_mask_save_load_and_append_padding(tmp_path):
     ab = a.append(b)
     assert ab.background_count == 1
     assert torch.equal(ab.background_mask, torch.tensor([True, False, False]))
+
+
+def test_prefix_view_shares_storage_and_preserves_autograd():
+    field = GaussianField.from_numpy(
+        np.zeros((5, 2)),
+        np.full((5, 2), 2.0),
+        np.zeros(5),
+        np.ones((5, 3)),
+        opacities=np.ones(5),
+    ).trainable()
+    view = field.prefix_view(3)
+
+    assert view.n == 3
+    assert view.means.untyped_storage().data_ptr() == (
+        field.means.untyped_storage().data_ptr()
+    )
+    loss = view.colors.square().sum()
+    loss.backward()
+    assert torch.count_nonzero(field.colors.grad[:3]) == 9
+    assert torch.count_nonzero(field.colors.grad[3:]) == 0
+
+    with pytest.raises(ValueError, match="prefix view count"):
+        field.prefix_view(6)

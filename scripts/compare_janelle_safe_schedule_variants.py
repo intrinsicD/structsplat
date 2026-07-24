@@ -92,6 +92,7 @@ def _load(label: str, run: Path, out: Path) -> dict[str, Any]:
             "p99": float(selected["p99_mse"]),
         })
     schedule_config = config["schedule"]
+    storage = schedule.get("storage") or {}
     return {
         "label": label,
         "path": str(run),
@@ -107,6 +108,26 @@ def _load(label: str, run: Path, out: Path) -> dict[str, Any]:
         "seconds_schedule": float(schedule["seconds"]),
         "seconds_total": float(config["timing"]["total_seconds"]),
         "peak_gpu_memory_bytes": int(config["timing"]["peak_gpu_memory_bytes"]),
+        "storage_policy": schedule_config.get("storage_policy", "dynamic"),
+        "physical_capacity": int(
+            storage.get("capacity", schedule_config.get("capacity", final["n_gaussians"]))
+        ),
+        "base_active_limit": int(
+            storage.get(
+                "base_active_limit",
+                schedule_config.get("base_active_limit")
+                or schedule_config.get("capacity", final["n_gaussians"]),
+            )
+        ),
+        "detail_tail_max_rows": int(
+            storage.get(
+                "detail_tail_max_rows",
+                schedule_config.get("detail_tail_max_rows", 0),
+            )
+        ),
+        "detail_tail_activated_rows": int(
+            storage.get("detail_tail_activated_rows", 0)
+        ),
         "refinement_policy": schedule_config.get("refinement_policy", "global"),
         "local_start_phase": schedule_config.get("local_start_phase", "coverage"),
         "local_seed_count": schedule_config.get("local_seed_count", 0),
@@ -388,6 +409,11 @@ def _run_cards(runs: list[dict[str, Any]]) -> str:
             "<article class='card'>"
             f"<h3>{html.escape(run['label'])}</h3>"
             f"<p><a href='{html.escape(run['index'])}'>vollständige Timeline</a></p>"
+            f"<p>storage <code>{html.escape(run['storage_policy'])}</code>; "
+            f"physical/base rows {run['physical_capacity']:,}/"
+            f"{run['base_active_limit']:,}; tail reserve/activated "
+            f"{run['detail_tail_max_rows']:,}/"
+            f"{run['detail_tail_activated_rows']:,}</p>"
             f"<p>policy <code>{html.escape(run['refinement_policy'])}</code>; "
             f"Pareto checkpoints <code>{str(run['pareto_safe_checkpoints']).lower()}</code> "
             f"(every {run['pareto_checkpoint_every']}); event color solve "
@@ -402,7 +428,9 @@ def _run_cards(runs: list[dict[str, Any]]) -> str:
             f"{run['earlier_checkpoint_commits']} earlier-checkpoint commits; "
             f"{run['event_color_solve_commits']} event-color commits; "
             f"{accepted_local} accepted standalone local fits; "
-            f"{run['seconds_total']:.1f} s total</p>"
+            f"{run['seconds_schedule']:.1f} s schedule; "
+            f"{run['seconds_total']:.1f} s total; "
+            f"{run['peak_gpu_memory_bytes'] / 2**20:.1f} MiB peak</p>"
             f"<img src='{html.escape(run['reconstruction'])}' "
             f"alt='{html.escape(run['label'])} reconstruction'>"
             f"<img src='{html.escape(run['error'])}' "

@@ -1,0 +1,54 @@
+{
+  "schema": "structsplat.janelle.storage_policy_audit.v1",
+  "valid": true,
+  "scope": "one-image one-seed RTX-4090 development storage-policy check",
+  "repository_commit": "8cfe30d8709dcdf19bf1a10d1d72011b54a89ac5",
+  "repository_status_sha256": "3309951b77cd98f8c295cb111cc27039e18fdd90e046f515e381ebfe6fdd3874",
+  "controlled_equalities": {
+    "source_and_seed": true,
+    "environment": true,
+    "fit_config": true,
+    "initialization": true,
+    "schedule_excluding_storage_policy": true,
+    "repository_status": true,
+    "executed_source_hashes": true,
+    "single_loaded_process": true
+  },
+  "integrity": {
+    "source_snapshot_hash_failures": 0,
+    "field_hash_failures": 0,
+    "history_step_sum_failures": 0,
+    "accepted_gate_failures": 0,
+    "missing_required_artifacts": 0,
+    "native_image_shape_failures": 0,
+    "cold_rescore_max_abs_metric_delta": {
+      "dynamic_a": 0.0,
+      "fixed_capacity": 0.0,
+      "dynamic_b": 0.0
+    }
+  },
+  "field_sha256": {
+    "dynamic_a": "5d80f4b31266bc91a16d41f7f832e4c5ae70d257bd2c1aaf44a0c60545df7885",
+    "fixed_capacity": "2d54268f0cfe0f7bc1ce65594735df3a90742e732223e9b2ad45a8c3c59ccd81",
+    "dynamic_b": "85f193ccefeb1627ad61afafc3a1e802df9f1d18849d44589c73c51385e413b1"
+  },
+  "initial_field_sha256_all_arms": "cfa13a084195149c637c0e50297dc010d812f308bfb4703ac55abb72dc26999b",
+  "comparison_sha256": {
+    "comparison.json": "d6ed933615796290802e1c7cf73e3334d765a64e36fceb4a4e59323ef7855069",
+    "index.html": "316d3a4c11e8af4c93a321a5f4241ff458a5b5386ad2dc617c6d5bb9face5ccb"
+  },
+  "disposition": {
+    "quality_regression_beyond_dynamic_aa_resolution_detected": false,
+    "material_speedup_supported": false,
+    "peak_allocated_memory_reduction_mib_vs_dynamic_mean": 11.541748046875,
+    "default_change_authorized": false
+  },
+  "limitations": [
+    "development image already exposed by FIT-023",
+    "one image, one seed, one GPU and one execution per arm",
+    "CUDA atomic accumulation makes event histories non-bit-reproducible",
+    "exact CUDA extension ELF was shared in-process but not archived",
+    "timing arms execute different accepted and attempted work",
+    "transaction and checkpoint snapshots still allocate capacity-shaped scratch tensors"
+  ]
+}
