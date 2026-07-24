@@ -6,7 +6,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "scripts" / "fit_janelle_mask_contained.py"
+SCRIPT = ROOT / "deprecated_scripts" / "fit_janelle_mask_contained.py"
 
 
 def _help(*arguments: str, realtime_root: Path) -> str:

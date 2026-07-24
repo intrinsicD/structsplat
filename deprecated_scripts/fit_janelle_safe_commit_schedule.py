@@ -62,8 +62,8 @@ def _source_provenance(out: Path) -> dict[str, Any]:
         REPOSITORY_ROOT / "src/structsplat/gaussians.py",
         REPOSITORY_ROOT / "src/structsplat/pool.py",
         REPOSITORY_ROOT / "src/structsplat/config.py",
-        REPOSITORY_ROOT / "scripts/fit_janelle_complete_refinement.py",
-        REPOSITORY_ROOT / "scripts/fit_janelle_mask_contained.py",
+        REPOSITORY_ROOT / "deprecated_scripts/fit_janelle_complete_refinement.py",
+        REPOSITORY_ROOT / "deprecated_scripts/fit_janelle_mask_contained.py",
     )
     records = []
     for source in sources:

@@ -226,7 +226,7 @@ scheduled multi-day job, use this predeclared staged protocol so stopping is evi
 
 ## Interfaces touched
 `src/structsplat/sampling.py`, `src/structsplat/init.py` (sampler registration),
-`benchmarks/ablation.py`, `benchmarks/abl004_confirmation.py`, `benchmarks/cross_repo_matrix_compare.py`, `benchmarks/abl004_visual_examples.py`, `scripts/run_abl004_full_ablation.sh`,
+`benchmarks/ablation.py`, `benchmarks/abl004_confirmation.py`, `benchmarks/cross_repo_matrix_compare.py`, `benchmarks/abl004_visual_examples.py`, `deprecated_scripts/run_abl004_full_ablation.sh`,
 `ara/evidence/`,
 `ara/logic/claims.md`, `README.md`, `tasks/ABL-001-init-sweep.md`, `tests/test_sampling.py`.
 

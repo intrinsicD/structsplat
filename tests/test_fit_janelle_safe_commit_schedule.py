@@ -4,7 +4,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "scripts"))
+sys.path.insert(0, str(ROOT / "deprecated_scripts"))
 import fit_janelle_safe_commit_schedule as runner  # noqa: E402
 import run_janelle_safe_schedule_factorial as factorial  # noqa: E402
 import run_janelle_detail_tail_ablation as detail_tail  # noqa: E402
@@ -93,7 +93,11 @@ def test_local_boundary_variant_is_explicitly_configurable():
 
 def test_runner_help_exposes_phase_and_event_controls():
     result = subprocess.run(
-        [sys.executable, str(ROOT / "scripts/fit_janelle_safe_commit_schedule.py"), "--help"],
+        [
+            sys.executable,
+            str(ROOT / "deprecated_scripts/fit_janelle_safe_commit_schedule.py"),
+            "--help",
+        ],
         cwd=ROOT,
         env={"PYTHONPATH": str(ROOT / "src")},
         text=True,

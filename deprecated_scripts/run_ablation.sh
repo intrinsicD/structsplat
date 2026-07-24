@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Convenience wrapper for the ABL-001 sweep. Usage: scripts/run_ablation.sh <images-or-dir>
+# Convenience wrapper for the ABL-001 sweep. Usage: deprecated_scripts/run_ablation.sh <images-or-dir>
 set -euo pipefail
 IMAGES="${1:?usage: run_ablation.sh <images-or-dir>}"
 EXTRA_ARGS=()

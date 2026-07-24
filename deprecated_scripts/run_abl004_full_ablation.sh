@@ -12,7 +12,7 @@ if [[ -n "${MAX_NEW_CELLS:-}" ]]; then
   EXTRA_ARGS+=(--max-new-cells "$MAX_NEW_CELLS")
 fi
 
-python scripts/prepare_abl004_images.py --outdir "$DATA_ROOT"
+python deprecated_scripts/prepare_abl004_images.py --outdir "$DATA_ROOT"
 
 mapfile -t IMAGES < "$DATA_ROOT/images.txt"
 python -m benchmarks.ablation "${IMAGES[@]}" \

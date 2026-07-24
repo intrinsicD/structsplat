@@ -31,7 +31,7 @@ detail tail that activates reserved rows in bounded error-driven transactions.
 
 ## Interfaces touched
 
-`src/structsplat/safe_schedule.py`, `scripts/fit_janelle_safe_commit_schedule.py`, a bounded
+`src/structsplat/safe_schedule.py`, `deprecated_scripts/fit_janelle_safe_commit_schedule.py`, a bounded
 three-arm runner, focused tests, documentation, and evidence.
 
 ## Depends on

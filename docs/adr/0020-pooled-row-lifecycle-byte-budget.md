@@ -11,7 +11,7 @@
 Every existing topology event (prune/split/relocate/adaptive growth) resizes the
 `GaussianField`, rebuilds the optimizer via `_carry_adam_state`, and destroys donor rows that a
 later event might have reused. There is no merge operator in the package; the validated
-prototype (`scripts/fit_janelle_complete_refinement.py`) had to implement count-neutral
+prototype (`deprecated_scripts/fit_janelle_complete_refinement.py`) had to implement count-neutral
 merge+teleport *between* fits. Separately, deployment wants a hard per-file byte budget
 (Gaussian payload + alpha map ≤ X bytes) rather than a Gaussian-count budget.
 

@@ -43,6 +43,7 @@ KNOWN_TOP_DIRS = (
     "docs",
     "tasks",
     "scripts",
+    "deprecated_scripts",
     ".claude",
     ".agents",
     "ara",

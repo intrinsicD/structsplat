@@ -59,11 +59,11 @@ so promotion decisions (each via its own ADR) rest on isolated, regime-correct e
   `ara/evidence/abl005-cli-unblock-2026-07-09/`. The HTML report now marks the best paired-delta
   variants for PSNR, MS-SSIM, AUC, and fit time. This does not resolve the affine-speed blocker.
 - 2026-07-10: Split the blocked protocol into two reproducible shard scripts. Use
-  `scripts/run_abl005_cuda_native_influence.sh` for the six CUDA-native knobs
+  `deprecated_scripts/run_abl005_cuda_native_influence.sh` for the six CUDA-native knobs
   (`loss=charbonnier`, `density=variance`, `opacity=constant`, `refine=moment_preserving`,
   `lr_schedule=cosine`, `color_solve=every10`) under `renderer=cuda`; it writes `index.html` and
   paired `influence.md` and is valid for quality, convergence, and fit-time deltas. Use
-  `scripts/run_abl005_affine_quality_influence.sh` for `color_basis=affine`; it pins the exact
+  `deprecated_scripts/run_abl005_affine_quality_influence.sh` for `color_basis=affine`; it pins the exact
   reference renderer by default and is quality/convergence evidence only until native CUDA affine
   backward exists. A tiny two-image smoke completed both scripts and wrote
   `results/abl005_cuda_native_influence_smoke/index.html` plus

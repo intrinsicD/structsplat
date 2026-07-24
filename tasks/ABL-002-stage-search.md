@@ -30,7 +30,7 @@ measure the influence of each stage in isolation (quality, convergence rate, spe
 - [x] Influence mode: one-factor-at-a-time paired deltas vs the baseline (`influence.md`).
 - [x] Canonicalize + dedupe configs whose differing stage is provably inert.
 - [x] Provide CLI entry point: `structsplat stage-search` (`--mode factorial|influence`).
-- [x] Provide screening script: `scripts/run_stage_search_screening.sh`.
+- [x] Provide screening script: `deprecated_scripts/run_stage_search_screening.sh`.
 - [ ] Run cheap screening on 20-50 COCO images and keep top candidates per stage.
 - [ ] Run final confirmation on 100-200 images, 3 seeds, and multiple budgets.
 - [ ] Compare the final winner against GaussianImage-RS and AIR under the fair protocol.

@@ -2,7 +2,7 @@
 # ABL-005 affine color-basis quality-only influence shard.
 #
 # Usage:
-#   scripts/run_abl005_affine_quality_influence.sh <kodim01> <kodim04> ...
+#   deprecated_scripts/run_abl005_affine_quality_influence.sh <kodim01> <kodim04> ...
 #
 # The affine arm must not be used for speed/default-promotion claims until native CUDA affine
 # backward exists. This script pins renderer=normalized by default so constant and affine rows use

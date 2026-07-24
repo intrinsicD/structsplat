@@ -8,7 +8,7 @@ from structsplat.gaussians import GaussianField
 
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "scripts"))
+sys.path.insert(0, str(ROOT / "deprecated_scripts"))
 import fit_janelle_complete_refinement as runner  # noqa: E402
 
 

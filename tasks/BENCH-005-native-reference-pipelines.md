@@ -75,7 +75,7 @@ StructSplat matched-policy default-promotion gate.
   `b4fd8324e81c48c9b2b9f62e1b9c6431fece6ab3`. Repository tree/diff, package direct-URL metadata,
   installed/repository Python-source hashes, both extension hashes, Python/Torch/CUDA/GPU state,
   and the `libstdc++` preload are recorded and checked again in each cell manifest.
-- Added `scripts/setup_native_image_gs_env.sh` to construct the official-version environment from
+- Added `deprecated_scripts/setup_native_image_gs_env.sh` to construct the official-version environment from
   Image-GS's `environment.yml` while pinning the previously floating `fused-ssim` dependency. The
   completed short run used the already available isolated Python 3.12.9, Torch 2.9.0+cu128, CUDA
   12.8 environment rather than the official Python 3.11.10, Torch 2.4.1, CUDA 12.4 stack. Its
@@ -134,7 +134,7 @@ StructSplat matched-policy default-promotion gate.
   confidence intervals crossing on PSNR; artifact:
   `results/native_image_gs_siggraph25_official_seed0/`.
 - Added `benchmarks/native_gaussianimage_compare.py`,
-  `benchmarks/native_runners/gaussianimage.py`, `scripts/setup_native_gaussianimage_env.sh`, and
+  `benchmarks/native_runners/gaussianimage.py`, `deprecated_scripts/setup_native_gaussianimage_env.sh`, and
   focused tests for base GaussianImage. The official isolated checkout pins GaussianImage
   `d53393bee7c9fbb24e3510614e3ff2c85b8fbbc1`, gsplat
   `bcca3ecae966a052e3bf8dd1ff9910cf7b8f851d`, Python 3.10, Torch 2.0.0+cu118, and a retained
@@ -202,7 +202,7 @@ StructSplat matched-policy default-promotion gate.
 
 `benchmarks/native_reference_compare.py`, `benchmarks/native_image_gs_compare.py`,
 `benchmarks/native_gaussianimage_compare.py`, `benchmarks/native_runners/`,
-`scripts/setup_native_image_gs_env.sh`, `scripts/setup_native_gaussianimage_env.sh`,
+`deprecated_scripts/setup_native_image_gs_env.sh`, `deprecated_scripts/setup_native_gaussianimage_env.sh`,
 `tests/test_native_reference_compare.py`, `tests/test_native_image_gs_compare.py`,
 `tests/test_native_gaussianimage_compare.py`,
 `benchmarks/README.md`.

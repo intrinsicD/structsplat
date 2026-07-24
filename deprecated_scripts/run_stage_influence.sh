@@ -2,7 +2,7 @@
 # Per-stage influence study (ADR-0010): one-factor-at-a-time paired deltas around the
 # ADR-0009 baseline, across all stage alternatives. Writes influence.md with
 # ΔPSNR / ΔMS-SSIM / ΔAUC / Δiters-to-target / Δseconds per stage option.
-# Usage: scripts/run_stage_influence.sh <images-or-dir>
+# Usage: deprecated_scripts/run_stage_influence.sh <images-or-dir>
 set -euo pipefail
 
 IMAGES="${1:?usage: run_stage_influence.sh <images-or-dir>}"

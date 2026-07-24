@@ -2,7 +2,7 @@
 # ABL-005 fair-regime influence shard for CUDA-native fitter knobs only.
 #
 # Usage:
-#   scripts/run_abl005_cuda_native_influence.sh <kodim01> <kodim04> ...
+#   deprecated_scripts/run_abl005_cuda_native_influence.sh <kodim01> <kodim04> ...
 #
 # This intentionally excludes color_basis=affine because renderer=cuda falls back to the
 # reference renderer for affine color gradients, confounding fit-time deltas.

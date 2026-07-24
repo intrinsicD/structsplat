@@ -35,6 +35,99 @@ pip install -e ".[gen]"          # optional: diffusers text-to-Gaussian generati
 pip install -e ".[dev]"          # pytest, ruff
 ```
 
+## Supported workflow scripts
+
+The supported operational surface is four scripts. They all use the frozen
+`safe_schedule_2026_07_24` profile: the bounded Janelle development winner with a 5,000-row
+start, fixed 12,024-row storage, an 11,512-row ordinary active ceiling, global transactional
+refinement, Pareto-safe checkpoints every 50 optimizer steps, no event color solve, and no
+specialized detail tail. This is the default for these workflow scripts, not a repository-wide
+superiority or SOTA claim.
+
+Masked and unmasked inputs use the same initialization count, phase order and budgets, optimizer,
+proposal auction, active ceiling, and polish. A masked input uses 4,500 general WSE rows plus 500
+boundary rows and enables containment, boundary losses, metrics, and proposals. An unmasked input
+uses 5,000 general WSE rows and substitutes count-matched coverage/detail proposals in the closure
+phase; no boundary-specific operation remains.
+
+### Convert an image folder
+
+```bash
+python scripts/convert.py ./images ./runs/converted --device cuda:0
+
+# The mask tree must have the same relative paths or unambiguous relative stems.
+python scripts/convert.py ./rgb ./runs/converted_masked \
+  --mask-dir ./mask --device cuda:0 --resume
+```
+
+Each image gets an editable `field.npz`, target, final reconstruction, fixed-scale error image,
+accepted intermediate reconstructions/errors, `config.json`, `history.json`, and `result.json`.
+The destination root also gets `manifest.json`, tidy `metrics.json`/`metrics.jsonl`/`metrics.csv`,
+and a portable `index.html`. Existing complete cells require `--resume`; use `--overwrite`
+explicitly to replace them.
+
+### Benchmark the current profile
+
+```bash
+python scripts/benchmark.py ./images ./results/current_benchmark \
+  --seeds 0 1 --lpips --device cuda:0 --resume
+```
+
+The report contains PSNR, SSIM, MS-SSIM, optional LPIPS, PSNR AUC, target-hit steps, phase and
+end-to-end timings, convergence/timing curves, and target/intermediate/final/error images for every
+image and seed.
+
+Pinned official GaussianImage and Image-GS runs are optional. Their repositories and isolated
+Python environments must already exist:
+
+```bash
+python scripts/benchmark.py ./images ./results/current_benchmark_native \
+  --baselines gaussianimage image_gs --seeds 0 --lpips --device cuda:0 \
+  --gaussianimage-repo ./results/native_envs/gaussianimage_official/repo \
+  --gaussianimage-python ./results/native_envs/gaussianimage_official/env/bin/python \
+  --image-gs-repo /path/to/image-gs \
+  --image-gs-python ./results/native_envs/image_gs_official/bin/python
+```
+
+The comparison aligns decoded target pixels, Gaussian count, requested optimizer horizon, and
+seed. Native renderer, optimizer, loss, growth, and timing semantics remain implementation
+specific and are labeled in their linked reports.
+
+### Run the fixed ablation
+
+```bash
+python scripts/ablation.py ./images ./results/current_ablation \
+  --seeds 0 1 --lpips --device cuda:0 --resume
+
+# A bounded subset:
+python scripts/ablation.py ./images ./results/current_ablation \
+  --arms full no_coverage_growth no_redistribution no_polish
+```
+
+The default matrix contains the full profile plus no-bootstrap, no-coverage, no-detail,
+no-closure, no-redistribution, no-polish, no-Pareto-checkpoint, and, for masked inputs,
+no-boundary-specialization arms. It uses the same report contract as the benchmark and accepts the
+same optional native-baseline arguments.
+
+### Search every variant of one stage
+
+```bash
+python scripts/stage_search.py ./images/kodim01.png ./results/search_detail \
+  --stage detail --seeds 0 1 --device cuda:0 --resume
+
+python scripts/stage_search.py ./images/kodim01.png ./results/search_init \
+  --stage initialization
+```
+
+Stage search requires exactly one image and runs every registered variant of the selected stage
+while freezing the rest of the current profile. Stages are `initialization`, `storage`,
+`checkpoint`, `bootstrap`, `coverage`, `detail`, `closure`, `redistribution`, and `polish`.
+Use `--variants ...` to select a subset and `--help` to inspect the complete interface.
+
+Previous task-specific launchers now live in `deprecated_scripts/`. They remain available for
+historical evidence reproduction but are not supported entry points. The only other maintained
+files in `scripts/` are `verify.sh`, `install_skills.sh`, and `docs_sync.py`.
+
 ## Quickstart
 ```bash
 # fit one image with the measured high-budget PSNR winner
@@ -147,7 +240,11 @@ structsplat image-to-gaussians2d photo.png --mask photo_mask.png \
   --outdir runs/photo_pooled
 ```
 
-### Janelle image + mask → capped realtime-gs `gaussians2d` views
+### Deprecated Janelle-specific diagnostic and transport runners
+
+The supported masked and unmasked workflow is `scripts/convert.py` above. The following
+Janelle-specific runners are retained under `deprecated_scripts/` only to reproduce the
+source-bound FIT-021--025 evidence and the realtime-gs transport bridge.
 
 The calibrated Janelle conversion is handled by the resumable mask-contained bridge. Run it from
 this checkout with the CUDA realtime-gs environment:
@@ -156,7 +253,7 @@ this checkout with the CUDA realtime-gs environment:
 cd /home/alex/Documents/structsplat
 PY=/home/alex/Documents/realtime-gs/.venv-cuda/bin/python
 "$PY" -m pip install -e . -e /home/alex/Documents/realtime-gs
-"$PY" scripts/fit_janelle_mask_contained.py convert \
+"$PY" deprecated_scripts/fit_janelle_mask_contained.py convert \
   --dataset-root /home/alex/Dropbox/Work/Janelle \
   --realtime-root /home/alex/Documents/realtime-gs \
   --device cuda:0
@@ -166,7 +263,7 @@ Inspect every parameter, its resolved default, whether it is active in residual 
 growth, and the current cleanup/export limitations before starting a run:
 
 ```bash
-"$PY" scripts/fit_janelle_mask_contained.py convert --help
+"$PY" deprecated_scripts/fit_janelle_mask_contained.py convert --help
 ```
 
 The help output is available without importing PyTorch, CUDA, or realtime-gs. Options are grouped
@@ -190,7 +287,7 @@ For a single native-resolution `frame_00008/C0001` quality run that exercises th
 refinement lifecycle, use the dedicated diagnostic runner instead of the capped multi-view bridge:
 
 ```bash
-/home/alex/miniconda3/bin/python scripts/fit_janelle_complete_refinement.py \
+/home/alex/miniconda3/bin/python deprecated_scripts/fit_janelle_complete_refinement.py \
   --capture-root /home/alex/Dropbox/Work/Janelle/2025_03_07_stage_with_fabric \
   --frame frame_00008 --view-id C0001 --device cuda:0 \
   --out runs/janelle_C0001_complete_refinement_20260722
@@ -219,7 +316,7 @@ safe-commit runner:
 
 ```bash
 PYTHONPATH=src /home/alex/miniconda3/bin/python \
-  scripts/fit_janelle_safe_commit_schedule.py \
+  deprecated_scripts/fit_janelle_safe_commit_schedule.py \
   --capture-root /home/alex/Dropbox/Work/Janelle/2025_03_07_stage_with_fabric \
   --frame frame_00008 --view-id C0001 --device cuda:0 \
   --out runs/janelle_C0001_safe_commit_schedule_20260723
@@ -246,7 +343,7 @@ The safe schedule can use the same topology policy with fixed-capacity storage:
 
 ```bash
 PYTHONPATH=src /home/alex/miniconda3/bin/python \
-  scripts/fit_janelle_safe_commit_schedule.py \
+  deprecated_scripts/fit_janelle_safe_commit_schedule.py \
   --storage-policy fixed_capacity --capacity 11000 \
   --pareto-safe-checkpoints --pareto-checkpoint-every 50 \
   --capture-root /home/alex/Dropbox/Work/Janelle/2025_03_07_stage_with_fabric \
@@ -276,7 +373,7 @@ redistribution growth. An optional suffix can be reserved for a post-color-solve
 
 ```bash
 PYTHONPATH=src /home/alex/miniconda3/bin/python \
-  scripts/fit_janelle_safe_commit_schedule.py \
+  deprecated_scripts/fit_janelle_safe_commit_schedule.py \
   --storage-policy fixed_capacity --capacity 12024 \
   --base-active-limit 11000 \
   --detail-tail-rows 512 --detail-tail-batch 128 \
@@ -317,7 +414,7 @@ full. The p99 guard is optional because it changes the Pareto gate rather than o
 
 ```bash
 PYTHONPATH=src /home/alex/miniconda3/bin/python \
-  scripts/fit_janelle_safe_commit_schedule.py \
+  deprecated_scripts/fit_janelle_safe_commit_schedule.py \
   --capture-root /home/alex/Dropbox/Work/Janelle/2025_03_07_stage_with_fabric \
   --frame frame_00008 --view-id C0001 --device cuda:0 \
   --out runs/janelle_C0001_safe_commit_hybrid_boundary_20260723 \
@@ -326,7 +423,7 @@ PYTHONPATH=src /home/alex/miniconda3/bin/python \
   --topology-neighbor-count 0 --boundary-recycle-at-capacity
 ```
 
-Use `scripts/compare_janelle_safe_schedule_variants.py` with repeated
+Use `deprecated_scripts/compare_janelle_safe_schedule_variants.py` with repeated
 `--run LABEL=PATH` arguments to create one source-backed comparison page. CUDA atomic accumulation
 can change close residual rankings and therefore later topology decisions; a single sequential
 pair is a mechanism test, not a deterministic or statistically replicated superiority claim.
@@ -337,7 +434,7 @@ Pareto-safe checkpoints every 50 steps:
 
 ```bash
 PYTHONPATH=src /home/alex/miniconda3/bin/python \
-  scripts/fit_janelle_safe_commit_schedule.py \
+  deprecated_scripts/fit_janelle_safe_commit_schedule.py \
   --capture-root /home/alex/Dropbox/Work/Janelle/2025_03_07_stage_with_fabric \
   --realtime-root /home/alex/Documents/realtime-gs \
   --frame frame_00008 --view-id C0001 --device cuda:0 \
@@ -383,7 +480,7 @@ original image and expose the other features used by initialization and normaliz
 
 ```bash
 cd /home/alex/Documents/structsplat
-python scripts/render_paper_figures.py photo.png \
+python deprecated_scripts/render_paper_figures.py photo.png \
   --outdir runs/photo/features --max-side 0 \
   --strategy quadtree_wse --num-gaussians 384 --seed 0
 ```
@@ -510,7 +607,7 @@ Generate deterministic structure-tensor, tensor-metric sampling, initialized Gau
 normalized-responsibility panels from a real image:
 
 ```bash
-python scripts/render_paper_figures.py tests/test_images/COCO_train2014_000000000030.jpg \
+python deprecated_scripts/render_paper_figures.py tests/test_images/COCO_train2014_000000000030.jpg \
   --outdir results/paper_method_figure --max-side 256 --num-gaussians 384 --seed 0
 ```
 
