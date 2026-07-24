@@ -7,7 +7,7 @@ The fitter's topology operators — sampled-add spawning (FIT-004/017), duplicat
 physically create/destroy rows, and force a full `GaussianField` + optimizer rebuild
 (`_carry_adam_state`) on every event. There is no merge operator in the package; the only merge
 implementation lives in the standalone prototype
-`scripts/fit_janelle_complete_refinement.py` (`merge_redundant`: mutual-nearest pair mining,
+`deprecated_scripts/fit_janelle_complete_refinement.py` (`merge_redundant`: mutual-nearest pair mining,
 midpoint + generalized-eigen covariance envelope, count-neutral coupled teleport), which runs
 *between* fits because `FitConfig` cannot express it.
 
@@ -103,7 +103,7 @@ validation), `cli.py` (flags + budget save), `tests/test_pool_triage.py` (new),
 FIT-002/004/007/017/018 (operator library + responsibility machinery), CORE-003 (clipped
 support = free parking), CORE-009 (background rows), CORE-010/011 + ADR-0017/0019 (mask
 containment), COMP-001/ADR-0007 (SSPL1 grammar), ADR-0010 (searchable-axis protocol),
-prototype `scripts/fit_janelle_complete_refinement.py`.
+prototype `deprecated_scripts/fit_janelle_complete_refinement.py`.
 
 ## Notes / deferred (phase 2 — new tasks, not silent additions)
 

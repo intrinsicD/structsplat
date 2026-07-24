@@ -32,8 +32,10 @@ init/sampling variants.
   exists.
 
 ## Running
-`structsplat ablation <images-or-dir> --budgets 2000 5000 10000 20000 --iters 1500 --target-psnr 35`
-or `python -m benchmarks.ablation`. Use a small image set (Kodak-style) to start.
+Use `python scripts/benchmark.py SOURCE OUTDIR`, `python scripts/ablation.py SOURCE OUTDIR`, or
+`python scripts/stage_search.py IMAGE OUTDIR --stage STAGE` for the supported current-profile
+workflows and portable visual reports. `structsplat ablation` / `python -m benchmarks.ablation`
+remain the lower-level ABL-001 init-strategy harness. Use a small image set (Kodak-style) first.
 
 ## As a fitness function
 `run_ablation` returns per-cell metrics; expose the aggregate (e.g. mean PSNR at a target budget,

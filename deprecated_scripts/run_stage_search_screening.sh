@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Cheap first-pass search across StructSplat stage alternatives.
-# Usage: scripts/run_stage_search_screening.sh <images-or-dir>
+# Usage: deprecated_scripts/run_stage_search_screening.sh <images-or-dir>
 set -euo pipefail
 
 IMAGES="${1:?usage: run_stage_search_screening.sh <images-or-dir>}"

@@ -3,6 +3,27 @@
 All benchmark scripts write machine-readable rows plus enough resolved configuration to make a run
 self-describing. See the `benchmark` skill for the full protocol.
 
+## Supported operational workflows
+
+Use the four top-level workflow scripts for routine conversion and current-profile evaluation:
+
+```bash
+python scripts/convert.py SOURCE OUTDIR [--mask-dir MASKS]
+python scripts/benchmark.py SOURCE OUTDIR --seeds 0 1 [--baselines gaussianimage image_gs]
+python scripts/ablation.py SOURCE OUTDIR --seeds 0 1
+python scripts/stage_search.py IMAGE OUTDIR --stage STAGE --seeds 0 1
+```
+
+They share `structsplat.pipeline`'s frozen `safe_schedule_2026_07_24` profile and
+`structsplat.workflows`' artifact/report contract. Every result includes resolved configuration,
+source/target hashes, raw JSON/JSONL/CSV, failures, timings, curves, reconstructions, fixed-scale
+errors, intermediate accepted states, and a relative-link `index.html`. A parallel mask tree turns
+on the boundary-specific initialization/containment/loss/proposal path; no mask uses the identical
+count and phase contract with boundary-specific work removed.
+
+The modules documented below remain focused research harnesses and implementation APIs. Historical
+shell/Python launchers moved to `deprecated_scripts/`.
+
 For any substantial benchmark or visual-audit result that produces plots, reconstructions, or
 comparison grids, also write a local `index.html` overview in the result directory. It should embed
 the key diagrams/images, link the raw CSV/JSON artifacts, and state whether visuals are original
@@ -81,7 +102,7 @@ scored on PSNR / MS-SSIM / LPIPS + iterations-to-target. Caveat: this is the bro
 keep image/budget/seed axes explicit in the output config. ABL-004 control labels are available
 alongside the core strategies: `floyd_steinberg`, `density_random`, and `random_relocate`.
 Long runs write `ablation.jsonl` incrementally; use `--resume` to skip cells already present there.
-For the ABL-004 protocol, `scripts/run_abl004_full_ablation.sh` prepares Kodak-24 under
+For the ABL-004 protocol, `deprecated_scripts/run_abl004_full_ablation.sh` prepares Kodak-24 under
 `results/datasets/abl004`, appends the pinned COCO fixtures, and launches the resumable full sweep.
 Set `MAX_NEW_CELLS=N` on either wrapper to execute a bounded shard and stop cleanly after `N`
 new cells. The ABL-004 wrapper defaults to `RENDERER=cuda` for the owned exact CUDA renderer; set
@@ -414,9 +435,9 @@ slice, `--pyramid-level-iters 150 1350` repaired the old 750/750 AUC loss while 
 quality (+0.0601 dB vs 750/750 pyramid, +0.0011 AUC vs single). Keep `pyramid=single` as shipped
 default until larger confirmation; use 150/1350 as the pyramid quality candidate.
 ABL-005 uses two fixed shard scripts to avoid mixing implementation-confounded timing with
-decision-grade fitter deltas: `scripts/run_abl005_cuda_native_influence.sh` covers the six
+decision-grade fitter deltas: `deprecated_scripts/run_abl005_cuda_native_influence.sh` covers the six
 CUDA-native knobs and can support quality/convergence/speed claims, while
-`scripts/run_abl005_affine_quality_influence.sh` isolates `color_basis=affine` as
+`deprecated_scripts/run_abl005_affine_quality_influence.sh` isolates `color_basis=affine` as
 quality/convergence-only until native CUDA affine backward exists. The CUDA-native runner accepts
 per-axis env overrides (`DENSITY_MODES`, `OPACITY_MODES`, `COLOR_SOLVE_MODES`, `PIXEL_LOSSES`,
 `LR_SCHEDULES`, `REFINE_MODES`) so slow arms such as `color_solve=every10` can be run as separate
@@ -601,7 +622,7 @@ environment, requires `gsplat` to have been built from that checkout's bundled s
 `fused-ssim` to commit `b4fd8324e81c48c9b2b9f62e1b9c6431fece6ab3`. Preflight and every cell
 record and cross-check the repository tree/diff, package `direct_url.json` provenance, installed
 Python-source hashes, compiled-extension hashes, Python/Torch/CUDA versions, GPU, and optional
-`libstdc++` preload. `scripts/setup_native_image_gs_env.sh` now creates and verifies the official
+`libstdc++` preload. `deprecated_scripts/setup_native_image_gs_env.sh` now creates and verifies the official
 Python 3.11.10, Torch 2.4.1, CUDA 12.4 environment. It constrains `mkl=2023.1.0` to avoid the
 `iJIT_NotifyEvent` loader failure and `cuda-version=12.4` to prevent solver drift, then builds the
 pinned fused-SSIM and bundled gsplat extensions. Exact environment exports and binary hashes live
@@ -670,7 +691,7 @@ harness hashes clean source trees, the retained build wheel, loaded extension, a
 sources, input pixels, environment, and checkpoint; shared metrics come from exported float
 pixels. Resume keys include the shared comparison-source revision; cached manifests are revalidated,
 central metrics are recomputed, and stale journal rows are compacted away before evidence output.
-`scripts/setup_native_gaussianimage_env.sh` provisions the isolated Python 3.10,
+`deprecated_scripts/setup_native_gaussianimage_env.sh` provisions the isolated Python 3.10,
 Torch 2.0.0+cu118 build and records exact dependency/linkage provenance.
 
 The current base-GaussianImage adapter is representation-only. Its `release_cholesky` and

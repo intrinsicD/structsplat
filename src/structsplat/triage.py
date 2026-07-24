@@ -8,7 +8,7 @@ tensors:
   responsibility (summed activity cannot see that a low-mass row is the sole owner of some
   pixels — under the normalized compositor such a row fully determines those pixels);
 - **merge**: prototype-parity envelope merge of mutual-nearest redundant pairs
-  (``scripts/fit_janelle_complete_refinement.py``): exact midpoint mean, smallest
+  (``deprecated_scripts/fit_janelle_complete_refinement.py``): exact midpoint mean, smallest
   generalized-eigen covariance envelope of both translated inputs with explicit inflation,
   amplitude-weighted color, union opacity; under ``mask_contain`` pairs whose certified caps
   cannot preserve the envelope are batch-restored. The absorbed partner is parked;

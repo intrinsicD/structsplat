@@ -84,7 +84,7 @@ Artifacts:
 ## Interfaces touched
 
 `src/structsplat/fit.py`, `src/structsplat/safe_schedule.py`,
-`scripts/fit_janelle_safe_commit_schedule.py`, comparison/experiment scripts, focused tests,
+`deprecated_scripts/fit_janelle_safe_commit_schedule.py`, comparison/experiment scripts, focused tests,
 `README.md`, `tasks/INDEX.md`, and source-bound run artifacts.
 
 ## Depends on

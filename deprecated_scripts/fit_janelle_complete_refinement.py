@@ -175,7 +175,7 @@ def _snapshot_executed_sources(out: Path) -> list[dict[str, Any]]:
     """Persist dirty/untracked orchestration sources so a run is source-bound, not hash-only."""
     sources = (
         Path(__file__).resolve(),
-        REPOSITORY_ROOT / "scripts/fit_janelle_mask_contained.py",
+        REPOSITORY_ROOT / "deprecated_scripts/fit_janelle_mask_contained.py",
     )
     records = []
     for source in sources:

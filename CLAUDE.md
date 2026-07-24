@@ -41,7 +41,8 @@ then re-enters `task-workflow` → `method` → `benchmark` → `review` → `do
 4. Everything reproducible from a logged config + `InitConfig.seed`.
 
 ## Layout
-`src/structsplat/` package · `tests/` pytest · `benchmarks/` ablation + fitness ·
+`src/structsplat/` package · `scripts/` four supported workflows + maintenance ·
+`deprecated_scripts/` historical launchers · `tests/` pytest · `benchmarks/` research harnesses ·
 `docs/adr/` decisions · `docs/architecture.md`, `docs/theory.md` · `tasks/` work items + `INDEX.md`.
 
 ## Environment

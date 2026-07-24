@@ -113,8 +113,8 @@ def _sha256(path: Path) -> str:
 def _source_snapshots(out: Path) -> list[dict[str, Any]]:
     sources = (
         Path(__file__).resolve(),
-        REPOSITORY_ROOT / "scripts/fit_janelle_complete_refinement.py",
-        REPOSITORY_ROOT / "scripts/fit_janelle_mask_contained.py",
+        REPOSITORY_ROOT / "deprecated_scripts/fit_janelle_complete_refinement.py",
+        REPOSITORY_ROOT / "deprecated_scripts/fit_janelle_mask_contained.py",
         REPOSITORY_ROOT / "src/structsplat/config.py",
         REPOSITORY_ROOT / "src/structsplat/fit.py",
         REPOSITORY_ROOT / "src/structsplat/pool.py",

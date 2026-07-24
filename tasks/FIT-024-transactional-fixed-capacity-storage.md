@@ -76,7 +76,7 @@ The adversarial claim/provenance audit is
 ## Interfaces touched
 
 `src/structsplat/{gaussians,pool,fit,safe_schedule}.py`,
-`scripts/fit_janelle_safe_commit_schedule.py`, focused tests, README/architecture, and ADR-0021.
+`deprecated_scripts/fit_janelle_safe_commit_schedule.py`, focused tests, README/architecture, and ADR-0021.
 
 ## Depends on
 

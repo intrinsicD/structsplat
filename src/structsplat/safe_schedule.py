@@ -1,4 +1,4 @@
-"""Transactional, phase-ordered optimization for mask-contained 2D Gaussian fields.
+"""Transactional, phase-ordered optimization for masked or unmasked 2D Gaussian fields.
 
 The legacy fitter exposes all individual mechanisms (birth, split, merge, relocation, pruning),
 but a fixed timer order can spend capacity before the operation with the largest useful delta
@@ -8,7 +8,7 @@ boundary investigation:
 * fixed-topology bootstrap;
 * coverage-first birth;
 * detail birth / moment-preserving split;
-* explicit boundary closure;
+* explicit boundary closure for masked inputs, or count-matched general closure otherwise;
 * count-neutral redistribution at capacity;
 * fixed-topology polish.
 
@@ -112,6 +112,7 @@ class SafeScheduleConfig:
 
     capacity: int = 11_000
     storage_policy: str = "dynamic"
+    boundary_enabled: bool = True
     base_active_limit: int | None = None
     detail_tail_max_rows: int = 0
     detail_tail_batch_rows: int = 128
@@ -283,8 +284,11 @@ class SafeScheduleConfig:
                 "minimum pixels positive"
             )
         for phase in self.phases:
-            if phase.max_steps <= 0 or phase.block_steps <= 0:
-                raise ValueError(f"phase {phase.name} must have positive step budgets")
+            if phase.max_steps < 0 or phase.block_steps <= 0:
+                raise ValueError(
+                    f"phase {phase.name} must have a nonnegative step budget "
+                    "and positive block size"
+                )
 
     @property
     def phases(self) -> tuple[PhaseBudget, ...]:
@@ -341,6 +345,8 @@ def _apply_constraint(
     *,
     refresh: bool = False,
 ) -> None:
+    if not cfg.mask_contain:
+        return
     active = _active_field(field, active_n)
     constraint.apply(active, cfg, refresh=refresh)
     if active_n is not None and active.scale_max is not None:
@@ -845,6 +851,7 @@ def _phase_fit_config(
     steps: int,
     *,
     lr_scale: float = 1.0,
+    boundary_enabled: bool = True,
 ) -> FitConfig:
     lm, ls, lr, lc, lo = phase.learning_rates
     lowpass = int(phase.lowpass_downsample)
@@ -861,7 +868,9 @@ def _phase_fit_config(
         loss_weighting="mask",
         loss_target_downsample=lowpass,
         loss_target_full_frac=1.0 if lowpass > 1 else 0.0,
-        mask_undercoverage_weight=float(phase.boundary_floor_weight),
+        mask_undercoverage_weight=(
+            float(phase.boundary_floor_weight) if boundary_enabled else 0.0
+        ),
         mask_interior_undercoverage_weight=float(phase.interior_floor_weight),
         coverage_match_weight=0.0,
         geometry_loss_weight=0.0,
@@ -1192,12 +1201,20 @@ def _safe_fit_block_with_backtracking(
     attempts: list[dict[str, Any]] = []
     total_attempted = 0
     selected_cfg = _phase_fit_config(
-        base_cfg, phase, trial_steps, lr_scale=trial_lr_scale
+        base_cfg,
+        phase,
+        trial_steps,
+        lr_scale=trial_lr_scale,
+        boundary_enabled=schedule.boundary_enabled,
     )
     final_record: dict[str, Any] | None = None
     for attempt_index in range(4):
         selected_cfg = _phase_fit_config(
-            base_cfg, phase, trial_steps, lr_scale=trial_lr_scale
+            base_cfg,
+            phase,
+            trial_steps,
+            lr_scale=trial_lr_scale,
+            boundary_enabled=schedule.boundary_enabled,
         )
         (
             selected_field,
@@ -2442,11 +2459,22 @@ def run_safe_schedule(
     schedule = SafeScheduleConfig() if schedule is None else schedule
     schedule.validate(initial_field.n)
     base_active_limit = schedule.resolved_base_active_limit()
-    mask_cpu = (
-        mask.detach().cpu().numpy()
-        if torch.is_tensor(mask)
-        else mask
-    )
+    has_authoritative_mask = mask is not None
+    if schedule.boundary_enabled and not has_authoritative_mask:
+        raise ValueError(
+            "boundary_enabled requires a mask; use boundary_enabled=False "
+            "for the count-matched unmasked path"
+        )
+    if mask is None:
+        mask_cpu = torch.ones(
+            target.shape[:2], dtype=torch.bool, device="cpu"
+        ).numpy()
+    else:
+        mask_cpu = (
+            mask.detach().cpu().numpy()
+            if torch.is_tensor(mask)
+            else mask
+        )
     mask_tensor = torch.as_tensor(
         mask_cpu, device=target.device, dtype=torch.bool
     )
@@ -2455,9 +2483,13 @@ def run_safe_schedule(
         pixel_loss="l2",
         ssim_weight=0.0,
         loss_weighting="mask",
-        mask_contain=True,
+        mask_contain=has_authoritative_mask,
         mask_cap_mode="anisotropic",
-        mask_undercoverage_band=float(schedule.boundary_band),
+        mask_undercoverage_band=(
+            float(schedule.boundary_band)
+            if schedule.boundary_enabled
+            else 0.0
+        ),
         mask_undercoverage_tau=float(schedule.coverage_tau),
         support_fade=True,
         coverage_match_weight=0.0,
@@ -2604,7 +2636,11 @@ def run_safe_schedule(
             local_refinement = phase_uses_local_refinement(phase)
             if local_refinement:
                 selection_cfg = _phase_fit_config(
-                    cfg, phase, steps, lr_scale=lr_scale
+                    cfg,
+                    phase,
+                    steps,
+                    lr_scale=lr_scale,
+                    boundary_enabled=schedule.boundary_enabled,
                 )
                 trainable_rows, selection_metadata = _local_residual_row_mask(
                     field,
@@ -2766,7 +2802,11 @@ def run_safe_schedule(
             >= schedule.coverage_target_gaussians
             or (
                 metrics.interior_hole_fraction <= schedule.interior_hole_target
-                and metrics.boundary_hole_fraction <= schedule.boundary_hole_target
+                and (
+                    not schedule.boundary_enabled
+                    or metrics.boundary_hole_fraction
+                    <= schedule.boundary_hole_target
+                )
             )
         ),
     )
@@ -2840,6 +2880,39 @@ def run_safe_schedule(
             0, base_active_limit - _logical_n(field, active_n)
         )
         count = min(schedule.boundary_birth_count, room)
+        if count > 0 and not schedule.boundary_enabled:
+            return [
+                (
+                    "coverage_birth",
+                    min(schedule.detail_birth_count, room),
+                    lambda k, image: propose_birth(
+                        field,
+                        target,
+                        image,
+                        phase_cfg,
+                        constraint,
+                        schedule,
+                        k,
+                        "coverage",
+                        active_n=active_n,
+                    ),
+                ),
+                (
+                    "detail_birth",
+                    min(schedule.detail_birth_count, room),
+                    lambda k, image: propose_birth(
+                        field,
+                        target,
+                        image,
+                        phase_cfg,
+                        constraint,
+                        schedule,
+                        k,
+                        "detail",
+                        active_n=active_n,
+                    ),
+                ),
+            ]
         if count > 0:
             factories = [
                 (
@@ -2923,6 +2996,8 @@ def run_safe_schedule(
         )
 
     def boundary_target_reached() -> bool:
+        if not schedule.boundary_enabled:
+            return _logical_n(field, active_n) >= base_active_limit
         if (
             not schedule.boundary_recycle_at_capacity
             and _logical_n(field, active_n) >= base_active_limit
@@ -2940,7 +3015,9 @@ def run_safe_schedule(
         schedule.boundary,
         topology=boundary_factories,
         exit_condition=boundary_target_reached,
-        diagnostics=boundary_diagnostics,
+        diagnostics=(
+            boundary_diagnostics if schedule.boundary_enabled else None
+        ),
     )
 
     def redistribution_factories(phase_cfg: FitConfig):
@@ -2948,7 +3025,7 @@ def run_safe_schedule(
             0, base_active_limit - _logical_n(field, active_n)
         )
         if room > 0:
-            return [
+            factories = [
                 (
                     "coverage_birth",
                     min(schedule.detail_birth_count, room),
@@ -2961,21 +3038,6 @@ def run_safe_schedule(
                         schedule,
                         k,
                         "coverage",
-                        active_n=active_n,
-                    ),
-                ),
-                (
-                    "boundary_birth",
-                    min(schedule.boundary_birth_count, room),
-                    lambda k, image: propose_birth(
-                        field,
-                        target,
-                        image,
-                        phase_cfg,
-                        constraint,
-                        schedule,
-                        k,
-                        "boundary",
                         active_n=active_n,
                     ),
                 ),
@@ -2995,6 +3057,26 @@ def run_safe_schedule(
                     ),
                 ),
             ]
+            if schedule.boundary_enabled:
+                factories.insert(
+                    1,
+                    (
+                        "boundary_birth",
+                        min(schedule.boundary_birth_count, room),
+                        lambda k, image: propose_birth(
+                            field,
+                            target,
+                            image,
+                            phase_cfg,
+                            constraint,
+                            schedule,
+                            k,
+                            "boundary",
+                            active_n=active_n,
+                        ),
+                    ),
+                )
+            return factories
         count = int(schedule.redistribution_count)
         factories = [
             (
@@ -3041,6 +3123,8 @@ def run_safe_schedule(
             ),
         ]
         if (
+            schedule.boundary_enabled
+            and
             schedule.boundary_recycle_at_capacity
             and metrics.boundary_hole_fraction > schedule.boundary_hole_target
         ):
@@ -3122,6 +3206,7 @@ def run_safe_schedule(
             cfg,
             schedule.polish,
             schedule.recovery_steps,
+            boundary_enabled=schedule.boundary_enabled,
         )
         while (
             _logical_n(field, active_n) < tail_limit

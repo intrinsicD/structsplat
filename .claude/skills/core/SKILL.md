@@ -27,6 +27,9 @@ IntrinsicEngine as an RHI pass.
   auction and immutable active-prefix liveness. FIT-025/ADR-0022 separately controls physical
   capacity, the ordinary active ceiling, and an opt-in Pareto-gated late detail reserve; defaults
   preserve the historical single ceiling with no tail.
+- `pipeline.py` / `workflows.py` — freeze the source-bound 2026-07-24 operational profile once,
+  keep masked and unmasked execution identical outside boundary-specific work, and power the four
+  report-producing entry points in `scripts/`.
 - `pyramid.py` (torch) — progressive densification driven by residual structure tensor.
 - `codec.py` / `cli.py` (torch at command time) — native NPZ and self-describing SSPL1 persistence;
   `fit`/`image-to-gaussians2d` saves native fields, while `render`/`gaussians2d-to-image`
@@ -46,6 +49,8 @@ IntrinsicEngine as an RHI pass.
 - New init strategy -> `init.py` + add to `STRATEGIES` + register in `benchmarks/ablation.py`. See `method`.
 - New metric -> `metrics.py`, wired through `fit.py` output dict and `BENCH-001`.
 - Perf/CUDA -> `PORT-001`; keep the NumPy/torch reference as the correctness oracle.
+- Routine conversion/evaluation -> `scripts/convert.py`, `benchmark.py`, `ablation.py`, or
+  `stage_search.py`; task-specific historical launchers live in `deprecated_scripts/`.
 
 ## Naming
 `structsplat` is a **placeholder project name** — if it changes, update `pyproject.toml`, imports,

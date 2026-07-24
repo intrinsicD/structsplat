@@ -37,7 +37,7 @@ a labeled montage, raw diagnostic arrays, and source/config/hash provenance.
 ## Interfaces touched
 
 - `src/structsplat/visualize.py`
-- `scripts/render_paper_figures.py`
+- `deprecated_scripts/render_paper_figures.py`
 - `tests/test_visualize.py`
 - `docs/publication_figures.md`
 - `ara/evidence/docs002-publication-visual-diagnostics-2026-07-14/`

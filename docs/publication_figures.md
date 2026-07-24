@@ -1,6 +1,6 @@
 # Publication figures and visual diagnostics
 
-`structsplat.visualize` and `scripts/render_paper_figures.py` generate a deterministic explanatory
+`structsplat.visualize` and `deprecated_scripts/render_paper_figures.py` generate a deterministic explanatory
 bundle for the existing structure-tensor/WSE initializer and normalized renderer. The default is
 `aniso_onedge` because that exposes the narrow tensor-metric mechanism under study; the shipped
 high-budget PSNR default remains `quadtree_wse`.
@@ -10,7 +10,7 @@ high-budget PSNR default remains `quadtree_wse`.
 Install the working tree (`pip install -e .`) and run:
 
 ```bash
-python scripts/render_paper_figures.py \
+python deprecated_scripts/render_paper_figures.py \
   tests/test_images/COCO_train2014_000000000030.jpg \
   --outdir ara/evidence/docs002-publication-visual-diagnostics-2026-07-14 \
   --max-side 256 \
@@ -20,7 +20,7 @@ python scripts/render_paper_figures.py \
   --candidate-oversample 4
 ```
 
-Run `python scripts/render_paper_figures.py --help` for crop, tensor operator/color space,
+Run `python deprecated_scripts/render_paper_figures.py --help` for crop, tensor operator/color space,
 density, glyph, ellipse, and montage controls. The implementation is CPU-capable; it does not run
 the fitter.
 

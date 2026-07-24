@@ -11,7 +11,7 @@ structure_tensor.compute ──► StructureTensor{ lam1,lam2, across_edge_angle
       ▼                                   ▼                 ▼                         │
 density.py  ── pmf ──►  sampling.eliminate (WSE)  ◄── anisotropy_metric ◄─────────────┘
                           │  exact-N blue noise, density- & anisotropy-adaptive
-                          ▼
+      ▼
 init.build_field ──► GaussianField{ means, log_scales, rotations, colors }   (RS params)
                           │
                           ▼
@@ -20,6 +20,9 @@ fit.fit  ──►  render.render (normalized weighted sum, differentiable)  ─
                           ▼
 pyramid.fit_pyramid: level 0 from image density; finer levels add Gaussians where the *residual*
 structure tensor has energy (densification); append order = coarse→fine = LOD prefix.
+
+pipeline.run_current_pipeline: frozen safe schedule; masked = boundary specialization,
+unmasked = identical counts/stages with general closure and no boundary-specific work.
 ```
 
 ## Module responsibilities
@@ -51,6 +54,9 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
   interface. FIT-025/ADR-0022 separates that physical capacity from the ordinary active ceiling
   and adds an opt-in post-color-solve reserve whose covered-interior high-frequency births/splits
   remain transactional and Pareto-gated), `pyramid`,
+  `pipeline` (ADR-0023: the source-bound `safe_schedule_2026_07_24` operational profile and its
+  matched masked/unmasked initialization contract), `workflows` (four clear folder/report
+  orchestrators, registered ablations/stage variants, and optional native-baseline subprocesses),
   `codec`
   (post-fit quantization, ADR-0007; optional in-container alpha stream for masked inputs,
   ignored by pre-FIT-021 decoders).
@@ -61,7 +67,10 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
   `viewer` bridges a `GaussianField` to the external igsv browser viewer (optional dependency)
   for live fit inspection via `fit(iteration_observer=..., observer_every=...)`; the embedding
   and its diagnostic-only status are ADR-0018.
-- **entry:** `cli` (`structsplat fit` / `image-to-gaussians2d`, `render` /
+- **entry:** `scripts/{convert,benchmark,ablation,stage_search}.py` are the supported operational
+  workflows and write portable report bundles. `deprecated_scripts/` retains evidence-bound
+  launchers without presenting them as supported interfaces. `cli` (`structsplat fit` /
+  `image-to-gaussians2d`, `render` /
   `gaussians2d-to-image`, `batch-fit`, `ablation`, `stage-search`); `render` cold-loads a native
   full-precision NPZ or self-describing SSPL1 stream and can emit display-referred error/metrics
   plus a read-only fitted-field ellipse overlay. `batch` (PORT-005) runs the `fit` option surface
