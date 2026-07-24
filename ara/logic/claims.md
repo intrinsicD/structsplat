@@ -928,3 +928,33 @@ reference renderer is memory-bound. See `ara/evidence/core005-render-checkpoint-
 - **Tags**: safe-schedule, fixed-capacity, memory, CUDA, development, negative-speed-result,
   claim-boundary
 - **From staging**: direct FIT-024 result audit
+
+## C52: Generic reserve activation beats the specialized detail tail on the bounded Janelle screen
+
+- **Statement**: At identical 12,024-row fixed physical storage in the FIT-025 one-image/one-seed
+  RTX-4090 development comparison, the 11,512-row generic active-budget arm reaches
+  `27.219252/11.582541 dB` foreground/boundary versus `27.106930/11.432527 dB` for the equal-count
+  covered-interior high-frequency detail tail. Generic activation is strictly better on every
+  nontrivial protected quality/coverage metric and fastest observed (`406.288 s` total versus
+  `450.837 s`). All four 128-row tail waves pass the unchanged Pareto gate, but gain per row falls
+  about 12x. The specialized tail is not promoted; no nonzero threshold, fixed-versus-dynamic
+  speedup, or general default follows.
+- **Status**: supported single-image development activation-policy result; specialized-tail
+  promotion refuted; general default unauthorized
+- **Provenance**: ai-executed
+- **Crystallized via**: empirical-resolution
+- **Falsification criteria**: Cold rescoring or gate replay changes the stored ordering, the
+  source/config equality audit fails, or a frozen multi-image/multi-seed comparison shows the
+  specialized tail retains a protected-metric advantage at equal active count. A replicated
+  predeclared gain-floor experiment is new evidence rather than a reinterpretation of this
+  zero-floor trace.
+- **Proof**: [`ara/evidence/fit025-reserved-detail-tail-janelle-2026-07-24/run.md`,
+  `ara/evidence/fit025-reserved-detail-tail-janelle-2026-07-24/audit.json`,
+  `runs/janelle_C0001_detail_tail_ablation_20260724/comparison.json`,
+  `runs/janelle_C0001_detail_tail_ablation_20260724/index.html`,
+  `tasks/FIT-025-reserved-detail-tail.md`,
+  `docs/adr/0022-separate-physical-capacity-staged-activation.md`]
+- **Dependencies**: [C50, C51]
+- **Tags**: safe-schedule, fixed-capacity, activation-policy, detail-tail, development,
+  negative-specialization-result, claim-boundary
+- **From staging**: direct FIT-025 result audit

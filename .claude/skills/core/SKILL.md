@@ -24,7 +24,9 @@ IntrinsicEngine as an RHI pass.
   and Adam updates use a contiguous active prefix (FIT-024/ADR-0021).
 - `pool.py` / `safe_schedule.py` (torch) — fixed-capacity storage is independent of topology:
   FIT-021 owns mutable triage/free-list policy, while FIT-024 keeps the transactional proposal
-  auction and immutable active-prefix liveness.
+  auction and immutable active-prefix liveness. FIT-025/ADR-0022 separately controls physical
+  capacity, the ordinary active ceiling, and an opt-in Pareto-gated late detail reserve; defaults
+  preserve the historical single ceiling with no tail.
 - `pyramid.py` (torch) — progressive densification driven by residual structure tensor.
 - `codec.py` / `cli.py` (torch at command time) — native NPZ and self-describing SSPL1 persistence;
   `fit`/`image-to-gaussians2d` saves native fields, while `render`/`gaussians2d-to-image`

@@ -48,7 +48,9 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
   FIT-024/ADR-0021's immutable active-prefix storage for `safe_schedule`, where preallocation is
   independent of topology policy, state checkpoints retain full field/Adam capacity, Adam update
   kernels use the active shape, and one terminal compaction restores the ordinary `GaussianField`
-  interface), `pyramid`,
+  interface. FIT-025/ADR-0022 separates that physical capacity from the ordinary active ceiling
+  and adds an opt-in post-color-solve reserve whose covered-interior high-frequency births/splits
+  remain transactional and Pareto-gated), `pyramid`,
   `codec`
   (post-fit quantization, ADR-0007; optional in-container alpha stream for masked inputs,
   ignored by pre-FIT-021 decoders).

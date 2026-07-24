@@ -270,6 +270,38 @@ nondeterministic even for repeated renders of one field, so event-sequence ident
 parity requirement; multi-image evidence is still required before a default change or broad speed
 claim.
 
+FIT-025 separates fixed physical capacity from staged activation. `--capacity` allocates the
+physical field and Adam tensors, while `--base-active-limit` caps ordinary coverage/boundary/
+redistribution growth. An optional suffix can be reserved for a post-color-solve detail tail:
+
+```bash
+PYTHONPATH=src /home/alex/miniconda3/bin/python \
+  scripts/fit_janelle_safe_commit_schedule.py \
+  --storage-policy fixed_capacity --capacity 12024 \
+  --base-active-limit 11000 \
+  --detail-tail-rows 512 --detail-tail-batch 128 \
+  --detail-tail-min-gain-per-row 0 \
+  --pareto-safe-checkpoints --pareto-checkpoint-every 50 \
+  --capture-root /home/alex/Dropbox/Work/Janelle/2025_03_07_stage_with_fabric \
+  --frame frame_00008 --view-id C0001 --device cuda:0 \
+  --out runs/janelle_C0001_safe_commit_detail_tail
+```
+
+Tail proposals use only already-covered deep-interior persistent high-frequency residuals, auction
+detail births against moment-preserving splits, retain the complete Pareto gate, and stop when no
+safe proposal clears the optional gain-per-row floor. Defaults preserve the old behavior:
+`base_active_limit=None` resolves to physical capacity and the tail is disabled.
+
+The matched fixed-storage Janelle screen favors ordinary activation, not the specialized tail.
+With the same 12,024 physical rows, an 11,512 generic active ceiling reaches
+`27.2193/11.5825 dB` foreground/boundary in 406.3 s total; the 11,000 baseline reaches
+`27.0653/11.4124 dB` in 416.0 s, and the equal-count adaptive tail reaches
+`27.1069/11.4325 dB` in 450.8 s. Generic +512 is better on every nontrivial protected metric.
+All three arms are pooled, so this timing ranks activation policies rather than fixed versus
+dynamic storage. Keep the tail opt-in and do not select a nonzero threshold from this exposed
+single image. The audited comparison is under
+`runs/janelle_C0001_detail_tail_ablation_20260724/`.
+
 `index.html` contains only the accepted reconstruction/error sequence and lists rejected trials
 separately. `schedule_history.json` is the complete transition audit; the editable result is
 `C0001_safe_commit_full.npz`. The optional `.rtgsv` remains separately labeled because its legacy
