@@ -41,12 +41,17 @@ DOCS-001 (docs-sync backfill).
   yet: adopting them is a separate, repo-wide lint/format ratchet, not this spine.
   **Follow-up task:** stage the style ratchet — `ruff check --fix` the ~774 auto-fixable, triage the
   rest (B023 loop-var capture, BLE001 blind-except may be real), then widen the pinned `select`.
-- The full suite is not fresh-checkout portable: ~416 tests (`ssp2e`/`ssp2v`/`ssp2f` actual-coder,
-  `local_linear_reproducing_full_assay`, `native_sad_frontier`, `gauge_free_covariance_assay`) need
-  committed `results/` evidence bundles (gitignored, absent from a fresh clone or CI runner), a
-  Landlock-capable kernel, or a thread-pinned worker env. `conftest.py` auto-marks those modules
-  `integration`; the default gate runs the remaining ~1474 tests (verified green — every failure in
-  a full run was inside an `integration` module). Run `-m integration` in a provisioned environment.
+- The full suite is not fresh-checkout portable: ~510 tests need something a clean CPU checkout
+  cannot guarantee — committed `results/` evidence bundles (gitignored), a Landlock-capable kernel,
+  a thread-pinned worker env, the host's exact sysfs/ACPI layout, or bit-exact numeric reproduction
+  (generated-image SHA-256s frozen against a reference BLAS/NumPy/CPU stack). `conftest.py`
+  auto-marks those modules `integration`; the default gate runs the remaining ~1386 tests. Run
+  `-m integration` in a provisioned environment that matches the reference machine.
+- The integration set was grown once from CI evidence: the first CI run surfaced five failures the
+  local sandbox missed — `test_marginal_cold_stream_rd` + `test_perturb_recover_spectroscopy`
+  (frozen image-hash drift on the runner's numeric stack) and `test_ssp2v_actual_run_replay` (a
+  frozen sandbox read-only policy rejected the cloud runner's `/sys/devices/.../numa_node`). All
+  three are intrinsically environment-coupled (untouched by this spine) and joined `_INTEGRATION_MODULES`.
 - Pre-existing drift observed (left untouched — it lives in the frozen evidence machinery):
   `test_gauge_free_covariance_assay` expects the source manifest to cover the whole tree, but the
   frozen manifest predates `triage.py`/`pool.py`/`mask.py`/`batch.py`/`safe_schedule.py`/`viewer.py`.

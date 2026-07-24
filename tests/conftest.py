@@ -27,10 +27,16 @@ def _seed_everything():
     yield
 
 
-# Environment/evidence-coupled test modules excluded from the default portable gate. They need
-# committed results/ evidence bundles (gitignored, absent from a fresh checkout), a Landlock-capable
-# kernel, or a specially configured worker environment (thread-pinning env vars, sandbox
-# subprocesses). Run them with `-m integration` in a fully provisioned setup.
+# Environment/evidence-coupled test modules excluded from the default portable gate. They depend on
+# something a clean CPU checkout cannot guarantee:
+#   - committed results/ evidence bundles (gitignored, absent from a fresh checkout);
+#   - a Landlock-capable kernel or a specially configured worker environment (thread-pinning env
+#     vars, sandbox subprocesses);
+#   - the exact host sysfs/ACPI layout (a frozen read-only sandbox policy enumerates real
+#     /sys/devices paths — e.g. a cloud runner's numa_node entries are not in the frozen set);
+#   - bit-exact numeric reproduction: they hash generated float images against a frozen SHA-256
+#     reference, which drifts across BLAS/NumPy/CPU stacks that differ from the reference machine.
+# Run them with `-m integration` in a fully provisioned setup that matches the reference environment.
 _INTEGRATION_MODULES = frozenset(
     {
         "test_ssp2e_replay_repair",
@@ -39,11 +45,14 @@ _INTEGRATION_MODULES = frozenset(
         "test_ssp2v_actual_run_preflight_policy",
         "test_ssp2v_actual_run_producer",
         "test_ssp2v_actual_run_recovery",
+        "test_ssp2v_actual_run_replay",
         "test_ssp2v_landlock",
         "test_ssp2v_quality",
         "test_local_linear_reproducing_full_assay",
         "test_native_sad_frontier",
         "test_gauge_free_covariance_assay",
+        "test_marginal_cold_stream_rd",
+        "test_perturb_recover_spectroscopy",
     }
 )
 
