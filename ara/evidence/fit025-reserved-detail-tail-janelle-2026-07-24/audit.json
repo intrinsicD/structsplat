@@ -1,0 +1,153 @@
+{
+  "schema": "structsplat.janelle.detail_tail_audit.v1",
+  "valid": true,
+  "scope": "one-image one-seed RTX-4090 development activation-policy comparison",
+  "repository_commit_at_execution": "8cfe30d8709dcdf19bf1a10d1d72011b54a89ac5",
+  "repository_status_sha256_at_execution": "d4635f3de6c9f2abcf4db5def50af93607037aa650ad5f1fe290c4142deea073",
+  "controlled_equalities": {
+    "source_and_seed": true,
+    "environment": true,
+    "fit_config": true,
+    "fit_window_and_size": true,
+    "initial_checkpoint": true,
+    "physical_capacity_12024": true,
+    "fixed_capacity_storage": true,
+    "executed_source_hashes": true
+  },
+  "intended_schedule_differences_from_baseline": {
+    "generic_plus512": [
+      "base_active_limit",
+      "boundary.target_gaussians",
+      "redistribution.target_gaussians",
+      "polish.target_gaussians"
+    ],
+    "adaptive_tail_plus512": [
+      "detail_tail_max_rows",
+      "polish.target_gaussians"
+    ]
+  },
+  "integrity": {
+    "source_snapshot_hash_failures": 0,
+    "manifest_source_hash_failures": 0,
+    "field_hash_failures": 0,
+    "history_step_sum_failures": 0,
+    "history_continuity_failures": 0,
+    "accepted_gate_replay_failures": 0,
+    "rejected_gate_replay_failures": 0,
+    "missing_required_artifacts": 0,
+    "native_image_shape_failures": 0,
+    "cold_rescore_max_abs_metric_delta": {
+      "baseline_11000": 0.0,
+      "generic_plus512": 0.0,
+      "adaptive_tail_plus512": 0.0
+    }
+  },
+  "initial_field_sha256_all_arms": "cfa13a084195149c637c0e50297dc010d812f308bfb4703ac55abb72dc26999b",
+  "field_sha256": {
+    "baseline_11000": "1c8aa921e35acde99223e9437b07d392daa4247cbe414d33c063caecee5bb9f9",
+    "generic_plus512": "400163380c12bb137656a81dba65c821914bbf4ca66869469820d17e52eec227",
+    "adaptive_tail_plus512": "46106fafe50f85cd573da9c8b963e2716046450fcd0b16552dc05b6e160630f0"
+  },
+  "history_gate_replay": {
+    "baseline_11000": {
+      "accepted_checked": 30,
+      "rejected_checked": 21,
+      "attempted_steps": 17591,
+      "accepted_steps": 1849
+    },
+    "generic_plus512": {
+      "accepted_checked": 31,
+      "rejected_checked": 20,
+      "attempted_steps": 17191,
+      "accepted_steps": 1970
+    },
+    "adaptive_tail_plus512": {
+      "accepted_checked": 35,
+      "rejected_checked": 21,
+      "attempted_steps": 21111,
+      "accepted_steps": 2229
+    }
+  },
+  "results": {
+    "baseline_11000": {
+      "n_gaussians": 11000,
+      "foreground_psnr_db": 27.06533033844454,
+      "boundary_psnr_db": 11.412448235039287,
+      "cvar99_mse": 0.15238669514656067,
+      "p99_mse": 0.01486177183687687,
+      "interior_hole_fraction": 0.014525865204632282,
+      "boundary_hole_fraction": 0.2863757312297821,
+      "schedule_seconds": 276.09708325285465,
+      "total_seconds": 416.0371188959107,
+      "peak_gpu_memory_bytes": 2236162560
+    },
+    "generic_plus512": {
+      "n_gaussians": 11512,
+      "foreground_psnr_db": 27.219252045567014,
+      "boundary_psnr_db": 11.582540589572938,
+      "cvar99_mse": 0.14710485935211182,
+      "p99_mse": 0.013987557962536812,
+      "interior_hole_fraction": 0.009236041456460953,
+      "boundary_hole_fraction": 0.25577154755592346,
+      "schedule_seconds": 272.06989346817136,
+      "total_seconds": 406.2879995536059,
+      "peak_gpu_memory_bytes": 2268850688
+    },
+    "adaptive_tail_plus512": {
+      "n_gaussians": 11512,
+      "foreground_psnr_db": 27.10692989409784,
+      "boundary_psnr_db": 11.432527325525454,
+      "cvar99_mse": 0.1511119157075882,
+      "p99_mse": 0.014250462874770164,
+      "interior_hole_fraction": 0.014343256130814552,
+      "boundary_hole_fraction": 0.2842784523963928,
+      "schedule_seconds": 315.32083547022194,
+      "total_seconds": 450.8374677700922,
+      "peak_gpu_memory_bytes": 2267646464
+    }
+  },
+  "adaptive_tail_waves": [
+    {
+      "rows": 128,
+      "gain": 0.004262526555240954,
+      "gain_per_row": 0.00003330098871281995
+    },
+    {
+      "rows": 128,
+      "gain": 0.0025922145106292743,
+      "gain_per_row": 0.000020251675864291206
+    },
+    {
+      "rows": 128,
+      "gain": 0.0008716146406030475,
+      "gain_per_row": 0.000006809489379711309
+    },
+    {
+      "rows": 128,
+      "gain": 0.0003566862203236558,
+      "gain_per_row": 0.000002786611096278561
+    }
+  ],
+  "comparison_sha256": {
+    "comparison.json": "bd4f5de7bc39019bde6654e7441d56a282cfbd9aed4121669eb3a62a21218ddb",
+    "index.html": "7752b3c2c1e7e3abe6a82e7b837d2a1875783e8a2552b038ade51e3aae58f792"
+  },
+  "disposition": {
+    "recommended_development_arm": "generic_plus512",
+    "generic_nonworse_on_all_protected_metrics_vs_adaptive": true,
+    "specialized_detail_tail_promoted": false,
+    "fastest_observed_arm": "generic_plus512",
+    "fixed_vs_dynamic_speed_claim_supported_by_this_experiment": false,
+    "default_change_authorized": false
+  },
+  "limitations": [
+    "development image already exposed by FIT-023 and FIT-024",
+    "one image, one seed, one GPU and one execution per arm",
+    "arms can execute different safe-auction work and were not order-randomized",
+    "CUDA atomic accumulation can alter close proposal rankings",
+    "all arms use fixed-capacity storage, so pooling is not an experimental axis",
+    "the detail-tail gain floor was zero; any nonzero stopping threshold is post-hoc until tested",
+    "the exact CUDA extension ELF was not archived",
+    "no transport archive or actual-rate comparison was produced"
+  ]
+}
