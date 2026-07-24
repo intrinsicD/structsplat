@@ -50,7 +50,10 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
   kernels use the active shape, and one terminal compaction restores the ordinary `GaussianField`
   interface. FIT-025/ADR-0022 separates that physical capacity from the ordinary active ceiling
   and adds an opt-in post-color-solve reserve whose covered-interior high-frequency births/splits
-  remain transactional and Pareto-gated), `pyramid`,
+  remain transactional and Pareto-gated; FIT-026/ADR-0023 adds the opt-in `geometric` storage
+  policy that grows physical capacity by `growth_factor` toward `capacity` on demand instead of
+  preallocating it, preserving the live prefix so the fit stays bit-identical to `fixed_capacity`),
+  `pyramid`,
   `codec`
   (post-fit quantization, ADR-0007; optional in-container alpha stream for masked inputs,
   ignored by pre-FIT-021 decoders).

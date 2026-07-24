@@ -48,7 +48,11 @@ from .fit import (
     fit,
 )
 from .triage import _mutual_nearest_pairs, _row_covariances, attribution_pass
-from .pool import prepare_transactional_pool
+from .pool import (
+    geometric_capacity_schedule,
+    grow_transactional_capacity,
+    prepare_transactional_pool,
+)
 
 
 @dataclass(frozen=True)
@@ -113,6 +117,8 @@ class SafeScheduleConfig:
     capacity: int = 11_000
     storage_policy: str = "dynamic"
     base_active_limit: int | None = None
+    growth_factor: float = 2.0
+    initial_capacity: int | None = None
     detail_tail_max_rows: int = 0
     detail_tail_batch_rows: int = 128
     detail_tail_min_gain_per_row: float = 0.0
@@ -191,6 +197,26 @@ class SafeScheduleConfig:
             else int(self.base_active_limit)
         )
 
+    def resolved_initial_capacity(self, initial_n: int) -> int:
+        """Physical row count a ``geometric`` fit starts at before growing toward ``capacity``."""
+
+        if self.initial_capacity is None:
+            return int(initial_n)
+        return int(self.initial_capacity)
+
+    def max_block_births(self) -> int:
+        """Largest row count a single topology block can activate (the headroom to reserve)."""
+
+        return max(
+            int(self.coverage_birth_count),
+            int(self.detail_birth_count),
+            int(self.detail_split_count),
+            int(self.boundary_birth_count),
+            int(self.redistribution_count),
+            int(self.event_min_count),
+            1,
+        )
+
     def validate(self, initial_n: int) -> None:
         if initial_n <= 0:
             raise ValueError("safe schedule needs a non-empty initial field")
@@ -212,10 +238,18 @@ class SafeScheduleConfig:
             raise ValueError(
                 "base_active_limit must be between the initial field size and capacity"
             )
-        if self.storage_policy not in ("dynamic", "fixed_capacity"):
+        if self.storage_policy not in ("dynamic", "fixed_capacity", "geometric"):
             raise ValueError(
-                "storage_policy must be 'dynamic' or 'fixed_capacity'"
+                "storage_policy must be 'dynamic', 'fixed_capacity', or 'geometric'"
             )
+        if self.storage_policy == "geometric":
+            if not math.isfinite(self.growth_factor) or self.growth_factor <= 1.0:
+                raise ValueError("growth_factor must be finite and greater than one")
+            initial_capacity = self.resolved_initial_capacity(initial_n)
+            if not initial_n <= initial_capacity <= self.capacity:
+                raise ValueError(
+                    "initial_capacity must be between the initial field size and capacity"
+                )
         if self.detail_tail_max_rows < 0:
             raise ValueError("detail_tail_max_rows must be nonnegative")
         if self.detail_tail_batch_rows <= 0:
@@ -792,6 +826,47 @@ def adapt_optimizer_state(
                 value[valid.to(device=value.device)] = 0
             parameter_state[key] = value
     return out
+
+
+def _reserve_geometric_capacity(
+    field: GaussianField,
+    optimizer_state: dict | None,
+    active_n: int | None,
+    schedule: SafeScheduleConfig,
+    migrations: list[dict[str, int]],
+) -> tuple[GaussianField, dict | None]:
+    """Grow physical storage geometrically ahead of a geometric-policy topology auction.
+
+    No-op unless ``storage_policy == "geometric"``. When the contiguous active prefix comes within
+    one block's birth demand of the current physical capacity, migrate the field tensors (append
+    parked rows) and the Adam moments (``adapt_optimizer_state``, appended rows zeroed) up to the
+    next geometric step, capped at the logical ceiling. This keeps every in-place birth inside
+    physical storage while committing only O(log N) migrations over the whole fit. The live prefix
+    is preserved bit-for-bit, so an accepted trajectory is identical to the equivalent
+    ``fixed_capacity`` run once physical capacity has caught up to the ceiling.
+    """
+    if schedule.storage_policy != "geometric" or active_n is None:
+        return field, optimizer_state
+    ceiling = min(int(schedule.capacity), schedule.resolved_base_active_limit())
+    old_n = int(field.n)
+    if old_n >= ceiling:
+        return field, optimizer_state
+    required = min(ceiling, int(active_n) + schedule.max_block_births())
+    if required <= old_n:
+        return field, optimizer_state
+    new_n = geometric_capacity_schedule(
+        old_n, required, growth_factor=schedule.growth_factor, max_capacity=ceiling
+    )
+    if new_n <= old_n:
+        return field, optimizer_state
+    field = grow_transactional_capacity(field, new_n)
+    optimizer_state = adapt_optimizer_state(
+        optimizer_state, old_n, new_n, torch.empty(0, dtype=torch.long)
+    )
+    migrations.append(
+        {"old_capacity": old_n, "new_capacity": new_n, "active_n": int(active_n)}
+    )
+    return field, optimizer_state
 
 
 def restore_frozen_optimizer_rows(
@@ -1559,7 +1634,12 @@ def propose_birth(
 ) -> TopologyProposal | None:
     logical_n = _logical_n(field, active_n)
     active = _active_field(field, active_n)
-    room = max(0, int(schedule.capacity) - logical_n)
+    # Prefix storage (fixed_capacity/geometric) clamps births to the physical row headroom
+    # ``field.n``: for fixed_capacity that equals ``schedule.capacity`` (unchanged), for geometric
+    # it is the current, still-growing physical capacity. Dynamic storage appends, so it clamps to
+    # the configured ceiling as before.
+    room_ceiling = int(field.n) if active_n is not None else int(schedule.capacity)
+    room = max(0, room_ceiling - logical_n)
     components, metadata = _birth_components(
         active,
         target,
@@ -1579,7 +1659,12 @@ def propose_birth(
             field.n, trial.n, device=field.means.device, dtype=torch.long
         )
     else:
-        if int(field.n) != int(schedule.capacity):
+        if schedule.storage_policy == "geometric":
+            if int(field.n) > int(schedule.capacity):
+                raise ValueError(
+                    "geometric proposal storage cannot exceed schedule.capacity"
+                )
+        elif int(field.n) != int(schedule.capacity):
             raise ValueError(
                 "fixed-capacity proposal storage must equal schedule.capacity"
             )
@@ -1619,7 +1704,10 @@ def propose_split(
 ) -> TopologyProposal | None:
     logical_n = _logical_n(field, active_n)
     active = _active_field(field, active_n)
-    room = max(0, int(schedule.capacity) - logical_n)
+    # See propose_birth: prefix storage clamps to the physical headroom ``field.n``
+    # (== schedule.capacity for fixed_capacity, still growing for geometric).
+    room_ceiling = int(field.n) if active_n is not None else int(schedule.capacity)
+    room = max(0, room_ceiling - logical_n)
     k = min(int(count), room, logical_n)
     if k <= 0:
         return None
@@ -1755,7 +1843,12 @@ def propose_split(
         proposal_active_n = None
         children = torch.arange(field.n, trial.n, device=parents.device)
     else:
-        if int(field.n) != int(schedule.capacity):
+        if schedule.storage_policy == "geometric":
+            if int(field.n) > int(schedule.capacity):
+                raise ValueError(
+                    "geometric proposal storage cannot exceed schedule.capacity"
+                )
+        elif int(field.n) != int(schedule.capacity):
             raise ValueError(
                 "fixed-capacity proposal storage must equal schedule.capacity"
             )
@@ -2492,9 +2585,16 @@ def run_safe_schedule(
         )
     initial_n = int(field.n)
     active_n: int | None = None
+    geometric_migrations: list[dict[str, int]] = []
     if schedule.storage_policy == "fixed_capacity":
         field, pool_state = prepare_transactional_pool(
             field, schedule.capacity
+        )
+        active_n = pool_state.active_n
+    elif schedule.storage_policy == "geometric":
+        # Start at a small physical capacity and grow geometrically toward ``capacity`` on demand.
+        field, pool_state = prepare_transactional_pool(
+            field, schedule.resolved_initial_capacity(initial_n)
         )
         active_n = pool_state.active_n
     initial_physical_n = int(field.n)
@@ -2655,6 +2755,9 @@ def run_safe_schedule(
             if topology is not None and not exit_condition():
                 factories = topology(phase_cfg)
                 if factories:
+                    field, optimizer_state = _reserve_geometric_capacity(
+                        field, optimizer_state, active_n, schedule, geometric_migrations
+                    )
                     (
                         field,
                         optimizer_state,
@@ -3262,9 +3365,17 @@ def run_safe_schedule(
         "final_active_n": final_active_n,
         "initial_physical_rows": initial_physical_n,
         "final_physical_rows": physical_capacity,
-        "fixed_shape_during_fit": active_n is not None,
+        "fixed_shape_during_fit": active_n is not None
+        and initial_physical_n == physical_capacity,
         "output_compacted": active_n is not None,
     }
+    if schedule.storage_policy == "geometric":
+        storage_record["growth_factor"] = float(schedule.growth_factor)
+        storage_record["initial_capacity"] = int(
+            schedule.resolved_initial_capacity(initial_n)
+        )
+        storage_record["geometric_migrations"] = len(geometric_migrations)
+        storage_record["geometric_migration_events"] = list(geometric_migrations)
     if active_n is not None:
         empty = torch.empty(
             0, device=field.means.device, dtype=torch.long
