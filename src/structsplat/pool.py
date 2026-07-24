@@ -40,6 +40,64 @@ POOL_PARK_OPACITY_LOGIT = -12.0
 _STREAM_FRAME_BYTES = 4  # struct.pack("<I", len(payload)) per framed stream
 
 
+def _parked_field(extra: int, device, dtype) -> GaussianField:
+    """A block of ``extra`` parked rows at the off-image sentinel (color_basis='constant')."""
+    return GaussianField(
+        torch.full((extra, 2), POOL_PARK_COORD, device=device, dtype=dtype),
+        torch.full((extra, 2), POOL_PARK_LOG_SCALE, device=device, dtype=dtype),
+        torch.zeros(extra, device=device, dtype=dtype),
+        torch.zeros(extra, 3, device=device, dtype=dtype),
+        torch.full((extra,), POOL_PARK_OPACITY_LOGIT, device=device, dtype=dtype),
+    )
+
+
+def geometric_capacity_schedule(
+    current: int, required: int, *, growth_factor: float, max_capacity: int
+) -> int:
+    """Smallest capacity >= ``required`` reached by growing ``current`` geometrically.
+
+    Mirrors the realtime-gs GeometricParameterArena schedule: each step multiplies by
+    ``growth_factor`` (and advances by at least one row), and the result is clamped to
+    ``max_capacity``. Amortizes allocation so a fit that ends at N rows migrates O(log N) times
+    rather than being pre-committed to its ceiling.
+    """
+    current = int(current)
+    required = int(required)
+    max_capacity = int(max_capacity)
+    if not math.isfinite(growth_factor) or growth_factor <= 1.0:
+        raise ValueError("growth_factor must be finite and greater than one")
+    if required > max_capacity:
+        raise ValueError(f"required {required} exceeds max_capacity {max_capacity}")
+    capacity = max(current, 1)
+    while capacity < required:
+        grown = max(capacity + 1, int(math.ceil(capacity * growth_factor)))
+        capacity = min(max_capacity, max(required, grown))
+    return min(max_capacity, max(current, capacity))
+
+
+@torch.no_grad()
+def grow_transactional_capacity(field: GaussianField, new_capacity: int) -> GaussianField:
+    """Return ``field`` physically enlarged to ``new_capacity`` rows by appending parked rows.
+
+    The existing rows (live active prefix and any parked tail) keep their exact values and order,
+    so the contiguous active prefix is preserved bit-for-bit; only inactive storage is added. The
+    matching Adam-moment growth is handled by ``fit.adapt_optimizer_state`` (new tail zeroed).
+    """
+    new_capacity = int(new_capacity)
+    current = int(field.n)
+    if new_capacity < current:
+        raise ValueError(
+            f"grow target {new_capacity} is below the current row count {current}"
+        )
+    if field.color_grads is not None:
+        raise ValueError("geometric growth supports color_basis='constant' only (FIT-021)")
+    if new_capacity == current:
+        return field
+    extra = new_capacity - current
+    parked = _parked_field(extra, field.means.device, field.means.dtype)
+    return field.append(parked)
+
+
 @dataclass
 class PoolState:
     """Fit-local pooled-lifecycle bookkeeping (deliberately not part of GaussianField)."""
@@ -203,14 +261,7 @@ def prepare_pooled_field(field: GaussianField, cfg: FitConfig, H: int, W: int,
             "raise target_file_bytes/pool_capacity or lower the init num_gaussians")
     extra = capacity - n0
     if extra > 0:
-        parked = GaussianField(
-            torch.full((extra, 2), POOL_PARK_COORD, device=device, dtype=dtype),
-            torch.full((extra, 2), POOL_PARK_LOG_SCALE, device=device, dtype=dtype),
-            torch.zeros(extra, device=device, dtype=dtype),
-            torch.zeros(extra, 3, device=device, dtype=dtype),
-            torch.full((extra,), POOL_PARK_OPACITY_LOGIT, device=device, dtype=dtype),
-        )
-        field = field.append(parked)
+        field = field.append(_parked_field(extra, device, dtype))
     live = torch.zeros(field.n, device=device, dtype=torch.bool)
     live[:n0] = True
     return field, PoolState(live=live, capacity=int(capacity), initial_live=int(n0),
@@ -239,16 +290,7 @@ def prepare_transactional_pool(
         )
     extra = capacity - initial_n
     if extra > 0:
-        parked = GaussianField(
-            torch.full((extra, 2), POOL_PARK_COORD, device=device, dtype=dtype),
-            torch.full((extra, 2), POOL_PARK_LOG_SCALE, device=device, dtype=dtype),
-            torch.zeros(extra, device=device, dtype=dtype),
-            torch.zeros(extra, 3, device=device, dtype=dtype),
-            torch.full(
-                (extra,), POOL_PARK_OPACITY_LOGIT, device=device, dtype=dtype
-            ),
-        )
-        field = field.append(parked)
+        field = field.append(_parked_field(extra, device, dtype))
     state = TransactionalPoolState(
         capacity=capacity,
         active_n=initial_n,
