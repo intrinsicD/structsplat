@@ -13,3 +13,4 @@ results/
 *.png.fit.npz
 # Claude Code personal settings
 .claude/settings.local.json
+.claude/settings.local.json.tmp.*

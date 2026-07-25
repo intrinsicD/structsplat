@@ -198,7 +198,17 @@ PORT-001, FIT-003.
   pair and `_ssim_builtin_bchw` runs two 1D passes instead of one 11x11 pass — the same operator
   up to float associativity (`~1e-8` on the value, `~2e-6` relative on the gradient; covered by
   `tests/test_metrics.py::test_ssim_separable_window_matches_dense_outer_product_reference`).
-  Measured `1.42x` on SSIM fwd+bwd at 512² and `1.37--1.44x` across 256²--1024².
+  Measured `1.36--1.48x` on SSIM fwd+bwd across 256², 384², 512² and 1024², stable across repeated
+  runs. **Below 256² the effect is unresolved on this machine and no claim is made**: a single
+  forward+backward is under a millisecond there, both arms sit at the same `~1.1--1.2 ms`
+  launch-overhead floor, and repeated measurement spans `0.64x` to `3.08x` with `144--570%`
+  spreads — including a dense-versus-dense control that measured `1.45x` apart from itself. An
+  earlier reading of `0.64x` as a real small-image regression was noise; a size-gated dispatch was
+  prototyped in response and then removed, because a threshold constant justified by unresolvable
+  data is worse than none. The shipped code is the unconditional separable form. If the ablation's
+  `max-side 160` cells matter here, that needs a quieter machine, not this artifact. Full numbers,
+  spreads, and the reproduction command are in
+  `ara/evidence/port002-tiled-render-profile-2026-07-25/` (claim C55).
   End-to-end effect: representative step `12.673 -> 11.215 ms` exact and `9.159 -> 7.075 ms`
   tiled, comparing the two passing runs (`_adr0024` before, `_head_pass` after). The two
   intermediate runs in `results/port002_tiled_render_profile_rtx3050_sepssim/` measured the same

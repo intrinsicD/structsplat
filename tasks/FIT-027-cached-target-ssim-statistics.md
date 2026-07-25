@@ -27,14 +27,23 @@ value, its gradient, or the stateless `metrics.ssim()` contract used for reporti
 
 Separable blur plus cached `mu_t` / `mu_t2` / `sig_t`, against the pre-change dense builtin:
 
-| resolution | builtin fwd+bwd | separable + cached | speedup |
-|---|---|---|---|
-| 256² | `1.641 ms` | `0.884 ms` | `1.86x` |
-| 512² | `6.212 ms` | `3.595 ms` | `1.73x` |
+| resolution | separable + cached, versus the pre-change dense form |
+|---|---|
+| 256² | `1.54--1.87x` |
+| 384² | `1.56x` |
+| 512² | `1.68--1.76x` |
+| 1024² | `1.65--1.72x` |
+
+Ranges span repeated runs; absolute milliseconds drifted with machine load while ratios held. No
+figure is claimed below 256², where both arms sit at the same launch-overhead floor and the
+measurement does not resolve (see C55).
 
 Agreement with the dense builtin: SSIM value `6.5e-9` absolute at 512²; gradient `2.274e-11`
-absolute, `2.0e-6` relative. The separable half of that (`1.42x`) already shipped with PORT-002;
-this task is the caching half, worth the remaining `~1.2x` on SSIM.
+absolute, `2.0e-6` relative. The separable half (`1.36--1.48x`) already shipped with PORT-002;
+this task is the caching half, worth roughly a further `1.2x` on the SSIM term. The prototype and
+its measurements live in
+`ara/evidence/port002-tiled-render-profile-2026-07-25/ssim_microbench.py` (claim C55) — it is
+benchmark code, not a shipped path.
 
 ## Approach
 
