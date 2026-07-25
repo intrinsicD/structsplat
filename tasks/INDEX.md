@@ -65,6 +65,7 @@ replay-valid; do not rewrite those task bytes merely to duplicate this table.
 | FIT-026 | Geometric-growth storage policy | implemented (opt-in, default off, ADR-0023) — `storage_policy="geometric"` starts the transactional pool at `initial_capacity` and grows physical capacity by `growth_factor` toward `capacity` on demand (append parked rows + `adapt_optimizer_state`), O(log N) migrations; the live prefix is preserved bit-for-bit so a geometric fit is `atol=0`-identical to `fixed_capacity` in field and metrics; ported from realtime-gs `GeometricParameterArena`; timing vs fixed/dynamic left to a FIT-024-style benchmark | FIT-021/023/025, CORE-010/011, ADR-0020/0021/0022/0023 |
 | FIT-027 | Cached target-side SSIM statistics | open, measured opportunity — SSIM is the largest term in the tiled fit step (512²: SSIM fwd+bwd `6.531 ms` vs L1 `0.206 ms`, Adam `~0.19 ms`); separable window already landed with PORT-002 (`1.42x`), caching the fixed target's `mu_t`/`sig_t` measures `1.73x` at 512² with `2.0e-6` relative gradient agreement; needs per-fit state plus invalidation on pyramid/curriculum target changes | PORT-002, FIT-003, FIT-016 |
 | DOCS-003 | Verification spine (docs_sync + verify.sh + markers/seeding + CI) | in-progress | DOCS-001 |
+| DOCS-004 | Staged lint/format ratchet (widen `select`, adopt `ruff format`) | todo — Stage 1/2 due before the next results-bearing task closes; see the task's Expiry section | DOCS-003 |
 
 ## Retired Done Tasks
 

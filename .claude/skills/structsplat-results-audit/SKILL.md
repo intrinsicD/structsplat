@@ -23,8 +23,8 @@ deliverable is corrections, narrower wording, explicit negative results, and
 updated ARA claims, never reassurance. "Everything checks out" requires a
 completed claim table with every row bound to independently inspected evidence.
 
-Load `core` first, `benchmark` for harness-specific rules, `review` before
-completion, and `docs-sync` for claim updates. This skill audits evidence; it
+Load `structsplat-core` first, `structsplat-benchmark` for harness-specific rules, `structsplat-review` before
+completion, and `structsplat-docs-sync` for claim updates. This skill audits evidence; it
 does not authorize a rescue experiment, protected confirmation data, or a new
 method.
 
@@ -148,10 +148,10 @@ remains unauthorized.
 
 ## Repository anchors
 
-`CLAUDE.md` + `core` — invariants and routing · `benchmark` and
+`CLAUDE.md` + `structsplat-core` — invariants and routing · `structsplat-benchmark` and
 `benchmarks/README.md` — validity protocol ·
 `tasks/BENCH-007-actual-rate-structure-phase-diagram.md` — frozen actual-rate
 gate · `benchmarks/actual_rate_phase_diagram.py` — executable accounting ·
 ADR-0003/0011 — normalized equation and exact CUDA · `ara/logic/claims.md` —
-claim ledger · `ara/evidence/` — source-bound proof · `docs-sync` — same-change
+claim ledger · `ara/evidence/` — source-bound proof · `structsplat-docs-sync` — same-change
 documentation discipline.

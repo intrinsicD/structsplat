@@ -20,8 +20,8 @@ metadata:
 > mission. It proposes and audits — it never modifies production or research code.
 > A selected candidate enters the normal StructSplat process as a bounded
 > `AREA-NNN` task under `tasks/`, registered in `tasks/INDEX.md`, and follows the
-> `core` → `task-workflow` → `method` (when applicable) → `benchmark` → `review`
-> → `docs-sync` route. Preserve the NumPy/torch split, establish correctness
+> `structsplat-core` → `structsplat-task-workflow` → `structsplat-method` (when applicable) → `structsplat-benchmark` → `structsplat-review`
+> → `structsplat-docs-sync` route. Preserve the NumPy/torch split, establish correctness
 > against the PyTorch reference, and require benchmark evidence plus forward and
 > backward parity before promoting an owned CUDA path. Hard-to-reverse decisions
 > get an ADR under `docs/adr/`; reproducible evidence belongs under `ara/evidence/`.

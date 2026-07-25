@@ -21,7 +21,7 @@ actual-rate development gate found that tensor-metric WSE did not add enough val
 strong gradient control; that compression claim is closed. Current research therefore treats the
 repository as an interpretable causal substrate for new representation, ownership, renderer, and
 codec hypotheses rather than as an established SOTA codec. `structsplat` is a **placeholder name**
-— rename freely (see the `docs-sync` skill).
+— rename freely (see the `structsplat-docs-sync` skill).
 
 > This is a PyTorch **research reference** with an opt-in exact CUDA extension for the same
 > normalized/additive equations. The remaining production port is a tiled CUDA/Vulkan/RHI path
@@ -522,25 +522,34 @@ completed negative BENCH-007 Stage-1 F5--F9 bundle status.
 ## Agentic workflow (Claude Code)
 This repo is built to be implemented *with* Claude Code, mirroring the IntrinsicEngine setup.
 
-- **`CLAUDE.md`** — project guide + a skill-aware routing table.
-- **`.claude/skills/`** — eight canonical project skills: `core`, `task-workflow`, `review`,
-  `method`, `benchmark`, `docs-sync`, `structsplat-research-ideation`,
-  `structsplat-results-audit`. They're auto-discovered
-  inside this repo; run `scripts/install_skills.sh` to symlink them into `~/.claude/skills` for
-  global use. The two repo-prefixed entries under `.agents/skills/` are relative discovery
+- **`CLAUDE.md`** — project guide + a skill-aware routing table. **`AGENTS.md`** is a thin
+  redirect to it for non-Claude harnesses.
+- **`.claude/skills/`** — eight canonical project skills: `structsplat-core`, `structsplat-task-workflow`, `structsplat-review`,
+  `structsplat-method`, `structsplat-benchmark`, `structsplat-docs-sync`, `structsplat-research-ideation`,
+  `structsplat-results-audit`. Every name is `structsplat-`prefixed so it cannot collide with a
+  sibling repository's skill when more than one repo is open in an agent session. They're
+  auto-discovered inside this repo; run `scripts/install_skills.sh` to symlink them into
+  `~/.claude/skills` for global use (it refuses to install an unprefixed skill). The
+  repo-prefixed entries under `.agents/skills/` are relative discovery
   symlinks to these same skill trees for Codex/Agent Skills, not duplicates. The ideation skill is
   a first-party, MIT-licensed adaptation by Alexander Dieckmann of
   `transformational-research-skill-kit` v1.0.0; the results-audit skill is its referee-side
   companion for evidence that already exists.
 - **`tasks/`** — work items (`AREA-NNN-slug.md`) tracked in `tasks/INDEX.md`. Say *"work on
-  INIT-003"* and the `task-workflow` skill drives the lifecycle.
+  INIT-003"* and the `structsplat-task-workflow` skill drives the lifecycle.
 - **`docs/adr/`** — architecture decisions the code references by number.
+- **`ara/`** — the claim and evidence ledger. `ara/logic/claims.md` is where a number becomes a
+  claim you may repeat; `scripts/check_ara.py` enforces its structure. See the "Evidence and
+  claims" section of `CLAUDE.md`.
+- **`scripts/`** — durable tooling and the structural gates `verify.sh` runs: `docs_sync.py`,
+  `check_ara.py`, `check_task_policy.py`, `check_script_layout.py`. One-off experiment drivers go
+  in `scripts/experiments/`.
 - **`docs/prompts/real-research.md`** — reusable evidence-first prompt for prior-art audit,
   preregistration, execution, negative-result handling, and per-axis conclusions.
 
-Typical loop: `core` → `task-workflow` → `method` (if adding a component) → `review` →
-`docs-sync`; results-bearing work inserts `benchmark` → `structsplat-results-audit` before review.
-Research discovery starts with `core` → `structsplat-research-ideation`; selected candidates then
+Typical loop: `structsplat-core` → `structsplat-task-workflow` → `structsplat-method` (if adding a component) → `structsplat-review` →
+`structsplat-docs-sync`; results-bearing work inserts `structsplat-benchmark` → `structsplat-results-audit` before review.
+Research discovery starts with `structsplat-core` → `structsplat-research-ideation`; selected candidates then
 enter the normal task/method/benchmark loop.
 
 ## Layout
@@ -665,7 +674,7 @@ torch/numpy/structsplat versions + repository commit/dirty diff fingerprint) so 
 source-bound from its own artifacts. Results are
 bit-exact from a seed only on **CPU**: the CUDA renderer accumulates with atomics
 (`atomicAdd` / `index_add`), so GPU renders vary run to run — the logged renderer/device/versions
-bound that variation. See the `benchmark` skill for the full experimental-validity rules.
+bound that variation. See the `structsplat-benchmark` skill for the full experimental-validity rules.
 
 ## Selected references
 GaussianImage (ECCV 2024) · Image-GS (SIGGRAPH 2025) · GaussianImage++ (AAAI 2026) ·

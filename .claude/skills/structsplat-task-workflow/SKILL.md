@@ -1,0 +1,46 @@
+---
+name: structsplat-task-workflow
+description: Use when picking up, implementing, or closing a StructSplat task from the tasks/ directory. Covers the task-file lifecycle, branch naming, the definition of done, and how a task links to ADRs, tests, and the benchmark. Trigger on "implement TASK-ID", "work on the next task", or opening anything under tasks/.
+---
+
+# Task workflow
+
+Tasks live in `tasks/` as `AREA-NNN-slug.md` and are tracked in `tasks/INDEX.md`. Areas:
+CORE, INIT, FIT, HIER (hierarchy), BENCH, ABL (ablation), FF (feed-forward), COMP (compression),
+PORT (CUDA/engine).
+
+## Lifecycle
+1. **Read the task file end to end** plus every ADR/task it references. Load the `structsplat-core` skill first.
+2. Set status `in-progress` in `tasks/INDEX.md`. Branch: `area/NNN-slug` (e.g. `init/003-wse`).
+3. Implement against the acceptance criteria only. Resist scope creep — extra ideas become new
+   task files, not silent additions (this repo favors small, reviewable diffs).
+4. Add/extend tests under `tests/` for every new behavior (`structsplat-review` skill lists what to check).
+5. Run `pytest -q` and, if the change can affect quality, the relevant `structsplat-benchmark` slice.
+6. Update docs in the **same** commit (`structsplat-docs-sync`): task status, INDEX, any ADR consequence.
+7. Run `./scripts/verify.sh` — it includes `scripts/check_task_policy.py`, which fails if the task
+   file and `tasks/INDEX.md` disagree.
+8. Open a PR summarizing: what changed, which acceptance criteria are met, benchmark delta.
+
+## Definition of done
+- Acceptance criteria in the task file are all satisfiable and tested.
+- No unrelated churn; NumPy/torch import split preserved (see `structsplat-core` invariant 1).
+- If a design decision was made, an ADR exists or was updated.
+- Results (if any) are reproducible from a logged config + seed.
+- Any claim the task produced or refuted has a row in `ara/logic/claims.md` bound to evidence.
+- `./scripts/verify.sh` is green.
+
+## Writing a new task
+Copy an existing file's shape: Context / Goal / Acceptance criteria / Interfaces touched /
+Depends on / Notes. Keep it short and testable.
+
+Name the file `AREA-NNN-slug.md` and add a row to the Active table of `tasks/INDEX.md` in the same
+commit — `check_task_policy.py` fails on a task file the index does not list, and on an index row
+with no file. Retiring a task means moving it to `tasks/done/` and moving its row to the Retired
+table with the new path. `Depends on` entries must name real task IDs or `ADR-NNNN` decisions that
+exist; the checker resolves both.
+
+Status vocabulary for the Active table (a qualifier may follow the first word, as in
+`implemented/screened — rejected by the 500-step guard`): `todo`, `partial`, `in-progress`,
+`implemented`, `implemented/screened`, `implemented/confirmed`, `design-only`, `completed`,
+`blocked`, `terminal`, `repaired`, `superseded`, `abandoned`. Adding a new word means editing
+`STATUS_WORDS` in `scripts/check_task_policy.py` deliberately.

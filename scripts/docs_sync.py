@@ -13,6 +13,13 @@ Checks:
   4. Every ``init.py`` ``STRATEGIES`` entry appears in ``README.md`` or ``docs/architecture.md``.
   5. Every path-like token in ``CLAUDE.md`` that names a repo location actually exists.
   6. Every ``src/structsplat`` module carries a module docstring.
+  7. Every ``docs/*.md`` and ``docs/adr/*.md`` is reachable by name from an entrypoint
+     (``CLAUDE.md``, ``README.md``, ``AGENTS.md``) directly or through another reachable doc —
+     the reverse of check 5, so a new doc cannot sit in ``docs/`` with no discovery path.
+
+Sibling structural checkers cover the surfaces this one deliberately does not:
+``scripts/check_ara.py`` (claim ledger), ``scripts/check_task_policy.py`` (task tree),
+``scripts/check_script_layout.py`` (scripts layout).
 
 Exit code is 0 when clean, 1 when any drift is found (with a per-problem report).
 """
@@ -148,6 +155,91 @@ def check_module_docstrings(problems: list[str]) -> None:
             problems.append(f"module missing docstring: {py.relative_to(ROOT)}")
 
 
+ENTRYPOINTS = ("CLAUDE.md", "README.md", "AGENTS.md")
+
+# Directories that never contain repository documentation references worth scanning.
+_SKIP_DIRS = {".git", ".venv", "venv", "__pycache__", "runs", "build", "dist", "external", "node_modules"}
+_TEXT_SUFFIXES = {".md", ".py", ".sh", ".yml", ".yaml", ".toml", ".json"}
+
+
+def _repo_corpus() -> dict[str, str]:
+    """Every readable text file in the working tree, keyed by repo-relative path."""
+    corpus: dict[str, str] = {}
+    for path in ROOT.rglob("*"):
+        if not path.is_file() or path.suffix not in _TEXT_SUFFIXES:
+            continue
+        if any(part in _SKIP_DIRS for part in path.relative_to(ROOT).parts):
+            continue
+        try:
+            corpus[path.relative_to(ROOT).as_posix()] = path.read_text(
+                encoding="utf-8", errors="replace"
+            )
+        except OSError:  # pragma: no cover - unreadable file
+            continue
+    return corpus
+
+
+def check_docs_reachable(problems: list[str]) -> None:
+    """No doc under docs/ may be undiscoverable. ``check_layout_paths`` is the other direction.
+
+    Three tiers, matching how this repository actually cites documentation:
+
+    * Top-level ``docs/*.md`` are architecture-level docs an agent should find from the guide, so
+      they must be reachable from an entrypoint transitively through other reachable docs.
+    * ``docs/adr/NNNN-*.md`` are cited by decision number (``ADR-0004``), not filename, so each
+      ADR must be cited as ``ADR-NNNN`` somewhere in the tree.
+    * Other subtree docs (``docs/research/``, ``docs/prompts/``) are dated session records cited
+      from task files and benchmark docs, so each must be referenced by name somewhere.
+    """
+    docs_dir = ROOT / "docs"
+    if not docs_dir.is_dir():
+        problems.append("missing docs/ directory")
+        return
+
+    # Tier 1: transitive reachability from an entrypoint.
+    top_level = {path.name: path for path in sorted(docs_dir.glob("*.md"))}
+    reachable: set[str] = set()
+    frontier = [_read(ROOT / name) for name in ENTRYPOINTS if (ROOT / name).is_file()]
+    while frontier:
+        text = frontier.pop()
+        for name in sorted(set(top_level) - reachable):
+            if name in text:
+                reachable.add(name)
+                frontier.append(_read(top_level[name]))
+    for name in sorted(set(top_level) - reachable):
+        problems.append(
+            f"docs/{name} is not reachable from {' / '.join(ENTRYPOINTS)} or any doc they reach "
+            "(add it to the CLAUDE.md layout section, or link it from a reachable doc)"
+        )
+
+    corpus = _repo_corpus()
+
+    # Tier 2a: every ADR must be cited by its decision number.
+    for path in sorted((docs_dir / "adr").glob("*.md")):
+        match = re.match(r"(\d+)-", path.name)
+        if not match:
+            problems.append(f"docs/adr/{path.name} does not start with a decision number")
+            continue
+        token = f"ADR-{match.group(1)}"
+        rel = path.relative_to(ROOT).as_posix()
+        if not any(token in text for name, text in corpus.items() if name != rel):
+            problems.append(
+                f"docs/adr/{path.name} is never cited as {token} (an uncited decision is a "
+                "decision nobody can follow)"
+            )
+
+    # Tier 2b: every other subtree doc must be referenced by name.
+    for path in sorted(docs_dir.rglob("*.md")):
+        if path.parent == docs_dir or path.parent.name == "adr":
+            continue
+        rel = path.relative_to(ROOT).as_posix()
+        doc_rel = path.relative_to(docs_dir).as_posix()
+        if not any(
+            (path.name in text or doc_rel in text) for name, text in corpus.items() if name != rel
+        ):
+            problems.append(f"docs/{doc_rel} is referenced from nowhere in the repository")
+
+
 CHECKS = (
     check_required_docs,
     check_skills_listed,
@@ -155,6 +247,7 @@ CHECKS = (
     check_strategies_documented,
     check_layout_paths,
     check_module_docstrings,
+    check_docs_reachable,
 )
 
 
