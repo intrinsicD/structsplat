@@ -20,3 +20,21 @@ jobs:
           pip install -e ".[dev,benchmark]"
       - name: verify.sh
         run: ./scripts/verify.sh
+
+  # Structural checkers only: no torch, no test suite. Keeps a docs/task/claim drift failure
+  # readable on its own instead of buried in the full verify log.
+  structural:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: docs_sync
+        run: python scripts/docs_sync.py
+      - name: ARA claim ledger
+        run: python scripts/check_ara.py
+      - name: Task policy
+        run: python scripts/check_task_policy.py
+      - name: Script layout
+        run: python scripts/check_script_layout.py

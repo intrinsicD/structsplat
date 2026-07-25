@@ -17,4 +17,13 @@ python -m pytest -q -m "not slow and not integration"
 echo "== docs_sync =="
 python scripts/docs_sync.py
 
+echo "== ara claim ledger =="
+python scripts/check_ara.py
+
+echo "== task policy =="
+python scripts/check_task_policy.py
+
+echo "== script layout =="
+python scripts/check_script_layout.py
+
 echo "verify: OK"

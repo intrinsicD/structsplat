@@ -1,5 +1,5 @@
 ---
-name: review
+name: structsplat-review
 description: Use when reviewing a StructSplat diff or PR, or self-reviewing before commit. A correctness-first checklist for differentiable graphics code — gradient safety, numerical stability, determinism, and performance regressions. Trigger on "review this", "check my changes", or before opening a PR.
 ---
 
@@ -25,3 +25,26 @@ description: Use when reviewing a StructSplat diff or PR, or self-reviewing befo
 ## Hygiene
 - Diff is scoped to the task. NumPy/torch split intact. Public signatures documented.
 - Any new user-facing behavior has a test and, if quality-relevant, a benchmark number.
+- No new one-off driver at the top level of `scripts/` — those go in `scripts/experiments/`.
+- No committed evidence bundle under `ara/evidence/` overwritten or rewritten.
+
+## Claim hygiene
+Prose is a claim surface. If the diff adds a number or a capability statement to `README.md`,
+`docs/`, a task status, or an ADR:
+
+- Is it bound to a row in `ara/logic/claims.md` whose `Proof` cites an artifact that exists?
+- Is the wording no stronger than the evidence class — proxy vs full-resolution, development vs
+  held-out, screened vs confirmed, one seed vs paired seeds?
+- Does a changed default cite the assay that justifies it, and is the `Status` qualifier honest
+  about scope (`implemented/screened`, not `implemented`)?
+
+`python scripts/check_ara.py` checks the structure; it cannot tell whether a sentence overstates
+its artifact. That is this step, and `structsplat-results-audit` for anything promoted.
+
+## Gate
+```bash
+./scripts/verify.sh
+```
+Lint, the portable test gate, and the four structural checkers (`docs_sync`, `check_ara`,
+`check_task_policy`, `check_script_layout`). Results-bearing changes go through
+`structsplat-results-audit` before the claim lands.

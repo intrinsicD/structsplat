@@ -1,5 +1,5 @@
 ---
-name: benchmark
+name: structsplat-benchmark
 description: Use when running or extending the StructSplat benchmark / ablation, interpreting results, or wiring outputs as a fitness signal for algorithm discovery. Covers the metric protocol (PSNR / MS-SSIM / LPIPS + iterations-to-target) and the strategy x budget sweep. Trigger on "run the ablation", "benchmark", "fitness", or editing benchmarks/.
 ---
 

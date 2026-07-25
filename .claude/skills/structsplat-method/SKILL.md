@@ -1,5 +1,5 @@
 ---
-name: method
+name: structsplat-method
 description: Use when adding or changing a StructSplat *method* — a new initialization strategy, a rasterizer variant, a sampler, or a hierarchy scheme — so it stays comparable to existing ones and plugs into the ablation. Trigger on "add a strategy", "new init/renderer/sampler", or editing init.py / render.py / sampling.py / pyramid.py.
 ---
 
@@ -19,7 +19,7 @@ something and feeds the co-scientist fitness cleanly).
 
 ## Add a renderer / sampler variant
 - Keep the **reference** intact as the correctness oracle; add the variant behind a flag or a new
-  function. New numeric behavior needs a NumPy mirror or closed-form check (`review`).
+  function. New numeric behavior needs a NumPy mirror or closed-form check (`structsplat-review`).
 - A renderer that changes the compositing model (e.g. additive for AIR-style residuals) needs an
   ADR — it interacts with the pyramid and metrics.
 

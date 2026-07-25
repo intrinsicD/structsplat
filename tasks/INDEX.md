@@ -64,6 +64,7 @@ replay-valid; do not rewrite those task bytes merely to duplicate this table.
 | FIT-025 | Reserved error-adaptive detail tail | implemented and development-screened (opt-in, ADR-0022) — physical capacity is separate from the ordinary active ceiling; bounded covered-interior high-frequency tail births/splits retain the full safe gate and gain-per-row stop. On the matched 12,024-row fixed-pool Janelle screen, generic +512 strictly beats the equal-count specialized tail on every nontrivial protected metric and is fastest observed; specialized tail/default promotion rejected | FIT-023/024, CORE-010/011, ADR-0021/0022 |
 | FIT-026 | Geometric-growth storage policy | implemented (opt-in, default off, ADR-0023) — `storage_policy="geometric"` starts the transactional pool at `initial_capacity` and grows physical capacity by `growth_factor` toward `capacity` on demand (append parked rows + `adapt_optimizer_state`), O(log N) migrations; the live prefix is preserved bit-for-bit so a geometric fit is `atol=0`-identical to `fixed_capacity` in field and metrics; ported from realtime-gs `GeometricParameterArena`; timing vs fixed/dynamic left to a FIT-024-style benchmark | FIT-021/023/025, CORE-010/011, ADR-0020/0021/0022/0023 |
 | DOCS-003 | Verification spine (docs_sync + verify.sh + markers/seeding + CI) | in-progress | DOCS-001 |
+| DOCS-004 | Staged lint/format ratchet (widen `select`, adopt `ruff format`) | todo — Stage 1/2 due before the next results-bearing task closes; see the task's Expiry section | DOCS-003 |
 
 ## Retired Done Tasks
 
