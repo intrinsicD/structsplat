@@ -62,3 +62,50 @@ def test_fused_ssim_backend_falls_back_or_matches_builtin():
         builtin = M.ssim(ac, bc, backend="builtin")
         torch.cuda.synchronize()
         assert torch.allclose(fused, builtin, atol=2e-5, rtol=2e-5)
+
+
+def test_ssim_separable_window_matches_dense_outer_product_reference():
+    """The separable blur must reproduce the dense 2D window it replaced (value and gradient).
+
+    Guards the PORT-002 follow-on optimization in `_gaussian_window`: a Gaussian window is an
+    outer product, so two 1D passes and one 2D pass are the same operator up to float
+    associativity. Any future change that breaks separability shows up here.
+    """
+    rng = np.random.default_rng(11)
+    pred = torch.as_tensor(rng.random((1, 3, 40, 44)).astype(np.float32)).requires_grad_(True)
+    target = torch.as_tensor(rng.random((1, 3, 40, 44)).astype(np.float32))
+    win, sigma, pad = 11, 1.5, 5
+
+    x = torch.arange(win, dtype=torch.float32) - (win - 1) / 2.0
+    g = torch.exp(-(x ** 2) / (2 * sigma ** 2))
+    g = (g / g.sum()).unsqueeze(0)
+    dense = (g.t() @ g).expand(3, 1, win, win).contiguous()
+
+    def dense_ssim(p, t):
+        c1, c2 = 0.01 ** 2, 0.03 ** 2
+        mu_p = torch.nn.functional.conv2d(p, dense, padding=pad, groups=3)
+        mu_t = torch.nn.functional.conv2d(t, dense, padding=pad, groups=3)
+        mu_p2, mu_t2, mu_pt = mu_p * mu_p, mu_t * mu_t, mu_p * mu_t
+        sig_p = torch.nn.functional.conv2d(p * p, dense, padding=pad, groups=3) - mu_p2
+        sig_t = torch.nn.functional.conv2d(t * t, dense, padding=pad, groups=3) - mu_t2
+        sig_pt = torch.nn.functional.conv2d(p * t, dense, padding=pad, groups=3) - mu_pt
+        return (((2 * mu_pt + c1) * (2 * sig_pt + c2))
+                / ((mu_p2 + mu_t2 + c1) * (sig_p + sig_t + c2))).mean()
+
+    want = dense_ssim(pred, target)
+    got = M._ssim_builtin_bchw(pred, target, win, sigma)
+    assert torch.allclose(got, want, atol=1e-6, rtol=1e-6)
+
+    (gw,) = torch.autograd.grad(want, pred, retain_graph=True)
+    (gg,) = torch.autograd.grad(got, pred)
+    assert torch.allclose(gg, gw, atol=1e-7, rtol=1e-5)
+
+
+def test_ssim_window_cache_returns_separable_pair():
+    M.clear_ssim_window_cache()
+    a = torch.as_tensor(np.random.default_rng(12).random((24, 24, 3)).astype(np.float32))
+    M.ssim(a, a)
+    horizontal, vertical = M._gaussian_window(11, 1.5, torch.device("cpu"), torch.float32)
+    assert horizontal.shape == (3, 1, 1, 11)
+    assert vertical.shape == (3, 1, 11, 1)
+    assert M.ssim_window_cache_info()["size"] == 1
