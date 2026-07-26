@@ -358,6 +358,21 @@ class _Trial:
 ScheduleObserver = Callable[[GaussianField, dict[str, Any]], None]
 
 
+# torch.quantile rejects inputs above 2**24 elements. A mask ROI rarely reaches that, but the
+# full-frame arm evaluates every pixel, so large frames do. Below the limit this is exactly
+# torch.quantile, so previously recorded metrics stay comparable; above it, the sorted-index
+# fallback is the nearest-rank quantile.
+_QUANTILE_MAX_ELEMENTS = 2 ** 24
+
+
+def _safe_quantile(values: torch.Tensor, q: float) -> torch.Tensor:
+    flat = values.reshape(-1)
+    if flat.numel() <= _QUANTILE_MAX_ELEMENTS:
+        return torch.quantile(flat, q)
+    k = int(min(flat.numel(), max(1, math.ceil(float(q) * flat.numel()))))
+    return torch.kthvalue(flat, k).values
+
+
 def _logical_n(field: GaussianField, active_n: int | None) -> int:
     return int(field.n if active_n is None else active_n)
 
@@ -690,7 +705,7 @@ def evaluate_quality(
         raise ValueError("safe schedule mask contains no foreground pixels")
     tail_count = max(1, int(math.ceil(0.01 * int(fg_values.numel()))))
     tail = torch.topk(fg_values.reshape(-1), k=tail_count).values
-    p99 = torch.quantile(fg_values, 0.99)
+    p99 = _safe_quantile(fg_values, 0.99)
     denominator = _raw_weight_map_field(
         active, cfg, H, W, support_fade_alpha=1.0
     ).reshape(H, W)
@@ -1422,12 +1437,8 @@ def _detail_tail_score(
             ),
         }
 
-    error_ref = torch.quantile(
-        persistent_error[allowed], 0.95
-    ).clamp_min(1e-8)
-    target_ref = torch.quantile(
-        persistent_target[allowed], 0.95
-    ).clamp_min(1e-8)
+    error_ref = _safe_quantile(persistent_error[allowed], 0.95).clamp_min(1e-8)
+    target_ref = _safe_quantile(persistent_target[allowed], 0.95).clamp_min(1e-8)
     error_n = (persistent_error / error_ref).clamp(0.0, 4.0)
     target_n = (persistent_target / target_ref).clamp(0.0, 4.0)
     score = error_n * (1.0 + 0.35 * target_n + 0.25 * coherence)
@@ -1493,7 +1504,7 @@ def _birth_components(
         field, cfg, H, W, support_fade_alpha=1.0
     ).reshape(H, W)
     residual = (render_img - target).abs().mean(dim=2)
-    residual_ref = torch.quantile(residual[constraint.inside], 0.95).clamp_min(1e-8)
+    residual_ref = _safe_quantile(residual[constraint.inside], 0.95).clamp_min(1e-8)
     residual_n = (residual / residual_ref).clamp(0.0, 4.0)
     tangent, coherence = _local_structure(target)
     deficit = ((float(schedule.coverage_tau) - den) / float(schedule.coverage_tau)).clamp(0, 1)
@@ -2523,23 +2534,41 @@ def _topology_auction(
 def run_safe_schedule(
     initial_field: GaussianField,
     target: torch.Tensor,
-    mask,
-    base_cfg: FitConfig,
+    mask=None,
+    base_cfg: FitConfig | None = None,
     schedule: SafeScheduleConfig | None = None,
     *,
     observer: ScheduleObserver | None = None,
     verbose: bool = True,
 ) -> dict[str, Any]:
-    """Run the complete safe-commit schedule and return the best accepted field."""
+    """Run the complete safe-commit schedule and return the best accepted field.
+
+    ``mask=None`` selects the full-frame arm: every pixel is foreground, so the containment
+    machinery degenerates rather than being bypassed by a separate code path. ``signed_distance``
+    clips an empty complement to the image diagonal, so the projection interior is the whole frame
+    and the per-row caps are inert; the boundary band `(0, boundary_band]` is empty, so boundary
+    births find no admissible site and ``_visible_boundary`` is empty. The boundary-closure phase
+    is therefore skipped outright instead of spending its step budget on a fixed-topology block
+    whose proposals cannot fire. Every other phase, the commit gate, and the metric vector are the
+    masked arm's, unchanged (ADR-0025).
+    """
 
     schedule = SafeScheduleConfig() if schedule is None else schedule
+    base_cfg = FitConfig() if base_cfg is None else base_cfg
     schedule.validate(initial_field.n)
     base_active_limit = schedule.resolved_base_active_limit()
-    mask_cpu = (
-        mask.detach().cpu().numpy()
-        if torch.is_tensor(mask)
-        else mask
-    )
+    H_target, W_target = int(target.shape[0]), int(target.shape[1])
+    full_frame = mask is None
+    if full_frame:
+        import numpy as _np
+
+        mask_cpu = _np.ones((H_target, W_target), dtype=bool)
+    else:
+        mask_cpu = (
+            mask.detach().cpu().numpy()
+            if torch.is_tensor(mask)
+            else mask
+        )
     mask_tensor = torch.as_tensor(
         mask_cpu, device=target.device, dtype=torch.bool
     )
@@ -3039,12 +3068,28 @@ def run_safe_schedule(
             <= int(schedule.boundary_residual_component_target)
         )
 
-    run_phase(
-        schedule.boundary,
-        topology=boundary_factories,
-        exit_condition=boundary_target_reached,
-        diagnostics=boundary_diagnostics,
-    )
+    if full_frame:
+        # No mask boundary exists, so the closure phase has nothing to close: the band is empty,
+        # every boundary birth is unallocatable, and the exit condition is already satisfied.
+        # Record the skip explicitly so the history is a complete account of the schedule.
+        emit(_event_record(
+            phase=schedule.boundary.name,
+            event="phase_skipped",
+            accepted=True,
+            before=metrics,
+            candidate=metrics,
+            selected=metrics,
+            attempted_steps=0,
+            accepted_steps=0,
+            metadata={"reason": "full_frame_arm", "arm": "full_frame"},
+        ))
+    else:
+        run_phase(
+            schedule.boundary,
+            topology=boundary_factories,
+            exit_condition=boundary_target_reached,
+            diagnostics=boundary_diagnostics,
+        )
 
     def redistribution_factories(phase_cfg: FitConfig):
         room = max(
@@ -3391,6 +3436,7 @@ def run_safe_schedule(
 
     return {
         "field": field,
+        "arm": "full_frame" if full_frame else "masked",
         "metrics": metrics.to_dict(),
         "history": history,
         "attempted_steps": attempted_steps,

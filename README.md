@@ -35,7 +35,46 @@ pip install -e ".[gen]"          # optional: diffusers text-to-Gaussian generati
 pip install -e ".[dev]"          # pytest, ruff
 ```
 
+## The best pipeline: `structsplat convert` (ADR-0025)
+`structsplat convert` is the maintained entrypoint for the current best pipeline. Pass a mask for
+alpha-matted/dome input and you get the masked arm; omit it and you get the full-frame arm, which
+runs the identical phase-ordered, Pareto-gated schedule with the mask and boundary stages inert.
+
+```bash
+# masked arm: dome/alpha-matted capture
+structsplat convert frame.png --mask frame_alpha.png --capacity 11000 --outdir runs/frame
+
+# full-frame arm: same schedule, no mask stages
+structsplat convert photo.png --capacity 11000 --outdir runs/photo
+```
+```python
+from structsplat.pipeline import PipelineConfig, run_pipeline
+
+result = run_pipeline(image, mask)             # mask=None -> full-frame arm
+field, metrics = result["field"], result["metrics"]
+```
+
+`--capacity` alone rescales the schedule: the phase targets derive from it (5/11 initial, 8/11
+coverage, 10/11 detail), so the defaults reproduce the 5,000/500/8,000/10,000-row Janelle recipe.
+Each run writes `<stem>_pipeline.json` carrying the recipe version, arm, resolved config, metric
+vector, and the complete accept/reject history.
+
+**What "best" means here, and what it does not.** `PipelineConfig`'s defaults are the *measured*
+recipe — progressive WSE ordering (C25), Pareto-safe checkpoints every 50 steps (C50), event color
+solve off (C50), no specialized detail tail (C52), dynamic storage (C51) — which is deliberately
+not the conservative library default surface in `config.py` (ADR-0009/0013). That evidence is one
+masked image, one seed, one GPU. The full-frame arm is a mechanism extension of it with **no**
+benchmark screen of its own; BENCH-017 is that screen. For unmasked images the separately
+evidenced comparison is the plain-fit path below.
+
+To change the recipe when a new approach wins, edit `RECIPE` and the `PipelineConfig` defaults in
+`src/structsplat/pipeline.py` together, bump the version, and cite the authorizing claim — one
+reviewable diff, not an inference across docs.
+
 ## Quickstart
+`structsplat fit` is the knob-level research command: every stage axis is a flag, and its defaults
+are the conservative shipped defaults rather than the recipe above.
+
 ```bash
 # fit one image with the measured high-budget PSNR winner
 structsplat fit photo.png --strategy quadtree_wse --num-gaussians 20000 --iters 2000

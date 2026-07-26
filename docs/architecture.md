@@ -1,5 +1,33 @@
 # Architecture
 
+## Entrypoint (ADR-0025)
+`structsplat.pipeline.run_pipeline` / `structsplat convert` is the maintained composition of the
+current best pipeline. `PipelineConfig`'s defaults are the measured recipe (C25/C50/C51/C52), which
+is deliberately *not* the conservative library default surface in `config.py` (ADR-0009/0013).
+Passing a mask selects the arm and nothing else does:
+
+```
+image (+ optional mask)
+      │
+      ▼
+pipeline.run_pipeline ── mask? ──► masked arm: quadtree-WSE interior + boundary-tangent rows
+      │                                        (CORE-011), containment on (ADR-0017/0019)
+      │                └── none ──► full-frame arm: same init, mask machinery degenerate
+      ▼
+safe_schedule.run_safe_schedule
+   bootstrap → coverage growth → detail growth → [boundary closure: masked arm only]
+   → redistribution → polish
+   every optimizer block and topology proposal runs on a detached trial field and is committed
+   only if a full-frame metric vector is Pareto-safe (FIT-023/024/025, ADR-0020..0023)
+```
+
+The full-frame arm degenerates rather than forks: `mask.signed_distance` clips an empty complement
+to the image diagonal, so caps are inert, the boundary band is empty, and boundary closure is
+skipped. The full-frame arm has no benchmark screen yet (BENCH-017).
+
+The layered reference path below is what both arms are built from, and what `structsplat fit`
+exposes directly as the knob-level research command.
+
 ## Pipeline
 ```
 image (H,W,3) in [0,1]
@@ -64,7 +92,13 @@ structure tensor has energy (densification); append order = coarse→fine = LOD 
   `viewer` bridges a `GaussianField` to the external igsv browser viewer (optional dependency)
   for live fit inspection via `fit(iteration_observer=..., observer_every=...)`; the embedding
   and its diagnostic-only status are ADR-0018.
-- **entry:** `cli` (`structsplat fit` / `image-to-gaussians2d`, `render` /
+- **entrypoint:** `pipeline` (CORE-012/ADR-0025) owns the maintained best-pipeline recipe and the
+  masked/full-frame arm selection; it composes `init`, `fit`'s mask constraint, and
+  `safe_schedule`, and holds no fitting mechanism of its own. `safe_schedule` (FIT-023/024/025)
+  owns the phase order, the topology auction, and the Pareto-safe commit gate; ADR-0020..0023 own
+  its storage policies.
+- **entry:** `cli` (`structsplat convert` — the best pipeline; `structsplat fit` /
+  `image-to-gaussians2d`, `render` /
   `gaussians2d-to-image`, `batch-fit`, `ablation`, `stage-search`); `render` cold-loads a native
   full-precision NPZ or self-describing SSPL1 stream and can emit display-referred error/metrics
   plus a read-only fitted-field ellipse overlay. `batch` (PORT-005) runs the `fit` option surface
