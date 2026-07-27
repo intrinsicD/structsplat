@@ -256,6 +256,7 @@ def cmd_convert(args):
         mask_margin=args.mask_margin,
         boundary_band=args.boundary_band,
         coverage_tau=args.coverage_tau,
+        hole_regression_budget=args.hole_regression_budget,
     )
 
     outdir = Path(args.outdir)
@@ -1071,6 +1072,10 @@ def main():
     c.add_argument("--mask-margin", type=float, default=PipelineConfig.mask_margin)
     c.add_argument("--boundary-band", type=float, default=PipelineConfig.boundary_band)
     c.add_argument("--coverage-tau", type=float, default=PipelineConfig.coverage_tau)
+    c.add_argument("--hole-regression-budget", type=float,
+                   default=PipelineConfig.hole_regression_budget,
+                   help="ADR-0026: interior hole fraction a block may add and still commit "
+                        "(default 0.0 = strict). Boundary holes are never budgeted.")
     c.add_argument("--renderer", default=None,
                    choices=["normalized", "cuda", "cuda_tiled"],
                    help="default: cuda on a CUDA device, else normalized")

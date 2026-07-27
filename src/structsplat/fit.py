@@ -2858,6 +2858,20 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         else None
     )
     lowpass_loss_target = _prepare_loss_target(target, cfg.loss_target_downsample)
+    # FIT-027: the target half of SSIM is constant for the two unblended curriculum states, so
+    # its blurred statistics — and the mask product, when there is one — are built once per fit
+    # instead of once per iteration. The lerp state between them makes a fresh target every step
+    # and is deliberately left uncached; the cache is keyed by identity and checked against the
+    # autograd version counter, so a stale entry is ignored rather than trusted.
+    ssim_const_targets: dict[int, tuple[torch.Tensor, torch.Tensor, M.SSIMTargetStats]] = {}
+    if cfg.ssim_weight != 0.0:
+        for _const_src in (target, lowpass_loss_target):
+            if _const_src is None or id(_const_src) in ssim_const_targets:
+                continue
+            _operand = _const_src if ssim_mask is None else _const_src * ssim_mask
+            ssim_const_targets[id(_const_src)] = (
+                _const_src, _operand, M.SSIMTargetStats(_operand)
+            )
     target_geometry_gradients = (
         tuple(gradient.detach() for gradient in _sobel_gradients(target))
         if cfg.geometry_loss_weight > 0.0
@@ -3148,7 +3162,13 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         if cfg.ssim_weight == 0.0:
             loss = pix
         else:
-            if ssim_mask is not None:
+            # `is` re-checked because a dict keyed by id() must not trust a recycled address.
+            const = ssim_const_targets.get(id(objective_target))
+            if const is not None and const[0] is objective_target:
+                _, ssim_target, ssim_stats = const
+                s = M.ssim(img if ssim_mask is None else img * ssim_mask, ssim_target,
+                           backend=cfg.ssim_backend, target_stats=ssim_stats)
+            elif ssim_mask is not None:
                 # Matte both sides so boundary SSIM windows compare consistent zeros; with hard
                 # containment the render is already ~0 outside, so this only zeroes the target.
                 s = M.ssim(img * ssim_mask, objective_target * ssim_mask,

@@ -109,3 +109,70 @@ def test_ssim_window_cache_returns_separable_pair():
     assert horizontal.shape == (3, 1, 1, 11)
     assert vertical.shape == (3, 1, 11, 1)
     assert M.ssim_window_cache_info()["size"] == 1
+
+
+class TestSSIMTargetStats:
+    """FIT-027: caching the target half of SSIM must change cost, never value."""
+
+    @staticmethod
+    def _pair(seed: int = 0, h: int = 48, w: int = 64):
+        g = torch.Generator().manual_seed(seed)
+        pred = torch.rand(h, w, 3, generator=g)
+        target = torch.rand(h, w, 3, generator=g)
+        return pred, target
+
+    def test_cached_value_matches_the_stateless_form(self):
+        pred, target = self._pair()
+        stats = M.SSIMTargetStats(target)
+        plain = M.ssim(pred, target)
+        cached = M.ssim(pred, target, target_stats=stats)
+        assert torch.allclose(plain, cached, atol=1e-12, rtol=0)
+
+    def test_cached_gradient_matches_the_stateless_form(self):
+        pred, target = self._pair(seed=3)
+        a = pred.clone().requires_grad_(True)
+        b = pred.clone().requires_grad_(True)
+        M.ssim(a, target).backward()
+        M.ssim(b, target, target_stats=M.SSIMTargetStats(target)).backward()
+        assert torch.allclose(a.grad, b.grad, atol=1e-12, rtol=0)
+
+    def test_cache_holds_no_graph_and_does_not_backprop_into_the_target(self):
+        pred, target = self._pair(seed=5)
+        target = target.requires_grad_(True)
+        stats = M.SSIMTargetStats(target)
+        assert not stats.mu_t.requires_grad
+        assert not stats.sig_t.requires_grad
+
+    def test_a_different_target_is_rejected_not_silently_reused(self):
+        pred, target = self._pair(seed=7)
+        other = torch.rand_like(target)
+        stats = M.SSIMTargetStats(target)
+        assert not stats.matches(other, 11, 1.5)
+        # The wrong cache must be ignored, so the value still tracks the target passed in.
+        assert torch.allclose(
+            M.ssim(pred, other, target_stats=stats), M.ssim(pred, other),
+            atol=1e-12, rtol=0,
+        )
+
+    def test_in_place_mutation_of_the_target_invalidates_the_cache(self):
+        """The curriculum and pyramid paths rewrite targets; stale stats must not survive."""
+        pred, target = self._pair(seed=11)
+        stats = M.SSIMTargetStats(target)
+        assert stats.matches(target, 11, 1.5)
+        with torch.no_grad():
+            target.mul_(0.5)
+        assert not stats.matches(target, 11, 1.5)
+        assert torch.allclose(
+            M.ssim(pred, target, target_stats=stats), M.ssim(pred, target),
+            atol=1e-12, rtol=0,
+        )
+
+    def test_window_parameters_are_part_of_the_cache_key(self):
+        pred, target = self._pair(seed=13)
+        stats = M.SSIMTargetStats(target, win=11, sigma=1.5)
+        assert not stats.matches(target, 7, 1.5)
+        assert not stats.matches(target, 11, 2.0)
+        assert torch.allclose(
+            M.ssim(pred, target, win=7, target_stats=stats), M.ssim(pred, target, win=7),
+            atol=1e-12, rtol=0,
+        )

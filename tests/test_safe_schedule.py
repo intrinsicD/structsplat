@@ -1272,3 +1272,71 @@ def test_interior_undercoverage_weight_validation():
         FitConfig(mask_interior_undercoverage_weight=-1.0)
     with pytest.raises(ValueError, match="mask_undercoverage_every"):
         FitConfig(mask_undercoverage_every=0)
+
+
+def test_hole_regression_budget_defaults_to_the_strict_historical_gate():
+    """Default 0.0 must reproduce strict monotonicity: no silent behaviour change."""
+    before = _metrics()
+    # Every pixel-error metric improves; interior coverage gives up a sliver. This is the
+    # shape of 75% of the rejections observed in the BENCH-017 exploratory pass.
+    candidate = _metrics(
+        foreground_mse=0.09,
+        boundary_mse=0.19,
+        cvar99_mse=0.29,
+        interior_hole_fraction=0.1006,
+    )
+    accepted, reasons = safe_commit_decision(before, candidate, CommitTolerances())
+    assert not accepted
+    assert "interior_holes_regressed" in reasons
+
+    explicit_zero, zero_reasons = safe_commit_decision(
+        before, candidate, CommitTolerances(), 0.0
+    )
+    assert explicit_zero is accepted
+    assert zero_reasons == reasons
+
+
+def test_hole_regression_budget_admits_strictly_better_pixel_error():
+    before = _metrics()
+    candidate = _metrics(
+        foreground_mse=0.09,
+        boundary_mse=0.19,
+        cvar99_mse=0.29,
+        interior_hole_fraction=0.1006,
+    )
+    accepted, reasons = safe_commit_decision(
+        before, candidate, CommitTolerances(), 0.001
+    )
+    assert accepted
+    assert reasons == []
+
+    # The budget is a bound, not a licence: a regression beyond it still rejects.
+    accepted, reasons = safe_commit_decision(
+        before, _metrics(foreground_mse=0.09, boundary_mse=0.19, cvar99_mse=0.29,
+                         interior_hole_fraction=0.2),
+        CommitTolerances(), 0.001,
+    )
+    assert not accepted
+    assert "interior_holes_regressed" in reasons
+
+
+def test_hole_regression_budget_never_relaxes_the_boundary_gate():
+    """The masked arm's boundary closure keeps its exact gate (ADR-0026)."""
+    before = _metrics()
+    candidate = _metrics(
+        foreground_mse=0.09,
+        cvar99_mse=0.29,
+        boundary_hole_fraction=0.2006,
+    )
+    accepted, reasons = safe_commit_decision(
+        before, candidate, CommitTolerances(), 0.05
+    )
+    assert not accepted
+    assert "boundary_holes_regressed" in reasons
+
+
+def test_hole_regression_budget_rejects_invalid_values():
+    before, candidate = _metrics(), _metrics()
+    for bad in (-1e-9, float("nan"), float("inf")):
+        with pytest.raises(ValueError, match="hole_regression_budget"):
+            safe_commit_decision(before, candidate, CommitTolerances(), bad)

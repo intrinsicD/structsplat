@@ -100,6 +100,7 @@ class PipelineConfig:
     mask_margin: float = 1.5
     boundary_band: float = 4.0
     coverage_tau: float = 0.05
+    hole_regression_budget: float = 0.0   # ADR-0026; 0.0 = the historical strict coverage gate
     schedule_overrides: dict[str, Any] = _field(default_factory=dict)
 
     def resolved_initial(self) -> int:
@@ -148,6 +149,14 @@ class PipelineConfig:
             raise ValueError(f"step_scale must be finite and positive, got {self.step_scale}")
         if self.block_steps is not None and self.block_steps <= 0:
             raise ValueError(f"block_steps must be positive, got {self.block_steps}")
+        if (
+            not math.isfinite(self.hole_regression_budget)
+            or self.hole_regression_budget < 0.0
+        ):
+            raise ValueError(
+                "hole_regression_budget must be finite and nonnegative, got "
+                f"{self.hole_regression_budget}"
+            )
         if not (
             initial
             <= self.resolved_coverage_target()
@@ -202,6 +211,7 @@ def build_schedule(cfg: PipelineConfig) -> "SafeScheduleConfig":
         detail_target_gaussians=detail_target,
         coverage_tau=float(cfg.coverage_tau),
         boundary_band=float(cfg.boundary_band),
+        hole_regression_budget=float(cfg.hole_regression_budget),
         pareto_safe_checkpoints=bool(cfg.pareto_safe_checkpoints),
         pareto_checkpoint_every=int(cfg.pareto_checkpoint_every),
         event_color_solve=bool(cfg.event_color_solve),

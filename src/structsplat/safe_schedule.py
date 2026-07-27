@@ -156,6 +156,10 @@ class SafeScheduleConfig:
     boundary_residual_component_target: int = 0
     boundary_residual_min_pixels: int = 4
     tolerances: CommitTolerances = CommitTolerances()
+    # ADR-0026: interior coverage a block may give up and still commit. 0.0 keeps the historical
+    # strict gate; a positive value trades a bounded amount of interior hole fraction for the
+    # pixel-error progress the strict gate discards. Boundary holes are never budgeted.
+    hole_regression_budget: float = 0.0
 
     bootstrap: PhaseBudget = PhaseBudget(
         "bootstrap", 1_250, 250, 5_000,
@@ -747,10 +751,23 @@ def safe_commit_decision(
     before: QualityMetrics,
     candidate: QualityMetrics,
     tolerance: CommitTolerances,
+    hole_regression_budget: float = 0.0,
 ) -> tuple[bool, list[str]]:
-    """Return a Pareto-safe decision and explicit rejection reasons."""
+    """Return a Pareto-safe decision and explicit rejection reasons.
+
+    ``hole_regression_budget`` (ADR-0026) is an explicit **interior** coverage trade-off budget,
+    unlike every field of ``tolerance``, which is numerical slack. It is the interior hole
+    fraction a block may add and still commit. The default 0.0 is the historical strict-
+    monotonicity gate. Boundary holes are never budgeted: the masked arm's boundary closure is
+    the one part of the schedule with confirmed behaviour, so it keeps its exact gate.
+    """
 
     reasons: list[str] = []
+    if not math.isfinite(hole_regression_budget) or hole_regression_budget < 0.0:
+        raise ValueError(
+            "hole_regression_budget must be finite and nonnegative, "
+            f"got {hole_regression_budget}"
+        )
     if not candidate.finite:
         reasons.append("non_finite")
 
@@ -770,7 +787,9 @@ def safe_commit_decision(
                  tolerance.tail_relative)
     if (
         candidate.interior_hole_fraction
-        > before.interior_hole_fraction + tolerance.hole_absolute
+        > before.interior_hole_fraction
+        + tolerance.hole_absolute
+        + float(hole_regression_budget)
     ):
         reasons.append("interior_holes_regressed")
     if (
@@ -1033,7 +1052,9 @@ def _safe_color_solve(
         schedule.coverage_tau,
         active_n=active_n,
     )
-    accepted, reasons = safe_commit_decision(metrics, candidate, schedule.tolerances)
+    accepted, reasons = safe_commit_decision(
+        metrics, candidate, schedule.tolerances, schedule.hole_regression_budget
+    )
     if accepted:
         selected_field = trial
         selected_state = _zero_color_optimizer_state(optimizer_state)
@@ -1127,7 +1148,7 @@ def _safe_fit_block(
             active_n=active_n,
         )
         accepted, reasons = safe_commit_decision(
-            metrics, candidate, schedule.tolerances
+            metrics, candidate, schedule.tolerances, schedule.hole_regression_budget
         )
         raw_evaluation = {
             "iter": int(snapshot["iter"]),
@@ -1167,7 +1188,8 @@ def _safe_fit_block(
                 active_n=active_n,
             )
             solved_accepted, solved_reasons = safe_commit_decision(
-                metrics, solved_metrics, schedule.tolerances
+                metrics, solved_metrics, schedule.tolerances,
+                schedule.hole_regression_budget,
             )
             evaluated.append({
                 "iter": int(snapshot["iter"]),

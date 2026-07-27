@@ -949,3 +949,36 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O87
+    timestamp: "2026-07-26T18:30+02:00"
+    provenance: ai-suggested
+    content: "In the BENCH-017 exploratory full-frame pass, 82 of 110 rejected commit blocks (75%) were rejected solely on interior_holes_regressed, and in the 7 safe_polish rejections every pixel-error metric (foreground_mse, cvar99_mse, p99_mse) improved while interior hole fraction rose by ~2e-4 to 6e-4 -- roughly 229 pixels at 768x512. The unconditional interior-hole veto, not pixel-error regression, is the dominant cause of discarded optimization work."
+    context: "Single-arm, single-seed exploratory pass over Kodak-24 at capacity 5000 (5 images) and 11000 (1 image, kodim01), full-frame arm of ADR-0025, RTX 3050. Rejection reasons read from the per-image <stem>_pipeline.json history. No control arm and no frozen gate: this locates waste, it does not show that spending coverage improves terminal quality."
+    potential_type: constraint
+    bound_to: []
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O88
+    timestamp: "2026-07-26T18:30+02:00"
+    provenance: ai-suggested
+    content: "Commit-gate acceptance in the full-frame arm is heavily phase-dependent: bootstrap 41.2% (3200/7776), coverage_growth 13.8% (420/3034), detail_growth 6.2% (3760/61028), redistribution 6.9% (1840/26536), safe_polish 0.0% (0/3276 across 7 of 7 images). detail_growth alone is ~56% of fit wall-clock at 6.2% acceptance, so ~91% of attempted optimization is discarded overall."
+    context: "Same exploratory pass as O87; per-phase attempted/accepted step counts summed across 7 fitted images. block_steps was the schedule default of 250 throughout, so one rejection discards up to 250 steps."
+    potential_type: claim
+    bound_to: []
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O89
+    timestamp: "2026-07-26T18:30+02:00"
+    provenance: ai-suggested
+    content: "At capacity 11000 the safe-commit schedule placed 8584 rows on kodim01 and reported converged, so the effective rate is chosen implicitly by the quality gate rather than by a rate target. Raising capacity from 5000 to 11000 raised attempted steps from 13844 to 17719 while accepted steps moved only 1515 to 1540, so the extra capacity bought mostly rejected trials; terminal quality still improved (25.14 to 26.82 dB PSNR, MS-SSIM 0.8978 to 0.9402)."
+    context: "Same exploratory pass as O87, kodim01 only, seed 0, RTX 3050, full-frame arm. Single image and single seed: the capacity comparison is descriptive, not a screen."
+    potential_type: claim
+    bound_to: []
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

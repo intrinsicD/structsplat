@@ -88,6 +88,8 @@ class TestConfigDerivation:
         dict(capacity=100, initial_gaussians=50, boundary_gaussians=50),
         dict(step_scale=0.0),
         dict(block_steps=0),
+        dict(hole_regression_budget=-1e-9),
+        dict(hole_regression_budget=float("nan")),
         dict(capacity=100, initial_gaussians=90, coverage_target=80),
     ])
     def test_invalid_configs_are_rejected(self, kwargs):
@@ -115,6 +117,14 @@ class TestConfigDerivation:
         for phase in schedule.phases:
             assert phase.max_steps >= 1
             assert phase.block_steps >= 1
+
+    def test_hole_regression_budget_defaults_off_and_reaches_the_schedule(self):
+        """ADR-0026 ships the mechanism, not a default change: the recipe stays strict."""
+        assert PipelineConfig.hole_regression_budget == 0.0
+        assert build_schedule(PipelineConfig()).hole_regression_budget == 0.0
+        assert build_schedule(
+            PipelineConfig(hole_regression_budget=0.002)
+        ).hole_regression_budget == 0.002
 
     def test_schedule_overrides_reject_unknown_fields(self):
         cfg = PipelineConfig(schedule_overrides={"not_a_field": 1})
