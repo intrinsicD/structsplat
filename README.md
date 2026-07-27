@@ -35,7 +35,7 @@ pip install -e ".[gen]"          # optional: diffusers text-to-Gaussian generati
 pip install -e ".[dev]"          # pytest, ruff
 ```
 
-## The best pipeline: `scripts/convert.py` (ADR-0025/0028)
+## The best pipeline: `scripts/convert.py` (ADR-0025/0028/0029)
 
 `scripts/convert.py` is the sole supported conversion CLI for the current best pipeline. It accepts
 one image or a recursively scanned folder. Pass `--mask` for one alpha-matted/dome image,
@@ -48,6 +48,10 @@ slot.
 ```bash
 # one masked image
 python scripts/convert.py frame.png runs/frame --mask frame_alpha.png --device cuda:0
+
+# the same recipe plus the experimental final error-only fine-detail stage
+python scripts/convert.py frame.png runs/frame_fine \
+  --mask frame_alpha.png --device cuda:0 --fine-detail
 
 # one full-frame image
 python scripts/convert.py photo.png runs/photo --device cuda:0
@@ -62,6 +66,18 @@ accepted intermediate reconstructions/errors, `config.json`, `history.json`, and
 The destination root also gets `manifest.json`, tidy `metrics.json`/`metrics.jsonl`/`metrics.csv`,
 and a portable `index.html`. Existing complete cells require `--resume`; use `--overwrite`
 explicitly to replace them.
+
+`--fine-detail` is an experimental, default-off terminal capacity stage (FIT-031/ADR-0029). After
+the ordinary schedule, it computes foreground per-pixel RGB MAE `e`, estimates effective residual
+support as `ceil((sum e)^2 / sum(e^2))`, requests half that many small isotropic error-ranked
+Gaussians, and optimizes under the same Pareto gate to a deterministic fixed point or a logged
+4,000-step ceiling. The estimate is a reproducible allocation heuristic, not a promise of zero
+error, and the resulting field is neither count- nor rate-matched to the default.
+
+The FIT-031 exposed-image screen accepted 4,608 of 7,089 requested rows and improved its own
+pre-tail foreground/boundary PSNR by `+0.522/+0.583 dB` while preserving the full gate (C58).
+The clean default and tail runs were not count-, rate-, or CUDA-trajectory-matched, so this keeps
+the option experimental and does not change the current recipe.
 
 ```python
 from structsplat.pipeline import PipelineConfig, run_pipeline

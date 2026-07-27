@@ -22,6 +22,9 @@ mode, the same proposals and gates operate on a contiguous active prefix of capa
 and Adam tensors; only activation metadata changes at growth commits, and compaction happens once
 at the output boundary. Detached transaction/checkpoint snapshots remain capacity-shaped
 allocations. FIT-021's triage policy remains a separate legacy mode.
+FIT-031/ADR-0029 adds a default-off terminal error-only tail: it estimates the effective residual
+support, activates a requested fraction as small isotropic rows, and converges under the unchanged
+Pareto gate.
 """
 from __future__ import annotations
 
@@ -123,6 +126,9 @@ class SafeScheduleConfig:
     detail_tail_max_rows: int = 0
     detail_tail_batch_rows: int = 128
     detail_tail_min_gain_per_row: float = 0.0
+    error_tail_fraction: float = 0.0
+    error_tail_batch_rows: int = 512
+    error_tail_max_scale: float = 1.25
     coverage_target_gaussians: int = 8_000
     detail_target_gaussians: int = 10_000
     coverage_tau: float = 0.05
@@ -191,6 +197,11 @@ class SafeScheduleConfig:
         "safe_polish", 2_000, 250, 11_000,
         (5e-3, 3e-3, 1e-3, 3e-3, 1e-3),
         0.002, 0.005,
+    )
+    error_tail: PhaseBudget = PhaseBudget(
+        "error_tail_convergence", 4_000, 250, None,
+        (2e-3, 1.5e-3, 5e-4, 5e-3, 5e-4),
+        0.0, 0.0,
     )
 
     def resolved_base_active_limit(self) -> int:
@@ -280,6 +291,34 @@ class SafeScheduleConfig:
                 raise ValueError(
                     "detail_tail_batch_rows must be at least event_min_count"
                 )
+        if (
+            not math.isfinite(self.error_tail_fraction)
+            or not 0.0 <= self.error_tail_fraction <= 1.0
+        ):
+            raise ValueError("error_tail_fraction must be finite and in [0, 1]")
+        if self.error_tail_batch_rows <= 0:
+            raise ValueError("error_tail_batch_rows must be positive")
+        if (
+            not math.isfinite(self.error_tail_max_scale)
+            or self.error_tail_max_scale < _MIN_DENSIFY_SCALE
+        ):
+            raise ValueError(
+                "error_tail_max_scale must be finite and at least "
+                f"{_MIN_DENSIFY_SCALE}"
+            )
+        if self.error_tail_fraction > 0.0:
+            if self.storage_policy != "dynamic":
+                raise ValueError(
+                    "error-only tail requires storage_policy='dynamic'"
+                )
+            if self.error_tail_batch_rows < self.event_min_count:
+                raise ValueError(
+                    "error_tail_batch_rows must be at least event_min_count"
+                )
+            if self.error_tail.max_steps <= 0:
+                raise ValueError(
+                    "error_tail max_steps must be positive when enabled"
+                )
         if self.coverage_tau <= 0.0:
             raise ValueError("coverage_tau must be positive")
         if self.event_min_count <= 0 or self.recovery_steps <= 0:
@@ -321,7 +360,7 @@ class SafeScheduleConfig:
                 "boundary residual component target must be nonnegative and "
                 "minimum pixels positive"
             )
-        for phase in self.phases:
+        for phase in (*self.phases, self.error_tail):
             if phase.max_steps < 0 or phase.block_steps <= 0:
                 raise ValueError(
                     f"phase {phase.name} must have a nonnegative step budget "
@@ -1420,6 +1459,51 @@ def _replicate_box_blur(value: torch.Tensor, kernel: int) -> torch.Tensor:
 
 
 @torch.no_grad()
+def _estimate_error_tail_rows(
+    target: torch.Tensor,
+    render_img: torch.Tensor,
+    constraint: _MaskConstraint,
+    fraction: float,
+) -> dict[str, Any]:
+    """Estimate independent residual sites with the absolute-error participation ratio.
+
+    For foreground per-pixel MAE ``e``, ``(sum e)^2 / sum(e^2)`` is the effective support size:
+    it equals the number of sites when their residual magnitudes are equal and shrinks when error
+    is concentrated. FIT-031 interprets one small Gaussian per effective site as the complete-row
+    estimate and requests a configured fraction. This is an explicit allocation heuristic, not a
+    promise that the normalized representation can attain zero error.
+    """
+
+    residual = (render_img - target).abs().mean(dim=2)
+    selected = residual[constraint.inside].to(dtype=torch.float64)
+    foreground_pixels = int(selected.numel())
+    nonzero_pixels = int((selected > 0.0).sum())
+    error_sum = float(selected.sum()) if foreground_pixels else 0.0
+    error_square_sum = float(selected.square().sum()) if foreground_pixels else 0.0
+    if error_sum <= 0.0 or error_square_sum <= 0.0:
+        estimated = 0
+    else:
+        effective = error_sum * error_sum / error_square_sum
+        estimated = min(nonzero_pixels, max(1, int(math.ceil(effective))))
+    requested = min(
+        estimated,
+        int(math.ceil(float(fraction) * float(estimated))),
+    )
+    return {
+        "estimator": "foreground_mae_effective_support",
+        "formula": "ceil((sum e)^2 / sum(e^2)); e=foreground per-pixel RGB MAE",
+        "interpretation": "one small Gaussian per effective residual site",
+        "fraction": float(fraction),
+        "foreground_pixels": foreground_pixels,
+        "nonzero_residual_pixels": nonzero_pixels,
+        "residual_l1_sum": error_sum,
+        "residual_l2_square_sum": error_square_sum,
+        "estimated_complete_rows": estimated,
+        "requested_rows": requested,
+    }
+
+
+@torch.no_grad()
 def _detail_tail_score(
     field: GaussianField,
     target: torch.Tensor,
@@ -1545,11 +1629,15 @@ def _birth_components(
     residual = (render_img - target).abs().mean(dim=2)
     residual_ref = _safe_quantile(residual[constraint.inside], 0.95).clamp_min(1e-8)
     residual_n = (residual / residual_ref).clamp(0.0, 4.0)
-    tangent, coherence = _local_structure(target)
     deficit = ((float(schedule.coverage_tau) - den) / float(schedule.coverage_tau)).clamp(0, 1)
     tail_metadata: dict[str, Any] = {}
+    tangent: torch.Tensor | None = None
+    coherence: torch.Tensor | None = None
+    if mode != "error_tail":
+        tangent, coherence = _local_structure(target)
 
     if mode == "boundary":
+        assert coherence is not None
         allowed = (
             (constraint.sdf_flat > 0.0)
             & (constraint.sdf_flat <= float(schedule.boundary_band))
@@ -1558,12 +1646,15 @@ def _birth_components(
     else:
         allowed = constraint.eroded_flat.reshape(H, W)
         if mode == "coverage":
+            assert coherence is not None
             holes = den < float(schedule.coverage_tau)
             score = 8.0 * holes.to(residual.dtype) + 3.0 * deficit \
                 + 0.20 * residual_n + 0.10 * coherence
         elif mode == "detail":
+            assert coherence is not None
             score = residual_n * (1.0 + 0.5 * coherence) + 2.0 * deficit
         elif mode == "detail_tail":
+            assert coherence is not None
             score, allowed, residual, tail_metadata = _detail_tail_score(
                 field,
                 target,
@@ -1574,15 +1665,33 @@ def _birth_components(
                 denominator=den,
                 coherence=coherence,
             )
+        elif mode == "error_tail":
+            # The mask is only a feasibility set. Ranking is exactly the current per-pixel
+            # absolute residual; no target structure, coverage deficit, or frequency prior enters.
+            allowed = constraint.inside
+            score = torch.where(
+                residual > 0.0,
+                residual,
+                torch.full_like(residual, -float("inf")),
+            )
+            tail_metadata = {
+                "score_rule": "foreground per-pixel RGB MAE only",
+                "eligible_pixels": int((allowed & torch.isfinite(score)).sum()),
+            }
         else:
             raise ValueError(f"unknown birth mode {mode!r}")
     negative = torch.full_like(score, -float("inf"))
     score = torch.where(allowed, score, negative)
-    radius = max(1, int(round(float(schedule.event_spacing_px) * 0.5)))
-    peaks = F.max_pool2d(
-        score[None, None], 2 * radius + 1, stride=1, padding=radius
-    )[0, 0]
-    peak_score = torch.where((score >= peaks) & allowed, score, negative).reshape(-1)
+    if mode == "error_tail":
+        # Every pixel is an independently addressable fine-detail site. Avoiding spatial NMS lets
+        # the estimator's requested count be realized even when residual is locally dense.
+        peak_score = score.reshape(-1)
+    else:
+        radius = max(1, int(round(float(schedule.event_spacing_px) * 0.5)))
+        peaks = F.max_pool2d(
+            score[None, None], 2 * radius + 1, stride=1, padding=radius
+        )[0, 0]
+        peak_score = torch.where((score >= peaks) & allowed, score, negative).reshape(-1)
     finite = int(torch.isfinite(peak_score).sum())
     k = min(int(count), finite)
     if k <= 0:
@@ -1591,6 +1700,7 @@ def _birth_components(
     source_y = torch.div(sites, W, rounding_mode="floor")
     source_x = sites - source_y * W
     if mode == "boundary":
+        assert tangent is not None
         projected = constraint.nearest_inside_flat[sites].clamp_min(0)
         y = torch.div(projected, W, rounding_mode="floor")
         x = projected - y * W
@@ -1602,7 +1712,11 @@ def _birth_components(
             torch.atan2(nx, -ny),
             tangent[source_y, source_x],
         )
+    elif mode == "error_tail":
+        y, x = source_y, source_x
+        angle = torch.zeros(k, device=target.device, dtype=target.dtype)
     else:
+        assert tangent is not None
         y, x = source_y, source_x
         angle = tangent[y, x]
 
@@ -1611,10 +1725,15 @@ def _birth_components(
         _MIN_DENSIFY_SCALE,
     )
     local_base = _error_region_scale(residual, source_y, source_x, global_base)
-    local_coherence = coherence[source_y, source_x]
-    ratio = 1.0 + (float(cfg.densify_max_axis_ratio) - 1.0) * (
-        local_coherence ** float(cfg.densify_coherence_power)
-    )
+    if mode == "error_tail":
+        local_base = local_base.clamp(max=float(schedule.error_tail_max_scale))
+        ratio = torch.ones_like(local_base)
+    else:
+        assert coherence is not None
+        local_coherence = coherence[source_y, source_x]
+        ratio = 1.0 + (float(cfg.densify_max_axis_ratio) - 1.0) * (
+            local_coherence ** float(cfg.densify_coherence_power)
+        )
     along = local_base * torch.sqrt(ratio)
     across = local_base / torch.sqrt(ratio)
     if mode == "boundary":
@@ -1664,7 +1783,11 @@ def _birth_components(
         "max_base_scale": float(local_base.max()),
         "mean_axis_ratio": float(ratio.mean()),
         "site_mode": mode,
-        "covariance_rule": "local residual support scale + local structure tensor",
+        "covariance_rule": (
+            "small isotropic residual-support scale"
+            if mode == "error_tail"
+            else "local residual support scale + local structure tensor"
+        ),
         **tail_metadata,
     }
     return components, metadata
@@ -2773,7 +2896,7 @@ def run_safe_schedule(
             block_index += 1
             steps = min(int(phase.block_steps), int(phase.max_steps) - phase_steps)
             lr_scale = 1.0
-            if phase.name == schedule.polish.name:
+            if phase.name in (schedule.polish.name, schedule.error_tail.name):
                 lr_scale = max(0.1, 1.0 - phase_steps / max(phase.max_steps, 1))
             trainable_rows = None
             selection_metadata = None
@@ -3483,14 +3606,215 @@ def run_safe_schedule(
         exit_condition=lambda: False,
     )
 
+    error_tail_start_n = _logical_n(field, active_n)
+    error_tail_limit = error_tail_start_n
+    error_tail_result: dict[str, Any] = {
+        "enabled": False,
+        "fraction": float(schedule.error_tail_fraction),
+        "estimated_complete_rows": 0,
+        "requested_rows": 0,
+        "activated_rows": 0,
+        "start_n": error_tail_start_n,
+        "end_n": error_tail_start_n,
+        "allocation_termination_reason": "disabled",
+        "convergence_termination_reason": "disabled",
+        "minimum_batch_rows": int(schedule.event_min_count),
+        "waves_attempted": 0,
+        "waves_accepted": 0,
+    }
+    if schedule.error_tail_fraction > 0.0:
+        if active_n is not None:
+            raise RuntimeError(
+                "validated error-only tail unexpectedly received prefix storage"
+            )
+        before_error_tail = metrics.to_dict()
+        _, error_tail_render = evaluate_quality(
+            field,
+            target,
+            mask_tensor,
+            cfg,
+            constraint,
+            schedule.coverage_tau,
+            active_n=active_n,
+        )
+        estimate = _estimate_error_tail_rows(
+            target,
+            error_tail_render,
+            constraint,
+            float(schedule.error_tail_fraction),
+        )
+        requested_rows = int(estimate["requested_rows"])
+        error_tail_limit = error_tail_start_n + requested_rows
+        error_schedule = replace(
+            schedule,
+            capacity=max(int(schedule.capacity), int(error_tail_limit)),
+            base_active_limit=max(int(base_active_limit), int(error_tail_limit)),
+        )
+        error_fit_cfg = _phase_fit_config(
+            cfg,
+            schedule.error_tail,
+            schedule.recovery_steps,
+            boundary_enabled=schedule.boundary_enabled,
+        )
+        emit(_event_record(
+            phase="error_tail",
+            event="error_tail_estimate",
+            accepted=True,
+            before=metrics,
+            candidate=metrics,
+            selected=metrics,
+            attempted_steps=0,
+            accepted_steps=0,
+            metadata={
+                **estimate,
+                "start_n": error_tail_start_n,
+                "tail_limit": error_tail_limit,
+                "batch_rows": int(schedule.error_tail_batch_rows),
+                "minimum_batch_rows": int(schedule.event_min_count),
+                "max_scale": float(schedule.error_tail_max_scale),
+                "score_rule": "foreground per-pixel RGB MAE only",
+            },
+        ))
+
+        error_waves_attempted = 0
+        error_waves_accepted = 0
+        allocation_reason = (
+            "no_residual" if requested_rows <= 0 else "requested_rows"
+        )
+        while _logical_n(field, active_n) < error_tail_limit:
+            error_waves_attempted += 1
+            room = error_tail_limit - _logical_n(field, active_n)
+            requested = min(int(schedule.error_tail_batch_rows), int(room))
+            factories = [
+                (
+                    "error_tail_birth",
+                    requested,
+                    lambda k, image: propose_birth(
+                        field,
+                        target,
+                        image,
+                        error_fit_cfg,
+                        constraint,
+                        error_schedule,
+                        k,
+                        "error_tail",
+                        active_n=active_n,
+                    ),
+                ),
+            ]
+            (
+                field,
+                optimizer_state,
+                metrics,
+                topology_record,
+                _auction_attempted,
+                _auction_accepted,
+                active_n,
+            ) = _topology_auction(
+                field,
+                optimizer_state,
+                metrics,
+                target,
+                mask_cpu,
+                mask_tensor,
+                error_fit_cfg,
+                constraint,
+                error_schedule,
+                factories,
+                active_n=active_n,
+                expand_neighborhood=False,
+                minimum_gain_per_row=0.0,
+                verbose=verbose,
+            )
+            topology_record["phase"] = "error_tail"
+            topology_record["metadata"].update({
+                "wave": error_waves_attempted,
+                "tail_start_n": error_tail_start_n,
+                "tail_limit": error_tail_limit,
+                "estimated_complete_rows": int(
+                    estimate["estimated_complete_rows"]
+                ),
+                "requested_rows": requested_rows,
+            })
+            emit(topology_record)
+            if not topology_record["accepted"]:
+                allocation_reason = "no_safe_effective_winner"
+                break
+            error_waves_accepted += 1
+        else:
+            if _logical_n(field, active_n) >= error_tail_limit:
+                allocation_reason = "requested_rows"
+
+        activated_rows = _logical_n(field, active_n) - error_tail_start_n
+        convergence_reason = (
+            "no_rows_activated" if activated_rows <= 0 else "step_budget"
+        )
+        if activated_rows > 0:
+            run_phase(
+                schedule.error_tail,
+                topology=None,
+                exit_condition=lambda: False,
+            )
+            convergence_reason = str(
+                history[-1]["metadata"].get(
+                    "termination_reason", "unknown"
+                )
+            )
+        after_error_tail = metrics.to_dict()
+        error_tail_result = {
+            "enabled": True,
+            **estimate,
+            "start_n": error_tail_start_n,
+            "end_n": _logical_n(field, active_n),
+            "activated_rows": activated_rows,
+            "tail_limit": error_tail_limit,
+            "batch_rows": int(schedule.error_tail_batch_rows),
+            "minimum_batch_rows": int(schedule.event_min_count),
+            "max_scale": float(schedule.error_tail_max_scale),
+            "waves_attempted": error_waves_attempted,
+            "waves_accepted": error_waves_accepted,
+            "allocation_termination_reason": allocation_reason,
+            "convergence_termination_reason": convergence_reason,
+            "convergence_step_ceiling": int(schedule.error_tail.max_steps),
+            "convergence_block_steps": int(schedule.error_tail.block_steps),
+            "score_rule": "foreground per-pixel RGB MAE only",
+            "geometry_rule": "small isotropic residual-support scale",
+            "before": before_error_tail,
+            "after": after_error_tail,
+            "foreground_psnr_gain_db": (
+                float(after_error_tail["foreground_psnr_db"])
+                - float(before_error_tail["foreground_psnr_db"])
+            ),
+        }
+        emit(_event_record(
+            phase="error_tail",
+            event="stage_end",
+            accepted=True,
+            before=metrics,
+            candidate=metrics,
+            selected=metrics,
+            attempted_steps=0,
+            accepted_steps=0,
+            metadata=error_tail_result,
+        ))
+
     final_active_n = _logical_n(field, active_n)
     physical_capacity = int(field.n)
     storage_record = {
         "policy": schedule.storage_policy,
         "capacity": int(schedule.capacity),
+        "effective_capacity": int(
+            max(int(schedule.capacity), int(error_tail_limit))
+        ),
         "base_active_limit": int(base_active_limit),
         "detail_tail_max_rows": int(schedule.detail_tail_max_rows),
         "detail_tail_activated_rows": int(tail_end_n - tail_start_n),
+        "error_tail_requested_rows": int(
+            error_tail_result["requested_rows"]
+        ),
+        "error_tail_activated_rows": int(
+            error_tail_result["activated_rows"]
+        ),
         "initial_active_n": initial_n,
         "final_active_n": final_active_n,
         "initial_physical_rows": initial_physical_n,
@@ -3528,13 +3852,22 @@ def run_safe_schedule(
         "accepted_steps": accepted_steps,
         "optimizer_state": optimizer_state,
         "storage": storage_record,
+        "error_tail": error_tail_result,
         "schedule": asdict(schedule),
         "fit_config": asdict(cfg),
         "converged": bool(
-            history
-            and history[-1]["phase"] == schedule.polish.name
-            and history[-1]["metadata"].get("termination_reason")
-            == "deterministic_fixed_point"
+            (
+                error_tail_result["enabled"]
+                and error_tail_result["convergence_termination_reason"]
+                == "deterministic_fixed_point"
+            )
+            or (
+                not error_tail_result["enabled"]
+                and history
+                and history[-1]["phase"] == schedule.polish.name
+                and history[-1]["metadata"].get("termination_reason")
+                == "deterministic_fixed_point"
+            )
         ),
         "seconds": time.perf_counter() - started,
     }

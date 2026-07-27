@@ -1,6 +1,6 @@
 # Architecture
 
-## Entrypoint (ADR-0025/0028)
+## Entrypoint (ADR-0025/0028/0029)
 
 `structsplat.pipeline.run_pipeline` is the maintained composition of the current best pipeline,
 and `scripts/convert.py` is its sole supported conversion CLI. `PipelineConfig`'s defaults are the
@@ -21,6 +21,8 @@ scripts/convert.py → pipeline.run_pipeline
 safe_schedule.run_safe_schedule
    bootstrap → coverage growth → detail growth → [boundary/general closure]
    → redistribution → polish
+   → [optional --fine-detail: residual effective-support estimate → error-only births
+      → fixed-topology convergence]
    every optimizer block and topology proposal runs on a detached trial field and is committed
    only if a full-frame metric vector is Pareto-safe (FIT-023/024/025, ADR-0020..0023)
 ```
@@ -111,7 +113,10 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   the masked/full-frame arm selection; it composes `init`, `fit`'s mask constraint, and
   `safe_schedule`, and holds no fitting mechanism of its own. `safe_schedule` (FIT-023/024/025)
   owns the phase order, the topology auction, and the Pareto-safe commit gate; ADR-0020..0023 own
-  its storage policies.
+  its storage policies. FIT-031/ADR-0029 adds the default-off terminal error-only tail: foreground
+  MAE effective support estimates demand, half is requested as small isotropic residual-ranked
+  rows in bounded batches no smaller than `event_min_count`, and the expanded field converges
+  under the unchanged Pareto gate.
 - **entry:** `cli` (`structsplat fit` /
   `image-to-gaussians2d`, `render` /
   `gaussians2d-to-image`, `batch-fit`, `ablation`, `stage-search`); `render` cold-loads a native

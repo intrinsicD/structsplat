@@ -104,6 +104,7 @@ class PipelineConfig:
     pareto_safe_checkpoints: bool = True
     pareto_checkpoint_every: int = 50
     event_color_solve: bool = False
+    error_tail_fraction: float = 0.0
     mask_margin: float = 0.75
     boundary_band: float = 4.0
     coverage_tau: float = 0.05
@@ -172,6 +173,14 @@ class PipelineConfig:
                 "hole_regression_budget must be finite and nonnegative, got "
                 f"{self.hole_regression_budget}"
             )
+        if (
+            not math.isfinite(self.error_tail_fraction)
+            or not 0.0 <= self.error_tail_fraction <= 1.0
+        ):
+            raise ValueError(
+                "error_tail_fraction must be finite and in [0, 1], got "
+                f"{self.error_tail_fraction}"
+            )
         if not (
             initial
             <= self.resolved_coverage_target()
@@ -230,12 +239,14 @@ def build_schedule(cfg: PipelineConfig) -> "SafeScheduleConfig":
         pareto_safe_checkpoints=bool(cfg.pareto_safe_checkpoints),
         pareto_checkpoint_every=int(cfg.pareto_checkpoint_every),
         event_color_solve=bool(cfg.event_color_solve),
+        error_tail_fraction=float(cfg.error_tail_fraction),
         bootstrap=_scaled_phase(defaults.bootstrap, cfg, cfg.resolved_initial()),
         coverage=_scaled_phase(defaults.coverage, cfg, coverage_target),
         detail=_scaled_phase(defaults.detail, cfg, detail_target),
         boundary=_scaled_phase(defaults.boundary, cfg, int(cfg.capacity)),
         redistribution=_scaled_phase(defaults.redistribution, cfg, int(cfg.capacity)),
         polish=_scaled_phase(defaults.polish, cfg, int(cfg.capacity)),
+        error_tail=_scaled_phase(defaults.error_tail, cfg, None),
     )
     if cfg.schedule_overrides:
         unknown = set(cfg.schedule_overrides) - set(asdict(schedule))
@@ -600,6 +611,7 @@ def run_current_pipeline(
     seed: int,
     strategy: str = "quadtree_wse",
     mask_margin: float = PipelineConfig.mask_margin,
+    fine_detail: bool = False,
     schedule_transform: ScheduleTransform | None = None,
     observer: PipelineObserver | None = None,
     verbose: bool = True,
@@ -613,6 +625,7 @@ def run_current_pipeline(
         device=str(device),
         init_strategy=str(strategy),
         mask_margin=float(mask_margin),
+        error_tail_fraction=0.5 if fine_detail else 0.0,
     )
     resolved_device = _resolve_device(cfg.device)
     target_np = np.asarray(image, dtype=np.float32)
@@ -642,6 +655,7 @@ def run_current_pipeline(
         "profile": profile_manifest(
             masked=mask is not None,
             mask_margin=float(mask_margin),
+            fine_detail=bool(fine_detail),
         ),
         "field": result["field"],
         "target": result["target"],
@@ -664,10 +678,23 @@ def profile_manifest(
     *,
     masked: bool,
     mask_margin: float = PipelineConfig.mask_margin,
+    fine_detail: bool = False,
 ) -> dict[str, Any]:
     """Return the reader-facing current-recipe contract."""
 
-    schedule = build_current_schedule(boundary_enabled=masked)
+    schedule = build_schedule(
+        PipelineConfig(
+            error_tail_fraction=0.5 if fine_detail else 0.0,
+        )
+    )
+    schedule = replace(
+        schedule,
+        boundary_enabled=bool(masked),
+        boundary=replace(
+            schedule.boundary,
+            name="boundary_closure" if masked else "general_closure",
+        ),
+    )
     return {
         "name": CURRENT_PROFILE_NAME,
         "recipe": dict(RECIPE),
@@ -683,9 +710,20 @@ def profile_manifest(
         "storage_policy": schedule.storage_policy,
         "physical_capacity": PHYSICAL_CAPACITY,
         "active_limit": ACTIVE_LIMIT,
+        "fine_detail": bool(fine_detail),
+        "fine_detail_fraction": float(schedule.error_tail_fraction),
+        "fine_detail_estimator": (
+            "foreground MAE effective support; request ceil(fraction * estimate)"
+            if fine_detail
+            else None
+        ),
         "mask_margin": float(mask_margin),
         "requested_optimizer_steps": sum(
             phase.max_steps for phase in schedule.phases
+        ) + (
+            int(schedule.error_tail.max_steps)
+            if schedule.error_tail_fraction > 0.0
+            else 0
         ),
         "boundary_contract": (
             "authoritative mask containment + boundary initialization/loss/proposals"

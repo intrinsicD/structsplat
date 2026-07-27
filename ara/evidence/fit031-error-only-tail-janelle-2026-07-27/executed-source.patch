@@ -1,0 +1,812 @@
+diff --git a/src/structsplat/pipeline.py b/src/structsplat/pipeline.py
+index e7c0476..961549c 100644
+--- a/src/structsplat/pipeline.py
++++ b/src/structsplat/pipeline.py
+@@ -104,6 +104,7 @@ class PipelineConfig:
+     pareto_safe_checkpoints: bool = True
+     pareto_checkpoint_every: int = 50
+     event_color_solve: bool = False
++    error_tail_fraction: float = 0.0
+     mask_margin: float = 0.75
+     boundary_band: float = 4.0
+     coverage_tau: float = 0.05
+@@ -172,6 +173,14 @@ class PipelineConfig:
+                 "hole_regression_budget must be finite and nonnegative, got "
+                 f"{self.hole_regression_budget}"
+             )
++        if (
++            not math.isfinite(self.error_tail_fraction)
++            or not 0.0 <= self.error_tail_fraction <= 1.0
++        ):
++            raise ValueError(
++                "error_tail_fraction must be finite and in [0, 1], got "
++                f"{self.error_tail_fraction}"
++            )
+         if not (
+             initial
+             <= self.resolved_coverage_target()
+@@ -230,12 +239,14 @@ def build_schedule(cfg: PipelineConfig) -> "SafeScheduleConfig":
+         pareto_safe_checkpoints=bool(cfg.pareto_safe_checkpoints),
+         pareto_checkpoint_every=int(cfg.pareto_checkpoint_every),
+         event_color_solve=bool(cfg.event_color_solve),
++        error_tail_fraction=float(cfg.error_tail_fraction),
+         bootstrap=_scaled_phase(defaults.bootstrap, cfg, cfg.resolved_initial()),
+         coverage=_scaled_phase(defaults.coverage, cfg, coverage_target),
+         detail=_scaled_phase(defaults.detail, cfg, detail_target),
+         boundary=_scaled_phase(defaults.boundary, cfg, int(cfg.capacity)),
+         redistribution=_scaled_phase(defaults.redistribution, cfg, int(cfg.capacity)),
+         polish=_scaled_phase(defaults.polish, cfg, int(cfg.capacity)),
++        error_tail=_scaled_phase(defaults.error_tail, cfg, None),
+     )
+     if cfg.schedule_overrides:
+         unknown = set(cfg.schedule_overrides) - set(asdict(schedule))
+@@ -600,6 +611,7 @@ def run_current_pipeline(
+     seed: int,
+     strategy: str = "quadtree_wse",
+     mask_margin: float = PipelineConfig.mask_margin,
++    fine_detail: bool = False,
+     schedule_transform: ScheduleTransform | None = None,
+     observer: PipelineObserver | None = None,
+     verbose: bool = True,
+@@ -613,6 +625,7 @@ def run_current_pipeline(
+         device=str(device),
+         init_strategy=str(strategy),
+         mask_margin=float(mask_margin),
++        error_tail_fraction=0.5 if fine_detail else 0.0,
+     )
+     resolved_device = _resolve_device(cfg.device)
+     target_np = np.asarray(image, dtype=np.float32)
+@@ -642,6 +655,7 @@ def run_current_pipeline(
+         "profile": profile_manifest(
+             masked=mask is not None,
+             mask_margin=float(mask_margin),
++            fine_detail=bool(fine_detail),
+         ),
+         "field": result["field"],
+         "target": result["target"],
+@@ -664,10 +678,23 @@ def profile_manifest(
+     *,
+     masked: bool,
+     mask_margin: float = PipelineConfig.mask_margin,
++    fine_detail: bool = False,
+ ) -> dict[str, Any]:
+     """Return the reader-facing current-recipe contract."""
+ 
+-    schedule = build_current_schedule(boundary_enabled=masked)
++    schedule = build_schedule(
++        PipelineConfig(
++            error_tail_fraction=0.5 if fine_detail else 0.0,
++        )
++    )
++    schedule = replace(
++        schedule,
++        boundary_enabled=bool(masked),
++        boundary=replace(
++            schedule.boundary,
++            name="boundary_closure" if masked else "general_closure",
++        ),
++    )
+     return {
+         "name": CURRENT_PROFILE_NAME,
+         "recipe": dict(RECIPE),
+@@ -683,9 +710,20 @@ def profile_manifest(
+         "storage_policy": schedule.storage_policy,
+         "physical_capacity": PHYSICAL_CAPACITY,
+         "active_limit": ACTIVE_LIMIT,
++        "fine_detail": bool(fine_detail),
++        "fine_detail_fraction": float(schedule.error_tail_fraction),
++        "fine_detail_estimator": (
++            "foreground MAE effective support; request ceil(fraction * estimate)"
++            if fine_detail
++            else None
++        ),
+         "mask_margin": float(mask_margin),
+         "requested_optimizer_steps": sum(
+             phase.max_steps for phase in schedule.phases
++        ) + (
++            int(schedule.error_tail.max_steps)
++            if schedule.error_tail_fraction > 0.0
++            else 0
+         ),
+         "boundary_contract": (
+             "authoritative mask containment + boundary initialization/loss/proposals"
+diff --git a/src/structsplat/safe_schedule.py b/src/structsplat/safe_schedule.py
+index bf5096d..dceb532 100644
+--- a/src/structsplat/safe_schedule.py
++++ b/src/structsplat/safe_schedule.py
+@@ -22,6 +22,9 @@ mode, the same proposals and gates operate on a contiguous active prefix of capa
+ and Adam tensors; only activation metadata changes at growth commits, and compaction happens once
+ at the output boundary. Detached transaction/checkpoint snapshots remain capacity-shaped
+ allocations. FIT-021's triage policy remains a separate legacy mode.
++FIT-031/ADR-0029 adds a default-off terminal error-only tail: it estimates the effective residual
++support, activates a requested fraction as small isotropic rows, and converges under the unchanged
++Pareto gate.
+ """
+ from __future__ import annotations
+ 
+@@ -123,6 +126,9 @@ class SafeScheduleConfig:
+     detail_tail_max_rows: int = 0
+     detail_tail_batch_rows: int = 128
+     detail_tail_min_gain_per_row: float = 0.0
++    error_tail_fraction: float = 0.0
++    error_tail_batch_rows: int = 512
++    error_tail_max_scale: float = 1.25
+     coverage_target_gaussians: int = 8_000
+     detail_target_gaussians: int = 10_000
+     coverage_tau: float = 0.05
+@@ -192,6 +198,11 @@ class SafeScheduleConfig:
+         (5e-3, 3e-3, 1e-3, 3e-3, 1e-3),
+         0.002, 0.005,
+     )
++    error_tail: PhaseBudget = PhaseBudget(
++        "error_tail_convergence", 4_000, 250, None,
++        (2e-3, 1.5e-3, 5e-4, 5e-3, 5e-4),
++        0.0, 0.0,
++    )
+ 
+     def resolved_base_active_limit(self) -> int:
+         """Return the logical ceiling used before the optional detail tail."""
+@@ -280,6 +291,34 @@ class SafeScheduleConfig:
+                 raise ValueError(
+                     "detail_tail_batch_rows must be at least event_min_count"
+                 )
++        if (
++            not math.isfinite(self.error_tail_fraction)
++            or not 0.0 <= self.error_tail_fraction <= 1.0
++        ):
++            raise ValueError("error_tail_fraction must be finite and in [0, 1]")
++        if self.error_tail_batch_rows <= 0:
++            raise ValueError("error_tail_batch_rows must be positive")
++        if (
++            not math.isfinite(self.error_tail_max_scale)
++            or self.error_tail_max_scale < _MIN_DENSIFY_SCALE
++        ):
++            raise ValueError(
++                "error_tail_max_scale must be finite and at least "
++                f"{_MIN_DENSIFY_SCALE}"
++            )
++        if self.error_tail_fraction > 0.0:
++            if self.storage_policy != "dynamic":
++                raise ValueError(
++                    "error-only tail requires storage_policy='dynamic'"
++                )
++            if self.error_tail_batch_rows < self.event_min_count:
++                raise ValueError(
++                    "error_tail_batch_rows must be at least event_min_count"
++                )
++            if self.error_tail.max_steps <= 0:
++                raise ValueError(
++                    "error_tail max_steps must be positive when enabled"
++                )
+         if self.coverage_tau <= 0.0:
+             raise ValueError("coverage_tau must be positive")
+         if self.event_min_count <= 0 or self.recovery_steps <= 0:
+@@ -321,7 +360,7 @@ class SafeScheduleConfig:
+                 "boundary residual component target must be nonnegative and "
+                 "minimum pixels positive"
+             )
+-        for phase in self.phases:
++        for phase in (*self.phases, self.error_tail):
+             if phase.max_steps < 0 or phase.block_steps <= 0:
+                 raise ValueError(
+                     f"phase {phase.name} must have a nonnegative step budget "
+@@ -1419,6 +1458,51 @@ def _replicate_box_blur(value: torch.Tensor, kernel: int) -> torch.Tensor:
+     )
+ 
+ 
++@torch.no_grad()
++def _estimate_error_tail_rows(
++    target: torch.Tensor,
++    render_img: torch.Tensor,
++    constraint: _MaskConstraint,
++    fraction: float,
++) -> dict[str, Any]:
++    """Estimate independent residual sites with the absolute-error participation ratio.
++
++    For foreground per-pixel MAE ``e``, ``(sum e)^2 / sum(e^2)`` is the effective support size:
++    it equals the number of sites when their residual magnitudes are equal and shrinks when error
++    is concentrated. FIT-031 interprets one small Gaussian per effective site as the complete-row
++    estimate and requests a configured fraction. This is an explicit allocation heuristic, not a
++    promise that the normalized representation can attain zero error.
++    """
++
++    residual = (render_img - target).abs().mean(dim=2)
++    selected = residual[constraint.inside].to(dtype=torch.float64)
++    foreground_pixels = int(selected.numel())
++    nonzero_pixels = int((selected > 0.0).sum())
++    error_sum = float(selected.sum()) if foreground_pixels else 0.0
++    error_square_sum = float(selected.square().sum()) if foreground_pixels else 0.0
++    if error_sum <= 0.0 or error_square_sum <= 0.0:
++        estimated = 0
++    else:
++        effective = error_sum * error_sum / error_square_sum
++        estimated = min(nonzero_pixels, max(1, int(math.ceil(effective))))
++    requested = min(
++        estimated,
++        int(math.ceil(float(fraction) * float(estimated))),
++    )
++    return {
++        "estimator": "foreground_mae_effective_support",
++        "formula": "ceil((sum e)^2 / sum(e^2)); e=foreground per-pixel RGB MAE",
++        "interpretation": "one small Gaussian per effective residual site",
++        "fraction": float(fraction),
++        "foreground_pixels": foreground_pixels,
++        "nonzero_residual_pixels": nonzero_pixels,
++        "residual_l1_sum": error_sum,
++        "residual_l2_square_sum": error_square_sum,
++        "estimated_complete_rows": estimated,
++        "requested_rows": requested,
++    }
++
++
+ @torch.no_grad()
+ def _detail_tail_score(
+     field: GaussianField,
+@@ -1545,11 +1629,15 @@ def _birth_components(
+     residual = (render_img - target).abs().mean(dim=2)
+     residual_ref = _safe_quantile(residual[constraint.inside], 0.95).clamp_min(1e-8)
+     residual_n = (residual / residual_ref).clamp(0.0, 4.0)
+-    tangent, coherence = _local_structure(target)
+     deficit = ((float(schedule.coverage_tau) - den) / float(schedule.coverage_tau)).clamp(0, 1)
+     tail_metadata: dict[str, Any] = {}
++    tangent: torch.Tensor | None = None
++    coherence: torch.Tensor | None = None
++    if mode != "error_tail":
++        tangent, coherence = _local_structure(target)
+ 
+     if mode == "boundary":
++        assert coherence is not None
+         allowed = (
+             (constraint.sdf_flat > 0.0)
+             & (constraint.sdf_flat <= float(schedule.boundary_band))
+@@ -1558,12 +1646,15 @@ def _birth_components(
+     else:
+         allowed = constraint.eroded_flat.reshape(H, W)
+         if mode == "coverage":
++            assert coherence is not None
+             holes = den < float(schedule.coverage_tau)
+             score = 8.0 * holes.to(residual.dtype) + 3.0 * deficit \
+                 + 0.20 * residual_n + 0.10 * coherence
+         elif mode == "detail":
++            assert coherence is not None
+             score = residual_n * (1.0 + 0.5 * coherence) + 2.0 * deficit
+         elif mode == "detail_tail":
++            assert coherence is not None
+             score, allowed, residual, tail_metadata = _detail_tail_score(
+                 field,
+                 target,
+@@ -1574,15 +1665,33 @@ def _birth_components(
+                 denominator=den,
+                 coherence=coherence,
+             )
++        elif mode == "error_tail":
++            # The mask is only a feasibility set. Ranking is exactly the current per-pixel
++            # absolute residual; no target structure, coverage deficit, or frequency prior enters.
++            allowed = constraint.inside
++            score = torch.where(
++                residual > 0.0,
++                residual,
++                torch.full_like(residual, -float("inf")),
++            )
++            tail_metadata = {
++                "score_rule": "foreground per-pixel RGB MAE only",
++                "eligible_pixels": int((allowed & torch.isfinite(score)).sum()),
++            }
+         else:
+             raise ValueError(f"unknown birth mode {mode!r}")
+     negative = torch.full_like(score, -float("inf"))
+     score = torch.where(allowed, score, negative)
+-    radius = max(1, int(round(float(schedule.event_spacing_px) * 0.5)))
+-    peaks = F.max_pool2d(
+-        score[None, None], 2 * radius + 1, stride=1, padding=radius
+-    )[0, 0]
+-    peak_score = torch.where((score >= peaks) & allowed, score, negative).reshape(-1)
++    if mode == "error_tail":
++        # Every pixel is an independently addressable fine-detail site. Avoiding spatial NMS lets
++        # the estimator's requested count be realized even when residual is locally dense.
++        peak_score = score.reshape(-1)
++    else:
++        radius = max(1, int(round(float(schedule.event_spacing_px) * 0.5)))
++        peaks = F.max_pool2d(
++            score[None, None], 2 * radius + 1, stride=1, padding=radius
++        )[0, 0]
++        peak_score = torch.where((score >= peaks) & allowed, score, negative).reshape(-1)
+     finite = int(torch.isfinite(peak_score).sum())
+     k = min(int(count), finite)
+     if k <= 0:
+@@ -1591,6 +1700,7 @@ def _birth_components(
+     source_y = torch.div(sites, W, rounding_mode="floor")
+     source_x = sites - source_y * W
+     if mode == "boundary":
++        assert tangent is not None
+         projected = constraint.nearest_inside_flat[sites].clamp_min(0)
+         y = torch.div(projected, W, rounding_mode="floor")
+         x = projected - y * W
+@@ -1602,7 +1712,11 @@ def _birth_components(
+             torch.atan2(nx, -ny),
+             tangent[source_y, source_x],
+         )
++    elif mode == "error_tail":
++        y, x = source_y, source_x
++        angle = torch.zeros(k, device=target.device, dtype=target.dtype)
+     else:
++        assert tangent is not None
+         y, x = source_y, source_x
+         angle = tangent[y, x]
+ 
+@@ -1611,10 +1725,15 @@ def _birth_components(
+         _MIN_DENSIFY_SCALE,
+     )
+     local_base = _error_region_scale(residual, source_y, source_x, global_base)
+-    local_coherence = coherence[source_y, source_x]
+-    ratio = 1.0 + (float(cfg.densify_max_axis_ratio) - 1.0) * (
+-        local_coherence ** float(cfg.densify_coherence_power)
+-    )
++    if mode == "error_tail":
++        local_base = local_base.clamp(max=float(schedule.error_tail_max_scale))
++        ratio = torch.ones_like(local_base)
++    else:
++        assert coherence is not None
++        local_coherence = coherence[source_y, source_x]
++        ratio = 1.0 + (float(cfg.densify_max_axis_ratio) - 1.0) * (
++            local_coherence ** float(cfg.densify_coherence_power)
++        )
+     along = local_base * torch.sqrt(ratio)
+     across = local_base / torch.sqrt(ratio)
+     if mode == "boundary":
+@@ -1664,7 +1783,11 @@ def _birth_components(
+         "max_base_scale": float(local_base.max()),
+         "mean_axis_ratio": float(ratio.mean()),
+         "site_mode": mode,
+-        "covariance_rule": "local residual support scale + local structure tensor",
++        "covariance_rule": (
++            "small isotropic residual-support scale"
++            if mode == "error_tail"
++            else "local residual support scale + local structure tensor"
++        ),
+         **tail_metadata,
+     }
+     return components, metadata
+@@ -2773,7 +2896,7 @@ def run_safe_schedule(
+             block_index += 1
+             steps = min(int(phase.block_steps), int(phase.max_steps) - phase_steps)
+             lr_scale = 1.0
+-            if phase.name == schedule.polish.name:
++            if phase.name in (schedule.polish.name, schedule.error_tail.name):
+                 lr_scale = max(0.1, 1.0 - phase_steps / max(phase.max_steps, 1))
+             trainable_rows = None
+             selection_metadata = None
+@@ -3483,14 +3606,215 @@ def run_safe_schedule(
+         exit_condition=lambda: False,
+     )
+ 
++    error_tail_start_n = _logical_n(field, active_n)
++    error_tail_limit = error_tail_start_n
++    error_tail_result: dict[str, Any] = {
++        "enabled": False,
++        "fraction": float(schedule.error_tail_fraction),
++        "estimated_complete_rows": 0,
++        "requested_rows": 0,
++        "activated_rows": 0,
++        "start_n": error_tail_start_n,
++        "end_n": error_tail_start_n,
++        "allocation_termination_reason": "disabled",
++        "convergence_termination_reason": "disabled",
++        "minimum_batch_rows": int(schedule.event_min_count),
++        "waves_attempted": 0,
++        "waves_accepted": 0,
++    }
++    if schedule.error_tail_fraction > 0.0:
++        if active_n is not None:
++            raise RuntimeError(
++                "validated error-only tail unexpectedly received prefix storage"
++            )
++        before_error_tail = metrics.to_dict()
++        _, error_tail_render = evaluate_quality(
++            field,
++            target,
++            mask_tensor,
++            cfg,
++            constraint,
++            schedule.coverage_tau,
++            active_n=active_n,
++        )
++        estimate = _estimate_error_tail_rows(
++            target,
++            error_tail_render,
++            constraint,
++            float(schedule.error_tail_fraction),
++        )
++        requested_rows = int(estimate["requested_rows"])
++        error_tail_limit = error_tail_start_n + requested_rows
++        error_schedule = replace(
++            schedule,
++            capacity=max(int(schedule.capacity), int(error_tail_limit)),
++            base_active_limit=max(int(base_active_limit), int(error_tail_limit)),
++        )
++        error_fit_cfg = _phase_fit_config(
++            cfg,
++            schedule.error_tail,
++            schedule.recovery_steps,
++            boundary_enabled=schedule.boundary_enabled,
++        )
++        emit(_event_record(
++            phase="error_tail",
++            event="error_tail_estimate",
++            accepted=True,
++            before=metrics,
++            candidate=metrics,
++            selected=metrics,
++            attempted_steps=0,
++            accepted_steps=0,
++            metadata={
++                **estimate,
++                "start_n": error_tail_start_n,
++                "tail_limit": error_tail_limit,
++                "batch_rows": int(schedule.error_tail_batch_rows),
++                "minimum_batch_rows": int(schedule.event_min_count),
++                "max_scale": float(schedule.error_tail_max_scale),
++                "score_rule": "foreground per-pixel RGB MAE only",
++            },
++        ))
++
++        error_waves_attempted = 0
++        error_waves_accepted = 0
++        allocation_reason = (
++            "no_residual" if requested_rows <= 0 else "requested_rows"
++        )
++        while _logical_n(field, active_n) < error_tail_limit:
++            error_waves_attempted += 1
++            room = error_tail_limit - _logical_n(field, active_n)
++            requested = min(int(schedule.error_tail_batch_rows), int(room))
++            factories = [
++                (
++                    "error_tail_birth",
++                    requested,
++                    lambda k, image: propose_birth(
++                        field,
++                        target,
++                        image,
++                        error_fit_cfg,
++                        constraint,
++                        error_schedule,
++                        k,
++                        "error_tail",
++                        active_n=active_n,
++                    ),
++                ),
++            ]
++            (
++                field,
++                optimizer_state,
++                metrics,
++                topology_record,
++                _auction_attempted,
++                _auction_accepted,
++                active_n,
++            ) = _topology_auction(
++                field,
++                optimizer_state,
++                metrics,
++                target,
++                mask_cpu,
++                mask_tensor,
++                error_fit_cfg,
++                constraint,
++                error_schedule,
++                factories,
++                active_n=active_n,
++                expand_neighborhood=False,
++                minimum_gain_per_row=0.0,
++                verbose=verbose,
++            )
++            topology_record["phase"] = "error_tail"
++            topology_record["metadata"].update({
++                "wave": error_waves_attempted,
++                "tail_start_n": error_tail_start_n,
++                "tail_limit": error_tail_limit,
++                "estimated_complete_rows": int(
++                    estimate["estimated_complete_rows"]
++                ),
++                "requested_rows": requested_rows,
++            })
++            emit(topology_record)
++            if not topology_record["accepted"]:
++                allocation_reason = "no_safe_effective_winner"
++                break
++            error_waves_accepted += 1
++        else:
++            if _logical_n(field, active_n) >= error_tail_limit:
++                allocation_reason = "requested_rows"
++
++        activated_rows = _logical_n(field, active_n) - error_tail_start_n
++        convergence_reason = (
++            "no_rows_activated" if activated_rows <= 0 else "step_budget"
++        )
++        if activated_rows > 0:
++            run_phase(
++                schedule.error_tail,
++                topology=None,
++                exit_condition=lambda: False,
++            )
++            convergence_reason = str(
++                history[-1]["metadata"].get(
++                    "termination_reason", "unknown"
++                )
++            )
++        after_error_tail = metrics.to_dict()
++        error_tail_result = {
++            "enabled": True,
++            **estimate,
++            "start_n": error_tail_start_n,
++            "end_n": _logical_n(field, active_n),
++            "activated_rows": activated_rows,
++            "tail_limit": error_tail_limit,
++            "batch_rows": int(schedule.error_tail_batch_rows),
++            "minimum_batch_rows": int(schedule.event_min_count),
++            "max_scale": float(schedule.error_tail_max_scale),
++            "waves_attempted": error_waves_attempted,
++            "waves_accepted": error_waves_accepted,
++            "allocation_termination_reason": allocation_reason,
++            "convergence_termination_reason": convergence_reason,
++            "convergence_step_ceiling": int(schedule.error_tail.max_steps),
++            "convergence_block_steps": int(schedule.error_tail.block_steps),
++            "score_rule": "foreground per-pixel RGB MAE only",
++            "geometry_rule": "small isotropic residual-support scale",
++            "before": before_error_tail,
++            "after": after_error_tail,
++            "foreground_psnr_gain_db": (
++                float(after_error_tail["foreground_psnr_db"])
++                - float(before_error_tail["foreground_psnr_db"])
++            ),
++        }
++        emit(_event_record(
++            phase="error_tail",
++            event="stage_end",
++            accepted=True,
++            before=metrics,
++            candidate=metrics,
++            selected=metrics,
++            attempted_steps=0,
++            accepted_steps=0,
++            metadata=error_tail_result,
++        ))
++
+     final_active_n = _logical_n(field, active_n)
+     physical_capacity = int(field.n)
+     storage_record = {
+         "policy": schedule.storage_policy,
+         "capacity": int(schedule.capacity),
++        "effective_capacity": int(
++            max(int(schedule.capacity), int(error_tail_limit))
++        ),
+         "base_active_limit": int(base_active_limit),
+         "detail_tail_max_rows": int(schedule.detail_tail_max_rows),
+         "detail_tail_activated_rows": int(tail_end_n - tail_start_n),
++        "error_tail_requested_rows": int(
++            error_tail_result["requested_rows"]
++        ),
++        "error_tail_activated_rows": int(
++            error_tail_result["activated_rows"]
++        ),
+         "initial_active_n": initial_n,
+         "final_active_n": final_active_n,
+         "initial_physical_rows": initial_physical_n,
+@@ -3528,13 +3852,22 @@ def run_safe_schedule(
+         "accepted_steps": accepted_steps,
+         "optimizer_state": optimizer_state,
+         "storage": storage_record,
++        "error_tail": error_tail_result,
+         "schedule": asdict(schedule),
+         "fit_config": asdict(cfg),
+         "converged": bool(
+-            history
+-            and history[-1]["phase"] == schedule.polish.name
+-            and history[-1]["metadata"].get("termination_reason")
+-            == "deterministic_fixed_point"
++            (
++                error_tail_result["enabled"]
++                and error_tail_result["convergence_termination_reason"]
++                == "deterministic_fixed_point"
++            )
++            or (
++                not error_tail_result["enabled"]
++                and history
++                and history[-1]["phase"] == schedule.polish.name
++                and history[-1]["metadata"].get("termination_reason")
++                == "deterministic_fixed_point"
++            )
+         ),
+         "seconds": time.perf_counter() - started,
+     }
+diff --git a/src/structsplat/workflows.py b/src/structsplat/workflows.py
+index 8b545fd..e205b78 100644
+--- a/src/structsplat/workflows.py
++++ b/src/structsplat/workflows.py
+@@ -358,6 +358,7 @@ def _job_key(
+     seed: int,
+     device: str,
+     mask_margin: float,
++    fine_detail: bool,
+     lpips: bool,
+ ) -> str:
+     payload = {
+@@ -375,6 +376,7 @@ def _job_key(
+         "seed": int(seed),
+         "device": str(device),
+         "mask_margin": float(mask_margin),
++        "fine_detail": bool(fine_detail),
+         "lpips": bool(lpips),
+         "target_pixel_sha256": _pixel_sha256(prepared["target"]),
+         "implementation_sha256": {
+@@ -404,6 +406,7 @@ def _run_job(
+     seed: int,
+     device: str,
+     mask_margin: float,
++    fine_detail: bool,
+     lpips: bool,
+     resume: bool,
+     overwrite: bool,
+@@ -418,6 +421,7 @@ def _run_job(
+         seed=seed,
+         device=device,
+         mask_margin=mask_margin,
++        fine_detail=fine_detail,
+         lpips=lpips,
+     )
+     result_path = job_out / "result.json"
+@@ -516,6 +520,7 @@ def _run_job(
+         seed=seed,
+         strategy=strategy,
+         mask_margin=mask_margin,
++        fine_detail=fine_detail,
+         schedule_transform=schedule_transform,
+         observer=observer,
+         verbose=verbose,
+@@ -589,8 +594,13 @@ def _run_job(
+     _atomic_json(job_out / "config.json", config)
+     requested_iters = sum(
+         int(phase["max_steps"])
+-        for phase in output["schedule"].values()
+-        if isinstance(phase, dict) and "max_steps" in phase
++        for name, phase in output["schedule"].items()
++        if isinstance(phase, dict)
++        and "max_steps" in phase
++        and (
++            name != "error_tail"
++            or float(output["schedule"].get("error_tail_fraction", 0.0)) > 0.0
++        )
+     )
+     row = {
+         "schema": "structsplat.current_pipeline.metric.v1",
+@@ -642,6 +652,7 @@ def _run_job(
+         "render_seconds": output["timing"]["final_render_seconds"],
+         "total_seconds": time.perf_counter() - started,
+         "phase_seconds": _phase_timings(history),
++        "error_tail": schedule_result.get("error_tail"),
+         "render_fps_median": (
+             1.0 / output["timing"]["final_render_seconds"]
+             if output["timing"]["final_render_seconds"] > 0.0
+@@ -814,6 +825,31 @@ def _run_card(outdir: Path, row: dict[str, Any]) -> str:
+         f"<span><b>{float(seconds):.3f}s</b> {html.escape(str(phase))}</span>"
+         for phase, seconds in (row.get("phase_seconds") or {}).items()
+     )
++    error_tail = row.get("error_tail") or {}
++    error_tail_html = ""
++    if error_tail.get("enabled"):
++        before = error_tail.get("before") or {}
++        after = error_tail.get("after") or {}
++        before_psnr = float(before.get("foreground_psnr_db", float("nan")))
++        after_psnr = float(after.get("foreground_psnr_db", float("nan")))
++        error_tail_html = (
++            "<details open><summary>error-only fine-detail stage</summary>"
++            "<div class='metrics'>"
++            f"<span><b>{int(error_tail['estimated_complete_rows']):,}</b> "
++            "estimated complete rows</span>"
++            f"<span><b>{float(error_tail['fraction']):.0%}</b> allocation</span>"
++            f"<span><b>{int(error_tail['requested_rows']):,}</b> requested</span>"
++            f"<span><b>{int(error_tail['activated_rows']):,}</b> activated</span>"
++            f"<span><b>{before_psnr:.4f} → {after_psnr:.4f}</b> foreground PSNR</span>"
++            f"<span><b>{float(error_tail['foreground_psnr_gain_db']):+.4f} dB</b> "
++            "stage gain</span>"
++            "</div>"
++            f"<p><code>{html.escape(str(error_tail.get('formula')))}</code>. "
++            f"Allocation: {html.escape(str(error_tail.get('allocation_termination_reason')))}; "
++            "convergence: "
++            f"{html.escape(str(error_tail.get('convergence_termination_reason')))}.</p>"
++            "</details>"
++        )
+     return (
+         "<article class='run'>"
+         f"<h2>{html.escape(str(row.get('method_label', row.get('method'))))}</h2>"
+@@ -828,6 +864,7 @@ def _run_card(outdir: Path, row: dict[str, Any]) -> str:
+         "</div>"
+         f"<details><summary>phase timings</summary><div class='metrics'>{phase_timings}</div>"
+         "</details>"
++        f"{error_tail_html}"
+         f"<div class='hero-images'>{''.join(images)}</div>"
+         "<div class='charts'>"
+         f"{_svg_curve(curves, 'psnr', 'PSNR over attempted steps', '#e65f2b')}"
+@@ -1312,6 +1349,7 @@ def _execute(
+     with_baselines: bool = False,
+ ) -> int:
+     _require_positive(args)
++    fine_detail = bool(getattr(args, "fine_detail", False))
+     outdir = args.outdir.expanduser().resolve()
+     outdir.mkdir(parents=True, exist_ok=True)
+     discovered = _discover_images(args.source)
+@@ -1370,6 +1408,7 @@ def _execute(
+                         seed=seed,
+                         device=args.device,
+                         mask_margin=args.mask_margin,
++                        fine_detail=fine_detail,
+                         lpips=args.lpips,
+                         resume=args.resume,
+                         overwrite=args.overwrite,
+@@ -1393,6 +1432,7 @@ def _execute(
+         "profile": profile_manifest(
+             masked=any(item["mask"] is not None for item in prepared_items),
+             mask_margin=float(args.mask_margin),
++            fine_detail=fine_detail,
+         ),
+         "command": " ".join(sys.argv),
+         "source": str(args.source.expanduser().resolve()),
+@@ -1407,6 +1447,7 @@ def _execute(
+             else str(direct_mask.expanduser().resolve())
+         ),
+         "mask_invert": bool(getattr(args, "mask_invert", False)),
++        "fine_detail": fine_detail,
+         "variants": [variant for variant, *_ in variants],
+         "seeds": seeds,
+         "images": [
+@@ -1451,6 +1492,14 @@ def build_convert_parser() -> argparse.ArgumentParser:
+         )
+     )
+     _common_arguments(parser, multiple_seeds=False, direct_mask=True)
++    parser.add_argument(
++        "--fine-detail",
++        action="store_true",
++        help=(
++            "append the optional terminal error-only stage: estimate effective "
++            "residual sites, request half as small Gaussians, and converge safely"
++        ),
++    )
+     return parser
+ 
+ 
+@@ -1500,18 +1549,31 @@ def build_stage_search_parser() -> argparse.ArgumentParser:
+ 
+ def main_convert(argv: list[str] | None = None) -> int:
+     args = build_convert_parser().parse_args(argv)
++    fine_detail = bool(args.fine_detail)
+     variants = [
+         (
+-            "current",
++            "fine_detail" if fine_detail else "current",
+             "quadtree_wse",
+             None,
+-            "structsplat_best_default",
+-            "Current profile",
++            (
++                "structsplat_best_default_error_tail50"
++                if fine_detail
++                else "structsplat_best_default"
++            ),
++            (
++                "Current profile + error-only fine detail"
++                if fine_detail
++                else "Current profile"
++            ),
+         )
+     ]
+     return _execute(
+         args,
+-        title="Current Pipeline Conversion",
++        title=(
++            "Current Pipeline + Error-Only Fine Detail"
++            if fine_detail
++            else "Current Pipeline Conversion"
++        ),
+         variants=variants,
+     )
+ 

@@ -16,6 +16,7 @@ from structsplat.safe_schedule import (
     QualityMetrics,
     SafeScheduleConfig,
     _detail_tail_score,
+    _estimate_error_tail_rows,
     _expand_spatial_neighborhood,
     _safe_fit_block,
     adapt_optimizer_state,
@@ -832,6 +833,101 @@ def test_detail_tail_score_excludes_holes_boundary_and_low_frequency_error():
     assert not torch.isfinite(flat_score).any()
 
 
+def test_error_tail_estimate_is_the_logged_mae_effective_support():
+    height = width = 12
+    target = torch.zeros(height, width, 3)
+    render = torch.zeros_like(target)
+    render[4, 5] = 1.0
+    render[7, 8] = 1.0
+    mask = torch.ones(height, width, dtype=torch.bool)
+    cfg = _base_cfg(iters=1)
+    constraint = _MaskConstraint.from_mask(
+        mask.numpy(),
+        target.device,
+        target.dtype,
+        cfg.sigma_cutoff,
+        cfg.mask_margin,
+        cap_mode="anisotropic",
+        undercoverage_band=4.0,
+    )
+
+    estimate = _estimate_error_tail_rows(
+        target, render, constraint, fraction=0.5
+    )
+
+    assert estimate["estimated_complete_rows"] == 2
+    assert estimate["requested_rows"] == 1
+    assert estimate["fraction"] == 0.5
+    assert estimate["nonzero_residual_pixels"] == 2
+    assert estimate["residual_l1_sum"] == pytest.approx(2.0)
+    assert estimate["residual_l2_square_sum"] == pytest.approx(2.0)
+
+
+def test_error_tail_births_rank_only_residual_and_are_small_isotropic_rows():
+    height = width = 28
+    mask = torch.ones(height, width, dtype=torch.bool)
+    target = torch.zeros(height, width, 3)
+    target[7, 9] = 1.0
+    target[18, 20] = 0.8
+    target[12, 14] = 0.2
+    render = torch.zeros_like(target)
+    field = _field(5, height, width)
+    cfg = _base_cfg(iters=1)
+    constraint = _MaskConstraint.from_mask(
+        mask.numpy(),
+        target.device,
+        target.dtype,
+        cfg.sigma_cutoff,
+        cfg.mask_margin,
+        cap_mode="anisotropic",
+        undercoverage_band=4.0,
+    )
+    schedule = SafeScheduleConfig(
+        capacity=7,
+        coverage_target_gaussians=5,
+        detail_target_gaussians=5,
+        error_tail_fraction=0.5,
+        error_tail_batch_rows=2,
+        event_min_count=1,
+    )
+
+    proposal = propose_birth(
+        field,
+        target,
+        render,
+        cfg,
+        constraint,
+        schedule,
+        2,
+        "error_tail",
+    )
+
+    assert proposal is not None
+    children = proposal.field.subset(proposal.touched)
+    selected = {
+        (int(y), int(x))
+        for x, y in children.means.detach().tolist()
+    }
+    assert selected == {(7, 9), (18, 20)}
+    torch.testing.assert_close(
+        children.rotations,
+        torch.zeros_like(children.rotations),
+        rtol=0,
+        atol=0,
+    )
+    torch.testing.assert_close(
+        children.scales()[:, 0],
+        children.scales()[:, 1],
+        rtol=0,
+        atol=0,
+    )
+    assert float(children.scales().max()) <= schedule.error_tail_max_scale
+    assert proposal.metadata["score_rule"] == "foreground per-pixel RGB MAE only"
+    assert proposal.metadata["covariance_rule"] == (
+        "small isotropic residual-support scale"
+    )
+
+
 def test_moment_split_preserves_integrated_raw_mass_before_caps():
     height = width = 36
     mask = torch.ones(height, width, dtype=torch.bool)
@@ -972,6 +1068,11 @@ def test_tiny_safe_schedule_emits_monotone_selected_sequence():
     )
     assert result["field"].n <= schedule.capacity
     assert result["history"]
+    assert result["error_tail"]["enabled"] is False
+    assert result["error_tail"]["requested_rows"] == 0
+    assert not [
+        entry for entry in result["history"] if entry["phase"] == "error_tail"
+    ]
     selected = [entry["selected"] for entry in result["history"]]
     for before, after in zip(selected, selected[1:]):
         assert after["foreground_mse"] <= before["foreground_mse"] * (1 + 3e-6) + 1e-10
@@ -996,9 +1097,12 @@ def test_tiny_safe_schedule_emits_monotone_selected_sequence():
     assert fixed["storage"] == {
         "policy": "fixed_capacity",
         "capacity": 11,
+        "effective_capacity": 11,
         "base_active_limit": 9,
         "detail_tail_max_rows": 0,
         "detail_tail_activated_rows": 0,
+        "error_tail_requested_rows": 0,
+        "error_tail_activated_rows": 0,
         "initial_active_n": 6,
         "final_active_n": result["field"].n,
         "initial_physical_rows": 11,
@@ -1120,6 +1224,73 @@ def test_geometric_storage_policy_validation():
     # A geometric fit cannot also reserve a detail tail (that stays fixed_capacity per ADR-0022).
     with pytest.raises(ValueError, match="requires storage_policy"):
         replace(valid, detail_tail_max_rows=4).validate(6)
+    with pytest.raises(ValueError, match="requires storage_policy='dynamic'"):
+        replace(valid, error_tail_fraction=0.5).validate(6)
+
+
+def test_error_tail_runs_after_polish_and_preserves_mask_containment():
+    height = width = 24
+    mask = _mask(height, width)
+    target = torch.zeros(height, width, 3)
+    target[9, 10] = 1.0
+    target[14, 15] = 0.8
+    target *= mask[..., None]
+    field = _field(6, height, width)
+    field.colors.zero_()
+    one = (2e-3, 1.5e-3, 5e-4, 5e-3, 5e-4)
+
+    def disabled(name: str, target_n: int):
+        return PhaseBudget(name, 0, 1, target_n, one, 0.0, 0.0)
+
+    schedule = SafeScheduleConfig(
+        capacity=6,
+        storage_policy="dynamic",
+        coverage_target_gaussians=6,
+        detail_target_gaussians=6,
+        error_tail_fraction=0.5,
+        error_tail_batch_rows=4,
+        event_min_count=1,
+        recovery_steps=2,
+        bootstrap=disabled("bootstrap", 6),
+        coverage=disabled("coverage_growth", 6),
+        detail=disabled("detail_growth", 6),
+        boundary=disabled("boundary_closure", 6),
+        redistribution=disabled("redistribution", 6),
+        polish=disabled("safe_polish", 6),
+        error_tail=PhaseBudget(
+            "error_tail_convergence", 2, 1, None, one, 0.0, 0.0
+        ),
+    )
+    result = run_safe_schedule(
+        field,
+        target,
+        mask,
+        _base_cfg(iters=1),
+        schedule,
+        verbose=False,
+    )
+
+    tail = result["error_tail"]
+    assert tail["enabled"] is True
+    assert tail["estimated_complete_rows"] >= tail["requested_rows"] > 0
+    assert 0 < tail["activated_rows"] <= tail["requested_rows"]
+    assert tail["minimum_batch_rows"] == schedule.event_min_count == 1
+    assert result["field"].n == 6 + tail["activated_rows"]
+    assert result["storage"]["error_tail_requested_rows"] == tail["requested_rows"]
+    assert result["storage"]["error_tail_activated_rows"] == tail["activated_rows"]
+    assert result["metrics"]["outside_max_abs"] == 0.0
+    assert result["metrics"]["outside_coverage_max"] == 0.0
+    assert result["metrics"]["finite"] is True
+    assert result["history"][-1]["phase"] == "error_tail"
+    assert result["history"][-1]["event"] == "stage_end"
+
+
+def test_error_tail_is_absent_when_default_fraction_is_zero():
+    schedule = SafeScheduleConfig()
+    assert schedule.error_tail_fraction == 0.0
+    assert schedule.error_tail_batch_rows == 512
+    assert schedule.error_tail_max_scale == 1.25
+    assert schedule.event_min_count == 8
 
 
 def test_fixed_reserve_is_activated_only_by_the_late_detail_tail():

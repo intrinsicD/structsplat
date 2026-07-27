@@ -26,7 +26,9 @@ IntrinsicEngine as an RHI pass.
   FIT-021 owns mutable triage/free-list policy, while FIT-024 keeps the transactional proposal
   auction and immutable active-prefix liveness. FIT-025/ADR-0022 separately controls physical
   capacity, the ordinary active ceiling, and an opt-in Pareto-gated late detail reserve; defaults
-  preserve the historical single ceiling with no tail.
+  preserve the historical single ceiling with no tail. FIT-031/ADR-0029 adds a separate
+  default-off terminal error-only tail whose effective-support estimate may grow dynamic storage
+  before fixed-topology convergence.
 - `pipeline.py` / `workflows.py` — freeze the source-bound 2026-07-24 operational profile once,
   keep masked and unmasked execution identical outside boundary-specific work, and power the sole
   conversion CLI (`scripts/convert.py`) plus three report-producing evaluation workflows.

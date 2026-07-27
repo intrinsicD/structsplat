@@ -95,6 +95,9 @@ class TestConfigDerivation:
         dict(block_steps=0),
         dict(hole_regression_budget=-1e-9),
         dict(hole_regression_budget=float("nan")),
+        dict(error_tail_fraction=-1e-9),
+        dict(error_tail_fraction=1.01),
+        dict(error_tail_fraction=float("nan")),
         dict(capacity=100, initial_gaussians=90, coverage_target=80),
     ])
     def test_invalid_configs_are_rejected(self, kwargs):
@@ -111,6 +114,7 @@ class TestConfigDerivation:
         assert schedule.pareto_checkpoint_every == 50
         assert schedule.event_color_solve is False
         assert schedule.detail_tail_max_rows == 0  # C52 rejected the specialized tail
+        assert schedule.error_tail_fraction == 0.0
         assert schedule.refinement_policy == "global"
         for phase in schedule.phases:
             assert phase.max_steps >= 1
@@ -130,6 +134,17 @@ class TestConfigDerivation:
         assert build_schedule(
             PipelineConfig(hole_regression_budget=0.002)
         ).hole_regression_budget == 0.002
+
+    def test_error_tail_is_an_explicit_opt_in_and_default_stays_unchanged(self):
+        default = build_schedule(PipelineConfig())
+        enabled = build_schedule(PipelineConfig(error_tail_fraction=0.5))
+
+        assert default.error_tail_fraction == 0.0
+        assert enabled.error_tail_fraction == 0.5
+        assert default.capacity == enabled.capacity == 11_000
+        assert default.phases == enabled.phases
+        assert enabled.error_tail.name == "error_tail_convergence"
+        assert enabled.error_tail.max_steps == 4_000
 
     def test_schedule_overrides_reject_unknown_fields(self):
         cfg = PipelineConfig(schedule_overrides={"not_a_field": 1})

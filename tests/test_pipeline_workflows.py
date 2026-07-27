@@ -18,6 +18,7 @@ from structsplat.pipeline import (
 from structsplat.workflows import (
     ABLATION_ARMS,
     STAGE_VARIANTS,
+    _run_card,
     build_ablation_parser,
     build_benchmark_parser,
     build_convert_parser,
@@ -61,6 +62,7 @@ def test_initialization_preserves_count_and_parameters_across_paths():
     config = build_initialization_config(seed=7)
     manifest_masked = profile_manifest(masked=True)
     manifest_unmasked = profile_manifest(masked=False)
+    manifest_fine = profile_manifest(masked=True, fine_detail=True)
 
     assert config.num_gaussians == INITIAL_GAUSSIANS == 5_000
     assert config.strategy == "quadtree_wse"
@@ -73,6 +75,14 @@ def test_initialization_preserves_count_and_parameters_across_paths():
     assert (
         manifest_masked["requested_optimizer_steps"]
         == manifest_unmasked["requested_optimizer_steps"]
+    )
+    assert manifest_masked["fine_detail"] is False
+    assert manifest_masked["fine_detail_fraction"] == 0.0
+    assert manifest_fine["fine_detail"] is True
+    assert manifest_fine["fine_detail_fraction"] == 0.5
+    assert (
+        manifest_fine["requested_optimizer_steps"]
+        == manifest_masked["requested_optimizer_steps"] + 4_000
     )
 
 
@@ -88,12 +98,17 @@ def test_public_parsers_expose_only_the_four_clear_workflows(tmp_path):
     )
 
     assert convert.seed == 0
+    assert convert.fine_detail is False
     assert convert.mask_margin == PipelineConfig.mask_margin == 0.75
     direct_mask = build_convert_parser().parse_args(
         [str(source / "one.png"), str(out), "--mask", str(source / "one_mask.png")]
     )
     assert direct_mask.mask == source / "one_mask.png"
     assert direct_mask.mask_dir is None
+    fine_detail = build_convert_parser().parse_args(
+        [str(source / "one.png"), str(out), "--fine-detail"]
+    )
+    assert fine_detail.fine_detail is True
     assert benchmark.seeds == [0]
     assert ablation.arms == list(ABLATION_ARMS)
     assert stage.stage == "coverage"
@@ -140,3 +155,42 @@ def test_convert_direct_mask_is_loaded_and_can_be_inverted(tmp_path):
     assert prepared["mask"][:, 2:].all()
     assert not prepared["mask"][:, :2].any()
     assert np.array_equal(inverted["mask"], ~prepared["mask"])
+
+
+def test_run_card_exposes_error_tail_estimate_allocation_and_convergence(tmp_path):
+    card = _run_card(
+        tmp_path,
+        {
+            "method_label": "Fine detail",
+            "source_id": "one.png",
+            "seed": 0,
+            "n_gaussians": 107,
+            "psnr": 31.0,
+            "ms_ssim": 0.99,
+            "lpips": None,
+            "fit_seconds": 2.0,
+            "total_seconds": 3.0,
+            "phase_seconds": {},
+            "curves": [],
+            "snapshots": [],
+            "error_tail": {
+                "enabled": True,
+                "formula": "ceil((sum e)^2 / sum(e^2))",
+                "fraction": 0.5,
+                "estimated_complete_rows": 14,
+                "requested_rows": 7,
+                "activated_rows": 6,
+                "allocation_termination_reason": "no_safe_effective_winner",
+                "convergence_termination_reason": "deterministic_fixed_point",
+                "before": {"foreground_psnr_db": 30.0},
+                "after": {"foreground_psnr_db": 31.0},
+                "foreground_psnr_gain_db": 1.0,
+            },
+        },
+    )
+
+    assert "14</b> estimated complete rows" in card
+    assert "7</b> requested" in card
+    assert "6</b> activated" in card
+    assert "no_safe_effective_winner" in card
+    assert "deterministic_fixed_point" in card

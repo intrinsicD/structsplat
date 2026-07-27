@@ -358,6 +358,7 @@ def _job_key(
     seed: int,
     device: str,
     mask_margin: float,
+    fine_detail: bool,
     lpips: bool,
 ) -> str:
     payload = {
@@ -375,6 +376,7 @@ def _job_key(
         "seed": int(seed),
         "device": str(device),
         "mask_margin": float(mask_margin),
+        "fine_detail": bool(fine_detail),
         "lpips": bool(lpips),
         "target_pixel_sha256": _pixel_sha256(prepared["target"]),
         "implementation_sha256": {
@@ -404,6 +406,7 @@ def _run_job(
     seed: int,
     device: str,
     mask_margin: float,
+    fine_detail: bool,
     lpips: bool,
     resume: bool,
     overwrite: bool,
@@ -418,6 +421,7 @@ def _run_job(
         seed=seed,
         device=device,
         mask_margin=mask_margin,
+        fine_detail=fine_detail,
         lpips=lpips,
     )
     result_path = job_out / "result.json"
@@ -516,6 +520,7 @@ def _run_job(
         seed=seed,
         strategy=strategy,
         mask_margin=mask_margin,
+        fine_detail=fine_detail,
         schedule_transform=schedule_transform,
         observer=observer,
         verbose=verbose,
@@ -589,8 +594,13 @@ def _run_job(
     _atomic_json(job_out / "config.json", config)
     requested_iters = sum(
         int(phase["max_steps"])
-        for phase in output["schedule"].values()
-        if isinstance(phase, dict) and "max_steps" in phase
+        for name, phase in output["schedule"].items()
+        if isinstance(phase, dict)
+        and "max_steps" in phase
+        and (
+            name != "error_tail"
+            or float(output["schedule"].get("error_tail_fraction", 0.0)) > 0.0
+        )
     )
     row = {
         "schema": "structsplat.current_pipeline.metric.v1",
@@ -642,6 +652,7 @@ def _run_job(
         "render_seconds": output["timing"]["final_render_seconds"],
         "total_seconds": time.perf_counter() - started,
         "phase_seconds": _phase_timings(history),
+        "error_tail": schedule_result.get("error_tail"),
         "render_fps_median": (
             1.0 / output["timing"]["final_render_seconds"]
             if output["timing"]["final_render_seconds"] > 0.0
@@ -814,6 +825,31 @@ def _run_card(outdir: Path, row: dict[str, Any]) -> str:
         f"<span><b>{float(seconds):.3f}s</b> {html.escape(str(phase))}</span>"
         for phase, seconds in (row.get("phase_seconds") or {}).items()
     )
+    error_tail = row.get("error_tail") or {}
+    error_tail_html = ""
+    if error_tail.get("enabled"):
+        before = error_tail.get("before") or {}
+        after = error_tail.get("after") or {}
+        before_psnr = float(before.get("foreground_psnr_db", float("nan")))
+        after_psnr = float(after.get("foreground_psnr_db", float("nan")))
+        error_tail_html = (
+            "<details open><summary>error-only fine-detail stage</summary>"
+            "<div class='metrics'>"
+            f"<span><b>{int(error_tail['estimated_complete_rows']):,}</b> "
+            "estimated complete rows</span>"
+            f"<span><b>{float(error_tail['fraction']):.0%}</b> allocation</span>"
+            f"<span><b>{int(error_tail['requested_rows']):,}</b> requested</span>"
+            f"<span><b>{int(error_tail['activated_rows']):,}</b> activated</span>"
+            f"<span><b>{before_psnr:.4f} → {after_psnr:.4f}</b> foreground PSNR</span>"
+            f"<span><b>{float(error_tail['foreground_psnr_gain_db']):+.4f} dB</b> "
+            "stage gain</span>"
+            "</div>"
+            f"<p><code>{html.escape(str(error_tail.get('formula')))}</code>. "
+            f"Allocation: {html.escape(str(error_tail.get('allocation_termination_reason')))}; "
+            "convergence: "
+            f"{html.escape(str(error_tail.get('convergence_termination_reason')))}.</p>"
+            "</details>"
+        )
     return (
         "<article class='run'>"
         f"<h2>{html.escape(str(row.get('method_label', row.get('method'))))}</h2>"
@@ -828,6 +864,7 @@ def _run_card(outdir: Path, row: dict[str, Any]) -> str:
         "</div>"
         f"<details><summary>phase timings</summary><div class='metrics'>{phase_timings}</div>"
         "</details>"
+        f"{error_tail_html}"
         f"<div class='hero-images'>{''.join(images)}</div>"
         "<div class='charts'>"
         f"{_svg_curve(curves, 'psnr', 'PSNR over attempted steps', '#e65f2b')}"
@@ -1312,6 +1349,7 @@ def _execute(
     with_baselines: bool = False,
 ) -> int:
     _require_positive(args)
+    fine_detail = bool(getattr(args, "fine_detail", False))
     outdir = args.outdir.expanduser().resolve()
     outdir.mkdir(parents=True, exist_ok=True)
     discovered = _discover_images(args.source)
@@ -1370,6 +1408,7 @@ def _execute(
                         seed=seed,
                         device=args.device,
                         mask_margin=args.mask_margin,
+                        fine_detail=fine_detail,
                         lpips=args.lpips,
                         resume=args.resume,
                         overwrite=args.overwrite,
@@ -1393,6 +1432,7 @@ def _execute(
         "profile": profile_manifest(
             masked=any(item["mask"] is not None for item in prepared_items),
             mask_margin=float(args.mask_margin),
+            fine_detail=fine_detail,
         ),
         "command": " ".join(sys.argv),
         "source": str(args.source.expanduser().resolve()),
@@ -1407,6 +1447,7 @@ def _execute(
             else str(direct_mask.expanduser().resolve())
         ),
         "mask_invert": bool(getattr(args, "mask_invert", False)),
+        "fine_detail": fine_detail,
         "variants": [variant for variant, *_ in variants],
         "seeds": seeds,
         "images": [
@@ -1451,6 +1492,14 @@ def build_convert_parser() -> argparse.ArgumentParser:
         )
     )
     _common_arguments(parser, multiple_seeds=False, direct_mask=True)
+    parser.add_argument(
+        "--fine-detail",
+        action="store_true",
+        help=(
+            "append the optional terminal error-only stage: estimate effective "
+            "residual sites, request half as small Gaussians, and converge safely"
+        ),
+    )
     return parser
 
 
@@ -1500,18 +1549,31 @@ def build_stage_search_parser() -> argparse.ArgumentParser:
 
 def main_convert(argv: list[str] | None = None) -> int:
     args = build_convert_parser().parse_args(argv)
+    fine_detail = bool(args.fine_detail)
     variants = [
         (
-            "current",
+            "fine_detail" if fine_detail else "current",
             "quadtree_wse",
             None,
-            "structsplat_best_default",
-            "Current profile",
+            (
+                "structsplat_best_default_error_tail50"
+                if fine_detail
+                else "structsplat_best_default"
+            ),
+            (
+                "Current profile + error-only fine detail"
+                if fine_detail
+                else "Current profile"
+            ),
         )
     ]
     return _execute(
         args,
-        title="Current Pipeline Conversion",
+        title=(
+            "Current Pipeline + Error-Only Fine Detail"
+            if fine_detail
+            else "Current Pipeline Conversion"
+        ),
         variants=variants,
     )
 

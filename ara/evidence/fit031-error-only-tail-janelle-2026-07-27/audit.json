@@ -1,0 +1,232 @@
+{
+  "artifact_sha256": {
+    "baseline_manifest": "ab6f01c1ef8c491138faf21dcb95f24ecb6a4e28203df695e50a2cd0d838b62e",
+    "baseline_metrics": "2c1cdafa1457b326292930aba3848232c5394cfab0e413dc9548e09a6ecb9c0d",
+    "fine_index": "f415c9edac81f17f76608b5bb010e5a2e7f57e8598a3866ff6b9fd68832eed83",
+    "fine_manifest": "c321b63c4174fe2b122505dd5d0474f38bf208833a1a3c56db14cb7b4327b502",
+    "fine_metrics": "2a91b2fed8b2833294d9574676aa80c923704b4754824017435617a5f9e30a38"
+  },
+  "baseline_context": {
+    "baseline_psnr": 26.821603775024414,
+    "baseline_rows": 10824,
+    "baseline_total_seconds": 270.27200671844184,
+    "count_matched": false,
+    "display_psnr_delta": 0.49040794372558594,
+    "final_rows": 15608,
+    "fine_final_psnr": 27.31201171875,
+    "fine_pre_tail_rows": 11000,
+    "fine_total_seconds": 570.916679170914,
+    "ordinary_terminal_count_matched": false
+  },
+  "cold_rescore": {
+    "device": "cuda:0",
+    "display_abs_delta": {
+      "lpips": 1.0803341865539551e-07,
+      "mae": 0.0,
+      "max_abs": 0.0,
+      "ms_ssim": 5.960464477539063e-08,
+      "mse": 2.3283064365386963e-10,
+      "psnr": 0.0,
+      "ssim": 0.0
+    },
+    "display_max_abs_delta": 1.0803341865539551e-07,
+    "display_metrics": {
+      "lpips": 0.04620237648487091,
+      "mae": 0.003942449577152729,
+      "max_abs": 0.9411764740943909,
+      "ms_ssim": 0.9894170165061951,
+      "mse": 0.0018569438252598047,
+      "psnr": 27.31201171875,
+      "ssim": 0.9667354822158813
+    },
+    "field_rows": 15608,
+    "field_sha256": "48a71fb5878a3600b42c03f6b94224152d30a4820b34e925318020a6d636e1c4",
+    "protected_abs_delta": {
+      "boundary_hole_fraction": 0.0,
+      "boundary_mse": 0.0,
+      "cvar99_mse": 0.0,
+      "foreground_mse": 0.0,
+      "interior_hole_fraction": 0.0,
+      "n_gaussians": 0.0,
+      "outside_coverage_max": 0.0,
+      "outside_max_abs": 0.0,
+      "p99_mse": 9.313225746154785e-10
+    },
+    "protected_max_abs_delta": 9.313225746154785e-10,
+    "protected_metrics": {
+      "boundary_hole_fraction": 0.11495116353034973,
+      "boundary_mse": 0.02763054333627224,
+      "boundary_psnr_db": 15.586105748871528,
+      "cvar99_mse": 0.16226167976856232,
+      "finite": true,
+      "foreground_mse": 0.0018569818930700421,
+      "foreground_psnr_db": 27.31192330928019,
+      "interior_hole_fraction": 0.0,
+      "n_gaussians": 15608,
+      "outside_coverage_max": 0.0,
+      "outside_max_abs": 0.0,
+      "p99_mse": 0.00914278719574213
+    }
+  },
+  "controlled_equalities": {
+    "environment": true,
+    "fit_config": true,
+    "initialization_config": true,
+    "seed": true,
+    "source": true,
+    "target_pixel_sha256": true
+  },
+  "estimator_and_geometry": {
+    "accepted_rows_sum": 4608,
+    "accepted_wave_counts": [
+      512,
+      512,
+      512,
+      512,
+      512,
+      512,
+      512,
+      512,
+      512
+    ],
+    "activated_rows_matches": true,
+    "all_batches_bounded": true,
+    "fine_root": "/home/alex/Documents/structsplat/runs/janelle_C0001_error_tail50_min8_20260727",
+    "formula_matches": true,
+    "formula_recomputed_rows": 14177,
+    "geometry_failures": [],
+    "png_quantized_estimate": 14055,
+    "png_quantized_relative_delta": 0.008605487761867814,
+    "png_quantized_within_one_percent": true,
+    "request_matches": true,
+    "request_recomputed_rows": 7089
+  },
+  "executed_source": {
+    "base_commit": "797eac6b0471a8f655e485e47b9af610e35b2fc0",
+    "branch": "main",
+    "dirty": true,
+    "implementation_sha256": {
+      "src/structsplat/pipeline.py": "b999faaef97220b7784ff08d9653f1f3bf35be143a884a3626e9d6b3272208a7",
+      "src/structsplat/safe_schedule.py": "a3ab378e1d1e551c5c94782d56368a579ca0744047aabf9c188bc80b5ca5ae88",
+      "src/structsplat/workflows.py": "a095bd627e7f82a67d204ca2608b626e7c888dc306ebf65c03aa6419c47eac71"
+    },
+    "patch_path": "/home/alex/Documents/structsplat/ara/evidence/fit031-error-only-tail-janelle-2026-07-27/executed-source.patch",
+    "patch_sha256": "f309e59d3081c42174cf8c2f55039883820cfe8caf608ed8b132074e266f52cc",
+    "status_sha256": "65b12cac91b97b107abffd2c03371dcd653ce3b0f8aa14760edae80f267a85bb"
+  },
+  "history": {
+    "accepted_gate_failures": [],
+    "accepted_gate_records_checked": 36,
+    "accepted_steps_matches": true,
+    "accepted_steps_sum": 2740,
+    "attempt_gate_failures": [],
+    "attempted_steps_matches": true,
+    "attempted_steps_sum": 21624,
+    "continuity_failures": [],
+    "records": 74,
+    "rejected_attempts_checked": 68
+  },
+  "limitations": [
+    "one exposed development image, one seed, one RTX 4090 execution",
+    "CUDA atomic accumulation makes the ordinary trajectories tolerance-reproducible, not bit-exact",
+    "the existing baseline stopped below 11,000 rows while this replay reached 11,000 before the tail",
+    "the final field is neither count-matched nor rate-matched to the default",
+    "the estimator snapshot is persisted as an 8-bit PNG, so its independent pixel replay is quantized",
+    "no default, generality, codec-rate, or efficiency claim is authorized"
+  ],
+  "results": {
+    "baseline": {
+      "accepted_steps": 1800,
+      "attempted_steps": 19156,
+      "fit_seconds": 260.455268596299,
+      "lpips": 0.04765903577208519,
+      "mae": 0.004085246007889509,
+      "ms_ssim": 0.9889335632324219,
+      "mse": 0.002078929217532277,
+      "n_gaussians": 10824,
+      "psnr": 26.821603775024414,
+      "ssim": 0.9651986360549927,
+      "total_seconds": 270.27200671844184
+    },
+    "fine_detail": {
+      "accepted_steps": 2740,
+      "attempted_steps": 21624,
+      "fit_seconds": 560.7737380871549,
+      "lpips": 0.046202268451452255,
+      "mae": 0.003942449577152729,
+      "ms_ssim": 0.9894169569015503,
+      "mse": 0.0018569440580904484,
+      "n_gaussians": 15608,
+      "psnr": 27.31201171875,
+      "ssim": 0.9667354822158813,
+      "total_seconds": 570.916679170914
+    },
+    "tail": {
+      "activated_rows": 4608,
+      "after": {
+        "boundary_hole_fraction": 0.11495116353034973,
+        "boundary_mse": 0.02763054333627224,
+        "boundary_psnr_db": 15.586105748871528,
+        "cvar99_mse": 0.16226167976856232,
+        "finite": true,
+        "foreground_mse": 0.0018569818930700421,
+        "foreground_psnr_db": 27.31192330928019,
+        "interior_hole_fraction": 0.0,
+        "n_gaussians": 15608,
+        "outside_coverage_max": 0.0,
+        "outside_max_abs": 0.0,
+        "p99_mse": 0.009142788127064705
+      },
+      "allocation_termination_reason": "no_safe_effective_winner",
+      "batch_rows": 512,
+      "before": {
+        "boundary_hole_fraction": 0.11977209895849228,
+        "boundary_mse": 0.03159836679697037,
+        "boundary_psnr_db": 15.003353638813937,
+        "cvar99_mse": 0.1845860332250595,
+        "finite": true,
+        "foreground_mse": 0.0020942646078765392,
+        "foreground_psnr_db": 26.789684465919986,
+        "interior_hole_fraction": 0.0,
+        "n_gaussians": 11000,
+        "outside_coverage_max": 0.0,
+        "outside_max_abs": 0.0,
+        "p99_mse": 0.010734111070632935
+      },
+      "convergence_block_steps": 250,
+      "convergence_step_ceiling": 4000,
+      "convergence_termination_reason": "deterministic_fixed_point",
+      "enabled": true,
+      "end_n": 15608,
+      "estimated_complete_rows": 14177,
+      "estimator": "foreground_mae_effective_support",
+      "foreground_pixels": 158226,
+      "foreground_psnr_gain_db": 0.5222388433602028,
+      "formula": "ceil((sum e)^2 / sum(e^2)); e=foreground per-pixel RGB MAE",
+      "fraction": 0.5,
+      "geometry_rule": "small isotropic residual-support scale",
+      "interpretation": "one small Gaussian per effective residual site",
+      "max_scale": 1.25,
+      "minimum_batch_rows": 8,
+      "nonzero_residual_pixels": 158226,
+      "requested_rows": 7089,
+      "residual_l1_sum": 2138.599877237837,
+      "residual_l2_square_sum": 322.6086826762243,
+      "score_rule": "foreground per-pixel RGB MAE only",
+      "start_n": 11000,
+      "tail_limit": 18089,
+      "waves_accepted": 9,
+      "waves_attempted": 10
+    }
+  },
+  "schema": "structsplat.fit031.error_tail_audit.v1",
+  "scope": "one-image one-seed RTX-4090 exposed-development terminal-tail assay",
+  "valid": true,
+  "within_run_deltas": {
+    "boundary_hole_percentage_points": -0.48209354281425476,
+    "boundary_psnr_db": 0.5827521100575908,
+    "cvar99_relative": -0.12094280952057657,
+    "foreground_psnr_db": 0.5222388433602028,
+    "p99_relative": -0.14824915944105255
+  }
+}

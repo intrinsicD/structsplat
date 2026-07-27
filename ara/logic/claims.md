@@ -1081,3 +1081,60 @@ reference renderer is memory-bound. See `ara/evidence/core005-render-checkpoint-
 - **Dependencies**: [C50, C51, C52]
 - **Tags**: mask-margin, safe-schedule, Janelle, provenance, recipe-default, claim-boundary
 - **From staging**: direct CORE-012 provenance audit
+
+## C57: The effective-support error tail is an opt-in, telemetry-complete plumbing path
+
+- **Statement**: `scripts/convert.py --fine-detail` leaves the current recipe default off, then
+  after `safe_polish` logs the foreground-MAE effective-support estimate
+  `ceil((sum e)^2 / sum(e^2))`, requests half as many small isotropic residual-ranked rows,
+  applies the existing certified mask constraint and full Pareto commit gate, and records
+  allocation/convergence state in run artifacts and `index.html`. Focused CPU tests cover the
+  formula, residual-only geometry, CLI/config opt-in, dynamic telemetry, finite output, and exact
+  zero outside the mask. No quality, efficiency, convergence-at-ceiling, default, or generality
+  claim follows from the implementation alone.
+- **Status**: supported implementation plumbing; quality and default promotion untested
+- **Provenance**: ai-implemented
+- **Crystallized via**: direct implementation audit
+- **Falsification criteria**: The default path enables or allocates the tail; candidate ranking or
+  geometry depends on target structure rather than residual plus mask feasibility; the persisted
+  estimate/request differs from the stated formula/fraction; a committed tail violates the
+  existing Pareto gate or mask containment; or the focused tests fail.
+- **Proof**: [`tests/test_safe_schedule.py`,
+  `tests/test_pipeline.py`,
+  `tests/test_pipeline_workflows.py`,
+  `docs/adr/0029-error-only-effective-support-tail.md`,
+  `tasks/FIT-031-error-only-fine-detail-tail.md`,
+  `ara/evidence/fit031-error-only-tail-janelle-2026-07-27/run.md`,
+  `ara/evidence/fit031-error-only-tail-janelle-2026-07-27/executed-source.patch`]
+- **Dependencies**: [C50, C52, C56]
+- **Tags**: fine-detail, error-tail, effective-support, safe-schedule, mask-containment,
+  implementation, experimental, claim-boundary
+- **From staging**: direct FIT-031 implementation
+
+## C58: The error-only tail safely improves its own terminal state on one exposed image
+
+- **Statement**: On the exposed masked Janelle C0001 seed-0/max-side-1200 RTX-4090 run, the
+  foreground-MAE effective-support estimate was 14,177 rows, half requested 7,089, and nine
+  Pareto-safe 512-row batches activated 4,608 rows before the next wave failed down to the
+  configured eight-row minimum. Relative to that run's own 11,000-row pre-tail state, the
+  15,608-row terminal field improved foreground/boundary PSNR by `+0.522239/+0.582752 dB`,
+  reduced CVaR99/p99 MSE by `12.09%/14.82%`, reduced boundary holes by `0.4821` percentage points,
+  and preserved exact-zero interior and outside-mask metrics. Cold rescoring matched protected
+  metrics within `5.59e-9`. The existing clean default stopped at 10,824 rows and is not count-,
+  rate-, work-, or CUDA-trajectory-matched; no direct superiority, efficiency, default, or
+  generality claim follows.
+- **Status**: supported exposed single-image development tail effect; no default or efficiency claim
+- **Provenance**: ai-executed and independently audited
+- **Crystallized via**: FIT-031 source-bound development screen and scientist pass
+- **Falsification criteria**: The source/mask/config bindings differ; the estimator or requested
+  count does not replay; an accepted transition fails the full Pareto gate; batch size falls
+  outside 8--512; the saved field fails cold rescore or mask containment; or any stated delta does
+  not recompute from the persisted before/after metrics.
+- **Proof**: [`ara/evidence/fit031-error-only-tail-janelle-2026-07-27/run.md`,
+  `ara/evidence/fit031-error-only-tail-janelle-2026-07-27/audit.json`,
+  `ara/evidence/fit031-error-only-tail-janelle-2026-07-27/executed-source.patch`,
+  `scripts/experiments/audit_fit031_error_tail.py`]
+- **Dependencies**: [C50, C52, C56, C57]
+- **Tags**: fine-detail, error-tail, effective-support, safe-schedule, Janelle, development,
+  single-image, source-bound, default-off, claim-boundary
+- **From staging**: direct FIT-031 development audit
