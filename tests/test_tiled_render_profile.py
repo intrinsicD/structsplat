@@ -6,10 +6,13 @@ import pytest
 
 pytest.importorskip("torch")
 
+import torch
+
 from benchmarks.tiled_render_profile import (
     PREREGISTERED_GATE,
     CellSpec,
     build_cells,
+    classify_arm_parity,
     evaluate_gate,
     make_field_arrays,
     requested_scale,
@@ -100,3 +103,60 @@ def test_summarize_rows_renders_missing_index_as_dash():
     assert "| - |" in text
     assert "| cuda |" in text
     assert math.isfinite(2.5)
+
+
+def _flat(values):
+    return torch.tensor(values, dtype=torch.float32)
+
+
+def test_adr0024_candidate_diverging_from_baseline_gates():
+    """A tiled arm that disagrees with exact `cuda` fails, regardless of the reference."""
+    ref = _flat([0.5, 0.5, 0.5])
+    baseline = _flat([0.5, 0.5, 0.5])
+    got = _flat([0.5, 0.5, 0.9])  # candidate's own divergence
+    rec = classify_arm_parity("cuda_tiled_gpu_index_cull", got, ref, baseline, True)
+    assert rec["gating"] == "candidate_vs_baseline"
+    assert rec["reference_diagnostic"] is False
+
+
+def test_adr0024_reference_mismatch_gates_when_baseline_is_clean():
+    """If the baseline matches the reference and the candidate does not, that is a regression."""
+    ref = _flat([0.5, 0.5, 0.5])
+    baseline = _flat([0.5, 0.5, 0.5])
+    # Within candidate-vs-baseline tolerance is impossible here by construction, so drive the
+    # baseline-clean branch through the baseline arm itself.
+    rec = classify_arm_parity("cuda", _flat([0.5, 0.5, 0.9]), ref, baseline, True)
+    assert rec["gating"] == "reference_regression_not_in_baseline"
+
+
+def test_adr0024_baseline_attributable_mismatch_is_reported_not_gated():
+    """The 2026-07-24 case: every arm inherits one bad pixel from the unmodified baseline."""
+    ref = _flat([0.5, 0.5, 0.5])
+    baseline = _flat([0.5, 0.5, 0.5 + 8.9e-4])  # baseline itself misses the reference
+    got = _flat([0.5, 0.5, 0.5 + 8.9e-4 + 1.8e-7])  # candidate tracks the baseline closely
+    rec = classify_arm_parity("cuda_tiled_gpu_index_cull", got, ref, baseline, False)
+    assert rec["gating"] is None
+    assert rec["reference_diagnostic"] is True
+    assert rec["values_over_reference_tol"] == 1
+    assert rec["max_abs_vs_baseline"] < 1e-6
+
+
+def test_adr0024_clean_arm_is_neither_gated_nor_reported():
+    ref = _flat([0.25, 0.75])
+    rec = classify_arm_parity("cuda_tiled_gpu_index_cull", ref.clone(), ref, ref.clone(), True)
+    assert rec["gating"] is None
+    assert rec["reference_diagnostic"] is False
+
+
+def test_evaluate_gate_reports_baseline_attributable_diagnostics():
+    diag = [{"cell": {"height": 512, "n_gaussians": 8192,
+                      "requested_support_overlap": 4.0, "axis_ratio": 1.0},
+             "arm": "cuda_tiled_gpu_index_cull", "max_abs_vs_reference": 8.877516e-4,
+             "values_over_reference_tol": 1, "values_total": 786432,
+             "max_abs_vs_baseline": 1.788139e-7}]
+    result = evaluate_gate(_paired_rows(candidate_step=3.0), parity_failures=[],
+                           reference_diagnostics=diag)
+    assert result["pass"] is True
+    assert result["checks"]["baseline_attributable_reference_cells"] == 1
+    assert result["checks"]["baseline_attributable_reference_detail"][0]["arm"] == (
+        "cuda_tiled_gpu_index_cull")

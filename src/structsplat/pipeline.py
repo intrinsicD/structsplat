@@ -1,128 +1,252 @@
-"""Frozen operational pipeline shared by conversion and benchmark workflows.
+"""The single entrypoint for converting an image into a Gaussian field (ADR-0025).
 
-The profile is the bounded Janelle development winner from 2026-07-24: fixed
-12,024-row storage, an 11,512-row ordinary active ceiling, global transactional
-refinement, Pareto-safe checkpoints every 50 steps, and no specialized detail
-tail or event color solve. This is an operational profile, not a repository-wide
-quality or SOTA claim.
+``run_pipeline`` is the one place that answers "what is StructSplat's current best pipeline?".
+Everything else in the package is a mechanism it composes: ``config`` holds the *conservative*
+library defaults (ADR-0009/0013), while this module holds the *measured best-known recipe*, which
+is deliberately not the same thing. A knob is set here when evidence says it wins even though the
+library default stays off pending broader confirmation.
 
-Masked and unmasked execution intentionally share the same 5,000-row start,
-phase budgets, active ceiling, optimizer, proposal auction, checkpoint policy,
-and polish. Masked execution replaces 500 general initial rows with explicit
-boundary rows and enables boundary losses/proposals. Unmasked execution keeps
-all 5,000 general rows and substitutes count-matched coverage/detail proposals
-in the closure phase; no boundary metric, loss, cap, or proposal is active.
+Two arms, one schedule
+----------------------
+``mask`` selects the arm and nothing else does:
+
+* **masked** (``mask`` given) — the dome/alpha-matted case. Mask containment, boundary-tangent
+  initialization, and the boundary-closure phase are active.
+* **full frame** (``mask=None``) — the ordinary-image case. The containment machinery degenerates
+  rather than being replaced (see :func:`safe_schedule.run_safe_schedule`), and the closure slot
+  uses count-matched general coverage/detail proposals instead of boundary proposals. Phase order,
+  budgets, the Pareto commit gate, and the metric vector are otherwise identical.
+
+Updating the recipe when a new approach wins
+--------------------------------------------
+Edit :data:`RECIPE` and the defaults on :class:`PipelineConfig` in the same commit, bump
+``RECIPE["version"]``, and cite the claim that authorizes the change in ``evidence``. That keeps
+"the best pipeline" a single reviewable diff instead of an inference across README prose, task
+status lines, and benchmark constants. A change here is a results-bearing change: it needs the
+``structsplat-results-audit`` pass and an ``ara/logic/claims.md`` row like any other promotion.
+
+Evidence status
+---------------
+The schedule's quality evidence (C50/C51/C52) is **one masked image, one seed** on an RTX 4090.
+This module ships it as the recommended path because it is the best measured pipeline in the
+repository, not because it has multi-image confirmation. The full-frame arm is a mechanism
+extension of that schedule and has **no** benchmark screen of its own yet; ``BENCH-017`` is the
+task that would give it one. Neither arm's defaults are promoted to ``FitConfig``/``InitConfig``.
 """
 from __future__ import annotations
 
-from dataclasses import asdict, replace
+from dataclasses import asdict, dataclass, field as _field, replace
+import math
 import time
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any, Callable
 
 import numpy as np
 
 from .config import FitConfig, InitConfig, StructureTensorConfig
-from .fit import _MaskConstraint, _boundary_tangent_add, _render
-from .init import build_field, build_masked_field
-from .safe_schedule import SafeScheduleConfig, run_safe_schedule
+
+# ``safe_schedule`` pulls in torch, so it is imported inside the functions that need it: importing
+# ``PipelineConfig`` (which the CLI parser does for its defaults) must stay torch-free.
+if TYPE_CHECKING:
+    from .safe_schedule import PhaseBudget, SafeScheduleConfig
+
+RECIPE: dict[str, Any] = {
+    "name": "safe-commit-schedule",
+    "version": "2026-07-25.1",
+    "summary": (
+        "Phase-ordered transactional fit (bootstrap / coverage / detail / boundary / "
+        "redistribution / polish) with a Pareto-safe commit gate on a full-frame metric vector."
+    ),
+    "choices": {
+        "init_strategy": "quadtree_wse (ADR-0013, ABL-006 / C05)",
+        "wse_progressive_order": "on (INIT-009 / C25: 32/32 uniform prefix wins, terminal set unchanged)",
+        "pareto_safe_checkpoints": "on every 50 steps (FIT-023 / C50: +0.502/+0.519 dB fg/boundary)",
+        "event_color_solve": "off (FIT-023 / C50: worse on every protected metric, 7.8% slower)",
+        "detail_tail_max_rows": "0 (FIT-025 / C52: generic activation beats the specialized tail)",
+        "storage_policy": "dynamic (FIT-024 / C51: fixed capacity is quality-neutral, not faster)",
+        "refinement_policy": "global (README: the reproducible baseline; local is experimental)",
+        "renderer": "cuda where available (ADR-0011 / C03; C53 keeps the tiled path opt-in)",
+    },
+    "evidence": ["C25", "C50", "C51", "C52"],
+    "evidence_scope": (
+        "single masked image, single seed, one GPU; the full-frame arm is unscreened (BENCH-017)"
+    ),
+}
+
+# Phase capacities as fractions of the row budget, from the Janelle schedule this generalizes
+# (5,000 / 8,000 / 10,000 / 11,000 rows). Overriding `capacity` alone rescales the whole schedule.
+_INITIAL_FRACTION = 5.0 / 11.0
+_COVERAGE_FRACTION = 8.0 / 11.0
+_DETAIL_FRACTION = 10.0 / 11.0
+# Share of the initial rows placed on the mask boundary as tangent-aligned seeds (500 of 5,000).
+_BOUNDARY_INIT_FRACTION = 0.10
 
 
-CURRENT_PROFILE_NAME = "safe_schedule_2026_07_24"
-CURRENT_PROFILE_EVIDENCE_SCOPE = (
-    "single-image Janelle development winner; operational default for these "
-    "workflow scripts, not a repository-wide superiority claim"
-)
-INITIAL_GAUSSIANS = 5_000
-MASKED_GENERAL_GAUSSIANS = 4_500
-MASKED_BOUNDARY_GAUSSIANS = 500
-PHYSICAL_CAPACITY = 12_024
-ACTIVE_LIMIT = 11_512
+@dataclass
+class PipelineConfig:
+    """User-facing knobs. Defaults are the recipe; everything here is an override, not a policy."""
 
-PipelineObserver = Callable[[Any, dict[str, Any], Any, FitConfig], None]
-ScheduleTransform = Callable[[SafeScheduleConfig], SafeScheduleConfig]
+    capacity: int = 11_000
+    initial_gaussians: int | None = None      # default: capacity * 5/11
+    boundary_gaussians: int | None = None     # masked arm only; default: 10% of the initial rows
+    coverage_target: int | None = None        # default: capacity * 8/11
+    detail_target: int | None = None          # default: capacity * 10/11
+    init_strategy: str = "quadtree_wse"
+    seed: int = 0
+    device: str | None = None                 # default: cuda when available, else cpu
+    renderer: str | None = None               # default: cuda when on a CUDA device, else normalized
+    step_scale: float = 1.0                   # scales every phase's step ceiling
+    block_steps: int | None = None            # commit-gate granularity; default: schedule default
+    storage_policy: str = "dynamic"
+    pareto_safe_checkpoints: bool = True
+    pareto_checkpoint_every: int = 50
+    event_color_solve: bool = False
+    mask_margin: float = 1.5
+    boundary_band: float = 4.0
+    coverage_tau: float = 0.05
+    hole_regression_budget: float = 0.0   # ADR-0026; 0.0 = the historical strict coverage gate
+    schedule_overrides: dict[str, Any] = _field(default_factory=dict)
+
+    def resolved_initial(self) -> int:
+        if self.initial_gaussians is not None:
+            return int(self.initial_gaussians)
+        return max(1, int(round(self.capacity * _INITIAL_FRACTION)))
+
+    def resolved_boundary(self) -> int:
+        if self.boundary_gaussians is not None:
+            return int(self.boundary_gaussians)
+        return int(round(self.resolved_initial() * _BOUNDARY_INIT_FRACTION))
+
+    def resolved_coverage_target(self) -> int:
+        if self.coverage_target is not None:
+            return int(self.coverage_target)
+        return max(
+            self.resolved_initial(),
+            int(round(self.capacity * _COVERAGE_FRACTION)),
+        )
+
+    def resolved_detail_target(self) -> int:
+        if self.detail_target is not None:
+            return int(self.detail_target)
+        return max(
+            self.resolved_coverage_target(),
+            int(round(self.capacity * _DETAIL_FRACTION)),
+        )
+
+    def validate(self) -> None:
+        if self.capacity <= 0:
+            raise ValueError(f"capacity must be positive, got {self.capacity}")
+        initial = self.resolved_initial()
+        if initial > self.capacity:
+            raise ValueError(
+                f"initial_gaussians {initial} exceeds capacity {self.capacity}"
+            )
+        boundary = self.resolved_boundary()
+        if boundary < 0:
+            raise ValueError(f"boundary_gaussians must be nonnegative, got {boundary}")
+        if boundary >= initial:
+            raise ValueError(
+                f"boundary_gaussians {boundary} must leave room inside the initial "
+                f"{initial} rows"
+            )
+        if not math.isfinite(self.step_scale) or self.step_scale <= 0.0:
+            raise ValueError(f"step_scale must be finite and positive, got {self.step_scale}")
+        if self.block_steps is not None and self.block_steps <= 0:
+            raise ValueError(f"block_steps must be positive, got {self.block_steps}")
+        if (
+            not math.isfinite(self.hole_regression_budget)
+            or self.hole_regression_budget < 0.0
+        ):
+            raise ValueError(
+                "hole_regression_budget must be finite and nonnegative, got "
+                f"{self.hole_regression_budget}"
+            )
+        if not (
+            initial
+            <= self.resolved_coverage_target()
+            <= self.resolved_detail_target()
+            <= self.capacity
+        ):
+            raise ValueError(
+                "expected initial <= coverage_target <= detail_target <= capacity, got "
+                f"{initial} / {self.resolved_coverage_target()} / "
+                f"{self.resolved_detail_target()} / {self.capacity}"
+            )
 
 
-def build_current_schedule(*, boundary_enabled: bool) -> SafeScheduleConfig:
-    """Return the fully resolved current workflow schedule."""
+def _resolve_device(requested: str | None) -> str:
+    if requested is not None:
+        return str(requested)
+    import torch
 
-    defaults = SafeScheduleConfig()
-    closure_name = "boundary_closure" if boundary_enabled else "general_closure"
-    return SafeScheduleConfig(
-        capacity=PHYSICAL_CAPACITY,
-        storage_policy="fixed_capacity",
-        boundary_enabled=bool(boundary_enabled),
-        base_active_limit=ACTIVE_LIMIT,
-        detail_tail_max_rows=0,
-        detail_tail_batch_rows=defaults.detail_tail_batch_rows,
-        detail_tail_min_gain_per_row=0.0,
-        coverage_target_gaussians=8_000,
-        detail_target_gaussians=10_000,
-        coverage_tau=defaults.coverage_tau,
-        boundary_band=defaults.boundary_band,
-        interior_hole_target=defaults.interior_hole_target,
-        boundary_hole_target=defaults.boundary_hole_target,
-        stale_patience=defaults.stale_patience,
-        event_min_count=defaults.event_min_count,
-        recovery_steps=defaults.recovery_steps,
-        event_spacing_px=defaults.event_spacing_px,
-        event_oversample=defaults.event_oversample,
-        coverage_birth_count=defaults.coverage_birth_count,
-        detail_birth_count=defaults.detail_birth_count,
-        detail_split_count=defaults.detail_split_count,
-        boundary_birth_count=defaults.boundary_birth_count,
-        redistribution_count=defaults.redistribution_count,
-        redistribution_min_responsibility=defaults.redistribution_min_responsibility,
-        split_shrink=defaults.split_shrink,
-        hole_opacity=defaults.hole_opacity,
-        covered_birth_opacity=defaults.covered_birth_opacity,
-        merge_envelope_inflation=defaults.merge_envelope_inflation,
-        refinement_policy="global",
-        local_start_phase=defaults.local_start_phase,
-        local_seed_count=defaults.local_seed_count,
-        local_neighbor_count=defaults.local_neighbor_count,
-        topology_neighbor_count=defaults.topology_neighbor_count,
-        boundary_recycle_at_capacity=False,
-        pareto_safe_checkpoints=True,
-        pareto_checkpoint_every=50,
-        event_color_solve=False,
-        boundary_residual_mse_threshold=defaults.boundary_residual_mse_threshold,
-        boundary_residual_component_target=defaults.boundary_residual_component_target,
-        boundary_residual_min_pixels=defaults.boundary_residual_min_pixels,
-        tolerances=defaults.tolerances,
-        bootstrap=replace(defaults.bootstrap, target_gaussians=INITIAL_GAUSSIANS),
-        coverage=replace(defaults.coverage, target_gaussians=8_000),
-        detail=replace(defaults.detail, target_gaussians=10_000),
-        boundary=replace(
-            defaults.boundary,
-            name=closure_name,
-            target_gaussians=ACTIVE_LIMIT,
-        ),
-        redistribution=replace(
-            defaults.redistribution, target_gaussians=ACTIVE_LIMIT
-        ),
-        polish=replace(defaults.polish, target_gaussians=ACTIVE_LIMIT),
+    return "cuda" if torch.cuda.is_available() else "cpu"
+
+
+def _resolve_renderer(requested: str | None, device: str) -> str:
+    """Default to the shipped GPU renderer (ADR-0011); C53 keeps `cuda_tiled` an explicit opt-in."""
+    if requested is not None:
+        return str(requested)
+    return "cuda" if str(device).startswith("cuda") else "normalized"
+
+
+def _scaled_phase(phase: "PhaseBudget", cfg: PipelineConfig, target: int | None) -> "PhaseBudget":
+    max_steps = max(1, int(round(phase.max_steps * cfg.step_scale)))
+    block = phase.block_steps if cfg.block_steps is None else int(cfg.block_steps)
+    return replace(
+        phase,
+        max_steps=max_steps,
+        block_steps=max(1, min(int(block), max_steps)),
+        target_gaussians=target,
     )
 
 
-def build_current_fit_config(*, masked: bool, mask_margin: float = 0.75) -> FitConfig:
-    """Return the shared optimizer/renderer configuration."""
+def build_schedule(cfg: PipelineConfig) -> "SafeScheduleConfig":
+    """Translate the user-facing config into the schedule policy the recipe pins."""
+    from .safe_schedule import SafeScheduleConfig
+
+    cfg.validate()
+    defaults = SafeScheduleConfig()
+    coverage_target = cfg.resolved_coverage_target()
+    detail_target = cfg.resolved_detail_target()
+    schedule = SafeScheduleConfig(
+        capacity=int(cfg.capacity),
+        storage_policy=str(cfg.storage_policy),
+        coverage_target_gaussians=coverage_target,
+        detail_target_gaussians=detail_target,
+        coverage_tau=float(cfg.coverage_tau),
+        boundary_band=float(cfg.boundary_band),
+        hole_regression_budget=float(cfg.hole_regression_budget),
+        pareto_safe_checkpoints=bool(cfg.pareto_safe_checkpoints),
+        pareto_checkpoint_every=int(cfg.pareto_checkpoint_every),
+        event_color_solve=bool(cfg.event_color_solve),
+        bootstrap=_scaled_phase(defaults.bootstrap, cfg, cfg.resolved_initial()),
+        coverage=_scaled_phase(defaults.coverage, cfg, coverage_target),
+        detail=_scaled_phase(defaults.detail, cfg, detail_target),
+        boundary=_scaled_phase(defaults.boundary, cfg, int(cfg.capacity)),
+        redistribution=_scaled_phase(defaults.redistribution, cfg, int(cfg.capacity)),
+        polish=_scaled_phase(defaults.polish, cfg, int(cfg.capacity)),
+    )
+    if cfg.schedule_overrides:
+        unknown = set(cfg.schedule_overrides) - set(asdict(schedule))
+        if unknown:
+            raise ValueError(
+                f"unknown schedule override(s): {', '.join(sorted(unknown))}"
+            )
+        schedule = replace(schedule, **cfg.schedule_overrides)
+    return schedule
+
+
+def build_fit_config(cfg: PipelineConfig, device: str) -> FitConfig:
+    """The base fit config; ``run_safe_schedule`` owns the loss/mask fields it must control."""
 
     return FitConfig(
         iters=1,
-        renderer="cuda_tiled",
+        renderer=_resolve_renderer(cfg.renderer, device),
         render_chunk=512,
         pixel_loss="l2",
         ssim_weight=0.0,
-        loss_weighting="mask",
-        mask_contain=bool(masked),
-        mask_margin=float(mask_margin),
-        mask_cap_mode="anisotropic",
+        mask_margin=float(cfg.mask_margin),
         mask_cap_refresh_every=100,
-        mask_undercoverage_band=4.0,
-        mask_undercoverage_tau=0.05,
-        mask_undercoverage_every=8,
         support_fade=True,
-        checkpoint_policy="terminal",
         split_scale=0.35,
         split_oversample=8.0,
         split_min_spacing=1.0,
@@ -135,15 +259,13 @@ def build_current_fit_config(*, masked: bool, mask_margin: float = 0.75) -> FitC
     )
 
 
-def build_initialization_config(
-    *, seed: int, strategy: str = "quadtree_wse"
-) -> InitConfig:
-    """Return the initialization shared by masked and unmasked paths."""
+def build_init_config(cfg: PipelineConfig, count: int) -> InitConfig:
+    """The measured-best initialization (ADR-0013 strategy + INIT-009 ordering)."""
 
     return InitConfig(
-        strategy=str(strategy),
-        num_gaussians=INITIAL_GAUSSIANS,
-        seed=int(seed),
+        strategy=str(cfg.init_strategy),
+        num_gaussians=int(count),
+        seed=int(cfg.seed),
         sampling_mode="wse",
         wse_progressive_order=True,
         init_scale_mult=0.35,
@@ -153,87 +275,301 @@ def build_initialization_config(
     )
 
 
-def _initialize(
+def _initial_masked_field(
     image: np.ndarray,
-    mask: np.ndarray | None,
-    *,
+    mask: np.ndarray,
+    cfg: PipelineConfig,
+    fit_cfg: FitConfig,
     device: str,
-    seed: int,
-    strategy: str,
-    boundary_enabled: bool,
-    mask_margin: float,
-):
+    *,
+    boundary_enabled: bool = True,
+) -> tuple[Any, dict[str, Any]]:
+    """Interior quadtree-WSE rows plus tangent-aligned boundary rows (CORE-011)."""
     import torch
 
-    init_cfg = build_initialization_config(seed=seed, strategy=strategy)
-    tensor_cfg = StructureTensorConfig()
-    if mask is None:
-        field = build_field(
-            image, init_cfg, tensor_cfg, device=device
-        )
-        return field, init_cfg, tensor_cfg, 0
+    from .fit import _MaskConstraint, _boundary_tangent_add, _render
+    from .init import build_masked_field
 
-    mask_bool = np.asarray(mask, dtype=bool)
-    target_np = image * mask_bool[..., None].astype(np.float32)
+    total = cfg.resolved_initial()
+    boundary_count = cfg.resolved_boundary()
+    interior_count = total - boundary_count
+    init_cfg = build_init_config(cfg, total)
     pool = build_masked_field(
-        target_np,
-        mask_bool,
+        image,
+        mask,
         init_cfg,
-        tensor_cfg,
+        StructureTensorConfig(),
         device=device,
-        sigma_cutoff=3.0,
-        mask_margin=float(mask_margin),
+        sigma_cutoff=fit_cfg.sigma_cutoff,
+        mask_margin=float(cfg.mask_margin),
         contain=False,
     )
     if not boundary_enabled:
-        return pool, init_cfg, tensor_cfg, 0
+        record = {
+            "strategy": init_cfg.strategy,
+            "requested": total,
+            "interior_rows": int(pool.n),
+            "boundary_rows": 0,
+            "boundary_requested": 0,
+            "n": int(pool.n),
+        }
+        return pool, record
 
-    field = pool.subset(slice(0, MASKED_GENERAL_GAUSSIANS))
-    cfg = replace(
-        build_current_fit_config(masked=True, mask_margin=mask_margin),
+    field = pool.subset(slice(0, min(interior_count, pool.n)))
+    add_cfg = replace(
+        fit_cfg,
+        loss_weighting="mask",
+        mask_contain=True,
+        mask_cap_mode="anisotropic",
         mask_boundary_add_every=1,
-        mask_boundary_add_count=MASKED_BOUNDARY_GAUSSIANS,
-        mask_boundary_add_band=4.0,
+        mask_boundary_add_count=boundary_count,
+        mask_boundary_add_band=float(cfg.boundary_band),
         mask_boundary_add_spacing=3.0,
-        max_gaussians=INITIAL_GAUSSIANS,
+        max_gaussians=total,
         split_color_init="target",
     )
     constraint = _MaskConstraint.from_mask(
-        mask_bool,
-        field.means.device,
-        field.means.dtype,
-        cfg.sigma_cutoff,
-        float(mask_margin),
-        aa_dilation=cfg.aa_dilation,
+        mask,
+        device,
+        torch.float32,
+        add_cfg.sigma_cutoff,
+        float(cfg.mask_margin),
+        aa_dilation=add_cfg.aa_dilation,
         cap_mode="anisotropic",
     )
-    constraint.apply(field, cfg, refresh=True)
-    target = torch.as_tensor(
-        target_np, device=device, dtype=torch.float32
+    constraint.apply(field, add_cfg, refresh=True)
+    added = 0
+    if boundary_count > 0:
+        target = torch.as_tensor(image, device=device, dtype=torch.float32)
+        H, W = image.shape[:2]
+        with torch.no_grad():
+            rendered = _render(field, add_cfg, H, W)
+            field, added = _boundary_tangent_add(
+                field, target, rendered, add_cfg, constraint
+            )
+            constraint.apply(field, add_cfg, refresh=True)
+    record = {
+        "strategy": init_cfg.strategy,
+        "requested": total,
+        "interior_rows": int(field.n) - int(added),
+        "boundary_rows": int(added),
+        "boundary_requested": boundary_count,
+        "n": int(field.n),
+    }
+    return field, record
+
+
+def _initial_full_frame_field(
+    image: np.ndarray,
+    cfg: PipelineConfig,
+    device: str,
+) -> tuple[Any, dict[str, Any]]:
+    """The same initialization without the mask-specific boundary allocation."""
+    from .init import build_field
+
+    total = cfg.resolved_initial()
+    init_cfg = build_init_config(cfg, total)
+    field = build_field(image, init_cfg, StructureTensorConfig(), device=device)
+    record = {
+        "strategy": init_cfg.strategy,
+        "requested": total,
+        "interior_rows": int(field.n),
+        "boundary_rows": 0,
+        "boundary_requested": 0,
+        "n": int(field.n),
+    }
+    return field, record
+
+
+def run_pipeline(
+    image: np.ndarray,
+    mask: np.ndarray | None = None,
+    cfg: PipelineConfig | None = None,
+    *,
+    observer=None,
+    schedule_transform: ScheduleTransform | None = None,
+    verbose: bool = True,
+) -> dict[str, Any]:
+    """Convert one image into a Gaussian field with the current best pipeline.
+
+    Parameters
+    ----------
+    image:
+        ``(H, W, 3)`` float32 in ``[0, 1]`` (core invariant 2).
+    mask:
+        ``(H, W)`` in ``[0, 1]`` or bool selects the masked arm; ``None`` runs the full-frame arm.
+    cfg:
+        :class:`PipelineConfig` overrides. ``None`` uses the recipe as shipped.
+
+    Returns the :func:`safe_schedule.run_safe_schedule` payload plus ``recipe``, ``arm``, ``init``,
+    and ``device`` provenance, so a run is self-describing from its own output.
+    """
+    import torch
+
+    from .safe_schedule import run_safe_schedule
+
+    cfg = PipelineConfig() if cfg is None else cfg
+    cfg.validate()
+    image = np.asarray(image, dtype=np.float32)
+    if image.ndim != 3 or image.shape[2] != 3:
+        raise ValueError(f"image must have shape (H, W, 3), got {image.shape}")
+    device = _resolve_device(cfg.device)
+    torch.manual_seed(int(cfg.seed))
+
+    mask_bool: np.ndarray | None = None
+    if mask is not None:
+        from . import mask as _mask
+
+        mask_bool = _mask.as_bool_mask(np.asarray(mask))
+        if mask_bool.shape != image.shape[:2]:
+            raise ValueError(
+                f"mask shape {mask_bool.shape} does not match image {image.shape[:2]}"
+            )
+        if not mask_bool.any():
+            raise ValueError("mask selects no pixels; pass mask=None for a full-frame fit")
+
+    fit_cfg = build_fit_config(cfg, device)
+    boundary_enabled = mask_bool is not None
+    schedule = build_schedule(cfg)
+    schedule = replace(
+        schedule,
+        boundary_enabled=boundary_enabled,
+        boundary=replace(
+            schedule.boundary,
+            name=(
+                "boundary_closure"
+                if boundary_enabled
+                else "general_closure"
+            ),
+        ),
     )
-    with torch.no_grad():
-        rendered = _render(
-            field,
+    if schedule_transform is not None:
+        schedule = schedule_transform(schedule)
+    if mask_bool is None and schedule.boundary_enabled:
+        raise ValueError(
+            "a full-frame run cannot enable boundary specialization"
+        )
+
+    target_image = (
+        image
+        if mask_bool is None
+        else image * mask_bool[..., None].astype(np.float32)
+    )
+    started = time.perf_counter()
+    init_started = time.perf_counter()
+    if mask_bool is None:
+        field, init_record = _initial_full_frame_field(
+            target_image, cfg, device
+        )
+    else:
+        field, init_record = _initial_masked_field(
+            target_image,
+            mask_bool,
             cfg,
-            target.shape[0],
-            target.shape[1],
-            support_fade_alpha=1.0,
+            fit_cfg,
+            device,
+            boundary_enabled=schedule.boundary_enabled,
         )
-        field, boundary_added = _boundary_tangent_add(
-            field, target, rendered, cfg, constraint
-        )
-        constraint.apply(field, cfg, refresh=True)
-    if field.n != INITIAL_GAUSSIANS or boundary_added != MASKED_BOUNDARY_GAUSSIANS:
-        raise RuntimeError(
-            "boundary initialization must produce exactly "
-            f"{INITIAL_GAUSSIANS} rows ({MASKED_GENERAL_GAUSSIANS} general + "
-            f"{MASKED_BOUNDARY_GAUSSIANS} boundary), got {field.n}/{boundary_added}"
-        )
-    return field, init_cfg, tensor_cfg, boundary_added
+    init_seconds = time.perf_counter() - init_started
+
+    target = torch.as_tensor(
+        target_image, device=device, dtype=torch.float32
+    ).contiguous()
+    schedule_started = time.perf_counter()
+    result = run_safe_schedule(
+        field,
+        target,
+        mask_bool,
+        fit_cfg,
+        schedule,
+        observer=observer,
+        verbose=verbose,
+    )
+    schedule_seconds = time.perf_counter() - schedule_started
+    render_started = time.perf_counter()
+    rendered = render_field(result["field"], target, fit_cfg)
+    render_seconds = time.perf_counter() - render_started
+    result["recipe"] = dict(RECIPE)
+    result["init"] = init_record
+    result["device"] = device
+    result["pipeline_config"] = asdict(cfg)
+    result["target"] = target
+    result["render"] = rendered
+    result["mask"] = mask_bool
+    result["timing"] = {
+        "initialization_seconds": init_seconds,
+        "schedule_seconds": schedule_seconds,
+        "final_render_seconds": render_seconds,
+        "total_seconds": time.perf_counter() - started,
+    }
+    return result
+
+
+CURRENT_PROFILE_NAME = f"{RECIPE['name']}_{RECIPE['version']}"
+CURRENT_PROFILE_EVIDENCE_SCOPE = str(RECIPE["evidence_scope"])
+_CURRENT_DEFAULTS = PipelineConfig()
+INITIAL_GAUSSIANS = _CURRENT_DEFAULTS.resolved_initial()
+MASKED_BOUNDARY_GAUSSIANS = _CURRENT_DEFAULTS.resolved_boundary()
+MASKED_GENERAL_GAUSSIANS = (
+    INITIAL_GAUSSIANS - MASKED_BOUNDARY_GAUSSIANS
+)
+PHYSICAL_CAPACITY = int(_CURRENT_DEFAULTS.capacity)
+ACTIVE_LIMIT = int(_CURRENT_DEFAULTS.capacity)
+
+PipelineObserver = Callable[[Any, dict[str, Any], Any, FitConfig], None]
+ScheduleTransform = Callable[
+    ["SafeScheduleConfig"], "SafeScheduleConfig"
+]
+
+
+def build_current_schedule(*, boundary_enabled: bool) -> "SafeScheduleConfig":
+    """Return the resolved current recipe for a masked or full-frame arm."""
+
+    schedule = build_schedule(PipelineConfig())
+    return replace(
+        schedule,
+        boundary_enabled=bool(boundary_enabled),
+        boundary=replace(
+            schedule.boundary,
+            name=(
+                "boundary_closure"
+                if boundary_enabled
+                else "general_closure"
+            ),
+        ),
+    )
+
+
+def build_current_fit_config(
+    *, masked: bool, mask_margin: float = PipelineConfig.mask_margin
+) -> FitConfig:
+    """Return the shared recipe fit config with only containment switched."""
+
+    cfg = PipelineConfig(mask_margin=float(mask_margin))
+    return replace(
+        build_fit_config(cfg, "cuda"),
+        loss_weighting="mask",
+        mask_contain=bool(masked),
+        mask_cap_mode="anisotropic",
+        mask_undercoverage_band=float(cfg.boundary_band),
+        mask_undercoverage_tau=float(cfg.coverage_tau),
+        mask_undercoverage_every=8,
+    )
+
+
+def build_initialization_config(
+    *, seed: int, strategy: str = "quadtree_wse"
+) -> InitConfig:
+    """Return the initialization shared by masked and full-frame workflows."""
+
+    cfg = PipelineConfig(seed=int(seed), init_strategy=str(strategy))
+    return build_init_config(cfg, cfg.resolved_initial())
 
 
 def render_field(field, target, cfg: FitConfig):
-    """Render a field with the current profile's final display semantics."""
+    """Render a field with the current recipe's final display semantics."""
+
+    from .fit import _render
 
     return _render(
         field,
@@ -251,117 +587,71 @@ def run_current_pipeline(
     device: str,
     seed: int,
     strategy: str = "quadtree_wse",
-    mask_margin: float = 0.75,
+    mask_margin: float = PipelineConfig.mask_margin,
     schedule_transform: ScheduleTransform | None = None,
     observer: PipelineObserver | None = None,
     verbose: bool = True,
 ) -> dict[str, Any]:
-    """Execute the current profile and return its field, pixels, and audit records."""
+    """Workflow adapter over :func:`run_pipeline`; it defines no second recipe."""
 
     import torch
 
-    image = np.asarray(image, dtype=np.float32)
-    if image.ndim != 3 or image.shape[2] != 3:
-        raise ValueError(f"expected RGB image (H,W,3), got {image.shape}")
-    mask_bool = None if mask is None else np.asarray(mask, dtype=bool)
-    if mask_bool is not None and mask_bool.shape != image.shape[:2]:
-        raise ValueError(
-            f"mask shape {mask_bool.shape} does not match image {image.shape[:2]}"
-        )
-    if mask_bool is not None and not mask_bool.any():
-        raise ValueError("mask contains no foreground pixels")
-    torch_device = torch.device(device)
-    if torch_device.type != "cuda" or not torch.cuda.is_available():
-        raise RuntimeError(
-            f"{CURRENT_PROFILE_NAME} requires a CUDA device; got {device!r}"
-        )
-    torch.cuda.set_device(torch_device)
-
-    boundary_enabled = mask_bool is not None
-    schedule = build_current_schedule(boundary_enabled=boundary_enabled)
-    if schedule_transform is not None:
-        schedule = schedule_transform(schedule)
-    if mask_bool is None and schedule.boundary_enabled:
-        raise ValueError("an unmasked run cannot enable boundary specialization")
-
-    started = time.perf_counter()
-    init_started = time.perf_counter()
-    field, init_cfg, tensor_cfg, boundary_added = _initialize(
-        image,
-        mask_bool,
-        device=str(torch_device),
-        seed=seed,
-        strategy=strategy,
-        boundary_enabled=schedule.boundary_enabled,
-        mask_margin=mask_margin,
+    cfg = PipelineConfig(
+        seed=int(seed),
+        device=str(device),
+        init_strategy=str(strategy),
+        mask_margin=float(mask_margin),
     )
-    init_seconds = time.perf_counter() - init_started
-    schedule.validate(field.n)
-    target_np = (
-        image
-        if mask_bool is None
-        else image * mask_bool[..., None].astype(np.float32)
-    )
+    resolved_device = _resolve_device(cfg.device)
+    target_np = np.asarray(image, dtype=np.float32)
+    if mask is not None:
+        target_np = target_np * np.asarray(
+            mask, dtype=bool
+        )[..., None].astype(np.float32)
     target = torch.as_tensor(
-        target_np, device=torch_device, dtype=torch.float32
+        target_np, device=resolved_device, dtype=torch.float32
     ).contiguous()
-    base_cfg = build_current_fit_config(
-        masked=mask_bool is not None, mask_margin=mask_margin
-    )
+    base_cfg = build_fit_config(cfg, resolved_device)
 
     def observe(selected_field, record: dict[str, Any]) -> None:
         if observer is not None:
             observer(selected_field, record, target, base_cfg)
 
-    schedule_started = time.perf_counter()
-    result = run_safe_schedule(
-        field,
-        target,
-        mask_bool,
-        base_cfg,
-        schedule,
+    result = run_pipeline(
+        image,
+        mask,
+        cfg,
         observer=observe,
+        schedule_transform=schedule_transform,
         verbose=verbose,
     )
-    schedule_seconds = time.perf_counter() - schedule_started
-    final_field = result["field"]
-    render_started = time.perf_counter()
-    final_render = render_field(final_field, target, base_cfg)
-    render_seconds = time.perf_counter() - render_started
+    init_cfg = build_init_config(cfg, cfg.resolved_initial())
     return {
-        "profile": profile_manifest(masked=mask_bool is not None),
-        "field": final_field,
-        "target": target,
-        "render": final_render,
-        "mask": mask_bool,
+        "profile": profile_manifest(masked=mask is not None),
+        "field": result["field"],
+        "target": result["target"],
+        "render": result["render"],
+        "mask": result["mask"],
         "initialization": {
             "config": asdict(init_cfg),
-            "structure_tensor": asdict(tensor_cfg),
-            "general_rows": (
-                MASKED_GENERAL_GAUSSIANS
-                if schedule.boundary_enabled
-                else INITIAL_GAUSSIANS
-            ),
-            "boundary_rows": int(boundary_added),
+            "structure_tensor": asdict(StructureTensorConfig()),
+            "general_rows": int(result["init"]["interior_rows"]),
+            "boundary_rows": int(result["init"]["boundary_rows"]),
         },
-        "fit_config": asdict(base_cfg),
-        "schedule": asdict(schedule),
+        "fit_config": result["fit_config"],
+        "schedule": result["schedule"],
         "schedule_result": result,
-        "timing": {
-            "initialization_seconds": init_seconds,
-            "schedule_seconds": schedule_seconds,
-            "final_render_seconds": render_seconds,
-            "total_seconds": time.perf_counter() - started,
-        },
+        "timing": result["timing"],
     }
 
 
 def profile_manifest(*, masked: bool) -> dict[str, Any]:
-    """Return the reader-facing frozen profile contract."""
+    """Return the reader-facing current-recipe contract."""
 
     schedule = build_current_schedule(boundary_enabled=masked)
     return {
         "name": CURRENT_PROFILE_NAME,
+        "recipe": dict(RECIPE),
         "evidence_scope": CURRENT_PROFILE_EVIDENCE_SCOPE,
         "masked": bool(masked),
         "initial_gaussians": INITIAL_GAUSSIANS,
@@ -371,6 +661,7 @@ def profile_manifest(*, masked: bool) -> dict[str, Any]:
         "masked_boundary_gaussians": (
             MASKED_BOUNDARY_GAUSSIANS if masked else 0
         ),
+        "storage_policy": schedule.storage_policy,
         "physical_capacity": PHYSICAL_CAPACITY,
         "active_limit": ACTIVE_LIMIT,
         "requested_optimizer_steps": sum(

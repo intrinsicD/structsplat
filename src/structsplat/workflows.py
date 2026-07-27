@@ -28,11 +28,8 @@ import numpy as np
 from PIL import Image
 
 from .pipeline import (
-    ACTIVE_LIMIT,
     CURRENT_PROFILE_EVIDENCE_SCOPE,
     CURRENT_PROFILE_NAME,
-    INITIAL_GAUSSIANS,
-    PHYSICAL_CAPACITY,
     profile_manifest,
     render_field,
     run_current_pipeline,
@@ -63,7 +60,7 @@ STAGE_VARIANTS: dict[str, tuple[str, ...]] = {
         "grid",
         "random",
     ),
-    "storage": ("fixed_capacity", "dynamic"),
+    "storage": ("dynamic", "fixed_capacity", "geometric"),
     "checkpoint": ("pareto50", "terminal"),
     "bootstrap": ("current", "full_resolution", "disabled"),
     "coverage": ("current", "births256", "births1024", "disabled"),
@@ -601,12 +598,16 @@ def _run_job(
         "max_side": 0,
         "requested_max_side": requested_max_side,
         "seed": int(seed),
-        "start_budget": INITIAL_GAUSSIANS,
-        "start_gaussians": INITIAL_GAUSSIANS,
+        "start_budget": int(output["initialization"]["config"]["num_gaussians"]),
+        "start_gaussians": int(output["initialization"]["config"]["num_gaussians"]),
         "final_budget": int(field.n),
         "n_gaussians": int(field.n),
-        "physical_capacity": PHYSICAL_CAPACITY,
-        "active_limit": ACTIVE_LIMIT,
+        "physical_capacity": int(
+            schedule_result["storage"]["final_physical_rows"]
+        ),
+        "active_limit": int(
+            schedule_result["storage"]["base_active_limit"]
+        ),
         "iters": requested_iters,
         "attempted_steps": int(schedule_result["attempted_steps"]),
         "accepted_steps": int(schedule_result["accepted_steps"]),
@@ -1053,7 +1054,7 @@ def _stage_transform(stage: str, variant: str) -> tuple[str, ScheduleTransform |
     strategy = "quadtree_wse"
     if stage == "initialization":
         return variant, None
-    if variant in {"current", "fixed_capacity", "pareto50"}:
+    if variant in {"current", "dynamic", "pareto50"}:
         return strategy, None
 
     def transform(schedule):

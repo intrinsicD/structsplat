@@ -63,6 +63,14 @@ def ssim_window_cache_info() -> dict:
 
 
 def _gaussian_window(win: int, sigma: float, device, dtype):
+    """Cached separable Gaussian window as a (horizontal, vertical) 1D convolution pair.
+
+    The window is a separable outer product, so the 11x11 blur it used to build costs 121
+    multiply-adds per output pixel where two 1x11 passes cost 22. Both forms are the same
+    operator up to float associativity (measured agreement ~1e-8 on the SSIM value and ~2e-6
+    relative on its gradient), and one cache entry per (win, sigma, device, dtype) key is
+    retained so `ssim_window_cache_info()` semantics are unchanged.
+    """
     dev = torch.device(device)
     key = (int(win), float(sigma), dev.type, -1 if dev.index is None else int(dev.index), str(dtype))
     cached = _WINDOW_CACHE.get(key)
@@ -70,23 +78,75 @@ def _gaussian_window(win: int, sigma: float, device, dtype):
         return cached
     x = torch.arange(win, device=device, dtype=dtype) - (win - 1) / 2.0
     g = torch.exp(-(x ** 2) / (2 * sigma ** 2))
-    g = (g / g.sum()).unsqueeze(0)
-    w2 = (g.t() @ g)
-    window = w2.expand(3, 1, win, win).contiguous()
-    _WINDOW_CACHE[key] = window
-    return window
+    g = g / g.sum()
+    horizontal = g.view(1, 1, 1, win).expand(3, 1, 1, win).contiguous()
+    vertical = g.view(1, 1, win, 1).expand(3, 1, win, 1).contiguous()
+    _WINDOW_CACHE[key] = (horizontal, vertical)
+    return _WINDOW_CACHE[key]
 
 
-def _ssim_builtin_bchw(p, t, win: int, sigma: float) -> torch.Tensor:
+def _ssim_blur(x, wh, wv, pad: int):
+    x = F.conv2d(x, wh, padding=(0, pad), groups=3)
+    return F.conv2d(x, wv, padding=(pad, 0), groups=3)
+
+
+class SSIMTargetStats:
+    """Target-side SSIM statistics, computed once and reused across a fit (FIT-027).
+
+    Within one fit the target ``t`` is constant, so ``blur(t)``, ``mu_t2`` and ``sig_t`` are
+    recomputed every iteration to produce the identical result and require no gradient. This
+    object holds them under **explicit ownership**: the fitter constructs one, hands it to
+    :func:`ssim`, and drops it whenever it swaps the target. ``metrics.ssim()`` stays stateless
+    when no cache is passed, so reporting and ablation values remain comparable to prior runs.
+
+    :meth:`matches` is the guard against silently serving stale statistics. It checks object
+    identity *and* the autograd version counter, so a target mutated in place — not just
+    replaced — invalidates the cache rather than poisoning the loss.
+    """
+
+    __slots__ = ("mu_t", "mu_t2", "sig_t", "_src", "_src_version", "_key")
+
+    def __init__(self, target, win: int = 11, sigma: float = 1.5):
+        t = _to_bchw(target)
+        wh, wv = _gaussian_window(win, sigma, t.device, t.dtype)
+        pad = win // 2
+        with torch.no_grad():
+            self.mu_t = _ssim_blur(t, wh, wv, pad)
+            self.mu_t2 = self.mu_t * self.mu_t
+            self.sig_t = _ssim_blur(t * t, wh, wv, pad) - self.mu_t2
+        self._src = target
+        self._src_version = int(target._version)
+        self._key = (int(win), float(sigma), tuple(t.shape), str(t.device), str(t.dtype))
+
+    def matches(self, target, win: int, sigma: float) -> bool:
+        """True only for the exact, unmutated tensor these statistics were built from."""
+        if target is not self._src or int(target._version) != self._src_version:
+            return False
+        t = _to_bchw(target)
+        return self._key == (
+            int(win), float(sigma), tuple(t.shape), str(t.device), str(t.dtype)
+        )
+
+
+def _ssim_builtin_bchw(p, t, win: int, sigma: float, stats: "SSIMTargetStats | None" = None
+                       ) -> torch.Tensor:
     C1, C2 = 0.01 ** 2, 0.03 ** 2
-    w = _gaussian_window(win, sigma, p.device, p.dtype)
+    wh, wv = _gaussian_window(win, sigma, p.device, p.dtype)
     pad = win // 2
-    mu_p = F.conv2d(p, w, padding=pad, groups=3)
-    mu_t = F.conv2d(t, w, padding=pad, groups=3)
-    mu_p2, mu_t2, mu_pt = mu_p * mu_p, mu_t * mu_t, mu_p * mu_t
-    sig_p = F.conv2d(p * p, w, padding=pad, groups=3) - mu_p2
-    sig_t = F.conv2d(t * t, w, padding=pad, groups=3) - mu_t2
-    sig_pt = F.conv2d(p * t, w, padding=pad, groups=3) - mu_pt
+
+    def blur(x):
+        return _ssim_blur(x, wh, wv, pad)
+
+    mu_p = blur(p)
+    if stats is None:
+        mu_t = blur(t)
+        mu_t2 = mu_t * mu_t
+        sig_t = blur(t * t) - mu_t2
+    else:
+        mu_t, mu_t2, sig_t = stats.mu_t, stats.mu_t2, stats.sig_t
+    mu_p2, mu_pt = mu_p * mu_p, mu_p * mu_t
+    sig_p = blur(p * p) - mu_p2
+    sig_pt = blur(p * t) - mu_pt
     s = ((2 * mu_pt + C1) * (2 * sig_pt + C2)) / ((mu_p2 + mu_t2 + C1) * (sig_p + sig_t + C2))
     return s.mean()
 
@@ -113,7 +173,13 @@ def fused_ssim_available(device: torch.device | str | None = None) -> bool:
 
 
 def ssim(pred, target, win: int = 11, sigma: float = 1.5,
-         backend: str = "builtin") -> torch.Tensor:
+         backend: str = "builtin",
+         target_stats: "SSIMTargetStats | None" = None) -> torch.Tensor:
+    """SSIM. Stateless unless the caller owns and passes ``target_stats`` (FIT-027).
+
+    A stale or mismatched cache is ignored rather than trusted, so passing one can change the
+    cost of this call but never its value.
+    """
     p, t = _to_bchw(pred), _to_bchw(target)
     if backend not in ("builtin", "fused", "auto"):
         raise ValueError(f"unknown ssim backend {backend!r}; expected builtin, fused, or auto")
@@ -125,7 +191,10 @@ def ssim(pred, target, win: int = 11, sigma: float = 1.5,
                           train=bool(p.requires_grad), reduction="mean")
             except Exception:
                 pass
-    return _ssim_builtin_bchw(p, t, win, sigma)
+    stats = target_stats if (
+        target_stats is not None and target_stats.matches(target, win, sigma)
+    ) else None
+    return _ssim_builtin_bchw(p, t, win, sigma, stats)
 
 
 def ms_ssim(pred, target, weights=(0.0448, 0.2856, 0.3001, 0.2363, 0.1333),

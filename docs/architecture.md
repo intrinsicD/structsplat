@@ -1,5 +1,35 @@
 # Architecture
 
+## Entrypoint (ADR-0025)
+`structsplat.pipeline.run_pipeline` / `structsplat convert` is the maintained composition of the
+current best pipeline. `PipelineConfig`'s defaults are the measured recipe (C25/C50/C51/C52), which
+is deliberately *not* the conservative library default surface in `config.py` (ADR-0009/0013).
+Passing a mask selects the arm and nothing else does:
+
+```
+image (+ optional mask)
+      │
+      ▼
+pipeline.run_pipeline ── mask? ──► masked arm: quadtree-WSE interior + boundary-tangent rows
+      │                                        (CORE-011), containment on (ADR-0017/0019)
+      │                └── none ──► full-frame arm: same init, mask machinery degenerate
+      ▼
+safe_schedule.run_safe_schedule
+   bootstrap → coverage growth → detail growth → [boundary/general closure]
+   → redistribution → polish
+   every optimizer block and topology proposal runs on a detached trial field and is committed
+   only if a full-frame metric vector is Pareto-safe (FIT-023/024/025, ADR-0020..0023)
+```
+
+The full-frame arm degenerates rather than forks: `mask.signed_distance` clips an empty complement
+to the image diagonal, so caps are inert and the boundary band is empty. Boundary initialization,
+containment, losses, metrics, and proposals are disabled; count-matched general coverage/detail
+proposals occupy the same closure slot and budget (ADR-0027). The full-frame arm has no benchmark
+screen yet (BENCH-017).
+
+The layered reference path below is what both arms are built from, and what `structsplat fit`
+exposes directly as the knob-level research command.
+
 ## Pipeline
 ```
 image (H,W,3) in [0,1]
@@ -53,10 +83,12 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   kernels use the active shape, and one terminal compaction restores the ordinary `GaussianField`
   interface. FIT-025/ADR-0022 separates that physical capacity from the ordinary active ceiling
   and adds an opt-in post-color-solve reserve whose covered-interior high-frequency births/splits
-  remain transactional and Pareto-gated), `pyramid`,
-  `pipeline` (ADR-0023: the source-bound `safe_schedule_2026_07_24` operational profile and its
-  matched masked/unmasked initialization contract), `workflows` (four clear folder/report
-  orchestrators, registered ablations/stage variants, and optional native-baseline subprocesses),
+  remain transactional and Pareto-gated; FIT-026/ADR-0023 adds the opt-in `geometric` storage
+  policy that grows physical capacity by `growth_factor` toward `capacity` on demand instead of
+  preallocating it, preserving the live prefix so the fit stays bit-identical to `fixed_capacity`),
+  `pyramid`, `pipeline` (CORE-012/ADR-0025: the single current-best recipe and matched
+  masked/full-frame arm selection), `workflows` (ADR-0027: four folder/report orchestrators,
+  registered ablations/stage variants, and optional native-baseline subprocesses),
   `codec`
   (post-fit quantization, ADR-0007; optional in-container alpha stream for masked inputs,
   ignored by pre-FIT-021 decoders).
@@ -69,7 +101,13 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   and its diagnostic-only status are ADR-0018.
 - **entry:** `scripts/{convert,benchmark,ablation,stage_search}.py` are the supported operational
   workflows and write portable report bundles. `deprecated_scripts/` retains evidence-bound
-  launchers without presenting them as supported interfaces. `cli` (`structsplat fit` /
+  launchers without presenting them as supported interfaces.
+- **entrypoint:** `pipeline` (CORE-012/ADR-0025) owns the maintained best-pipeline recipe and the
+  masked/full-frame arm selection; it composes `init`, `fit`'s mask constraint, and
+  `safe_schedule`, and holds no fitting mechanism of its own. `safe_schedule` (FIT-023/024/025)
+  owns the phase order, the topology auction, and the Pareto-safe commit gate; ADR-0020..0023 own
+  its storage policies.
+- **entry:** `cli` (`structsplat convert` — the best pipeline; `structsplat fit` /
   `image-to-gaussians2d`, `render` /
   `gaussians2d-to-image`, `batch-fit`, `ablation`, `stage-search`); `render` cold-loads a native
   full-precision NPZ or self-describing SSPL1 stream and can emit display-referred error/metrics

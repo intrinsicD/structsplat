@@ -1,5 +1,5 @@
 ---
-name: core
+name: structsplat-core
 description: Load at the start of any StructSplat work session. Repo map, invariants, naming, and the layered architecture (structure-tensor init -> anisotropic blue-noise sampling -> RS Gaussians -> normalized renderer -> fit -> pyramid). Use when orienting in the codebase, deciding where code belongs, or before editing any module.
 ---
 
@@ -46,12 +46,24 @@ IntrinsicEngine as an RHI pass.
 5. Every experiment is reproducible: seed flows InitConfig.seed -> RNG; log the config with results.
 
 ## Where things go
-- New init strategy -> `init.py` + add to `STRATEGIES` + register in `benchmarks/ablation.py`. See `method`.
+- New init strategy -> `init.py` + add to `STRATEGIES` + register in `benchmarks/ablation.py`. See `structsplat-method`.
 - New metric -> `metrics.py`, wired through `fit.py` output dict and `BENCH-001`.
 - Perf/CUDA -> `PORT-001`; keep the NumPy/torch reference as the correctness oracle.
 - Routine conversion/evaluation -> `scripts/convert.py`, `benchmark.py`, `ablation.py`, or
   `stage_search.py`; task-specific historical launchers live in `deprecated_scripts/`.
+- New claim / refuted claim -> a row in `ara/logic/claims.md`; a not-yet-promoted finding -> an
+  `O<NN>` entry in `ara/staging/observations.yaml`. See "Evidence and claims" in `CLAUDE.md`.
+- New task -> `tasks/AREA-NNN-slug.md` **and** a row in `tasks/INDEX.md`, same commit.
+- One-off experiment driver -> `scripts/experiments/`, not the top level of `scripts/`.
+- New ADR -> `docs/adr/NNNN-title.md`, and cite it as `ADR-NNNN` from the code or task that
+  depends on it (an uncited ADR fails `docs_sync`).
+
+## Verification gate
+`./scripts/verify.sh` runs `ruff check`, the portable pytest gate
+(`-m "not slow and not integration"`), and four structural checkers: `docs_sync.py`,
+`check_ara.py`, `check_task_policy.py`, `check_script_layout.py`. CI mirrors it on CPU. The
+broader lint/format ratchet is tracked by `DOCS-004`, not deferred indefinitely.
 
 ## Naming
 `structsplat` is a **placeholder project name** — if it changes, update `pyproject.toml`, imports,
-`README`, and this file in one commit (see `docs-sync`).
+`README`, and this file in one commit (see `structsplat-docs-sync`).

@@ -21,7 +21,7 @@ actual-rate development gate found that tensor-metric WSE did not add enough val
 strong gradient control; that compression claim is closed. Current research therefore treats the
 repository as an interpretable causal substrate for new representation, ownership, renderer, and
 codec hypotheses rather than as an established SOTA codec. `structsplat` is a **placeholder name**
-— rename freely (see the `docs-sync` skill).
+— rename freely (see the `structsplat-docs-sync` skill).
 
 > This is a PyTorch **research reference** with an opt-in exact CUDA extension for the same
 > normalized/additive equations. The remaining production port is a tiled CUDA/Vulkan/RHI path
@@ -35,20 +35,48 @@ pip install -e ".[gen]"          # optional: diffusers text-to-Gaussian generati
 pip install -e ".[dev]"          # pytest, ruff
 ```
 
-## Supported workflow scripts
+## The best pipeline: `structsplat convert` (ADR-0025)
 
-The supported operational surface is four scripts. They all use the frozen
-`safe_schedule_2026_07_24` profile: the bounded Janelle development winner with a 5,000-row
-start, fixed 12,024-row storage, an 11,512-row ordinary active ceiling, global transactional
-refinement, Pareto-safe checkpoints every 50 optimizer steps, no event color solve, and no
-specialized detail tail. This is the default for these workflow scripts, not a repository-wide
-superiority or SOTA claim.
+`structsplat convert` is the maintained single-image entrypoint for the current best pipeline.
+Pass a mask for alpha-matted/dome input; omit it for the full-frame arm. Both arms use the recipe
+in `structsplat.pipeline.RECIPE` and the same phase ordering, budgets, optimizer, proposal auction,
+Pareto gate, and polish. The full-frame arm removes boundary initialization, containment, boundary
+losses/metrics/proposals, and uses count-matched general proposals in the same closure slot.
 
-Masked and unmasked inputs use the same initialization count, phase order and budgets, optimizer,
-proposal auction, active ceiling, and polish. A masked input uses 4,500 general WSE rows plus 500
-boundary rows and enables containment, boundary losses, metrics, and proposals. An unmasked input
-uses 5,000 general WSE rows and substitutes count-matched coverage/detail proposals in the closure
-phase; no boundary-specific operation remains.
+```bash
+# masked arm
+structsplat convert frame.png --mask frame_alpha.png --capacity 11000 --outdir runs/frame
+
+# full-frame arm
+structsplat convert photo.png --capacity 11000 --outdir runs/photo
+```
+
+```python
+from structsplat.pipeline import PipelineConfig, run_pipeline
+
+result = run_pipeline(image, mask)  # mask=None selects the full-frame arm
+field, metrics = result["field"], result["metrics"]
+```
+
+`--capacity` alone rescales the schedule: phase targets derive from it (5/11 initial, 8/11
+coverage, 10/11 detail), so the defaults reproduce the 5,000/500/8,000/10,000-row Janelle recipe.
+Each run writes `<stem>_pipeline.json` carrying the recipe version, arm, resolved config, metric
+vector, and complete accept/reject history.
+
+**Evidence scope.** `PipelineConfig` defaults are the measured Janelle recipe: progressive WSE
+ordering (C25), Pareto-safe checkpoints every 50 steps (C50), event color solve off (C50), no
+specialized detail tail (C52), dynamic storage (C51), and global refinement. That evidence is one
+masked image, one seed, one GPU. The full-frame arm is a mechanism extension with no independent
+benchmark screen yet; BENCH-017 owns that screen. This is the operational default, not a
+repository-wide superiority or SOTA claim.
+
+To change the recipe after a new approach wins, edit `RECIPE` and the `PipelineConfig` defaults in
+`src/structsplat/pipeline.py` together, bump the version, and cite the authorizing claim.
+
+## Supported workflow scripts (ADR-0027)
+
+Four folder/report scripts delegate to that same `run_pipeline` definition; they do not carry a
+second pipeline configuration.
 
 ### Convert an image folder
 
@@ -66,15 +94,15 @@ The destination root also gets `manifest.json`, tidy `metrics.json`/`metrics.jso
 and a portable `index.html`. Existing complete cells require `--resume`; use `--overwrite`
 explicitly to replace them.
 
-### Benchmark the current profile
+### Benchmark the current pipeline
 
 ```bash
 python scripts/benchmark.py ./images ./results/current_benchmark \
   --seeds 0 1 --lpips --device cuda:0 --resume
 ```
 
-The report contains PSNR, SSIM, MS-SSIM, optional LPIPS, PSNR AUC, target-hit steps, phase and
-end-to-end timings, convergence/timing curves, and target/intermediate/final/error images for every
+The report contains PSNR, SSIM, MS-SSIM, optional LPIPS, MSE/MAE/error-tail curves, PSNR AUC,
+target-hit steps, phase/end-to-end timings, and target/intermediate/final/error images for every
 image and seed.
 
 Pinned official GaussianImage and Image-GS runs are optional. Their repositories and isolated
@@ -90,8 +118,8 @@ python scripts/benchmark.py ./images ./results/current_benchmark_native \
 ```
 
 The comparison aligns decoded target pixels, Gaussian count, requested optimizer horizon, and
-seed. Native renderer, optimizer, loss, growth, and timing semantics remain implementation
-specific and are labeled in their linked reports.
+seed. Native renderer, optimizer, loss, growth, and timing semantics remain implementation-specific
+and are labeled in their linked reports.
 
 ### Run the fixed ablation
 
@@ -99,36 +127,36 @@ specific and are labeled in their linked reports.
 python scripts/ablation.py ./images ./results/current_ablation \
   --seeds 0 1 --lpips --device cuda:0 --resume
 
-# A bounded subset:
 python scripts/ablation.py ./images ./results/current_ablation \
   --arms full no_coverage_growth no_redistribution no_polish
 ```
 
-The default matrix contains the full profile plus no-bootstrap, no-coverage, no-detail,
-no-closure, no-redistribution, no-polish, no-Pareto-checkpoint, and, for masked inputs,
-no-boundary-specialization arms. It uses the same report contract as the benchmark and accepts the
-same optional native-baseline arguments.
+The default matrix contains the full recipe plus no-bootstrap, no-coverage, no-detail, no-closure,
+no-redistribution, no-polish, no-Pareto-checkpoint, and, for masked inputs,
+no-boundary-specialization arms. It uses the benchmark report contract and accepts the same
+optional native-baseline arguments.
 
 ### Search every variant of one stage
 
 ```bash
 python scripts/stage_search.py ./images/kodim01.png ./results/search_detail \
   --stage detail --seeds 0 1 --device cuda:0 --resume
-
-python scripts/stage_search.py ./images/kodim01.png ./results/search_init \
-  --stage initialization
 ```
 
 Stage search requires exactly one image and runs every registered variant of the selected stage
-while freezing the rest of the current profile. Stages are `initialization`, `storage`,
-`checkpoint`, `bootstrap`, `coverage`, `detail`, `closure`, `redistribution`, and `polish`.
-Use `--variants ...` to select a subset and `--help` to inspect the complete interface.
+while freezing the rest of the current recipe. Stages are `initialization`, `storage`,
+`checkpoint`, `bootstrap`, `coverage`, `detail`, `closure`, `redistribution`, and `polish`. Use
+`--variants ...` for a subset and `--help` for the complete interface.
 
-Previous task-specific launchers now live in `deprecated_scripts/`. They remain available for
-historical evidence reproduction but are not supported entry points. The only other maintained
-files in `scripts/` are `verify.sh`, `install_skills.sh`, and `docs_sync.py`.
+Previous task-specific launchers live in `deprecated_scripts/`. They remain available for
+historical evidence reproduction but are not supported entrypoints. The remaining top-level files
+in `scripts/` are verification/maintenance tools and the four workflows above; one-off new
+experiment drivers belong in `scripts/experiments/`.
 
 ## Quickstart
+`structsplat fit` is the knob-level research command: every stage axis is a flag, and its defaults
+are the conservative shipped defaults rather than the recipe above.
+
 ```bash
 # fit one image with the measured high-budget PSNR winner
 structsplat fit photo.png --strategy quadtree_wse --num-gaussians 20000 --iters 2000
@@ -619,25 +647,34 @@ completed negative BENCH-007 Stage-1 F5--F9 bundle status.
 ## Agentic workflow (Claude Code)
 This repo is built to be implemented *with* Claude Code, mirroring the IntrinsicEngine setup.
 
-- **`CLAUDE.md`** — project guide + a skill-aware routing table.
-- **`.claude/skills/`** — eight canonical project skills: `core`, `task-workflow`, `review`,
-  `method`, `benchmark`, `docs-sync`, `structsplat-research-ideation`,
-  `structsplat-results-audit`. They're auto-discovered
-  inside this repo; run `scripts/install_skills.sh` to symlink them into `~/.claude/skills` for
-  global use. The two repo-prefixed entries under `.agents/skills/` are relative discovery
+- **`CLAUDE.md`** — project guide + a skill-aware routing table. **`AGENTS.md`** is a thin
+  redirect to it for non-Claude harnesses.
+- **`.claude/skills/`** — eight canonical project skills: `structsplat-core`, `structsplat-task-workflow`, `structsplat-review`,
+  `structsplat-method`, `structsplat-benchmark`, `structsplat-docs-sync`, `structsplat-research-ideation`,
+  `structsplat-results-audit`. Every name is `structsplat-`prefixed so it cannot collide with a
+  sibling repository's skill when more than one repo is open in an agent session. They're
+  auto-discovered inside this repo; run `scripts/install_skills.sh` to symlink them into
+  `~/.claude/skills` for global use (it refuses to install an unprefixed skill). The
+  repo-prefixed entries under `.agents/skills/` are relative discovery
   symlinks to these same skill trees for Codex/Agent Skills, not duplicates. The ideation skill is
   a first-party, MIT-licensed adaptation by Alexander Dieckmann of
   `transformational-research-skill-kit` v1.0.0; the results-audit skill is its referee-side
   companion for evidence that already exists.
 - **`tasks/`** — work items (`AREA-NNN-slug.md`) tracked in `tasks/INDEX.md`. Say *"work on
-  INIT-003"* and the `task-workflow` skill drives the lifecycle.
+  INIT-003"* and the `structsplat-task-workflow` skill drives the lifecycle.
 - **`docs/adr/`** — architecture decisions the code references by number.
+- **`ara/`** — the claim and evidence ledger. `ara/logic/claims.md` is where a number becomes a
+  claim you may repeat; `scripts/check_ara.py` enforces its structure. See the "Evidence and
+  claims" section of `CLAUDE.md`.
+- **`scripts/`** — durable tooling and the structural gates `verify.sh` runs: `docs_sync.py`,
+  `check_ara.py`, `check_task_policy.py`, `check_script_layout.py`. One-off experiment drivers go
+  in `scripts/experiments/`.
 - **`docs/prompts/real-research.md`** — reusable evidence-first prompt for prior-art audit,
   preregistration, execution, negative-result handling, and per-axis conclusions.
 
-Typical loop: `core` → `task-workflow` → `method` (if adding a component) → `review` →
-`docs-sync`; results-bearing work inserts `benchmark` → `structsplat-results-audit` before review.
-Research discovery starts with `core` → `structsplat-research-ideation`; selected candidates then
+Typical loop: `structsplat-core` → `structsplat-task-workflow` → `structsplat-method` (if adding a component) → `structsplat-review` →
+`structsplat-docs-sync`; results-bearing work inserts `structsplat-benchmark` → `structsplat-results-audit` before review.
+Research discovery starts with `structsplat-core` → `structsplat-research-ideation`; selected candidates then
 enter the normal task/method/benchmark loop.
 
 ## Layout
@@ -762,7 +799,7 @@ torch/numpy/structsplat versions + repository commit/dirty diff fingerprint) so 
 source-bound from its own artifacts. Results are
 bit-exact from a seed only on **CPU**: the CUDA renderer accumulates with atomics
 (`atomicAdd` / `index_add`), so GPU renders vary run to run — the logged renderer/device/versions
-bound that variation. See the `benchmark` skill for the full experimental-validity rules.
+bound that variation. See the `structsplat-benchmark` skill for the full experimental-validity rules.
 
 ## Selected references
 GaussianImage (ECCV 2024) · Image-GS (SIGGRAPH 2025) · GaussianImage++ (AAAI 2026) ·

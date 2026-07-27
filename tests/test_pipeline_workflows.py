@@ -5,6 +5,7 @@ from structsplat.pipeline import (
     CURRENT_PROFILE_NAME,
     INITIAL_GAUSSIANS,
     PHYSICAL_CAPACITY,
+    RECIPE,
     build_current_fit_config,
     build_current_schedule,
     build_initialization_config,
@@ -20,13 +21,13 @@ from structsplat.workflows import (
 )
 
 
-def test_current_profile_is_the_bounded_janelle_development_winner():
+def test_current_profile_is_the_single_measured_recipe():
     schedule = build_current_schedule(boundary_enabled=True)
 
-    assert CURRENT_PROFILE_NAME == "safe_schedule_2026_07_24"
-    assert schedule.storage_policy == "fixed_capacity"
-    assert schedule.capacity == PHYSICAL_CAPACITY == 12_024
-    assert schedule.resolved_base_active_limit() == ACTIVE_LIMIT == 11_512
+    assert CURRENT_PROFILE_NAME == f"{RECIPE['name']}_{RECIPE['version']}"
+    assert schedule.storage_policy == "dynamic"
+    assert schedule.capacity == PHYSICAL_CAPACITY == 11_000
+    assert schedule.resolved_base_active_limit() == ACTIVE_LIMIT == 11_000
     assert schedule.detail_tail_max_rows == 0
     assert schedule.pareto_safe_checkpoints is True
     assert schedule.pareto_checkpoint_every == 50
@@ -89,7 +90,7 @@ def test_public_parsers_expose_only_the_four_clear_workflows(tmp_path):
         variants[0] in {
             "current",
             "quadtree_wse",
-            "fixed_capacity",
+            "dynamic",
             "pareto50",
         }
         for variants in STAGE_VARIANTS.values()

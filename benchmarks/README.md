@@ -14,12 +14,13 @@ python scripts/ablation.py SOURCE OUTDIR --seeds 0 1
 python scripts/stage_search.py IMAGE OUTDIR --stage STAGE --seeds 0 1
 ```
 
-They share `structsplat.pipeline`'s frozen `safe_schedule_2026_07_24` profile and
-`structsplat.workflows`' artifact/report contract. Every result includes resolved configuration,
-source/target hashes, raw JSON/JSONL/CSV, failures, timings, curves, reconstructions, fixed-scale
-errors, intermediate accepted states, and a relative-link `index.html`. A parallel mask tree turns
-on the boundary-specific initialization/containment/loss/proposal path; no mask uses the identical
-count and phase contract with boundary-specific work removed.
+They delegate to the same `structsplat.pipeline.RECIPE` / `PipelineConfig` definition as
+`structsplat convert` and share `structsplat.workflows`' artifact/report contract (ADR-0025/0027).
+Every result includes resolved configuration, source/target hashes, raw JSON/JSONL/CSV, failures,
+timings, curves, reconstructions, fixed-scale errors, intermediate accepted states, and a
+relative-link `index.html`. A parallel mask tree turns on boundary-specific
+initialization/containment/loss/proposals; no mask keeps the same count, phase, and budget contract
+while the closure slot uses general proposals.
 
 The modules documented below remain focused research harnesses and implementation APIs. Historical
 shell/Python launchers moved to `deprecated_scripts/`.

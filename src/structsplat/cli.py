@@ -225,6 +225,74 @@ def build_fit_configs(args):
     return icfg, scfg, fcfg
 
 
+def cmd_convert(args):
+    """Run the current best pipeline (ADR-0025). Masked when --mask is given, else full frame."""
+    import json
+
+    import torch
+
+    from .pipeline import PipelineConfig, run_pipeline
+
+    img = load_image(args.image)
+    mask_np = load_mask(args.mask) if args.mask else None
+    if mask_np is not None and args.mask_invert:
+        mask_np = 1.0 - mask_np
+
+    cfg = PipelineConfig(
+        capacity=args.capacity,
+        initial_gaussians=args.initial_gaussians,
+        boundary_gaussians=args.boundary_gaussians,
+        coverage_target=args.coverage_target,
+        detail_target=args.detail_target,
+        seed=args.seed,
+        device=args.device,
+        renderer=args.renderer,
+        step_scale=args.step_scale,
+        block_steps=args.block_steps,
+        storage_policy=args.storage_policy,
+        pareto_safe_checkpoints=not args.no_checkpoints,
+        pareto_checkpoint_every=args.checkpoint_every,
+        event_color_solve=args.event_color_solve,
+        mask_margin=args.mask_margin,
+        boundary_band=args.boundary_band,
+        coverage_tau=args.coverage_tau,
+        hole_regression_budget=args.hole_regression_budget,
+    )
+
+    outdir = Path(args.outdir)
+    outdir.mkdir(parents=True, exist_ok=True)
+    stem = Path(args.image).stem
+    result = run_pipeline(img, mask_np, cfg, verbose=not args.quiet)
+
+    field = result["field"]
+    field.save(str(outdir / f"{stem}.npz"))
+    H, W = img.shape[:2]
+    with torch.no_grad():
+        from .fit import _render
+
+        fit_cfg_dict = result["fit_config"]
+        from .config import FitConfig
+
+        render_cfg = FitConfig(**{
+            k: v for k, v in fit_cfg_dict.items() if k in FitConfig.__dataclass_fields__
+        })
+        rendered = _render(field, render_cfg, H, W, support_fade_alpha=1.0)
+    recon = rendered.detach().cpu().numpy()
+    save_image(str(outdir / f"{stem}_reconstruction.png"), recon)
+
+    report = {k: v for k, v in result.items() if k not in ("field", "optimizer_state")}
+    (outdir / f"{stem}_pipeline.json").write_text(json.dumps(report, indent=2, default=str))
+
+    metrics = result["metrics"]
+    print(f"arm={result['arm']} recipe={result['recipe']['name']}@{result['recipe']['version']}")
+    print(f"n={field.n} device={result['device']} seconds={result['seconds']:.1f}")
+    for key in ("foreground_psnr_db", "boundary_psnr_db", "interior_hole_fraction",
+                "boundary_hole_fraction"):
+        if key in metrics:
+            print(f"{key}={metrics[key]}")
+    print(f"wrote {outdir}/{stem}.npz")
+
+
 def cmd_fit(args):
     import torch
     from .config import PyramidConfig
@@ -650,6 +718,8 @@ def main():
         FitConfig,
         GenConfig,
     )
+    # Torch-free by construction (see structsplat.pipeline), so `--help` still works without torch.
+    from .pipeline import PipelineConfig
 
     p = argparse.ArgumentParser(prog="structsplat")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -959,10 +1029,66 @@ def main():
     f.add_argument("--outdir", default="runs")
     f.add_argument("--device", default=None)
 
+    c = sub.add_parser(
+        "convert",
+        help="convert an image into a GaussianField with the current best pipeline (ADR-0025)",
+        description=(
+            "The maintained best-known pipeline. Pass --mask for alpha-matted/dome inputs to get "
+            "the masked arm (containment, boundary initialization and closure); omit it for the "
+            "full-frame arm, which runs the identical schedule with the mask stages inert. "
+            "`structsplat fit` remains the knob-level research command."
+        ),
+    )
+    c.add_argument("image")
+    c.add_argument("--mask", default=None,
+                   help="mask image (grayscale or RGBA alpha); selects the masked arm")
+    c.add_argument("--mask-invert", action="store_true",
+                   help="treat the dark side of the mask as the object")
+    c.add_argument("--capacity", type=int, default=PipelineConfig.capacity,
+                   help="row budget; the phase targets scale with it")
+    c.add_argument("--initial-gaussians", type=int, default=None,
+                   help="rows before growth (default: capacity * 5/11)")
+    c.add_argument("--boundary-gaussians", type=int, default=None,
+                   help="masked arm: tangent-aligned boundary rows in the initial field "
+                        "(default: 10%% of the initial rows)")
+    c.add_argument("--coverage-target", type=int, default=None,
+                   help="row count the coverage phase grows to (default: capacity * 8/11)")
+    c.add_argument("--detail-target", type=int, default=None,
+                   help="row count the detail phase grows to (default: capacity * 10/11)")
+    c.add_argument("--step-scale", type=float, default=PipelineConfig.step_scale,
+                   help="scale every phase's step ceiling (0.1 for a quick look)")
+    c.add_argument("--block-steps", type=int, default=None,
+                   help="commit-gate granularity in steps")
+    c.add_argument("--storage-policy",
+                   choices=["dynamic", "fixed_capacity", "geometric"],
+                   default=PipelineConfig.storage_policy)
+    c.add_argument("--no-checkpoints", action="store_true",
+                   help="disable Pareto-safe state checkpoints (FIT-023 found them a win; "
+                        "this reverts to the matched control)")
+    c.add_argument("--checkpoint-every", type=int,
+                   default=PipelineConfig.pareto_checkpoint_every)
+    c.add_argument("--event-color-solve", action="store_true",
+                   help="post-topology color solve; FIT-023 measured it worse, default off")
+    c.add_argument("--mask-margin", type=float, default=PipelineConfig.mask_margin)
+    c.add_argument("--boundary-band", type=float, default=PipelineConfig.boundary_band)
+    c.add_argument("--coverage-tau", type=float, default=PipelineConfig.coverage_tau)
+    c.add_argument("--hole-regression-budget", type=float,
+                   default=PipelineConfig.hole_regression_budget,
+                   help="ADR-0026: interior hole fraction a block may add and still commit "
+                        "(default 0.0 = strict). Boundary holes are never budgeted.")
+    c.add_argument("--renderer", default=None,
+                   choices=["normalized", "cuda", "cuda_tiled"],
+                   help="default: cuda on a CUDA device, else normalized")
+    c.add_argument("--seed", type=int, default=PipelineConfig.seed)
+    c.add_argument("--device", default=None)
+    c.add_argument("--outdir", default="runs/convert")
+    c.add_argument("--quiet", action="store_true")
+    c.set_defaults(func=cmd_convert)
+
     fit_parser = sub.add_parser(
         "fit",
         aliases=["image-to-gaussians2d"],
-        help="fit a single image into a native 2D GaussianField",
+        help="fit a single image into a native 2D GaussianField (knob-level research command)",
         parents=[f],
     )
     fit_parser.add_argument("image")

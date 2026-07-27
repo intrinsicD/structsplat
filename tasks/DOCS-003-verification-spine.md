@@ -39,8 +39,10 @@ DOCS-001 (docs-sync backfill).
   pre-existing style findings (I/B/UP/RUF/SIM/…). Those broader style/import families and
   `ruff format --check` (97/136 tracked files predate ruff-format) are intentionally NOT enforced
   yet: adopting them is a separate, repo-wide lint/format ratchet, not this spine.
-  **Follow-up task:** stage the style ratchet — `ruff check --fix` the ~774 auto-fixable, triage the
-  rest (B023 loop-var capture, BLE001 blind-except may be real), then widen the pinned `select`.
+  **Follow-up task:** `DOCS-004` now owns the staged style/format ratchet — auto-fix the mechanical
+  families, run `ruff format` in an isolated commit, then triage the correctness-relevant families
+  (B023 loop-var capture, B904/BLE001 blind-except may be real) and widen the pinned `select`.
+  `DOCS-004` carries an explicit expiry so the deferral cannot stay open untracked.
 - The full suite is not fresh-checkout portable: ~510 tests need something a clean CPU checkout
   cannot guarantee — committed `results/` evidence bundles (gitignored), a Landlock-capable kernel,
   a thread-pinned worker env, the host's exact sysfs/ACPI layout, or bit-exact numeric reproduction

@@ -958,3 +958,98 @@ reference renderer is memory-bound. See `ara/evidence/core005-render-checkpoint-
 - **Tags**: safe-schedule, fixed-capacity, activation-policy, detail-tail, development,
   negative-specialization-result, claim-boundary
 - **From staging**: direct FIT-025 result audit
+
+## C53: The GPU-native tiled renderer passes its frozen microprofile against exact CUDA
+
+- **Statement**: On an RTX 3050 with PyTorch 2.9.0+cu128, the tiled path (in-extension CUB
+  binning, shared-memory staged kernels, PORT-003 warp-reduced backward atomics, exact ellipse
+  cull) beats the untiled exact `cuda` renderer at every measured high-N cell. Representative
+  512²/N=8192/overlap-16/ratio-6 step ratio is `0.6308`, all eight N=8192 grid ratios are
+  `0.6276, 0.6533, 0.4654, 0.5390, 0.6512, 0.6602, 0.6374, 0.6308`, GPU index build is `1.358%` of
+  the tiled step, and representative CVs are inside the frozen `5%` limit. Representative
+  backward falls `5.918 -> 2.145 ms` and the full step `11.215 -> 7.075 ms`. This is a single
+  consumer-GPU microprofile of a synthetic Gaussian field; it authorizes the fair-protocol
+  end-to-end fit benchmark and nothing else. The shipped GPU default remains `cuda`.
+- **Status**: supported bounded single-device renderer microprofile; default flip, cross-GPU,
+  quality, and compression claims unauthorized
+- **Provenance**: ai-executed
+- **Crystallized via**: empirical-resolution
+- **Falsification criteria**: A rerun of the identical frozen grid on the same device fails the
+  direction, index-share, or CV clauses; the tiled path diverges from the untiled baseline beyond
+  `PARITY_ATOL`/`PARITY_RTOL` at any cell; or an end-to-end fair-protocol fit fails to reproduce
+  the direction. A different GPU or an image-fitting result is separate evidence, not a test of
+  this claim.
+- **Proof**: [`ara/evidence/port002-tiled-render-profile-2026-07-25/run.md`,
+  `ara/evidence/port002-tiled-render-profile-2026-07-25/primary/raw.json`,
+  `ara/evidence/port002-tiled-render-profile-2026-07-25/pre_ssim/raw.json`,
+  `benchmarks/tiled_render_profile.py`,
+  `tests/test_tiled_render_profile.py`,
+  `docs/adr/0024-normalized-fade-cutoff-conditioning-parity.md`,
+  `tasks/PORT-002-gpu-native-tile-index-fused-loss.md`,
+  `tasks/PORT-003-tiled-backward-reductions.md`]
+- **Dependencies**: [C03]
+- **Tags**: CUDA, tiled-renderer, microprofile, performance, PORT-002, PORT-003, parity,
+  claim-boundary
+- **From staging**: direct PORT-002/PORT-003 result audit
+
+## C54: The normalized compositor's fade cutoff is ill-conditioned in float32, and parity must be scoped to it
+
+- **Statement**: Under `support_fade`, the weight `w = exp(-q/2) - exp(-c^2/2)` is approximately
+  proportional to `(c^2 - q)`, so with float32 spacing `ulp(q) ~ 9.54e-7` near `q = 9` its relative
+  error grows as `~ulp/(c^2 - q)` and ADR-0003's normalize-by-denominator amplifies the residue by
+  `eps/(D + eps)^2`. At one pixel of one profile cell (`D = 1.822550e-7`, a single contributing
+  Gaussian at its cutoff) this predicts `~7e-4` against a measured `8.877516e-4`, in `1` of
+  `786,432` values. The defect is in the unmodified baseline renderer: all four arms, including
+  untiled `cuda`, reproduce it identically, while candidates track the baseline to `1.788139e-7`.
+  The algebraic reformulation `exp(-c^2/2) * expm1((c^2 - q)/2)` cuts the formula's own error from
+  `3.76e-4` to `5.51e-8` relative but leaves total error unchanged (`1.11e-2` versus `1.15e-2`),
+  because the dominant term is the float32 representation of `q` itself. No float32-local fix
+  exists, so ADR-0024 scopes governing renderer parity to candidate-versus-baseline at unchanged
+  tolerances and reports reference disagreement separately.
+- **Status**: supported numerical-conditioning result; renderer-defect interpretation refuted
+- **Provenance**: ai-executed
+- **Crystallized via**: empirical-resolution
+- **Falsification criteria**: A formulation is exhibited that reduces total float32 error at the
+  cutoff without changing the operator; or a reference mismatch appears that the untiled baseline
+  does not reproduce, which would make it a candidate defect rather than an inherited property.
+- **Proof**: [`ara/evidence/port002-tiled-render-profile-2026-07-25/run.md`,
+  `ara/evidence/port002-tiled-render-profile-2026-07-25/primary/raw.json`,
+  `docs/adr/0024-normalized-fade-cutoff-conditioning-parity.md`,
+  `benchmarks/tiled_render_profile.py`,
+  `tests/test_tiled_render_profile.py`,
+  `docs/adr/0003-additive-vs-normalized-renderer.md`]
+- **Dependencies**: [C53]
+- **Tags**: numerics, float32, normalized-renderer, support-fade, parity, conditioning,
+  negative-result, claim-boundary
+- **From staging**: direct PORT-002 parity diagnosis
+
+## C55: Separable SSIM is a dependency-free loss speedup at and above 256 squared; small sizes are unresolved
+
+- **Statement**: The SSIM half of the default `0.7 L1 + 0.3 SSIM` objective dominates the
+  non-renderer fit-step cost once the tiled renderer lands: at 512², SSIM forward+backward measures
+  `6.5--9.4 ms` against L1's `0.21--0.32 ms` and Adam's `~0.19--0.34 ms`, and the remainder is flat
+  in `N`, overlap, anisotropy, and renderer arm. Replacing the dense 11x11 blur with the separable
+  pair it factors into measures `1.36--1.48x` at 256², 384², 512² and 1024², at `~1e-8` value and
+  `~2e-6` relative gradient agreement with the dense form. Below 256² the effect is **unresolved**:
+  both arms sit at the same `~1.1--1.2 ms` launch-overhead floor and repeated measurement spans
+  `0.64x` to `3.08x` with `144--570%` spreads, including a `1.45x` dense-versus-dense control. A
+  caching prototype for the fixed target's statistics measures a further `1.54--1.87x` but is
+  unimplemented (FIT-027). The third-party `fused_ssim` dependency is declined.
+- **Status**: supported bounded single-device loss-term result at and above 256 squared;
+  small-image effect unavailable
+- **Provenance**: ai-executed
+- **Crystallized via**: empirical-resolution
+- **Falsification criteria**: A quieter machine or dedicated harness resolves the sub-256² regime
+  and shows a material regression there; the separable and dense forms disagree beyond the
+  tolerances the parity test asserts; or an end-to-end fit shows no step-time benefit at the sizes
+  where the microbenchmark reports one.
+- **Proof**: [`ara/evidence/port002-tiled-render-profile-2026-07-25/run.md`,
+  `ara/evidence/port002-tiled-render-profile-2026-07-25/ssim_microbench.py`,
+  `ara/evidence/port002-tiled-render-profile-2026-07-25/ssim_microbench.json`,
+  `src/structsplat/metrics.py`,
+  `tests/test_metrics.py`,
+  `tasks/FIT-027-cached-target-ssim-statistics.md`]
+- **Dependencies**: [C53]
+- **Tags**: SSIM, loss, performance, separable-convolution, measurement-noise, FIT-027,
+  claim-boundary
+- **From staging**: direct PORT-002 loss-term profile

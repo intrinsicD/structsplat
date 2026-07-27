@@ -54,8 +54,8 @@ port target rather than an implemented backend in this tree (`README.md`,
   policy analogues and native external runs as different evidence classes.
 - **Research record:** bounded work lives in `tasks/` and `tasks/INDEX.md`;
   hard-to-reverse decisions live in `docs/adr/`; reproducible run artifacts and
-  negative results live under `ara/evidence/`. The existing `core`,
-  `task-workflow`, `method`, `benchmark`, `review`, and `docs-sync` skills define
+  negative results live under `ara/evidence/`. The existing `structsplat-core`,
+  `structsplat-task-workflow`, `structsplat-method`, `structsplat-benchmark`, `structsplat-review`, and `structsplat-docs-sync` skills define
   the handoff from a chosen idea to implementation and evidence.
 
 ## High-value research surface (grounded in the active task index)
@@ -116,13 +116,13 @@ transfer is new or valid.
 
 A chosen candidate becomes a short `AREA-NNN-slug.md` task in `tasks/` and a row
 in `tasks/INDEX.md`, with a falsifiable goal, interfaces, dependencies, acceptance
-criteria, baseline, and abandonment rule. Load `core`, then use `task-workflow`;
-use `method` for a swappable initializer, renderer, sampler, hierarchy, primitive,
-or optimization method, and `benchmark` for the decisive experiment. Implement
+criteria, baseline, and abandonment rule. Load `structsplat-core`, then use `structsplat-task-workflow`;
+use `structsplat-method` for a swappable initializer, renderer, sampler, hierarchy, primitive,
+or optimization method, and `structsplat-benchmark` for the decisive experiment. Implement
 the smallest reference path first, add correctness and regression tests under
 `tests/`, compare optimized CUDA behavior against the reference when applicable,
 and preserve configuration plus seed in the result artifacts. Put reproducible
-evidence under `ara/evidence/`, update documentation through `docs-sync`, and use
+evidence under `ara/evidence/`, update documentation through `structsplat-docs-sync`, and use
 an ADR under `docs/adr/` for a hard-to-reverse representation, renderer, or
 architecture decision. The ideation skill itself proposes and audits; it does not
 skip this workflow or modify research code automatically.

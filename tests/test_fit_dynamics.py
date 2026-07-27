@@ -2084,3 +2084,39 @@ def test_densify_anisotropy_threaded_from_config():
     assert out["n_gaussians"] > 12
     assert out["field"].scale_max is not None
     assert float(torch.exp(out["field"].log_scales).max().detach()) <= 1.25 + 1e-6
+
+
+@pytest.mark.parametrize("loss_weighting", ["none", "mask"])
+def test_ssim_target_cache_does_not_change_the_fit(monkeypatch, loss_weighting):
+    """FIT-027: caching the SSIM target half must change cost, not the fit trajectory.
+
+    Forcing every cache lookup to miss reproduces the pre-FIT-027 stateless path, so an exact
+    match between the two runs is the statement that the optimization is unchanged.
+    """
+    rng = np.random.default_rng(5)
+    img = rng.random((20, 24, 3)).astype(np.float32)
+    target = torch.as_tensor(img)
+
+    mask = None
+    if loss_weighting == "mask":
+        mask = np.zeros(img.shape[:2], np.float32)
+        mask[3:17, 4:20] = 1.0
+
+    def run():
+        field = _init.build_field(
+            img, InitConfig(strategy="random", num_gaussians=16, seed=0)
+        )
+        return fit(
+            field, target,
+            FitConfig(iters=6, log_every=1, ssim_weight=0.4, renderer="normalized",
+                      loss_weighting=loss_weighting),
+            verbose=False, mask=mask,
+        )
+
+    cached = run()
+    monkeypatch.setattr(M.SSIMTargetStats, "matches", lambda self, t, w, s: False)
+    stateless = run()
+
+    assert cached["history"]["loss"] == stateless["history"]["loss"]
+    assert torch.equal(cached["field"].means, stateless["field"].means)
+    assert torch.equal(cached["field"].colors, stateless["field"].colors)

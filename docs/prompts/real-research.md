@@ -24,12 +24,12 @@ Intended contribution level: a credible publishable result, including an informa
 
 Mandatory skills and workflow
 -----------------------------
-1. Load the repository's `core` skill and inspect the live tree before reasoning from summaries.
+1. Load the repository's `structsplat-core` skill and inspect the live tree before reasoning from summaries.
 2. Use `structsplat-research-ideation` in full. Read its required novelty, transfer, evidence,
    prior-art, repository-context, and output-template resources. Keep generation and evaluation
    separate and preserve incompatible directions.
-3. When a candidate is selected for implementation, re-enter `task-workflow` -> `method` (when it
-   changes a method) -> `benchmark` -> `review` -> `docs-sync`. Do not silently modify production
+3. When a candidate is selected for implementation, re-enter `structsplat-task-workflow` -> `structsplat-method` (when it
+   changes a method) -> `structsplat-benchmark` -> `structsplat-review` -> `structsplat-docs-sync`. Do not silently modify production
    code from the ideation phase.
 4. At the end of the turn, invoke `research-manager` once to record decisions, experiments, dead
    ends, evidence, and staged interpretations with provenance. Never invent ARA events.

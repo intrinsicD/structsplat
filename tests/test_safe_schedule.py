@@ -1030,6 +1030,98 @@ def test_tiny_safe_schedule_emits_monotone_selected_sequence():
         )
 
 
+def test_geometric_storage_grows_and_matches_fixed_capacity():
+    height = width = 28
+    mask = _mask(height, width)
+    yy, xx = torch.meshgrid(
+        torch.linspace(0, 1, height),
+        torch.linspace(0, 1, width),
+        indexing="ij",
+    )
+    target = torch.stack([xx, yy, 0.5 * (xx + yy)], dim=2)
+    target = target * mask[..., None]
+    field = _field(6, height, width)
+    one = (1e-2, 8e-3, 3e-3, 1e-2, 3e-3)
+
+    def phase(name: str, target_n: int | None, lowpass: int = 1):
+        return PhaseBudget(name, 1, 1, target_n, one, 0.001, 0.002, lowpass)
+
+    base = SafeScheduleConfig(
+        capacity=11,
+        base_active_limit=9,
+        coverage_target_gaussians=7,
+        detail_target_gaussians=8,
+        event_min_count=1,
+        recovery_steps=1,
+        event_spacing_px=3.0,
+        coverage_birth_count=1,
+        detail_birth_count=1,
+        detail_split_count=1,
+        boundary_birth_count=1,
+        redistribution_count=1,
+        stale_patience=1,
+        bootstrap=phase("bootstrap", 6, 2),
+        coverage=phase("coverage_growth", 7),
+        detail=phase("detail_growth", 8),
+        boundary=phase("boundary_closure", 9),
+        redistribution=phase("redistribution", 9),
+        polish=phase("safe_polish", 9),
+    )
+
+    fixed = run_safe_schedule(
+        field, target, mask, _base_cfg(iters=1),
+        replace(base, storage_policy="fixed_capacity"), verbose=False,
+    )
+    geometric = run_safe_schedule(
+        field, target, mask, _base_cfg(iters=1),
+        replace(base, storage_policy="geometric", initial_capacity=6), verbose=False,
+    )
+
+    # The physical pool starts at the initial field and grows geometrically to the ceiling.
+    assert geometric["storage"]["policy"] == "geometric"
+    assert geometric["storage"]["initial_physical_rows"] == 6
+    assert geometric["storage"]["final_physical_rows"] == 9  # min(capacity=11, base_active_limit=9)
+    assert geometric["storage"]["geometric_migrations"] == 1
+    assert geometric["storage"]["growth_factor"] == 2.0
+    assert geometric["storage"]["fixed_shape_during_fit"] is False
+    assert geometric["storage"]["output_compacted"] is True
+
+    # Growth only adds inactive storage, so the fitted outcome is identical to fixed capacity.
+    assert geometric["metrics"] == fixed["metrics"]
+    assert geometric["field"].n == fixed["field"].n
+    for name in ("means", "log_scales", "rotations", "colors", "opacities", "scale_max"):
+        torch.testing.assert_close(
+            getattr(geometric["field"], name),
+            getattr(fixed["field"], name),
+            rtol=0,
+            atol=0,
+        )
+
+
+def test_geometric_storage_policy_validation():
+    valid = SafeScheduleConfig(
+        capacity=32,
+        storage_policy="geometric",
+        base_active_limit=16,
+        growth_factor=1.5,
+        initial_capacity=8,
+        coverage_target_gaussians=12,
+        detail_target_gaussians=14,
+    )
+    valid.validate(6)
+    with pytest.raises(ValueError, match="growth_factor"):
+        replace(valid, growth_factor=1.0).validate(6)
+    with pytest.raises(ValueError, match="initial_capacity"):
+        replace(valid, initial_capacity=64).validate(6)  # above capacity
+    with pytest.raises(ValueError, match="initial_capacity"):
+        replace(valid, initial_capacity=2).validate(6)  # below the initial field
+    with pytest.raises(ValueError, match="storage_policy"):
+        replace(valid, storage_policy="bogus").validate(6)
+    # A geometric fit cannot also reserve a detail tail (that stays fixed_capacity per ADR-0022).
+    with pytest.raises(ValueError, match="requires storage_policy"):
+        replace(valid, detail_tail_max_rows=4).validate(6)
+
+
 def test_fixed_reserve_is_activated_only_by_the_late_detail_tail():
     height = width = 32
     mask = _mask(height, width)
@@ -1180,3 +1272,71 @@ def test_interior_undercoverage_weight_validation():
         FitConfig(mask_interior_undercoverage_weight=-1.0)
     with pytest.raises(ValueError, match="mask_undercoverage_every"):
         FitConfig(mask_undercoverage_every=0)
+
+
+def test_hole_regression_budget_defaults_to_the_strict_historical_gate():
+    """Default 0.0 must reproduce strict monotonicity: no silent behaviour change."""
+    before = _metrics()
+    # Every pixel-error metric improves; interior coverage gives up a sliver. This is the
+    # shape of 75% of the rejections observed in the BENCH-017 exploratory pass.
+    candidate = _metrics(
+        foreground_mse=0.09,
+        boundary_mse=0.19,
+        cvar99_mse=0.29,
+        interior_hole_fraction=0.1006,
+    )
+    accepted, reasons = safe_commit_decision(before, candidate, CommitTolerances())
+    assert not accepted
+    assert "interior_holes_regressed" in reasons
+
+    explicit_zero, zero_reasons = safe_commit_decision(
+        before, candidate, CommitTolerances(), 0.0
+    )
+    assert explicit_zero is accepted
+    assert zero_reasons == reasons
+
+
+def test_hole_regression_budget_admits_strictly_better_pixel_error():
+    before = _metrics()
+    candidate = _metrics(
+        foreground_mse=0.09,
+        boundary_mse=0.19,
+        cvar99_mse=0.29,
+        interior_hole_fraction=0.1006,
+    )
+    accepted, reasons = safe_commit_decision(
+        before, candidate, CommitTolerances(), 0.001
+    )
+    assert accepted
+    assert reasons == []
+
+    # The budget is a bound, not a licence: a regression beyond it still rejects.
+    accepted, reasons = safe_commit_decision(
+        before, _metrics(foreground_mse=0.09, boundary_mse=0.19, cvar99_mse=0.29,
+                         interior_hole_fraction=0.2),
+        CommitTolerances(), 0.001,
+    )
+    assert not accepted
+    assert "interior_holes_regressed" in reasons
+
+
+def test_hole_regression_budget_never_relaxes_the_boundary_gate():
+    """The masked arm's boundary closure keeps its exact gate (ADR-0026)."""
+    before = _metrics()
+    candidate = _metrics(
+        foreground_mse=0.09,
+        cvar99_mse=0.29,
+        boundary_hole_fraction=0.2006,
+    )
+    accepted, reasons = safe_commit_decision(
+        before, candidate, CommitTolerances(), 0.05
+    )
+    assert not accepted
+    assert "boundary_holes_regressed" in reasons
+
+
+def test_hole_regression_budget_rejects_invalid_values():
+    before, candidate = _metrics(), _metrics()
+    for bad in (-1e-9, float("nan"), float("inf")):
+        with pytest.raises(ValueError, match="hole_regression_budget"):
+            safe_commit_decision(before, candidate, CommitTolerances(), bad)

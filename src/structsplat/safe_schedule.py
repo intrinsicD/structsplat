@@ -48,7 +48,11 @@ from .fit import (
     fit,
 )
 from .triage import _mutual_nearest_pairs, _row_covariances, attribution_pass
-from .pool import prepare_transactional_pool
+from .pool import (
+    geometric_capacity_schedule,
+    grow_transactional_capacity,
+    prepare_transactional_pool,
+)
 
 
 @dataclass(frozen=True)
@@ -114,6 +118,8 @@ class SafeScheduleConfig:
     storage_policy: str = "dynamic"
     boundary_enabled: bool = True
     base_active_limit: int | None = None
+    growth_factor: float = 2.0
+    initial_capacity: int | None = None
     detail_tail_max_rows: int = 0
     detail_tail_batch_rows: int = 128
     detail_tail_min_gain_per_row: float = 0.0
@@ -151,6 +157,10 @@ class SafeScheduleConfig:
     boundary_residual_component_target: int = 0
     boundary_residual_min_pixels: int = 4
     tolerances: CommitTolerances = CommitTolerances()
+    # ADR-0026: interior coverage a block may give up and still commit. 0.0 keeps the historical
+    # strict gate; a positive value trades a bounded amount of interior hole fraction for the
+    # pixel-error progress the strict gate discards. Boundary holes are never budgeted.
+    hole_regression_budget: float = 0.0
 
     bootstrap: PhaseBudget = PhaseBudget(
         "bootstrap", 1_250, 250, 5_000,
@@ -192,6 +202,26 @@ class SafeScheduleConfig:
             else int(self.base_active_limit)
         )
 
+    def resolved_initial_capacity(self, initial_n: int) -> int:
+        """Physical row count a ``geometric`` fit starts at before growing toward ``capacity``."""
+
+        if self.initial_capacity is None:
+            return int(initial_n)
+        return int(self.initial_capacity)
+
+    def max_block_births(self) -> int:
+        """Largest row count a single topology block can activate (the headroom to reserve)."""
+
+        return max(
+            int(self.coverage_birth_count),
+            int(self.detail_birth_count),
+            int(self.detail_split_count),
+            int(self.boundary_birth_count),
+            int(self.redistribution_count),
+            int(self.event_min_count),
+            1,
+        )
+
     def validate(self, initial_n: int) -> None:
         if initial_n <= 0:
             raise ValueError("safe schedule needs a non-empty initial field")
@@ -213,10 +243,18 @@ class SafeScheduleConfig:
             raise ValueError(
                 "base_active_limit must be between the initial field size and capacity"
             )
-        if self.storage_policy not in ("dynamic", "fixed_capacity"):
+        if self.storage_policy not in ("dynamic", "fixed_capacity", "geometric"):
             raise ValueError(
-                "storage_policy must be 'dynamic' or 'fixed_capacity'"
+                "storage_policy must be 'dynamic', 'fixed_capacity', or 'geometric'"
             )
+        if self.storage_policy == "geometric":
+            if not math.isfinite(self.growth_factor) or self.growth_factor <= 1.0:
+                raise ValueError("growth_factor must be finite and greater than one")
+            initial_capacity = self.resolved_initial_capacity(initial_n)
+            if not initial_n <= initial_capacity <= self.capacity:
+                raise ValueError(
+                    "initial_capacity must be between the initial field size and capacity"
+                )
         if self.detail_tail_max_rows < 0:
             raise ValueError("detail_tail_max_rows must be nonnegative")
         if self.detail_tail_batch_rows <= 0:
@@ -326,6 +364,21 @@ class _Trial:
 
 
 ScheduleObserver = Callable[[GaussianField, dict[str, Any]], None]
+
+
+# torch.quantile rejects inputs above 2**24 elements. A mask ROI rarely reaches that, but the
+# full-frame arm evaluates every pixel, so large frames do. Below the limit this is exactly
+# torch.quantile, so previously recorded metrics stay comparable; above it, the sorted-index
+# fallback is the nearest-rank quantile.
+_QUANTILE_MAX_ELEMENTS = 2 ** 24
+
+
+def _safe_quantile(values: torch.Tensor, q: float) -> torch.Tensor:
+    flat = values.reshape(-1)
+    if flat.numel() <= _QUANTILE_MAX_ELEMENTS:
+        return torch.quantile(flat, q)
+    k = int(min(flat.numel(), max(1, math.ceil(float(q) * flat.numel()))))
+    return torch.kthvalue(flat, k).values
 
 
 def _logical_n(field: GaussianField, active_n: int | None) -> int:
@@ -662,7 +715,7 @@ def evaluate_quality(
         raise ValueError("safe schedule mask contains no foreground pixels")
     tail_count = max(1, int(math.ceil(0.01 * int(fg_values.numel()))))
     tail = torch.topk(fg_values.reshape(-1), k=tail_count).values
-    p99 = torch.quantile(fg_values, 0.99)
+    p99 = _safe_quantile(fg_values, 0.99)
     denominator = _raw_weight_map_field(
         active, cfg, H, W, support_fade_alpha=1.0
     ).reshape(H, W)
@@ -704,10 +757,23 @@ def safe_commit_decision(
     before: QualityMetrics,
     candidate: QualityMetrics,
     tolerance: CommitTolerances,
+    hole_regression_budget: float = 0.0,
 ) -> tuple[bool, list[str]]:
-    """Return a Pareto-safe decision and explicit rejection reasons."""
+    """Return a Pareto-safe decision and explicit rejection reasons.
+
+    ``hole_regression_budget`` (ADR-0026) is an explicit **interior** coverage trade-off budget,
+    unlike every field of ``tolerance``, which is numerical slack. It is the interior hole
+    fraction a block may add and still commit. The default 0.0 is the historical strict-
+    monotonicity gate. Boundary holes are never budgeted: the masked arm's boundary closure is
+    the one part of the schedule with confirmed behaviour, so it keeps its exact gate.
+    """
 
     reasons: list[str] = []
+    if not math.isfinite(hole_regression_budget) or hole_regression_budget < 0.0:
+        raise ValueError(
+            "hole_regression_budget must be finite and nonnegative, "
+            f"got {hole_regression_budget}"
+        )
     if not candidate.finite:
         reasons.append("non_finite")
 
@@ -727,7 +793,9 @@ def safe_commit_decision(
                  tolerance.tail_relative)
     if (
         candidate.interior_hole_fraction
-        > before.interior_hole_fraction + tolerance.hole_absolute
+        > before.interior_hole_fraction
+        + tolerance.hole_absolute
+        + float(hole_regression_budget)
     ):
         reasons.append("interior_holes_regressed")
     if (
@@ -798,6 +866,47 @@ def adapt_optimizer_state(
                 value[valid.to(device=value.device)] = 0
             parameter_state[key] = value
     return out
+
+
+def _reserve_geometric_capacity(
+    field: GaussianField,
+    optimizer_state: dict | None,
+    active_n: int | None,
+    schedule: SafeScheduleConfig,
+    migrations: list[dict[str, int]],
+) -> tuple[GaussianField, dict | None]:
+    """Grow physical storage geometrically ahead of a geometric-policy topology auction.
+
+    No-op unless ``storage_policy == "geometric"``. When the contiguous active prefix comes within
+    one block's birth demand of the current physical capacity, migrate the field tensors (append
+    parked rows) and the Adam moments (``adapt_optimizer_state``, appended rows zeroed) up to the
+    next geometric step, capped at the logical ceiling. This keeps every in-place birth inside
+    physical storage while committing only O(log N) migrations over the whole fit. The live prefix
+    is preserved bit-for-bit, so an accepted trajectory is identical to the equivalent
+    ``fixed_capacity`` run once physical capacity has caught up to the ceiling.
+    """
+    if schedule.storage_policy != "geometric" or active_n is None:
+        return field, optimizer_state
+    ceiling = min(int(schedule.capacity), schedule.resolved_base_active_limit())
+    old_n = int(field.n)
+    if old_n >= ceiling:
+        return field, optimizer_state
+    required = min(ceiling, int(active_n) + schedule.max_block_births())
+    if required <= old_n:
+        return field, optimizer_state
+    new_n = geometric_capacity_schedule(
+        old_n, required, growth_factor=schedule.growth_factor, max_capacity=ceiling
+    )
+    if new_n <= old_n:
+        return field, optimizer_state
+    field = grow_transactional_capacity(field, new_n)
+    optimizer_state = adapt_optimizer_state(
+        optimizer_state, old_n, new_n, torch.empty(0, dtype=torch.long)
+    )
+    migrations.append(
+        {"old_capacity": old_n, "new_capacity": new_n, "active_n": int(active_n)}
+    )
+    return field, optimizer_state
 
 
 def restore_frozen_optimizer_rows(
@@ -952,7 +1061,9 @@ def _safe_color_solve(
         schedule.coverage_tau,
         active_n=active_n,
     )
-    accepted, reasons = safe_commit_decision(metrics, candidate, schedule.tolerances)
+    accepted, reasons = safe_commit_decision(
+        metrics, candidate, schedule.tolerances, schedule.hole_regression_budget
+    )
     if accepted:
         selected_field = trial
         selected_state = _zero_color_optimizer_state(optimizer_state)
@@ -1046,7 +1157,7 @@ def _safe_fit_block(
             active_n=active_n,
         )
         accepted, reasons = safe_commit_decision(
-            metrics, candidate, schedule.tolerances
+            metrics, candidate, schedule.tolerances, schedule.hole_regression_budget
         )
         raw_evaluation = {
             "iter": int(snapshot["iter"]),
@@ -1086,7 +1197,8 @@ def _safe_fit_block(
                 active_n=active_n,
             )
             solved_accepted, solved_reasons = safe_commit_decision(
-                metrics, solved_metrics, schedule.tolerances
+                metrics, solved_metrics, schedule.tolerances,
+                schedule.hole_regression_budget,
             )
             evaluated.append({
                 "iter": int(snapshot["iter"]),
@@ -1364,12 +1476,8 @@ def _detail_tail_score(
             ),
         }
 
-    error_ref = torch.quantile(
-        persistent_error[allowed], 0.95
-    ).clamp_min(1e-8)
-    target_ref = torch.quantile(
-        persistent_target[allowed], 0.95
-    ).clamp_min(1e-8)
+    error_ref = _safe_quantile(persistent_error[allowed], 0.95).clamp_min(1e-8)
+    target_ref = _safe_quantile(persistent_target[allowed], 0.95).clamp_min(1e-8)
     error_n = (persistent_error / error_ref).clamp(0.0, 4.0)
     target_n = (persistent_target / target_ref).clamp(0.0, 4.0)
     score = error_n * (1.0 + 0.35 * target_n + 0.25 * coherence)
@@ -1435,7 +1543,7 @@ def _birth_components(
         field, cfg, H, W, support_fade_alpha=1.0
     ).reshape(H, W)
     residual = (render_img - target).abs().mean(dim=2)
-    residual_ref = torch.quantile(residual[constraint.inside], 0.95).clamp_min(1e-8)
+    residual_ref = _safe_quantile(residual[constraint.inside], 0.95).clamp_min(1e-8)
     residual_n = (residual / residual_ref).clamp(0.0, 4.0)
     tangent, coherence = _local_structure(target)
     deficit = ((float(schedule.coverage_tau) - den) / float(schedule.coverage_tau)).clamp(0, 1)
@@ -1576,7 +1684,12 @@ def propose_birth(
 ) -> TopologyProposal | None:
     logical_n = _logical_n(field, active_n)
     active = _active_field(field, active_n)
-    room = max(0, int(schedule.capacity) - logical_n)
+    # Prefix storage (fixed_capacity/geometric) clamps births to the physical row headroom
+    # ``field.n``: for fixed_capacity that equals ``schedule.capacity`` (unchanged), for geometric
+    # it is the current, still-growing physical capacity. Dynamic storage appends, so it clamps to
+    # the configured ceiling as before.
+    room_ceiling = int(field.n) if active_n is not None else int(schedule.capacity)
+    room = max(0, room_ceiling - logical_n)
     components, metadata = _birth_components(
         active,
         target,
@@ -1596,7 +1709,12 @@ def propose_birth(
             field.n, trial.n, device=field.means.device, dtype=torch.long
         )
     else:
-        if int(field.n) != int(schedule.capacity):
+        if schedule.storage_policy == "geometric":
+            if int(field.n) > int(schedule.capacity):
+                raise ValueError(
+                    "geometric proposal storage cannot exceed schedule.capacity"
+                )
+        elif int(field.n) != int(schedule.capacity):
             raise ValueError(
                 "fixed-capacity proposal storage must equal schedule.capacity"
             )
@@ -1636,7 +1754,10 @@ def propose_split(
 ) -> TopologyProposal | None:
     logical_n = _logical_n(field, active_n)
     active = _active_field(field, active_n)
-    room = max(0, int(schedule.capacity) - logical_n)
+    # See propose_birth: prefix storage clamps to the physical headroom ``field.n``
+    # (== schedule.capacity for fixed_capacity, still growing for geometric).
+    room_ceiling = int(field.n) if active_n is not None else int(schedule.capacity)
+    room = max(0, room_ceiling - logical_n)
     k = min(int(count), room, logical_n)
     if k <= 0:
         return None
@@ -1772,7 +1893,12 @@ def propose_split(
         proposal_active_n = None
         children = torch.arange(field.n, trial.n, device=parents.device)
     else:
-        if int(field.n) != int(schedule.capacity):
+        if schedule.storage_policy == "geometric":
+            if int(field.n) > int(schedule.capacity):
+                raise ValueError(
+                    "geometric proposal storage cannot exceed schedule.capacity"
+                )
+        elif int(field.n) != int(schedule.capacity):
             raise ValueError(
                 "fixed-capacity proposal storage must equal schedule.capacity"
             )
@@ -2447,28 +2573,42 @@ def _topology_auction(
 def run_safe_schedule(
     initial_field: GaussianField,
     target: torch.Tensor,
-    mask,
-    base_cfg: FitConfig,
+    mask=None,
+    base_cfg: FitConfig | None = None,
     schedule: SafeScheduleConfig | None = None,
     *,
     observer: ScheduleObserver | None = None,
     verbose: bool = True,
 ) -> dict[str, Any]:
-    """Run the complete safe-commit schedule and return the best accepted field."""
+    """Run the complete safe-commit schedule and return the best accepted field.
+
+    ``mask=None`` selects the full-frame arm: every pixel is foreground, so the containment
+    machinery degenerates rather than being bypassed by a separate code path. ``signed_distance``
+    clips an empty complement to the image diagonal, so the projection interior is the whole frame
+    and the per-row caps are inert. Boundary-specific initialization, loss, metrics, and proposals
+    are disabled; the same closure slot and step budget use general coverage/detail proposals.
+    Every other phase, the commit gate, and the metric vector are the masked arm's, unchanged
+    (ADR-0025/0027).
+    """
 
     schedule = SafeScheduleConfig() if schedule is None else schedule
+    base_cfg = FitConfig() if base_cfg is None else base_cfg
     schedule.validate(initial_field.n)
     base_active_limit = schedule.resolved_base_active_limit()
-    has_authoritative_mask = mask is not None
-    if schedule.boundary_enabled and not has_authoritative_mask:
-        raise ValueError(
-            "boundary_enabled requires a mask; use boundary_enabled=False "
-            "for the count-matched unmasked path"
-        )
-    if mask is None:
-        mask_cpu = torch.ones(
-            target.shape[:2], dtype=torch.bool, device="cpu"
-        ).numpy()
+    H_target, W_target = int(target.shape[0]), int(target.shape[1])
+    full_frame = mask is None
+    if full_frame:
+        if schedule.boundary_enabled:
+            schedule = replace(
+                schedule,
+                boundary_enabled=False,
+                boundary=replace(
+                    schedule.boundary, name="general_closure"
+                ),
+            )
+        import numpy as _np
+
+        mask_cpu = _np.ones((H_target, W_target), dtype=bool)
     else:
         mask_cpu = (
             mask.detach().cpu().numpy()
@@ -2483,7 +2623,7 @@ def run_safe_schedule(
         pixel_loss="l2",
         ssim_weight=0.0,
         loss_weighting="mask",
-        mask_contain=has_authoritative_mask,
+        mask_contain=schedule.boundary_enabled and not full_frame,
         mask_cap_mode="anisotropic",
         mask_undercoverage_band=(
             float(schedule.boundary_band)
@@ -2524,9 +2664,16 @@ def run_safe_schedule(
         )
     initial_n = int(field.n)
     active_n: int | None = None
+    geometric_migrations: list[dict[str, int]] = []
     if schedule.storage_policy == "fixed_capacity":
         field, pool_state = prepare_transactional_pool(
             field, schedule.capacity
+        )
+        active_n = pool_state.active_n
+    elif schedule.storage_policy == "geometric":
+        # Start at a small physical capacity and grow geometrically toward ``capacity`` on demand.
+        field, pool_state = prepare_transactional_pool(
+            field, schedule.resolved_initial_capacity(initial_n)
         )
         active_n = pool_state.active_n
     initial_physical_n = int(field.n)
@@ -2691,6 +2838,9 @@ def run_safe_schedule(
             if topology is not None and not exit_condition():
                 factories = topology(phase_cfg)
                 if factories:
+                    field, optimizer_state = _reserve_geometric_capacity(
+                        field, optimizer_state, active_n, schedule, geometric_migrations
+                    )
                     (
                         field,
                         optimizer_state,
@@ -3347,9 +3497,17 @@ def run_safe_schedule(
         "final_active_n": final_active_n,
         "initial_physical_rows": initial_physical_n,
         "final_physical_rows": physical_capacity,
-        "fixed_shape_during_fit": active_n is not None,
+        "fixed_shape_during_fit": active_n is not None
+        and initial_physical_n == physical_capacity,
         "output_compacted": active_n is not None,
     }
+    if schedule.storage_policy == "geometric":
+        storage_record["growth_factor"] = float(schedule.growth_factor)
+        storage_record["initial_capacity"] = int(
+            schedule.resolved_initial_capacity(initial_n)
+        )
+        storage_record["geometric_migrations"] = len(geometric_migrations)
+        storage_record["geometric_migration_events"] = list(geometric_migrations)
     if active_n is not None:
         empty = torch.empty(
             0, device=field.means.device, dtype=torch.long
@@ -3365,6 +3523,7 @@ def run_safe_schedule(
 
     return {
         "field": field,
+        "arm": "full_frame" if full_frame else "masked",
         "metrics": metrics.to_dict(),
         "history": history,
         "attempted_steps": attempted_steps,
