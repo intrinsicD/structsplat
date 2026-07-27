@@ -22,7 +22,8 @@ and pipeline docstring say so.
 ## Goal
 
 Decide whether the full-frame arm should be the recommended path for unmasked images, or whether
-`structsplat convert` without a mask should dispatch to the plain-fit path instead.
+`python scripts/convert.py` without `--mask`/`--mask-dir` should dispatch to the plain-fit path
+instead.
 
 ## Approach (preregister before running)
 

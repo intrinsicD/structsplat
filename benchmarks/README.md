@@ -14,8 +14,9 @@ python scripts/ablation.py SOURCE OUTDIR --seeds 0 1
 python scripts/stage_search.py IMAGE OUTDIR --stage STAGE --seeds 0 1
 ```
 
-They delegate to the same `structsplat.pipeline.RECIPE` / `PipelineConfig` definition as
-`structsplat convert` and share `structsplat.workflows`' artifact/report contract (ADR-0025/0027).
+`scripts/convert.py` is the sole conversion CLI; the other three scripts are evaluation
+workflows. All four delegate to the same `structsplat.pipeline.RECIPE` / `PipelineConfig`
+definition and share `structsplat.workflows`' artifact/report contract (ADR-0025/0027/0028).
 Every result includes resolved configuration, source/target hashes, raw JSON/JSONL/CSV, failures,
 timings, curves, reconstructions, fixed-scale errors, intermediate accepted states, and a
 relative-link `index.html`. A parallel mask tree turns on boundary-specific

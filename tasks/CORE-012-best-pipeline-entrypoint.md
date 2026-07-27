@@ -2,11 +2,14 @@
 
 ## Status
 
-Implemented on 2026-07-26 (ADR-0025). `structsplat.pipeline.run_pipeline` and `structsplat
-convert` are the maintained best-pipeline entrypoint, with a masked arm and a full-frame arm over
-one shared schedule. No library default changed. The full-frame arm has no benchmark screen yet —
-BENCH-017 owns it — so this task claims a maintained composition and a mechanism extension, not a
-quality result on unmasked images.
+Implemented on 2026-07-26 (ADR-0025), with the CLI/default drift corrected on 2026-07-27
+(ADR-0028). `structsplat.pipeline.run_pipeline` is the maintained recipe definition and
+`scripts/convert.py` is its sole supported conversion CLI, with a masked arm and a full-frame arm
+over one shared schedule. The Janelle recipe margin is `0.75` by executed-config provenance (C56),
+not by a margin quality comparison. No conservative library default changed. The full-frame arm
+has no benchmark screen yet — BENCH-017 owns it. The ADR-0028 consolidation audit also restored
+full-frame execution by retaining a positive, inert under-coverage band while its weight is off;
+the previous `0.0` replacement violated `FitConfig` validation before fitting began.
 
 ## Context
 
@@ -35,14 +38,16 @@ masked and unmasked inputs from the same schedule, differing only in the mask/bo
    event color solve off (C50), no specialized detail tail (C52), dynamic storage (C51), global
    refinement. Phase targets derive from `capacity` by the Janelle ratios (5/11, 8/11, 10/11), so
    `capacity` alone rescales the schedule and the defaults reproduce 5,000/500/8,000/10,000.
+   `mask_margin=0.75` reproduces every resolved FIT-023/024/025 arm (C56).
 2. **Arm selection on `mask`.** `run_pipeline(image, mask=None, cfg)`; nothing else selects an arm.
 3. **Full-frame arm by degeneration, not duplication.** `run_safe_schedule(mask=None)` builds an
    all-true frame mask. `mask.signed_distance` already clips an empty complement to the image
    diagonal, so caps are inert, the projection interior is the whole frame, the boundary band is
    empty, and `_visible_boundary` is empty. Boundary-specific work is disabled and count-matched
    general coverage/detail proposals use the same closure slot and budget (ADR-0027).
-4. **`structsplat convert`.** A small flag surface over `PipelineConfig`; `structsplat fit` keeps
-   its knob-level surface unchanged.
+4. **`scripts/convert.py`.** The sole current-best conversion CLI handles a source image or tree,
+   with `--mask` for one image and `--mask-dir` for a parallel tree. `structsplat fit` keeps its
+   knob-level research surface unchanged; the duplicate `structsplat convert` command is removed.
 5. **`_safe_quantile`.** `torch.quantile` rejects inputs above `2**24` elements. A mask ROI rarely
    reaches that; a full frame does. Below the limit the value is unchanged, so previously recorded
    metrics stay comparable.
@@ -56,15 +61,18 @@ masked and unmasked inputs from the same schedule, differing only in the mask/bo
 - [x] Both arms share the schedule apart from explicit boundary switches and the closure label.
 - [x] The masked arm preserves the ADR-0017/0019 guarantee (`outside_max_abs == 0`).
 - [x] Recipe defaults do not leak into `FitConfig`/`InitConfig`.
-- [x] `PipelineConfig` imports without torch, so `structsplat convert --help` works without it.
+- [x] `PipelineConfig` imports without torch, and `python scripts/convert.py --help` works without
+      torch initialization.
 - [x] Fast tests cover the recipe surface and config->schedule translation; `slow` tests cover both
       arms end to end.
-- [x] ADR-0025 records the decision; README and `docs/architecture.md` point at the entrypoint.
+- [x] ADR-0025 records the recipe decision, ADR-0028 records the sole CLI/default correction, and
+      README plus `docs/architecture.md` point at the entrypoint.
 
 ## Interfaces touched
 
 `src/structsplat/pipeline.py` (new) · `src/structsplat/safe_schedule.py` (`mask=None` arm,
-`_safe_quantile`) · `src/structsplat/cli.py` (`convert`) · `tests/test_pipeline.py` (new).
+`_safe_quantile`) · `src/structsplat/workflows.py` / `scripts/convert.py` (sole conversion CLI) ·
+`src/structsplat/cli.py` (duplicate command removed by ADR-0028) · `tests/test_pipeline.py` (new).
 
 ## Depends on
 
@@ -79,5 +87,4 @@ FIT-023, FIT-024, FIT-025, CORE-010, CORE-011, INIT-009, ADR-0013, ADR-0017, ADR
 - Deferred: `fit.py`'s remaining full-frame `torch.quantile` calls (lines ~1769/1779/2445) have the
   same `2**24` ceiling. They are equally reachable from the masked arm today, so they are a
   separate robustness fix rather than part of this change.
-- Follow-up: BENCH-017 (full-frame arm screen vs the plain-fit path), and a `--resume` story for
-  long dome runs, which currently lives only in `scripts/fit_janelle_mask_contained.py`.
+- Follow-up: BENCH-017 (full-frame arm screen vs the plain-fit path).

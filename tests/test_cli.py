@@ -6,6 +6,18 @@ import pytest
 from structsplat.cli import _benchmark_symbol, load_image, main, save_image
 
 
+def test_best_default_conversion_is_not_a_structsplat_subcommand(
+    monkeypatch, capsys
+):
+    """ADR-0028 leaves scripts/convert.py as the only best-default conversion CLI."""
+    monkeypatch.setattr("sys.argv", ["structsplat", "convert"])
+
+    with pytest.raises(SystemExit):
+        main()
+
+    assert "invalid choice: 'convert'" in capsys.readouterr().err
+
+
 def test_save_image_rounds_not_truncates(tmp_path):
     # astype(uint8) floored every pixel down by up to 1/255; np.rint round-trips exact 8-bit
     # values and halves the quantization bias (COMP-002).

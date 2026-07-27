@@ -1,4 +1,4 @@
-"""CORE-012: the maintained best-pipeline entrypoint (ADR-0025).
+"""CORE-012: the maintained best-pipeline recipe and sole conversion CLI (ADR-0025/0028).
 
 The fast tests cover the recipe surface and the config -> schedule translation, which is where a
 future recipe change lands. The two end-to-end arm tests are ``slow``: the schedule is a real fit,
@@ -10,6 +10,7 @@ import numpy as np
 import pytest
 
 from structsplat.pipeline import (
+    MIN_MASK_MARGIN,
     RECIPE,
     PipelineConfig,
     build_fit_config,
@@ -57,6 +58,8 @@ class TestRecipe:
         assert cfg.pareto_checkpoint_every == 50        # C50
         assert cfg.event_color_solve is False           # C50 refuted it
         assert cfg.storage_policy == "dynamic"          # C51 kept the default dynamic
+        assert cfg.mask_margin == 0.75                  # C56 executed-recipe provenance
+        assert RECIPE["choices"]["mask_margin"].startswith("0.75 px")
         assert build_init_config(cfg, 100).strategy == "quadtree_wse"      # ADR-0013
         assert build_init_config(cfg, 100).wse_progressive_order is True   # C25
 
@@ -87,6 +90,8 @@ class TestConfigDerivation:
         dict(capacity=100, initial_gaussians=200),
         dict(capacity=100, initial_gaussians=50, boundary_gaussians=50),
         dict(step_scale=0.0),
+        dict(mask_margin=MIN_MASK_MARGIN - 0.01),
+        dict(mask_margin=float("nan")),
         dict(block_steps=0),
         dict(hole_regression_budget=-1e-9),
         dict(hole_regression_budget=float("nan")),

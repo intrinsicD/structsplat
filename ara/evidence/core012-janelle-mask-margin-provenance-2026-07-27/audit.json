@@ -1,0 +1,87 @@
+{
+  "schema": "structsplat.core012.mask_margin_provenance.v1",
+  "audited_at": "2026-07-27",
+  "question": "Which mask margin reproduces the evidence-bearing Janelle safe-schedule recipe?",
+  "resolved_config_count": 10,
+  "distinct_resolved_mask_margins": [
+    0.75
+  ],
+  "comparative_margin_experiment_present": false,
+  "configs": [
+    {
+      "claim": "C50",
+      "arm": "control",
+      "path": "runs/janelle_C0001_transactional_candidates_factorial_20260723/control/run_config.json",
+      "sha256": "d775a651b17e3ffbb474ac5da2bde6eff1dbc74daf4a5ec71716b0768d7e07cf",
+      "mask_margin": 0.75
+    },
+    {
+      "claim": "C50",
+      "arm": "pareto_checkpoint",
+      "path": "runs/janelle_C0001_transactional_candidates_factorial_20260723/pareto_checkpoint/run_config.json",
+      "sha256": "29d965a33e35973e09ccb8e5f0fadb3587797238a8718a385b1f34eadc5c09c8",
+      "mask_margin": 0.75
+    },
+    {
+      "claim": "C50",
+      "arm": "event_color_solve",
+      "path": "runs/janelle_C0001_transactional_candidates_factorial_20260723/event_color_solve/run_config.json",
+      "sha256": "aff3c6f5fca9a0811141dea80dc2f15bfbcc490011964583d769de51bc0cad06",
+      "mask_margin": 0.75
+    },
+    {
+      "claim": "C50",
+      "arm": "combined",
+      "path": "runs/janelle_C0001_transactional_candidates_factorial_20260723/combined/run_config.json",
+      "sha256": "57ee1d1f0621adb74c0956e47b7e80385b25f5f95fdc959723c7585064a68362",
+      "mask_margin": 0.75
+    },
+    {
+      "claim": "C51",
+      "arm": "dynamic_a",
+      "path": "runs/janelle_C0001_storage_ab_active_shape_20260724/dynamic_a/run_config.json",
+      "sha256": "aed02a915dc2b57fb8483294bfcf155ef3add4f47e8a166da3539b73649c20be",
+      "mask_margin": 0.75
+    },
+    {
+      "claim": "C51",
+      "arm": "fixed_capacity",
+      "path": "runs/janelle_C0001_storage_ab_active_shape_20260724/fixed_capacity/run_config.json",
+      "sha256": "2b63b61c8d931f184d15f46d41c344f367c13df0136ebe0a87c50506d37b0b40",
+      "mask_margin": 0.75
+    },
+    {
+      "claim": "C51",
+      "arm": "dynamic_b",
+      "path": "runs/janelle_C0001_storage_ab_active_shape_20260724/dynamic_b/run_config.json",
+      "sha256": "06b72ad7a21e560fc758c2a02f21de29a8ce4779d9cc58a76a38c28a28194afe",
+      "mask_margin": 0.75
+    },
+    {
+      "claim": "C52",
+      "arm": "baseline_11000",
+      "path": "runs/janelle_C0001_detail_tail_ablation_20260724/baseline_11000/run_config.json",
+      "sha256": "2f244b6e8616c48bbab7a84c737693d8ff3abe1ce13d31d2285278b29ed11a6d",
+      "mask_margin": 0.75
+    },
+    {
+      "claim": "C52",
+      "arm": "generic_plus512",
+      "path": "runs/janelle_C0001_detail_tail_ablation_20260724/generic_plus512/run_config.json",
+      "sha256": "92b2f0a54e9c66e051ab80c90f440bff33b7f26909523881a2ad9861e7a41712",
+      "mask_margin": 0.75
+    },
+    {
+      "claim": "C52",
+      "arm": "adaptive_tail_plus512",
+      "path": "runs/janelle_C0001_detail_tail_ablation_20260724/adaptive_tail_plus512/run_config.json",
+      "sha256": "0e8c44f7be55803d545e75980f87140a7b44090740cffbe6d9dcad37b7deac48",
+      "mask_margin": 0.75
+    }
+  ],
+  "disposition": {
+    "recipe_default": 0.75,
+    "reason": "executed configuration provenance",
+    "quality_superiority_over_1_5": "untested"
+  }
+}

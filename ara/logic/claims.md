@@ -1053,3 +1053,31 @@ reference renderer is memory-bound. See `ara/evidence/core005-render-checkpoint-
 - **Tags**: SSIM, loss, performance, separable-convolution, measurement-noise, FIT-027,
   claim-boundary
 - **From staging**: direct PORT-002 loss-term profile
+
+## C56: The evidence-bearing Janelle recipe used a 0.75 px mask margin
+
+- **Statement**: All ten resolved FIT-023/024/025 Janelle safe-schedule configurations underlying
+  C50/C51/C52 record `mask_margin=0.75` (four checkpoint-factorial arms, three storage arms, and
+  three detail-tail arms), matching the historical runners' default. The tracked `1.5` result is
+  the older CORE-010 20,000-row L1+SSIM densification procedure, not a safe-schedule margin arm.
+  Therefore `0.75` is the provenance-correct default for the named current Janelle recipe. No
+  controlled `0.75`-versus-`1.5` quality comparison exists, so comparative or general superiority
+  is untested.
+- **Status**: supported bounded configuration-provenance result; comparative margin quality
+  untested
+- **Provenance**: ai-audited
+- **Crystallized via**: evidence-provenance audit
+- **Falsification criteria**: A resolved FIT-023/024/025 arm configuration records a different
+  margin, or the cited runner/source snapshot does not resolve the commands to `0.75`. A future
+  paired margin experiment may change the recommended recipe, but would not rewrite this
+  historical provenance result.
+- **Proof**: [`ara/evidence/core012-janelle-mask-margin-provenance-2026-07-27/run.md`,
+  `ara/evidence/core012-janelle-mask-margin-provenance-2026-07-27/audit.json`,
+  `ara/evidence/fit023-transactional-candidates-janelle-2026-07-23/run.md`,
+  `ara/evidence/fit024-transactional-fixed-capacity-janelle-2026-07-24/run.md`,
+  `ara/evidence/fit025-reserved-detail-tail-janelle-2026-07-24/run.md`,
+  `deprecated_scripts/fit_janelle_safe_commit_schedule.py`,
+  `tests/test_pipeline.py`]
+- **Dependencies**: [C50, C51, C52]
+- **Tags**: mask-margin, safe-schedule, Janelle, provenance, recipe-default, claim-boundary
+- **From staging**: direct CORE-012 provenance audit

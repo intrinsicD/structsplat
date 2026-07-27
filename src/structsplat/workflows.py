@@ -30,6 +30,8 @@ from PIL import Image
 from .pipeline import (
     CURRENT_PROFILE_EVIDENCE_SCOPE,
     CURRENT_PROFILE_NAME,
+    MIN_MASK_MARGIN,
+    PipelineConfig,
     profile_manifest,
     render_field,
     run_current_pipeline,
@@ -168,7 +170,10 @@ def _load_rgb(path: Path, max_side: int | None) -> tuple[np.ndarray, tuple[int, 
 
 def _load_mask(path: Path, size: tuple[int, int]) -> np.ndarray:
     with Image.open(path) as source:
-        mask = source.convert("L")
+        if source.mode in {"RGBA", "LA"} or "transparency" in source.info:
+            mask = source.convert("RGBA").getchannel("A")
+        else:
+            mask = source.convert("L")
         if mask.size != size:
             mask = mask.resize(size, Image.Resampling.NEAREST)
         return np.asarray(mask, dtype=np.uint8) > 127
@@ -220,13 +225,25 @@ def _prepare_source(
     relative: Path,
     *,
     mask_root: Path | None,
+    direct_mask: Path | None,
+    mask_invert: bool,
     max_side: int | None,
 ) -> dict[str, Any]:
     image, original_size = _load_rgb(image_path, max_side)
-    mask_path = _resolve_mask(mask_root, relative)
+    mask_path = (
+        None
+        if direct_mask is None
+        else direct_mask.expanduser().resolve()
+    )
+    if mask_path is not None and not mask_path.is_file():
+        raise FileNotFoundError(f"mask image does not exist: {mask_path}")
+    if mask_path is None:
+        mask_path = _resolve_mask(mask_root, relative)
     mask = None
     if mask_path is not None:
         mask = _load_mask(mask_path, (image.shape[1], image.shape[0]))
+        if mask_invert:
+            mask = ~mask
         if not mask.any():
             raise ValueError(f"mask contains no foreground: {mask_path}")
     target = image if mask is None else image * mask[..., None].astype(np.float32)
@@ -975,10 +992,18 @@ def _common_arguments(
     parser: argparse.ArgumentParser,
     *,
     multiple_seeds: bool,
+    direct_mask: bool = False,
 ) -> None:
     parser.add_argument("source", type=Path, help="image file or recursively scanned folder")
     parser.add_argument("outdir", type=Path, help="destination/result folder")
-    parser.add_argument(
+    masks = parser.add_mutually_exclusive_group()
+    if direct_mask:
+        masks.add_argument(
+            "--mask",
+            type=Path,
+            help="mask image for a single source image",
+        )
+    masks.add_argument(
         "--mask-dir",
         type=Path,
         help="optional parallel mask tree with matching relative stems",
@@ -986,7 +1011,17 @@ def _common_arguments(
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--max-side", type=int)
     parser.add_argument("--max-images", type=int)
-    parser.add_argument("--mask-margin", type=float, default=0.75)
+    parser.add_argument(
+        "--mask-margin",
+        type=float,
+        default=PipelineConfig.mask_margin,
+    )
+    if direct_mask:
+        parser.add_argument(
+            "--mask-invert",
+            action="store_true",
+            help="treat the dark side of the mask as foreground",
+        )
     if multiple_seeds:
         parser.add_argument("--seeds", nargs="+", type=int, default=[0])
     else:
@@ -1003,8 +1038,14 @@ def _require_positive(args: argparse.Namespace) -> None:
         raise ValueError("--max-side must be positive")
     if args.max_images is not None and args.max_images <= 0:
         raise ValueError("--max-images must be positive")
-    if args.mask_margin < 0.72:
-        raise ValueError("--mask-margin must preserve the >=0.72 containment floor")
+    if (
+        not math.isfinite(args.mask_margin)
+        or args.mask_margin < MIN_MASK_MARGIN
+    ):
+        raise ValueError(
+            f"--mask-margin must be finite and preserve the >={MIN_MASK_MARGIN} "
+            "containment floor"
+        )
 
 
 def _materialize_input(outdir: Path, prepared: dict[str, Any]) -> Path:
@@ -1276,6 +1317,11 @@ def _execute(
     discovered = _discover_images(args.source)
     if args.max_images is not None:
         discovered = discovered[: args.max_images]
+    direct_mask = getattr(args, "mask", None)
+    if direct_mask is not None and len(discovered) != 1:
+        raise ValueError(
+            f"--mask requires exactly one source image, found {len(discovered)}"
+        )
     if single_image and len(discovered) != 1:
         raise ValueError(
             f"stage search requires exactly one image, found {len(discovered)}"
@@ -1289,6 +1335,8 @@ def _execute(
             image_path,
             relative,
             mask_root=args.mask_dir,
+            direct_mask=direct_mask,
+            mask_invert=bool(getattr(args, "mask_invert", False)),
             max_side=args.max_side,
         )
         prepared_items.append(prepared)
@@ -1343,7 +1391,8 @@ def _execute(
         "schema": "structsplat.current_pipeline.workflow.v1",
         "title": title,
         "profile": profile_manifest(
-            masked=any(item["mask"] is not None for item in prepared_items)
+            masked=any(item["mask"] is not None for item in prepared_items),
+            mask_margin=float(args.mask_margin),
         ),
         "command": " ".join(sys.argv),
         "source": str(args.source.expanduser().resolve()),
@@ -1352,6 +1401,12 @@ def _execute(
             if args.mask_dir is None
             else str(args.mask_dir.expanduser().resolve())
         ),
+        "mask": (
+            None
+            if direct_mask is None
+            else str(direct_mask.expanduser().resolve())
+        ),
+        "mask_invert": bool(getattr(args, "mask_invert", False)),
         "variants": [variant for variant, *_ in variants],
         "seeds": seeds,
         "images": [
@@ -1391,10 +1446,11 @@ def _execute(
 def build_convert_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Convert an image tree with the current masked/unmasked safe-schedule profile"
+            "Convert an image or image tree with the current masked/unmasked "
+            "safe-schedule profile"
         )
     )
-    _common_arguments(parser, multiple_seeds=False)
+    _common_arguments(parser, multiple_seeds=False, direct_mask=True)
     return parser
 
 

@@ -1,10 +1,14 @@
 from dataclasses import asdict
 
+import numpy as np
+from PIL import Image
+
 from structsplat.pipeline import (
     ACTIVE_LIMIT,
     CURRENT_PROFILE_NAME,
     INITIAL_GAUSSIANS,
     PHYSICAL_CAPACITY,
+    PipelineConfig,
     RECIPE,
     build_current_fit_config,
     build_current_schedule,
@@ -18,6 +22,7 @@ from structsplat.workflows import (
     build_benchmark_parser,
     build_convert_parser,
     build_stage_search_parser,
+    _prepare_source,
 )
 
 
@@ -64,6 +69,7 @@ def test_initialization_preserves_count_and_parameters_across_paths():
     assert manifest_unmasked["initial_gaussians"] == INITIAL_GAUSSIANS
     assert manifest_masked["physical_capacity"] == manifest_unmasked["physical_capacity"]
     assert manifest_masked["active_limit"] == manifest_unmasked["active_limit"]
+    assert manifest_masked["mask_margin"] == manifest_unmasked["mask_margin"] == 0.75
     assert (
         manifest_masked["requested_optimizer_steps"]
         == manifest_unmasked["requested_optimizer_steps"]
@@ -82,6 +88,12 @@ def test_public_parsers_expose_only_the_four_clear_workflows(tmp_path):
     )
 
     assert convert.seed == 0
+    assert convert.mask_margin == PipelineConfig.mask_margin == 0.75
+    direct_mask = build_convert_parser().parse_args(
+        [str(source / "one.png"), str(out), "--mask", str(source / "one_mask.png")]
+    )
+    assert direct_mask.mask == source / "one_mask.png"
+    assert direct_mask.mask_dir is None
     assert benchmark.seeds == [0]
     assert ablation.arms == list(ABLATION_ARMS)
     assert stage.stage == "coverage"
@@ -95,3 +107,36 @@ def test_public_parsers_expose_only_the_four_clear_workflows(tmp_path):
         }
         for variants in STAGE_VARIANTS.values()
     )
+
+
+def test_convert_direct_mask_is_loaded_and_can_be_inverted(tmp_path):
+    image_path = tmp_path / "one.png"
+    mask_path = tmp_path / "one_mask.png"
+    Image.fromarray(np.full((4, 4, 3), 255, dtype=np.uint8)).save(image_path)
+    alpha = np.zeros((4, 4), dtype=np.uint8)
+    alpha[:, 2:] = 255
+    rgba = np.full((4, 4, 4), 255, dtype=np.uint8)
+    rgba[..., 3] = alpha
+    Image.fromarray(rgba, mode="RGBA").save(mask_path)
+
+    prepared = _prepare_source(
+        image_path,
+        image_path.relative_to(tmp_path),
+        mask_root=None,
+        direct_mask=mask_path,
+        mask_invert=False,
+        max_side=None,
+    )
+    inverted = _prepare_source(
+        image_path,
+        image_path.relative_to(tmp_path),
+        mask_root=None,
+        direct_mask=mask_path,
+        mask_invert=True,
+        max_side=None,
+    )
+
+    assert prepared["mask_path"] == mask_path.resolve()
+    assert prepared["mask"][:, 2:].all()
+    assert not prepared["mask"][:, :2].any()
+    assert np.array_equal(inverted["mask"], ~prepared["mask"])

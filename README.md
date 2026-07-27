@@ -35,55 +35,24 @@ pip install -e ".[gen]"          # optional: diffusers text-to-Gaussian generati
 pip install -e ".[dev]"          # pytest, ruff
 ```
 
-## The best pipeline: `structsplat convert` (ADR-0025)
+## The best pipeline: `scripts/convert.py` (ADR-0025/0028)
 
-`structsplat convert` is the maintained single-image entrypoint for the current best pipeline.
-Pass a mask for alpha-matted/dome input; omit it for the full-frame arm. Both arms use the recipe
-in `structsplat.pipeline.RECIPE` and the same phase ordering, budgets, optimizer, proposal auction,
-Pareto gate, and polish. The full-frame arm removes boundary initialization, containment, boundary
-losses/metrics/proposals, and uses count-matched general proposals in the same closure slot.
-
-```bash
-# masked arm
-structsplat convert frame.png --mask frame_alpha.png --capacity 11000 --outdir runs/frame
-
-# full-frame arm
-structsplat convert photo.png --capacity 11000 --outdir runs/photo
-```
-
-```python
-from structsplat.pipeline import PipelineConfig, run_pipeline
-
-result = run_pipeline(image, mask)  # mask=None selects the full-frame arm
-field, metrics = result["field"], result["metrics"]
-```
-
-`--capacity` alone rescales the schedule: phase targets derive from it (5/11 initial, 8/11
-coverage, 10/11 detail), so the defaults reproduce the 5,000/500/8,000/10,000-row Janelle recipe.
-Each run writes `<stem>_pipeline.json` carrying the recipe version, arm, resolved config, metric
-vector, and complete accept/reject history.
-
-**Evidence scope.** `PipelineConfig` defaults are the measured Janelle recipe: progressive WSE
-ordering (C25), Pareto-safe checkpoints every 50 steps (C50), event color solve off (C50), no
-specialized detail tail (C52), dynamic storage (C51), and global refinement. That evidence is one
-masked image, one seed, one GPU. The full-frame arm is a mechanism extension with no independent
-benchmark screen yet; BENCH-017 owns that screen. This is the operational default, not a
-repository-wide superiority or SOTA claim.
-
-To change the recipe after a new approach wins, edit `RECIPE` and the `PipelineConfig` defaults in
-`src/structsplat/pipeline.py` together, bump the version, and cite the authorizing claim.
-
-## Supported workflow scripts (ADR-0027)
-
-Four folder/report scripts delegate to that same `run_pipeline` definition; they do not carry a
-second pipeline configuration.
-
-### Convert an image folder
+`scripts/convert.py` is the sole supported conversion CLI for the current best pipeline. It accepts
+one image or a recursively scanned folder. Pass `--mask` for one alpha-matted/dome image,
+`--mask-dir` for a parallel mask tree, or omit both for the full-frame arm. Both arms use
+`structsplat.pipeline.RECIPE` and the same phase ordering, budgets, optimizer, proposal auction,
+Pareto gate, and polish. The full-frame arm removes boundary initialization, containment,
+boundary losses/metrics/proposals, and uses count-matched general proposals in the same closure
+slot.
 
 ```bash
-python scripts/convert.py ./images ./runs/converted --device cuda:0
+# one masked image
+python scripts/convert.py frame.png runs/frame --mask frame_alpha.png --device cuda:0
 
-# The mask tree must have the same relative paths or unambiguous relative stems.
+# one full-frame image
+python scripts/convert.py photo.png runs/photo --device cuda:0
+
+# a folder and parallel mask tree
 python scripts/convert.py ./rgb ./runs/converted_masked \
   --mask-dir ./mask --device cuda:0 --resume
 ```
@@ -93,6 +62,35 @@ accepted intermediate reconstructions/errors, `config.json`, `history.json`, and
 The destination root also gets `manifest.json`, tidy `metrics.json`/`metrics.jsonl`/`metrics.csv`,
 and a portable `index.html`. Existing complete cells require `--resume`; use `--overwrite`
 explicitly to replace them.
+
+```python
+from structsplat.pipeline import PipelineConfig, run_pipeline
+
+result = run_pipeline(image, mask)  # mask=None selects the full-frame arm
+field, metrics = result["field"], result["metrics"]
+```
+
+For programmatic experiments, changing `PipelineConfig.capacity` alone rescales the schedule:
+phase targets derive from it (5/11 initial, 8/11 coverage, 10/11 detail). The CLI intentionally
+runs the fixed current profile, whose defaults reproduce the 5,000/500/8,000/10,000-row Janelle
+recipe.
+
+**Evidence scope.** `PipelineConfig` defaults are the measured Janelle recipe: progressive WSE
+ordering (C25), Pareto-safe checkpoints every 50 steps (C50), event color solve off (C50), no
+specialized detail tail (C52), dynamic storage (C51), global refinement, and a `0.75` px mask
+margin (C56). All ten resolved FIT-023/024/025 Janelle arms used `0.75`; the `1.5` result belongs
+to an older, different CORE-010 fit. No controlled margin comparison exists, so `0.75` is the
+evidence-aligned recipe value, not a general quality claim. The evidence is one masked image, one
+seed, one GPU. The full-frame arm is a mechanism extension with no independent benchmark screen
+yet; BENCH-017 owns that screen.
+
+To change the recipe after a new approach wins, edit `RECIPE` and the `PipelineConfig` defaults in
+`src/structsplat/pipeline.py` together, bump the version, and cite the authorizing claim.
+
+## Evaluation workflows (ADR-0027)
+
+The benchmark, ablation, and stage-search scripts delegate to the same `run_pipeline` definition.
+They are evaluation tools, not alternate conversion entrypoints.
 
 ### Benchmark the current pipeline
 
@@ -150,8 +148,8 @@ while freezing the rest of the current recipe. Stages are `initialization`, `sto
 
 Previous task-specific launchers live in `deprecated_scripts/`. They remain available for
 historical evidence reproduction but are not supported entrypoints. The remaining top-level files
-in `scripts/` are verification/maintenance tools and the four workflows above; one-off new
-experiment drivers belong in `scripts/experiments/`.
+in `scripts/` are verification/maintenance tools and the four operational workflows above;
+one-off new experiment drivers belong in `scripts/experiments/`.
 
 ## Quickstart
 `structsplat fit` is the knob-level research command: every stage axis is a flag, and its defaults

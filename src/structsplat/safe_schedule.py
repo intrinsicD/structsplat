@@ -2625,11 +2625,9 @@ def run_safe_schedule(
         loss_weighting="mask",
         mask_contain=schedule.boundary_enabled and not full_frame,
         mask_cap_mode="anisotropic",
-        mask_undercoverage_band=(
-            float(schedule.boundary_band)
-            if schedule.boundary_enabled
-            else 0.0
-        ),
+        # The weight is disabled for the full-frame arm in `_phase_fit_config`; retain a valid
+        # positive inert band because FitConfig rejects zero even when the term is off.
+        mask_undercoverage_band=float(schedule.boundary_band),
         mask_undercoverage_tau=float(schedule.coverage_tau),
         support_fade=True,
         coverage_match_weight=0.0,

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Convert images with the current masked/unmasked StructSplat pipeline."""
+"""The sole supported CLI for current-best masked/unmasked conversion (ADR-0028)."""
 from pathlib import Path
 import sys
 

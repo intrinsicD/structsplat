@@ -28,8 +28,8 @@ IntrinsicEngine as an RHI pass.
   capacity, the ordinary active ceiling, and an opt-in Pareto-gated late detail reserve; defaults
   preserve the historical single ceiling with no tail.
 - `pipeline.py` / `workflows.py` — freeze the source-bound 2026-07-24 operational profile once,
-  keep masked and unmasked execution identical outside boundary-specific work, and power the four
-  report-producing entry points in `scripts/`.
+  keep masked and unmasked execution identical outside boundary-specific work, and power the sole
+  conversion CLI (`scripts/convert.py`) plus three report-producing evaluation workflows.
 - `pyramid.py` (torch) — progressive densification driven by residual structure tensor.
 - `codec.py` / `cli.py` (torch at command time) — native NPZ and self-describing SSPL1 persistence;
   `fit`/`image-to-gaussians2d` saves native fields, while `render`/`gaussians2d-to-image`

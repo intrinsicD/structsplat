@@ -1,4 +1,4 @@
-"""The single entrypoint for converting an image into a Gaussian field (ADR-0025).
+"""The single recipe for converting an image into a Gaussian field (ADR-0025/0028).
 
 ``run_pipeline`` is the one place that answers "what is StructSplat's current best pipeline?".
 Everything else in the package is a mechanism it composes: ``config`` holds the *conservative*
@@ -45,13 +45,13 @@ import numpy as np
 from .config import FitConfig, InitConfig, StructureTensorConfig
 
 # ``safe_schedule`` pulls in torch, so it is imported inside the functions that need it: importing
-# ``PipelineConfig`` (which the CLI parser does for its defaults) must stay torch-free.
+# ``PipelineConfig`` (which workflow parsers use for defaults) must stay torch-free.
 if TYPE_CHECKING:
     from .safe_schedule import PhaseBudget, SafeScheduleConfig
 
 RECIPE: dict[str, Any] = {
     "name": "safe-commit-schedule",
-    "version": "2026-07-25.1",
+    "version": "2026-07-27.1",
     "summary": (
         "Phase-ordered transactional fit (bootstrap / coverage / detail / boundary / "
         "redistribution / polish) with a Pareto-safe commit gate on a full-frame metric vector."
@@ -64,9 +64,12 @@ RECIPE: dict[str, Any] = {
         "detail_tail_max_rows": "0 (FIT-025 / C52: generic activation beats the specialized tail)",
         "storage_policy": "dynamic (FIT-024 / C51: fixed capacity is quality-neutral, not faster)",
         "refinement_policy": "global (README: the reproducible baseline; local is experimental)",
+        "mask_margin": (
+            "0.75 px (C56: executed Janelle recipe provenance; no 0.75-vs-1.5 quality claim)"
+        ),
         "renderer": "cuda where available (ADR-0011 / C03; C53 keeps the tiled path opt-in)",
     },
-    "evidence": ["C25", "C50", "C51", "C52"],
+    "evidence": ["C25", "C50", "C51", "C52", "C56"],
     "evidence_scope": (
         "single masked image, single seed, one GPU; the full-frame arm is unscreened (BENCH-017)"
     ),
@@ -79,6 +82,7 @@ _COVERAGE_FRACTION = 8.0 / 11.0
 _DETAIL_FRACTION = 10.0 / 11.0
 # Share of the initial rows placed on the mask boundary as tangent-aligned seeds (500 of 5,000).
 _BOUNDARY_INIT_FRACTION = 0.10
+MIN_MASK_MARGIN = 0.72
 
 
 @dataclass
@@ -100,7 +104,7 @@ class PipelineConfig:
     pareto_safe_checkpoints: bool = True
     pareto_checkpoint_every: int = 50
     event_color_solve: bool = False
-    mask_margin: float = 1.5
+    mask_margin: float = 0.75
     boundary_band: float = 4.0
     coverage_tau: float = 0.05
     hole_regression_budget: float = 0.0   # ADR-0026; 0.0 = the historical strict coverage gate
@@ -150,6 +154,14 @@ class PipelineConfig:
             )
         if not math.isfinite(self.step_scale) or self.step_scale <= 0.0:
             raise ValueError(f"step_scale must be finite and positive, got {self.step_scale}")
+        if (
+            not math.isfinite(self.mask_margin)
+            or self.mask_margin < MIN_MASK_MARGIN
+        ):
+            raise ValueError(
+                f"mask_margin must be finite and >= {MIN_MASK_MARGIN}, got "
+                f"{self.mask_margin}"
+            )
         if self.block_steps is not None and self.block_steps <= 0:
             raise ValueError(f"block_steps must be positive, got {self.block_steps}")
         if (
@@ -627,7 +639,10 @@ def run_current_pipeline(
     )
     init_cfg = build_init_config(cfg, cfg.resolved_initial())
     return {
-        "profile": profile_manifest(masked=mask is not None),
+        "profile": profile_manifest(
+            masked=mask is not None,
+            mask_margin=float(mask_margin),
+        ),
         "field": result["field"],
         "target": result["target"],
         "render": result["render"],
@@ -645,7 +660,11 @@ def run_current_pipeline(
     }
 
 
-def profile_manifest(*, masked: bool) -> dict[str, Any]:
+def profile_manifest(
+    *,
+    masked: bool,
+    mask_margin: float = PipelineConfig.mask_margin,
+) -> dict[str, Any]:
     """Return the reader-facing current-recipe contract."""
 
     schedule = build_current_schedule(boundary_enabled=masked)
@@ -664,6 +683,7 @@ def profile_manifest(*, masked: bool) -> dict[str, Any]:
         "storage_policy": schedule.storage_policy,
         "physical_capacity": PHYSICAL_CAPACITY,
         "active_limit": ACTIVE_LIMIT,
+        "mask_margin": float(mask_margin),
         "requested_optimizer_steps": sum(
             phase.max_steps for phase in schedule.phases
         ),
