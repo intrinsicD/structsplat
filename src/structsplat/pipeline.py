@@ -105,6 +105,7 @@ class PipelineConfig:
     pareto_checkpoint_every: int = 50
     event_color_solve: bool = False
     error_tail_fraction: float = 0.0
+    fine_detail_pursuit: bool = False
     mask_margin: float = 0.75
     boundary_band: float = 4.0
     coverage_tau: float = 0.05
@@ -181,6 +182,10 @@ class PipelineConfig:
                 "error_tail_fraction must be finite and in [0, 1], got "
                 f"{self.error_tail_fraction}"
             )
+        if self.fine_detail_pursuit and self.error_tail_fraction > 0.0:
+            raise ValueError(
+                "fine_detail_pursuit and error_tail_fraction are mutually exclusive"
+            )
         if not (
             initial
             <= self.resolved_coverage_target()
@@ -240,6 +245,7 @@ def build_schedule(cfg: PipelineConfig) -> "SafeScheduleConfig":
         pareto_checkpoint_every=int(cfg.pareto_checkpoint_every),
         event_color_solve=bool(cfg.event_color_solve),
         error_tail_fraction=float(cfg.error_tail_fraction),
+        pursuit_tail_enabled=bool(cfg.fine_detail_pursuit),
         bootstrap=_scaled_phase(defaults.bootstrap, cfg, cfg.resolved_initial()),
         coverage=_scaled_phase(defaults.coverage, cfg, coverage_target),
         detail=_scaled_phase(defaults.detail, cfg, detail_target),
@@ -450,6 +456,8 @@ def run_pipeline(
             )
         if not mask_bool.any():
             raise ValueError("mask selects no pixels; pass mask=None for a full-frame fit")
+    if cfg.fine_detail_pursuit and mask_bool is None:
+        raise ValueError("fine_detail_pursuit requires a masked input")
 
     fit_cfg = build_fit_config(cfg, device)
     boundary_enabled = mask_bool is not None
@@ -612,6 +620,7 @@ def run_current_pipeline(
     strategy: str = "quadtree_wse",
     mask_margin: float = PipelineConfig.mask_margin,
     fine_detail: bool = False,
+    fine_detail_pursuit: bool = False,
     schedule_transform: ScheduleTransform | None = None,
     observer: PipelineObserver | None = None,
     verbose: bool = True,
@@ -626,6 +635,7 @@ def run_current_pipeline(
         init_strategy=str(strategy),
         mask_margin=float(mask_margin),
         error_tail_fraction=0.5 if fine_detail else 0.0,
+        fine_detail_pursuit=bool(fine_detail_pursuit),
     )
     resolved_device = _resolve_device(cfg.device)
     target_np = np.asarray(image, dtype=np.float32)
@@ -656,6 +666,7 @@ def run_current_pipeline(
             masked=mask is not None,
             mask_margin=float(mask_margin),
             fine_detail=bool(fine_detail),
+            fine_detail_pursuit=bool(fine_detail_pursuit),
         ),
         "field": result["field"],
         "target": result["target"],
@@ -679,12 +690,16 @@ def profile_manifest(
     masked: bool,
     mask_margin: float = PipelineConfig.mask_margin,
     fine_detail: bool = False,
+    fine_detail_pursuit: bool = False,
 ) -> dict[str, Any]:
     """Return the reader-facing current-recipe contract."""
 
+    if fine_detail_pursuit and not masked:
+        raise ValueError("fine_detail_pursuit requires a masked profile")
     schedule = build_schedule(
         PipelineConfig(
             error_tail_fraction=0.5 if fine_detail else 0.0,
+            fine_detail_pursuit=bool(fine_detail_pursuit),
         )
     )
     schedule = replace(
@@ -716,6 +731,14 @@ def profile_manifest(
             "foreground MAE effective support; request ceil(fraction * estimate)"
             if fine_detail
             else None
+        ),
+        "fine_detail_pursuit": bool(fine_detail_pursuit),
+        "fine_detail_pursuit_max_rows": (
+            int(schedule.pursuit_tail_max_rows) if fine_detail_pursuit else 0
+        ),
+        "fine_detail_pursuit_stop_rule": (
+            ">=25% deep sigma-1.5 high-pass and >=20% Laplacian reduction"
+            if fine_detail_pursuit else None
         ),
         "mask_margin": float(mask_margin),
         "requested_optimizer_steps": sum(

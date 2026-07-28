@@ -28,7 +28,9 @@ IntrinsicEngine as an RHI pass.
   capacity, the ordinary active ceiling, and an opt-in Pareto-gated late detail reserve; defaults
   preserve the historical single ceiling with no tail. FIT-031/ADR-0029 adds a separate
   default-off terminal error-only tail whose effective-support estimate may grow dynamic storage
-  before fixed-topology convergence.
+  before fixed-topology convergence. FIT-040/ADR-0030 adds a mutually exclusive default-off
+  masked fine-detail pursuit tail; `detail_pursuit.py` owns its deep high-pass selector, metrics,
+  and inherited-row-frozen exact partial color solve.
 - `pipeline.py` / `workflows.py` — freeze the source-bound 2026-07-24 operational profile once,
   keep masked and unmasked execution identical outside boundary-specific work, and power the sole
   conversion CLI (`scripts/convert.py`) plus three report-producing evaluation workflows.

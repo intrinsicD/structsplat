@@ -3881,3 +3881,171 @@ tree:
       - "runs/live_viewer_frame_00008_C0001_mask_contained_densified_converged_20260722/artifacts/final_render_full.png"
     also_depends_on: [N191]
     status: resolved
+  - id: N193
+    type: question
+    title: "Can the Janelle pipeline repair deep fine detail with very few rows?"
+    provenance: user
+    timestamp: "2026-07-28T04:11+02:00"
+    description: >
+      Determine whether the latest FIT-031 error-only tail actually fixes fine fabric detail on
+      the requested masked Janelle source, and invent a terminal allocation mechanism that
+      substantially reduces fine-detail error while adding as few Gaussians as possible.
+    status: resolved
+  - id: N194
+    type: experiment
+    title: "Primitive and partial-solve screens isolate the useful detail mechanism"
+    provenance: ai-executed
+    timestamp: "2026-07-28T04:11+02:00"
+    result: >
+      FIT-032--036 screened gauge-lifted dipoles, high-pass residual births with an exact partial
+      color solve, a spectral objective, sparse affine appearance, and residual-ridge anisotropy.
+      Dipoles hit none of three frozen targets; the ordinary partial color solve established a
+      6.473% high-pass reduction at 128 rows; and the spectral, affine, and ridge variants
+      remained below 8.895% high-pass and 9.723% Laplacian reduction. No variant reached the
+      predeclared 25%/20% target.
+    evidence:
+      - "tasks/FIT-032-gauge-lifted-residual-dipoles.md"
+      - "tasks/FIT-033-residual-birth-partial-color-solve.md"
+      - "tasks/FIT-034-spectral-partial-color-solve.md"
+      - "tasks/FIT-035-sparse-affine-detail-births.md"
+      - "tasks/FIT-036-highpass-residual-ridge-births.md"
+      - "benchmarks/residual_birth_color_solve.py"
+    also_depends_on: [N193]
+    status: resolved
+  - id: N195
+    type: dead_end
+    title: "Richer local primitives do not produce the required sparse detail drop"
+    provenance: ai-executed
+    timestamp: "2026-07-28T04:11+02:00"
+    hypothesis: >
+      Gauge freedom, spectral weighting, affine color, or residual-aligned anisotropy would make
+      a small static cohort substantially more efficient than ordinary constant-color births.
+    failure_mode: >
+      Every screened embellishment stayed below 9% high-pass and 10% Laplacian reduction, far
+      short of the frozen 25%/20% target, despite adding parameters or a more specialized score.
+    lesson: >
+      The missing mechanism is iterative residual remeasurement and joint tail-color
+      orthogonalization, not a more elaborate primitive family.
+    also_depends_on: [N194]
+    status: resolved
+  - id: N196
+    type: experiment
+    title: "Static residual ranking saturates before the fine-detail target"
+    provenance: ai-executed
+    timestamp: "2026-07-28T04:11+02:00"
+    result: >
+      FIT-037 swept one-shot ordinary high-pass births to 2,048 added rows. The best endpoint
+      reached only 15.01% sigma-1.5 high-pass and 12.04% Laplacian reduction, closing static
+      ranking as a route to the frozen 25%/20% target.
+    evidence:
+      - "tasks/FIT-037-minimum-row-detail-target.md"
+      - "benchmarks/highpass_births.py"
+    also_depends_on: [N194, N195]
+    status: resolved
+  - id: N197
+    type: experiment
+    title: "Iterative pursuit remains starved by cross-wave exclusion"
+    provenance: ai-executed
+    timestamp: "2026-07-28T04:11+02:00"
+    result: >
+      FIT-038 remeasured the residual after every 128-row solve but retained 5x5 exclusion around
+      all prior sites. At the 2,048-row ceiling it reached 20.22% high-pass and 16.21% Laplacian
+      reduction, improving on static ranking but still missing both frozen targets.
+    evidence:
+      - "tasks/FIT-038-orthogonal-detail-pursuit.md"
+      - "scripts/experiments/fit038_janelle_detail_pursuit.py"
+    also_depends_on: [N196]
+    status: resolved
+  - id: N198
+    type: pivot
+    title: "Relax cross-wave exclusion while retaining within-wave NMS"
+    provenance: ai-suggested
+    timestamp: "2026-07-28T04:11+02:00"
+    from: >
+      Apply a 5x5 exclusion radius both within each cohort and around every site selected by all
+      previous pursuit waves.
+    to: >
+      Keep 5x5 within-wave NMS but forbid only exact previously used sites across waves, allowing
+      nearby later atoms to encode distinct residual lobes.
+    trigger: >
+      FIT-038's iterative improvement still saturated below target with unused high-pass energy
+      adjacent to prior sites.
+    evidence:
+      - "tasks/FIT-038-orthogonal-detail-pursuit.md"
+      - "tasks/FIT-039-detail-pursuit-exclusion-radius.md"
+    also_depends_on: [N197]
+    status: resolved
+  - id: N199
+    type: experiment
+    title: "Exact-site pursuit first reaches the frozen detail target at 768 rows"
+    provenance: ai-executed
+    timestamp: "2026-07-28T04:11+02:00"
+    result: >
+      FIT-039 reached the first protected-safe endpoint after six 128-row waves: 768 unique deep
+      sites reduced sigma-1.5 high-pass MSE by 25.9262%, Laplacian MSE by 27.3157%, and raw LPIPS
+      by 10.4601%. Outside-mask values remained exactly zero. The effect is concentrated:
+      11.33% of deep pixels improved, 8.88% worsened, and 42.27% of qualifying 32px tiles had
+      positive reduction.
+    evidence:
+      - "runs/fit039_janelle_exclusion_screen_20260728/result.json"
+      - "ara/evidence/fit040-orthogonal-detail-pursuit-janelle-2026-07-28/prototype_audit.json"
+      - "ara/evidence/fit040-orthogonal-detail-pursuit-janelle-2026-07-28/spatial.json"
+    also_depends_on: [N198]
+    status: resolved
+  - id: N200
+    type: experiment
+    title: "Production pursuit replay preserves the selected mechanism"
+    provenance: ai-executed
+    timestamp: "2026-07-28T04:11+02:00"
+    result: >
+      FIT-040 integrated a masked-only, mutually exclusive, default-off pursuit tail after polish.
+      The production path reproduced FIT-039's canonical 768-site set and all non-color tensors
+      exactly after canonical ordering; colors differed by at most 7.153e-7 from CUDA reduction
+      order. Every inherited row was bit-exact, every wave passed the protected gate, and wave six
+      was the first target pass.
+    evidence:
+      - "src/structsplat/detail_pursuit.py"
+      - "src/structsplat/safe_schedule.py"
+      - "scripts/experiments/fit040_janelle_production_pursuit.py"
+      - "ara/evidence/fit040-orthogonal-detail-pursuit-janelle-2026-07-28/production_result.json"
+    also_depends_on: [N199]
+    status: resolved
+  - id: N201
+    type: experiment
+    title: "Equal-base FIT-031 control separates boundary and deep-detail objectives"
+    provenance: ai-executed
+    timestamp: "2026-07-28T04:11+02:00"
+    result: >
+      FIT-041 ran the unchanged FIT-031 tail from FIT-040's exact 11,000-row base, target, mask,
+      seed, and renderer. It added 2,777 rows, all centered within 2.24px of the boundary, gaining
+      0.320788 dB foreground PSNR but only 0.000042% deep high-pass reduction, 0% Laplacian
+      reduction, and 3.2114% raw LPIPS reduction. Pursuit used 3.6159x fewer rows and won the
+      predeclared detail and LPIPS objectives; FIT-031 won global foreground PSNR. The independent
+      audit passed 17/17 checks and rejected every default/generality/equal-rate promotion.
+    evidence:
+      - "scripts/experiments/fit041_janelle_equal_base_error_tail.py"
+      - "scripts/experiments/audit_fit041_equal_base_tail_comparison.py"
+      - "ara/evidence/fit040-orthogonal-detail-pursuit-janelle-2026-07-28/audit.json"
+      - "ara/evidence/fit040-orthogonal-detail-pursuit-janelle-2026-07-28/run.md"
+    also_depends_on: [N193, N200]
+    status: resolved
+  - id: N202
+    type: decision
+    title: "Keep boundary repair and deep-detail pursuit as separate default-off tails"
+    provenance: ai-suggested
+    timestamp: "2026-07-28T04:11+02:00"
+    choice: >
+      Preserve FIT-031 as `--fine-detail` for broad foreground/boundary error and expose the new
+      mechanism separately as masked-only `--fine-detail-pursuit`; leave both off by default and
+      require held-out, replicated, rate/work-matched evidence before any promotion.
+    alternatives:
+      - "Replace FIT-031 with pursuit despite its larger global-PSNR gain on the control."
+      - "Enable pursuit in the current default recipe from one exposed image and seed."
+      - "Combine both tails without a fixed shared row or byte budget."
+    evidence:
+      - "docs/adr/0030-orthogonal-fine-detail-pursuit-tail.md"
+      - "ara/logic/claims.md:C59"
+      - "ara/logic/claims.md:C60"
+      - "ara/evidence/fit040-orthogonal-detail-pursuit-janelle-2026-07-28/run.md"
+    also_depends_on: [N200, N201]
+    status: resolved

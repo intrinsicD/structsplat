@@ -25,11 +25,15 @@ allocations. FIT-021's triage policy remains a separate legacy mode.
 FIT-031/ADR-0029 adds a default-off terminal error-only tail: it estimates the effective residual
 support, activates a requested fraction as small isotropic rows, and converges under the unchanged
 Pareto gate.
+FIT-039/040 adds a separate default-off orthogonal fine-detail pursuit: it repeatedly remeasures
+deep high-pass residual peaks and jointly solves only the appended colors, stopping at explicit
+high-pass/Laplacian targets under the same protected-metric gate.
 """
 from __future__ import annotations
 
 import copy
 from dataclasses import asdict, dataclass, replace
+import hashlib
 import math
 import time
 from typing import Any, Callable, Iterable
@@ -38,6 +42,13 @@ import torch
 import torch.nn.functional as F
 
 from .config import FitConfig
+from .detail_pursuit import (
+    FineDetailMetrics,
+    fine_detail_metrics,
+    relative_detail_reductions,
+    select_pursuit_births,
+    solve_partial_colors_normalized,
+)
 from .gaussians import GaussianField
 from .fit import (
     _MIN_DENSIFY_SCALE,
@@ -56,6 +67,17 @@ from .pool import (
     grow_transactional_capacity,
     prepare_transactional_pool,
 )
+
+
+def _flat_site_sha256(sites: Iterable[int]) -> str:
+    digest = hashlib.sha256()
+    for site in sites:
+        digest.update(int(site).to_bytes(8, byteorder="little", signed=True))
+    return digest.hexdigest()
+
+
+def _site_set_sha256(sites: Iterable[int]) -> str:
+    return _flat_site_sha256(sorted(int(site) for site in sites))
 
 
 @dataclass(frozen=True)
@@ -129,6 +151,19 @@ class SafeScheduleConfig:
     error_tail_fraction: float = 0.0
     error_tail_batch_rows: int = 512
     error_tail_max_scale: float = 1.25
+    pursuit_tail_enabled: bool = False
+    pursuit_tail_batch_rows: int = 128
+    pursuit_tail_max_rows: int = 2_048
+    pursuit_tail_blur_sigma: float = 1.5
+    pursuit_tail_nms_radius: int = 2
+    pursuit_tail_deep_offset: float = 6.0
+    pursuit_tail_scale: float = 0.35
+    pursuit_tail_opacity: float = 0.8
+    pursuit_tail_highpass_target: float = 0.25
+    pursuit_tail_laplacian_target: float = 0.20
+    pursuit_tail_color_ridge: float = 1e-4
+    pursuit_tail_color_maxiter: int = 64
+    pursuit_tail_color_tolerance: float = 1e-7
     coverage_target_gaussians: int = 8_000
     detail_target_gaussians: int = 10_000
     coverage_tau: float = 0.05
@@ -365,6 +400,78 @@ class SafeScheduleConfig:
                 raise ValueError(
                     f"phase {phase.name} must have a nonnegative step budget "
                     "and positive block size"
+                )
+        if self.pursuit_tail_enabled:
+            if self.error_tail_fraction > 0.0:
+                raise ValueError(
+                    "orthogonal pursuit and error-only tails are mutually exclusive"
+                )
+            if self.storage_policy != "dynamic":
+                raise ValueError(
+                    "orthogonal pursuit tail requires storage_policy='dynamic'"
+                )
+            if self.pursuit_tail_batch_rows <= 0:
+                raise ValueError("pursuit_tail_batch_rows must be positive")
+            if self.pursuit_tail_max_rows < self.pursuit_tail_batch_rows:
+                raise ValueError(
+                    "pursuit_tail_max_rows must be at least pursuit_tail_batch_rows"
+                )
+            if self.pursuit_tail_max_rows % self.pursuit_tail_batch_rows != 0:
+                raise ValueError(
+                    "pursuit_tail_max_rows must be divisible by pursuit_tail_batch_rows"
+                )
+            if (
+                not math.isfinite(self.pursuit_tail_blur_sigma)
+                or self.pursuit_tail_blur_sigma <= 0.0
+            ):
+                raise ValueError(
+                    "pursuit_tail_blur_sigma must be finite and positive"
+                )
+            if self.pursuit_tail_nms_radius < 0:
+                raise ValueError("pursuit_tail_nms_radius must be nonnegative")
+            if (
+                not math.isfinite(self.pursuit_tail_deep_offset)
+                or self.pursuit_tail_deep_offset < 0.0
+            ):
+                raise ValueError(
+                    "pursuit_tail_deep_offset must be finite and nonnegative"
+                )
+            if (
+                not math.isfinite(self.pursuit_tail_scale)
+                or self.pursuit_tail_scale < _MIN_DENSIFY_SCALE
+            ):
+                raise ValueError(
+                    "pursuit_tail_scale must be finite and at least "
+                    f"{_MIN_DENSIFY_SCALE}"
+                )
+            if (
+                not math.isfinite(self.pursuit_tail_opacity)
+                or not 0.0 < self.pursuit_tail_opacity < 1.0
+            ):
+                raise ValueError(
+                    "pursuit_tail_opacity must be finite and in (0, 1)"
+                )
+            for name, value in (
+                ("pursuit_tail_highpass_target", self.pursuit_tail_highpass_target),
+                ("pursuit_tail_laplacian_target", self.pursuit_tail_laplacian_target),
+            ):
+                if not math.isfinite(value) or not 0.0 <= value <= 1.0:
+                    raise ValueError(f"{name} must be finite and in [0, 1]")
+            if (
+                not math.isfinite(self.pursuit_tail_color_ridge)
+                or self.pursuit_tail_color_ridge < 0.0
+            ):
+                raise ValueError(
+                    "pursuit_tail_color_ridge must be finite and nonnegative"
+                )
+            if self.pursuit_tail_color_maxiter <= 0:
+                raise ValueError("pursuit_tail_color_maxiter must be positive")
+            if (
+                not math.isfinite(self.pursuit_tail_color_tolerance)
+                or self.pursuit_tail_color_tolerance <= 0.0
+            ):
+                raise ValueError(
+                    "pursuit_tail_color_tolerance must be finite and positive"
                 )
 
     @property
@@ -2720,6 +2827,8 @@ def run_safe_schedule(
     base_active_limit = schedule.resolved_base_active_limit()
     H_target, W_target = int(target.shape[0]), int(target.shape[1])
     full_frame = mask is None
+    if full_frame and schedule.pursuit_tail_enabled:
+        raise ValueError("orthogonal pursuit tail requires a masked input")
     if full_frame:
         if schedule.boundary_enabled:
             schedule = replace(
@@ -3606,6 +3715,346 @@ def run_safe_schedule(
         exit_condition=lambda: False,
     )
 
+    pursuit_tail_start_n = _logical_n(field, active_n)
+    pursuit_tail_limit = pursuit_tail_start_n
+    pursuit_tail_result: dict[str, Any] = {
+        "enabled": False,
+        "start_n": pursuit_tail_start_n,
+        "end_n": pursuit_tail_start_n,
+        "activated_rows": 0,
+        "batch_rows": int(schedule.pursuit_tail_batch_rows),
+        "max_rows": int(schedule.pursuit_tail_max_rows),
+        "waves_attempted": 0,
+        "waves_accepted": 0,
+        "termination_reason": "disabled",
+        "target_reached": False,
+        "before_detail": None,
+        "after_detail": None,
+        "highpass_reduction": 0.0,
+        "laplacian_reduction": 0.0,
+        "waves": [],
+    }
+    if schedule.pursuit_tail_enabled:
+        if active_n is not None:
+            raise RuntimeError(
+                "validated orthogonal pursuit unexpectedly received prefix storage"
+            )
+        pursuit_started = time.perf_counter()
+        pursuit_tail_limit = (
+            pursuit_tail_start_n + int(schedule.pursuit_tail_max_rows)
+        )
+        baseline_quality = metrics
+        _, current_render = evaluate_quality(
+            field,
+            target,
+            mask_tensor,
+            cfg,
+            constraint,
+            schedule.coverage_tau,
+        )
+        baseline_detail = fine_detail_metrics(
+            current_render,
+            target,
+            constraint,
+            blur_sigma=float(schedule.pursuit_tail_blur_sigma),
+            deep_offset=float(schedule.pursuit_tail_deep_offset),
+        )
+        current_detail: FineDetailMetrics = baseline_detail
+        frozen_base = field.detached()
+        site_mask = torch.zeros(
+            target.shape[:2],
+            device=target.device,
+            dtype=torch.bool,
+        )
+        pursuit_waves: list[dict[str, Any]] = []
+        pursuit_sites: list[int] = []
+        pursuit_waves_attempted = 0
+        pursuit_waves_accepted = 0
+        pursuit_target_reached = False
+        pursuit_termination_reason = "maximum_rows"
+
+        emit(_event_record(
+            phase="fine_detail_pursuit",
+            event="stage_start",
+            accepted=True,
+            before=metrics,
+            candidate=metrics,
+            selected=metrics,
+            attempted_steps=0,
+            accepted_steps=0,
+            metadata={
+                "start_n": pursuit_tail_start_n,
+                "batch_rows": int(schedule.pursuit_tail_batch_rows),
+                "max_rows": int(schedule.pursuit_tail_max_rows),
+                "before_detail": baseline_detail.to_dict(),
+                "highpass_target": float(
+                    schedule.pursuit_tail_highpass_target
+                ),
+                "laplacian_target": float(
+                    schedule.pursuit_tail_laplacian_target
+                ),
+            },
+        ))
+
+        if baseline_detail.highpass_mse <= 0.0 and baseline_detail.laplacian_mse <= 0.0:
+            pursuit_target_reached = True
+            pursuit_termination_reason = "no_detail_residual"
+        else:
+            maximum_waves = (
+                int(schedule.pursuit_tail_max_rows)
+                // int(schedule.pursuit_tail_batch_rows)
+            )
+            for wave in range(1, maximum_waves + 1):
+                wave_started = time.perf_counter()
+                pursuit_waves_attempted += 1
+                selection = select_pursuit_births(
+                    field,
+                    target,
+                    current_render,
+                    constraint,
+                    int(schedule.pursuit_tail_batch_rows),
+                    blur_sigma=float(schedule.pursuit_tail_blur_sigma),
+                    nms_radius=int(schedule.pursuit_tail_nms_radius),
+                    deep_offset=float(schedule.pursuit_tail_deep_offset),
+                    scale=float(schedule.pursuit_tail_scale),
+                    opacity=float(schedule.pursuit_tail_opacity),
+                    forbidden_mask=site_mask,
+                )
+                if (
+                    selection.components is None
+                    or selection.components.n
+                    != int(schedule.pursuit_tail_batch_rows)
+                ):
+                    pursuit_termination_reason = "insufficient_sites"
+                    wave_record = {
+                        "wave": wave,
+                        "accepted": False,
+                        "reason": pursuit_termination_reason,
+                        "selection": selection.metadata,
+                        "seconds": time.perf_counter() - wave_started,
+                    }
+                    pursuit_waves.append(wave_record)
+                    emit(_event_record(
+                        phase="fine_detail_pursuit",
+                        event="pursuit_wave",
+                        accepted=False,
+                        before=metrics,
+                        candidate=None,
+                        selected=metrics,
+                        attempted_steps=0,
+                        accepted_steps=0,
+                        reasons=(pursuit_termination_reason,),
+                        metadata=wave_record,
+                    ))
+                    break
+
+                components = selection.components
+                batch_sites = [
+                    int(site)
+                    for site in selection.sites.detach().cpu().tolist()
+                ]
+                candidate_sites = [*pursuit_sites, *batch_sites]
+                constraint.apply(components, cfg, refresh=True)
+                candidate = field.append(components)
+                tail_rows = torch.arange(
+                    pursuit_tail_start_n,
+                    candidate.n,
+                    device=target.device,
+                    dtype=torch.long,
+                )
+                solve = solve_partial_colors_normalized(
+                    candidate,
+                    target,
+                    cfg,
+                    tail_rows,
+                    ridge=float(schedule.pursuit_tail_color_ridge),
+                    max_iterations=int(schedule.pursuit_tail_color_maxiter),
+                    tolerance=float(schedule.pursuit_tail_color_tolerance),
+                )
+                candidate = solve.field
+                candidate_quality, candidate_render = evaluate_quality(
+                    candidate,
+                    target,
+                    mask_tensor,
+                    cfg,
+                    constraint,
+                    schedule.coverage_tau,
+                )
+                candidate_detail = fine_detail_metrics(
+                    candidate_render,
+                    target,
+                    constraint,
+                    blur_sigma=float(schedule.pursuit_tail_blur_sigma),
+                    deep_offset=float(schedule.pursuit_tail_deep_offset),
+                )
+                safe, reasons = safe_commit_decision(
+                    baseline_quality,
+                    candidate_quality,
+                    schedule.tolerances,
+                    schedule.hole_regression_budget,
+                )
+                prefix_unchanged = True
+                for name in (
+                    "means",
+                    "log_scales",
+                    "rotations",
+                    "colors",
+                    "opacities",
+                    "scale_max",
+                    "color_grads",
+                    "background_mask",
+                    "filter_variance",
+                ):
+                    frozen_value = getattr(frozen_base, name)
+                    candidate_value = getattr(candidate, name)
+                    if frozen_value is None:
+                        prefix_unchanged = prefix_unchanged and candidate_value is None
+                    else:
+                        prefix_unchanged = bool(
+                            prefix_unchanged
+                            and candidate_value is not None
+                            and torch.equal(
+                                frozen_value,
+                                candidate_value[:pursuit_tail_start_n],
+                            )
+                        )
+                if not prefix_unchanged:
+                    safe = False
+                    reasons = [*reasons, "inherited_rows_changed"]
+                reductions = relative_detail_reductions(
+                    baseline_detail,
+                    candidate_detail,
+                )
+                reached = bool(
+                    safe
+                    and reductions["highpass"]
+                    >= float(schedule.pursuit_tail_highpass_target)
+                    and reductions["laplacian"]
+                    >= float(schedule.pursuit_tail_laplacian_target)
+                )
+                wave_record = {
+                    "wave": wave,
+                    "accepted": bool(safe),
+                    "added_rows": int(candidate.n - pursuit_tail_start_n),
+                    "n_after": int(candidate.n),
+                    "selection": selection.metadata,
+                    "batch_site_sha256": _flat_site_sha256(batch_sites),
+                    "all_sites_sha256": _flat_site_sha256(candidate_sites),
+                    "batch_site_set_sha256": _site_set_sha256(batch_sites),
+                    "all_site_set_sha256": _site_set_sha256(candidate_sites),
+                    "solve": solve.metadata(),
+                    "detail": candidate_detail.to_dict(),
+                    "highpass_reduction": float(reductions["highpass"]),
+                    "laplacian_reduction": float(reductions["laplacian"]),
+                    "protected_reasons": list(reasons),
+                    "inherited_rows_frozen": prefix_unchanged,
+                    "target_reached": reached,
+                    "seconds": time.perf_counter() - wave_started,
+                }
+                pursuit_waves.append(wave_record)
+                previous_metrics = metrics
+                if not safe:
+                    pursuit_termination_reason = "protected_rejection"
+                    emit(_event_record(
+                        phase="fine_detail_pursuit",
+                        event="pursuit_wave",
+                        accepted=False,
+                        before=previous_metrics,
+                        candidate=candidate_quality,
+                        selected=previous_metrics,
+                        attempted_steps=0,
+                        accepted_steps=0,
+                        reasons=reasons,
+                        metadata=wave_record,
+                    ))
+                    break
+
+                optimizer_state = adapt_optimizer_state(
+                    optimizer_state,
+                    field.n,
+                    candidate.n,
+                    tail_rows,
+                )
+                field = candidate
+                metrics = candidate_quality
+                current_render = candidate_render
+                current_detail = candidate_detail
+                pursuit_waves_accepted += 1
+                site_y = torch.div(
+                    selection.sites,
+                    target.shape[1],
+                    rounding_mode="floor",
+                )
+                site_x = selection.sites - site_y * target.shape[1]
+                site_mask[site_y, site_x] = True
+                pursuit_sites = candidate_sites
+                emit(_event_record(
+                    phase="fine_detail_pursuit",
+                    event="pursuit_wave",
+                    accepted=True,
+                    before=previous_metrics,
+                    candidate=candidate_quality,
+                    selected=metrics,
+                    attempted_steps=0,
+                    accepted_steps=0,
+                    metadata=wave_record,
+                ))
+                if reached:
+                    pursuit_target_reached = True
+                    pursuit_termination_reason = "targets_reached"
+                    break
+
+        final_reductions = relative_detail_reductions(
+            baseline_detail,
+            current_detail,
+        )
+        pursuit_tail_result = {
+            "enabled": True,
+            "start_n": pursuit_tail_start_n,
+            "end_n": _logical_n(field, active_n),
+            "activated_rows": _logical_n(field, active_n) - pursuit_tail_start_n,
+            "batch_rows": int(schedule.pursuit_tail_batch_rows),
+            "max_rows": int(schedule.pursuit_tail_max_rows),
+            "waves_attempted": pursuit_waves_attempted,
+            "waves_accepted": pursuit_waves_accepted,
+            "termination_reason": pursuit_termination_reason,
+            "target_reached": pursuit_target_reached,
+            "highpass_target": float(schedule.pursuit_tail_highpass_target),
+            "laplacian_target": float(schedule.pursuit_tail_laplacian_target),
+            "before_detail": baseline_detail.to_dict(),
+            "after_detail": current_detail.to_dict(),
+            "highpass_reduction": float(final_reductions["highpass"]),
+            "laplacian_reduction": float(final_reductions["laplacian"]),
+            "before_protected": baseline_quality.to_dict(),
+            "after_protected": metrics.to_dict(),
+            "foreground_psnr_gain_db": (
+                metrics.foreground_psnr_db - baseline_quality.foreground_psnr_db
+            ),
+            "unique_sites": int(site_mask.sum()),
+            "site_sha256": _flat_site_sha256(pursuit_sites),
+            "site_set_sha256": _site_set_sha256(pursuit_sites),
+            "score_rule": (
+                "deep RGB high-pass residual, wave-local NMS, exact-site prior dedup"
+            ),
+            "geometry_rule": "0.35 px isotropic, opacity 0.8",
+            "color_rule": (
+                "joint exact normalized-compositor ridge solve over all pursuit rows"
+            ),
+            "seconds": time.perf_counter() - pursuit_started,
+            "waves": pursuit_waves,
+        }
+        emit(_event_record(
+            phase="fine_detail_pursuit",
+            event="stage_end",
+            accepted=True,
+            before=baseline_quality,
+            candidate=metrics,
+            selected=metrics,
+            attempted_steps=0,
+            accepted_steps=0,
+            metadata=pursuit_tail_result,
+        ))
+
     error_tail_start_n = _logical_n(field, active_n)
     error_tail_limit = error_tail_start_n
     error_tail_result: dict[str, Any] = {
@@ -3804,7 +4253,11 @@ def run_safe_schedule(
         "policy": schedule.storage_policy,
         "capacity": int(schedule.capacity),
         "effective_capacity": int(
-            max(int(schedule.capacity), int(error_tail_limit))
+            max(
+                int(schedule.capacity),
+                int(error_tail_limit),
+                int(pursuit_tail_limit),
+            )
         ),
         "base_active_limit": int(base_active_limit),
         "detail_tail_max_rows": int(schedule.detail_tail_max_rows),
@@ -3823,6 +4276,13 @@ def run_safe_schedule(
         and initial_physical_n == physical_capacity,
         "output_compacted": active_n is not None,
     }
+    if schedule.pursuit_tail_enabled:
+        storage_record["pursuit_tail_max_rows"] = int(
+            schedule.pursuit_tail_max_rows
+        )
+        storage_record["pursuit_tail_activated_rows"] = int(
+            pursuit_tail_result["activated_rows"]
+        )
     if schedule.storage_policy == "geometric":
         storage_record["growth_factor"] = float(schedule.growth_factor)
         storage_record["initial_capacity"] = int(
@@ -3853,16 +4313,23 @@ def run_safe_schedule(
         "optimizer_state": optimizer_state,
         "storage": storage_record,
         "error_tail": error_tail_result,
+        "pursuit_tail": pursuit_tail_result,
         "schedule": asdict(schedule),
         "fit_config": asdict(cfg),
         "converged": bool(
             (
-                error_tail_result["enabled"]
+                pursuit_tail_result["enabled"]
+                and pursuit_tail_result["target_reached"]
+            )
+            or (
+                not pursuit_tail_result["enabled"]
+                and error_tail_result["enabled"]
                 and error_tail_result["convergence_termination_reason"]
                 == "deterministic_fixed_point"
             )
             or (
-                not error_tail_result["enabled"]
+                not pursuit_tail_result["enabled"]
+                and not error_tail_result["enabled"]
                 and history
                 and history[-1]["phase"] == schedule.polish.name
                 and history[-1]["metadata"].get("termination_reason")

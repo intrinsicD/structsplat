@@ -982,3 +982,25 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O90
+    timestamp: "2026-07-28T03:45+02:00"
+    provenance: ai-suggested
+    content: "A default-off masked orthogonal pursuit can make fine-detail capacity explicit: repeatedly select deep high-pass residual peaks, append ordinary small Gaussians, exactly re-solve only all accumulated tail colors under the normalized compositor, and stop at predeclared detail targets while inherited rows and the protected gate remain authoritative."
+    context: "FIT-033--039 isolated the mechanism; FIT-040 integrated it through the sole conversion entrypoint with deterministic telemetry, rollback, site-set hashes, and default-off parity."
+    potential_type: claim
+    bound_to: [N200, N202]
+    promoted: true
+    promoted_to: "logic/claims.md:C59"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O91
+    timestamp: "2026-07-28T03:45+02:00"
+    provenance: ai-suggested
+    content: "On the exact same full-frame Janelle base, FIT-031's MAE tail is a boundary/global-error repair rather than a deep-detail repair: 2,777 rows give +0.3208 dB foreground PSNR but effectively zero deep high-pass/Laplacian reduction, while 768 pursuit rows give 25.93%/27.32% reduction and a larger LPIPS gain; the objectives trade off and neither establishes a general or equal-rate winner."
+    context: "FIT-041 corrected the invalid crop-to-full-frame row comparison, bound identical field/target/mask hashes, and passed an adversarial JSON audit on one exposed seed/device."
+    potential_type: claim
+    bound_to: [N201]
+    promoted: true
+    promoted_to: "logic/claims.md:C60"
+    crystallized_via: empirical-resolution
+    stale: false

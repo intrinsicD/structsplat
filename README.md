@@ -35,7 +35,7 @@ pip install -e ".[gen]"          # optional: diffusers text-to-Gaussian generati
 pip install -e ".[dev]"          # pytest, ruff
 ```
 
-## The best pipeline: `scripts/convert.py` (ADR-0025/0028/0029)
+## The best pipeline: `scripts/convert.py` (ADR-0025/0028/0029/0030)
 
 `scripts/convert.py` is the sole supported conversion CLI for the current best pipeline. It accepts
 one image or a recursively scanned folder. Pass `--mask` for one alpha-matted/dome image,
@@ -52,6 +52,10 @@ python scripts/convert.py frame.png runs/frame --mask frame_alpha.png --device c
 # the same recipe plus the experimental final error-only fine-detail stage
 python scripts/convert.py frame.png runs/frame_fine \
   --mask frame_alpha.png --device cuda:0 --fine-detail
+
+# sparse deep-detail pursuit; mutually exclusive with --fine-detail
+python scripts/convert.py frame.png runs/frame_pursuit \
+  --mask frame_alpha.png --device cuda:0 --fine-detail-pursuit
 
 # one full-frame image
 python scripts/convert.py photo.png runs/photo --device cuda:0
@@ -79,6 +83,20 @@ pre-tail foreground/boundary PSNR by `+0.522/+0.583 dB` while preserving the ful
 The clean default and tail runs were not count-, rate-, or CUDA-trajectory-matched, so this keeps
 the option experimental and does not change the current recipe.
 
+`--fine-detail-pursuit` is the separate masked-only ADR-0030 path. In 128-row waves it selects
+5x5-NMS peaks of the current deep sigma-1.5 high-pass residual, appends 0.35-pixel ordinary
+Gaussians, jointly solves only all pursuit-row colors under the exact normalized compositor, and
+remeasures. Inherited rows remain bit-exact and every wave must pass the full protected gate. It
+stops at the first safe `25%` high-pass and `20%` Laplacian reduction, or at a logged rejection,
+site exhaustion, or 2,048-row ceiling.
+
+On the exposed full `1200x1038` Janelle frame, it reached the target at 768 rows:
+`25.93%/27.32%` high-pass/Laplacian reduction and `10.46%` relative LPIPS reduction. The same-base
+FIT-031 control used 2,777 rows and improved global foreground PSNR more, but placed all rows near
+the mask boundary and changed the deep-detail metrics by effectively zero (C60). Thus pursuit is
+the measured fine-detail option, not a general/global-quality winner. It remains default-off and
+is mutually exclusive with `--fine-detail`.
+
 ```python
 from structsplat.pipeline import PipelineConfig, run_pipeline
 
@@ -93,7 +111,7 @@ recipe.
 
 **Evidence scope.** `PipelineConfig` defaults are the measured Janelle recipe: progressive WSE
 ordering (C25), Pareto-safe checkpoints every 50 steps (C50), event color solve off (C50), no
-specialized detail tail (C52), dynamic storage (C51), global refinement, and a `0.75` px mask
+specialized detail tail (C52/C59), dynamic storage (C51), global refinement, and a `0.75` px mask
 margin (C56). All ten resolved FIT-023/024/025 Janelle arms used `0.75`; the `1.5` result belongs
 to an older, different CORE-010 fit. No controlled margin comparison exists, so `0.75` is the
 evidence-aligned recipe value, not a general quality claim. The evidence is one masked image, one

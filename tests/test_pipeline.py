@@ -146,6 +146,22 @@ class TestConfigDerivation:
         assert enabled.error_tail.name == "error_tail_convergence"
         assert enabled.error_tail.max_steps == 4_000
 
+    def test_orthogonal_pursuit_is_a_distinct_default_off_tail(self):
+        default = build_schedule(PipelineConfig())
+        enabled = build_schedule(PipelineConfig(fine_detail_pursuit=True))
+
+        assert default.pursuit_tail_enabled is False
+        assert enabled.pursuit_tail_enabled is True
+        assert enabled.pursuit_tail_batch_rows == 128
+        assert enabled.pursuit_tail_max_rows == 2_048
+        assert enabled.pursuit_tail_highpass_target == 0.25
+        assert enabled.pursuit_tail_laplacian_target == 0.20
+        with pytest.raises(ValueError, match="mutually exclusive"):
+            PipelineConfig(
+                fine_detail_pursuit=True,
+                error_tail_fraction=0.5,
+            ).validate()
+
     def test_schedule_overrides_reject_unknown_fields(self):
         cfg = PipelineConfig(schedule_overrides={"not_a_field": 1})
         with pytest.raises(ValueError, match="unknown schedule override"):
@@ -178,6 +194,14 @@ class TestArmSelection:
     def test_empty_mask_is_rejected_with_the_full_frame_hint(self):
         with pytest.raises(ValueError, match="full-frame"):
             run_pipeline(_image(), np.zeros((64, 64), dtype=bool), _tiny_config())
+
+    def test_orthogonal_pursuit_rejects_the_full_frame_arm(self):
+        with pytest.raises(ValueError, match="masked input"):
+            run_pipeline(
+                _image(),
+                None,
+                _tiny_config(fine_detail_pursuit=True),
+            )
 
     def test_image_shape_is_validated(self):
         with pytest.raises(ValueError, match=r"\(H, W, 3\)"):

@@ -1,0 +1,57 @@
+{
+  "baseline": {
+    "display_clamped": {
+      "lpips": 0.010189062915742397,
+      "ms_ssim": 0.9973328113555908,
+      "psnr": 37.889015197753906,
+      "ssim": 0.993198037147522
+    },
+    "raw": {
+      "lpips": 0.010190046392381191,
+      "ms_ssim": 0.9973329305648804,
+      "psnr": 37.88897705078125,
+      "ssim": 0.993198037147522
+    }
+  },
+  "candidate": {
+    "display_clamped": {
+      "lpips": 0.009862169623374939,
+      "ms_ssim": 0.9974650144577026,
+      "psnr": 38.20979690551758,
+      "ssim": 0.9934525489807129
+    },
+    "raw": {
+      "lpips": 0.009862798266112804,
+      "ms_ssim": 0.9974650740623474,
+      "psnr": 38.20977020263672,
+      "ssim": 0.9934525489807129
+    }
+  },
+  "created_utc": "2026-07-28T01:41:05Z",
+  "delta_candidate_minus_baseline": {
+    "display_clamped": {
+      "lpips": -0.00032689329236745834,
+      "ms_ssim": 0.0001322031021118164,
+      "psnr": 0.3207817077636719,
+      "ssim": 0.00025451183319091797
+    },
+    "raw": {
+      "lpips": -0.00032724812626838684,
+      "ms_ssim": 0.00013214349746704102,
+      "psnr": 0.32079315185546875,
+      "ssim": 0.00025451183319091797
+    }
+  },
+  "inputs": {
+    "field": "/home/alex/Documents/structsplat/runs/fit041_janelle_equal_base_error_tail_20260728/field.npz",
+    "field_sha256": "2475f4540a0565a5737cff5ab584592520ba16291a93b3df783a2d5e51a9ad20",
+    "result": "/home/alex/Documents/structsplat/runs/fit039_janelle_exclusion_screen_20260728/result.json",
+    "result_sha256": "b8183933938748bc8963b060e93d2a2e66bd5f92df89089eab02f69b4393538c"
+  },
+  "protocol": {
+    "lpips_optional": true,
+    "mask_is_matted_black_in_both_target_and_render": true,
+    "metric_module": "src/structsplat/metrics.py"
+  },
+  "schema": "structsplat.fit039.bench001-metrics.v1"
+}

@@ -1,6 +1,6 @@
 # Architecture
 
-## Entrypoint (ADR-0025/0028/0029)
+## Entrypoint (ADR-0025/0028/0029/0030)
 
 `structsplat.pipeline.run_pipeline` is the maintained composition of the current best pipeline,
 and `scripts/convert.py` is its sole supported conversion CLI. `PipelineConfig`'s defaults are the
@@ -23,6 +23,8 @@ safe_schedule.run_safe_schedule
    → redistribution → polish
    → [optional --fine-detail: residual effective-support estimate → error-only births
       → fixed-topology convergence]
+   → [optional --fine-detail-pursuit: deep high-pass/NMS births in 128-row waves
+      → joint pursuit-color solve → remeasure to explicit detail targets]
    every optimizer block and topology proposal runs on a detached trial field and is committed
    only if a full-frame metric vector is Pareto-safe (FIT-023/024/025, ADR-0020..0023)
 ```
@@ -117,6 +119,10 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   MAE effective support estimates demand, half is requested as small isotropic residual-ranked
   rows in bounded batches no smaller than `event_min_count`, and the expanded field converges
   under the unchanged Pareto gate.
+  FIT-039/040/ADR-0030 add a mutually exclusive, default-off masked pursuit tail: deep high-pass
+  residual sites receive ordinary 0.35-pixel rows, all accumulated tail colors are jointly solved
+  while inherited rows stay frozen, and the stage stops at explicit high-pass/Laplacian targets
+  under the same protected gate.
 - **entry:** `cli` (`structsplat fit` /
   `image-to-gaussians2d`, `render` /
   `gaussians2d-to-image`, `batch-fit`, `ablation`, `stage-search`); `render` cold-loads a native

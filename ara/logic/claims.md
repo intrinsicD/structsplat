@@ -1138,3 +1138,72 @@ reference renderer is memory-bound. See `ara/evidence/core005-render-checkpoint-
 - **Tags**: fine-detail, error-tail, effective-support, safe-schedule, Janelle, development,
   single-image, source-bound, default-off, claim-boundary
 - **From staging**: direct FIT-031 development audit
+
+## C59: Orthogonal fine-detail pursuit is a default-off, telemetry-complete pipeline option
+
+- **Statement**: `scripts/convert.py --fine-detail-pursuit` leaves the current recipe unchanged by
+  default and is mutually exclusive with `--fine-detail`. On masked normalized-renderer jobs it
+  adds fixed 128-row waves at deep sigma-1.5 high-pass residual peaks with within-wave 5x5 NMS and
+  exact-site cross-wave deduplication, jointly solves only all accumulated tail colors under the
+  exact normalized compositor, freezes every inherited row, applies the full protected gate, and
+  stops at explicit `25%` high-pass/`20%` Laplacian targets or a bounded failure/2,048-row ceiling.
+  Config, history, workflow results, and reports carry wave metrics, site/order and canonical-set
+  hashes, solve diagnostics, termination, protected decisions, and time. Focused tests cover
+  selection, partial-solve freeze, rollback, target stopping, containment, telemetry, CLI
+  exclusivity, and default-off parity. No quality, efficiency, default, or generality result
+  follows from the implementation alone.
+- **Status**: supported experimental implementation plumbing; default and general promotion
+  untested
+- **Provenance**: ai-implemented
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: The default path activates pursuit; it can coexist with the
+  error-only tail or run without a mask/normalized renderer/dynamic storage; an inherited row
+  changes; a committed wave violates the protected gate or containment; the persisted stop rule,
+  site hashes, or metrics differ from the stated mechanism; or the focused tests fail.
+- **Proof**: [`src/structsplat/detail_pursuit.py`,
+  `src/structsplat/safe_schedule.py`,
+  `src/structsplat/pipeline.py`,
+  `src/structsplat/workflows.py`,
+  `tests/test_detail_pursuit.py`,
+  `tests/test_pursuit_schedule.py`,
+  `tests/test_pipeline.py`,
+  `tests/test_pipeline_workflows.py`,
+  `docs/adr/0030-orthogonal-fine-detail-pursuit-tail.md`,
+  `tasks/FIT-040-opt-in-orthogonal-detail-pursuit-tail.md`]
+- **Dependencies**: [C50, C56, C57]
+- **Tags**: fine-detail, orthogonal-pursuit, safe-schedule, mask-containment, implementation,
+  experimental, default-off, claim-boundary
+- **From staging**: O90
+
+## C60: Pursuit wins the predeclared fine-detail objective on one equal-base Janelle comparison
+
+- **Statement**: On the exposed full `1200x1038` masked Janelle `frame_00008/C0001` target,
+  seed 0 and RTX 3050, both terminal tails start from the exact same hash-bound 11,000-row field,
+  target pixels, and mask. The shipped FIT-031 `0.5` MAE tail activates all 2,777 requested rows
+  (`+0.320788 dB` foreground PSNR), but all 2,777 final centers lie outside the predeclared
+  `margin + 6 px` deep region; sigma-1.5 high-pass MSE changes by only `0.000042%` relative,
+  Laplacian MSE by `0%`, and raw LPIPS falls `3.21%` relative. Orthogonal pursuit stops at 768
+  unique deep sites, reduces the same high-pass/Laplacian metrics by `25.9262%/27.3157%`, and raw
+  LPIPS by `10.46%`, while gaining only `0.034326 dB` foreground PSNR. Both pass protected and
+  exact-zero-outside checks. Pursuit is therefore the fine-detail winner and the error tail the
+  global foreground-PSNR winner on this one trajectory. The work is not equalized, the source is
+  exposed, and no equal-rate, default, generality, or global-superiority claim follows.
+- **Status**: supported exposed single-image same-base objective-specific result; general and
+  equal-rate superiority unauthorized
+- **Provenance**: ai-executed and adversarially audited
+- **Crystallized via**: empirical-resolution
+- **Falsification criteria**: Any base/target/mask hash differs; production replay fails to
+  reproduce the 768-site set or target; inherited rows move; cold/protected/containment checks
+  fail; the error-tail placement audit finds a deep row; LPIPS or detail reductions do not
+  recompute from the persisted artifacts; or the stated objective winners reverse.
+- **Proof**: [`ara/evidence/fit040-orthogonal-detail-pursuit-janelle-2026-07-28/run.md`,
+  `ara/evidence/fit040-orthogonal-detail-pursuit-janelle-2026-07-28/audit.json`,
+  `ara/evidence/fit040-orthogonal-detail-pursuit-janelle-2026-07-28/production_result.json`,
+  `ara/evidence/fit040-orthogonal-detail-pursuit-janelle-2026-07-28/equal_base_error_tail_result.json`,
+  `ara/evidence/fit040-orthogonal-detail-pursuit-janelle-2026-07-28/prototype_audit.json`,
+  `scripts/experiments/audit_fit041_equal_base_tail_comparison.py`,
+  `tasks/FIT-041-equal-base-error-tail-control.md`]
+- **Dependencies**: [C58, C59]
+- **Tags**: fine-detail, orthogonal-pursuit, error-tail, Janelle, same-base, single-image,
+  source-bound, LPIPS, default-off, claim-boundary
+- **From staging**: O91

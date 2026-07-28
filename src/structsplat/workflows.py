@@ -359,6 +359,7 @@ def _job_key(
     device: str,
     mask_margin: float,
     fine_detail: bool,
+    fine_detail_pursuit: bool,
     lpips: bool,
 ) -> str:
     payload = {
@@ -377,6 +378,7 @@ def _job_key(
         "device": str(device),
         "mask_margin": float(mask_margin),
         "fine_detail": bool(fine_detail),
+        "fine_detail_pursuit": bool(fine_detail_pursuit),
         "lpips": bool(lpips),
         "target_pixel_sha256": _pixel_sha256(prepared["target"]),
         "implementation_sha256": {
@@ -384,6 +386,7 @@ def _job_key(
             for name, path in {
                 "pipeline": "src/structsplat/pipeline.py",
                 "safe_schedule": "src/structsplat/safe_schedule.py",
+                "detail_pursuit": "src/structsplat/detail_pursuit.py",
                 "workflows": "src/structsplat/workflows.py",
             }.items()
         },
@@ -407,6 +410,7 @@ def _run_job(
     device: str,
     mask_margin: float,
     fine_detail: bool,
+    fine_detail_pursuit: bool,
     lpips: bool,
     resume: bool,
     overwrite: bool,
@@ -422,6 +426,7 @@ def _run_job(
         device=device,
         mask_margin=mask_margin,
         fine_detail=fine_detail,
+        fine_detail_pursuit=fine_detail_pursuit,
         lpips=lpips,
     )
     result_path = job_out / "result.json"
@@ -521,6 +526,7 @@ def _run_job(
         strategy=strategy,
         mask_margin=mask_margin,
         fine_detail=fine_detail,
+        fine_detail_pursuit=fine_detail_pursuit,
         schedule_transform=schedule_transform,
         observer=observer,
         verbose=verbose,
@@ -653,6 +659,7 @@ def _run_job(
         "total_seconds": time.perf_counter() - started,
         "phase_seconds": _phase_timings(history),
         "error_tail": schedule_result.get("error_tail"),
+        "pursuit_tail": schedule_result.get("pursuit_tail"),
         "render_fps_median": (
             1.0 / output["timing"]["final_render_seconds"]
             if output["timing"]["final_render_seconds"] > 0.0
@@ -662,6 +669,7 @@ def _run_job(
         "reconstruction_png": str(reconstruction_path),
         "error_png": str(error_path),
         "field_npz": str(field_path),
+        "field_sha256": _sha256_file(field_path),
         "history_json": str(history_path),
         "config_json": str(job_out / "config.json"),
         "curves": curves,
@@ -850,6 +858,24 @@ def _run_card(outdir: Path, row: dict[str, Any]) -> str:
             f"{html.escape(str(error_tail.get('convergence_termination_reason')))}.</p>"
             "</details>"
         )
+    pursuit_tail = row.get("pursuit_tail") or {}
+    pursuit_tail_html = ""
+    if pursuit_tail.get("enabled"):
+        pursuit_tail_html = (
+            "<details open><summary>orthogonal fine-detail pursuit</summary>"
+            "<div class='metrics'>"
+            f"<span><b>{int(pursuit_tail['activated_rows']):,}</b> "
+            "added Gaussians</span>"
+            f"<span><b>{float(pursuit_tail['highpass_reduction']):.2%}</b> "
+            "high-pass reduction</span>"
+            f"<span><b>{float(pursuit_tail['laplacian_reduction']):.2%}</b> "
+            "Laplacian reduction</span>"
+            f"<span><b>{int(pursuit_tail['waves_accepted'])}</b> accepted waves</span>"
+            "</div>"
+            f"<p>Termination: {html.escape(str(pursuit_tail['termination_reason']))}; "
+            f"target reached: {bool(pursuit_tail['target_reached'])}.</p>"
+            "</details>"
+        )
     return (
         "<article class='run'>"
         f"<h2>{html.escape(str(row.get('method_label', row.get('method'))))}</h2>"
@@ -865,6 +891,7 @@ def _run_card(outdir: Path, row: dict[str, Any]) -> str:
         f"<details><summary>phase timings</summary><div class='metrics'>{phase_timings}</div>"
         "</details>"
         f"{error_tail_html}"
+        f"{pursuit_tail_html}"
         f"<div class='hero-images'>{''.join(images)}</div>"
         "<div class='charts'>"
         f"{_svg_curve(curves, 'psnr', 'PSNR over attempted steps', '#e65f2b')}"
@@ -1350,6 +1377,9 @@ def _execute(
 ) -> int:
     _require_positive(args)
     fine_detail = bool(getattr(args, "fine_detail", False))
+    fine_detail_pursuit = bool(
+        getattr(args, "fine_detail_pursuit", False)
+    )
     outdir = args.outdir.expanduser().resolve()
     outdir.mkdir(parents=True, exist_ok=True)
     discovered = _discover_images(args.source)
@@ -1379,6 +1409,10 @@ def _execute(
         )
         prepared_items.append(prepared)
         comparison_inputs.append(_materialize_input(outdir, prepared))
+    if fine_detail_pursuit and any(
+        item["mask"] is None for item in prepared_items
+    ):
+        raise ValueError("--fine-detail-pursuit requires a mask for every image")
     for prepared, comparison_source in zip(prepared_items, comparison_inputs):
         for variant, strategy, transform, method, method_label in variants:
             if (
@@ -1409,6 +1443,7 @@ def _execute(
                         device=args.device,
                         mask_margin=args.mask_margin,
                         fine_detail=fine_detail,
+                        fine_detail_pursuit=fine_detail_pursuit,
                         lpips=args.lpips,
                         resume=args.resume,
                         overwrite=args.overwrite,
@@ -1433,6 +1468,7 @@ def _execute(
             masked=any(item["mask"] is not None for item in prepared_items),
             mask_margin=float(args.mask_margin),
             fine_detail=fine_detail,
+            fine_detail_pursuit=fine_detail_pursuit,
         ),
         "command": " ".join(sys.argv),
         "source": str(args.source.expanduser().resolve()),
@@ -1448,6 +1484,7 @@ def _execute(
         ),
         "mask_invert": bool(getattr(args, "mask_invert", False)),
         "fine_detail": fine_detail,
+        "fine_detail_pursuit": fine_detail_pursuit,
         "variants": [variant for variant, *_ in variants],
         "seeds": seeds,
         "images": [
@@ -1492,12 +1529,21 @@ def build_convert_parser() -> argparse.ArgumentParser:
         )
     )
     _common_arguments(parser, multiple_seeds=False, direct_mask=True)
-    parser.add_argument(
+    fine_detail_group = parser.add_mutually_exclusive_group()
+    fine_detail_group.add_argument(
         "--fine-detail",
         action="store_true",
         help=(
             "append the optional terminal error-only stage: estimate effective "
             "residual sites, request half as small Gaussians, and converge safely"
+        ),
+    )
+    fine_detail_group.add_argument(
+        "--fine-detail-pursuit",
+        action="store_true",
+        help=(
+            "append sparse high-pass pursuit waves until explicit detail targets "
+            "are reached under the protected-metric gate"
         ),
     )
     return parser
@@ -1550,30 +1596,34 @@ def build_stage_search_parser() -> argparse.ArgumentParser:
 def main_convert(argv: list[str] | None = None) -> int:
     args = build_convert_parser().parse_args(argv)
     fine_detail = bool(args.fine_detail)
+    fine_detail_pursuit = bool(args.fine_detail_pursuit)
+    if fine_detail_pursuit:
+        variant = "fine_detail_pursuit"
+        method = "structsplat_best_default_detail_pursuit"
+        method_label = "Current profile + orthogonal fine-detail pursuit"
+        title = "Current Pipeline + Orthogonal Fine-Detail Pursuit"
+    elif fine_detail:
+        variant = "fine_detail"
+        method = "structsplat_best_default_error_tail50"
+        method_label = "Current profile + error-only fine detail"
+        title = "Current Pipeline + Error-Only Fine Detail"
+    else:
+        variant = "current"
+        method = "structsplat_best_default"
+        method_label = "Current profile"
+        title = "Current Pipeline Conversion"
     variants = [
         (
-            "fine_detail" if fine_detail else "current",
+            variant,
             "quadtree_wse",
             None,
-            (
-                "structsplat_best_default_error_tail50"
-                if fine_detail
-                else "structsplat_best_default"
-            ),
-            (
-                "Current profile + error-only fine detail"
-                if fine_detail
-                else "Current profile"
-            ),
+            method,
+            method_label,
         )
     ]
     return _execute(
         args,
-        title=(
-            "Current Pipeline + Error-Only Fine Detail"
-            if fine_detail
-            else "Current Pipeline Conversion"
-        ),
+        title=title,
         variants=variants,
     )
 

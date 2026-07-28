@@ -1,6 +1,7 @@
 from dataclasses import asdict
 
 import numpy as np
+import pytest
 from PIL import Image
 
 from structsplat.pipeline import (
@@ -63,6 +64,10 @@ def test_initialization_preserves_count_and_parameters_across_paths():
     manifest_masked = profile_manifest(masked=True)
     manifest_unmasked = profile_manifest(masked=False)
     manifest_fine = profile_manifest(masked=True, fine_detail=True)
+    manifest_pursuit = profile_manifest(
+        masked=True,
+        fine_detail_pursuit=True,
+    )
 
     assert config.num_gaussians == INITIAL_GAUSSIANS == 5_000
     assert config.strategy == "quadtree_wse"
@@ -80,6 +85,8 @@ def test_initialization_preserves_count_and_parameters_across_paths():
     assert manifest_masked["fine_detail_fraction"] == 0.0
     assert manifest_fine["fine_detail"] is True
     assert manifest_fine["fine_detail_fraction"] == 0.5
+    assert manifest_pursuit["fine_detail_pursuit"] is True
+    assert manifest_pursuit["fine_detail_pursuit_max_rows"] == 2_048
     assert (
         manifest_fine["requested_optimizer_steps"]
         == manifest_masked["requested_optimizer_steps"] + 4_000
@@ -99,6 +106,7 @@ def test_public_parsers_expose_only_the_four_clear_workflows(tmp_path):
 
     assert convert.seed == 0
     assert convert.fine_detail is False
+    assert convert.fine_detail_pursuit is False
     assert convert.mask_margin == PipelineConfig.mask_margin == 0.75
     direct_mask = build_convert_parser().parse_args(
         [str(source / "one.png"), str(out), "--mask", str(source / "one_mask.png")]
@@ -109,6 +117,19 @@ def test_public_parsers_expose_only_the_four_clear_workflows(tmp_path):
         [str(source / "one.png"), str(out), "--fine-detail"]
     )
     assert fine_detail.fine_detail is True
+    pursuit = build_convert_parser().parse_args(
+        [str(source / "one.png"), str(out), "--fine-detail-pursuit"]
+    )
+    assert pursuit.fine_detail_pursuit is True
+    with pytest.raises(SystemExit):
+        build_convert_parser().parse_args(
+            [
+                str(source / "one.png"),
+                str(out),
+                "--fine-detail",
+                "--fine-detail-pursuit",
+            ]
+        )
     assert benchmark.seeds == [0]
     assert ablation.arms == list(ABLATION_ARMS)
     assert stage.stage == "coverage"

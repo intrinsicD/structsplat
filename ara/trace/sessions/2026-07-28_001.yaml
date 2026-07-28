@@ -1,0 +1,133 @@
+session:
+  id: "2026-07-28_001"
+  date: "2026-07-28"
+  started: "2026-07-28T04:11+02:00"
+  last_turn: "2026-07-28T04:11+02:00"
+  turn_count: 1
+  summary: "Invented, integrated, and audited a 768-row orthogonal pursuit tail that cuts Janelle deep-detail error by 25.93%/27.32%; an exact same-base control shows the latest FIT-031 tail instead repairs boundary/global error."
+
+events_logged:
+  - turn: 1
+    type: question
+    id: "N193"
+    routing: direct
+    provenance: user
+    summary: "Asked whether FIT-031 really repairs Janelle fine detail and requested a much sparser, larger-effect terminal mechanism."
+  - turn: 1
+    type: experiment
+    id: "N194"
+    routing: direct
+    provenance: ai-executed
+    summary: "FIT-032--036 rejected richer primitive/score variants and isolated iterative exact partial color solving as the useful component."
+  - turn: 1
+    type: dead_end
+    id: "N195"
+    routing: direct
+    provenance: ai-executed
+    summary: "Closed gauge, spectral, affine, and ridge embellishments after all stayed far below the frozen 25%/20% target."
+  - turn: 1
+    type: experiment
+    id: "N196"
+    routing: direct
+    provenance: ai-executed
+    summary: "Static high-pass birth ranking saturated at 15.01%/12.04% with 2,048 rows."
+  - turn: 1
+    type: experiment
+    id: "N197"
+    routing: direct
+    provenance: ai-executed
+    summary: "Iterative remeasurement with cross-wave 5x5 exclusion improved to 20.22%/16.21% but still missed both targets."
+  - turn: 1
+    type: pivot
+    id: "N198"
+    routing: direct
+    provenance: ai-suggested
+    summary: "Retained within-wave NMS while relaxing cross-wave exclusion to exact-site deduplication."
+  - turn: 1
+    type: experiment
+    id: "N199"
+    routing: direct
+    provenance: ai-executed
+    summary: "Exact-site pursuit first passed at 768 rows with 25.9262%/27.3157% detail reduction and 10.4601% LPIPS reduction."
+  - turn: 1
+    type: experiment
+    id: "N200"
+    routing: direct
+    provenance: ai-executed
+    summary: "Production integration reproduced the canonical 768-site basis with frozen inherited rows and protected-safe wave telemetry."
+  - turn: 1
+    type: experiment
+    id: "N201"
+    routing: direct
+    provenance: ai-executed
+    summary: "The exact same-base FIT-031 control used 2,777 boundary rows, won global PSNR, and made effectively no deep-detail reduction."
+  - turn: 1
+    type: decision
+    id: "N202"
+    routing: direct
+    provenance: ai-suggested
+    summary: "Kept FIT-031 and pursuit as separate default-off objective-specific tails pending held-out matched controls."
+  - turn: 1
+    type: claim
+    id: "C59"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the default-off, telemetry-complete pursuit implementation via artifact commitment."
+  - turn: 1
+    type: claim
+    id: "C60"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the one-image same-base objective trade-off via empirical resolution."
+
+ai_actions:
+  - turn: 1
+    action: "Implemented the selector, deep-detail metrics, exact partial color solve, transactional schedule stage, workflow/CLI plumbing, reports, and focused regression coverage."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/detail_pursuit.py"
+      - "src/structsplat/safe_schedule.py"
+      - "src/structsplat/pipeline.py"
+      - "src/structsplat/workflows.py"
+      - "tests/test_detail_pursuit.py"
+      - "tests/test_pursuit_schedule.py"
+  - turn: 1
+    action: "Executed FIT-032--041, production replay, perceptual/spatial rescoring, the exact same-base FIT-031 control, and a 17-check adversarial comparison audit."
+    provenance: ai-executed
+    files_changed:
+      - "benchmarks/"
+      - "scripts/experiments/"
+      - "tasks/FIT-032-gauge-lifted-residual-dipoles.md"
+      - "tasks/FIT-041-equal-base-error-tail-control.md"
+      - "ara/evidence/fit040-orthogonal-detail-pursuit-janelle-2026-07-28/"
+  - turn: 1
+    action: "Synchronized ADR-0030, README, architecture, task index, core skill, observations, and claims; verified hashes; passed the canonical repository gate and final structural checks."
+    provenance: ai-executed
+    files_changed:
+      - "docs/adr/0030-orthogonal-fine-detail-pursuit-tail.md"
+      - "README.md"
+      - "docs/architecture.md"
+      - "tasks/INDEX.md"
+      - "ara/logic/claims.md"
+      - "ara/staging/observations.yaml"
+
+claims_touched:
+  - id: C59
+    action: crystallized
+    turn: 1
+  - id: C60
+    action: crystallized
+    turn: 1
+
+key_context:
+  - turn: 1
+    excerpt: "Continue real research on the masked Janelle image, assess the latest-commit idea, and invent a way to massively reduce final fine-detail error with minimal Gaussians."
+
+open_threads:
+  - "Replicate pursuit and FIT-031 on independent masked images and seeds with equal row, byte, and work budgets before any default or efficiency promotion."
+  - "Investigate whether a fixed-budget spatially balanced selector can preserve the net detail drop while improving the current 42.27% positive-tile coverage."
+  - "Only after held-out replication, test an objective-aware shared allocator that budgets boundary/global and deep-detail cohorts without simply stacking both tails."
+
+ai_suggestions_pending:
+  - "Treat the 768-row result as a source-bound development win; do not enable pursuit by default from this one exposed trajectory."
+  - "Use canonical site-set hashes for CUDA replay diagnosis while retaining ordered hashes; consider strict tie-breaking before stronger determinism claims."
