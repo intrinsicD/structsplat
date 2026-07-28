@@ -57,6 +57,12 @@ SOURCE_FILES = (
 )
 
 
+def _aa_is_nondegrading(accepted: bool, reasons: list[str]) -> bool:
+    """Allow an identity A/A when gain is the only unsatisfied gate term."""
+
+    return accepted or reasons == ["no_material_gain"]
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -121,15 +127,20 @@ def run(args: argparse.Namespace) -> None:
         affine_quality,
         SafeScheduleConfig().tolerances,
     )
+    aa_nondegrading = _aa_is_nondegrading(aa_safe, aa_reasons)
     renderer_aa = {
         "max_abs_render_delta": float((affine_render - base_render).abs().max()),
         "foreground_mse_delta": (
             affine_metrics["foreground_mse"] - baseline["foreground_mse"]
         ),
-        "protected_safe": aa_safe,
+        "protected_gate_accepted": aa_safe,
+        "protected_nondegrading": aa_nondegrading,
         "protected_reasons": aa_reasons,
     }
-    if renderer_aa["max_abs_render_delta"] > 2e-6 or not aa_safe:
+    if (
+        renderer_aa["max_abs_render_delta"] > 2e-6
+        or not aa_nondegrading
+    ):
         raise RuntimeError(f"affine zero-gradient renderer A/A failed: {renderer_aa}")
 
     deep = (

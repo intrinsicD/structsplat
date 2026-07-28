@@ -1,0 +1,14 @@
+{
+  "audit_sha256": "00d905c6d8c4496512f8b0075f93410547e746665768ba55d8f2f541d9e2d6cc",
+  "audit_status": "PASS",
+  "cells": 51,
+  "comparison_csv_sha256": "6676f2a75121cc87d4b4c50fe2f68df384b0f75cc93fb6cee8a321779fc74064",
+  "index_sha256": "1f43170299b5f108f53b067e10bc3aa284cadf8c9775afae26906a173119125d",
+  "report_images": 459,
+  "run_markdown_sha256": "8191e57e0db9cc3e91a9ee6d3549b95e3ccebac2e90105bcfa22b032fce51734",
+  "schema": "structsplat.fit043_sequential_error_pursuit.v1.artifact",
+  "source_manifest_sha256": "1ce2e876255a5ebc4883fd03071ee7a5ef54b4763cd3fd688978f1591c2567b3",
+  "source_run": "/home/alex/Documents/structsplat/runs/fit043_sequential_error_pursuit_20260728",
+  "summary_sha256": "fdf486d4b0b07678e4a6624a3c5e57c31c4984215675e036c0c2d07a7d97415c",
+  "title": "FIT-043 sequential error-then-pursuit Janelle diagnostic"
+}

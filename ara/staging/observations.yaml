@@ -1004,3 +1004,25 @@ observations:
     promoted_to: "logic/claims.md:C60"
     crystallized_via: empirical-resolution
     stale: false
+  - id: O92
+    timestamp: "2026-07-28T14:22+02:00"
+    provenance: ai-suggested
+    content: "In a paired diagnostic over all 51 remaining Janelle frame/view cells, FIT-040 pursuit reaches the protected 25% high-pass / 20% Laplacian target in 51/51 cells with 384 median added rows, versus 7/51 and 6,144 median rows for FIT-031 error-only; pursuit wins the target-then-rows rule in every cell, while error-only wins foreground-PSNR gain in every cell."
+    context: "One-seed RTX-4090 sweep with exact source/packed-mask bindings, one shared archived mask-contained base per cell, a harmonized exact-CUDA renderer, natural unequal method budgets, full visual gallery, and a 10-check independent audit. The two adjacent frames and camera views are correlated within one capture; this does not enter FIT-042's preregistered screen or confirmation gate."
+    potential_type: claim
+    bound_to: []
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O93
+    timestamp: "2026-07-28T16:35+02:00"
+    provenance: ai-suggested
+    content: "A cumulative error-only then pursuit controller reaches the 25% high-pass / 20% Laplacian target in all 51 exposed Janelle cells, skips pursuit in the seven cells already solved by error-only, uses 256 median incremental pursuit rows, and raises rather than erodes median foreground PSNR relative to error-only; however its frozen viability rule fails because exact persisted error-prefix equality is 43/44."
+    context: "FIT-043 reused the audited 51-cell base/error/pursuit results and executed only the missing sequence. All 51 cells pass the original-base protected and exact-outside-zero checks, while one frame_00008/C0021 schedule-entry containment refresh changes one scale_max element before the pursuit wave freezes its inherited prefix. The independent 10-category audit passes. This is one-seed, correlated, exposed-capture evidence; no production interface, default, efficiency, or FIT-042 claim follows."
+    potential_type: claim
+    bound_to: []
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

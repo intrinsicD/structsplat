@@ -1,0 +1,13 @@
+{
+  "audit_script_sha256": "dcf50e5ec7aa32c9637c5d3fc4cf78540bfa4041056907486a9dc6335797995c",
+  "audit_sha256": "ec15543bb4ea5ebff3d7e9ae2071af7cb500da9ae53d998668ed1cba36698e9b",
+  "cells": 51,
+  "comparison_csv_sha256": "bdde1bd87adba10bd9ee1e33bc189c963d597a4fc81ae4311739d85c4a24c564",
+  "index_sha256": "66085ae8b14730eabcbb3f7109736cf0deb95a26de044ae8e644dc05bb7cc809",
+  "run_markdown_sha256": "3e92154df5a408611aefe8ebf26e3387b11a6ca2e2a3d64171193cd1e91f3262",
+  "schema": "structsplat.janelle_cross_view_tail_diagnostic.v1.report",
+  "source_run": "/home/alex/Documents/structsplat/runs/janelle_cross_view_tail_diagnostic_20260728",
+  "source_run_manifest_sha256": "f8958a583c238cf649b9662b84130d75d2bf3afad7760f43ce22da9245ee6976",
+  "summary_sha256": "c1cafe794fc73e8e32212d00b4edc9e8e48fe863d71c97195f8bd9db64bcc638",
+  "title": "Janelle cross-view fine-detail tails"
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "added_rows": 2777,
+    "deep_rows": 0,
+    "method": "FIT031 error-only tail",
+    "metric": "Sigma-1.5 high-pass",
+    "reduction": 4.197421523688405e-07,
+    "seconds": 18.00248301200918
+  },
+  {
+    "added_rows": 2777,
+    "deep_rows": 0,
+    "method": "FIT031 error-only tail",
+    "metric": "Laplacian",
+    "reduction": 0.0,
+    "seconds": 18.00248301200918
+  },
+  {
+    "added_rows": 2777,
+    "deep_rows": 0,
+    "method": "FIT031 error-only tail",
+    "metric": "LPIPS",
+    "reduction": 0.032114488361217,
+    "seconds": 18.00248301200918
+  },
+  {
+    "added_rows": 768,
+    "deep_rows": 768,
+    "method": "Orthogonal pursuit",
+    "metric": "Sigma-1.5 high-pass",
+    "reduction": 0.25926232493182966,
+    "seconds": 3.359910507017048
+  },
+  {
+    "added_rows": 768,
+    "deep_rows": 768,
+    "method": "Orthogonal pursuit",
+    "metric": "Laplacian",
+    "reduction": 0.2731565966440711,
+    "seconds": 3.359910507017048
+  },
+  {
+    "added_rows": 768,
+    "deep_rows": 768,
+    "method": "Orthogonal pursuit",
+    "metric": "LPIPS",
+    "reduction": 0.10460057547978663,
+    "seconds": 3.359910507017048
+  }
+]

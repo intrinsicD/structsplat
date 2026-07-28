@@ -1,0 +1,1383 @@
+{
+  "manifest": {
+    "blocks": [
+      {
+        "body": "# StructSplat Fine-Detail Stage Comparison\n\nA source-bound comparison of the newly added fine-detail stages against FIT031.",
+        "id": "title",
+        "type": "markdown"
+      },
+      {
+        "body": "## Technical summary\n\nOnly FIT032\u2013038 were rerun because their durable machine-readable results were missing. FIT039\u2013041 were reused after their hashes and all 17 committed audit checks passed. The new 18-check comparison audit passes in full.",
+        "id": "technical_summary",
+        "type": "markdown"
+      },
+      {
+        "cardIds": [
+          "evidence_card",
+          "pursuit_card",
+          "error_tail_card"
+        ],
+        "id": "headline_metrics",
+        "type": "metric-strip"
+      },
+      {
+        "body": "## Stage judgment\n\n**Keep FIT032\u2013037 as negative or diagnostic stages. Keep FIT038 as the useful iterative mechanism. Retain FIT039 exact-site exclusion and FIT040 integration as the fine-detail path.** No stage authorizes a default change yet.",
+        "id": "stage_judgment",
+        "type": "markdown"
+      },
+      {
+        "chartId": "stage_endpoint_chart",
+        "id": "stage_endpoint_chart_block",
+        "type": "chart"
+      },
+      {
+        "body": "FIT033 establishes that high-pass-targeted placement and a partial color solve are useful. FIT034\u2013036 add spectral mixing, affine colors, and ridge geometry, but none clears its stage target. Static FIT037 saturates early; iterative FIT038 improves the endpoint but still misses 25% high-pass and 20% Laplacian at 2,048 rows.",
+        "id": "stage_endpoint_explanation",
+        "type": "markdown"
+      },
+      {
+        "body": "## Static versus iterative pursuit\n\nFIT037 and FIT038 use the same target, base field, protected gate, and row budgets. The difference is reselection: FIT038 recomputes residual sites after each accepted 128-row wave.",
+        "id": "method_progression",
+        "type": "markdown"
+      },
+      {
+        "chartId": "stage_curve_chart",
+        "id": "stage_curve_chart_block",
+        "type": "chart"
+      },
+      {
+        "body": "The curves coincide at 128 rows. By 2,048 rows, FIT038 reaches 20.90% high-pass reduction versus 15.73% for FIT037, confirming that iterative reselection matters. Exact-site exclusion then removes repeated placements and reaches the published target at 768 rows.",
+        "id": "stage_curve_explanation",
+        "type": "markdown"
+      },
+      {
+        "body": "## FIT031 versus orthogonal pursuit\n\nThe valid direct comparison is FIT041's full-frame exact-same-base control, not FIT031's original crop. On that control, the methods optimize different objectives: FIT031 improves global foreground PSNR; orthogonal pursuit improves deep detail and LPIPS.",
+        "id": "fit031_comparison",
+        "type": "markdown"
+      },
+      {
+        "chartId": "same_base_detail_chart",
+        "id": "same_base_detail_chart_block",
+        "type": "chart"
+      },
+      {
+        "body": "Orthogonal pursuit uses 768 deep rows and reduces high-pass, Laplacian, and raw LPIPS by 25.93%, 27.32%, and 10.46%. FIT031 uses 2,777 rows, places zero rows in the deep region, and changes the two deep-detail MSEs by effectively zero.",
+        "id": "same_base_detail_explanation",
+        "type": "markdown"
+      },
+      {
+        "chartId": "same_base_psnr_chart",
+        "id": "same_base_psnr_chart_block",
+        "type": "chart"
+      },
+      {
+        "body": "FIT031 gains 0.321 dB foreground PSNR versus 0.034 dB for pursuit. This is not a contradiction: the first method spends capacity on foreground MAE and boundary error, while pursuit spends capacity on deep high-frequency residuals.",
+        "id": "same_base_psnr_explanation",
+        "type": "markdown"
+      },
+      {
+        "id": "same_base_table_block",
+        "layout": "full",
+        "tableId": "same_base_table",
+        "type": "table"
+      },
+      {
+        "body": "## Stage ledger\n\nThe endpoint table keeps evidence tier, row count, metrics, and gate outcome together. Cross-tier values are descriptive; only the FIT031/FIT041 control is an exact-base method comparison.",
+        "id": "stage_ledger",
+        "type": "markdown"
+      },
+      {
+        "id": "stage_table_block",
+        "layout": "full",
+        "tableId": "stage_table",
+        "type": "table"
+      },
+      {
+        "body": "## Scope, data, and definitions\n\nSource: masked Janelle frame_00008/C0001 at 1200\u00d71038, seed 0. The primary objective is relative reduction in sigma-1.5 high-pass RGB residual MSE on pixels deeper than mask margin + 6; the orthogonal objective is Laplacian residual MSE. Protected safety covers foreground, boundary, tail-risk, holes, finiteness, and outside-mask containment.",
+        "id": "scope",
+        "type": "markdown"
+      },
+      {
+        "body": "## Methodology\n\nThe published PNG target was regenerated with Pillow 12.3 and verified byte-for-byte. A Pillow 11 resize was quarantined. FIT032\u2013038 share one 10,816-row RTX4090 base; their reported reductions were independently recomputed from before/after MSE. FIT039\u2013041 use the published 11,000-row RTX3050 base and its cold/audit artifacts.",
+        "id": "methodology",
+        "type": "markdown"
+      },
+      {
+        "body": "## Limitations and robustness\n\nThis remains one exposed image, one seed per evidence tier, and two GPU/software trajectories. The RTX4090 replication is same-target and common-base within its tier, but not an exact-base replay of the RTX3050 published tier. Results are not rate-matched, and no default, generality, or equal-rate claim is authorized.",
+        "id": "limitations",
+        "type": "markdown"
+      },
+      {
+        "body": "## FIT035 evidence correction\n\nThe first rerun exposed a harness error: an identity A/A render was rejected solely because the strict gate requires material gain. The check now permits exactly `no_material_gain` while still failing on any protected regression. The corrected rerun passes A/A and remains scientifically negative.",
+        "id": "fit035_correction",
+        "type": "markdown"
+      },
+      {
+        "id": "audit_checks_block",
+        "tableId": "audit_table",
+        "type": "table"
+      },
+      {
+        "body": "## Recommended next steps\n\n1. Treat FIT039/040 as the sole fine-detail candidate.\n2. Keep FIT031 only when global/boundary cleanup is the declared objective.\n3. Run a preregistered multi-image, multi-seed, equal-rate comparison before changing defaults.\n4. If a hybrid is tested, allocate separate boundary and deep-detail budgets rather than merging objectives post hoc.",
+        "id": "next_steps",
+        "type": "markdown"
+      },
+      {
+        "body": "## Further questions\n\nDoes exact-site exclusion generalize beyond this frame? At equal encoded bytes, is a boundary/deep hybrid Pareto-superior to either tail alone? Are the 768 pursuit rows stable across seeds and renderer hardware?",
+        "id": "further_questions",
+        "type": "markdown"
+      }
+    ],
+    "cards": [
+      {
+        "dataset": "summary_metrics",
+        "description": "Independent validation and rerun scope.",
+        "id": "evidence_card",
+        "metrics": [
+          {
+            "field": "audit_checks_passed",
+            "format": "number",
+            "label": "Audit checks passed"
+          },
+          {
+            "field": "rerun_cells",
+            "format": "number",
+            "label": "Rerun cells"
+          }
+        ],
+        "sourceId": "summary_metrics_source"
+      },
+      {
+        "dataset": "summary_metrics",
+        "description": "Published exact-same-base fine-detail result.",
+        "id": "pursuit_card",
+        "metrics": [
+          {
+            "field": "pursuit_highpass_reduction",
+            "format": "percent",
+            "label": "Pursuit high-pass reduction"
+          },
+          {
+            "field": "pursuit_added_rows",
+            "format": "number",
+            "label": "Pursuit rows"
+          }
+        ],
+        "sourceId": "summary_metrics_source"
+      },
+      {
+        "dataset": "summary_metrics",
+        "description": "Published exact-same-base FIT031 global-quality result.",
+        "id": "error_tail_card",
+        "metrics": [
+          {
+            "field": "error_tail_foreground_psnr_gain_db",
+            "format": "number",
+            "label": "FIT031 FG PSNR gain"
+          },
+          {
+            "field": "error_tail_added_rows",
+            "format": "number",
+            "label": "FIT031 rows"
+          }
+        ],
+        "sourceId": "summary_metrics_source"
+      }
+    ],
+    "charts": [
+      {
+        "dataset": "stage_endpoint_long",
+        "encodings": {
+          "color": {
+            "field": "metric",
+            "label": "Metric",
+            "type": "nominal"
+          },
+          "tooltip": [
+            {
+              "field": "added_rows",
+              "format": "number",
+              "label": "Added rows",
+              "type": "quantitative"
+            },
+            {
+              "field": "gate_status",
+              "label": "Gate",
+              "type": "nominal"
+            }
+          ],
+          "x": {
+            "field": "task",
+            "label": "Stage",
+            "type": "nominal"
+          },
+          "y": {
+            "field": "reduction",
+            "format": "percent",
+            "label": "Relative MSE reduction",
+            "type": "quantitative"
+          }
+        },
+        "id": "stage_endpoint_chart",
+        "sourceId": "stage_endpoint_long_source",
+        "subtitle": "Iterative reselection improves the curve; exact-site exclusion is the only tested stage that reaches both fine-detail thresholds.",
+        "title": "Deep-detail reduction at each stage endpoint",
+        "type": "bar",
+        "valueFormat": "percent"
+      },
+      {
+        "dataset": "stage_curves",
+        "encodings": {
+          "color": {
+            "field": "task",
+            "label": "Stage",
+            "type": "nominal"
+          },
+          "tooltip": [
+            {
+              "field": "laplacian_reduction",
+              "format": "percent",
+              "label": "Laplacian reduction",
+              "type": "quantitative"
+            }
+          ],
+          "x": {
+            "field": "added_rows",
+            "label": "Added rows",
+            "type": "quantitative"
+          },
+          "y": {
+            "field": "highpass_reduction",
+            "format": "percent",
+            "label": "High-pass reduction",
+            "type": "quantitative"
+          }
+        },
+        "id": "stage_curve_chart",
+        "sourceId": "stage_curves_source",
+        "subtitle": "Iterative FIT038 stays above static FIT037 after the first wave but plateaus below the 25% target.",
+        "title": "Sigma-1.5 high-pass reduction over added rows",
+        "type": "line",
+        "valueFormat": "percent"
+      },
+      {
+        "dataset": "same_base_detail_long",
+        "encodings": {
+          "color": {
+            "field": "method",
+            "label": "Method",
+            "type": "nominal"
+          },
+          "tooltip": [
+            {
+              "field": "added_rows",
+              "format": "number",
+              "label": "Added rows",
+              "type": "quantitative"
+            },
+            {
+              "field": "deep_rows",
+              "format": "number",
+              "label": "Deep rows",
+              "type": "quantitative"
+            }
+          ],
+          "x": {
+            "field": "metric",
+            "label": "Metric",
+            "type": "nominal"
+          },
+          "y": {
+            "field": "reduction",
+            "format": "percent",
+            "label": "Relative reduction",
+            "type": "quantitative"
+          }
+        },
+        "id": "same_base_detail_chart",
+        "sourceId": "same_base_detail_long_source",
+        "subtitle": "Orthogonal pursuit dominates the deep-detail and LPIPS objectives while using fewer rows.",
+        "title": "Exact-same-base detail and perceptual reductions",
+        "type": "bar",
+        "valueFormat": "percent"
+      },
+      {
+        "dataset": "same_base_rows",
+        "encodings": {
+          "tooltip": [
+            {
+              "field": "added_rows",
+              "format": "number",
+              "label": "Added rows",
+              "type": "quantitative"
+            },
+            {
+              "field": "seconds",
+              "format": "number",
+              "label": "Tail seconds",
+              "type": "quantitative"
+            }
+          ],
+          "x": {
+            "field": "method",
+            "label": "Method",
+            "type": "nominal"
+          },
+          "y": {
+            "field": "foreground_psnr_gain_db",
+            "format": "number",
+            "label": "Foreground PSNR gain (dB)",
+            "type": "quantitative"
+          }
+        },
+        "id": "same_base_psnr_chart",
+        "sourceId": "same_base_rows_source",
+        "subtitle": "FIT031 wins the global foreground metric; pursuit wins the separately measured fine-detail objectives.",
+        "title": "Exact-same-base foreground PSNR gain",
+        "type": "bar",
+        "valueFormat": "number"
+      }
+    ],
+    "description": "A source-bound technical comparison of FIT032--041 against FIT031, with explicit evidence tiers and stage judgments.",
+    "generatedAt": "2026-07-28T10:36:55Z",
+    "sources": [
+      {
+        "id": "comparison_audit",
+        "label": "FIT031 new-method stage audit",
+        "path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/comparison.json"
+      },
+      {
+        "id": "fit031_audit",
+        "label": "FIT031 original crop audit",
+        "path": "ara/evidence/fit031-error-only-tail-janelle-2026-07-27/audit.json"
+      },
+      {
+        "id": "fit040_audit",
+        "label": "FIT040/FIT041 exact-same-base audit",
+        "path": "ara/evidence/fit040-orthogonal-detail-pursuit-janelle-2026-07-28/audit.json"
+      },
+      {
+        "id": "summary_metrics_source",
+        "label": "Reviewed headline metrics",
+        "path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/summary_metrics.json",
+        "query": {
+          "description": "Loads the reviewed headline metrics shown in report cards.",
+          "engine": "duckdb",
+          "language": "sql",
+          "metric_definitions": [
+            "Reduction fields are relative reductions, stored as fractions.",
+            "Foreground PSNR gain is candidate minus baseline in decibels."
+          ],
+          "sql": "SELECT * FROM read_json_auto('ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/summary_metrics.json')",
+          "tables_used": [
+            "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/summary_metrics.json"
+          ]
+        }
+      },
+      {
+        "id": "stage_endpoint_long_source",
+        "label": "Reviewed stage endpoints",
+        "path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/stage_endpoint_long.json",
+        "query": {
+          "description": "Loads tidy deep-detail endpoint metrics for each stage.",
+          "engine": "duckdb",
+          "language": "sql",
+          "metric_definitions": [
+            "Reduction = 1 - candidate MSE / baseline MSE.",
+            "Added rows count accepted terminal capacity only."
+          ],
+          "sql": "SELECT * FROM read_json_auto('ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/stage_endpoint_long.json')",
+          "tables_used": [
+            "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/stage_endpoint_long.json"
+          ]
+        }
+      },
+      {
+        "id": "stage_curves_source",
+        "label": "Reviewed FIT037/FIT038 curves",
+        "path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/stage_curves.json",
+        "query": {
+          "description": "Loads protected-safe row-budget curves for static and iterative pursuit.",
+          "engine": "duckdb",
+          "language": "sql",
+          "metric_definitions": [
+            "High-pass reduction uses the deep sigma-1.5 residual MSE.",
+            "Laplacian reduction uses deep Laplacian residual MSE."
+          ],
+          "sql": "SELECT * FROM read_json_auto('ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/stage_curves.json')",
+          "tables_used": [
+            "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/stage_curves.json"
+          ]
+        }
+      },
+      {
+        "id": "same_base_detail_long_source",
+        "label": "Reviewed exact-same-base detail metrics",
+        "path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/same_base_detail_long.json",
+        "query": {
+          "description": "Loads tidy FIT031 and pursuit detail/perceptual reductions.",
+          "engine": "duckdb",
+          "language": "sql",
+          "metric_definitions": [
+            "LPIPS reduction uses raw unclamped LPIPS.",
+            "Both methods start from the same 11,000-row field."
+          ],
+          "sql": "SELECT * FROM read_json_auto('ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/same_base_detail_long.json')",
+          "tables_used": [
+            "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/same_base_detail_long.json"
+          ]
+        }
+      },
+      {
+        "id": "same_base_rows_source",
+        "label": "Reviewed exact-same-base method rows",
+        "path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/same_base_rows.json",
+        "query": {
+          "description": "Loads method-level rows, timings, and quality metrics.",
+          "engine": "duckdb",
+          "language": "sql",
+          "metric_definitions": [
+            "Tail seconds exclude the shared base fit.",
+            "Deep rows have support on the declared deep-detail region."
+          ],
+          "sql": "SELECT * FROM read_json_auto('ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/same_base_rows.json')",
+          "tables_used": [
+            "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/same_base_rows.json"
+          ]
+        }
+      },
+      {
+        "id": "stage_table_source",
+        "label": "Reviewed stage endpoint ledger",
+        "path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/stage_table.json",
+        "query": {
+          "description": "Loads the exact stage ledger shown in the report table.",
+          "engine": "duckdb",
+          "language": "sql",
+          "metric_definitions": [
+            "Cross-tier endpoint values are descriptive only.",
+            "Gate status is the predeclared stage disposition."
+          ],
+          "sql": "SELECT * FROM read_json_auto('ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/stage_table.json')",
+          "tables_used": [
+            "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/stage_table.json"
+          ]
+        }
+      },
+      {
+        "id": "audit_checks_source",
+        "label": "Independent audit checks",
+        "path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/audit_checks.json",
+        "query": {
+          "description": "Loads the source, binding, metric, and gate audit outcomes.",
+          "engine": "duckdb",
+          "language": "sql",
+          "metric_definitions": [
+            "Passed is true only when the independent check succeeds."
+          ],
+          "sql": "SELECT * FROM read_json_auto('ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/audit_checks.json')",
+          "tables_used": [
+            "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/audit_checks.json"
+          ]
+        }
+      }
+    ],
+    "surface": "report",
+    "tables": [
+      {
+        "columns": [
+          {
+            "field": "stage_order",
+            "label": "Order",
+            "type": "number"
+          },
+          {
+            "field": "task",
+            "label": "Task",
+            "type": "text"
+          },
+          {
+            "field": "method",
+            "label": "Method",
+            "type": "text"
+          },
+          {
+            "field": "added_rows",
+            "format": "number",
+            "label": "Added rows"
+          },
+          {
+            "field": "highpass_reduction",
+            "format": "percent",
+            "label": "High-pass"
+          },
+          {
+            "field": "laplacian_reduction",
+            "format": "percent",
+            "label": "Laplacian"
+          },
+          {
+            "field": "foreground_psnr_gain_db",
+            "format": "number",
+            "label": "FG PSNR gain (dB)"
+          },
+          {
+            "field": "gate_status",
+            "label": "Gate",
+            "type": "text"
+          },
+          {
+            "field": "evidence_class",
+            "label": "Evidence class",
+            "type": "text"
+          }
+        ],
+        "dataset": "stage_table",
+        "defaultSort": {
+          "direction": "asc",
+          "field": "stage_order"
+        },
+        "density": "dense",
+        "id": "stage_table",
+        "layout": "full",
+        "sourceId": "stage_table_source",
+        "subtitle": "Exact values, evidence class, and gate disposition.",
+        "title": "Stage endpoint ledger"
+      },
+      {
+        "columns": [
+          {
+            "field": "method",
+            "label": "Method",
+            "type": "text"
+          },
+          {
+            "field": "added_rows",
+            "format": "number",
+            "label": "Added rows"
+          },
+          {
+            "field": "deep_rows",
+            "format": "number",
+            "label": "Deep rows"
+          },
+          {
+            "field": "highpass_reduction",
+            "format": "percent",
+            "label": "High-pass"
+          },
+          {
+            "field": "laplacian_reduction",
+            "format": "percent",
+            "label": "Laplacian"
+          },
+          {
+            "field": "lpips_reduction",
+            "format": "percent",
+            "label": "LPIPS"
+          },
+          {
+            "field": "foreground_psnr_gain_db",
+            "format": "number",
+            "label": "FG PSNR gain (dB)"
+          },
+          {
+            "field": "seconds",
+            "format": "number",
+            "label": "Tail seconds"
+          }
+        ],
+        "dataset": "same_base_rows",
+        "defaultSort": {
+          "direction": "asc",
+          "field": "added_rows"
+        },
+        "id": "same_base_table",
+        "sourceId": "same_base_rows_source",
+        "subtitle": "Published full-frame control values used for the final method judgment.",
+        "title": "Exact-same-base FIT031 and pursuit results"
+      },
+      {
+        "columns": [
+          {
+            "field": "check",
+            "label": "Check",
+            "type": "text"
+          },
+          {
+            "field": "passed",
+            "label": "Passed",
+            "type": "text"
+          }
+        ],
+        "dataset": "audit_checks",
+        "defaultSort": {
+          "direction": "asc",
+          "field": "check"
+        },
+        "id": "audit_table",
+        "sourceId": "audit_checks_source",
+        "subtitle": "All source, binding, metric, and gate checks.",
+        "title": "Independent audit checks"
+      }
+    ],
+    "title": "StructSplat Fine-Detail Stage Comparison",
+    "version": 1
+  },
+  "package_info": {
+    "controls": {
+      "copyAsImage": false,
+      "edit": false,
+      "persistence": false,
+      "refresh": false
+    },
+    "originUrl": "artifact://structsplat-fit031-new-method-stages"
+  },
+  "snapshot": {
+    "datasets": {
+      "audit_checks": [
+        {
+          "check": "all replications share base field",
+          "passed": true
+        },
+        {
+          "check": "all replications share baseline",
+          "passed": true
+        },
+        {
+          "check": "base result field binding",
+          "passed": true
+        },
+        {
+          "check": "captured sources match",
+          "passed": true
+        },
+        {
+          "check": "exact published target file reused",
+          "passed": true
+        },
+        {
+          "check": "expected schemas",
+          "passed": true
+        },
+        {
+          "check": "fit031 original audit valid",
+          "passed": true
+        },
+        {
+          "check": "fit032 rejection replicated",
+          "passed": true
+        },
+        {
+          "check": "fit033 advance only replicated",
+          "passed": true
+        },
+        {
+          "check": "fit034 negative replicated",
+          "passed": true
+        },
+        {
+          "check": "fit035 negative replicated",
+          "passed": true
+        },
+        {
+          "check": "fit035 renderer aa valid",
+          "passed": true
+        },
+        {
+          "check": "fit036 negative replicated",
+          "passed": true
+        },
+        {
+          "check": "fit037 target miss replicated",
+          "passed": true
+        },
+        {
+          "check": "fit038 target miss replicated",
+          "passed": true
+        },
+        {
+          "check": "mask binding matches published",
+          "passed": true
+        },
+        {
+          "check": "published equal base audit passed",
+          "passed": true
+        },
+        {
+          "check": "reported reductions recompute",
+          "passed": true
+        }
+      ],
+      "same_base_detail_long": [
+        {
+          "added_rows": 2777,
+          "deep_rows": 0,
+          "method": "FIT031 error-only tail",
+          "metric": "Sigma-1.5 high-pass",
+          "reduction": 4.197421523688405e-07,
+          "seconds": 18.00248301200918
+        },
+        {
+          "added_rows": 2777,
+          "deep_rows": 0,
+          "method": "FIT031 error-only tail",
+          "metric": "Laplacian",
+          "reduction": 0.0,
+          "seconds": 18.00248301200918
+        },
+        {
+          "added_rows": 2777,
+          "deep_rows": 0,
+          "method": "FIT031 error-only tail",
+          "metric": "LPIPS",
+          "reduction": 0.032114488361217,
+          "seconds": 18.00248301200918
+        },
+        {
+          "added_rows": 768,
+          "deep_rows": 768,
+          "method": "Orthogonal pursuit",
+          "metric": "Sigma-1.5 high-pass",
+          "reduction": 0.25926232493182966,
+          "seconds": 3.359910507017048
+        },
+        {
+          "added_rows": 768,
+          "deep_rows": 768,
+          "method": "Orthogonal pursuit",
+          "metric": "Laplacian",
+          "reduction": 0.2731565966440711,
+          "seconds": 3.359910507017048
+        },
+        {
+          "added_rows": 768,
+          "deep_rows": 768,
+          "method": "Orthogonal pursuit",
+          "metric": "LPIPS",
+          "reduction": 0.10460057547978663,
+          "seconds": 3.359910507017048
+        }
+      ],
+      "same_base_rows": [
+        {
+          "added_rows": 2777,
+          "deep_rows": 0,
+          "foreground_psnr_gain_db": 0.32078795822405226,
+          "highpass_reduction": 4.197421523688405e-07,
+          "laplacian_reduction": 0.0,
+          "lpips_reduction": 0.032114488361217,
+          "method": "FIT031 error-only tail",
+          "seconds": 18.00248301200918
+        },
+        {
+          "added_rows": 768,
+          "deep_rows": 768,
+          "foreground_psnr_gain_db": 0.034326070062487446,
+          "highpass_reduction": 0.25926232493182966,
+          "laplacian_reduction": 0.2731565966440711,
+          "lpips_reduction": 0.10460057547978663,
+          "method": "Orthogonal pursuit",
+          "seconds": 3.359910507017048
+        }
+      ],
+      "stage_curves": [
+        {
+          "added_rows": 128,
+          "highpass_reduction": 0.07622094928513012,
+          "laplacian_reduction": 0.08073377781113455,
+          "protected_safe": true,
+          "task": "FIT-037"
+        },
+        {
+          "added_rows": 256,
+          "highpass_reduction": 0.1029542769537104,
+          "laplacian_reduction": 0.10050989660168907,
+          "protected_safe": true,
+          "task": "FIT-037"
+        },
+        {
+          "added_rows": 384,
+          "highpass_reduction": 0.11859025018251113,
+          "laplacian_reduction": 0.10858292373843004,
+          "protected_safe": true,
+          "task": "FIT-037"
+        },
+        {
+          "added_rows": 512,
+          "highpass_reduction": 0.12856422652387456,
+          "laplacian_reduction": 0.11383199538880273,
+          "protected_safe": true,
+          "task": "FIT-037"
+        },
+        {
+          "added_rows": 768,
+          "highpass_reduction": 0.13950603403236927,
+          "laplacian_reduction": 0.11712499367721052,
+          "protected_safe": true,
+          "task": "FIT-037"
+        },
+        {
+          "added_rows": 1024,
+          "highpass_reduction": 0.14511207241296553,
+          "laplacian_reduction": 0.11844020849463599,
+          "protected_safe": true,
+          "task": "FIT-037"
+        },
+        {
+          "added_rows": 1536,
+          "highpass_reduction": 0.15231433089239566,
+          "laplacian_reduction": 0.12210869468230645,
+          "protected_safe": true,
+          "task": "FIT-037"
+        },
+        {
+          "added_rows": 2048,
+          "highpass_reduction": 0.1572834905942092,
+          "laplacian_reduction": 0.12555358912865167,
+          "protected_safe": true,
+          "task": "FIT-037"
+        },
+        {
+          "added_rows": 128,
+          "highpass_reduction": 0.07622094928513012,
+          "laplacian_reduction": 0.08073377781113455,
+          "protected_safe": true,
+          "task": "FIT-038"
+        },
+        {
+          "added_rows": 256,
+          "highpass_reduction": 0.11509985677427559,
+          "laplacian_reduction": 0.1165799281910167,
+          "protected_safe": true,
+          "task": "FIT-038"
+        },
+        {
+          "added_rows": 384,
+          "highpass_reduction": 0.13731479339905184,
+          "laplacian_reduction": 0.13056429721094487,
+          "protected_safe": true,
+          "task": "FIT-038"
+        },
+        {
+          "added_rows": 512,
+          "highpass_reduction": 0.15321719703839232,
+          "laplacian_reduction": 0.14017754840496355,
+          "protected_safe": true,
+          "task": "FIT-038"
+        },
+        {
+          "added_rows": 640,
+          "highpass_reduction": 0.1650095295565377,
+          "laplacian_reduction": 0.14702376786924753,
+          "protected_safe": true,
+          "task": "FIT-038"
+        },
+        {
+          "added_rows": 768,
+          "highpass_reduction": 0.17402113769845617,
+          "laplacian_reduction": 0.15126432662030898,
+          "protected_safe": true,
+          "task": "FIT-038"
+        },
+        {
+          "added_rows": 896,
+          "highpass_reduction": 0.18098989122123976,
+          "laplacian_reduction": 0.15355828686798034,
+          "protected_safe": true,
+          "task": "FIT-038"
+        },
+        {
+          "added_rows": 1024,
+          "highpass_reduction": 0.1864361747089549,
+          "laplacian_reduction": 0.15518296399538822,
+          "protected_safe": true,
+          "task": "FIT-038"
+        },
+        {
+          "added_rows": 1152,
+          "highpass_reduction": 0.19093788155414937,
+          "laplacian_reduction": 0.15626914089293753,
+          "protected_safe": true,
+          "task": "FIT-038"
+        },
+        {
+          "added_rows": 1280,
+          "highpass_reduction": 0.19477340163716284,
+          "laplacian_reduction": 0.15772983582233635,
+          "protected_safe": true,
+          "task": "FIT-038"
+        },
+        {
+          "added_rows": 1408,
+          "highpass_reduction": 0.19792952048210544,
+          "laplacian_reduction": 0.15856071377466874,
+          "protected_safe": true,
+          "task": "FIT-038"
+        },
+        {
+          "added_rows": 1536,
+          "highpass_reduction": 0.20057396596172483,
+          "laplacian_reduction": 0.15897425031860146,
+          "protected_safe": true,
+          "task": "FIT-038"
+        },
+        {
+          "added_rows": 1664,
+          "highpass_reduction": 0.2030079395376454,
+          "laplacian_reduction": 0.15991405184194984,
+          "protected_safe": true,
+          "task": "FIT-038"
+        },
+        {
+          "added_rows": 1792,
+          "highpass_reduction": 0.20515547642947218,
+          "laplacian_reduction": 0.16063264898991292,
+          "protected_safe": true,
+          "task": "FIT-038"
+        },
+        {
+          "added_rows": 1920,
+          "highpass_reduction": 0.20716326470197188,
+          "laplacian_reduction": 0.1615449958049504,
+          "protected_safe": true,
+          "task": "FIT-038"
+        },
+        {
+          "added_rows": 2048,
+          "highpass_reduction": 0.20902473402914312,
+          "laplacian_reduction": 0.16240482056930616,
+          "protected_safe": true,
+          "task": "FIT-038"
+        }
+      ],
+      "stage_endpoint_long": [
+        {
+          "added_rows": 0,
+          "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+          "gate_status": "rejected: no protected recovery accepted",
+          "method": "Gauge-lifted residual dipoles",
+          "metric": "Sigma-1.5 high-pass",
+          "reduction": 0.0,
+          "stage_order": 32,
+          "target_reached": false,
+          "task": "FIT-032"
+        },
+        {
+          "added_rows": 0,
+          "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+          "gate_status": "rejected: no protected recovery accepted",
+          "method": "Gauge-lifted residual dipoles",
+          "metric": "Laplacian",
+          "reduction": 0.0,
+          "stage_order": 32,
+          "target_reached": false,
+          "task": "FIT-032"
+        },
+        {
+          "added_rows": 128,
+          "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+          "gate_status": "advanced to independent confirmation only",
+          "method": "High-pass births + partial color solve",
+          "metric": "Sigma-1.5 high-pass",
+          "reduction": 0.07622094928513012,
+          "stage_order": 33,
+          "target_reached": false,
+          "task": "FIT-033"
+        },
+        {
+          "added_rows": 128,
+          "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+          "gate_status": "advanced to independent confirmation only",
+          "method": "High-pass births + partial color solve",
+          "metric": "Laplacian",
+          "reduction": 0.08073377781113455,
+          "stage_order": 33,
+          "target_reached": false,
+          "task": "FIT-033"
+        },
+        {
+          "added_rows": 128,
+          "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+          "gate_status": "negative: selected raw weight 0",
+          "method": "Spectral/raw mixed partial solve",
+          "metric": "Sigma-1.5 high-pass",
+          "reduction": 0.077046521820754,
+          "stage_order": 34,
+          "target_reached": false,
+          "task": "FIT-034"
+        },
+        {
+          "added_rows": 128,
+          "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+          "gate_status": "negative: selected raw weight 0",
+          "method": "Spectral/raw mixed partial solve",
+          "metric": "Laplacian",
+          "reduction": 0.08076451514761307,
+          "stage_order": 34,
+          "target_reached": false,
+          "task": "FIT-034"
+        },
+        {
+          "added_rows": 128,
+          "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+          "gate_status": "negative: affine target missed",
+          "method": "Sparse affine detail births",
+          "metric": "Sigma-1.5 high-pass",
+          "reduction": 0.09686269886402021,
+          "stage_order": 35,
+          "target_reached": false,
+          "task": "FIT-035"
+        },
+        {
+          "added_rows": 128,
+          "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+          "gate_status": "negative: affine target missed",
+          "method": "Sparse affine detail births",
+          "metric": "Laplacian",
+          "reduction": 0.09392084121226263,
+          "stage_order": 35,
+          "target_reached": false,
+          "task": "FIT-035"
+        },
+        {
+          "added_rows": 128,
+          "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+          "gate_status": "negative: ridge target missed",
+          "method": "High-pass residual ridge births",
+          "metric": "Sigma-1.5 high-pass",
+          "reduction": 0.08084631114214336,
+          "stage_order": 36,
+          "target_reached": false,
+          "task": "FIT-036"
+        },
+        {
+          "added_rows": 128,
+          "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+          "gate_status": "negative: ridge target missed",
+          "method": "High-pass residual ridge births",
+          "metric": "Laplacian",
+          "reduction": 0.08456923040423925,
+          "stage_order": 36,
+          "target_reached": false,
+          "task": "FIT-036"
+        },
+        {
+          "added_rows": 2048,
+          "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+          "gate_status": "negative: target missed at 2,048 rows",
+          "method": "Static nested deep-detail rows",
+          "metric": "Sigma-1.5 high-pass",
+          "reduction": 0.1572834905942092,
+          "stage_order": 37,
+          "target_reached": false,
+          "task": "FIT-037"
+        },
+        {
+          "added_rows": 2048,
+          "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+          "gate_status": "negative: target missed at 2,048 rows",
+          "method": "Static nested deep-detail rows",
+          "metric": "Laplacian",
+          "reduction": 0.12555358912865167,
+          "stage_order": 37,
+          "target_reached": false,
+          "task": "FIT-037"
+        },
+        {
+          "added_rows": 2048,
+          "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+          "gate_status": "negative: target missed at 2,048 rows",
+          "method": "Iterative orthogonal pursuit, radius 2",
+          "metric": "Sigma-1.5 high-pass",
+          "reduction": 0.20902473402914312,
+          "stage_order": 38,
+          "target_reached": false,
+          "task": "FIT-038"
+        },
+        {
+          "added_rows": 2048,
+          "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+          "gate_status": "negative: target missed at 2,048 rows",
+          "method": "Iterative orthogonal pursuit, radius 2",
+          "metric": "Laplacian",
+          "reduction": 0.16240482056930616,
+          "stage_order": 38,
+          "target_reached": false,
+          "task": "FIT-038"
+        },
+        {
+          "added_rows": 768,
+          "evidence_class": "published same-target RTX3050 result; 11,000-row base",
+          "gate_status": "fine-detail target reached at 768 rows",
+          "method": "Orthogonal pursuit + exact-site exclusion",
+          "metric": "Sigma-1.5 high-pass",
+          "reduction": 0.25926232493182966,
+          "stage_order": 39,
+          "target_reached": true,
+          "task": "FIT-039/040"
+        },
+        {
+          "added_rows": 768,
+          "evidence_class": "published same-target RTX3050 result; 11,000-row base",
+          "gate_status": "fine-detail target reached at 768 rows",
+          "method": "Orthogonal pursuit + exact-site exclusion",
+          "metric": "Laplacian",
+          "reduction": 0.2731565966440711,
+          "stage_order": 39,
+          "target_reached": true,
+          "task": "FIT-039/040"
+        }
+      ],
+      "stage_table": [
+        {
+          "added_rows": 0,
+          "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+          "foreground_psnr_gain_db": 0.0,
+          "gate_status": "rejected: no protected recovery accepted",
+          "highpass_reduction": 0.0,
+          "laplacian_reduction": 0.0,
+          "method": "Gauge-lifted residual dipoles",
+          "stage_order": 32,
+          "task": "FIT-032"
+        },
+        {
+          "added_rows": 128,
+          "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+          "foreground_psnr_gain_db": 0.011083710682285641,
+          "gate_status": "advanced to independent confirmation only",
+          "highpass_reduction": 0.07622094928513012,
+          "laplacian_reduction": 0.08073377781113455,
+          "method": "High-pass births + partial color solve",
+          "stage_order": 33,
+          "task": "FIT-033"
+        },
+        {
+          "added_rows": 128,
+          "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+          "foreground_psnr_gain_db": 0.010948552002631118,
+          "gate_status": "negative: selected raw weight 0",
+          "highpass_reduction": 0.077046521820754,
+          "laplacian_reduction": 0.08076451514761307,
+          "method": "Spectral/raw mixed partial solve",
+          "stage_order": 34,
+          "task": "FIT-034"
+        },
+        {
+          "added_rows": 128,
+          "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+          "foreground_psnr_gain_db": 0.014202164495038971,
+          "gate_status": "negative: affine target missed",
+          "highpass_reduction": 0.09686269886402021,
+          "laplacian_reduction": 0.09392084121226263,
+          "method": "Sparse affine detail births",
+          "stage_order": 35,
+          "task": "FIT-035"
+        },
+        {
+          "added_rows": 128,
+          "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+          "foreground_psnr_gain_db": 0.011224919290981461,
+          "gate_status": "negative: ridge target missed",
+          "highpass_reduction": 0.08084631114214336,
+          "laplacian_reduction": 0.08456923040423925,
+          "method": "High-pass residual ridge births",
+          "stage_order": 36,
+          "task": "FIT-036"
+        },
+        {
+          "added_rows": 2048,
+          "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+          "foreground_psnr_gain_db": 0.025794485722073546,
+          "gate_status": "negative: target missed at 2,048 rows",
+          "highpass_reduction": 0.1572834905942092,
+          "laplacian_reduction": 0.12555358912865167,
+          "method": "Static nested deep-detail rows",
+          "stage_order": 37,
+          "task": "FIT-037"
+        },
+        {
+          "added_rows": 2048,
+          "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+          "foreground_psnr_gain_db": 0.03430046955256927,
+          "gate_status": "negative: target missed at 2,048 rows",
+          "highpass_reduction": 0.20902473402914312,
+          "laplacian_reduction": 0.16240482056930616,
+          "method": "Iterative orthogonal pursuit, radius 2",
+          "stage_order": 38,
+          "task": "FIT-038"
+        },
+        {
+          "added_rows": 768,
+          "evidence_class": "published same-target RTX3050 result; 11,000-row base",
+          "foreground_psnr_gain_db": 0.034326070062487446,
+          "gate_status": "fine-detail target reached at 768 rows",
+          "highpass_reduction": 0.25926232493182966,
+          "laplacian_reduction": 0.2731565966440711,
+          "method": "Orthogonal pursuit + exact-site exclusion",
+          "stage_order": 39,
+          "task": "FIT-039/040"
+        }
+      ],
+      "summary_metrics": [
+        {
+          "audit_checks_passed": 18,
+          "audit_checks_total": 18,
+          "error_tail_added_rows": 2777,
+          "error_tail_foreground_psnr_gain_db": 0.32078795822405226,
+          "pursuit_added_rows": 768,
+          "pursuit_foreground_psnr_gain_db": 0.034326070062487446,
+          "pursuit_highpass_reduction": 0.25926232493182966,
+          "pursuit_laplacian_reduction": 0.2731565966440711,
+          "rerun_cells": 7
+        }
+      ]
+    },
+    "generatedAt": "2026-07-28T10:36:55Z",
+    "status": "ready",
+    "version": 1
+  },
+  "sources": [
+    {
+      "id": "comparison_audit",
+      "label": "FIT031 new-method stage audit",
+      "path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/comparison.json"
+    },
+    {
+      "id": "fit031_audit",
+      "label": "FIT031 original crop audit",
+      "path": "ara/evidence/fit031-error-only-tail-janelle-2026-07-27/audit.json"
+    },
+    {
+      "id": "fit040_audit",
+      "label": "FIT040/FIT041 exact-same-base audit",
+      "path": "ara/evidence/fit040-orthogonal-detail-pursuit-janelle-2026-07-28/audit.json"
+    },
+    {
+      "id": "summary_metrics_source",
+      "label": "Reviewed headline metrics",
+      "path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/summary_metrics.json",
+      "query": {
+        "description": "Loads the reviewed headline metrics shown in report cards.",
+        "engine": "duckdb",
+        "language": "sql",
+        "metric_definitions": [
+          "Reduction fields are relative reductions, stored as fractions.",
+          "Foreground PSNR gain is candidate minus baseline in decibels."
+        ],
+        "sql": "SELECT * FROM read_json_auto('ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/summary_metrics.json')",
+        "tables_used": [
+          "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/summary_metrics.json"
+        ]
+      }
+    },
+    {
+      "id": "stage_endpoint_long_source",
+      "label": "Reviewed stage endpoints",
+      "path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/stage_endpoint_long.json",
+      "query": {
+        "description": "Loads tidy deep-detail endpoint metrics for each stage.",
+        "engine": "duckdb",
+        "language": "sql",
+        "metric_definitions": [
+          "Reduction = 1 - candidate MSE / baseline MSE.",
+          "Added rows count accepted terminal capacity only."
+        ],
+        "sql": "SELECT * FROM read_json_auto('ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/stage_endpoint_long.json')",
+        "tables_used": [
+          "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/stage_endpoint_long.json"
+        ]
+      }
+    },
+    {
+      "id": "stage_curves_source",
+      "label": "Reviewed FIT037/FIT038 curves",
+      "path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/stage_curves.json",
+      "query": {
+        "description": "Loads protected-safe row-budget curves for static and iterative pursuit.",
+        "engine": "duckdb",
+        "language": "sql",
+        "metric_definitions": [
+          "High-pass reduction uses the deep sigma-1.5 residual MSE.",
+          "Laplacian reduction uses deep Laplacian residual MSE."
+        ],
+        "sql": "SELECT * FROM read_json_auto('ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/stage_curves.json')",
+        "tables_used": [
+          "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/stage_curves.json"
+        ]
+      }
+    },
+    {
+      "id": "same_base_detail_long_source",
+      "label": "Reviewed exact-same-base detail metrics",
+      "path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/same_base_detail_long.json",
+      "query": {
+        "description": "Loads tidy FIT031 and pursuit detail/perceptual reductions.",
+        "engine": "duckdb",
+        "language": "sql",
+        "metric_definitions": [
+          "LPIPS reduction uses raw unclamped LPIPS.",
+          "Both methods start from the same 11,000-row field."
+        ],
+        "sql": "SELECT * FROM read_json_auto('ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/same_base_detail_long.json')",
+        "tables_used": [
+          "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/same_base_detail_long.json"
+        ]
+      }
+    },
+    {
+      "id": "same_base_rows_source",
+      "label": "Reviewed exact-same-base method rows",
+      "path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/same_base_rows.json",
+      "query": {
+        "description": "Loads method-level rows, timings, and quality metrics.",
+        "engine": "duckdb",
+        "language": "sql",
+        "metric_definitions": [
+          "Tail seconds exclude the shared base fit.",
+          "Deep rows have support on the declared deep-detail region."
+        ],
+        "sql": "SELECT * FROM read_json_auto('ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/same_base_rows.json')",
+        "tables_used": [
+          "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/same_base_rows.json"
+        ]
+      }
+    },
+    {
+      "id": "stage_table_source",
+      "label": "Reviewed stage endpoint ledger",
+      "path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/stage_table.json",
+      "query": {
+        "description": "Loads the exact stage ledger shown in the report table.",
+        "engine": "duckdb",
+        "language": "sql",
+        "metric_definitions": [
+          "Cross-tier endpoint values are descriptive only.",
+          "Gate status is the predeclared stage disposition."
+        ],
+        "sql": "SELECT * FROM read_json_auto('ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/stage_table.json')",
+        "tables_used": [
+          "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/stage_table.json"
+        ]
+      }
+    },
+    {
+      "id": "audit_checks_source",
+      "label": "Independent audit checks",
+      "path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/audit_checks.json",
+      "query": {
+        "description": "Loads the source, binding, metric, and gate audit outcomes.",
+        "engine": "duckdb",
+        "language": "sql",
+        "metric_definitions": [
+          "Passed is true only when the independent check succeeds."
+        ],
+        "sql": "SELECT * FROM read_json_auto('ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/audit_checks.json')",
+        "tables_used": [
+          "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/datasets/audit_checks.json"
+        ]
+      }
+    }
+  ],
+  "surface": "report"
+}

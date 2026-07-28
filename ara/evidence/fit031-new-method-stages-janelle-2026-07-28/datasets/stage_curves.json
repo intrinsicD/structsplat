@@ -1,0 +1,170 @@
+[
+  {
+    "added_rows": 128,
+    "highpass_reduction": 0.07622094928513012,
+    "laplacian_reduction": 0.08073377781113455,
+    "protected_safe": true,
+    "task": "FIT-037"
+  },
+  {
+    "added_rows": 256,
+    "highpass_reduction": 0.1029542769537104,
+    "laplacian_reduction": 0.10050989660168907,
+    "protected_safe": true,
+    "task": "FIT-037"
+  },
+  {
+    "added_rows": 384,
+    "highpass_reduction": 0.11859025018251113,
+    "laplacian_reduction": 0.10858292373843004,
+    "protected_safe": true,
+    "task": "FIT-037"
+  },
+  {
+    "added_rows": 512,
+    "highpass_reduction": 0.12856422652387456,
+    "laplacian_reduction": 0.11383199538880273,
+    "protected_safe": true,
+    "task": "FIT-037"
+  },
+  {
+    "added_rows": 768,
+    "highpass_reduction": 0.13950603403236927,
+    "laplacian_reduction": 0.11712499367721052,
+    "protected_safe": true,
+    "task": "FIT-037"
+  },
+  {
+    "added_rows": 1024,
+    "highpass_reduction": 0.14511207241296553,
+    "laplacian_reduction": 0.11844020849463599,
+    "protected_safe": true,
+    "task": "FIT-037"
+  },
+  {
+    "added_rows": 1536,
+    "highpass_reduction": 0.15231433089239566,
+    "laplacian_reduction": 0.12210869468230645,
+    "protected_safe": true,
+    "task": "FIT-037"
+  },
+  {
+    "added_rows": 2048,
+    "highpass_reduction": 0.1572834905942092,
+    "laplacian_reduction": 0.12555358912865167,
+    "protected_safe": true,
+    "task": "FIT-037"
+  },
+  {
+    "added_rows": 128,
+    "highpass_reduction": 0.07622094928513012,
+    "laplacian_reduction": 0.08073377781113455,
+    "protected_safe": true,
+    "task": "FIT-038"
+  },
+  {
+    "added_rows": 256,
+    "highpass_reduction": 0.11509985677427559,
+    "laplacian_reduction": 0.1165799281910167,
+    "protected_safe": true,
+    "task": "FIT-038"
+  },
+  {
+    "added_rows": 384,
+    "highpass_reduction": 0.13731479339905184,
+    "laplacian_reduction": 0.13056429721094487,
+    "protected_safe": true,
+    "task": "FIT-038"
+  },
+  {
+    "added_rows": 512,
+    "highpass_reduction": 0.15321719703839232,
+    "laplacian_reduction": 0.14017754840496355,
+    "protected_safe": true,
+    "task": "FIT-038"
+  },
+  {
+    "added_rows": 640,
+    "highpass_reduction": 0.1650095295565377,
+    "laplacian_reduction": 0.14702376786924753,
+    "protected_safe": true,
+    "task": "FIT-038"
+  },
+  {
+    "added_rows": 768,
+    "highpass_reduction": 0.17402113769845617,
+    "laplacian_reduction": 0.15126432662030898,
+    "protected_safe": true,
+    "task": "FIT-038"
+  },
+  {
+    "added_rows": 896,
+    "highpass_reduction": 0.18098989122123976,
+    "laplacian_reduction": 0.15355828686798034,
+    "protected_safe": true,
+    "task": "FIT-038"
+  },
+  {
+    "added_rows": 1024,
+    "highpass_reduction": 0.1864361747089549,
+    "laplacian_reduction": 0.15518296399538822,
+    "protected_safe": true,
+    "task": "FIT-038"
+  },
+  {
+    "added_rows": 1152,
+    "highpass_reduction": 0.19093788155414937,
+    "laplacian_reduction": 0.15626914089293753,
+    "protected_safe": true,
+    "task": "FIT-038"
+  },
+  {
+    "added_rows": 1280,
+    "highpass_reduction": 0.19477340163716284,
+    "laplacian_reduction": 0.15772983582233635,
+    "protected_safe": true,
+    "task": "FIT-038"
+  },
+  {
+    "added_rows": 1408,
+    "highpass_reduction": 0.19792952048210544,
+    "laplacian_reduction": 0.15856071377466874,
+    "protected_safe": true,
+    "task": "FIT-038"
+  },
+  {
+    "added_rows": 1536,
+    "highpass_reduction": 0.20057396596172483,
+    "laplacian_reduction": 0.15897425031860146,
+    "protected_safe": true,
+    "task": "FIT-038"
+  },
+  {
+    "added_rows": 1664,
+    "highpass_reduction": 0.2030079395376454,
+    "laplacian_reduction": 0.15991405184194984,
+    "protected_safe": true,
+    "task": "FIT-038"
+  },
+  {
+    "added_rows": 1792,
+    "highpass_reduction": 0.20515547642947218,
+    "laplacian_reduction": 0.16063264898991292,
+    "protected_safe": true,
+    "task": "FIT-038"
+  },
+  {
+    "added_rows": 1920,
+    "highpass_reduction": 0.20716326470197188,
+    "laplacian_reduction": 0.1615449958049504,
+    "protected_safe": true,
+    "task": "FIT-038"
+  },
+  {
+    "added_rows": 2048,
+    "highpass_reduction": 0.20902473402914312,
+    "laplacian_reduction": 0.16240482056930616,
+    "protected_safe": true,
+    "task": "FIT-038"
+  }
+]

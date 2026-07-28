@@ -1,0 +1,305 @@
+{
+  "arms": {
+    "error_only": {
+      "added_rows": {
+        "mean": 5798.0392156862745,
+        "median": 6144.0,
+        "p25": 5576.0,
+        "p75": 6400.0
+      },
+      "cells": 51,
+      "foreground_psnr_gain_db": {
+        "mean": 3.668066115787509,
+        "median": 3.587437856714317,
+        "p25": 3.1048542848592877,
+        "p75": 4.050877732297236
+      },
+      "highpass_reduction": {
+        "mean": 0.14512120753821964,
+        "median": 0.12781426396057538,
+        "p25": 0.08090361899576459,
+        "p75": 0.1866605235112081
+      },
+      "laplacian_reduction": {
+        "mean": 0.1634446208983453,
+        "median": 0.1480913653748548,
+        "p25": 0.0984891431922632,
+        "p75": 0.21649594447583398
+      },
+      "protected_safe": 51,
+      "seconds": {
+        "mean": 10.039135003590262,
+        "median": 9.303135564550757,
+        "p25": 8.830826985649765,
+        "p75": 10.317713420838118
+      },
+      "target_reached": 7,
+      "total_added_rows": 295700,
+      "total_seconds": 511.9958851831034
+    },
+    "pursuit": {
+      "added_rows": {
+        "mean": 494.4313725490196,
+        "median": 384.0,
+        "p25": 320.0,
+        "p75": 576.0
+      },
+      "cells": 51,
+      "foreground_psnr_gain_db": {
+        "mean": 0.0522461457586351,
+        "median": 0.05089355064658818,
+        "p25": 0.042924907074537444,
+        "p75": 0.06102083386839574
+      },
+      "highpass_reduction": {
+        "mean": 0.2735233773182384,
+        "median": 0.2670524411083094,
+        "p25": 0.25719721866305256,
+        "p75": 0.2781957593114076
+      },
+      "laplacian_reduction": {
+        "mean": 0.2735123271139301,
+        "median": 0.26896604071905683,
+        "p25": 0.2556703192920038,
+        "p75": 0.2860081127186824
+      },
+      "protected_safe": 51,
+      "seconds": {
+        "mean": 6.99328742439256,
+        "median": 6.516109671443701,
+        "p25": 6.175831685308367,
+        "p75": 7.214722621254623
+      },
+      "target_reached": 51,
+      "total_added_rows": 25216,
+      "total_seconds": 356.65765864402056
+    }
+  },
+  "by_frame": {
+    "frame_00008": {
+      "cells": 25,
+      "error_only": {
+        "added_rows": {
+          "mean": 5565.6,
+          "median": 5632.0,
+          "p25": 5120.0,
+          "p75": 6144.0
+        },
+        "cells": 25,
+        "foreground_psnr_gain_db": {
+          "mean": 3.6788449248116937,
+          "median": 3.566916079431021,
+          "p25": 3.1016896206683775,
+          "p75": 3.9749938341893802
+        },
+        "highpass_reduction": {
+          "mean": 0.13802597262885757,
+          "median": 0.1168247807963203,
+          "p25": 0.07626914402124485,
+          "p75": 0.20190837817697005
+        },
+        "laplacian_reduction": {
+          "mean": 0.16563827745208215,
+          "median": 0.15342680013120624,
+          "p25": 0.09836022895508034,
+          "p75": 0.24137920940510127
+        },
+        "protected_safe": 25,
+        "seconds": {
+          "mean": 10.2308602861315,
+          "median": 9.22889672126621,
+          "p25": 8.468582565896213,
+          "p75": 10.263236628845334
+        },
+        "target_reached": 4,
+        "total_added_rows": 139140,
+        "total_seconds": 255.77150715328753
+      },
+      "pursuit": {
+        "added_rows": {
+          "mean": 486.4,
+          "median": 384.0,
+          "p25": 256.0,
+          "p75": 640.0
+        },
+        "cells": 25,
+        "foreground_psnr_gain_db": {
+          "mean": 0.048585146237747526,
+          "median": 0.04408067922395986,
+          "p25": 0.03603953695160911,
+          "p75": 0.05727446269772685
+        },
+        "highpass_reduction": {
+          "mean": 0.2758578610099129,
+          "median": 0.26863539070181464,
+          "p25": 0.2599635048831582,
+          "p75": 0.27733947298176675
+        },
+        "laplacian_reduction": {
+          "mean": 0.27706008427928863,
+          "median": 0.27195536794404196,
+          "p25": 0.2599383246084561,
+          "p75": 0.2895028641413724
+        },
+        "protected_safe": 25,
+        "seconds": {
+          "mean": 7.20438562296331,
+          "median": 6.836902631446719,
+          "p25": 5.907495183870196,
+          "p75": 7.3239124258980155
+        },
+        "target_reached": 25,
+        "total_added_rows": 12160,
+        "total_seconds": 180.10964057408273
+      },
+      "winners": {
+        "error_only": 0,
+        "neither": 0,
+        "pursuit": 25,
+        "tie": 0
+      }
+    },
+    "frame_00009": {
+      "cells": 26,
+      "error_only": {
+        "added_rows": {
+          "mean": 6021.538461538462,
+          "median": 6144.0,
+          "p25": 5632.0,
+          "p75": 7040.0
+        },
+        "cells": 26,
+        "foreground_psnr_gain_db": {
+          "mean": 3.657701876341177,
+          "median": 3.6209940979210504,
+          "p25": 3.1865236781764024,
+          "p75": 4.051474171061568
+        },
+        "highpass_reduction": {
+          "mean": 0.15194354879722163,
+          "median": 0.15079782667452024,
+          "p25": 0.09084055714574943,
+          "p75": 0.17983241325462804
+        },
+        "laplacian_reduction": {
+          "mean": 0.1613353357505214,
+          "median": 0.14032974588577996,
+          "p25": 0.10436748969522769,
+          "p75": 0.20221333277014641
+        },
+        "protected_safe": 26,
+        "seconds": {
+          "mean": 9.854783770377534,
+          "median": 9.617738321889192,
+          "p25": 8.958897132892162,
+          "p75": 10.376291782129556
+        },
+        "target_reached": 3,
+        "total_added_rows": 156560,
+        "total_seconds": 256.22437802981585
+      },
+      "pursuit": {
+        "added_rows": {
+          "mean": 502.15384615384613,
+          "median": 448.0,
+          "p25": 384.0,
+          "p75": 512.0
+        },
+        "cells": 26,
+        "foreground_psnr_gain_db": {
+          "mean": 0.05576633760564238,
+          "median": 0.05667471303289595,
+          "p25": 0.04940102031386839,
+          "p75": 0.06300337959301672
+        },
+        "highpass_reduction": {
+          "mean": 0.271278681460859,
+          "median": 0.265914810328384,
+          "p25": 0.25674705936220776,
+          "p75": 0.27934929618261684
+        },
+        "laplacian_reduction": {
+          "mean": 0.2701010221472392,
+          "median": 0.2667166655350117,
+          "p25": 0.2548975160133347,
+          "p75": 0.28218877332827297
+        },
+        "protected_safe": 26,
+        "seconds": {
+          "mean": 6.790308387305301,
+          "median": 6.488425345625728,
+          "p25": 6.211453674826771,
+          "p75": 6.928590951487422
+        },
+        "target_reached": 26,
+        "total_added_rows": 13056,
+        "total_seconds": 176.54801806993783
+      },
+      "winners": {
+        "error_only": 0,
+        "neither": 0,
+        "pursuit": 26,
+        "tie": 0
+      }
+    }
+  },
+  "failures": [],
+  "paired_counts": {
+    "error_higher_foreground_psnr_gain": 51,
+    "pursuit_fewer_rows": 51,
+    "pursuit_higher_highpass_reduction": 48,
+    "pursuit_higher_laplacian_reduction": 44
+  },
+  "primary_rule": "reach >=25% deep sigma-1.5 high-pass and >=20% deep Laplacian reduction while protected-safe; if both pass, fewer rows wins",
+  "schema": "structsplat.janelle_cross_view_tail_diagnostic.v1.summary",
+  "scope": {
+    "completed_cells": 51,
+    "eligible_cells": 51,
+    "excluded_reference_cell": [
+      "frame_00008",
+      "C0001"
+    ],
+    "failed_cells": 0,
+    "frames": [
+      "frame_00008",
+      "frame_00009"
+    ],
+    "independent_scene_confirmation": false,
+    "interpretation": "paired cross-view transfer diagnostic within one Janelle capture/session; views and adjacent frames are correlated",
+    "requested_cells": 51,
+    "unique_views": [
+      "C0001",
+      "C0004",
+      "C0005",
+      "C0006",
+      "C0008",
+      "C0009",
+      "C0012",
+      "C0014",
+      "C0018",
+      "C0019",
+      "C0020",
+      "C0021",
+      "C0022",
+      "C0025",
+      "C0026",
+      "C0028",
+      "C0029",
+      "C0030",
+      "C0031",
+      "C0034",
+      "C0037",
+      "C0039",
+      "C1000",
+      "C1001",
+      "C1002",
+      "C1004"
+    ]
+  },
+  "winners": {
+    "error_only": 0,
+    "neither": 0,
+    "pursuit": 51,
+    "tie": 0
+  }
+}

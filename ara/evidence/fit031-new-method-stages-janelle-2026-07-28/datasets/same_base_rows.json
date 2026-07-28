@@ -1,0 +1,22 @@
+[
+  {
+    "added_rows": 2777,
+    "deep_rows": 0,
+    "foreground_psnr_gain_db": 0.32078795822405226,
+    "highpass_reduction": 4.197421523688405e-07,
+    "laplacian_reduction": 0.0,
+    "lpips_reduction": 0.032114488361217,
+    "method": "FIT031 error-only tail",
+    "seconds": 18.00248301200918
+  },
+  {
+    "added_rows": 768,
+    "deep_rows": 768,
+    "foreground_psnr_gain_db": 0.034326070062487446,
+    "highpass_reduction": 0.25926232493182966,
+    "laplacian_reduction": 0.2731565966440711,
+    "lpips_reduction": 0.10460057547978663,
+    "method": "Orthogonal pursuit",
+    "seconds": 3.359910507017048
+  }
+]

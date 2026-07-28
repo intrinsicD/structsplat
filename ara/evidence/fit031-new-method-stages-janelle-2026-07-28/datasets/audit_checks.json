@@ -1,0 +1,74 @@
+[
+  {
+    "check": "all replications share base field",
+    "passed": true
+  },
+  {
+    "check": "all replications share baseline",
+    "passed": true
+  },
+  {
+    "check": "base result field binding",
+    "passed": true
+  },
+  {
+    "check": "captured sources match",
+    "passed": true
+  },
+  {
+    "check": "exact published target file reused",
+    "passed": true
+  },
+  {
+    "check": "expected schemas",
+    "passed": true
+  },
+  {
+    "check": "fit031 original audit valid",
+    "passed": true
+  },
+  {
+    "check": "fit032 rejection replicated",
+    "passed": true
+  },
+  {
+    "check": "fit033 advance only replicated",
+    "passed": true
+  },
+  {
+    "check": "fit034 negative replicated",
+    "passed": true
+  },
+  {
+    "check": "fit035 negative replicated",
+    "passed": true
+  },
+  {
+    "check": "fit035 renderer aa valid",
+    "passed": true
+  },
+  {
+    "check": "fit036 negative replicated",
+    "passed": true
+  },
+  {
+    "check": "fit037 target miss replicated",
+    "passed": true
+  },
+  {
+    "check": "fit038 target miss replicated",
+    "passed": true
+  },
+  {
+    "check": "mask binding matches published",
+    "passed": true
+  },
+  {
+    "check": "published equal base audit passed",
+    "passed": true
+  },
+  {
+    "check": "reported reductions recompute",
+    "passed": true
+  }
+]

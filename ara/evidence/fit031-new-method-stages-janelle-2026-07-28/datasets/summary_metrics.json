@@ -1,0 +1,13 @@
+[
+  {
+    "audit_checks_passed": 18,
+    "audit_checks_total": 18,
+    "error_tail_added_rows": 2777,
+    "error_tail_foreground_psnr_gain_db": 0.32078795822405226,
+    "pursuit_added_rows": 768,
+    "pursuit_foreground_psnr_gain_db": 0.034326070062487446,
+    "pursuit_highpass_reduction": 0.25926232493182966,
+    "pursuit_laplacian_reduction": 0.2731565966440711,
+    "rerun_cells": 7
+  }
+]

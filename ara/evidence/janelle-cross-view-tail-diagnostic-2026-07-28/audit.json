@@ -1,0 +1,154 @@
+{
+  "audit_script": {
+    "path": "/home/alex/Documents/structsplat/scripts/experiments/audit_janelle_cross_view_tail_diagnostic.py",
+    "sha256": "dcf50e5ec7aa32c9637c5d3fc4cf78540bfa4041056907486a9dc6335797995c"
+  },
+  "checks": [
+    {
+      "detail": "complete",
+      "name": "manifest_complete",
+      "passed": true
+    },
+    {
+      "detail": {
+        "requested": 51,
+        "unique": 51
+      },
+      "name": "manifest_scope",
+      "passed": true
+    },
+    {
+      "detail": "c1cafe794fc73e8e32212d00b4edc9e8e48fe863d71c97195f8bd9db64bcc638",
+      "name": "run_summary_hash",
+      "passed": true
+    },
+    {
+      "detail": [],
+      "name": "all_51_cell_artifacts_valid",
+      "passed": true
+    },
+    {
+      "detail": {
+        "recomputed": {
+          "completed": 51,
+          "error_median_highpass": 0.12781426396057538,
+          "error_median_laplacian": 0.1480913653748548,
+          "error_median_rows": 6144.0,
+          "error_protected_safe": 51,
+          "error_target_reached": 7,
+          "error_total_rows": 295700,
+          "pursuit_median_highpass": 0.2670524411083094,
+          "pursuit_median_laplacian": 0.26896604071905683,
+          "pursuit_median_rows": 384.0,
+          "pursuit_protected_safe": 51,
+          "pursuit_target_reached": 51,
+          "pursuit_total_rows": 25216,
+          "winners": {
+            "error_only": 0,
+            "neither": 0,
+            "pursuit": 51,
+            "tie": 0
+          }
+        },
+        "reported": {
+          "completed": 51,
+          "error_median_highpass": 0.12781426396057538,
+          "error_median_laplacian": 0.1480913653748548,
+          "error_median_rows": 6144.0,
+          "error_protected_safe": 51,
+          "error_target_reached": 7,
+          "error_total_rows": 295700,
+          "pursuit_median_highpass": 0.2670524411083094,
+          "pursuit_median_laplacian": 0.26896604071905683,
+          "pursuit_median_rows": 384.0,
+          "pursuit_protected_safe": 51,
+          "pursuit_target_reached": 51,
+          "pursuit_total_rows": 25216,
+          "winners": {
+            "error_only": 0,
+            "neither": 0,
+            "pursuit": 51,
+            "tie": 0
+          }
+        }
+      },
+      "name": "independent_aggregate_reconciliation",
+      "passed": true
+    },
+    {
+      "detail": {
+        "rows": 51,
+        "unique_keys": 51
+      },
+      "name": "tidy_csv_complete",
+      "passed": true
+    },
+    {
+      "detail": {
+        "report_sha256": "c1cafe794fc73e8e32212d00b4edc9e8e48fe863d71c97195f8bd9db64bcc638",
+        "run_sha256": "c1cafe794fc73e8e32212d00b4edc9e8e48fe863d71c97195f8bd9db64bcc638"
+      },
+      "name": "report_summary_matches_run",
+      "passed": true
+    },
+    {
+      "detail": {
+        "cards": 51,
+        "links": 921,
+        "missing": []
+      },
+      "name": "html_cards_and_links",
+      "passed": true
+    },
+    {
+      "detail": {
+        "expected": 357,
+        "images": 357
+      },
+      "name": "report_crop_inventory",
+      "passed": true
+    },
+    {
+      "detail": {
+        "csv": true,
+        "index": true,
+        "run": true,
+        "source_manifest": true,
+        "summary": true
+      },
+      "name": "artifact_hashes",
+      "passed": true
+    }
+  ],
+  "checks_passed": 10,
+  "checks_total": 10,
+  "interpretation_guardrails": {
+    "archived_mask_contained_bases": true,
+    "independent_scene_confirmation": false,
+    "natural_not_equal_row_budgets": true,
+    "same_capture_correlated": true
+  },
+  "recomputed": {
+    "completed": 51,
+    "error_median_highpass": 0.12781426396057538,
+    "error_median_laplacian": 0.1480913653748548,
+    "error_median_rows": 6144.0,
+    "error_protected_safe": 51,
+    "error_target_reached": 7,
+    "error_total_rows": 295700,
+    "pursuit_median_highpass": 0.2670524411083094,
+    "pursuit_median_laplacian": 0.26896604071905683,
+    "pursuit_median_rows": 384.0,
+    "pursuit_protected_safe": 51,
+    "pursuit_target_reached": 51,
+    "pursuit_total_rows": 25216,
+    "winners": {
+      "error_only": 0,
+      "neither": 0,
+      "pursuit": 51,
+      "tie": 0
+    }
+  },
+  "schema": "structsplat.janelle_cross_view_tail_diagnostic.v1.audit",
+  "status": "PASS"
+}

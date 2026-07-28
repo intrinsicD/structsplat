@@ -1,0 +1,1278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FIT-043 · Error → pursuit sequence</title>
+<style>
+:root { color-scheme: dark; --bg:#0b1017; --panel:#121a24; --line:#26364a;
+  --text:#e7edf5; --muted:#9dacbd; --cyan:#71e5d1; --amber:#f3bf64; --red:#ff8b8b; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text);
+  font:15px/1.5 system-ui,sans-serif; }
+main { max-width:1540px; margin:auto; padding:28px; }
+h1 { font-size:clamp(2rem,5vw,4.5rem); margin:.1em 0; letter-spacing:-.04em; }
+h2 { margin-top:2.5rem; } .lede { max-width:1000px; color:var(--muted); font-size:1.1rem; }
+.verdict { border:1px solid var(--cyan); background:#102924; padding:18px 22px;
+  border-radius:14px; margin:24px 0; } .verdict.fail { border-color:var(--red); background:#301a20; }
+.metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; }
+.metric { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px; }
+.metric strong { display:block; color:var(--cyan); font-size:1.65rem; }
+.metric span { color:var(--muted); }
+table { width:100%; border-collapse:collapse; background:var(--panel); }
+th,td { border-bottom:1px solid var(--line); padding:10px; text-align:right; }
+th:first-child,td:first-child { text-align:left; }
+.controls { position:sticky; top:0; z-index:4; padding:12px 0; background:rgba(11,16,23,.94); }
+button { background:var(--panel); color:var(--text); border:1px solid var(--line);
+  border-radius:999px; padding:8px 13px; margin-right:6px; cursor:pointer; }
+.grid { display:grid; gap:18px; }
+.cell { border:1px solid var(--line); background:var(--panel); border-radius:15px; padding:16px; }
+.cell.fail { border-color:var(--red); } .cell header { display:flex; justify-content:space-between; }
+.cell h3 { margin:0; } .tag { color:var(--amber); }
+.numbers { display:flex; flex-wrap:wrap; gap:14px; color:var(--muted); margin:8px 0 13px; }
+.numbers b { color:var(--text); }
+.visuals { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; }
+.visuals.errors { grid-template-columns:repeat(4,minmax(0,1fr)); margin-top:12px; }
+figure { margin:0; } img { width:100%; display:block; border-radius:7px; image-rendering:auto; }
+figcaption { color:var(--muted); font-size:.82rem; margin-top:3px; }
+details { margin-top:10px; color:var(--muted); } summary { cursor:pointer; color:var(--text); }
+.hidden { display:none; } code { color:var(--cyan); }
+@media (max-width:900px) { .visuals,.visuals.errors { grid-template-columns:repeat(2,1fr); } }
+</style>
+</head>
+<body><main>
+<p>STRUCTSPLAT / FIT-043 / EXPOSED-DATA DIAGNOSTIC</p>
+<h1>Error first. Detail second.</h1>
+<p class="lede">The natural FIT-031 error tail is followed by FIT-040 pursuit only for the
+remaining cumulative fine-detail deficit. Existing single-stage results are reused; only the
+missing sequential arm was executed. The 51 cells are correlated Janelle views, not independent
+FIT-042 confirmation.</p>
+<section class="verdict fail">
+  <strong>Verdict: reject the frozen sequential controller without retuning</strong><br>
+  This tests separate ordered stages—not a merged score. Production interface and default changes
+  remain unauthorized.
+</section>
+<section class="metrics">
+  <div class="metric"><strong>51/51</strong><span>cumulative target hits</span></div>
+  <div class="metric"><strong>7</strong><span>pursuit stages skipped</span></div>
+  <div class="metric"><strong>256</strong><span>median added pursuit rows</span></div>
+  <div class="metric"><strong>6,272</strong><span>median total tail rows</span></div>
+  <div class="metric"><strong>27.30%</strong><span>median cumulative HP reduction</span></div>
+  <div class="metric"><strong>28.27%</strong><span>median cumulative Lap reduction</span></div>
+  <div class="metric"><strong>+3.620 dB</strong><span>median foreground gain</span></div>
+</section>
+<h2>Stage comparison</h2>
+<table>
+<thead><tr><th>Arm</th><th>Target hits</th><th>Median added rows</th><th>Median HP</th><th>Median Lap</th><th>Median FG gain</th></tr></thead>
+<tbody>
+<tr><td>FIT-040 pursuit only (reused)</td><td>51/51</td>
+<td>384</td><td>26.71%</td><td>26.90%</td><td>+0.051 dB</td></tr>
+<tr><td>FIT-031 error only (reused)</td><td>7/51</td>
+<td>6,144</td><td>12.78%</td><td>14.81%</td><td>+3.587 dB</td></tr>
+<tr><td>Error → pursuit</td><td>51/51</td>
+<td>6,272 total (+256 pursuit)</td>
+<td>27.30%</td>
+<td>28.27%</td>
+<td>+3.620 dB</td></tr>
+</tbody></table>
+<p class="lede">The combination is a dual-objective quality path, not a row-efficiency winner:
+it carries the error tail's large natural row count. Pursuit-only remains the fine-detail choice;
+error-only remains the global-fit choice.</p>
+<h2>All 51 paired visual cells</h2>
+<div class="controls">
+  <button data-filter="all">All</button>
+  <button data-filter="pursuit_executed">Pursuit executed</button>
+  <button data-filter="already_satisfied">Already satisfied</button>
+</div>
+<section class="grid">
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00008 / C0004</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>5,632</b> error rows</span>
+    <span><b>+384</b> pursuit rows</span>
+    <span><b>28.18%</b> HP</span>
+    <span><b>30.07%</b> Lap</span>
+    <span><b>+3.649 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C0004/target.png"><img loading="lazy" src="images/frame_00008/C0004/target.png" alt="Target frame_00008/C0004"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0004/base.png"><img loading="lazy" src="images/frame_00008/C0004/base.png" alt="Base frame_00008/C0004"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C0004/error_only.png"><img loading="lazy" src="images/frame_00008/C0004/error_only.png" alt="Error-only frame_00008/C0004"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C0004/pursuit.png"><img loading="lazy" src="images/frame_00008/C0004/pursuit.png" alt="Pursuit only frame_00008/C0004"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C0004/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C0004/error_then_pursuit.png" alt="Error → pursuit frame_00008/C0004"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C0004/base_error.png"><img loading="lazy" src="images/frame_00008/C0004/base_error.png" alt="Base |error| frame_00008/C0004"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0004/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0004/error_only_error.png" alt="Error-only |error| frame_00008/C0004"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0004/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0004/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C0004"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0004/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0004/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C0004"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1854,
+      Lap 0.1008.
+      Gain retained:
+      102.29%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00008 / C0005</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>6,144</b> error rows</span>
+    <span><b>+640</b> pursuit rows</span>
+    <span><b>26.07%</b> HP</span>
+    <span><b>27.40%</b> Lap</span>
+    <span><b>+4.957 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C0005/target.png"><img loading="lazy" src="images/frame_00008/C0005/target.png" alt="Target frame_00008/C0005"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0005/base.png"><img loading="lazy" src="images/frame_00008/C0005/base.png" alt="Base frame_00008/C0005"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C0005/error_only.png"><img loading="lazy" src="images/frame_00008/C0005/error_only.png" alt="Error-only frame_00008/C0005"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C0005/pursuit.png"><img loading="lazy" src="images/frame_00008/C0005/pursuit.png" alt="Pursuit only frame_00008/C0005"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C0005/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C0005/error_then_pursuit.png" alt="Error → pursuit frame_00008/C0005"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C0005/base_error.png"><img loading="lazy" src="images/frame_00008/C0005/base_error.png" alt="Base |error| frame_00008/C0005"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0005/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0005/error_only_error.png" alt="Error-only |error| frame_00008/C0005"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0005/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0005/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C0005"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0005/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0005/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C0005"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.2178,
+      Lap 0.1463.
+      Gain retained:
+      102.01%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00008 / C0006</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>6,144</b> error rows</span>
+    <span><b>+512</b> pursuit rows</span>
+    <span><b>25.49%</b> HP</span>
+    <span><b>28.57%</b> Lap</span>
+    <span><b>+3.118 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C0006/target.png"><img loading="lazy" src="images/frame_00008/C0006/target.png" alt="Target frame_00008/C0006"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0006/base.png"><img loading="lazy" src="images/frame_00008/C0006/base.png" alt="Base frame_00008/C0006"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C0006/error_only.png"><img loading="lazy" src="images/frame_00008/C0006/error_only.png" alt="Error-only frame_00008/C0006"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C0006/pursuit.png"><img loading="lazy" src="images/frame_00008/C0006/pursuit.png" alt="Pursuit only frame_00008/C0006"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C0006/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C0006/error_then_pursuit.png" alt="Error → pursuit frame_00008/C0006"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C0006/base_error.png"><img loading="lazy" src="images/frame_00008/C0006/base_error.png" alt="Base |error| frame_00008/C0006"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0006/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0006/error_only_error.png" alt="Error-only |error| frame_00008/C0006"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0006/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0006/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C0006"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0006/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0006/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C0006"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.2138,
+      Lap 0.1202.
+      Gain retained:
+      102.55%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00008 / C0008</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>6,144</b> error rows</span>
+    <span><b>+512</b> pursuit rows</span>
+    <span><b>26.44%</b> HP</span>
+    <span><b>29.41%</b> Lap</span>
+    <span><b>+4.729 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C0008/target.png"><img loading="lazy" src="images/frame_00008/C0008/target.png" alt="Target frame_00008/C0008"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0008/base.png"><img loading="lazy" src="images/frame_00008/C0008/base.png" alt="Base frame_00008/C0008"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C0008/error_only.png"><img loading="lazy" src="images/frame_00008/C0008/error_only.png" alt="Error-only frame_00008/C0008"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C0008/pursuit.png"><img loading="lazy" src="images/frame_00008/C0008/pursuit.png" alt="Pursuit only frame_00008/C0008"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C0008/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C0008/error_then_pursuit.png" alt="Error → pursuit frame_00008/C0008"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C0008/base_error.png"><img loading="lazy" src="images/frame_00008/C0008/base_error.png" alt="Base |error| frame_00008/C0008"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0008/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0008/error_only_error.png" alt="Error-only |error| frame_00008/C0008"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0008/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0008/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C0008"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0008/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0008/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C0008"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1825,
+      Lap 0.0978.
+      Gain retained:
+      102.01%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00008 / C0009</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>6,144</b> error rows</span>
+    <span><b>+128</b> pursuit rows</span>
+    <span><b>29.28%</b> HP</span>
+    <span><b>30.99%</b> Lap</span>
+    <span><b>+3.866 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C0009/target.png"><img loading="lazy" src="images/frame_00008/C0009/target.png" alt="Target frame_00008/C0009"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0009/base.png"><img loading="lazy" src="images/frame_00008/C0009/base.png" alt="Base frame_00008/C0009"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C0009/error_only.png"><img loading="lazy" src="images/frame_00008/C0009/error_only.png" alt="Error-only frame_00008/C0009"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C0009/pursuit.png"><img loading="lazy" src="images/frame_00008/C0009/pursuit.png" alt="Pursuit only frame_00008/C0009"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C0009/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C0009/error_then_pursuit.png" alt="Error → pursuit frame_00008/C0009"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C0009/base_error.png"><img loading="lazy" src="images/frame_00008/C0009/base_error.png" alt="Base |error| frame_00008/C0009"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0009/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0009/error_only_error.png" alt="Error-only |error| frame_00008/C0009"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0009/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0009/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C0009"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0009/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0009/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C0009"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.0757,
+      Lap 0.0000.
+      Gain retained:
+      101.23%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00008 / C0012</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>5,632</b> error rows</span>
+    <span><b>+384</b> pursuit rows</span>
+    <span><b>26.38%</b> HP</span>
+    <span><b>27.29%</b> Lap</span>
+    <span><b>+3.351 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C0012/target.png"><img loading="lazy" src="images/frame_00008/C0012/target.png" alt="Target frame_00008/C0012"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0012/base.png"><img loading="lazy" src="images/frame_00008/C0012/base.png" alt="Base frame_00008/C0012"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C0012/error_only.png"><img loading="lazy" src="images/frame_00008/C0012/error_only.png" alt="Error-only frame_00008/C0012"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C0012/pursuit.png"><img loading="lazy" src="images/frame_00008/C0012/pursuit.png" alt="Pursuit only frame_00008/C0012"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C0012/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C0012/error_then_pursuit.png" alt="Error → pursuit frame_00008/C0012"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C0012/base_error.png"><img loading="lazy" src="images/frame_00008/C0012/base_error.png" alt="Base |error| frame_00008/C0012"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0012/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0012/error_only_error.png" alt="Error-only |error| frame_00008/C0012"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0012/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0012/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C0012"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0012/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0012/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C0012"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1881,
+      Lap 0.1127.
+      Gain retained:
+      101.40%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00008 / C0014</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>5,120</b> error rows</span>
+    <span><b>+768</b> pursuit rows</span>
+    <span><b>25.71%</b> HP</span>
+    <span><b>28.27%</b> Lap</span>
+    <span><b>+5.642 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C0014/target.png"><img loading="lazy" src="images/frame_00008/C0014/target.png" alt="Target frame_00008/C0014"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0014/base.png"><img loading="lazy" src="images/frame_00008/C0014/base.png" alt="Base frame_00008/C0014"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C0014/error_only.png"><img loading="lazy" src="images/frame_00008/C0014/error_only.png" alt="Error-only frame_00008/C0014"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C0014/pursuit.png"><img loading="lazy" src="images/frame_00008/C0014/pursuit.png" alt="Pursuit only frame_00008/C0014"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C0014/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C0014/error_then_pursuit.png" alt="Error → pursuit frame_00008/C0014"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C0014/base_error.png"><img loading="lazy" src="images/frame_00008/C0014/base_error.png" alt="Base |error| frame_00008/C0014"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0014/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0014/error_only_error.png" alt="Error-only |error| frame_00008/C0014"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0014/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0014/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C0014"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0014/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0014/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C0014"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1906,
+      Lap 0.1099.
+      Gain retained:
+      101.40%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00008 / C0018</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>5,120</b> error rows</span>
+    <span><b>+1,408</b> pursuit rows</span>
+    <span><b>25.36%</b> HP</span>
+    <span><b>24.06%</b> Lap</span>
+    <span><b>+4.803 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C0018/target.png"><img loading="lazy" src="images/frame_00008/C0018/target.png" alt="Target frame_00008/C0018"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0018/base.png"><img loading="lazy" src="images/frame_00008/C0018/base.png" alt="Base frame_00008/C0018"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C0018/error_only.png"><img loading="lazy" src="images/frame_00008/C0018/error_only.png" alt="Error-only frame_00008/C0018"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C0018/pursuit.png"><img loading="lazy" src="images/frame_00008/C0018/pursuit.png" alt="Pursuit only frame_00008/C0018"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C0018/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C0018/error_then_pursuit.png" alt="Error → pursuit frame_00008/C0018"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C0018/base_error.png"><img loading="lazy" src="images/frame_00008/C0018/base_error.png" alt="Base |error| frame_00008/C0018"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0018/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0018/error_only_error.png" alt="Error-only |error| frame_00008/C0018"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0018/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0018/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C0018"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0018/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0018/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C0018"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.2185,
+      Lap 0.1764.
+      Gain retained:
+      101.41%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell fail" data-disposition="already_satisfied">
+  <header><h3>frame_00008 / C0019</h3>
+    <span class="tag">already satisfied</span></header>
+  <div class="numbers">
+    <span><b>9,728</b> error rows</span>
+    <span><b>+0</b> pursuit rows</span>
+    <span><b>27.30%</b> HP</span>
+    <span><b>29.15%</b> Lap</span>
+    <span><b>+5.477 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C0019/target.png"><img loading="lazy" src="images/frame_00008/C0019/target.png" alt="Target frame_00008/C0019"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0019/base.png"><img loading="lazy" src="images/frame_00008/C0019/base.png" alt="Base frame_00008/C0019"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C0019/error_only.png"><img loading="lazy" src="images/frame_00008/C0019/error_only.png" alt="Error-only frame_00008/C0019"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C0019/pursuit.png"><img loading="lazy" src="images/frame_00008/C0019/pursuit.png" alt="Pursuit only frame_00008/C0019"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C0019/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C0019/error_then_pursuit.png" alt="Error → pursuit frame_00008/C0019"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C0019/base_error.png"><img loading="lazy" src="images/frame_00008/C0019/base_error.png" alt="Base |error| frame_00008/C0019"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0019/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0019/error_only_error.png" alt="Error-only |error| frame_00008/C0019"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0019/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0019/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C0019"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0019/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0019/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C0019"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.0000,
+      Lap 0.0000.
+      Gain retained:
+      100.00%.
+      Stage/base protected: False/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00008 / C0020</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>6,144</b> error rows</span>
+    <span><b>+256</b> pursuit rows</span>
+    <span><b>29.35%</b> HP</span>
+    <span><b>28.43%</b> Lap</span>
+    <span><b>+4.031 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C0020/target.png"><img loading="lazy" src="images/frame_00008/C0020/target.png" alt="Target frame_00008/C0020"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0020/base.png"><img loading="lazy" src="images/frame_00008/C0020/base.png" alt="Base frame_00008/C0020"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C0020/error_only.png"><img loading="lazy" src="images/frame_00008/C0020/error_only.png" alt="Error-only frame_00008/C0020"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C0020/pursuit.png"><img loading="lazy" src="images/frame_00008/C0020/pursuit.png" alt="Pursuit only frame_00008/C0020"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C0020/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C0020/error_then_pursuit.png" alt="Error → pursuit frame_00008/C0020"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C0020/base_error.png"><img loading="lazy" src="images/frame_00008/C0020/base_error.png" alt="Base |error| frame_00008/C0020"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0020/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0020/error_only_error.png" alt="Error-only |error| frame_00008/C0020"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0020/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0020/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C0020"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0020/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0020/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C0020"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1400,
+      Lap 0.0550.
+      Gain retained:
+      101.42%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell fail" data-disposition="pursuit_executed">
+  <header><h3>frame_00008 / C0021</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>5,872</b> error rows</span>
+    <span><b>+128</b> pursuit rows</span>
+    <span><b>32.02%</b> HP</span>
+    <span><b>36.96%</b> Lap</span>
+    <span><b>+2.538 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C0021/target.png"><img loading="lazy" src="images/frame_00008/C0021/target.png" alt="Target frame_00008/C0021"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0021/base.png"><img loading="lazy" src="images/frame_00008/C0021/base.png" alt="Base frame_00008/C0021"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C0021/error_only.png"><img loading="lazy" src="images/frame_00008/C0021/error_only.png" alt="Error-only frame_00008/C0021"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C0021/pursuit.png"><img loading="lazy" src="images/frame_00008/C0021/pursuit.png" alt="Pursuit only frame_00008/C0021"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C0021/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C0021/error_then_pursuit.png" alt="Error → pursuit frame_00008/C0021"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C0021/base_error.png"><img loading="lazy" src="images/frame_00008/C0021/base_error.png" alt="Base |error| frame_00008/C0021"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0021/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0021/error_only_error.png" alt="Error-only |error| frame_00008/C0021"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0021/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0021/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C0021"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0021/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0021/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C0021"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.0603,
+      Lap 0.0000.
+      Gain retained:
+      100.99%.
+      Stage/base protected: True/True;
+      prefix exact: False; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell fail" data-disposition="already_satisfied">
+  <header><h3>frame_00008 / C0022</h3>
+    <span class="tag">already satisfied</span></header>
+  <div class="numbers">
+    <span><b>5,632</b> error rows</span>
+    <span><b>+0</b> pursuit rows</span>
+    <span><b>33.83%</b> HP</span>
+    <span><b>33.30%</b> Lap</span>
+    <span><b>+2.788 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C0022/target.png"><img loading="lazy" src="images/frame_00008/C0022/target.png" alt="Target frame_00008/C0022"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0022/base.png"><img loading="lazy" src="images/frame_00008/C0022/base.png" alt="Base frame_00008/C0022"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C0022/error_only.png"><img loading="lazy" src="images/frame_00008/C0022/error_only.png" alt="Error-only frame_00008/C0022"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C0022/pursuit.png"><img loading="lazy" src="images/frame_00008/C0022/pursuit.png" alt="Pursuit only frame_00008/C0022"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C0022/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C0022/error_then_pursuit.png" alt="Error → pursuit frame_00008/C0022"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C0022/base_error.png"><img loading="lazy" src="images/frame_00008/C0022/base_error.png" alt="Base |error| frame_00008/C0022"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0022/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0022/error_only_error.png" alt="Error-only |error| frame_00008/C0022"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0022/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0022/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C0022"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0022/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0022/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C0022"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.0000,
+      Lap 0.0000.
+      Gain retained:
+      100.00%.
+      Stage/base protected: False/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00008 / C0025</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>6,144</b> error rows</span>
+    <span><b>+256</b> pursuit rows</span>
+    <span><b>28.21%</b> HP</span>
+    <span><b>27.97%</b> Lap</span>
+    <span><b>+3.880 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C0025/target.png"><img loading="lazy" src="images/frame_00008/C0025/target.png" alt="Target frame_00008/C0025"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0025/base.png"><img loading="lazy" src="images/frame_00008/C0025/base.png" alt="Base frame_00008/C0025"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C0025/error_only.png"><img loading="lazy" src="images/frame_00008/C0025/error_only.png" alt="Error-only frame_00008/C0025"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C0025/pursuit.png"><img loading="lazy" src="images/frame_00008/C0025/pursuit.png" alt="Pursuit only frame_00008/C0025"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C0025/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C0025/error_then_pursuit.png" alt="Error → pursuit frame_00008/C0025"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C0025/base_error.png"><img loading="lazy" src="images/frame_00008/C0025/base_error.png" alt="Base |error| frame_00008/C0025"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0025/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0025/error_only_error.png" alt="Error-only |error| frame_00008/C0025"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0025/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0025/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C0025"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0025/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0025/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C0025"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1401,
+      Lap 0.0910.
+      Gain retained:
+      101.89%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00008 / C0026</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>7,168</b> error rows</span>
+    <span><b>+640</b> pursuit rows</span>
+    <span><b>26.44%</b> HP</span>
+    <span><b>28.25%</b> Lap</span>
+    <span><b>+4.059 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C0026/target.png"><img loading="lazy" src="images/frame_00008/C0026/target.png" alt="Target frame_00008/C0026"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0026/base.png"><img loading="lazy" src="images/frame_00008/C0026/base.png" alt="Base frame_00008/C0026"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C0026/error_only.png"><img loading="lazy" src="images/frame_00008/C0026/error_only.png" alt="Error-only frame_00008/C0026"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C0026/pursuit.png"><img loading="lazy" src="images/frame_00008/C0026/pursuit.png" alt="Pursuit only frame_00008/C0026"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C0026/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C0026/error_then_pursuit.png" alt="Error → pursuit frame_00008/C0026"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C0026/base_error.png"><img loading="lazy" src="images/frame_00008/C0026/base_error.png" alt="Base |error| frame_00008/C0026"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0026/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0026/error_only_error.png" alt="Error-only |error| frame_00008/C0026"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0026/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0026/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C0026"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0026/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0026/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C0026"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.2125,
+      Lap 0.1390.
+      Gain retained:
+      102.63%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00008 / C0028</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>5,632</b> error rows</span>
+    <span><b>+512</b> pursuit rows</span>
+    <span><b>26.00%</b> HP</span>
+    <span><b>29.47%</b> Lap</span>
+    <span><b>+2.486 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C0028/target.png"><img loading="lazy" src="images/frame_00008/C0028/target.png" alt="Target frame_00008/C0028"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0028/base.png"><img loading="lazy" src="images/frame_00008/C0028/base.png" alt="Base frame_00008/C0028"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C0028/error_only.png"><img loading="lazy" src="images/frame_00008/C0028/error_only.png" alt="Error-only frame_00008/C0028"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C0028/pursuit.png"><img loading="lazy" src="images/frame_00008/C0028/pursuit.png" alt="Pursuit only frame_00008/C0028"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C0028/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C0028/error_then_pursuit.png" alt="Error → pursuit frame_00008/C0028"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C0028/base_error.png"><img loading="lazy" src="images/frame_00008/C0028/base_error.png" alt="Base |error| frame_00008/C0028"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0028/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0028/error_only_error.png" alt="Error-only |error| frame_00008/C0028"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0028/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0028/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C0028"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0028/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0028/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C0028"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.2331,
+      Lap 0.1470.
+      Gain retained:
+      103.51%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00008 / C0029</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>6,144</b> error rows</span>
+    <span><b>+256</b> pursuit rows</span>
+    <span><b>25.53%</b> HP</span>
+    <span><b>25.90%</b> Lap</span>
+    <span><b>+2.751 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C0029/target.png"><img loading="lazy" src="images/frame_00008/C0029/target.png" alt="Target frame_00008/C0029"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0029/base.png"><img loading="lazy" src="images/frame_00008/C0029/base.png" alt="Base frame_00008/C0029"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C0029/error_only.png"><img loading="lazy" src="images/frame_00008/C0029/error_only.png" alt="Error-only frame_00008/C0029"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C0029/pursuit.png"><img loading="lazy" src="images/frame_00008/C0029/pursuit.png" alt="Pursuit only frame_00008/C0029"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C0029/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C0029/error_then_pursuit.png" alt="Error → pursuit frame_00008/C0029"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C0029/base_error.png"><img loading="lazy" src="images/frame_00008/C0029/base_error.png" alt="Base |error| frame_00008/C0029"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0029/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0029/error_only_error.png" alt="Error-only |error| frame_00008/C0029"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0029/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0029/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C0029"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0029/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0029/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C0029"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1815,
+      Lap 0.1187.
+      Gain retained:
+      101.93%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00008 / C0030</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>6,144</b> error rows</span>
+    <span><b>+128</b> pursuit rows</span>
+    <span><b>32.82%</b> HP</span>
+    <span><b>27.95%</b> Lap</span>
+    <span><b>+3.526 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C0030/target.png"><img loading="lazy" src="images/frame_00008/C0030/target.png" alt="Target frame_00008/C0030"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0030/base.png"><img loading="lazy" src="images/frame_00008/C0030/base.png" alt="Base frame_00008/C0030"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C0030/error_only.png"><img loading="lazy" src="images/frame_00008/C0030/error_only.png" alt="Error-only frame_00008/C0030"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C0030/pursuit.png"><img loading="lazy" src="images/frame_00008/C0030/pursuit.png" alt="Pursuit only frame_00008/C0030"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C0030/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C0030/error_then_pursuit.png" alt="Error → pursuit frame_00008/C0030"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C0030/base_error.png"><img loading="lazy" src="images/frame_00008/C0030/base_error.png" alt="Base |error| frame_00008/C0030"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0030/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0030/error_only_error.png" alt="Error-only |error| frame_00008/C0030"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0030/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0030/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C0030"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0030/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0030/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C0030"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.0228,
+      Lap 0.0011.
+      Gain retained:
+      101.82%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell fail" data-disposition="already_satisfied">
+  <header><h3>frame_00008 / C0031</h3>
+    <span class="tag">already satisfied</span></header>
+  <div class="numbers">
+    <span><b>3,683</b> error rows</span>
+    <span><b>+0</b> pursuit rows</span>
+    <span><b>27.99%</b> HP</span>
+    <span><b>34.01%</b> Lap</span>
+    <span><b>+3.810 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C0031/target.png"><img loading="lazy" src="images/frame_00008/C0031/target.png" alt="Target frame_00008/C0031"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0031/base.png"><img loading="lazy" src="images/frame_00008/C0031/base.png" alt="Base frame_00008/C0031"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C0031/error_only.png"><img loading="lazy" src="images/frame_00008/C0031/error_only.png" alt="Error-only frame_00008/C0031"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C0031/pursuit.png"><img loading="lazy" src="images/frame_00008/C0031/pursuit.png" alt="Pursuit only frame_00008/C0031"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C0031/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C0031/error_then_pursuit.png" alt="Error → pursuit frame_00008/C0031"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C0031/base_error.png"><img loading="lazy" src="images/frame_00008/C0031/base_error.png" alt="Base |error| frame_00008/C0031"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0031/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0031/error_only_error.png" alt="Error-only |error| frame_00008/C0031"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0031/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0031/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C0031"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0031/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0031/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C0031"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.0000,
+      Lap 0.0000.
+      Gain retained:
+      100.00%.
+      Stage/base protected: False/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00008 / C0034</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>4,096</b> error rows</span>
+    <span><b>+256</b> pursuit rows</span>
+    <span><b>27.64%</b> HP</span>
+    <span><b>29.38%</b> Lap</span>
+    <span><b>+2.243 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C0034/target.png"><img loading="lazy" src="images/frame_00008/C0034/target.png" alt="Target frame_00008/C0034"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0034/base.png"><img loading="lazy" src="images/frame_00008/C0034/base.png" alt="Base frame_00008/C0034"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C0034/error_only.png"><img loading="lazy" src="images/frame_00008/C0034/error_only.png" alt="Error-only frame_00008/C0034"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C0034/pursuit.png"><img loading="lazy" src="images/frame_00008/C0034/pursuit.png" alt="Pursuit only frame_00008/C0034"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C0034/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C0034/error_then_pursuit.png" alt="Error → pursuit frame_00008/C0034"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C0034/base_error.png"><img loading="lazy" src="images/frame_00008/C0034/base_error.png" alt="Base |error| frame_00008/C0034"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0034/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0034/error_only_error.png" alt="Error-only |error| frame_00008/C0034"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0034/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0034/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C0034"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0034/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0034/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C0034"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1826,
+      Lap 0.1125.
+      Gain retained:
+      102.33%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00008 / C0037</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>6,656</b> error rows</span>
+    <span><b>+256</b> pursuit rows</span>
+    <span><b>25.78%</b> HP</span>
+    <span><b>26.89%</b> Lap</span>
+    <span><b>+3.619 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C0037/target.png"><img loading="lazy" src="images/frame_00008/C0037/target.png" alt="Target frame_00008/C0037"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0037/base.png"><img loading="lazy" src="images/frame_00008/C0037/base.png" alt="Base frame_00008/C0037"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C0037/error_only.png"><img loading="lazy" src="images/frame_00008/C0037/error_only.png" alt="Error-only frame_00008/C0037"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C0037/pursuit.png"><img loading="lazy" src="images/frame_00008/C0037/pursuit.png" alt="Pursuit only frame_00008/C0037"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C0037/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C0037/error_then_pursuit.png" alt="Error → pursuit frame_00008/C0037"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C0037/base_error.png"><img loading="lazy" src="images/frame_00008/C0037/base_error.png" alt="Base |error| frame_00008/C0037"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0037/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0037/error_only_error.png" alt="Error-only |error| frame_00008/C0037"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0037/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0037/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C0037"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0037/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0037/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C0037"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1201,
+      Lap 0.0455.
+      Gain retained:
+      100.88%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00008 / C0039</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>2,560</b> error rows</span>
+    <span><b>+128</b> pursuit rows</span>
+    <span><b>25.76%</b> HP</span>
+    <span><b>31.94%</b> Lap</span>
+    <span><b>+4.530 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C0039/target.png"><img loading="lazy" src="images/frame_00008/C0039/target.png" alt="Target frame_00008/C0039"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0039/base.png"><img loading="lazy" src="images/frame_00008/C0039/base.png" alt="Base frame_00008/C0039"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C0039/error_only.png"><img loading="lazy" src="images/frame_00008/C0039/error_only.png" alt="Error-only frame_00008/C0039"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C0039/pursuit.png"><img loading="lazy" src="images/frame_00008/C0039/pursuit.png" alt="Pursuit only frame_00008/C0039"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C0039/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C0039/error_then_pursuit.png" alt="Error → pursuit frame_00008/C0039"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C0039/base_error.png"><img loading="lazy" src="images/frame_00008/C0039/base_error.png" alt="Base |error| frame_00008/C0039"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0039/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0039/error_only_error.png" alt="Error-only |error| frame_00008/C0039"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0039/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0039/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C0039"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C0039/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0039/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C0039"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1508,
+      Lap 0.0192.
+      Gain retained:
+      100.88%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00008 / C1000</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>5,632</b> error rows</span>
+    <span><b>+128</b> pursuit rows</span>
+    <span><b>27.43%</b> HP</span>
+    <span><b>28.81%</b> Lap</span>
+    <span><b>+3.151 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C1000/target.png"><img loading="lazy" src="images/frame_00008/C1000/target.png" alt="Target frame_00008/C1000"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C1000/base.png"><img loading="lazy" src="images/frame_00008/C1000/base.png" alt="Base frame_00008/C1000"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C1000/error_only.png"><img loading="lazy" src="images/frame_00008/C1000/error_only.png" alt="Error-only frame_00008/C1000"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C1000/pursuit.png"><img loading="lazy" src="images/frame_00008/C1000/pursuit.png" alt="Pursuit only frame_00008/C1000"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C1000/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C1000/error_then_pursuit.png" alt="Error → pursuit frame_00008/C1000"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C1000/base_error.png"><img loading="lazy" src="images/frame_00008/C1000/base_error.png" alt="Base |error| frame_00008/C1000"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C1000/error_only_error.png"><img loading="lazy" src="images/frame_00008/C1000/error_only_error.png" alt="Error-only |error| frame_00008/C1000"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C1000/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C1000/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C1000"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C1000/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C1000/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C1000"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1150,
+      Lap 0.0071.
+      Gain retained:
+      101.58%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00008 / C1001</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>4,232</b> error rows</span>
+    <span><b>+128</b> pursuit rows</span>
+    <span><b>30.11%</b> HP</span>
+    <span><b>34.68%</b> Lap</span>
+    <span><b>+3.123 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C1001/target.png"><img loading="lazy" src="images/frame_00008/C1001/target.png" alt="Target frame_00008/C1001"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C1001/base.png"><img loading="lazy" src="images/frame_00008/C1001/base.png" alt="Base frame_00008/C1001"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C1001/error_only.png"><img loading="lazy" src="images/frame_00008/C1001/error_only.png" alt="Error-only frame_00008/C1001"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C1001/pursuit.png"><img loading="lazy" src="images/frame_00008/C1001/pursuit.png" alt="Pursuit only frame_00008/C1001"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C1001/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C1001/error_then_pursuit.png" alt="Error → pursuit frame_00008/C1001"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C1001/base_error.png"><img loading="lazy" src="images/frame_00008/C1001/base_error.png" alt="Base |error| frame_00008/C1001"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C1001/error_only_error.png"><img loading="lazy" src="images/frame_00008/C1001/error_only_error.png" alt="Error-only |error| frame_00008/C1001"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C1001/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C1001/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C1001"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C1001/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C1001/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C1001"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.0341,
+      Lap 0.0000.
+      Gain retained:
+      100.47%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00008 / C1002</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>2,377</b> error rows</span>
+    <span><b>+128</b> pursuit rows</span>
+    <span><b>34.06%</b> HP</span>
+    <span><b>42.53%</b> Lap</span>
+    <span><b>+3.540 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C1002/target.png"><img loading="lazy" src="images/frame_00008/C1002/target.png" alt="Target frame_00008/C1002"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C1002/base.png"><img loading="lazy" src="images/frame_00008/C1002/base.png" alt="Base frame_00008/C1002"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C1002/error_only.png"><img loading="lazy" src="images/frame_00008/C1002/error_only.png" alt="Error-only frame_00008/C1002"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C1002/pursuit.png"><img loading="lazy" src="images/frame_00008/C1002/pursuit.png" alt="Pursuit only frame_00008/C1002"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C1002/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C1002/error_then_pursuit.png" alt="Error → pursuit frame_00008/C1002"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C1002/base_error.png"><img loading="lazy" src="images/frame_00008/C1002/base_error.png" alt="Base |error| frame_00008/C1002"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C1002/error_only_error.png"><img loading="lazy" src="images/frame_00008/C1002/error_only_error.png" alt="Error-only |error| frame_00008/C1002"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C1002/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C1002/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C1002"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C1002/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C1002/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C1002"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1548,
+      Lap 0.0000.
+      Gain retained:
+      100.66%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell fail" data-disposition="already_satisfied">
+  <header><h3>frame_00008 / C1004</h3>
+    <span class="tag">already satisfied</span></header>
+  <div class="numbers">
+    <span><b>5,216</b> error rows</span>
+    <span><b>+0</b> pursuit rows</span>
+    <span><b>25.27%</b> HP</span>
+    <span><b>24.14%</b> Lap</span>
+    <span><b>+3.557 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00008/C1004/target.png"><img loading="lazy" src="images/frame_00008/C1004/target.png" alt="Target frame_00008/C1004"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C1004/base.png"><img loading="lazy" src="images/frame_00008/C1004/base.png" alt="Base frame_00008/C1004"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00008/C1004/error_only.png"><img loading="lazy" src="images/frame_00008/C1004/error_only.png" alt="Error-only frame_00008/C1004"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00008/C1004/pursuit.png"><img loading="lazy" src="images/frame_00008/C1004/pursuit.png" alt="Pursuit only frame_00008/C1004"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00008/C1004/error_then_pursuit.png"><img loading="lazy" src="images/frame_00008/C1004/error_then_pursuit.png" alt="Error → pursuit frame_00008/C1004"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00008/C1004/base_error.png"><img loading="lazy" src="images/frame_00008/C1004/base_error.png" alt="Base |error| frame_00008/C1004"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C1004/error_only_error.png"><img loading="lazy" src="images/frame_00008/C1004/error_only_error.png" alt="Error-only |error| frame_00008/C1004"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00008/C1004/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C1004/pursuit_error.png" alt="Pursuit-only |error| frame_00008/C1004"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00008/C1004/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00008/C1004/error_then_pursuit_error.png" alt="Combined |error| frame_00008/C1004"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.0000,
+      Lap 0.0000.
+      Gain retained:
+      100.00%.
+      Stage/base protected: False/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C0001</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>4,096</b> error rows</span>
+    <span><b>+128</b> pursuit rows</span>
+    <span><b>29.41%</b> HP</span>
+    <span><b>31.24%</b> Lap</span>
+    <span><b>+3.087 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C0001/target.png"><img loading="lazy" src="images/frame_00009/C0001/target.png" alt="Target frame_00009/C0001"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0001/base.png"><img loading="lazy" src="images/frame_00009/C0001/base.png" alt="Base frame_00009/C0001"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C0001/error_only.png"><img loading="lazy" src="images/frame_00009/C0001/error_only.png" alt="Error-only frame_00009/C0001"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C0001/pursuit.png"><img loading="lazy" src="images/frame_00009/C0001/pursuit.png" alt="Pursuit only frame_00009/C0001"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C0001/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C0001/error_then_pursuit.png" alt="Error → pursuit frame_00009/C0001"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C0001/base_error.png"><img loading="lazy" src="images/frame_00009/C0001/base_error.png" alt="Base |error| frame_00009/C0001"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0001/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0001/error_only_error.png" alt="Error-only |error| frame_00009/C0001"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0001/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0001/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C0001"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0001/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0001/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C0001"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1427,
+      Lap 0.0609.
+      Gain retained:
+      101.44%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C0004</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>6,144</b> error rows</span>
+    <span><b>+128</b> pursuit rows</span>
+    <span><b>30.64%</b> HP</span>
+    <span><b>31.10%</b> Lap</span>
+    <span><b>+4.227 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C0004/target.png"><img loading="lazy" src="images/frame_00009/C0004/target.png" alt="Target frame_00009/C0004"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0004/base.png"><img loading="lazy" src="images/frame_00009/C0004/base.png" alt="Base frame_00009/C0004"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C0004/error_only.png"><img loading="lazy" src="images/frame_00009/C0004/error_only.png" alt="Error-only frame_00009/C0004"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C0004/pursuit.png"><img loading="lazy" src="images/frame_00009/C0004/pursuit.png" alt="Pursuit only frame_00009/C0004"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C0004/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C0004/error_then_pursuit.png" alt="Error → pursuit frame_00009/C0004"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C0004/base_error.png"><img loading="lazy" src="images/frame_00009/C0004/base_error.png" alt="Base |error| frame_00009/C0004"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0004/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0004/error_only_error.png" alt="Error-only |error| frame_00009/C0004"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0004/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0004/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C0004"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0004/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0004/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C0004"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.0688,
+      Lap 0.0000.
+      Gain retained:
+      100.84%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C0005</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>7,680</b> error rows</span>
+    <span><b>+128</b> pursuit rows</span>
+    <span><b>27.34%</b> HP</span>
+    <span><b>26.44%</b> Lap</span>
+    <span><b>+3.205 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C0005/target.png"><img loading="lazy" src="images/frame_00009/C0005/target.png" alt="Target frame_00009/C0005"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0005/base.png"><img loading="lazy" src="images/frame_00009/C0005/base.png" alt="Base frame_00009/C0005"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C0005/error_only.png"><img loading="lazy" src="images/frame_00009/C0005/error_only.png" alt="Error-only frame_00009/C0005"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C0005/pursuit.png"><img loading="lazy" src="images/frame_00009/C0005/pursuit.png" alt="Pursuit only frame_00009/C0005"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C0005/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C0005/error_then_pursuit.png" alt="Error → pursuit frame_00009/C0005"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C0005/base_error.png"><img loading="lazy" src="images/frame_00009/C0005/base_error.png" alt="Base |error| frame_00009/C0005"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0005/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0005/error_only_error.png" alt="Error-only |error| frame_00009/C0005"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0005/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0005/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C0005"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0005/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0005/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C0005"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.0943,
+      Lap 0.0422.
+      Gain retained:
+      101.11%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C0006</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>7,680</b> error rows</span>
+    <span><b>+640</b> pursuit rows</span>
+    <span><b>25.90%</b> HP</span>
+    <span><b>24.89%</b> Lap</span>
+    <span><b>+3.862 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C0006/target.png"><img loading="lazy" src="images/frame_00009/C0006/target.png" alt="Target frame_00009/C0006"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0006/base.png"><img loading="lazy" src="images/frame_00009/C0006/base.png" alt="Base frame_00009/C0006"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C0006/error_only.png"><img loading="lazy" src="images/frame_00009/C0006/error_only.png" alt="Error-only frame_00009/C0006"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C0006/pursuit.png"><img loading="lazy" src="images/frame_00009/C0006/pursuit.png" alt="Pursuit only frame_00009/C0006"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C0006/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C0006/error_then_pursuit.png" alt="Error → pursuit frame_00009/C0006"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C0006/base_error.png"><img loading="lazy" src="images/frame_00009/C0006/base_error.png" alt="Base |error| frame_00009/C0006"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0006/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0006/error_only_error.png" alt="Error-only |error| frame_00009/C0006"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0006/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0006/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C0006"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0006/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0006/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C0006"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.2311,
+      Lap 0.1748.
+      Gain retained:
+      102.21%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C0008</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>6,144</b> error rows</span>
+    <span><b>+256</b> pursuit rows</span>
+    <span><b>27.30%</b> HP</span>
+    <span><b>29.42%</b> Lap</span>
+    <span><b>+3.620 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C0008/target.png"><img loading="lazy" src="images/frame_00009/C0008/target.png" alt="Target frame_00009/C0008"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0008/base.png"><img loading="lazy" src="images/frame_00009/C0008/base.png" alt="Base frame_00009/C0008"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C0008/error_only.png"><img loading="lazy" src="images/frame_00009/C0008/error_only.png" alt="Error-only frame_00009/C0008"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C0008/pursuit.png"><img loading="lazy" src="images/frame_00009/C0008/pursuit.png" alt="Pursuit only frame_00009/C0008"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C0008/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C0008/error_then_pursuit.png" alt="Error → pursuit frame_00009/C0008"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C0008/base_error.png"><img loading="lazy" src="images/frame_00009/C0008/base_error.png" alt="Base |error| frame_00009/C0008"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0008/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0008/error_only_error.png" alt="Error-only |error| frame_00009/C0008"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0008/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0008/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C0008"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0008/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0008/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C0008"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1465,
+      Lap 0.0792.
+      Gain retained:
+      101.44%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell fail" data-disposition="already_satisfied">
+  <header><h3>frame_00009 / C0009</h3>
+    <span class="tag">already satisfied</span></header>
+  <div class="numbers">
+    <span><b>7,168</b> error rows</span>
+    <span><b>+0</b> pursuit rows</span>
+    <span><b>27.14%</b> HP</span>
+    <span><b>27.15%</b> Lap</span>
+    <span><b>+3.604 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C0009/target.png"><img loading="lazy" src="images/frame_00009/C0009/target.png" alt="Target frame_00009/C0009"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0009/base.png"><img loading="lazy" src="images/frame_00009/C0009/base.png" alt="Base frame_00009/C0009"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C0009/error_only.png"><img loading="lazy" src="images/frame_00009/C0009/error_only.png" alt="Error-only frame_00009/C0009"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C0009/pursuit.png"><img loading="lazy" src="images/frame_00009/C0009/pursuit.png" alt="Pursuit only frame_00009/C0009"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C0009/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C0009/error_then_pursuit.png" alt="Error → pursuit frame_00009/C0009"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C0009/base_error.png"><img loading="lazy" src="images/frame_00009/C0009/base_error.png" alt="Base |error| frame_00009/C0009"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0009/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0009/error_only_error.png" alt="Error-only |error| frame_00009/C0009"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0009/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0009/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C0009"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0009/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0009/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C0009"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.0000,
+      Lap 0.0000.
+      Gain retained:
+      100.00%.
+      Stage/base protected: False/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C0012</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>6,656</b> error rows</span>
+    <span><b>+128</b> pursuit rows</span>
+    <span><b>26.67%</b> HP</span>
+    <span><b>24.36%</b> Lap</span>
+    <span><b>+4.113 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C0012/target.png"><img loading="lazy" src="images/frame_00009/C0012/target.png" alt="Target frame_00009/C0012"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0012/base.png"><img loading="lazy" src="images/frame_00009/C0012/base.png" alt="Base frame_00009/C0012"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C0012/error_only.png"><img loading="lazy" src="images/frame_00009/C0012/error_only.png" alt="Error-only frame_00009/C0012"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C0012/pursuit.png"><img loading="lazy" src="images/frame_00009/C0012/pursuit.png" alt="Pursuit only frame_00009/C0012"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C0012/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C0012/error_then_pursuit.png" alt="Error → pursuit frame_00009/C0012"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C0012/base_error.png"><img loading="lazy" src="images/frame_00009/C0012/base_error.png" alt="Base |error| frame_00009/C0012"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0012/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0012/error_only_error.png" alt="Error-only |error| frame_00009/C0012"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0012/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0012/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C0012"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0012/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0012/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C0012"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1055,
+      Lap 0.0545.
+      Gain retained:
+      101.47%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C0014</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>6,144</b> error rows</span>
+    <span><b>+256</b> pursuit rows</span>
+    <span><b>27.77%</b> HP</span>
+    <span><b>27.04%</b> Lap</span>
+    <span><b>+4.591 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C0014/target.png"><img loading="lazy" src="images/frame_00009/C0014/target.png" alt="Target frame_00009/C0014"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0014/base.png"><img loading="lazy" src="images/frame_00009/C0014/base.png" alt="Base frame_00009/C0014"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C0014/error_only.png"><img loading="lazy" src="images/frame_00009/C0014/error_only.png" alt="Error-only frame_00009/C0014"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C0014/pursuit.png"><img loading="lazy" src="images/frame_00009/C0014/pursuit.png" alt="Pursuit only frame_00009/C0014"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C0014/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C0014/error_then_pursuit.png" alt="Error → pursuit frame_00009/C0014"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C0014/base_error.png"><img loading="lazy" src="images/frame_00009/C0014/base_error.png" alt="Base |error| frame_00009/C0014"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0014/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0014/error_only_error.png" alt="Error-only |error| frame_00009/C0014"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0014/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0014/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C0014"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0014/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0014/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C0014"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1201,
+      Lap 0.0538.
+      Gain retained:
+      101.23%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C0018</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>5,632</b> error rows</span>
+    <span><b>+256</b> pursuit rows</span>
+    <span><b>27.53%</b> HP</span>
+    <span><b>23.18%</b> Lap</span>
+    <span><b>+4.134 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C0018/target.png"><img loading="lazy" src="images/frame_00009/C0018/target.png" alt="Target frame_00009/C0018"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0018/base.png"><img loading="lazy" src="images/frame_00009/C0018/base.png" alt="Base frame_00009/C0018"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C0018/error_only.png"><img loading="lazy" src="images/frame_00009/C0018/error_only.png" alt="Error-only frame_00009/C0018"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C0018/pursuit.png"><img loading="lazy" src="images/frame_00009/C0018/pursuit.png" alt="Pursuit only frame_00009/C0018"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C0018/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C0018/error_then_pursuit.png" alt="Error → pursuit frame_00009/C0018"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C0018/base_error.png"><img loading="lazy" src="images/frame_00009/C0018/base_error.png" alt="Base |error| frame_00009/C0018"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0018/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0018/error_only_error.png" alt="Error-only |error| frame_00009/C0018"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0018/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0018/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C0018"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0018/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0018/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C0018"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.2122,
+      Lap 0.1956.
+      Gain retained:
+      102.07%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C0019</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>5,632</b> error rows</span>
+    <span><b>+512</b> pursuit rows</span>
+    <span><b>26.17%</b> HP</span>
+    <span><b>28.68%</b> Lap</span>
+    <span><b>+5.018 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C0019/target.png"><img loading="lazy" src="images/frame_00009/C0019/target.png" alt="Target frame_00009/C0019"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0019/base.png"><img loading="lazy" src="images/frame_00009/C0019/base.png" alt="Base frame_00009/C0019"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C0019/error_only.png"><img loading="lazy" src="images/frame_00009/C0019/error_only.png" alt="Error-only frame_00009/C0019"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C0019/pursuit.png"><img loading="lazy" src="images/frame_00009/C0019/pursuit.png" alt="Pursuit only frame_00009/C0019"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C0019/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C0019/error_then_pursuit.png" alt="Error → pursuit frame_00009/C0019"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C0019/base_error.png"><img loading="lazy" src="images/frame_00009/C0019/base_error.png" alt="Base |error| frame_00009/C0019"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0019/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0019/error_only_error.png" alt="Error-only |error| frame_00009/C0019"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0019/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0019/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C0019"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0019/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0019/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C0019"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1785,
+      Lap 0.1029.
+      Gain retained:
+      102.16%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C0020</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>6,656</b> error rows</span>
+    <span><b>+128</b> pursuit rows</span>
+    <span><b>26.20%</b> HP</span>
+    <span><b>22.58%</b> Lap</span>
+    <span><b>+3.960 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C0020/target.png"><img loading="lazy" src="images/frame_00009/C0020/target.png" alt="Target frame_00009/C0020"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0020/base.png"><img loading="lazy" src="images/frame_00009/C0020/base.png" alt="Base frame_00009/C0020"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C0020/error_only.png"><img loading="lazy" src="images/frame_00009/C0020/error_only.png" alt="Error-only frame_00009/C0020"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C0020/pursuit.png"><img loading="lazy" src="images/frame_00009/C0020/pursuit.png" alt="Pursuit only frame_00009/C0020"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C0020/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C0020/error_then_pursuit.png" alt="Error → pursuit frame_00009/C0020"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C0020/base_error.png"><img loading="lazy" src="images/frame_00009/C0020/base_error.png" alt="Base |error| frame_00009/C0020"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0020/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0020/error_only_error.png" alt="Error-only |error| frame_00009/C0020"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0020/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0020/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C0020"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0020/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0020/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C0020"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1034,
+      Lap 0.0813.
+      Gain retained:
+      101.09%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C0021</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>6,656</b> error rows</span>
+    <span><b>+128</b> pursuit rows</span>
+    <span><b>25.38%</b> HP</span>
+    <span><b>28.27%</b> Lap</span>
+    <span><b>+3.537 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C0021/target.png"><img loading="lazy" src="images/frame_00009/C0021/target.png" alt="Target frame_00009/C0021"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0021/base.png"><img loading="lazy" src="images/frame_00009/C0021/base.png" alt="Base frame_00009/C0021"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C0021/error_only.png"><img loading="lazy" src="images/frame_00009/C0021/error_only.png" alt="Error-only frame_00009/C0021"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C0021/pursuit.png"><img loading="lazy" src="images/frame_00009/C0021/pursuit.png" alt="Pursuit only frame_00009/C0021"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C0021/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C0021/error_then_pursuit.png" alt="Error → pursuit frame_00009/C0021"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C0021/base_error.png"><img loading="lazy" src="images/frame_00009/C0021/base_error.png" alt="Base |error| frame_00009/C0021"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0021/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0021/error_only_error.png" alt="Error-only |error| frame_00009/C0021"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0021/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0021/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C0021"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0021/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0021/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C0021"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.0800,
+      Lap 0.0000.
+      Gain retained:
+      100.80%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C0022</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>7,168</b> error rows</span>
+    <span><b>+640</b> pursuit rows</span>
+    <span><b>25.90%</b> HP</span>
+    <span><b>26.93%</b> Lap</span>
+    <span><b>+2.796 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C0022/target.png"><img loading="lazy" src="images/frame_00009/C0022/target.png" alt="Target frame_00009/C0022"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0022/base.png"><img loading="lazy" src="images/frame_00009/C0022/base.png" alt="Base frame_00009/C0022"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C0022/error_only.png"><img loading="lazy" src="images/frame_00009/C0022/error_only.png" alt="Error-only frame_00009/C0022"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C0022/pursuit.png"><img loading="lazy" src="images/frame_00009/C0022/pursuit.png" alt="Pursuit only frame_00009/C0022"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C0022/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C0022/error_then_pursuit.png" alt="Error → pursuit frame_00009/C0022"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C0022/base_error.png"><img loading="lazy" src="images/frame_00009/C0022/base_error.png" alt="Base |error| frame_00009/C0022"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0022/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0022/error_only_error.png" alt="Error-only |error| frame_00009/C0022"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0022/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0022/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C0022"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0022/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0022/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C0022"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.2257,
+      Lap 0.1704.
+      Gain retained:
+      102.62%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C0025</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>5,632</b> error rows</span>
+    <span><b>+256</b> pursuit rows</span>
+    <span><b>25.11%</b> HP</span>
+    <span><b>25.04%</b> Lap</span>
+    <span><b>+4.284 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C0025/target.png"><img loading="lazy" src="images/frame_00009/C0025/target.png" alt="Target frame_00009/C0025"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0025/base.png"><img loading="lazy" src="images/frame_00009/C0025/base.png" alt="Base frame_00009/C0025"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C0025/error_only.png"><img loading="lazy" src="images/frame_00009/C0025/error_only.png" alt="Error-only frame_00009/C0025"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C0025/pursuit.png"><img loading="lazy" src="images/frame_00009/C0025/pursuit.png" alt="Pursuit only frame_00009/C0025"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C0025/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C0025/error_then_pursuit.png" alt="Error → pursuit frame_00009/C0025"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C0025/base_error.png"><img loading="lazy" src="images/frame_00009/C0025/base_error.png" alt="Base |error| frame_00009/C0025"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0025/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0025/error_only_error.png" alt="Error-only |error| frame_00009/C0025"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0025/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0025/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C0025"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0025/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0025/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C0025"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1584,
+      Lap 0.1074.
+      Gain retained:
+      101.57%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C0026</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>5,632</b> error rows</span>
+    <span><b>+512</b> pursuit rows</span>
+    <span><b>26.18%</b> HP</span>
+    <span><b>29.40%</b> Lap</span>
+    <span><b>+3.309 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C0026/target.png"><img loading="lazy" src="images/frame_00009/C0026/target.png" alt="Target frame_00009/C0026"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0026/base.png"><img loading="lazy" src="images/frame_00009/C0026/base.png" alt="Base frame_00009/C0026"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C0026/error_only.png"><img loading="lazy" src="images/frame_00009/C0026/error_only.png" alt="Error-only frame_00009/C0026"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C0026/pursuit.png"><img loading="lazy" src="images/frame_00009/C0026/pursuit.png" alt="Pursuit only frame_00009/C0026"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C0026/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C0026/error_then_pursuit.png" alt="Error → pursuit frame_00009/C0026"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C0026/base_error.png"><img loading="lazy" src="images/frame_00009/C0026/base_error.png" alt="Base |error| frame_00009/C0026"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0026/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0026/error_only_error.png" alt="Error-only |error| frame_00009/C0026"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0026/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0026/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C0026"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0026/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0026/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C0026"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1685,
+      Lap 0.0777.
+      Gain retained:
+      102.20%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C0028</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>6,144</b> error rows</span>
+    <span><b>+256</b> pursuit rows</span>
+    <span><b>27.68%</b> HP</span>
+    <span><b>24.61%</b> Lap</span>
+    <span><b>+3.403 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C0028/target.png"><img loading="lazy" src="images/frame_00009/C0028/target.png" alt="Target frame_00009/C0028"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0028/base.png"><img loading="lazy" src="images/frame_00009/C0028/base.png" alt="Base frame_00009/C0028"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C0028/error_only.png"><img loading="lazy" src="images/frame_00009/C0028/error_only.png" alt="Error-only frame_00009/C0028"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C0028/pursuit.png"><img loading="lazy" src="images/frame_00009/C0028/pursuit.png" alt="Pursuit only frame_00009/C0028"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C0028/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C0028/error_then_pursuit.png" alt="Error → pursuit frame_00009/C0028"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C0028/base_error.png"><img loading="lazy" src="images/frame_00009/C0028/base_error.png" alt="Base |error| frame_00009/C0028"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0028/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0028/error_only_error.png" alt="Error-only |error| frame_00009/C0028"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0028/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0028/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C0028"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0028/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0028/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C0028"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1135,
+      Lap 0.0878.
+      Gain retained:
+      101.13%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C0029</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>5,632</b> error rows</span>
+    <span><b>+1,408</b> pursuit rows</span>
+    <span><b>25.32%</b> HP</span>
+    <span><b>26.56%</b> Lap</span>
+    <span><b>+3.019 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C0029/target.png"><img loading="lazy" src="images/frame_00009/C0029/target.png" alt="Target frame_00009/C0029"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0029/base.png"><img loading="lazy" src="images/frame_00009/C0029/base.png" alt="Base frame_00009/C0029"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C0029/error_only.png"><img loading="lazy" src="images/frame_00009/C0029/error_only.png" alt="Error-only frame_00009/C0029"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C0029/pursuit.png"><img loading="lazy" src="images/frame_00009/C0029/pursuit.png" alt="Pursuit only frame_00009/C0029"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C0029/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C0029/error_then_pursuit.png" alt="Error → pursuit frame_00009/C0029"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C0029/base_error.png"><img loading="lazy" src="images/frame_00009/C0029/base_error.png" alt="Base |error| frame_00009/C0029"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0029/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0029/error_only_error.png" alt="Error-only |error| frame_00009/C0029"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0029/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0029/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C0029"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0029/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0029/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C0029"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.2184,
+      Lap 0.1503.
+      Gain retained:
+      102.60%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C0030</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>7,168</b> error rows</span>
+    <span><b>+512</b> pursuit rows</span>
+    <span><b>26.90%</b> HP</span>
+    <span><b>26.86%</b> Lap</span>
+    <span><b>+4.022 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C0030/target.png"><img loading="lazy" src="images/frame_00009/C0030/target.png" alt="Target frame_00009/C0030"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0030/base.png"><img loading="lazy" src="images/frame_00009/C0030/base.png" alt="Base frame_00009/C0030"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C0030/error_only.png"><img loading="lazy" src="images/frame_00009/C0030/error_only.png" alt="Error-only frame_00009/C0030"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C0030/pursuit.png"><img loading="lazy" src="images/frame_00009/C0030/pursuit.png" alt="Pursuit only frame_00009/C0030"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C0030/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C0030/error_then_pursuit.png" alt="Error → pursuit frame_00009/C0030"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C0030/base_error.png"><img loading="lazy" src="images/frame_00009/C0030/base_error.png" alt="Base |error| frame_00009/C0030"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0030/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0030/error_only_error.png" alt="Error-only |error| frame_00009/C0030"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0030/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0030/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C0030"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0030/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0030/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C0030"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1571,
+      Lap 0.1050.
+      Gain retained:
+      102.26%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C0031</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>5,632</b> error rows</span>
+    <span><b>+128</b> pursuit rows</span>
+    <span><b>25.70%</b> HP</span>
+    <span><b>26.47%</b> Lap</span>
+    <span><b>+3.519 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C0031/target.png"><img loading="lazy" src="images/frame_00009/C0031/target.png" alt="Target frame_00009/C0031"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0031/base.png"><img loading="lazy" src="images/frame_00009/C0031/base.png" alt="Base frame_00009/C0031"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C0031/error_only.png"><img loading="lazy" src="images/frame_00009/C0031/error_only.png" alt="Error-only frame_00009/C0031"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C0031/pursuit.png"><img loading="lazy" src="images/frame_00009/C0031/pursuit.png" alt="Pursuit only frame_00009/C0031"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C0031/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C0031/error_then_pursuit.png" alt="Error → pursuit frame_00009/C0031"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C0031/base_error.png"><img loading="lazy" src="images/frame_00009/C0031/base_error.png" alt="Base |error| frame_00009/C0031"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0031/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0031/error_only_error.png" alt="Error-only |error| frame_00009/C0031"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0031/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0031/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C0031"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0031/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0031/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C0031"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.0930,
+      Lap 0.0108.
+      Gain retained:
+      101.27%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C0034</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>4,608</b> error rows</span>
+    <span><b>+384</b> pursuit rows</span>
+    <span><b>25.84%</b> HP</span>
+    <span><b>24.73%</b> Lap</span>
+    <span><b>+3.101 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C0034/target.png"><img loading="lazy" src="images/frame_00009/C0034/target.png" alt="Target frame_00009/C0034"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0034/base.png"><img loading="lazy" src="images/frame_00009/C0034/base.png" alt="Base frame_00009/C0034"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C0034/error_only.png"><img loading="lazy" src="images/frame_00009/C0034/error_only.png" alt="Error-only frame_00009/C0034"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C0034/pursuit.png"><img loading="lazy" src="images/frame_00009/C0034/pursuit.png" alt="Pursuit only frame_00009/C0034"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C0034/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C0034/error_then_pursuit.png" alt="Error → pursuit frame_00009/C0034"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C0034/base_error.png"><img loading="lazy" src="images/frame_00009/C0034/base_error.png" alt="Base |error| frame_00009/C0034"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0034/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0034/error_only_error.png" alt="Error-only |error| frame_00009/C0034"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0034/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0034/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C0034"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0034/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0034/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C0034"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1872,
+      Lap 0.1224.
+      Gain retained:
+      103.21%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C0037</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>6,144</b> error rows</span>
+    <span><b>+256</b> pursuit rows</span>
+    <span><b>29.25%</b> HP</span>
+    <span><b>28.17%</b> Lap</span>
+    <span><b>+2.539 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C0037/target.png"><img loading="lazy" src="images/frame_00009/C0037/target.png" alt="Target frame_00009/C0037"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0037/base.png"><img loading="lazy" src="images/frame_00009/C0037/base.png" alt="Base frame_00009/C0037"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C0037/error_only.png"><img loading="lazy" src="images/frame_00009/C0037/error_only.png" alt="Error-only frame_00009/C0037"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C0037/pursuit.png"><img loading="lazy" src="images/frame_00009/C0037/pursuit.png" alt="Pursuit only frame_00009/C0037"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C0037/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C0037/error_then_pursuit.png" alt="Error → pursuit frame_00009/C0037"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C0037/base_error.png"><img loading="lazy" src="images/frame_00009/C0037/base_error.png" alt="Base |error| frame_00009/C0037"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0037/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0037/error_only_error.png" alt="Error-only |error| frame_00009/C0037"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0037/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0037/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C0037"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0037/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0037/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C0037"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1772,
+      Lap 0.1131.
+      Gain retained:
+      101.93%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell fail" data-disposition="already_satisfied">
+  <header><h3>frame_00009 / C0039</h3>
+    <span class="tag">already satisfied</span></header>
+  <div class="numbers">
+    <span><b>3,385</b> error rows</span>
+    <span><b>+0</b> pursuit rows</span>
+    <span><b>50.18%</b> HP</span>
+    <span><b>54.07%</b> Lap</span>
+    <span><b>+5.123 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C0039/target.png"><img loading="lazy" src="images/frame_00009/C0039/target.png" alt="Target frame_00009/C0039"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0039/base.png"><img loading="lazy" src="images/frame_00009/C0039/base.png" alt="Base frame_00009/C0039"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C0039/error_only.png"><img loading="lazy" src="images/frame_00009/C0039/error_only.png" alt="Error-only frame_00009/C0039"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C0039/pursuit.png"><img loading="lazy" src="images/frame_00009/C0039/pursuit.png" alt="Pursuit only frame_00009/C0039"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C0039/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C0039/error_then_pursuit.png" alt="Error → pursuit frame_00009/C0039"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C0039/base_error.png"><img loading="lazy" src="images/frame_00009/C0039/base_error.png" alt="Base |error| frame_00009/C0039"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0039/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0039/error_only_error.png" alt="Error-only |error| frame_00009/C0039"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0039/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0039/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C0039"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C0039/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0039/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C0039"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.0000,
+      Lap 0.0000.
+      Gain retained:
+      100.00%.
+      Stage/base protected: False/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C1000</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>7,168</b> error rows</span>
+    <span><b>+128</b> pursuit rows</span>
+    <span><b>30.99%</b> HP</span>
+    <span><b>31.78%</b> Lap</span>
+    <span><b>+3.670 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C1000/target.png"><img loading="lazy" src="images/frame_00009/C1000/target.png" alt="Target frame_00009/C1000"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C1000/base.png"><img loading="lazy" src="images/frame_00009/C1000/base.png" alt="Base frame_00009/C1000"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C1000/error_only.png"><img loading="lazy" src="images/frame_00009/C1000/error_only.png" alt="Error-only frame_00009/C1000"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C1000/pursuit.png"><img loading="lazy" src="images/frame_00009/C1000/pursuit.png" alt="Pursuit only frame_00009/C1000"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C1000/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C1000/error_then_pursuit.png" alt="Error → pursuit frame_00009/C1000"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C1000/base_error.png"><img loading="lazy" src="images/frame_00009/C1000/base_error.png" alt="Base |error| frame_00009/C1000"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C1000/error_only_error.png"><img loading="lazy" src="images/frame_00009/C1000/error_only_error.png" alt="Error-only |error| frame_00009/C1000"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C1000/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C1000/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C1000"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C1000/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C1000/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C1000"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.0830,
+      Lap 0.0163.
+      Gain retained:
+      100.88%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C1001</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>7,680</b> error rows</span>
+    <span><b>+128</b> pursuit rows</span>
+    <span><b>32.77%</b> HP</span>
+    <span><b>32.10%</b> Lap</span>
+    <span><b>+3.686 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C1001/target.png"><img loading="lazy" src="images/frame_00009/C1001/target.png" alt="Target frame_00009/C1001"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C1001/base.png"><img loading="lazy" src="images/frame_00009/C1001/base.png" alt="Base frame_00009/C1001"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C1001/error_only.png"><img loading="lazy" src="images/frame_00009/C1001/error_only.png" alt="Error-only frame_00009/C1001"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C1001/pursuit.png"><img loading="lazy" src="images/frame_00009/C1001/pursuit.png" alt="Pursuit only frame_00009/C1001"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C1001/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C1001/error_then_pursuit.png" alt="Error → pursuit frame_00009/C1001"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C1001/base_error.png"><img loading="lazy" src="images/frame_00009/C1001/base_error.png" alt="Base |error| frame_00009/C1001"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C1001/error_only_error.png"><img loading="lazy" src="images/frame_00009/C1001/error_only_error.png" alt="Error-only |error| frame_00009/C1001"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C1001/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C1001/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C1001"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C1001/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C1001/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C1001"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.0439,
+      Lap 0.0000.
+      Gain retained:
+      100.91%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell pass" data-disposition="pursuit_executed">
+  <header><h3>frame_00009 / C1002</h3>
+    <span class="tag">pursuit executed</span></header>
+  <div class="numbers">
+    <span><b>2,759</b> error rows</span>
+    <span><b>+128</b> pursuit rows</span>
+    <span><b>28.98%</b> HP</span>
+    <span><b>36.65%</b> Lap</span>
+    <span><b>+4.075 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C1002/target.png"><img loading="lazy" src="images/frame_00009/C1002/target.png" alt="Target frame_00009/C1002"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C1002/base.png"><img loading="lazy" src="images/frame_00009/C1002/base.png" alt="Base frame_00009/C1002"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C1002/error_only.png"><img loading="lazy" src="images/frame_00009/C1002/error_only.png" alt="Error-only frame_00009/C1002"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C1002/pursuit.png"><img loading="lazy" src="images/frame_00009/C1002/pursuit.png" alt="Pursuit only frame_00009/C1002"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C1002/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C1002/error_then_pursuit.png" alt="Error → pursuit frame_00009/C1002"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C1002/base_error.png"><img loading="lazy" src="images/frame_00009/C1002/base_error.png" alt="Base |error| frame_00009/C1002"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C1002/error_only_error.png"><img loading="lazy" src="images/frame_00009/C1002/error_only_error.png" alt="Error-only |error| frame_00009/C1002"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C1002/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C1002/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C1002"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C1002/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C1002/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C1002"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.1044,
+      Lap 0.0000.
+      Gain retained:
+      100.58%.
+      Stage/base protected: True/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article>
+<article class="cell fail" data-disposition="already_satisfied">
+  <header><h3>frame_00009 / C1004</h3>
+    <span class="tag">already satisfied</span></header>
+  <div class="numbers">
+    <span><b>5,520</b> error rows</span>
+    <span><b>+0</b> pursuit rows</span>
+    <span><b>30.54%</b> HP</span>
+    <span><b>29.43%</b> Lap</span>
+    <span><b>+2.913 dB</b> FG gain</span>
+  </div>
+  <div class="visuals"><figure><a href="images/frame_00009/C1004/target.png"><img loading="lazy" src="images/frame_00009/C1004/target.png" alt="Target frame_00009/C1004"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C1004/base.png"><img loading="lazy" src="images/frame_00009/C1004/base.png" alt="Base frame_00009/C1004"></a><figcaption>Base</figcaption></figure><figure><a href="images/frame_00009/C1004/error_only.png"><img loading="lazy" src="images/frame_00009/C1004/error_only.png" alt="Error-only frame_00009/C1004"></a><figcaption>Error-only</figcaption></figure><figure><a href="images/frame_00009/C1004/pursuit.png"><img loading="lazy" src="images/frame_00009/C1004/pursuit.png" alt="Pursuit only frame_00009/C1004"></a><figcaption>Pursuit only</figcaption></figure><figure><a href="images/frame_00009/C1004/error_then_pursuit.png"><img loading="lazy" src="images/frame_00009/C1004/error_then_pursuit.png" alt="Error → pursuit frame_00009/C1004"></a><figcaption>Error → pursuit</figcaption></figure></div>
+  <details><summary>Matched residual views and checks</summary>
+    <div class="visuals errors"><figure><a href="images/frame_00009/C1004/base_error.png"><img loading="lazy" src="images/frame_00009/C1004/base_error.png" alt="Base |error| frame_00009/C1004"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C1004/error_only_error.png"><img loading="lazy" src="images/frame_00009/C1004/error_only_error.png" alt="Error-only |error| frame_00009/C1004"></a><figcaption>Error-only |error|</figcaption></figure><figure><a href="images/frame_00009/C1004/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C1004/pursuit_error.png" alt="Pursuit-only |error| frame_00009/C1004"></a><figcaption>Pursuit-only |error|</figcaption></figure><figure><a href="images/frame_00009/C1004/error_then_pursuit_error.png"><img loading="lazy" src="images/frame_00009/C1004/error_then_pursuit_error.png" alt="Combined |error| frame_00009/C1004"></a><figcaption>Combined |error|</figcaption></figure></div>
+    <p>Adjusted pursuit targets:
+      HP 0.0000,
+      Lap 0.0000.
+      Gain retained:
+      100.00%.
+      Stage/base protected: False/True;
+      prefix exact: True; outside zero: True.
+    </p>
+  </details>
+</article></section>
+<h2>Scope and provenance</h2>
+<p class="lede">Exact source/field hashes, adjusted targets, metrics, timings, prefix checks, and
+termination records are in <a href="comparison.csv">comparison.csv</a>,
+<a href="summary.json">summary.json</a>, <a href="audit.json">audit.json</a>, and
+<a href="run.md">run.md</a>. Historical single-arm timings are not presented as newly measured.
+No actual-byte, work-efficiency, independent-scene, or default claim follows.</p>
+</main>
+<script>
+document.querySelectorAll("button[data-filter]").forEach(button => {
+  button.addEventListener("click", () => {
+    const wanted = button.dataset.filter;
+    document.querySelectorAll(".cell").forEach(card => {
+      card.classList.toggle("hidden", wanted !== "all" && card.dataset.disposition !== wanted);
+    });
+  });
+});
+</script>
+</body></html>

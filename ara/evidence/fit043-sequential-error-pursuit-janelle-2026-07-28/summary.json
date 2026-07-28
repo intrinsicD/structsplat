@@ -1,0 +1,137 @@
+{
+  "already_satisfied_cells": 7,
+  "by_frame": {
+    "frame_00008": {
+      "cells": 25,
+      "incremental_rows": {
+        "mean": 317.44,
+        "median": 256.0,
+        "p25": 128.0,
+        "p75": 512.0
+      },
+      "skipped": 4,
+      "target_reached": 25
+    },
+    "frame_00009": {
+      "cells": 26,
+      "incremental_rows": {
+        "mean": 285.53846153846155,
+        "median": 192.0,
+        "p25": 128.0,
+        "p75": 352.0
+      },
+      "skipped": 3,
+      "target_reached": 26
+    }
+  },
+  "completed_cells": 51,
+  "cumulative": {
+    "combined_minus_error_foreground_psnr_db": {
+      "mean": 0.05035849526555308,
+      "median": 0.04888772471174363,
+      "p25": 0.03176232174403992,
+      "p75": 0.07433227645660168
+    },
+    "foreground_gain_retention_fraction": {
+      "mean": 1.0141775256308003,
+      "median": 1.014096901429235,
+      "p25": 1.0087915184943324,
+      "p75": 1.0204319380053886
+    },
+    "foreground_psnr_gain_db": {
+      "mean": 3.7184246360807585,
+      "median": 3.619717713241023,
+      "p25": 3.136605053385434,
+      "p75": 4.094019411289066
+    },
+    "highpass_reduction": {
+      "mean": 0.2818114067871244,
+      "median": 0.2729729105319556,
+      "p25": 0.25899542634504846,
+      "p75": 0.29264216394587417
+    },
+    "laplacian_reduction": {
+      "mean": 0.29274036894266153,
+      "median": 0.28269243242689657,
+      "p25": 0.2671363757189227,
+      "p75": 0.3053164309136608
+    }
+  },
+  "decision": {
+    "default_change_authorized": false,
+    "fit042_confirmation": false,
+    "production_interface_authorized": false,
+    "rule_1_all_cells_target_protected_prefix_zero": false,
+    "rule_2_every_cell_retains_95_percent": true,
+    "rule_2_global_gain_retained": true,
+    "rule_2_median_combined_minus_error_psnr_db": 0.04888772471174363,
+    "rule_3_every_executed_stage_improves_both_detail_metrics": true,
+    "rule_4_median_incremental_rows_no_more_than_pursuit_only": true,
+    "verdict": "reject the frozen sequential controller without retuning",
+    "viable_dual_objective_exposed_data_option": false
+  },
+  "executed_prefix_exact_cells": 43,
+  "failed_cells": 0,
+  "failures": [],
+  "incremental_executed": {
+    "highpass_reduction": {
+      "mean": 0.17701436444964314,
+      "median": 0.1800613229919551,
+      "p25": 0.14343630424816653,
+      "p75": 0.2192509027724339
+    },
+    "laplacian_reduction": {
+      "mean": 0.17095431177612974,
+      "median": 0.1816511679765378,
+      "p25": 0.12716214700651216,
+      "p75": 0.21415767725485338
+    }
+  },
+  "original_base_protected_safe_cells": 51,
+  "outside_exact_zero_cells": 51,
+  "pursuit_executed_cells": 44,
+  "requested_cells": 51,
+  "rows": {
+    "combined_tail_added": {
+      "mean": 6099.21568627451,
+      "median": 6272.0,
+      "p25": 5760.0,
+      "p75": 6784.0
+    },
+    "error_only_added": {
+      "mean": 5798.0392156862745,
+      "median": 6144.0,
+      "p25": 5576.0,
+      "p75": 6400.0
+    },
+    "pursuit_only_added_reused": {
+      "mean": 494.4313725490196,
+      "median": 384.0,
+      "p25": 320.0,
+      "p75": 576.0
+    },
+    "sequential_pursuit_added_all_cells": {
+      "mean": 301.1764705882353,
+      "median": 256.0,
+      "p25": 128.0,
+      "p75": 448.0
+    },
+    "sequential_pursuit_added_executed_cells": {
+      "mean": 349.09090909090907,
+      "median": 256.0,
+      "p25": 128.0,
+      "p75": 512.0
+    }
+  },
+  "schema": "structsplat.fit043_sequential_error_pursuit.v1.summary",
+  "scope": "exposed correlated 51-cell Janelle diagnostic; one seed; natural unequal counts; not FIT-042",
+  "seconds_new_stage": {
+    "mean": 5.663234950408485,
+    "median": 6.046215462498367,
+    "p25": 5.351289057638496,
+    "p75": 6.741339393425733
+  },
+  "stage_protected_safe_cells": 44,
+  "target_reached_cells": 51,
+  "task": "FIT-043"
+}

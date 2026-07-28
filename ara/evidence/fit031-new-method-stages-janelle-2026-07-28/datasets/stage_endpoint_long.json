@@ -1,0 +1,178 @@
+[
+  {
+    "added_rows": 0,
+    "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+    "gate_status": "rejected: no protected recovery accepted",
+    "method": "Gauge-lifted residual dipoles",
+    "metric": "Sigma-1.5 high-pass",
+    "reduction": 0.0,
+    "stage_order": 32,
+    "target_reached": false,
+    "task": "FIT-032"
+  },
+  {
+    "added_rows": 0,
+    "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+    "gate_status": "rejected: no protected recovery accepted",
+    "method": "Gauge-lifted residual dipoles",
+    "metric": "Laplacian",
+    "reduction": 0.0,
+    "stage_order": 32,
+    "target_reached": false,
+    "task": "FIT-032"
+  },
+  {
+    "added_rows": 128,
+    "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+    "gate_status": "advanced to independent confirmation only",
+    "method": "High-pass births + partial color solve",
+    "metric": "Sigma-1.5 high-pass",
+    "reduction": 0.07622094928513012,
+    "stage_order": 33,
+    "target_reached": false,
+    "task": "FIT-033"
+  },
+  {
+    "added_rows": 128,
+    "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+    "gate_status": "advanced to independent confirmation only",
+    "method": "High-pass births + partial color solve",
+    "metric": "Laplacian",
+    "reduction": 0.08073377781113455,
+    "stage_order": 33,
+    "target_reached": false,
+    "task": "FIT-033"
+  },
+  {
+    "added_rows": 128,
+    "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+    "gate_status": "negative: selected raw weight 0",
+    "method": "Spectral/raw mixed partial solve",
+    "metric": "Sigma-1.5 high-pass",
+    "reduction": 0.077046521820754,
+    "stage_order": 34,
+    "target_reached": false,
+    "task": "FIT-034"
+  },
+  {
+    "added_rows": 128,
+    "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+    "gate_status": "negative: selected raw weight 0",
+    "method": "Spectral/raw mixed partial solve",
+    "metric": "Laplacian",
+    "reduction": 0.08076451514761307,
+    "stage_order": 34,
+    "target_reached": false,
+    "task": "FIT-034"
+  },
+  {
+    "added_rows": 128,
+    "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+    "gate_status": "negative: affine target missed",
+    "method": "Sparse affine detail births",
+    "metric": "Sigma-1.5 high-pass",
+    "reduction": 0.09686269886402021,
+    "stage_order": 35,
+    "target_reached": false,
+    "task": "FIT-035"
+  },
+  {
+    "added_rows": 128,
+    "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+    "gate_status": "negative: affine target missed",
+    "method": "Sparse affine detail births",
+    "metric": "Laplacian",
+    "reduction": 0.09392084121226263,
+    "stage_order": 35,
+    "target_reached": false,
+    "task": "FIT-035"
+  },
+  {
+    "added_rows": 128,
+    "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+    "gate_status": "negative: ridge target missed",
+    "method": "High-pass residual ridge births",
+    "metric": "Sigma-1.5 high-pass",
+    "reduction": 0.08084631114214336,
+    "stage_order": 36,
+    "target_reached": false,
+    "task": "FIT-036"
+  },
+  {
+    "added_rows": 128,
+    "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+    "gate_status": "negative: ridge target missed",
+    "method": "High-pass residual ridge births",
+    "metric": "Laplacian",
+    "reduction": 0.08456923040423925,
+    "stage_order": 36,
+    "target_reached": false,
+    "task": "FIT-036"
+  },
+  {
+    "added_rows": 2048,
+    "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+    "gate_status": "negative: target missed at 2,048 rows",
+    "method": "Static nested deep-detail rows",
+    "metric": "Sigma-1.5 high-pass",
+    "reduction": 0.1572834905942092,
+    "stage_order": 37,
+    "target_reached": false,
+    "task": "FIT-037"
+  },
+  {
+    "added_rows": 2048,
+    "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+    "gate_status": "negative: target missed at 2,048 rows",
+    "method": "Static nested deep-detail rows",
+    "metric": "Laplacian",
+    "reduction": 0.12555358912865167,
+    "stage_order": 37,
+    "target_reached": false,
+    "task": "FIT-037"
+  },
+  {
+    "added_rows": 2048,
+    "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+    "gate_status": "negative: target missed at 2,048 rows",
+    "method": "Iterative orthogonal pursuit, radius 2",
+    "metric": "Sigma-1.5 high-pass",
+    "reduction": 0.20902473402914312,
+    "stage_order": 38,
+    "target_reached": false,
+    "task": "FIT-038"
+  },
+  {
+    "added_rows": 2048,
+    "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+    "gate_status": "negative: target missed at 2,048 rows",
+    "method": "Iterative orthogonal pursuit, radius 2",
+    "metric": "Laplacian",
+    "reduction": 0.16240482056930616,
+    "stage_order": 38,
+    "target_reached": false,
+    "task": "FIT-038"
+  },
+  {
+    "added_rows": 768,
+    "evidence_class": "published same-target RTX3050 result; 11,000-row base",
+    "gate_status": "fine-detail target reached at 768 rows",
+    "method": "Orthogonal pursuit + exact-site exclusion",
+    "metric": "Sigma-1.5 high-pass",
+    "reduction": 0.25926232493182966,
+    "stage_order": 39,
+    "target_reached": true,
+    "task": "FIT-039/040"
+  },
+  {
+    "added_rows": 768,
+    "evidence_class": "published same-target RTX3050 result; 11,000-row base",
+    "gate_status": "fine-detail target reached at 768 rows",
+    "method": "Orthogonal pursuit + exact-site exclusion",
+    "metric": "Laplacian",
+    "reduction": 0.2731565966440711,
+    "stage_order": 39,
+    "target_reached": true,
+    "task": "FIT-039/040"
+  }
+]

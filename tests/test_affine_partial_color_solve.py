@@ -8,6 +8,9 @@ from benchmarks.affine_partial_color_solve import (
     affine_color_basis_transpose,
     solve_new_row_affine_colors,
 )
+from scripts.experiments.fit035_janelle_affine_screen import (
+    _aa_is_nondegrading,
+)
 from structsplat.config import FitConfig
 from structsplat.fit import _normalized_color_denominator, _render
 from structsplat.gaussians import GaussianField
@@ -192,3 +195,12 @@ def test_affine_partial_solve_matches_materialized_regularized_system():
     assert torch.allclose(actual, expected, atol=3e-5, rtol=3e-5)
     assert result.relative_residual < 1e-5
     assert result.final_objective < result.initial_objective
+
+
+def test_affine_renderer_aa_allows_only_missing_material_gain():
+    assert _aa_is_nondegrading(True, [])
+    assert _aa_is_nondegrading(False, ["no_material_gain"])
+    assert not _aa_is_nondegrading(
+        False,
+        ["foreground_mse_regressed", "no_material_gain"],
+    )

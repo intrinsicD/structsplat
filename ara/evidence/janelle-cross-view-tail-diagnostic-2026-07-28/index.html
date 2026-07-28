@@ -1,0 +1,2265 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Janelle cross-view fine-detail tails</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #09101d; --card: #121c2d; --card2: #17243a;
+      --text: #edf3fb; --muted: #9eacc0; --line: #2b3c55;
+      --cyan: #3dd6c6; --amber: #ffbe4d; --red: #ff7070; --blue: #65a9ff;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text);
+      font: 15px/1.55 system-ui, sans-serif; }
+    main { max-width: 1500px; margin: auto; padding: 36px 24px 80px; }
+    h1 { font-size: clamp(30px, 4vw, 54px); line-height: 1.05; margin: 8px 0 14px; }
+    h2 { margin-top: 42px; font-size: 25px; }
+    h3 { margin: 2px 0 0; font-size: 23px; }
+    a { color: #8ac7ff; }
+    .lede { max-width: 980px; color: var(--muted); font-size: 18px; }
+    .caveat { border: 1px solid #765b25; background: #2d2415; padding: 14px 18px;
+      border-radius: 12px; max-width: 1100px; }
+    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px; margin: 28px 0; }
+    .metric { background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+      padding: 16px; }
+    .metric strong { display: block; font-size: 30px; }
+    .metric span, .eyebrow { color: var(--muted); font-size: 12px; text-transform: uppercase;
+      letter-spacing: .08em; }
+    .table-wrap { overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; background: var(--card);
+      border: 1px solid var(--line); }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: right; }
+    th:first-child, td:first-child { text-align: left; }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0; }
+    button { border: 1px solid var(--line); background: var(--card2); color: var(--text);
+      border-radius: 999px; padding: 8px 13px; cursor: pointer; }
+    button.active { border-color: var(--cyan); color: var(--cyan); }
+    .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(570px, 1fr));
+      gap: 18px; }
+    .view-card { background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+      padding: 16px; min-width: 0; }
+    .view-card[hidden] { display: none; }
+    .view-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .winner { border-radius: 999px; padding: 6px 10px; font-weight: 700; }
+    .winner-pursuit { background: #133d39; color: var(--cyan); }
+    .winner-error_only { background: #342b15; color: var(--amber); }
+    .winner-neither { background: #392026; color: #ff9a9a; }
+    .winner-tie { background: #203653; color: #9bc5ff; }
+    .reason { color: var(--muted); margin: 8px 0 14px; }
+    .image-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+    .error-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px;
+      margin-top: 10px; }
+    figure { margin: 0; min-width: 0; }
+    img { width: 100%; height: auto; display: block; border-radius: 7px;
+      image-rendering: auto; background: #000; }
+    figcaption { color: var(--muted); font-size: 12px; padding-top: 4px; }
+    details { margin: 11px 0; color: var(--muted); }
+    summary { cursor: pointer; }
+    .mini { font-size: 13px; margin-top: 10px; }
+    .mini th, .mini td { padding: 7px 8px; }
+    .links { color: var(--muted); font-size: 13px; margin-bottom: 0; }
+    .method-note { color: var(--muted); max-width: 1050px; }
+    @media (max-width: 720px) {
+      main { padding: 24px 12px 60px; }
+      .gallery { grid-template-columns: 1fr; }
+      .image-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body><main>
+  <span class="eyebrow">StructSplat · 2026-07-28</span>
+  <h1>Janelle cross-view fine-detail tails</h1>
+  <p class="lede">A paired comparison of the production FIT-040 orthogonal-pursuit tail and
+  FIT-031 error-only tail on every remaining persisted Janelle view. Each card uses a
+  deterministic pre-treatment detail crop, so the allocation behavior can be judged visually.</p>
+  <p class="caveat"><strong>Scope boundary:</strong> this is a correlated transfer diagnostic
+  within one capture/session, using archived mask-contained bases. It is not independent-scene
+  FIT-042 confirmation and does not establish a population-level success rate.</p>
+
+  <div class="metrics">
+    <div class="metric"><strong>51</strong><span>eligible / completed views</span></div>
+    <div class="metric"><strong>51/51</strong><span>pursuit target hits</span></div>
+    <div class="metric"><strong>7/51</strong><span>error-only target hits</span></div>
+    <div class="metric"><strong>51</strong><span>pursuit wins</span></div>
+    <div class="metric"><strong>384</strong><span>pursuit median added rows</span></div>
+    <div class="metric"><strong>6,144</strong><span>error-only median added rows</span></div>
+  </div>
+
+  <h2>Aggregate comparison</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Method</th><th>Target hits</th><th>Protected-safe</th>
+      <th>Median rows</th><th>Median HP reduction</th><th>Median Lap reduction</th>
+      <th>Median FG PSNR gain</th></tr></thead>
+    <tbody>
+      <tr><td>FIT-040 pursuit</td><td>51/51</td>
+        <td>51/51</td>
+        <td>384</td>
+        <td>26.7%</td>
+        <td>26.9%</td>
+        <td>+0.051 dB</td></tr>
+      <tr><td>FIT-031 error-only</td><td>7/51</td>
+        <td>51/51</td>
+        <td>6,144</td>
+        <td>12.8%</td>
+        <td>14.8%</td>
+        <td>+3.587 dB</td></tr>
+    </tbody>
+  </table></div>
+  <p class="method-note">Primary target: at least 25% deep sigma-1.5 high-pass reduction and
+  20% deep Laplacian reduction, with protected metrics safe. Natural stopping policies are used:
+  pursuit adds 128-row waves up to 2,048 rows; error-only estimates a 50%-residual-support tail
+  and optimizes it to its deterministic stopping condition. Row totals are therefore an outcome,
+  not an equal-row treatment.</p>
+
+  <h2>Frame breakdown</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Frame</th><th>Views</th><th>Pursuit hits</th><th>Error hits</th>
+      <th>Pursuit wins</th><th>Error wins</th><th>Neither</th></tr></thead>
+    <tbody>
+            <tr>
+              <td>frame_00008</td>
+              <td>25</td>
+              <td>25/25</td>
+              <td>4/25</td>
+              <td>25</td>
+              <td>0</td>
+              <td>0</td>
+            </tr>
+            
+            <tr>
+              <td>frame_00009</td>
+              <td>26</td>
+              <td>26/26</td>
+              <td>3/26</td>
+              <td>26</td>
+              <td>0</td>
+              <td>0</td>
+            </tr>
+            </tbody>
+  </table></div>
+
+  <h2>Per-view visual judgment</h2>
+  <div class="controls">
+    <button class="active" data-filter="all">All</button>
+    <button data-filter="pursuit">Pursuit wins</button>
+    <button data-filter="error_only">Error-only wins</button>
+    <button data-filter="neither">No target hit</button>
+    <button data-filter="frame_00008">Frame 8</button>
+    <button data-filter="frame_00009">Frame 9</button>
+  </div>
+  <section class="gallery">
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C0004</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C0004/target.png"><img loading="lazy" src="images/frame_00008/C0004/target.png" alt="Target crop for frame_00008 C0004"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0004/base.png"><img loading="lazy" src="images/frame_00008/C0004/base.png" alt="Shared base crop for frame_00008 C0004"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C0004/pursuit.png"><img loading="lazy" src="images/frame_00008/C0004/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C0004"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C0004/error_only.png"><img loading="lazy" src="images/frame_00008/C0004/error_only.png" alt="FIT-031 error-only crop for frame_00008 C0004"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C0004/base_error.png"><img loading="lazy" src="images/frame_00008/C0004/base_error.png" alt="Base |error| residual crop for frame_00008 C0004"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0004/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0004/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C0004"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C0004/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0004/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C0004"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>384</td>
+                    <td>25.5%</td>
+                    <td>26.6%</td>
+                    <td>+0.044 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>5,632</td>
+                    <td>7.9%</td>
+                    <td>11.0%</td>
+                    <td>+3.567 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0004/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0004/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0004/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0004/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C0005</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C0005/target.png"><img loading="lazy" src="images/frame_00008/C0005/target.png" alt="Target crop for frame_00008 C0005"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0005/base.png"><img loading="lazy" src="images/frame_00008/C0005/base.png" alt="Shared base crop for frame_00008 C0005"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C0005/pursuit.png"><img loading="lazy" src="images/frame_00008/C0005/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C0005"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C0005/error_only.png"><img loading="lazy" src="images/frame_00008/C0005/error_only.png" alt="FIT-031 error-only crop for frame_00008 C0005"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C0005/base_error.png"><img loading="lazy" src="images/frame_00008/C0005/base_error.png" alt="Base |error| residual crop for frame_00008 C0005"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0005/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0005/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C0005"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C0005/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0005/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C0005"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>640</td>
+                    <td>25.2%</td>
+                    <td>25.0%</td>
+                    <td>+0.045 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>6,144</td>
+                    <td>4.1%</td>
+                    <td>6.3%</td>
+                    <td>+4.860 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0005/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0005/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0005/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0005/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C0006</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C0006/target.png"><img loading="lazy" src="images/frame_00008/C0006/target.png" alt="Target crop for frame_00008 C0006"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0006/base.png"><img loading="lazy" src="images/frame_00008/C0006/base.png" alt="Shared base crop for frame_00008 C0006"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C0006/pursuit.png"><img loading="lazy" src="images/frame_00008/C0006/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C0006"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C0006/error_only.png"><img loading="lazy" src="images/frame_00008/C0006/error_only.png" alt="FIT-031 error-only crop for frame_00008 C0006"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C0006/base_error.png"><img loading="lazy" src="images/frame_00008/C0006/base_error.png" alt="Base |error| residual crop for frame_00008 C0006"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0006/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0006/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C0006"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C0006/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0006/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C0006"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>640</td>
+                    <td>26.9%</td>
+                    <td>28.6%</td>
+                    <td>+0.049 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>6,144</td>
+                    <td>4.6%</td>
+                    <td>9.1%</td>
+                    <td>+3.041 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0006/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0006/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0006/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0006/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C0008</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C0008/target.png"><img loading="lazy" src="images/frame_00008/C0008/target.png" alt="Target crop for frame_00008 C0008"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0008/base.png"><img loading="lazy" src="images/frame_00008/C0008/base.png" alt="Shared base crop for frame_00008 C0008"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C0008/pursuit.png"><img loading="lazy" src="images/frame_00008/C0008/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C0008"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C0008/error_only.png"><img loading="lazy" src="images/frame_00008/C0008/error_only.png" alt="FIT-031 error-only crop for frame_00008 C0008"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C0008/base_error.png"><img loading="lazy" src="images/frame_00008/C0008/base_error.png" alt="Base |error| residual crop for frame_00008 C0008"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0008/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0008/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C0008"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C0008/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0008/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C0008"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>512</td>
+                    <td>25.1%</td>
+                    <td>27.2%</td>
+                    <td>+0.047 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>6,144</td>
+                    <td>8.3%</td>
+                    <td>11.3%</td>
+                    <td>+4.636 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0008/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0008/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0008/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0008/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C0009</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C0009/target.png"><img loading="lazy" src="images/frame_00008/C0009/target.png" alt="Target crop for frame_00008 C0009"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0009/base.png"><img loading="lazy" src="images/frame_00008/C0009/base.png" alt="Shared base crop for frame_00008 C0009"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C0009/pursuit.png"><img loading="lazy" src="images/frame_00008/C0009/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C0009"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C0009/error_only.png"><img loading="lazy" src="images/frame_00008/C0009/error_only.png" alt="FIT-031 error-only crop for frame_00008 C0009"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C0009/base_error.png"><img loading="lazy" src="images/frame_00008/C0009/base_error.png" alt="Base |error| residual crop for frame_00008 C0009"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0009/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0009/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C0009"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C0009/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0009/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C0009"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>256</td>
+                    <td>31.1%</td>
+                    <td>31.7%</td>
+                    <td>+0.057 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>6,144</td>
+                    <td>18.9%</td>
+                    <td>21.1%</td>
+                    <td>+3.819 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0009/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0009/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0009/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0009/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C0012</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C0012/target.png"><img loading="lazy" src="images/frame_00008/C0012/target.png" alt="Target crop for frame_00008 C0012"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0012/base.png"><img loading="lazy" src="images/frame_00008/C0012/base.png" alt="Shared base crop for frame_00008 C0012"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C0012/pursuit.png"><img loading="lazy" src="images/frame_00008/C0012/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C0012"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C0012/error_only.png"><img loading="lazy" src="images/frame_00008/C0012/error_only.png" alt="FIT-031 error-only crop for frame_00008 C0012"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C0012/base_error.png"><img loading="lazy" src="images/frame_00008/C0012/base_error.png" alt="Base |error| residual crop for frame_00008 C0012"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0012/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0012/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C0012"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C0012/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0012/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C0012"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>512</td>
+                    <td>26.9%</td>
+                    <td>27.2%</td>
+                    <td>+0.039 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>5,632</td>
+                    <td>7.6%</td>
+                    <td>9.8%</td>
+                    <td>+3.305 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0012/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0012/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0012/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0012/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C0014</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C0014/target.png"><img loading="lazy" src="images/frame_00008/C0014/target.png" alt="Target crop for frame_00008 C0014"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0014/base.png"><img loading="lazy" src="images/frame_00008/C0014/base.png" alt="Shared base crop for frame_00008 C0014"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C0014/pursuit.png"><img loading="lazy" src="images/frame_00008/C0014/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C0014"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C0014/error_only.png"><img loading="lazy" src="images/frame_00008/C0014/error_only.png" alt="FIT-031 error-only crop for frame_00008 C0014"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C0014/base_error.png"><img loading="lazy" src="images/frame_00008/C0014/base_error.png" alt="Base |error| residual crop for frame_00008 C0014"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0014/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0014/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C0014"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C0014/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0014/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C0014"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>896</td>
+                    <td>26.1%</td>
+                    <td>28.6%</td>
+                    <td>+0.038 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>5,120</td>
+                    <td>7.3%</td>
+                    <td>10.1%</td>
+                    <td>+5.564 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0014/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0014/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0014/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0014/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C0018</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C0018/target.png"><img loading="lazy" src="images/frame_00008/C0018/target.png" alt="Target crop for frame_00008 C0018"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0018/base.png"><img loading="lazy" src="images/frame_00008/C0018/base.png" alt="Shared base crop for frame_00008 C0018"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C0018/pursuit.png"><img loading="lazy" src="images/frame_00008/C0018/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C0018"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C0018/error_only.png"><img loading="lazy" src="images/frame_00008/C0018/error_only.png" alt="FIT-031 error-only crop for frame_00008 C0018"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C0018/base_error.png"><img loading="lazy" src="images/frame_00008/C0018/base_error.png" alt="Base |error| residual crop for frame_00008 C0018"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0018/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0018/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C0018"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C0018/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0018/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C0018"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>1,536</td>
+                    <td>25.4%</td>
+                    <td>24.3%</td>
+                    <td>+0.032 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>5,120</td>
+                    <td>4.0%</td>
+                    <td>2.9%</td>
+                    <td>+4.737 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0018/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0018/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0018/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0018/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C0019</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">both reached target; pursuit used fewer rows</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C0019/target.png"><img loading="lazy" src="images/frame_00008/C0019/target.png" alt="Target crop for frame_00008 C0019"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0019/base.png"><img loading="lazy" src="images/frame_00008/C0019/base.png" alt="Shared base crop for frame_00008 C0019"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C0019/pursuit.png"><img loading="lazy" src="images/frame_00008/C0019/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C0019"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C0019/error_only.png"><img loading="lazy" src="images/frame_00008/C0019/error_only.png" alt="FIT-031 error-only crop for frame_00008 C0019"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C0019/base_error.png"><img loading="lazy" src="images/frame_00008/C0019/base_error.png" alt="Base |error| residual crop for frame_00008 C0019"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0019/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0019/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C0019"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C0019/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0019/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C0019"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>384</td>
+                    <td>27.7%</td>
+                    <td>27.8%</td>
+                    <td>+0.117 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>✓</td>
+                    <td>9,728</td>
+                    <td>27.3%</td>
+                    <td>29.2%</td>
+                    <td>+5.477 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0019/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0019/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0019/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0019/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C0020</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C0020/target.png"><img loading="lazy" src="images/frame_00008/C0020/target.png" alt="Target crop for frame_00008 C0020"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0020/base.png"><img loading="lazy" src="images/frame_00008/C0020/base.png" alt="Shared base crop for frame_00008 C0020"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C0020/pursuit.png"><img loading="lazy" src="images/frame_00008/C0020/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C0020"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C0020/error_only.png"><img loading="lazy" src="images/frame_00008/C0020/error_only.png" alt="FIT-031 error-only crop for frame_00008 C0020"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C0020/base_error.png"><img loading="lazy" src="images/frame_00008/C0020/base_error.png" alt="Base |error| residual crop for frame_00008 C0020"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0020/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0020/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C0020"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C0020/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0020/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C0020"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>384</td>
+                    <td>25.3%</td>
+                    <td>23.9%</td>
+                    <td>+0.036 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>6,144</td>
+                    <td>12.8%</td>
+                    <td>15.3%</td>
+                    <td>+3.975 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0020/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0020/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0020/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0020/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C0021</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C0021/target.png"><img loading="lazy" src="images/frame_00008/C0021/target.png" alt="Target crop for frame_00008 C0021"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0021/base.png"><img loading="lazy" src="images/frame_00008/C0021/base.png" alt="Shared base crop for frame_00008 C0021"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C0021/pursuit.png"><img loading="lazy" src="images/frame_00008/C0021/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C0021"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C0021/error_only.png"><img loading="lazy" src="images/frame_00008/C0021/error_only.png" alt="FIT-031 error-only crop for frame_00008 C0021"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C0021/base_error.png"><img loading="lazy" src="images/frame_00008/C0021/base_error.png" alt="Base |error| residual crop for frame_00008 C0021"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0021/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0021/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C0021"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C0021/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0021/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C0021"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>512</td>
+                    <td>25.3%</td>
+                    <td>29.0%</td>
+                    <td>+0.031 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>5,872</td>
+                    <td>20.2%</td>
+                    <td>27.2%</td>
+                    <td>+2.513 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0021/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0021/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0021/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0021/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C0022</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">both reached target; pursuit used fewer rows</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C0022/target.png"><img loading="lazy" src="images/frame_00008/C0022/target.png" alt="Target crop for frame_00008 C0022"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0022/base.png"><img loading="lazy" src="images/frame_00008/C0022/base.png" alt="Shared base crop for frame_00008 C0022"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C0022/pursuit.png"><img loading="lazy" src="images/frame_00008/C0022/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C0022"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C0022/error_only.png"><img loading="lazy" src="images/frame_00008/C0022/error_only.png" alt="FIT-031 error-only crop for frame_00008 C0022"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C0022/base_error.png"><img loading="lazy" src="images/frame_00008/C0022/base_error.png" alt="Base |error| residual crop for frame_00008 C0022"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0022/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0022/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C0022"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C0022/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0022/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C0022"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>384</td>
+                    <td>35.0%</td>
+                    <td>30.5%</td>
+                    <td>+0.073 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>✓</td>
+                    <td>5,632</td>
+                    <td>33.8%</td>
+                    <td>33.3%</td>
+                    <td>+2.788 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0022/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0022/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0022/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0022/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C0025</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C0025/target.png"><img loading="lazy" src="images/frame_00008/C0025/target.png" alt="Target crop for frame_00008 C0025"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0025/base.png"><img loading="lazy" src="images/frame_00008/C0025/base.png" alt="Shared base crop for frame_00008 C0025"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C0025/pursuit.png"><img loading="lazy" src="images/frame_00008/C0025/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C0025"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C0025/error_only.png"><img loading="lazy" src="images/frame_00008/C0025/error_only.png" alt="FIT-031 error-only crop for frame_00008 C0025"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C0025/base_error.png"><img loading="lazy" src="images/frame_00008/C0025/base_error.png" alt="Base |error| residual crop for frame_00008 C0025"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0025/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0025/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C0025"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C0025/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0025/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C0025"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>384</td>
+                    <td>26.5%</td>
+                    <td>26.2%</td>
+                    <td>+0.066 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>6,144</td>
+                    <td>12.8%</td>
+                    <td>12.0%</td>
+                    <td>+3.808 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0025/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0025/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0025/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0025/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C0026</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C0026/target.png"><img loading="lazy" src="images/frame_00008/C0026/target.png" alt="Target crop for frame_00008 C0026"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0026/base.png"><img loading="lazy" src="images/frame_00008/C0026/base.png" alt="Shared base crop for frame_00008 C0026"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C0026/pursuit.png"><img loading="lazy" src="images/frame_00008/C0026/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C0026"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C0026/error_only.png"><img loading="lazy" src="images/frame_00008/C0026/error_only.png" alt="FIT-031 error-only crop for frame_00008 C0026"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C0026/base_error.png"><img loading="lazy" src="images/frame_00008/C0026/base_error.png" alt="Base |error| residual crop for frame_00008 C0026"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0026/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0026/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C0026"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C0026/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0026/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C0026"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>640</td>
+                    <td>26.0%</td>
+                    <td>27.1%</td>
+                    <td>+0.050 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>7,168</td>
+                    <td>4.8%</td>
+                    <td>7.1%</td>
+                    <td>+3.955 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0026/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0026/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0026/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0026/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C0028</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C0028/target.png"><img loading="lazy" src="images/frame_00008/C0028/target.png" alt="Target crop for frame_00008 C0028"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0028/base.png"><img loading="lazy" src="images/frame_00008/C0028/base.png" alt="Shared base crop for frame_00008 C0028"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C0028/pursuit.png"><img loading="lazy" src="images/frame_00008/C0028/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C0028"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C0028/error_only.png"><img loading="lazy" src="images/frame_00008/C0028/error_only.png" alt="FIT-031 error-only crop for frame_00008 C0028"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C0028/base_error.png"><img loading="lazy" src="images/frame_00008/C0028/base_error.png" alt="Base |error| residual crop for frame_00008 C0028"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0028/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0028/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C0028"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C0028/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0028/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C0028"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>640</td>
+                    <td>27.8%</td>
+                    <td>29.5%</td>
+                    <td>+0.059 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>5,632</td>
+                    <td>2.2%</td>
+                    <td>6.2%</td>
+                    <td>+2.402 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0028/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0028/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0028/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0028/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C0029</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C0029/target.png"><img loading="lazy" src="images/frame_00008/C0029/target.png" alt="Target crop for frame_00008 C0029"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0029/base.png"><img loading="lazy" src="images/frame_00008/C0029/base.png" alt="Shared base crop for frame_00008 C0029"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C0029/pursuit.png"><img loading="lazy" src="images/frame_00008/C0029/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C0029"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C0029/error_only.png"><img loading="lazy" src="images/frame_00008/C0029/error_only.png" alt="FIT-031 error-only crop for frame_00008 C0029"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C0029/base_error.png"><img loading="lazy" src="images/frame_00008/C0029/base_error.png" alt="Base |error| residual crop for frame_00008 C0029"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0029/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0029/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C0029"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C0029/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0029/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C0029"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>384</td>
+                    <td>26.9%</td>
+                    <td>26.1%</td>
+                    <td>+0.044 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>6,144</td>
+                    <td>8.4%</td>
+                    <td>9.2%</td>
+                    <td>+2.699 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0029/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0029/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0029/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0029/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C0030</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C0030/target.png"><img loading="lazy" src="images/frame_00008/C0030/target.png" alt="Target crop for frame_00008 C0030"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0030/base.png"><img loading="lazy" src="images/frame_00008/C0030/base.png" alt="Shared base crop for frame_00008 C0030"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C0030/pursuit.png"><img loading="lazy" src="images/frame_00008/C0030/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C0030"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C0030/error_only.png"><img loading="lazy" src="images/frame_00008/C0030/error_only.png" alt="FIT-031 error-only crop for frame_00008 C0030"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C0030/base_error.png"><img loading="lazy" src="images/frame_00008/C0030/base_error.png" alt="Base |error| residual crop for frame_00008 C0030"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0030/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0030/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C0030"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C0030/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0030/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C0030"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>256</td>
+                    <td>29.5%</td>
+                    <td>25.0%</td>
+                    <td>+0.083 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>6,144</td>
+                    <td>23.3%</td>
+                    <td>19.9%</td>
+                    <td>+3.463 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0030/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0030/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0030/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0030/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C0031</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">both reached target; pursuit used fewer rows</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C0031/target.png"><img loading="lazy" src="images/frame_00008/C0031/target.png" alt="Target crop for frame_00008 C0031"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0031/base.png"><img loading="lazy" src="images/frame_00008/C0031/base.png" alt="Shared base crop for frame_00008 C0031"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C0031/pursuit.png"><img loading="lazy" src="images/frame_00008/C0031/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C0031"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C0031/error_only.png"><img loading="lazy" src="images/frame_00008/C0031/error_only.png" alt="FIT-031 error-only crop for frame_00008 C0031"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C0031/base_error.png"><img loading="lazy" src="images/frame_00008/C0031/base_error.png" alt="Base |error| residual crop for frame_00008 C0031"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0031/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0031/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C0031"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C0031/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0031/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C0031"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>512</td>
+                    <td>26.4%</td>
+                    <td>28.9%</td>
+                    <td>+0.030 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>✓</td>
+                    <td>3,683</td>
+                    <td>28.0%</td>
+                    <td>34.0%</td>
+                    <td>+3.810 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0031/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0031/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0031/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0031/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C0034</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C0034/target.png"><img loading="lazy" src="images/frame_00008/C0034/target.png" alt="Target crop for frame_00008 C0034"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0034/base.png"><img loading="lazy" src="images/frame_00008/C0034/base.png" alt="Shared base crop for frame_00008 C0034"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C0034/pursuit.png"><img loading="lazy" src="images/frame_00008/C0034/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C0034"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C0034/error_only.png"><img loading="lazy" src="images/frame_00008/C0034/error_only.png" alt="FIT-031 error-only crop for frame_00008 C0034"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C0034/base_error.png"><img loading="lazy" src="images/frame_00008/C0034/base_error.png" alt="Base |error| residual crop for frame_00008 C0034"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0034/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0034/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C0034"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C0034/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0034/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C0034"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>256</td>
+                    <td>27.2%</td>
+                    <td>27.2%</td>
+                    <td>+0.043 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>4,096</td>
+                    <td>8.2%</td>
+                    <td>9.9%</td>
+                    <td>+2.192 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0034/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0034/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0034/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0034/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C0037</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C0037/target.png"><img loading="lazy" src="images/frame_00008/C0037/target.png" alt="Target crop for frame_00008 C0037"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0037/base.png"><img loading="lazy" src="images/frame_00008/C0037/base.png" alt="Shared base crop for frame_00008 C0037"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C0037/pursuit.png"><img loading="lazy" src="images/frame_00008/C0037/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C0037"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C0037/error_only.png"><img loading="lazy" src="images/frame_00008/C0037/error_only.png" alt="FIT-031 error-only crop for frame_00008 C0037"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C0037/base_error.png"><img loading="lazy" src="images/frame_00008/C0037/base_error.png" alt="Base |error| residual crop for frame_00008 C0037"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0037/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0037/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C0037"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C0037/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0037/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C0037"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>640</td>
+                    <td>26.6%</td>
+                    <td>26.0%</td>
+                    <td>+0.043 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>6,656</td>
+                    <td>14.8%</td>
+                    <td>16.2%</td>
+                    <td>+3.587 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0037/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0037/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0037/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0037/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C0039</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C0039/target.png"><img loading="lazy" src="images/frame_00008/C0039/target.png" alt="Target crop for frame_00008 C0039"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C0039/base.png"><img loading="lazy" src="images/frame_00008/C0039/base.png" alt="Shared base crop for frame_00008 C0039"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C0039/pursuit.png"><img loading="lazy" src="images/frame_00008/C0039/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C0039"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C0039/error_only.png"><img loading="lazy" src="images/frame_00008/C0039/error_only.png" alt="FIT-031 error-only crop for frame_00008 C0039"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C0039/base_error.png"><img loading="lazy" src="images/frame_00008/C0039/base_error.png" alt="Base |error| residual crop for frame_00008 C0039"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C0039/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C0039/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C0039"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C0039/error_only_error.png"><img loading="lazy" src="images/frame_00008/C0039/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C0039"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>256</td>
+                    <td>28.8%</td>
+                    <td>31.5%</td>
+                    <td>+0.028 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>2,560</td>
+                    <td>11.7%</td>
+                    <td>18.4%</td>
+                    <td>+4.491 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0039/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0039/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0039/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C0039/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C1000</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C1000/target.png"><img loading="lazy" src="images/frame_00008/C1000/target.png" alt="Target crop for frame_00008 C1000"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C1000/base.png"><img loading="lazy" src="images/frame_00008/C1000/base.png" alt="Shared base crop for frame_00008 C1000"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C1000/pursuit.png"><img loading="lazy" src="images/frame_00008/C1000/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C1000"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C1000/error_only.png"><img loading="lazy" src="images/frame_00008/C1000/error_only.png" alt="FIT-031 error-only crop for frame_00008 C1000"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C1000/base_error.png"><img loading="lazy" src="images/frame_00008/C1000/base_error.png" alt="Base |error| residual crop for frame_00008 C1000"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C1000/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C1000/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C1000"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C1000/error_only_error.png"><img loading="lazy" src="images/frame_00008/C1000/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C1000"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>256</td>
+                    <td>27.6%</td>
+                    <td>22.7%</td>
+                    <td>+0.060 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>5,632</td>
+                    <td>15.3%</td>
+                    <td>19.4%</td>
+                    <td>+3.102 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C1000/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C1000/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C1000/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C1000/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C1001</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C1001/target.png"><img loading="lazy" src="images/frame_00008/C1001/target.png" alt="Target crop for frame_00008 C1001"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C1001/base.png"><img loading="lazy" src="images/frame_00008/C1001/base.png" alt="Shared base crop for frame_00008 C1001"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C1001/pursuit.png"><img loading="lazy" src="images/frame_00008/C1001/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C1001"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C1001/error_only.png"><img loading="lazy" src="images/frame_00008/C1001/error_only.png" alt="FIT-031 error-only crop for frame_00008 C1001"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C1001/base_error.png"><img loading="lazy" src="images/frame_00008/C1001/base_error.png" alt="Base |error| residual crop for frame_00008 C1001"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C1001/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C1001/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C1001"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C1001/error_only_error.png"><img loading="lazy" src="images/frame_00008/C1001/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C1001"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>384</td>
+                    <td>27.1%</td>
+                    <td>30.8%</td>
+                    <td>+0.032 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>4,232</td>
+                    <td>22.4%</td>
+                    <td>26.8%</td>
+                    <td>+3.108 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C1001/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C1001/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C1001/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C1001/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C1002</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C1002/target.png"><img loading="lazy" src="images/frame_00008/C1002/target.png" alt="Target crop for frame_00008 C1002"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C1002/base.png"><img loading="lazy" src="images/frame_00008/C1002/base.png" alt="Shared base crop for frame_00008 C1002"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C1002/pursuit.png"><img loading="lazy" src="images/frame_00008/C1002/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C1002"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C1002/error_only.png"><img loading="lazy" src="images/frame_00008/C1002/error_only.png" alt="FIT-031 error-only crop for frame_00008 C1002"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C1002/base_error.png"><img loading="lazy" src="images/frame_00008/C1002/base_error.png" alt="Base |error| residual crop for frame_00008 C1002"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C1002/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C1002/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C1002"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C1002/error_only_error.png"><img loading="lazy" src="images/frame_00008/C1002/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C1002"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>256</td>
+                    <td>37.1%</td>
+                    <td>39.0%</td>
+                    <td>+0.015 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>2,377</td>
+                    <td>11.3%</td>
+                    <td>24.2%</td>
+                    <td>+3.517 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C1002/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C1002/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C1002/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C1002/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00008">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00008</span><h3>C1004</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">both reached target; pursuit used fewer rows</p>
+              <div class="image-grid"><figure><a href="images/frame_00008/C1004/target.png"><img loading="lazy" src="images/frame_00008/C1004/target.png" alt="Target crop for frame_00008 C1004"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00008/C1004/base.png"><img loading="lazy" src="images/frame_00008/C1004/base.png" alt="Shared base crop for frame_00008 C1004"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00008/C1004/pursuit.png"><img loading="lazy" src="images/frame_00008/C1004/pursuit.png" alt="FIT-040 pursuit crop for frame_00008 C1004"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00008/C1004/error_only.png"><img loading="lazy" src="images/frame_00008/C1004/error_only.png" alt="FIT-031 error-only crop for frame_00008 C1004"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00008/C1004/base_error.png"><img loading="lazy" src="images/frame_00008/C1004/base_error.png" alt="Base |error| residual crop for frame_00008 C1004"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00008/C1004/pursuit_error.png"><img loading="lazy" src="images/frame_00008/C1004/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00008 C1004"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00008/C1004/error_only_error.png"><img loading="lazy" src="images/frame_00008/C1004/error_only_error.png" alt="Error-only |error| residual crop for frame_00008 C1004"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>256</td>
+                    <td>26.7%</td>
+                    <td>22.1%</td>
+                    <td>+0.055 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>✓</td>
+                    <td>5,216</td>
+                    <td>25.3%</td>
+                    <td>24.1%</td>
+                    <td>+3.557 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C1004/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C1004/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C1004/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00008/C1004/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C0001</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C0001/target.png"><img loading="lazy" src="images/frame_00009/C0001/target.png" alt="Target crop for frame_00009 C0001"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0001/base.png"><img loading="lazy" src="images/frame_00009/C0001/base.png" alt="Shared base crop for frame_00009 C0001"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C0001/pursuit.png"><img loading="lazy" src="images/frame_00009/C0001/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C0001"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C0001/error_only.png"><img loading="lazy" src="images/frame_00009/C0001/error_only.png" alt="FIT-031 error-only crop for frame_00009 C0001"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C0001/base_error.png"><img loading="lazy" src="images/frame_00009/C0001/base_error.png" alt="Base |error| residual crop for frame_00009 C0001"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0001/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0001/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C0001"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C0001/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0001/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C0001"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>256</td>
+                    <td>30.9%</td>
+                    <td>34.2%</td>
+                    <td>+0.044 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>4,096</td>
+                    <td>12.5%</td>
+                    <td>14.8%</td>
+                    <td>+3.043 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0001/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0001/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0001/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0001/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C0004</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C0004/target.png"><img loading="lazy" src="images/frame_00009/C0004/target.png" alt="Target crop for frame_00009 C0004"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0004/base.png"><img loading="lazy" src="images/frame_00009/C0004/base.png" alt="Shared base crop for frame_00009 C0004"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C0004/pursuit.png"><img loading="lazy" src="images/frame_00009/C0004/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C0004"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C0004/error_only.png"><img loading="lazy" src="images/frame_00009/C0004/error_only.png" alt="FIT-031 error-only crop for frame_00009 C0004"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C0004/base_error.png"><img loading="lazy" src="images/frame_00009/C0004/base_error.png" alt="Base |error| residual crop for frame_00009 C0004"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0004/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0004/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C0004"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C0004/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0004/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C0004"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>384</td>
+                    <td>25.6%</td>
+                    <td>25.9%</td>
+                    <td>+0.046 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>6,144</td>
+                    <td>19.5%</td>
+                    <td>20.6%</td>
+                    <td>+4.191 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0004/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0004/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0004/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0004/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C0005</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C0005/target.png"><img loading="lazy" src="images/frame_00009/C0005/target.png" alt="Target crop for frame_00009 C0005"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0005/base.png"><img loading="lazy" src="images/frame_00009/C0005/base.png" alt="Shared base crop for frame_00009 C0005"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C0005/pursuit.png"><img loading="lazy" src="images/frame_00009/C0005/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C0005"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C0005/error_only.png"><img loading="lazy" src="images/frame_00009/C0005/error_only.png" alt="FIT-031 error-only crop for frame_00009 C0005"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C0005/base_error.png"><img loading="lazy" src="images/frame_00009/C0005/base_error.png" alt="Base |error| residual crop for frame_00009 C0005"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0005/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0005/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C0005"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C0005/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0005/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C0005"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>512</td>
+                    <td>27.1%</td>
+                    <td>26.7%</td>
+                    <td>+0.061 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>7,680</td>
+                    <td>17.2%</td>
+                    <td>16.5%</td>
+                    <td>+3.169 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0005/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0005/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0005/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0005/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C0006</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C0006/target.png"><img loading="lazy" src="images/frame_00009/C0006/target.png" alt="Target crop for frame_00009 C0006"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0006/base.png"><img loading="lazy" src="images/frame_00009/C0006/base.png" alt="Shared base crop for frame_00009 C0006"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C0006/pursuit.png"><img loading="lazy" src="images/frame_00009/C0006/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C0006"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C0006/error_only.png"><img loading="lazy" src="images/frame_00009/C0006/error_only.png" alt="FIT-031 error-only crop for frame_00009 C0006"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C0006/base_error.png"><img loading="lazy" src="images/frame_00009/C0006/base_error.png" alt="Base |error| residual crop for frame_00009 C0006"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0006/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0006/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C0006"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C0006/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0006/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C0006"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>768</td>
+                    <td>26.5%</td>
+                    <td>25.8%</td>
+                    <td>+0.049 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>7,680</td>
+                    <td>2.5%</td>
+                    <td>3.1%</td>
+                    <td>+3.779 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0006/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0006/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0006/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0006/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C0008</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C0008/target.png"><img loading="lazy" src="images/frame_00009/C0008/target.png" alt="Target crop for frame_00009 C0008"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0008/base.png"><img loading="lazy" src="images/frame_00009/C0008/base.png" alt="Shared base crop for frame_00009 C0008"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C0008/pursuit.png"><img loading="lazy" src="images/frame_00009/C0008/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C0008"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C0008/error_only.png"><img loading="lazy" src="images/frame_00009/C0008/error_only.png" alt="FIT-031 error-only crop for frame_00009 C0008"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C0008/base_error.png"><img loading="lazy" src="images/frame_00009/C0008/base_error.png" alt="Base |error| residual crop for frame_00009 C0008"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0008/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0008/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C0008"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C0008/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0008/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C0008"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>384</td>
+                    <td>28.4%</td>
+                    <td>29.5%</td>
+                    <td>+0.056 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>6,144</td>
+                    <td>12.1%</td>
+                    <td>13.1%</td>
+                    <td>+3.568 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0008/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0008/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0008/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0008/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C0009</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">both reached target; pursuit used fewer rows</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C0009/target.png"><img loading="lazy" src="images/frame_00009/C0009/target.png" alt="Target crop for frame_00009 C0009"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0009/base.png"><img loading="lazy" src="images/frame_00009/C0009/base.png" alt="Shared base crop for frame_00009 C0009"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C0009/pursuit.png"><img loading="lazy" src="images/frame_00009/C0009/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C0009"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C0009/error_only.png"><img loading="lazy" src="images/frame_00009/C0009/error_only.png" alt="FIT-031 error-only crop for frame_00009 C0009"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C0009/base_error.png"><img loading="lazy" src="images/frame_00009/C0009/base_error.png" alt="Base |error| residual crop for frame_00009 C0009"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0009/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0009/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C0009"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C0009/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0009/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C0009"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>256</td>
+                    <td>30.2%</td>
+                    <td>25.4%</td>
+                    <td>+0.082 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>✓</td>
+                    <td>7,168</td>
+                    <td>27.1%</td>
+                    <td>27.1%</td>
+                    <td>+3.604 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0009/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0009/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0009/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0009/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C0012</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C0012/target.png"><img loading="lazy" src="images/frame_00009/C0012/target.png" alt="Target crop for frame_00009 C0012"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0012/base.png"><img loading="lazy" src="images/frame_00009/C0012/base.png" alt="Shared base crop for frame_00009 C0012"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C0012/pursuit.png"><img loading="lazy" src="images/frame_00009/C0012/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C0012"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C0012/error_only.png"><img loading="lazy" src="images/frame_00009/C0012/error_only.png" alt="FIT-031 error-only crop for frame_00009 C0012"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C0012/base_error.png"><img loading="lazy" src="images/frame_00009/C0012/base_error.png" alt="Base |error| residual crop for frame_00009 C0012"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0012/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0012/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C0012"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C0012/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0012/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C0012"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>384</td>
+                    <td>25.9%</td>
+                    <td>25.2%</td>
+                    <td>+0.071 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>6,656</td>
+                    <td>16.2%</td>
+                    <td>15.4%</td>
+                    <td>+4.053 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0012/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0012/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0012/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0012/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C0014</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C0014/target.png"><img loading="lazy" src="images/frame_00009/C0014/target.png" alt="Target crop for frame_00009 C0014"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0014/base.png"><img loading="lazy" src="images/frame_00009/C0014/base.png" alt="Shared base crop for frame_00009 C0014"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C0014/pursuit.png"><img loading="lazy" src="images/frame_00009/C0014/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C0014"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C0014/error_only.png"><img loading="lazy" src="images/frame_00009/C0014/error_only.png" alt="FIT-031 error-only crop for frame_00009 C0014"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C0014/base_error.png"><img loading="lazy" src="images/frame_00009/C0014/base_error.png" alt="Base |error| residual crop for frame_00009 C0014"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0014/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0014/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C0014"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C0014/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0014/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C0014"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>384</td>
+                    <td>25.6%</td>
+                    <td>25.8%</td>
+                    <td>+0.052 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>6,144</td>
+                    <td>14.8%</td>
+                    <td>15.4%</td>
+                    <td>+4.535 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0014/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0014/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0014/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0014/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C0018</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C0018/target.png"><img loading="lazy" src="images/frame_00009/C0018/target.png" alt="Target crop for frame_00009 C0018"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0018/base.png"><img loading="lazy" src="images/frame_00009/C0018/base.png" alt="Shared base crop for frame_00009 C0018"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C0018/pursuit.png"><img loading="lazy" src="images/frame_00009/C0018/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C0018"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C0018/error_only.png"><img loading="lazy" src="images/frame_00009/C0018/error_only.png" alt="FIT-031 error-only crop for frame_00009 C0018"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C0018/base_error.png"><img loading="lazy" src="images/frame_00009/C0018/base_error.png" alt="Base |error| residual crop for frame_00009 C0018"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0018/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0018/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C0018"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C0018/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0018/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C0018"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>512</td>
+                    <td>26.9%</td>
+                    <td>25.1%</td>
+                    <td>+0.063 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>5,632</td>
+                    <td>4.8%</td>
+                    <td>0.5%</td>
+                    <td>+4.050 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0018/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0018/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0018/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0018/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C0019</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C0019/target.png"><img loading="lazy" src="images/frame_00009/C0019/target.png" alt="Target crop for frame_00009 C0019"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0019/base.png"><img loading="lazy" src="images/frame_00009/C0019/base.png" alt="Shared base crop for frame_00009 C0019"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C0019/pursuit.png"><img loading="lazy" src="images/frame_00009/C0019/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C0019"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C0019/error_only.png"><img loading="lazy" src="images/frame_00009/C0019/error_only.png" alt="FIT-031 error-only crop for frame_00009 C0019"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C0019/base_error.png"><img loading="lazy" src="images/frame_00009/C0019/base_error.png" alt="Base |error| residual crop for frame_00009 C0019"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0019/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0019/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C0019"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C0019/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0019/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C0019"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>512</td>
+                    <td>26.0%</td>
+                    <td>27.8%</td>
+                    <td>+0.058 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>5,632</td>
+                    <td>8.7%</td>
+                    <td>10.8%</td>
+                    <td>+4.912 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0019/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0019/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0019/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0019/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C0020</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C0020/target.png"><img loading="lazy" src="images/frame_00009/C0020/target.png" alt="Target crop for frame_00009 C0020"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0020/base.png"><img loading="lazy" src="images/frame_00009/C0020/base.png" alt="Shared base crop for frame_00009 C0020"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C0020/pursuit.png"><img loading="lazy" src="images/frame_00009/C0020/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C0020"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C0020/error_only.png"><img loading="lazy" src="images/frame_00009/C0020/error_only.png" alt="FIT-031 error-only crop for frame_00009 C0020"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C0020/base_error.png"><img loading="lazy" src="images/frame_00009/C0020/base_error.png" alt="Base |error| residual crop for frame_00009 C0020"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0020/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0020/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C0020"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C0020/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0020/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C0020"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>256</td>
+                    <td>26.7%</td>
+                    <td>20.8%</td>
+                    <td>+0.061 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>6,656</td>
+                    <td>16.4%</td>
+                    <td>12.9%</td>
+                    <td>+3.917 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0020/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0020/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0020/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0020/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C0021</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C0021/target.png"><img loading="lazy" src="images/frame_00009/C0021/target.png" alt="Target crop for frame_00009 C0021"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0021/base.png"><img loading="lazy" src="images/frame_00009/C0021/base.png" alt="Shared base crop for frame_00009 C0021"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C0021/pursuit.png"><img loading="lazy" src="images/frame_00009/C0021/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C0021"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C0021/error_only.png"><img loading="lazy" src="images/frame_00009/C0021/error_only.png" alt="FIT-031 error-only crop for frame_00009 C0021"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C0021/base_error.png"><img loading="lazy" src="images/frame_00009/C0021/base_error.png" alt="Base |error| residual crop for frame_00009 C0021"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0021/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0021/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C0021"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C0021/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0021/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C0021"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>512</td>
+                    <td>25.6%</td>
+                    <td>27.6%</td>
+                    <td>+0.057 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>6,656</td>
+                    <td>18.5%</td>
+                    <td>22.2%</td>
+                    <td>+3.509 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0021/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0021/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0021/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0021/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C0022</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C0022/target.png"><img loading="lazy" src="images/frame_00009/C0022/target.png" alt="Target crop for frame_00009 C0022"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0022/base.png"><img loading="lazy" src="images/frame_00009/C0022/base.png" alt="Shared base crop for frame_00009 C0022"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C0022/pursuit.png"><img loading="lazy" src="images/frame_00009/C0022/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C0022"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C0022/error_only.png"><img loading="lazy" src="images/frame_00009/C0022/error_only.png" alt="FIT-031 error-only crop for frame_00009 C0022"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C0022/base_error.png"><img loading="lazy" src="images/frame_00009/C0022/base_error.png" alt="Base |error| residual crop for frame_00009 C0022"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0022/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0022/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C0022"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C0022/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0022/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C0022"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>640</td>
+                    <td>25.2%</td>
+                    <td>25.7%</td>
+                    <td>+0.044 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>7,168</td>
+                    <td>3.1%</td>
+                    <td>3.6%</td>
+                    <td>+2.725 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0022/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0022/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0022/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0022/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C0025</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C0025/target.png"><img loading="lazy" src="images/frame_00009/C0025/target.png" alt="Target crop for frame_00009 C0025"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0025/base.png"><img loading="lazy" src="images/frame_00009/C0025/base.png" alt="Shared base crop for frame_00009 C0025"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C0025/pursuit.png"><img loading="lazy" src="images/frame_00009/C0025/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C0025"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C0025/error_only.png"><img loading="lazy" src="images/frame_00009/C0025/error_only.png" alt="FIT-031 error-only crop for frame_00009 C0025"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C0025/base_error.png"><img loading="lazy" src="images/frame_00009/C0025/base_error.png" alt="Base |error| residual crop for frame_00009 C0025"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0025/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0025/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C0025"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C0025/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0025/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C0025"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>512</td>
+                    <td>27.5%</td>
+                    <td>28.5%</td>
+                    <td>+0.056 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>5,632</td>
+                    <td>10.9%</td>
+                    <td>10.4%</td>
+                    <td>+4.218 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0025/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0025/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0025/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0025/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C0026</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C0026/target.png"><img loading="lazy" src="images/frame_00009/C0026/target.png" alt="Target crop for frame_00009 C0026"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0026/base.png"><img loading="lazy" src="images/frame_00009/C0026/base.png" alt="Shared base crop for frame_00009 C0026"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C0026/pursuit.png"><img loading="lazy" src="images/frame_00009/C0026/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C0026"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C0026/error_only.png"><img loading="lazy" src="images/frame_00009/C0026/error_only.png" alt="FIT-031 error-only crop for frame_00009 C0026"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C0026/base_error.png"><img loading="lazy" src="images/frame_00009/C0026/base_error.png" alt="Base |error| residual crop for frame_00009 C0026"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0026/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0026/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C0026"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C0026/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0026/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C0026"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>640</td>
+                    <td>25.8%</td>
+                    <td>28.3%</td>
+                    <td>+0.062 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>5,632</td>
+                    <td>9.8%</td>
+                    <td>13.3%</td>
+                    <td>+3.238 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0026/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0026/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0026/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0026/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C0028</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C0028/target.png"><img loading="lazy" src="images/frame_00009/C0028/target.png" alt="Target crop for frame_00009 C0028"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0028/base.png"><img loading="lazy" src="images/frame_00009/C0028/base.png" alt="Shared base crop for frame_00009 C0028"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C0028/pursuit.png"><img loading="lazy" src="images/frame_00009/C0028/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C0028"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C0028/error_only.png"><img loading="lazy" src="images/frame_00009/C0028/error_only.png" alt="FIT-031 error-only crop for frame_00009 C0028"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C0028/base_error.png"><img loading="lazy" src="images/frame_00009/C0028/base_error.png" alt="Base |error| residual crop for frame_00009 C0028"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0028/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0028/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C0028"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C0028/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0028/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C0028"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>384</td>
+                    <td>28.0%</td>
+                    <td>25.1%</td>
+                    <td>+0.050 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>6,144</td>
+                    <td>15.4%</td>
+                    <td>12.3%</td>
+                    <td>+3.365 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0028/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0028/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0028/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0028/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C0029</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C0029/target.png"><img loading="lazy" src="images/frame_00009/C0029/target.png" alt="Target crop for frame_00009 C0029"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0029/base.png"><img loading="lazy" src="images/frame_00009/C0029/base.png" alt="Shared base crop for frame_00009 C0029"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C0029/pursuit.png"><img loading="lazy" src="images/frame_00009/C0029/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C0029"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C0029/error_only.png"><img loading="lazy" src="images/frame_00009/C0029/error_only.png" alt="FIT-031 error-only crop for frame_00009 C0029"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C0029/base_error.png"><img loading="lazy" src="images/frame_00009/C0029/base_error.png" alt="Base |error| residual crop for frame_00009 C0029"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0029/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0029/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C0029"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C0029/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0029/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C0029"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>1,664</td>
+                    <td>25.4%</td>
+                    <td>26.8%</td>
+                    <td>+0.065 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>5,632</td>
+                    <td>4.0%</td>
+                    <td>5.8%</td>
+                    <td>+2.943 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0029/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0029/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0029/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0029/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C0030</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C0030/target.png"><img loading="lazy" src="images/frame_00009/C0030/target.png" alt="Target crop for frame_00009 C0030"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0030/base.png"><img loading="lazy" src="images/frame_00009/C0030/base.png" alt="Shared base crop for frame_00009 C0030"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C0030/pursuit.png"><img loading="lazy" src="images/frame_00009/C0030/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C0030"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C0030/error_only.png"><img loading="lazy" src="images/frame_00009/C0030/error_only.png" alt="FIT-031 error-only crop for frame_00009 C0030"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C0030/base_error.png"><img loading="lazy" src="images/frame_00009/C0030/base_error.png" alt="Base |error| residual crop for frame_00009 C0030"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0030/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0030/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C0030"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C0030/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0030/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C0030"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>896</td>
+                    <td>25.6%</td>
+                    <td>26.6%</td>
+                    <td>+0.077 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>7,168</td>
+                    <td>11.0%</td>
+                    <td>10.6%</td>
+                    <td>+3.933 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0030/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0030/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0030/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0030/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C0031</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C0031/target.png"><img loading="lazy" src="images/frame_00009/C0031/target.png" alt="Target crop for frame_00009 C0031"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0031/base.png"><img loading="lazy" src="images/frame_00009/C0031/base.png" alt="Shared base crop for frame_00009 C0031"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C0031/pursuit.png"><img loading="lazy" src="images/frame_00009/C0031/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C0031"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C0031/error_only.png"><img loading="lazy" src="images/frame_00009/C0031/error_only.png" alt="FIT-031 error-only crop for frame_00009 C0031"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C0031/base_error.png"><img loading="lazy" src="images/frame_00009/C0031/base_error.png" alt="Base |error| residual crop for frame_00009 C0031"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0031/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0031/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C0031"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C0031/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0031/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C0031"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>256</td>
+                    <td>25.8%</td>
+                    <td>24.3%</td>
+                    <td>+0.063 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>5,632</td>
+                    <td>17.3%</td>
+                    <td>19.1%</td>
+                    <td>+3.475 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0031/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0031/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0031/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0031/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C0034</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C0034/target.png"><img loading="lazy" src="images/frame_00009/C0034/target.png" alt="Target crop for frame_00009 C0034"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0034/base.png"><img loading="lazy" src="images/frame_00009/C0034/base.png" alt="Shared base crop for frame_00009 C0034"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C0034/pursuit.png"><img loading="lazy" src="images/frame_00009/C0034/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C0034"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C0034/error_only.png"><img loading="lazy" src="images/frame_00009/C0034/error_only.png" alt="FIT-031 error-only crop for frame_00009 C0034"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C0034/base_error.png"><img loading="lazy" src="images/frame_00009/C0034/base_error.png" alt="Base |error| residual crop for frame_00009 C0034"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0034/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0034/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C0034"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C0034/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0034/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C0034"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>512</td>
+                    <td>27.9%</td>
+                    <td>26.2%</td>
+                    <td>+0.073 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>4,608</td>
+                    <td>7.7%</td>
+                    <td>8.8%</td>
+                    <td>+3.004 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0034/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0034/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0034/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0034/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C0037</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C0037/target.png"><img loading="lazy" src="images/frame_00009/C0037/target.png" alt="Target crop for frame_00009 C0037"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0037/base.png"><img loading="lazy" src="images/frame_00009/C0037/base.png" alt="Shared base crop for frame_00009 C0037"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C0037/pursuit.png"><img loading="lazy" src="images/frame_00009/C0037/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C0037"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C0037/error_only.png"><img loading="lazy" src="images/frame_00009/C0037/error_only.png" alt="FIT-031 error-only crop for frame_00009 C0037"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C0037/base_error.png"><img loading="lazy" src="images/frame_00009/C0037/base_error.png" alt="Base |error| residual crop for frame_00009 C0037"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0037/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0037/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C0037"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C0037/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0037/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C0037"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>640</td>
+                    <td>27.6%</td>
+                    <td>26.9%</td>
+                    <td>+0.039 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>6,144</td>
+                    <td>8.8%</td>
+                    <td>9.8%</td>
+                    <td>+2.491 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0037/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0037/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0037/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0037/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C0039</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">both reached target; pursuit used fewer rows</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C0039/target.png"><img loading="lazy" src="images/frame_00009/C0039/target.png" alt="Target crop for frame_00009 C0039"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C0039/base.png"><img loading="lazy" src="images/frame_00009/C0039/base.png" alt="Shared base crop for frame_00009 C0039"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C0039/pursuit.png"><img loading="lazy" src="images/frame_00009/C0039/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C0039"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C0039/error_only.png"><img loading="lazy" src="images/frame_00009/C0039/error_only.png" alt="FIT-031 error-only crop for frame_00009 C0039"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C0039/base_error.png"><img loading="lazy" src="images/frame_00009/C0039/base_error.png" alt="Base |error| residual crop for frame_00009 C0039"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C0039/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C0039/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C0039"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C0039/error_only_error.png"><img loading="lazy" src="images/frame_00009/C0039/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C0039"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>384</td>
+                    <td>28.4%</td>
+                    <td>29.1%</td>
+                    <td>+0.051 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>✓</td>
+                    <td>3,385</td>
+                    <td>50.2%</td>
+                    <td>54.1%</td>
+                    <td>+5.123 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0039/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0039/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0039/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C0039/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C1000</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C1000/target.png"><img loading="lazy" src="images/frame_00009/C1000/target.png" alt="Target crop for frame_00009 C1000"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C1000/base.png"><img loading="lazy" src="images/frame_00009/C1000/base.png" alt="Shared base crop for frame_00009 C1000"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C1000/pursuit.png"><img loading="lazy" src="images/frame_00009/C1000/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C1000"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C1000/error_only.png"><img loading="lazy" src="images/frame_00009/C1000/error_only.png" alt="FIT-031 error-only crop for frame_00009 C1000"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C1000/base_error.png"><img loading="lazy" src="images/frame_00009/C1000/base_error.png" alt="Base |error| residual crop for frame_00009 C1000"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C1000/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C1000/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C1000"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C1000/error_only_error.png"><img loading="lazy" src="images/frame_00009/C1000/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C1000"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>512</td>
+                    <td>26.3%</td>
+                    <td>28.4%</td>
+                    <td>+0.035 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>7,168</td>
+                    <td>18.2%</td>
+                    <td>18.7%</td>
+                    <td>+3.638 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C1000/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C1000/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C1000/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C1000/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C1001</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C1001/target.png"><img loading="lazy" src="images/frame_00009/C1001/target.png" alt="Target crop for frame_00009 C1001"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C1001/base.png"><img loading="lazy" src="images/frame_00009/C1001/base.png" alt="Shared base crop for frame_00009 C1001"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C1001/pursuit.png"><img loading="lazy" src="images/frame_00009/C1001/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C1001"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C1001/error_only.png"><img loading="lazy" src="images/frame_00009/C1001/error_only.png" alt="FIT-031 error-only crop for frame_00009 C1001"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C1001/base_error.png"><img loading="lazy" src="images/frame_00009/C1001/base_error.png" alt="Base |error| residual crop for frame_00009 C1001"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C1001/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C1001/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C1001"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C1001/error_only_error.png"><img loading="lazy" src="images/frame_00009/C1001/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C1001"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>384</td>
+                    <td>29.1%</td>
+                    <td>28.0%</td>
+                    <td>+0.057 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>7,680</td>
+                    <td>21.6%</td>
+                    <td>23.1%</td>
+                    <td>+3.653 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C1001/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C1001/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C1001/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C1001/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C1002</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">only pursuit reached the shared detail target</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C1002/target.png"><img loading="lazy" src="images/frame_00009/C1002/target.png" alt="Target crop for frame_00009 C1002"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C1002/base.png"><img loading="lazy" src="images/frame_00009/C1002/base.png" alt="Shared base crop for frame_00009 C1002"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C1002/pursuit.png"><img loading="lazy" src="images/frame_00009/C1002/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C1002"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C1002/error_only.png"><img loading="lazy" src="images/frame_00009/C1002/error_only.png" alt="FIT-031 error-only crop for frame_00009 C1002"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C1002/base_error.png"><img loading="lazy" src="images/frame_00009/C1002/base_error.png" alt="Base |error| residual crop for frame_00009 C1002"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C1002/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C1002/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C1002"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C1002/error_only_error.png"><img loading="lazy" src="images/frame_00009/C1002/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C1002"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>256</td>
+                    <td>31.9%</td>
+                    <td>34.6%</td>
+                    <td>+0.022 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>—</td>
+                    <td>2,759</td>
+                    <td>16.3%</td>
+                    <td>28.0%</td>
+                    <td>+4.052 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C1002/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C1002/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C1002/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C1002/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            
+            <article class="view-card" data-winner="pursuit" data-frame="frame_00009">
+              <div class="view-head">
+                <div><span class="eyebrow">frame_00009</span><h3>C1004</h3></div>
+                <span class="winner winner-pursuit">Pursuit</span>
+              </div>
+              <p class="reason">both reached target; pursuit used fewer rows</p>
+              <div class="image-grid"><figure><a href="images/frame_00009/C1004/target.png"><img loading="lazy" src="images/frame_00009/C1004/target.png" alt="Target crop for frame_00009 C1004"></a><figcaption>Target</figcaption></figure><figure><a href="images/frame_00009/C1004/base.png"><img loading="lazy" src="images/frame_00009/C1004/base.png" alt="Shared base crop for frame_00009 C1004"></a><figcaption>Shared base</figcaption></figure><figure><a href="images/frame_00009/C1004/pursuit.png"><img loading="lazy" src="images/frame_00009/C1004/pursuit.png" alt="FIT-040 pursuit crop for frame_00009 C1004"></a><figcaption>FIT-040 pursuit</figcaption></figure><figure><a href="images/frame_00009/C1004/error_only.png"><img loading="lazy" src="images/frame_00009/C1004/error_only.png" alt="FIT-031 error-only crop for frame_00009 C1004"></a><figcaption>FIT-031 error-only</figcaption></figure></div>
+              <details>
+                <summary>Same-scale residual heatmaps</summary>
+                <div class="error-grid"><figure><a href="images/frame_00009/C1004/base_error.png"><img loading="lazy" src="images/frame_00009/C1004/base_error.png" alt="Base |error| residual crop for frame_00009 C1004"></a><figcaption>Base |error|</figcaption></figure><figure><a href="images/frame_00009/C1004/pursuit_error.png"><img loading="lazy" src="images/frame_00009/C1004/pursuit_error.png" alt="Pursuit |error| residual crop for frame_00009 C1004"></a><figcaption>Pursuit |error|</figcaption></figure><figure><a href="images/frame_00009/C1004/error_only_error.png"><img loading="lazy" src="images/frame_00009/C1004/error_only_error.png" alt="Error-only |error| residual crop for frame_00009 C1004"></a><figcaption>Error-only |error|</figcaption></figure></div>
+              </details>
+              <table class="mini">
+                <thead><tr><th>Arm</th><th>Target</th><th>Rows</th><th>HP</th><th>Lap</th><th>FG PSNR</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Pursuit</td>
+                    <td>✓</td>
+                    <td>256</td>
+                    <td>25.5%</td>
+                    <td>23.9%</td>
+                    <td>+0.054 dB</td>
+                  </tr>
+                  <tr>
+                    <td>Error-only</td>
+                    <td>✓</td>
+                    <td>5,520</td>
+                    <td>30.5%</td>
+                    <td>29.4%</td>
+                    <td>+2.913 dB</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="links">
+                Full frames:
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C1004/images/full/target.png">target</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C1004/images/full/base.png">base</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C1004/images/full/pursuit.png">pursuit</a> ·
+                <a href="../../../runs/janelle_cross_view_tail_diagnostic_20260728/cells/frame_00009/C1004/images/full/error_only.png">error-only</a>
+              </p>
+            </article>
+            </section>
+
+  <h2>Files and audit trail</h2>
+  <p><a href="comparison.csv">Tidy per-view CSV</a> ·
+  <a href="summary.json">Machine-readable summary</a> ·
+  <a href="run.md">Protocol and limitations</a></p>
+</main>
+<script>
+  const buttons = [...document.querySelectorAll("button[data-filter]")];
+  const cards = [...document.querySelectorAll(".view-card")];
+  buttons.forEach(button => button.addEventListener("click", () => {
+    buttons.forEach(item => item.classList.remove("active"));
+    button.classList.add("active");
+    const filter = button.dataset.filter;
+    cards.forEach(card => {
+      card.hidden = !(filter === "all" || card.dataset.winner === filter ||
+        card.dataset.frame === filter);
+    });
+  }));
+</script>
+</body></html>

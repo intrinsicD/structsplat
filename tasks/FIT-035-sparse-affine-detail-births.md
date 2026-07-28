@@ -62,3 +62,10 @@ representation and a complete-byte comparison.
 The selected protected 128-row affine arm (scale `0.5`, gradient ridge `0.01`) reaches `8.895%`
 sigma-1.5 high-pass and `9.723%` Laplacian reduction with bounded gradients. It misses both frozen
 thresholds and uses 15 scalars per row versus nine for the ordinary constant-opacity row.
+
+A 2026-07-28 evidence-completeness rerun found that the renderer A/A harness conflated a valid
+identity result with a scientific gate pass: the strict gate returns `no_material_gain` for exact
+identity. The harness now permits only that reason for A/A while still failing closed on any
+protected regression. The source-bound rerun passes A/A and leaves this task's negative
+disposition unchanged. See
+`ara/evidence/fit031-new-method-stages-janelle-2026-07-28/run.md`.

@@ -1,0 +1,466 @@
+{
+  "checks": {
+    "all_replications_share_base_field": true,
+    "all_replications_share_baseline": true,
+    "base_result_field_binding": true,
+    "captured_sources_match": true,
+    "exact_published_target_file_reused": true,
+    "expected_schemas": true,
+    "fit031_original_audit_valid": true,
+    "fit032_rejection_replicated": true,
+    "fit033_advance_only_replicated": true,
+    "fit034_negative_replicated": true,
+    "fit035_negative_replicated": true,
+    "fit035_renderer_aa_valid": true,
+    "fit036_negative_replicated": true,
+    "fit037_target_miss_replicated": true,
+    "fit038_target_miss_replicated": true,
+    "mask_binding_matches_published": true,
+    "published_equal_base_audit_passed": true,
+    "reported_reductions_recompute": true
+  },
+  "created_utc": "2026-07-28T10:36:55Z",
+  "decision": {
+    "default_change_authorized": false,
+    "equal_rate_claim_authorized": false,
+    "fine_detail_winner": "orthogonal_pursuit_with_exact_site_exclusion",
+    "generality_authorized": false,
+    "global_foreground_psnr_winner_on_exact_same_base": "fit031_error_only_tail",
+    "recommended_stage_judgment": "Keep FIT-032--037 as negative/diagnostic stages; keep FIT-038 as the useful iterative mechanism; retain FIT-039 exact-site exclusion and FIT-040 integration as the fine-detail path."
+  },
+  "evidence_inventory": {
+    "quarantined": {
+      "path": "runs/fit031_new_methods_comparison_20260728/base",
+      "reason": "Pillow 11 Lanczos pixels did not match the published Pillow 12.3 target; no result from this base is used."
+    },
+    "rerun_due_to_missing_durable_machine_results": [
+      "FIT-032",
+      "FIT-033",
+      "FIT-034",
+      "FIT-035",
+      "FIT-036",
+      "FIT-037",
+      "FIT-038"
+    ],
+    "reused_after_hash_and_audit_validation": [
+      "FIT-031 original crop bundle",
+      "FIT-039 exclusion result",
+      "FIT-040 production replay",
+      "FIT-041 exact-same-base FIT-031 control"
+    ]
+  },
+  "fit035_audit_correction": {
+    "fix": "A/A now accepts either a full gate pass or exactly the no_material_gain reason; any protected regression still fails closed.",
+    "issue": "The original harness treated an identity A/A result as invalid because the strict gate requires material gain.",
+    "outcome": "The corrected A/A check passes and the scientific FIT-035 decision remains negative."
+  },
+  "inputs": {
+    "base_config": {
+      "archived_path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/raw/base_config.json",
+      "archived_sha256": "e35e99b4d6f91236b8d573741f5996178da713b530467ec2b406b83f7201abb6",
+      "source_path": "runs/fit031_new_methods_comparison_20260728/base_exact/runs/current/C0001/seed_0/config.json",
+      "source_sha256": "e35e99b4d6f91236b8d573741f5996178da713b530467ec2b406b83f7201abb6"
+    },
+    "base_result": {
+      "archived_path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/raw/base_result.json",
+      "archived_sha256": "22b0c00db743c05e6783a2d4c18c67df192f503b5fd7095a64689132d5287688",
+      "source_path": "runs/fit031_new_methods_comparison_20260728/base_exact/runs/current/C0001/seed_0/result.json",
+      "source_sha256": "22b0c00db743c05e6783a2d4c18c67df192f503b5fd7095a64689132d5287688"
+    },
+    "fit031_audit": {
+      "archived_path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/raw/fit031_audit.json",
+      "archived_sha256": "79b5816b0bd57b65a37b5dfe1cfa1f812247ac809939832d0b16efeb5049d470",
+      "source_path": "ara/evidence/fit031-error-only-tail-janelle-2026-07-27/audit.json",
+      "source_sha256": "79b5816b0bd57b65a37b5dfe1cfa1f812247ac809939832d0b16efeb5049d470"
+    },
+    "fit032": {
+      "archived_path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/raw/fit032.json",
+      "archived_sha256": "ed19ecc56b5fd411161ffcf7fad0eabf0af03870cbc386f270103f88cd216d4b",
+      "source_path": "runs/fit031_new_methods_comparison_20260728/fit032/result.json",
+      "source_sha256": "ed19ecc56b5fd411161ffcf7fad0eabf0af03870cbc386f270103f88cd216d4b"
+    },
+    "fit033": {
+      "archived_path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/raw/fit033.json",
+      "archived_sha256": "2b0fcbe39e3379a21828e62ade45b83e45a8e3a18ed67719e724792b1b909aaf",
+      "source_path": "runs/fit031_new_methods_comparison_20260728/fit033/result.json",
+      "source_sha256": "2b0fcbe39e3379a21828e62ade45b83e45a8e3a18ed67719e724792b1b909aaf"
+    },
+    "fit034": {
+      "archived_path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/raw/fit034.json",
+      "archived_sha256": "1fc5368889ff2920145ad46b7f0f3412badb85c1a920877840605347c12146e7",
+      "source_path": "runs/fit031_new_methods_comparison_20260728/fit034/result.json",
+      "source_sha256": "1fc5368889ff2920145ad46b7f0f3412badb85c1a920877840605347c12146e7"
+    },
+    "fit035": {
+      "archived_path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/raw/fit035.json",
+      "archived_sha256": "11179c7ba5569c365189aeef697fb982526ef2c537d34b273b8f1aef29f2cce6",
+      "source_path": "runs/fit031_new_methods_comparison_20260728/fit035_final3/result.json",
+      "source_sha256": "11179c7ba5569c365189aeef697fb982526ef2c537d34b273b8f1aef29f2cce6"
+    },
+    "fit036": {
+      "archived_path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/raw/fit036.json",
+      "archived_sha256": "dcd4ce4049edf4e08287994cc080d895e10cd70f5b8c1d91106ae2612788e465",
+      "source_path": "runs/fit031_new_methods_comparison_20260728/fit036/result.json",
+      "source_sha256": "dcd4ce4049edf4e08287994cc080d895e10cd70f5b8c1d91106ae2612788e465"
+    },
+    "fit037": {
+      "archived_path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/raw/fit037.json",
+      "archived_sha256": "7ef1f99aae7f6ac448b3ee26fe28642150390a117705e3274489e984dced88b3",
+      "source_path": "runs/fit031_new_methods_comparison_20260728/fit037/result.json",
+      "source_sha256": "7ef1f99aae7f6ac448b3ee26fe28642150390a117705e3274489e984dced88b3"
+    },
+    "fit038": {
+      "archived_path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/raw/fit038.json",
+      "archived_sha256": "be1d35b55f1c65b3e66e0a71cd66cfa9efdb4609a0096388db29e54dc3ce9437",
+      "source_path": "runs/fit031_new_methods_comparison_20260728/fit038/result.json",
+      "source_sha256": "be1d35b55f1c65b3e66e0a71cd66cfa9efdb4609a0096388db29e54dc3ce9437"
+    },
+    "fit040_audit": {
+      "archived_path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/raw/fit040_audit.json",
+      "archived_sha256": "bed519d358d8a5f61cba9ad22c9e84a4c76350340acddde796eba625bfb18c9f",
+      "source_path": "ara/evidence/fit040-orthogonal-detail-pursuit-janelle-2026-07-28/audit.json",
+      "source_sha256": "bed519d358d8a5f61cba9ad22c9e84a4c76350340acddde796eba625bfb18c9f"
+    },
+    "fit040_production_result": {
+      "archived_path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/raw/fit040_production_result.json",
+      "archived_sha256": "b308294482adeaaea11756e1e74eca2261258012c2e0ea523b3e6601bba8e60b",
+      "source_path": "ara/evidence/fit040-orthogonal-detail-pursuit-janelle-2026-07-28/production_result.json",
+      "source_sha256": "b308294482adeaaea11756e1e74eca2261258012c2e0ea523b3e6601bba8e60b"
+    },
+    "fit041_equal_base_result": {
+      "archived_path": "ara/evidence/fit031-new-method-stages-janelle-2026-07-28/raw/fit041_equal_base_result.json",
+      "archived_sha256": "1abd8ac1d617756b1a5a14cc367d9acb99525e7a7e5c4034dedaf781b64657fa",
+      "source_path": "ara/evidence/fit040-orthogonal-detail-pursuit-janelle-2026-07-28/equal_base_error_tail_result.json",
+      "source_sha256": "1abd8ac1d617756b1a5a14cc367d9acb99525e7a7e5c4034dedaf781b64657fa"
+    }
+  },
+  "original_fit031_context": {
+    "added_rows": 4608,
+    "boundary_psnr_gain_db": 0.5827521100575908,
+    "cvar99_relative_reduction": 0.12094280952057657,
+    "evidence_class": "original 1200x437 crop, one image/seed/RTX4090; not a direct control for the full-frame stages",
+    "foreground_psnr_gain_db": 0.5222388433602028,
+    "p99_relative_reduction": 0.14824915944105255
+  },
+  "passed": true,
+  "published_same_base_comparison": {
+    "error_tail": {
+      "added_rows": 2777,
+      "deep_rows": 0,
+      "foreground_psnr_gain_db": 0.32078795822405226,
+      "laplacian_reduction": 0.0,
+      "lpips_reduction": 0.032114488361217,
+      "seconds": 18.00248301200918,
+      "sigma_1_5_highpass_reduction": 4.197421523688405e-07
+    },
+    "error_to_pursuit_row_ratio": 3.6158854166666665,
+    "orthogonal_pursuit": {
+      "added_rows": 768,
+      "deep_rows": 768,
+      "foreground_psnr_gain_db": 0.034326070062487446,
+      "laplacian_reduction": 0.2731565966440711,
+      "lpips_reduction": 0.10460057547978663,
+      "seconds": 3.359910507017048,
+      "sigma_1_5_highpass_reduction": 0.25926232493182966
+    }
+  },
+  "schema": "structsplat.fit031-new-method-stages-audit.v1",
+  "scope": {
+    "comparability": "FIT-032--038 are a common-base, same-target RTX4090 replication. FIT-031 versus FIT-039/040 uses the separately published exact-same-base RTX3050 control. Cross-tier endpoint values are descriptive, not exact-base effects.",
+    "fit_size_wh": [
+      1200,
+      1038
+    ],
+    "published_control_base_rows": 11000,
+    "published_control_device": "NVIDIA GeForce RTX 3050",
+    "replication_base_field_sha256": "b4dde2c30d82dcd84457609770c1b85d064971f29af0d1bdc38bfc1e191d26be",
+    "replication_base_rows": 10816,
+    "replication_device": "NVIDIA GeForce RTX 4090",
+    "seed": 0,
+    "source": "Janelle frame_00008/C0001 full masked frame"
+  },
+  "stage_curves": [
+    {
+      "added_rows": 128,
+      "laplacian_reduction": 0.08073377781113455,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.07622094928513012,
+      "task": "FIT-037"
+    },
+    {
+      "added_rows": 256,
+      "laplacian_reduction": 0.10050989660168907,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.1029542769537104,
+      "task": "FIT-037"
+    },
+    {
+      "added_rows": 384,
+      "laplacian_reduction": 0.10858292373843004,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.11859025018251113,
+      "task": "FIT-037"
+    },
+    {
+      "added_rows": 512,
+      "laplacian_reduction": 0.11383199538880273,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.12856422652387456,
+      "task": "FIT-037"
+    },
+    {
+      "added_rows": 768,
+      "laplacian_reduction": 0.11712499367721052,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.13950603403236927,
+      "task": "FIT-037"
+    },
+    {
+      "added_rows": 1024,
+      "laplacian_reduction": 0.11844020849463599,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.14511207241296553,
+      "task": "FIT-037"
+    },
+    {
+      "added_rows": 1536,
+      "laplacian_reduction": 0.12210869468230645,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.15231433089239566,
+      "task": "FIT-037"
+    },
+    {
+      "added_rows": 2048,
+      "laplacian_reduction": 0.12555358912865167,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.1572834905942092,
+      "task": "FIT-037"
+    },
+    {
+      "added_rows": 128,
+      "laplacian_reduction": 0.08073377781113455,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.07622094928513012,
+      "task": "FIT-038"
+    },
+    {
+      "added_rows": 256,
+      "laplacian_reduction": 0.1165799281910167,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.11509985677427559,
+      "task": "FIT-038"
+    },
+    {
+      "added_rows": 384,
+      "laplacian_reduction": 0.13056429721094487,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.13731479339905184,
+      "task": "FIT-038"
+    },
+    {
+      "added_rows": 512,
+      "laplacian_reduction": 0.14017754840496355,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.15321719703839232,
+      "task": "FIT-038"
+    },
+    {
+      "added_rows": 640,
+      "laplacian_reduction": 0.14702376786924753,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.1650095295565377,
+      "task": "FIT-038"
+    },
+    {
+      "added_rows": 768,
+      "laplacian_reduction": 0.15126432662030898,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.17402113769845617,
+      "task": "FIT-038"
+    },
+    {
+      "added_rows": 896,
+      "laplacian_reduction": 0.15355828686798034,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.18098989122123976,
+      "task": "FIT-038"
+    },
+    {
+      "added_rows": 1024,
+      "laplacian_reduction": 0.15518296399538822,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.1864361747089549,
+      "task": "FIT-038"
+    },
+    {
+      "added_rows": 1152,
+      "laplacian_reduction": 0.15626914089293753,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.19093788155414937,
+      "task": "FIT-038"
+    },
+    {
+      "added_rows": 1280,
+      "laplacian_reduction": 0.15772983582233635,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.19477340163716284,
+      "task": "FIT-038"
+    },
+    {
+      "added_rows": 1408,
+      "laplacian_reduction": 0.15856071377466874,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.19792952048210544,
+      "task": "FIT-038"
+    },
+    {
+      "added_rows": 1536,
+      "laplacian_reduction": 0.15897425031860146,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.20057396596172483,
+      "task": "FIT-038"
+    },
+    {
+      "added_rows": 1664,
+      "laplacian_reduction": 0.15991405184194984,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.2030079395376454,
+      "task": "FIT-038"
+    },
+    {
+      "added_rows": 1792,
+      "laplacian_reduction": 0.16063264898991292,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.20515547642947218,
+      "task": "FIT-038"
+    },
+    {
+      "added_rows": 1920,
+      "laplacian_reduction": 0.1615449958049504,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.20716326470197188,
+      "task": "FIT-038"
+    },
+    {
+      "added_rows": 2048,
+      "laplacian_reduction": 0.16240482056930616,
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.20902473402914312,
+      "task": "FIT-038"
+    }
+  ],
+  "stage_endpoints": [
+    {
+      "added_rows": 0,
+      "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+      "foreground_psnr_gain_db": 0.0,
+      "gate_status": "rejected: no protected recovery accepted",
+      "laplacian_reduction": 0.0,
+      "method": "Gauge-lifted residual dipoles",
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.0,
+      "source_artifact": "raw/fit032.json",
+      "stage_order": 32,
+      "target_reached": false,
+      "task": "FIT-032"
+    },
+    {
+      "added_rows": 128,
+      "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+      "foreground_psnr_gain_db": 0.011083710682285641,
+      "gate_status": "advanced to independent confirmation only",
+      "laplacian_reduction": 0.08073377781113455,
+      "method": "High-pass births + partial color solve",
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.07622094928513012,
+      "source_artifact": "raw/fit033.json",
+      "stage_order": 33,
+      "target_reached": false,
+      "task": "FIT-033"
+    },
+    {
+      "added_rows": 128,
+      "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+      "foreground_psnr_gain_db": 0.010948552002631118,
+      "gate_status": "negative: selected raw weight 0",
+      "laplacian_reduction": 0.08076451514761307,
+      "method": "Spectral/raw mixed partial solve",
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.077046521820754,
+      "source_artifact": "raw/fit034.json",
+      "stage_order": 34,
+      "target_reached": false,
+      "task": "FIT-034"
+    },
+    {
+      "added_rows": 128,
+      "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+      "foreground_psnr_gain_db": 0.014202164495038971,
+      "gate_status": "negative: affine target missed",
+      "laplacian_reduction": 0.09392084121226263,
+      "method": "Sparse affine detail births",
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.09686269886402021,
+      "source_artifact": "raw/fit035.json",
+      "stage_order": 35,
+      "target_reached": false,
+      "task": "FIT-035"
+    },
+    {
+      "added_rows": 128,
+      "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+      "foreground_psnr_gain_db": 0.011224919290981461,
+      "gate_status": "negative: ridge target missed",
+      "laplacian_reduction": 0.08456923040423925,
+      "method": "High-pass residual ridge births",
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.08084631114214336,
+      "source_artifact": "raw/fit036.json",
+      "stage_order": 36,
+      "target_reached": false,
+      "task": "FIT-036"
+    },
+    {
+      "added_rows": 2048,
+      "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+      "foreground_psnr_gain_db": 0.025794485722073546,
+      "gate_status": "negative: target missed at 2,048 rows",
+      "laplacian_reduction": 0.12555358912865167,
+      "method": "Static nested deep-detail rows",
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.1572834905942092,
+      "source_artifact": "raw/fit037.json",
+      "stage_order": 37,
+      "target_reached": false,
+      "task": "FIT-037"
+    },
+    {
+      "added_rows": 2048,
+      "evidence_class": "same-target RTX4090 replication; common 10,816-row base",
+      "foreground_psnr_gain_db": 0.03430046955256927,
+      "gate_status": "negative: target missed at 2,048 rows",
+      "laplacian_reduction": 0.16240482056930616,
+      "method": "Iterative orthogonal pursuit, radius 2",
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.20902473402914312,
+      "source_artifact": "raw/fit038.json",
+      "stage_order": 38,
+      "target_reached": false,
+      "task": "FIT-038"
+    },
+    {
+      "added_rows": 768,
+      "evidence_class": "published same-target RTX3050 result; 11,000-row base",
+      "foreground_psnr_gain_db": 0.034326070062487446,
+      "gate_status": "fine-detail target reached at 768 rows",
+      "laplacian_reduction": 0.2731565966440711,
+      "method": "Orthogonal pursuit + exact-site exclusion",
+      "protected_safe": true,
+      "sigma_1_5_highpass_reduction": 0.25926232493182966,
+      "source_artifact": "raw/fit040_production_result.json",
+      "stage_order": 39,
+      "target_reached": true,
+      "task": "FIT-039/040"
+    }
+  ]
+}

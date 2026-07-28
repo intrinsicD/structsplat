@@ -1,0 +1,141 @@
+{
+  "checks": {
+    "both_outside_exact_zero": true,
+    "error_tail_all_requested_rows_activated": true,
+    "error_tail_fixed_point": true,
+    "error_tail_larger_global_psnr_gain": true,
+    "placement_separation": true,
+    "production_replay_acceptance": true,
+    "prototype_cold_audit": true,
+    "pursuit_detail_targets": true,
+    "pursuit_first_target_at_768": true,
+    "pursuit_inherited_rows_frozen": true,
+    "pursuit_larger_highpass_reduction": true,
+    "pursuit_larger_laplacian_reduction": true,
+    "pursuit_larger_lpips_reduction": true,
+    "pursuit_protected_safe": true,
+    "pursuit_rows_unique": true,
+    "pursuit_uses_fewer_rows": true,
+    "same_base_binding": true
+  },
+  "created_utc": "2026-07-28T01:42:30Z",
+  "decision": {
+    "default_change_authorized": false,
+    "equal_rate_claim_authorized": false,
+    "fine_detail_winner": "orthogonal_pursuit",
+    "generality_authorized": false,
+    "global_foreground_psnr_winner": "error_tail"
+  },
+  "inputs": {
+    "error_perceptual": {
+      "path": "/home/alex/Documents/structsplat/runs/fit041_janelle_equal_base_error_tail_20260728/perceptual.json",
+      "sha256": "8a16b8b69a7efe98dd5840e3c79940ac0643ad30cd2282f2bc6964b8c13fd139"
+    },
+    "error_tail": {
+      "path": "/home/alex/Documents/structsplat/runs/fit041_janelle_equal_base_error_tail_20260728/result.json",
+      "sha256": "1abd8ac1d617756b1a5a14cc367d9acb99525e7a7e5c4034dedaf781b64657fa"
+    },
+    "pursuit": {
+      "path": "/home/alex/Documents/structsplat/runs/fit040_janelle_production_pursuit_20260728/result.json",
+      "sha256": "b308294482adeaaea11756e1e74eca2261258012c2e0ea523b3e6601bba8e60b"
+    },
+    "pursuit_audit": {
+      "path": "/home/alex/Documents/structsplat/runs/fit039_janelle_exclusion_screen_20260728/audit/audit.json",
+      "sha256": "fa2869ec0f2eee7ea5eff4da3f38db31639bbc6dd8c5326e2f770555c5e21749"
+    },
+    "pursuit_perceptual": {
+      "path": "/home/alex/Documents/structsplat/runs/fit039_janelle_exclusion_screen_20260728/audit/perceptual.json",
+      "sha256": "7b131c000e14c901a1ad9487ca58f711fdb1e3100c06183aa2d6ab48b9dc9139"
+    },
+    "spatial": {
+      "path": "/home/alex/Documents/structsplat/runs/fit039_janelle_exclusion_screen_20260728/audit/spatial.json",
+      "sha256": "4b0dfb0d2b95fe41794fbbbda7f97cc9c25531f2c0f6e6796f867d4ef55e9a2f"
+    }
+  },
+  "passed": true,
+  "same_base_result": {
+    "error_tail": {
+      "added_rows": 2777,
+      "deep_rows": 0,
+      "foreground_psnr_gain_db": 0.32078795822405226,
+      "laplacian_reduction": 0.0,
+      "lpips_reduction": 0.032114488361217,
+      "seconds": 18.00248301200918,
+      "sigma_1_5_highpass_reduction": 4.197421523688405e-07
+    },
+    "error_to_pursuit_row_ratio": 3.6158854166666665,
+    "orthogonal_pursuit": {
+      "added_rows": 768,
+      "deep_rows": 768,
+      "foreground_psnr_gain_db": 0.034326070062487446,
+      "laplacian_reduction": 0.2731565966440711,
+      "lpips_reduction": 0.10460057547978663,
+      "seconds": 3.359910507017048,
+      "sigma_1_5_highpass_reduction": 0.25926232493182966
+    }
+  },
+  "schema": "structsplat.fit041.equal-base-tail-audit.v1",
+  "scope": {
+    "base_rows": 11000,
+    "device": "NVIDIA GeForce RTX 3050",
+    "fit_size_wh": [
+      1200,
+      1038
+    ],
+    "latest_commit_screen_is_not_direct_control": "FIT-031's committed 1200x437 crop differs from this 1200x1038 target; FIT-041 supplies the equal-base control",
+    "seed": 0,
+    "source": "Janelle frame_00008/C0001 full masked frame"
+  },
+  "sources": [
+    {
+      "path": "src/structsplat/detail_pursuit.py",
+      "sha256": "79b5be75fc16b7318a87aef35ed842ba92cd37144fca540497236fcd53c52c30"
+    },
+    {
+      "path": "src/structsplat/safe_schedule.py",
+      "sha256": "98650958a57fbd89d2a6cbacacfcd8c11b98588a3a3292a0ef01a7c8bed69854"
+    },
+    {
+      "path": "src/structsplat/pipeline.py",
+      "sha256": "fcff659c3b401a25c613233613274931091374eed76e6e1d25f528c4c6705584"
+    },
+    {
+      "path": "src/structsplat/workflows.py",
+      "sha256": "9af23b02eac5599d8d9e6a586f4fae4a138117ab06d5bc99bce33dfc1f33371d"
+    },
+    {
+      "path": "scripts/experiments/fit040_janelle_production_pursuit.py",
+      "sha256": "64a7407b2d28cead2d8dea97ac1627ba54eb106d350122c7ea4986d22655d772"
+    },
+    {
+      "path": "scripts/experiments/fit041_janelle_equal_base_error_tail.py",
+      "sha256": "c38d9bb2ecc5d7a4e12a512595e6159fcad5e526b2e297694a4d84c22adc0953"
+    },
+    {
+      "path": "scripts/experiments/audit_fit041_equal_base_tail_comparison.py",
+      "sha256": "43129696abade5ff5825f2f44f2fe7816387586f1ba1b6932558ea0c97965f11"
+    },
+    {
+      "path": "tests/test_detail_pursuit.py",
+      "sha256": "06a4cd0a7af1554c270c2847b0086b8ac96dada13330b21a6443091327fa764e"
+    },
+    {
+      "path": "tests/test_pursuit_schedule.py",
+      "sha256": "d96b5c833e21d459b316ee056844562ff35c3398c8e41ac8c90c1453d736108c"
+    },
+    {
+      "path": "tests/test_pipeline.py",
+      "sha256": "4b3e230980703b102a7373424f833a22d644bc8e4129649cff7bd236a1766877"
+    },
+    {
+      "path": "tests/test_pipeline_workflows.py",
+      "sha256": "cd84a824075e92ecd8363e1b6b1ba952f5c69e9bb34ab512439c9517154999c5"
+    }
+  ],
+  "spatial_boundary": {
+    "deep_pixels_improved_fraction": 0.1132788434624672,
+    "deep_pixels_worsened_fraction": 0.08882886171340942,
+    "interpretation": "The net fine-detail effect is large but spatially concentrated; this is not a uniform-detail or general-image claim.",
+    "positive_32px_tile_fraction": 0.42268040776252747
+  }
+}
