@@ -4049,3 +4049,22 @@ tree:
       - "ara/evidence/fit040-orthogonal-detail-pursuit-janelle-2026-07-28/run.md"
     also_depends_on: [N200, N201]
     status: resolved
+  - id: N203
+    type: decision
+    title: "Publish the orthogonal fine-detail research batch directly to main"
+    provenance: user
+    timestamp: "2026-07-28T09:04+02:00"
+    choice: >
+      Commit the complete FIT-032--041/ADR-0030 code, controls, tests, evidence, claims, and trace
+      directly on local main, then push main to origin after the full repository verification
+      gate passes.
+    alternatives:
+      - "Leave the completed research worktree uncommitted."
+      - "Publish through a feature branch and pull request instead of the requested direct-main flow."
+      - "Commit only the positive mechanism while omitting negative screens or evidence."
+    evidence:
+      - "commit 7289f9c44df6e0d74dbd4ada9bf7509c98030d3a"
+      - "./scripts/verify.sh: 1488 passed, 4 skipped; all structural gates OK"
+      - "origin/main at 7289f9c44df6e0d74dbd4ada9bf7509c98030d3a after push"
+    also_depends_on: [N200, N201, N202]
+    status: resolved

@@ -106,8 +106,8 @@ sessions:
     open_threads: 3
   - id: "2026-07-28_001"
     date: "2026-07-28"
-    summary: "Invented, integrated, and audited a 768-row orthogonal pursuit tail that cuts Janelle deep-detail error by 25.93%/27.32%; an exact same-base control shows the latest FIT-031 tail instead repairs boundary/global error."
-    turn_count: 1
-    events_count: 12
+    summary: "Invented and audited a 768-row orthogonal pursuit tail, separated its deep-detail objective from FIT-031's boundary/global repair, and published the complete FIT-032--041 batch to origin/main as 7289f9c."
+    turn_count: 2
+    events_count: 13
     claims_touched: [C59, C60]
     open_threads: 3

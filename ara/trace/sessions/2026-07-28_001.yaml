@@ -2,9 +2,9 @@ session:
   id: "2026-07-28_001"
   date: "2026-07-28"
   started: "2026-07-28T04:11+02:00"
-  last_turn: "2026-07-28T04:11+02:00"
-  turn_count: 1
-  summary: "Invented, integrated, and audited a 768-row orthogonal pursuit tail that cuts Janelle deep-detail error by 25.93%/27.32%; an exact same-base control shows the latest FIT-031 tail instead repairs boundary/global error."
+  last_turn: "2026-07-28T09:04+02:00"
+  turn_count: 2
+  summary: "Invented and audited a 768-row orthogonal pursuit tail, separated its deep-detail objective from FIT-031's boundary/global repair, and published the complete FIT-032--041 batch to origin/main as 7289f9c."
 
 events_logged:
   - turn: 1
@@ -79,6 +79,12 @@ events_logged:
     routing: crystallized
     provenance: ai-suggested
     summary: "Crystallized the one-image same-base objective trade-off via empirical resolution."
+  - turn: 2
+    type: decision
+    id: "N203"
+    routing: direct
+    provenance: user
+    summary: "Authorized the complete audited FIT-032--041/ADR-0030 batch to be committed directly on main and pushed to origin."
 
 ai_actions:
   - turn: 1
@@ -110,6 +116,12 @@ ai_actions:
       - "tasks/INDEX.md"
       - "ara/logic/claims.md"
       - "ara/staging/observations.yaml"
+  - turn: 2
+    action: "Fetched origin, re-audited the complete 66-file scope, passed the exact pre-commit verification gate, committed as 7289f9c, pushed main, and verified the local, tracking, and remote hashes agree."
+    provenance: ai-executed
+    files_changed:
+      - "commit 7289f9c44df6e0d74dbd4ada9bf7509c98030d3a"
+      - "origin/main"
 
 claims_touched:
   - id: C59
@@ -122,6 +134,8 @@ claims_touched:
 key_context:
   - turn: 1
     excerpt: "Continue real research on the masked Janelle image, assess the latest-commit idea, and invent a way to massively reduce final fine-detail error with minimal Gaussians."
+  - turn: 2
+    excerpt: "The user explicitly requested committing the completed batch, merging it to main, and pushing it to the remote."
 
 open_threads:
   - "Replicate pursuit and FIT-031 on independent masked images and seeds with equal row, byte, and work budgets before any default or efficiency promotion."

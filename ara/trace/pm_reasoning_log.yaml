@@ -565,3 +565,10 @@ entries:
       - "Found no contradiction with C58: FIT-031's earlier positive result used a 1200x437 crop and global/boundary metrics, while C60 uses the requested 1200x1038 full frame and a predeclared deep-detail band."
       - "Did not infer general, equal-rate, default, novelty, or uniform-detail superiority from one exposed image/seed/device; the spatial audit explicitly shows a concentrated effect."
       - "Did not newly stale observations because this is the first recorded session-day since the prior epilogue and false abandonment is worse than delayed cleanup."
+  - turn: "2026-07-28_001#2"
+    notes:
+      - "Routed the user's explicit direct-main commit/merge/push instruction as decision N203; the repository was already on main, so no synthetic merge commit or pull request was created."
+      - "Bound publication to commit 7289f9c, a fresh 1,488-test verification pass, and exact local/origin/remote main hash agreement."
+      - "Treated Git staging, commit, fetch, and push as one ai-action rather than additional experiment nodes because they package resolved research rather than produce new scientific evidence."
+      - "Did not upgrade C59/C60 provenance or scope: publication authorization is not scientific affirmation and the one-image/default-off boundaries remain unchanged."
+      - "Added no observation and marked nothing stale; this turn changed repository publication state only."
