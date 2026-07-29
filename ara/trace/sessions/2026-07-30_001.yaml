@@ -1,0 +1,36 @@
+session:
+  id: "2026-07-30_001"
+  date: "2026-07-30"
+  started: "2026-07-30T01:01+02:00"
+  last_turn: "2026-07-30T01:01+02:00"
+  turn_count: 1
+  summary: "Merged the retained research-ideation refresh against current task/evidence state, published it to main, and retired every merged topic branch."
+
+events_logged:
+  - turn: 1
+    type: decision
+    id: "N206"
+    routing: direct
+    provenance: user
+    summary: "Authorized preserving proc/025 through a reconciled main merge, then deleting every merged local and remote topic branch."
+
+ai_actions:
+  - turn: 1
+    action: "Merged proc/025 into main, reconciled its research context with current tasks and C28/O69 scope, passed the canonical gate, pushed main, pruned stale worktree metadata, and safely deleted all merged topic branches."
+    provenance: ai-executed
+    files_changed:
+      - ".claude/skills/structsplat-research-ideation/SKILL.md"
+      - ".claude/skills/structsplat-research-ideation/references/repository-context.md"
+      - "merge commit 44f778096064d96ac997d5a9fad0c1e7b9d7799c"
+      - "main"
+      - "origin/main"
+
+claims_touched: []
+
+key_context:
+  - turn: 1
+    excerpt: "The user explicitly requested merging proc into the correct files on main, then removing every deletable branch except main."
+
+open_threads: []
+
+ai_suggestions_pending: []

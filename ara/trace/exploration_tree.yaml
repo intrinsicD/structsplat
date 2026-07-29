@@ -4111,3 +4111,22 @@ tree:
       - "local main, origin/main, and remote main all reached 7c4b3fd408dcd54f8db01a3c636a58b627e4fbd0"
     also_depends_on: [N204]
     status: resolved
+  - id: N206
+    type: decision
+    title: "Preserve the proc research context and retire merged topic branches"
+    provenance: user
+    timestamp: "2026-07-30T01:01+02:00"
+    choice: >
+      Merge proc/025's unique research-ideation refresh into current main, reconcile it with the
+      live task and evidence ledgers, publish the merge, and delete every local and remote topic
+      branch after proving its tip reachable from the pushed main.
+    alternatives:
+      - "Delete proc/025 and discard its unique research-context commit."
+      - "Apply the July 18 text verbatim without reconciling later task and evidence state."
+      - "Keep already-merged local and remote topic branches indefinitely."
+    evidence:
+      - "merge commit 44f778096064d96ac997d5a9fad0c1e7b9d7799c"
+      - "./scripts/verify.sh: 1514 passed, 4 skipped; all structural gates OK"
+      - "remote branch audit after cleanup advertised only refs/heads/main"
+    also_depends_on: []
+    status: resolved

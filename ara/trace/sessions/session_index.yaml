@@ -118,3 +118,10 @@ sessions:
     events_count: 4
     claims_touched: [C61]
     open_threads: 2
+  - id: "2026-07-30_001"
+    date: "2026-07-30"
+    summary: "Merged the retained research-ideation refresh against current task/evidence state, published it to main, and retired every merged topic branch."
+    turn_count: 1
+    events_count: 1
+    claims_touched: []
+    open_threads: 0

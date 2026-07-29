@@ -64,9 +64,9 @@ port target rather than an implemented backend in this tree (`README.md`,
 ## High-value research surface (grounded in the active task index)
 
 The current frontier begins with a negative result, not a promotable method.
-BENCH-007 found a bounded tensor-WSE gain at 0.5 bpp, but the effect vanished at
-1.0 bpp, reached only `-4.5417%` BD-rate against a preregistered `-10%` gate,
-cost `1.4752x`, and exceeded the texture guard (C28;
+BENCH-007 reported a bounded mean tensor-WSE gain at 0.5 bpp, but the mean
+difference was near zero at 1.0 bpp, reached only `-4.5417%` BD-rate against a
+preregistered `-10%` gate, cost `1.4752x`, and exceeded the texture guard (C28;
 `ara/evidence/bench007-stage1-killing-pilot-2026-07-14/run.md`). Stage 2 was
 therefore prohibited:
 BENCH-008 and COMP-005 are not authorized, and CORE-007/008 remain design-only.

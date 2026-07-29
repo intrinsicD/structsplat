@@ -587,3 +587,10 @@ entries:
       - "Treated staging, commit, merge, fetch, and push as one ai-action rather than experiments because they package the already-resolved workflow capability."
       - "Did not upgrade N204/C61 provenance or ADR-0031 status: publication authorization is not first-person affirmation of the policy's semantic correctness or independent review."
       - "Added no observation and marked nothing stale; this turn changed repository publication state only."
+  - turn: "2026-07-30_001#1"
+    notes:
+      - "Routed the user's explicit merge-and-cleanup instruction as decision N206 because it selected preservation of proc/025's unique context over discarding it."
+      - "Bound the preserved history to two-parent merge commit 44f7780, a fresh 1,514-test canonical gate, and a live remote exposing only main after cleanup."
+      - "Reconciled the July 18 frontier with the live task ledger and tightened the BENCH-007 sentence to a reported mean difference, consistent with staged scope warning O69."
+      - "Treated merge, push, worktree pruning, and safe branch deletion as one ai-action rather than scientific experiments."
+      - "Added no observation, upgraded no claim provenance, and marked nothing stale; this publication-only turn provides no topic-specific scientific closure signal."
