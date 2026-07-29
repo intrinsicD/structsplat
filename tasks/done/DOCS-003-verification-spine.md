@@ -62,3 +62,7 @@ DOCS-001 (docs-sync backfill).
 - StructSplat half of a bidirectional infra transfer with rtgs; the rtgs half wires StructSplat
   mechanisms (structure-tensor/WSE init, pooled row lifecycle, checkpoint policy) as opt-in tested
   modules before any default-changing experiment.
+
+## Completion
+Completed 2026-07-25. The verification spine landed across commits `1976419`, `8433b3f`, and
+`5ca592b`; DOCS-004 owns the deliberately separate lint/format ratchet.

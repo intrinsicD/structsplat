@@ -40,6 +40,15 @@ Typical flow: `structsplat-core` → `structsplat-task-workflow` (open the task)
 → `structsplat-method` → `structsplat-benchmark` → `structsplat-review` →
 `structsplat-docs-sync`.
 
+## Session start and task authority
+
+Read `tasks/SESSION-BRIEF.md` after this guide, then confirm any selected work in
+`tasks/INDEX.md` and the task file. The brief is a generated execution view; the Index remains
+the outcome authority. Picked-up tasks record Driver, Reviewer, Turn, reviewed revision,
+structured handoffs, and a terminal verdict. Self-review is provisional, never independent
+approval. The exact cross-harness lifecycle and risk-based review requirements are in
+`docs/agent_workflow.md` and `tasks/README.md` (ADR-0031, C61).
+
 ## Non-negotiable invariants (full list in the `structsplat-core` skill)
 1. Init-time math (`structure_tensor`, `density`, `sampling`) is **NumPy and importable without
    torch**. Autograd lives in torch modules only.
@@ -52,7 +61,8 @@ Typical flow: `structsplat-core` → `structsplat-task-workflow` (open the task)
 `docs/adr/` decisions (cited as `ADR-NNNN`) · `docs/architecture.md`, `docs/theory.md`,
 `docs/comparison.md` (external-method comparison), `docs/blockers_and_external_techniques.md`
 (known blockers and borrowed techniques), `docs/publication_figures.md` ·
-`docs/research/` dated session records · `tasks/` work items + `INDEX.md` ·
+`docs/agent_workflow.md` (cross-harness workflow) · `docs/research/` dated session records ·
+`tasks/` work items + `INDEX.md` authority + generated `SESSION-BRIEF.md` ·
 `ara/` claim + evidence ledger (see below) · `scripts/` durable tooling, with one-off experiment
 drivers under `scripts/experiments/`. The supported operational scripts are
 `convert.py`, `benchmark.py`, `ablation.py`, and `stage_search.py`; historical launchers live in
@@ -86,10 +96,11 @@ artifact under `ara/evidence/`, `benchmarks/`, or `tests/`. A claim row carries 
 `refuted development actual-rate claim`. A `supported` or `refuted` claim must cite at least one
 artifact path that exists on disk.
 
-`python scripts/check_ara.py` enforces the structure: required layer files, PAPER.md index
-targets, claim-field completeness, status vocabulary, dependency resolution, proof-path
-existence, and staging-ID resolution. It cannot judge whether a sentence overstates its
-artifact — that is `structsplat-review`, and `structsplat-results-audit` for anything promoted.
+`python scripts/check_ara.py` enforces the structure: required layer files, contained PAPER.md
+index targets, known/unique claim fields, nonempty normalized status vocabulary, dependency
+resolution, proof paths that resolve inside the repository, and staging-ID resolution. It cannot
+judge whether a sentence overstates its artifact — that is `structsplat-review`, and
+`structsplat-results-audit` for anything promoted.
 
 BENCH-007 is the model entry: a rejected headline claim, recorded as rejected, with the gate that
 killed it. Keep that standard.
@@ -102,15 +113,20 @@ remaining production/tiled CUDA/Vulkan/RHI work is `PORT-001`/002/003; ADR-0011 
 CUDA research renderer.
 
 ## Verify
-Run `./scripts/verify.sh` before every commit: `ruff check` + `ruff format --check` +
+Run `./scripts/verify.sh` before every commit: the pinned `ruff check` correctness rules +
 `pytest -m "not slow and not integration"` + `scripts/docs_sync.py` (structural docs↔code gate) +
 `scripts/check_ara.py` (claim ledger) + `scripts/check_task_policy.py` (task tree) +
-`scripts/check_script_layout.py` (scripts layout). CI mirrors these steps on CPU.
+`scripts/check_script_layout.py` (scripts layout) + `scripts/check_agent_workflow.py` (guides,
+settings, hooks, skill mirrors, generated session view, verify/CI/PR agreement). CI mirrors these
+steps on CPU. Validate a maintained report before handoff with
+`python scripts/check_report_bundle.py RESULTS_DIR`; that structural gate does not replace
+`structsplat-results-audit`.
 
 `ruff check` enforces the correctness baseline pinned in `pyproject.toml`. The broader style and
-import ruleset is a separate repo-wide ratchet owned by `DOCS-003`; see that task for the current
-stage and its expiry.
+import/format ruleset is a separate repo-wide ratchet owned by `DOCS-004`; see that task for the
+current stage and expiry.
 
 ## Definition of done (short form)
 Acceptance criteria tested · NumPy/torch split intact · ADR for any real decision · docs updated in
-the same commit · results reproducible.
+the same commit · results reproducible · exact handoff/review boundary recorded · self-review
+visibly provisional · full verification green.

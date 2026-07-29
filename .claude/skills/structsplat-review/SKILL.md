@@ -27,6 +27,15 @@ description: Use when reviewing a StructSplat diff or PR, or self-reviewing befo
 - Any new user-facing behavior has a test and, if quality-relevant, a benchmark number.
 - No new one-off driver at the top level of `scripts/` — those go in `scripts/experiments/`.
 - No committed evidence bundle under `ara/evidence/` overwritten or rewritten.
+- New machinery is right-sized for a demonstrated failure. Flag duplicate authorities, generic
+  frameworks with no current consumer, and configuration that is more complex than the behavior.
+- Trace every new file and option to a caller, test, guide, task acceptance criterion, or explicit
+  follow-up. Flag half-integrated agent output: unused helpers, placeholder TODOs without a task,
+  copied policy that names the wrong repository, schemas no checker reads, and docs that promise a
+  gate the verification command does not run.
+- For workflow-governed tasks, confirm the Driver/Reviewer/Turn state, reviewed revision, latest
+  Handoff, protected actions not taken, and verdict describe the actual boundary. Treat the
+  producer-authored Handoff as orientation, not proof. Self-review must remain provisional.
 
 ## Claim hygiene
 Prose is a claim surface. If the diff adds a number or a capability statement to `README.md`,
@@ -45,6 +54,7 @@ its artifact. That is this step, and `structsplat-results-audit` for anything pr
 ```bash
 ./scripts/verify.sh
 ```
-Lint, the portable test gate, and the four structural checkers (`docs_sync`, `check_ara`,
-`check_task_policy`, `check_script_layout`). Results-bearing changes go through
+Lint, the portable test gate, and five structural checkers (`docs_sync`, `check_ara`,
+`check_task_policy`, `check_script_layout`, `check_agent_workflow`). Maintained report bundles
+also run `python scripts/check_report_bundle.py RESULTS_DIR`. Results-bearing changes go through
 `structsplat-results-audit` before the claim lands.

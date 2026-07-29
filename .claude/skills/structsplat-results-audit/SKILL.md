@@ -75,6 +75,11 @@ validation remains untouched. Do not rescue the claim with the favorable
 needs a new null, disjoint development screen, frozen gate, and authorization
 before confirmation.
 
+For new formal protocols, verify that a distinct prospective reviewer approved
+the exact declared digest before execution and recorded no access to sealed
+outcomes. Recompute the digest with the task-specific protocol tool or command.
+Prospective approval is not outcome evidence and does not replace this audit.
+
 ### 4. Audit renderer and decoded-field parity
 
 Freeze the equation separately from its implementation. `renderer=normalized`
@@ -97,6 +102,12 @@ snapshot, and library/CUDA versions. A dirty run is usable only when its exact
 executed source is preserved. On resumed journals select the latest valid row per
 stable cell key and include error/missing rows in completeness accounting. Never
 copy a number from prose or a stale journal when raw tables can be recomputed.
+
+For a maintained current-pipeline bundle, first run
+`python scripts/check_report_bundle.py RESULTS_DIR`. Treat any failure as an
+integrity finding. A pass establishes only structural consistency, portability,
+and clean-source binding; continue the semantic, statistical, and scope audit
+below.
 
 ### 6. Recompute statistics and resources
 

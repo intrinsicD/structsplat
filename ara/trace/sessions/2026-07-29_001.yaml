@@ -1,0 +1,70 @@
+session:
+  id: "2026-07-29_001"
+  date: "2026-07-29"
+  started: "2026-07-29T12:23+02:00"
+  last_turn: "2026-07-29T13:11+02:00"
+  turn_count: 1
+  summary: "Audited four local agent workflows, integrated only demonstrated StructSplat gaps, and provisionally closed a mechanically gated workflow without adding parallel task or evidence state."
+
+events_logged:
+  - turn: 1
+    type: decision
+    id: "N204"
+    routing: direct
+    provenance: ai-suggested
+    summary: "Kept the task Index/files and ARA authoritative while adding derived context, in-task review state, prospective review, drift checks, and report integrity."
+  - turn: 1
+    type: observation
+    id: "O94"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged the reconstructable-agent-workflow capability with explicit structural and independent-review limits."
+  - turn: 1
+    type: claim
+    id: "C61"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the executable repository-workflow capability via artifact commitment while retaining provisional policy-review status."
+
+ai_actions:
+  - turn: 1
+    action: "Read-only audited bounded snapshots of agent-kit, IntrinsicEngine, realtime-gs, and prospect; recorded source-qualified adopt, adapt, and reject decisions."
+    provenance: ai-executed
+    files_changed:
+      - "docs/research/2026-07-29-agentic-workflow-audit.md"
+      - "docs/adr/0031-agentic-workflow-authority-and-review.md"
+  - turn: 1
+    action: "Implemented generated session context, task/review and ARA hardening, workflow drift and report-bundle gates, CI/template/hook integration, portable artifact serialization, and adversarial regressions."
+    provenance: ai-executed
+    files_changed:
+      - "scripts/check_ara.py"
+      - "scripts/check_task_policy.py"
+      - "scripts/check_agent_workflow.py"
+      - "scripts/check_report_bundle.py"
+      - "scripts/generate_session_brief.py"
+      - "src/structsplat/workflows.py"
+      - "tests/test_agent_workflow_maturity.py"
+  - turn: 1
+    action: "Revalidated changing sibling heads, fixed self-review bypasses, passed 31 focused tests and all structural gates, and closed DOCS-005 provisionally at its bound implementation tree."
+    provenance: ai-executed
+    files_changed:
+      - "tasks/done/DOCS-005-agentic-workflow-maturity.md"
+      - "tasks/INDEX.md"
+      - "tasks/SESSION-BRIEF.md"
+      - "ara/logic/claims.md"
+
+claims_touched:
+  - id: C61
+    action: crystallized
+    turn: 1
+
+key_context:
+  - turn: 1
+    excerpt: "The user requested a mature StructSplat agent workflow based only on genuinely missing parts from four named local repositories."
+
+open_threads:
+  - "Obtain a distinct policy review before promoting ADR-0031 or describing DOCS-005 as independently accepted."
+  - "Let CI reproduce the torch-free structural checkers across Python 3.10, 3.11, 3.12, and 3.13."
+
+ai_suggestions_pending:
+  - "Repeat the bounded mechanism audit only when supported harnesses or formal evidence workflows materially change."

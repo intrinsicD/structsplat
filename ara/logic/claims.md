@@ -1207,3 +1207,40 @@ reference renderer is memory-bound. See `ara/evidence/core005-render-checkpoint-
 - **Tags**: fine-detail, orthogonal-pursuit, error-tail, Janelle, same-base, single-image,
   source-bound, LPIPS, default-off, claim-boundary
 - **From staging**: O91
+
+## C61: The agent workflow is reconstructable and structurally gated without parallel state
+
+- **Statement**: For workflow-governed StructSplat tasks, the repository derives session context
+  from `tasks/INDEX.md`, validates task ownership/turn/review boundaries, bounded revision
+  authorization, optional prospective protocol-review envelopes, and dependency cycles; hardens
+  ARA fields/status/proof containment; checks agreement among agent guides, settings, hooks, skill
+  mirrors, verification, CI, and PR structure; and provides a clean-source-by-default integrity
+  gate for maintained portable reports. These are structural capabilities: they do not establish
+  reviewer identity, recompute task-specific protocol digests, establish scientific validity, or
+  provide independent approval, and DOCS-005 remains provisionally self-reviewed.
+- **Status**: supported executable repository-workflow capability; independent policy review pending
+- **Provenance**: ai-implemented and provisionally self-reviewed
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: The generated brief diverges from the task Index without a gate
+  failure; compact task dependencies remain unresolved or actionable cycles pass; a terminal
+  workflow task can claim independent acceptance without a distinct reviewer; an unauthorized
+  post-escalation review or malformed prospective protocol review passes; an ARA proof escapes by
+  traversal/symlink or an unknown/duplicate field or empty/punctuated status passes; the configured
+  workflow surfaces or verify stages drift without detection; a maintained bundle with dirty
+  source, inconsistent tables, non-finite metrics, escaping/missing links, or broken hashes passes
+  the default report gate; or the cited adversarial tests fail.
+- **Proof**: [`scripts/check_ara.py`,
+  `scripts/check_task_policy.py`,
+  `scripts/generate_session_brief.py`,
+  `scripts/check_agent_workflow.py`,
+  `scripts/check_report_bundle.py`,
+  `src/structsplat/workflows.py`,
+  `tests/test_agent_workflow_checkers.py`,
+  `tests/test_agent_workflow_maturity.py`,
+  `tests/test_pipeline_workflows.py`,
+  `docs/adr/0031-agentic-workflow-authority-and-review.md`,
+  `tasks/done/DOCS-005-agentic-workflow-maturity.md`]
+- **Dependencies**: []
+- **Tags**: agent-workflow, task-authority, handoff, prospective-review, review, provenance,
+  proof-containment, portability, structural-validation, claim-boundary
+- **From staging**: O94

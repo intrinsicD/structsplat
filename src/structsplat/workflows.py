@@ -713,18 +713,39 @@ def _csv_value(value: Any) -> Any:
     return value
 
 
+def _portable_metric_value(outdir: Path, value: Any) -> Any:
+    if isinstance(value, dict):
+        return {
+            key: _portable_metric_value(outdir, item)
+            for key, item in value.items()
+        }
+    if isinstance(value, (list, tuple)):
+        return [_portable_metric_value(outdir, item) for item in value]
+    if isinstance(value, (str, Path)):
+        raw = str(value)
+        path = Path(raw)
+        if path.is_absolute():
+            try:
+                return path.resolve().relative_to(outdir.resolve()).as_posix()
+            except ValueError:
+                pass
+        return raw
+    return value
+
+
 def _write_metrics(outdir: Path, rows: list[dict[str, Any]]) -> None:
-    _atomic_json(outdir / "metrics.json", rows)
+    portable_rows = [_portable_metric_value(outdir, row) for row in rows]
+    _atomic_json(outdir / "metrics.json", portable_rows)
     _atomic_text(
         outdir / "metrics.jsonl",
-        "".join(json.dumps(row, default=str) + "\n" for row in rows),
+        "".join(json.dumps(row, default=str) + "\n" for row in portable_rows),
     )
-    if not rows:
+    if not portable_rows:
         return
     fields = sorted(
         {
             key
-            for row in rows
+            for row in portable_rows
             for key in row
             if key not in {"curves", "snapshots"}
         }
@@ -733,7 +754,7 @@ def _write_metrics(outdir: Path, rows: list[dict[str, Any]]) -> None:
     with temporary.open("w", newline="", encoding="utf-8") as stream:
         writer = csv.DictWriter(stream, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
-        for row in rows:
+        for row in portable_rows:
             writer.writerow(
                 {key: _csv_value(row.get(key)) for key in fields}
             )
@@ -798,6 +819,17 @@ def _svg_curve(
 def _run_card(outdir: Path, row: dict[str, Any]) -> str:
     curves = list(row.get("curves") or [])
     snapshots = list(row.get("snapshots") or [])
+    artifacts = []
+    for label, key in (
+        ("field.npz", "field_npz"),
+        ("history.json", "history_json"),
+        ("config.json", "config_json"),
+    ):
+        if row.get(key):
+            link = _relative_link(outdir, row[key])
+            artifacts.append(
+                f"<a href='{html.escape(link)}'>{html.escape(label)}</a>"
+            )
     images = []
     for label, key in (
         ("target", "target_png"),
@@ -892,6 +924,7 @@ def _run_card(outdir: Path, row: dict[str, Any]) -> str:
         "</details>"
         f"{error_tail_html}"
         f"{pursuit_tail_html}"
+        f"<div class='links'>{' '.join(artifacts)}</div>"
         f"<div class='hero-images'>{''.join(images)}</div>"
         "<div class='charts'>"
         f"{_svg_curve(curves, 'psnr', 'PSNR over attempted steps', '#e65f2b')}"

@@ -37,6 +37,22 @@ Use `python scripts/benchmark.py SOURCE OUTDIR`, `python scripts/ablation.py SOU
 workflows and portable visual reports. `structsplat ablation` / `python -m benchmarks.ablation`
 remain the lower-level ABL-001 init-strategy harness. Use a small image set (Kodak-style) first.
 
+Before a formal evidence run, freeze the question, split roles, controls, budgets, seeds,
+metrics, killing rule, exact command, and source identity in the owning task. Run from a clean
+commit only after a distinct prospective reviewer records an Approved protocol digest and
+`Outcomes accessed: No` using the schema in `tasks/README.md`. Prospective approval says the
+protocol is fit to execute, not that the method works. Write a new immutable output directory; do
+not repair an executed bundle in place.
+After a maintained workflow completes, run:
+
+```bash
+python scripts/check_report_bundle.py OUTDIR
+```
+
+`--allow-dirty` and `--allow-error-cells` mark diagnostic inspection only; they do not make a
+bundle claim-ready. The structural checker complements, and never replaces,
+`structsplat-results-audit`.
+
 ## As a fitness function
 `run_ablation` returns per-cell metrics; expose the aggregate (e.g. mean PSNR at a target budget,
 or area-under-PSNR-vs-iters) as the scalar a search/optimizer maximizes. Keep the harness

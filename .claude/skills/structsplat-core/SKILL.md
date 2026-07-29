@@ -57,16 +57,20 @@ IntrinsicEngine as an RHI pass.
   `stage_search.py`; task-specific historical launchers live in `deprecated_scripts/`.
 - New claim / refuted claim -> a row in `ara/logic/claims.md`; a not-yet-promoted finding -> an
   `O<NN>` entry in `ara/staging/observations.yaml`. See "Evidence and claims" in `CLAUDE.md`.
-- New task -> `tasks/AREA-NNN-slug.md` **and** a row in `tasks/INDEX.md`, same commit.
+- New task -> `tasks/AREA-NNN-slug.md` **and** a row in `tasks/INDEX.md`, same commit; regenerate
+  the derived `tasks/SESSION-BRIEF.md`. See `tasks/TEMPLATE.md` and
+  `structsplat-task-workflow`.
 - One-off experiment driver -> `scripts/experiments/`, not the top level of `scripts/`.
 - New ADR -> `docs/adr/NNNN-title.md`, and cite it as `ADR-NNNN` from the code or task that
   depends on it (an uncited ADR fails `docs_sync`).
 
 ## Verification gate
 `./scripts/verify.sh` runs `ruff check`, the portable pytest gate
-(`-m "not slow and not integration"`), and four structural checkers: `docs_sync.py`,
-`check_ara.py`, `check_task_policy.py`, `check_script_layout.py`. CI mirrors it on CPU. The
-broader lint/format ratchet is tracked by `DOCS-004`, not deferred indefinitely.
+(`-m "not slow and not integration"`), and five structural checkers: `docs_sync.py`,
+`check_ara.py`, `check_task_policy.py`, `check_script_layout.py`,
+`check_agent_workflow.py`. CI mirrors it on CPU. `check_report_bundle.py` is the parameterized
+on-demand gate for maintained reports. The broader lint/format ratchet is tracked by `DOCS-004`,
+not deferred indefinitely.
 
 ## Naming
 `structsplat` is a **placeholder project name** — if it changes, update `pyproject.toml`, imports,

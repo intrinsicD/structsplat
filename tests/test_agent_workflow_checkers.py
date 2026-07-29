@@ -1,31 +1,40 @@
 """The structural agent-workflow checkers stay green (torch-free; run anywhere).
 
-``tests/test_docs_sync.py`` covers ``docs_sync.py``. This module covers its three siblings —
-the claim ledger, the task tree, and the scripts layout — plus the skill-naming invariant that
-keeps this repository's skills from colliding with a sibling repository's.
+``tests/test_docs_sync.py`` covers ``docs_sync.py``. This module covers its four repository-wide
+siblings — the claim ledger, task tree, scripts layout, and agent-workflow drift gate — plus the
+skill-naming invariant that keeps this repository's skills from colliding with a sibling
+repository's.
 """
 
 from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+import sys
 from types import ModuleType
 
 import pytest
 
 REPO = Path(__file__).resolve().parent.parent
+SCRIPTS = REPO / "scripts"
 
 
 def _load(name: str) -> ModuleType:
-    path = REPO / "scripts" / f"{name}.py"
+    path = SCRIPTS / f"{name}.py"
+    if str(SCRIPTS) not in sys.path:
+        sys.path.insert(0, str(SCRIPTS))
     spec = importlib.util.spec_from_file_location(f"_checker_{name}", path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
 
 
-@pytest.mark.parametrize("checker", ["check_ara", "check_task_policy", "check_script_layout"])
+@pytest.mark.parametrize(
+    "checker",
+    ["check_ara", "check_task_policy", "check_script_layout", "check_agent_workflow"],
+)
 def test_repository_passes_checker(checker: str, capsys: pytest.CaptureFixture[str]) -> None:
     assert _load(checker).main() == 0, capsys.readouterr().err
 

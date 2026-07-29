@@ -676,11 +676,16 @@ config, hashes/provenance, and a labeled montage. It is initialization-only expl
 optimized or comparative evidence. See `docs/publication_figures.md` for panel semantics and the
 completed negative BENCH-007 Stage-1 F5--F9 bundle status.
 
-## Agentic workflow (Claude Code)
-This repo is built to be implemented *with* Claude Code, mirroring the IntrinsicEngine setup.
+## Agentic workflow
+
+This repository uses one checked workflow across Claude Code, Codex, and other agent harnesses
+(ADR-0031, C61). Start with `CLAUDE.md` and the generated `tasks/SESSION-BRIEF.md`; confirm work
+against `tasks/INDEX.md`, which remains the sole outcome authority. The full lifecycle, including
+Driver/Reviewer turns, handoffs, reviewed revisions, provisional self-review, and report
+integrity, is in `docs/agent_workflow.md`.
 
 - **`CLAUDE.md`** — project guide + a skill-aware routing table. **`AGENTS.md`** is a thin
-  redirect to it for non-Claude harnesses.
+  cross-harness adapter.
 - **`.claude/skills/`** — eight canonical project skills: `structsplat-core`, `structsplat-task-workflow`, `structsplat-review`,
   `structsplat-method`, `structsplat-benchmark`, `structsplat-docs-sync`, `structsplat-research-ideation`,
   `structsplat-results-audit`. Every name is `structsplat-`prefixed so it cannot collide with a
@@ -692,20 +697,25 @@ This repo is built to be implemented *with* Claude Code, mirroring the Intrinsic
   a first-party, MIT-licensed adaptation by Alexander Dieckmann of
   `transformational-research-skill-kit` v1.0.0; the results-audit skill is its referee-side
   companion for evidence that already exists.
-- **`tasks/`** — work items (`AREA-NNN-slug.md`) tracked in `tasks/INDEX.md`. Say *"work on
-  INIT-003"* and the `structsplat-task-workflow` skill drives the lifecycle.
+- **`tasks/`** — work items (`AREA-NNN-slug.md`) tracked in `tasks/INDEX.md`, with
+  `tasks/TEMPLATE.md`, exact lifecycle schemas in `tasks/README.md`, and a generated
+  `tasks/SESSION-BRIEF.md`. Say *"work on INIT-003"* and the `structsplat-task-workflow` skill
+  drives the lifecycle.
 - **`docs/adr/`** — architecture decisions the code references by number.
 - **`ara/`** — the claim and evidence ledger. `ara/logic/claims.md` is where a number becomes a
   claim you may repeat; `scripts/check_ara.py` enforces its structure. See the "Evidence and
   claims" section of `CLAUDE.md`.
 - **`scripts/`** — durable tooling and the structural gates `verify.sh` runs: `docs_sync.py`,
-  `check_ara.py`, `check_task_policy.py`, `check_script_layout.py`. One-off experiment drivers go
-  in `scripts/experiments/`.
+  `check_ara.py`, `check_task_policy.py`, `check_script_layout.py`, and
+  `check_agent_workflow.py`. `generate_session_brief.py` derives startup context, while
+  `check_report_bundle.py RESULTS_DIR` validates maintained portable reports before evidence
+  handoff. One-off experiment drivers go in `scripts/experiments/`.
 - **`docs/prompts/real-research.md`** — reusable evidence-first prompt for prior-art audit,
   preregistration, execution, negative-result handling, and per-axis conclusions.
 
-Typical loop: `structsplat-core` → `structsplat-task-workflow` → `structsplat-method` (if adding a component) → `structsplat-review` →
-`structsplat-docs-sync`; results-bearing work inserts `structsplat-benchmark` → `structsplat-results-audit` before review.
+Typical loop: `structsplat-core` → `structsplat-task-workflow` → `structsplat-method` (if adding a
+component) → `structsplat-review` → `structsplat-docs-sync`; results-bearing work inserts
+`structsplat-benchmark` → `structsplat-results-audit` before review.
 Research discovery starts with `structsplat-core` → `structsplat-research-ideation`; selected candidates then
 enter the normal task/method/benchmark loop.
 

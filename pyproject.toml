@@ -51,7 +51,7 @@ target-version = "py310"
 #
 # The broader style/import/bugbear families (I, B, UP, RUF, SIM, …) and `ruff format` are
 # NOT part of this gate yet: the tree predates them and adopting them is a separate,
-# repo-wide ratchet (tracked as a DOCS-003 follow-up), not this verification spine.
+# repo-wide ratchet (owned by DOCS-004), not the already-complete verification spine.
 select = ["E9", "F"]
 
 [tool.pytest.ini_options]

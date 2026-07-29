@@ -1026,3 +1026,14 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O94
+    timestamp: "2026-07-29T12:23+02:00"
+    provenance: ai-suggested
+    content: "StructSplat can make substantial agent work reconstructable without a parallel state tree by deriving session context from tasks/INDEX.md, keeping ownership/handoff/verdict and prospective protocol review in task files, constraining post-escalation revisions, hardening ARA proof containment, mechanically checking workflow surfaces, and structurally rejecting non-portable or dirty-source maintained reports before evidence handoff."
+    context: "DOCS-005 audited and then revalidated the exact current local states of agent-kit, IntrinsicEngine, realtime-gs, and prospect after source revisions changed. It integrated only gaps not already owned by StructSplat tasks, ARA, verification, or results audit. The implementation has adversarial tests; its terminal task review remains provisional self-review."
+    potential_type: claim
+    bound_to: [N204]
+    promoted: true
+    promoted_to: "logic/claims.md:C61"
+    crystallized_via: artifact-commitment
+    stale: false

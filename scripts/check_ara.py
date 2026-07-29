@@ -13,9 +13,9 @@ Checks are structural on purpose — they catch drift that misleads agents, neve
   2. Every layer-index path referenced in ``ara/PAPER.md`` exists on disk.
   3. Every claim heading matches ``## C<NN>: <title>`` and every claim ID is unique.
   4. Every claim carries the nine required fields.
-  5. Every ``Status`` starts with a known disposition word.
+  5. Every field is known and unique; every ``Status`` has a known disposition word.
   6. Every ``Dependencies`` entry names a claim ID defined in this file.
-  7. Every ``Proof`` entry that looks like a repository path exists on disk.
+  7. Every ``Proof`` entry that looks like a repository path exists inside the repository.
   8. Every ``From staging`` observation ID is defined in ``ara/staging/observations.yaml``.
   9. ``ara/`` is described in CLAUDE.md so agents discover the ledger at all.
 
@@ -86,7 +86,7 @@ STATUS_WORDS = frozenset(
 PATH_ROOTS = ("ara/", "benchmarks/", "docs/", "src/", "tests/", "scripts/", "tasks/")
 
 CLAIM_HEADING = re.compile(r"^## (C\d+):\s*(\S.*)$")
-FIELD = re.compile(r"^- \*\*([A-Za-z ]+)\*\*:\s*(.*)$")
+FIELD = re.compile(r"^- \*\*([^*\r\n]+)\*\*\s*:\s*(.*)$")
 
 errors: list[str] = []
 
@@ -98,9 +98,19 @@ def err(msg: str) -> None:
 def read(path: Path) -> str:
     try:
         return path.read_text(encoding="utf-8")
-    except FileNotFoundError:
-        err(f"missing file: {path.relative_to(ROOT)}")
+    except (OSError, UnicodeError) as exc:
+        try:
+            source = path.relative_to(ROOT)
+        except ValueError:
+            source = path
+        err(f"cannot read {source}: {exc}")
         return ""
+
+
+def status_disposition(status: str) -> str:
+    """Return the normalized first-word disposition used by every status check."""
+    words = status.split()
+    return words[0].strip(".,;:").lower() if words else ""
 
 
 def check_required_files() -> None:
@@ -113,9 +123,26 @@ def check_paper_layer_index() -> None:
     """Every backticked path in ara/PAPER.md must resolve, relative to ara/ or to the root."""
     paper = read(ARA / "PAPER.md")
     for token in re.findall(r"`([\w./-]+\.(?:md|yaml|json))`", paper):
-        if (ARA / token).exists() or (ROOT / token).exists():
+        valid = False
+        escaped = False
+        for candidate in (ARA / token, ROOT / token):
+            try:
+                resolved = candidate.resolve(strict=True)
+            except (OSError, RuntimeError):
+                continue
+            try:
+                resolved.relative_to(ROOT.resolve())
+            except ValueError:
+                escaped = True
+                continue
+            valid = True
+            break
+        if valid:
             continue
-        err(f"ara/PAPER.md references '{token}' which does not exist")
+        if escaped:
+            err(f"ara/PAPER.md path '{token}' escapes the repository root")
+        else:
+            err(f"ara/PAPER.md references '{token}' which does not exist")
 
 
 def parse_claims() -> dict[str, dict[str, str]]:
@@ -148,7 +175,9 @@ def parse_claims() -> dict[str, dict[str, str]]:
             continue
         field = FIELD.match(line)
         if field:
-            field_name = field.group(1)
+            field_name = field.group(1).strip()
+            if field_name in claims[current]:
+                err(f"claim {current} repeats field '{field_name}'")
             claims[current][field_name] = field.group(2).strip()
             continue
         # Indented continuation of the field opened above.
@@ -175,18 +204,22 @@ def check_claim_fields(claims: dict[str, dict[str, str]]) -> None:
                     f"claim {claim_id} is missing required field '{required}' "
                     "(claims from C12 on use the nine-field schema)"
                 )
+        for unknown in sorted(set(fields) - set(REQUIRED_CLAIM_FIELDS)):
+            err(f"claim {claim_id} has unknown field '{unknown}'")
 
 
 def check_claim_statuses(claims: dict[str, dict[str, str]]) -> None:
     for claim_id, fields in claims.items():
-        status = fields.get("Status", "")
-        if not status:
+        if "Status" not in fields:
             continue
-        first = status.split()[0].strip(".,;:").lower()
-        if first not in STATUS_WORDS:
+        status = fields.get("Status", "")
+        disposition = status_disposition(status)
+        if not disposition:
+            err(f"claim {claim_id} has no status disposition")
+        elif disposition not in STATUS_WORDS:
             err(
-                f"claim {claim_id} has status '{status}' whose disposition '{first}' is not one "
-                f"of {sorted(STATUS_WORDS)}"
+                f"claim {claim_id} has status '{status}' whose disposition "
+                f"'{disposition}' is not one of {sorted(STATUS_WORDS)}"
             )
 
 
@@ -207,22 +240,29 @@ def check_claim_proofs(claims: dict[str, dict[str, str]]) -> None:
         entries = re.findall(r"`([^`]+)`", proof) or [
             part.strip() for part in proof.strip("[]").split(",")
         ]
-        cited_path = False
+        existing_path = False
         for entry in entries:
             token = entry.strip().strip("`\"'")
             if not token.startswith(PATH_ROOTS):
                 continue
-            cited_path = True
             # A claim may cite a specific test as "path::test_name"; resolve the file part.
             path_part = token.split("::", 1)[0]
-            if not (ROOT / path_part).exists():
+            try:
+                resolved = (ROOT / path_part).resolve(strict=True)
+            except (OSError, RuntimeError):
                 err(f"claim {claim_id} cites proof path '{path_part}' which does not exist")
-        status = fields.get("Status", "").split()
-        disposition = status[0].lower() if status else ""
-        if disposition in {"supported", "refuted"} and not cited_path:
+                continue
+            try:
+                resolved.relative_to(ROOT.resolve())
+            except ValueError:
+                err(f"claim {claim_id} proof path '{path_part}' escapes repository root")
+                continue
+            existing_path = True
+        disposition = status_disposition(fields.get("Status", ""))
+        if disposition in {"supported", "refuted"} and not existing_path:
             err(
                 f"claim {claim_id} is '{disposition}' but its Proof cites no repository "
-                "artifact path (a disposed claim must be bound to evidence on disk)"
+                "artifact path that exists inside the repository"
             )
 
 
@@ -246,6 +286,7 @@ def check_ara_is_documented() -> None:
 
 
 def main() -> int:
+    errors.clear()
     check_required_files()
     check_paper_layer_index()
     claims = parse_claims()

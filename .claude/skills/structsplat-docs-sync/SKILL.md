@@ -8,7 +8,8 @@ description: Use whenever a StructSplat code change affects documented behavior,
 Docs drift is a bug. When code changes, update docs in the **same commit**.
 
 ## Triggers -> what to update
-- **Closed/advanced a task** -> `tasks/INDEX.md` status + the task file's checkboxes.
+- **Closed/advanced a task** -> `tasks/INDEX.md` status + task workflow/review state, then
+  regenerate `tasks/SESSION-BRIEF.md`.
 - **Made a design decision / reversed one** -> add or amend an ADR in `docs/adr/`
   (`NNNN-title.md`: Context / Decision / Consequences). Never edit a superseded ADR's decision;
   add a new one that supersedes it and link both.
@@ -42,6 +43,8 @@ python scripts/docs_sync.py           # docs<->code, doc reachability, skills li
 python scripts/check_ara.py           # claim ledger structure and proof paths
 python scripts/check_task_policy.py   # tasks/ tree vs INDEX.md
 python scripts/check_script_layout.py # scripts/ vs scripts/experiments/
+python scripts/check_agent_workflow.py # guides/hooks/skills/verify/CI/generated brief
 ```
 
-`./scripts/verify.sh` runs all four plus lint and the portable test gate.
+`./scripts/verify.sh` runs all five plus lint and the portable test gate. Maintained portable
+reports use the separate, parameterized `python scripts/check_report_bundle.py RESULTS_DIR` gate.

@@ -4068,3 +4068,27 @@ tree:
       - "origin/main at 7289f9c44df6e0d74dbd4ada9bf7509c98030d3a after push"
     also_depends_on: [N200, N201, N202]
     status: resolved
+  - id: N204
+    type: decision
+    title: "Strengthen agent coordination without adding a second authority"
+    provenance: ai-suggested
+    timestamp: "2026-07-29T12:23+02:00"
+    choice: >
+      Keep tasks/INDEX.md, task files, and ARA authoritative; add a generated session brief,
+      in-task Driver/Reviewer/Turn/handoff/verdict and prospective-review records, bounded
+      human-authorized revisions, ARA proof-containment hardening, orchestration drift checks,
+      and a structural maintained-report gate.
+    alternatives:
+      - "Install agent-kit's parallel .agents/state tree beside the task and ARA ledgers."
+      - "Adopt realtime-gs's experiment registry as a second protocol authority."
+      - "Document the gaps without adding executable checkers or adversarial tests."
+    evidence:
+      - "docs/research/2026-07-29-agentic-workflow-audit.md"
+      - "docs/adr/0031-agentic-workflow-authority-and-review.md"
+      - "scripts/check_ara.py"
+      - "scripts/check_task_policy.py"
+      - "scripts/check_agent_workflow.py"
+      - "scripts/check_report_bundle.py"
+      - "tests/test_agent_workflow_maturity.py"
+    also_depends_on: []
+    status: resolved

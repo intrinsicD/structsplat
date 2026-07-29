@@ -19,7 +19,8 @@ Checks:
 
 Sibling structural checkers cover the surfaces this one deliberately does not:
 ``scripts/check_ara.py`` (claim ledger), ``scripts/check_task_policy.py`` (task tree),
-``scripts/check_script_layout.py`` (scripts layout).
+``scripts/check_script_layout.py`` (scripts layout), and
+``scripts/check_agent_workflow.py`` (agent configuration and generated context).
 
 Exit code is 0 when clean, 1 when any drift is found (with a per-problem report).
 """
@@ -36,10 +37,15 @@ SRC = ROOT / "src" / "structsplat"
 
 REQUIRED_DOCS = (
     "README.md",
+    "AGENTS.md",
     "CLAUDE.md",
     "docs/architecture.md",
+    "docs/agent_workflow.md",
     "docs/theory.md",
     "tasks/INDEX.md",
+    "tasks/README.md",
+    "tasks/TEMPLATE.md",
+    "tasks/SESSION-BRIEF.md",
 )
 
 # Top-level directories that make a backticked CLAUDE.md token look like a real repo path.
@@ -53,6 +59,7 @@ KNOWN_TOP_DIRS = (
     "deprecated_scripts",
     ".claude",
     ".agents",
+    ".github",
     "ara",
     "results",
 )
@@ -159,7 +166,17 @@ def check_module_docstrings(problems: list[str]) -> None:
 ENTRYPOINTS = ("CLAUDE.md", "README.md", "AGENTS.md")
 
 # Directories that never contain repository documentation references worth scanning.
-_SKIP_DIRS = {".git", ".venv", "venv", "__pycache__", "runs", "build", "dist", "external", "node_modules"}
+_SKIP_DIRS = {
+    ".git",
+    ".venv",
+    "venv",
+    "__pycache__",
+    "runs",
+    "build",
+    "dist",
+    "external",
+    "node_modules",
+}
 _TEXT_SUFFIXES = {".md", ".py", ".sh", ".yml", ".yaml", ".toml", ".json"}
 
 

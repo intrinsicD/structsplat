@@ -2,7 +2,8 @@
 
 Active work stays in `tasks/`; retired completed work lives in `tasks/done/`. Areas: CORE, INIT,
 FIT, HIER, BENCH, ABL, FF, GEN, COMP, PORT, MERGE, DOCS. Work items are picked up via the
-`task-workflow` skill.
+`structsplat-task-workflow` skill. `SESSION-BRIEF.md` is the generated session-start view of this
+table; it never supersedes the Index.
 
 The table below is the current outcome authority. Executed tasks whose protocol text is bound by
 an artifact may intentionally retain a pre-execution `Status` section so its frozen hash remains
@@ -83,7 +84,6 @@ replay-valid; do not rewrite those task bytes merely to duplicate this table.
 | FIT-042 | Independent fine-detail pursuit confirmation | todo — preregistered held-out killing screen plus sealed confirmation; tests FIT-040 against equal-row generic/static controls and FIT-031 as an objective control, with actual-byte/work accounting; no default change authorized | FIT-031/033/037/038/039/040/041, CORE-012, BENCH-001/002, COMP-001, ADR-0029/0030 |
 | FIT-043 | Sequential error-then-pursuit tail | completed negative — 51/51 cumulative target hits and rules 2–4 pass, but exact persisted error-prefix equality is 43/44 because one `scale_max` certificate refreshes at stage entry; frozen rule 1 rejects without retuning, no production/default or FIT-042 claim | FIT-031/040/041/042, CORE-012, BENCH-002, ADR-0029/0030 |
 | BENCH-018 | Commit-gate granularity (`block_steps`) | todo — no code change needed, `--block-steps` already exposed; overall acceptance ~9% with `detail_growth` at 6.2% over ~56% of wall-clock (O88). Interacts with FIT-028 and FIT-027, so sequence after both | BENCH-002, BENCH-017, FIT-023, ADR-0025 |
-| DOCS-003 | Verification spine (docs_sync + verify.sh + markers/seeding + CI) | in-progress | DOCS-001 |
 | DOCS-004 | Staged lint/format ratchet (widen `select`, adopt `ruff format`) | todo — Stage 1/2 due before the next results-bearing task closes; see the task's Expiry section | DOCS-003 |
 
 ## Retired Done Tasks
@@ -133,6 +133,8 @@ replay-valid; do not rewrite those task bytes merely to duplicate this table.
 | COMP-004 | QAT + entropy-aware fitting | `done/COMP-004-entropy-aware-fitting.md` |
 | DOCS-001 | Docs-sync backfill (stale status, missing ADRs, ara scaffold) | `done/DOCS-001-docs-sync-backfill.md` |
 | DOCS-002 | Publication visual diagnostics | `done/DOCS-002-publication-visual-diagnostics.md` |
+| DOCS-003 | Verification spine (docs_sync + verify.sh + markers/seeding + CI) | `done/DOCS-003-verification-spine.md` |
+| DOCS-005 | Agentic workflow maturity | `done/DOCS-005-agentic-workflow-maturity.md` |
 
 Retired tasks remain valid dependency IDs. They describe completed reference/correctness work; the
 performance and scale follow-ups stay active under PORT/FIT/INIT/BENCH/ABL tasks.

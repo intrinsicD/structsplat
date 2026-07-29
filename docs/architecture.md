@@ -109,8 +109,16 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   and its diagnostic-only status are ADR-0018.
 - **entry:** `scripts/convert.py` is the sole current-best conversion CLI;
   `scripts/{benchmark,ablation,stage_search}.py` are evaluation workflows. All four write portable
-  report bundles. `deprecated_scripts/` retains evidence-bound launchers without presenting them
-  as supported interfaces (ADR-0028).
+  report bundles. `scripts/check_report_bundle.py` is their standalone structural handoff gate:
+  report-owned artifact paths serialize relative to the bundle, and the checker validates clean
+  source identity, table agreement, finite metrics, contained artifacts/hashes, and portable
+  local links before semantic results audit. `deprecated_scripts/` retains
+  evidence-bound launchers without presenting them as supported interfaces (ADR-0028/0031, C61).
+- **agent workflow:** `tasks/INDEX.md` and task files are the work authority, while
+  `tasks/SESSION-BRIEF.md` is a deterministic derived view. `scripts/check_task_policy.py`
+  validates dependency and review state; `scripts/check_agent_workflow.py` checks agreement among
+  the guides, harness configuration, skill mirrors, verification/CI spine, generated brief, and
+  PR contract (ADR-0031, C61).
 - **entrypoint:** `pipeline` (CORE-012/ADR-0025/0028) owns the maintained best-pipeline recipe and
   the masked/full-frame arm selection; it composes `init`, `fit`'s mask constraint, and
   `safe_schedule`, and holds no fitting mechanism of its own. `safe_schedule` (FIT-023/024/025)

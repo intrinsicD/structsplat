@@ -1,4 +1,5 @@
 from dataclasses import asdict
+import json
 
 import numpy as np
 import pytest
@@ -20,6 +21,7 @@ from structsplat.workflows import (
     ABLATION_ARMS,
     STAGE_VARIANTS,
     _run_card,
+    _write_metrics,
     build_ablation_parser,
     build_benchmark_parser,
     build_convert_parser,
@@ -100,9 +102,7 @@ def test_public_parsers_expose_only_the_four_clear_workflows(tmp_path):
     convert = build_convert_parser().parse_args([str(source), str(out)])
     benchmark = build_benchmark_parser().parse_args([str(source), str(out)])
     ablation = build_ablation_parser().parse_args([str(source), str(out)])
-    stage = build_stage_search_parser().parse_args(
-        [str(source), str(out), "--stage", "coverage"]
-    )
+    stage = build_stage_search_parser().parse_args([str(source), str(out), "--stage", "coverage"])
 
     assert convert.seed == 0
     assert convert.fine_detail is False
@@ -135,7 +135,8 @@ def test_public_parsers_expose_only_the_four_clear_workflows(tmp_path):
     assert stage.stage == "coverage"
     assert STAGE_VARIANTS["coverage"][0] == "current"
     assert all(
-        variants[0] in {
+        variants[0]
+        in {
             "current",
             "quadtree_wse",
             "dynamic",
@@ -215,3 +216,50 @@ def test_run_card_exposes_error_tail_estimate_allocation_and_convergence(tmp_pat
     assert "6</b> activated" in card
     assert "no_safe_effective_winner" in card
     assert "deterministic_fixed_point" in card
+
+
+def test_run_card_exposes_integrity_gated_run_artifacts(tmp_path):
+    card = _run_card(
+        tmp_path,
+        {
+            "method": "fixture",
+            "source_id": "one.png",
+            "seed": 0,
+            "n_gaussians": 8,
+            "psnr": 30.0,
+            "ms_ssim": 0.98,
+            "lpips": None,
+            "fit_seconds": 1.0,
+            "total_seconds": 2.0,
+            "phase_seconds": {},
+            "curves": [],
+            "snapshots": [],
+            "field_npz": tmp_path / "runs" / "field.npz",
+            "history_json": tmp_path / "runs" / "history.json",
+            "config_json": tmp_path / "runs" / "config.json",
+        },
+    )
+
+    assert "href='runs/field.npz'" in card
+    assert "href='runs/history.json'" in card
+    assert "href='runs/config.json'" in card
+
+
+def test_metric_tables_serialize_report_artifacts_as_relative_paths(tmp_path):
+    artifact = tmp_path / "runs" / "field.npz"
+    external = tmp_path.parent / "source.png"
+    _write_metrics(
+        tmp_path,
+        [
+            {
+                "field_npz": str(artifact),
+                "original_source_path": str(external),
+                "snapshots": [{"reconstruction": str(artifact)}],
+            }
+        ],
+    )
+
+    row = json.loads((tmp_path / "metrics.json").read_text(encoding="utf-8"))[0]
+    assert row["field_npz"] == "runs/field.npz"
+    assert row["snapshots"][0]["reconstruction"] == "runs/field.npz"
+    assert row["original_source_path"] == str(external)

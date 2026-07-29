@@ -1,14 +1,17 @@
 #!/bin/bash
-# SessionStart hook for Claude Code on the web: create the venv and install the package
-# (CPU torch) so tests/linters/checkers work immediately. Idempotent — skips installation when
-# the environment is already functional. Mirrors realtime-gs/.claude/hooks/session-start.sh.
+# SessionStart hook: expose the generated work view in every environment. On Claude Code web,
+# also create the venv and install the package (CPU torch) so tests/checkers work immediately.
+# Idempotent — skips installation when the environment is already functional.
 set -euo pipefail
+
+cd "$CLAUDE_PROJECT_DIR"
+
+echo "structsplat session work view:"
+sed -n '1,80p' tasks/SESSION-BRIEF.md
 
 if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
   exit 0
 fi
-
-cd "$CLAUDE_PROJECT_DIR"
 
 if [ ! -x .venv/bin/python ]; then
   python3 -m venv .venv
