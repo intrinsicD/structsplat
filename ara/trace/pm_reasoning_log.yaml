@@ -580,3 +580,10 @@ entries:
       - "Recorded source-head drift and the retroactive-authorization, symlink-containment, and absolute-artifact bypasses as self-review corrections, not separate scientific experiments."
       - "Did not introduce an installer, parallel state tree, generic experiment registry, or generic maturity vocabulary because the audit found no matching StructSplat consumer or authority gap."
       - "Did not promote or stale older scientific observations during this workflow-only turn; it provides no topic-specific closure signal, and false abandonment would be worse than delayed triage."
+  - turn: "2026-07-29_001#2"
+    notes:
+      - "Routed the explicit commit/merge/push instruction as decision N205 because it selected direct-main publication over leaving the branch local or opening a pull request."
+      - "Bound publication to implementation commit 7c4b3fd, a fresh 1,514-test canonical gate, a clean fast-forward merge, and matching local/tracking/remote main hashes."
+      - "Treated staging, commit, merge, fetch, and push as one ai-action rather than experiments because they package the already-resolved workflow capability."
+      - "Did not upgrade N204/C61 provenance or ADR-0031 status: publication authorization is not first-person affirmation of the policy's semantic correctness or independent review."
+      - "Added no observation and marked nothing stale; this turn changed repository publication state only."

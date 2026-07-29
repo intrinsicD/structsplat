@@ -2,9 +2,9 @@ session:
   id: "2026-07-29_001"
   date: "2026-07-29"
   started: "2026-07-29T12:23+02:00"
-  last_turn: "2026-07-29T13:11+02:00"
-  turn_count: 1
-  summary: "Audited four local agent workflows, integrated only demonstrated StructSplat gaps, and provisionally closed a mechanically gated workflow without adding parallel task or evidence state."
+  last_turn: "2026-07-29T13:31+02:00"
+  turn_count: 2
+  summary: "Audited four local agent workflows, integrated only demonstrated StructSplat gaps without parallel state, and published the provisionally reviewed workflow batch directly to main."
 
 events_logged:
   - turn: 1
@@ -25,6 +25,12 @@ events_logged:
     routing: crystallized
     provenance: ai-suggested
     summary: "Crystallized the executable repository-workflow capability via artifact commitment while retaining provisional policy-review status."
+  - turn: 2
+    type: decision
+    id: "N205"
+    routing: direct
+    provenance: user
+    summary: "Authorized every scoped DOCS-005 change to be committed, fast-forwarded into main, and pushed directly to origin."
 
 ai_actions:
   - turn: 1
@@ -52,6 +58,13 @@ ai_actions:
       - "tasks/INDEX.md"
       - "tasks/SESSION-BRIEF.md"
       - "ara/logic/claims.md"
+  - turn: 2
+    action: "Re-ran the canonical gate, committed the 42-file workflow batch as 7c4b3fd, fast-forwarded local main, pushed main, and verified local, tracking, and remote-advertised hashes agreed."
+    provenance: ai-executed
+    files_changed:
+      - "commit 7c4b3fd408dcd54f8db01a3c636a58b627e4fbd0"
+      - "main"
+      - "origin/main"
 
 claims_touched:
   - id: C61
@@ -61,6 +74,8 @@ claims_touched:
 key_context:
   - turn: 1
     excerpt: "The user requested a mature StructSplat agent workflow based only on genuinely missing parts from four named local repositories."
+  - turn: 2
+    excerpt: "The user explicitly requested committing all changes, merging the completed branch to main, and pushing main to the remote."
 
 open_threads:
   - "Obtain a distinct policy review before promoting ADR-0031 or describing DOCS-005 as independently accepted."

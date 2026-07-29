@@ -113,8 +113,8 @@ sessions:
     open_threads: 3
   - id: "2026-07-29_001"
     date: "2026-07-29"
-    summary: "Audited four local agent workflows, integrated only demonstrated StructSplat gaps, and provisionally closed a mechanically gated workflow without adding parallel task or evidence state."
-    turn_count: 1
-    events_count: 3
+    summary: "Audited four local agent workflows, integrated only demonstrated StructSplat gaps without parallel state, and published the provisionally reviewed workflow batch directly to main."
+    turn_count: 2
+    events_count: 4
     claims_touched: [C61]
     open_threads: 2

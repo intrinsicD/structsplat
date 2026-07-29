@@ -4092,3 +4092,22 @@ tree:
       - "tests/test_agent_workflow_maturity.py"
     also_depends_on: []
     status: resolved
+  - id: N205
+    type: decision
+    title: "Publish the agent-workflow maturity batch directly to main"
+    provenance: user
+    timestamp: "2026-07-29T13:31+02:00"
+    choice: >
+      Commit every scoped DOCS-005 workflow, checker, test, documentation, task, and ARA change;
+      fast-forward local main to the completed branch; and push main directly to origin after the
+      canonical verification gate passes.
+    alternatives:
+      - "Leave the completed workflow batch uncommitted on its task branch."
+      - "Push only the task branch and open a pull request instead of the requested direct-main merge."
+      - "Commit a subset while leaving generated context or research trace dirty."
+    evidence:
+      - "implementation commit 7c4b3fd408dcd54f8db01a3c636a58b627e4fbd0"
+      - "./scripts/verify.sh: 1514 passed, 4 skipped; all structural gates OK"
+      - "local main, origin/main, and remote main all reached 7c4b3fd408dcd54f8db01a3c636a58b627e4fbd0"
+    also_depends_on: [N204]
+    status: resolved
