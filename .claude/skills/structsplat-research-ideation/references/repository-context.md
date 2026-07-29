@@ -1,9 +1,9 @@
 # Repository Context: StructSplat
 
 This is a starting map for ideation, not authority. Verify every claim against
-the live tree — especially `CLAUDE.md`, `.claude/skills/{core,method,benchmark,task-workflow}/`,
-`docs/architecture.md`, `tasks/INDEX.md`, `src/structsplat/`, `tests/`, and
-`benchmarks/` — before relying on it.
+the live tree — especially `CLAUDE.md`, the prefixed skills under
+`.claude/skills/`, `docs/architecture.md`, `tasks/INDEX.md`,
+`src/structsplat/`, `tests/`, and `benchmarks/` — before relying on it.
 
 ## Mission
 
@@ -35,7 +35,8 @@ port target rather than an implemented backend in this tree (`README.md`,
   positions are `(x,y)` pixel coordinates. Gaussians use rotation-and-scale
   parameters; tensor-aligned edge Gaussians elongate along the tangent. The
   shipped renderer is a normalized weighted sum, while additive modes are
-  explicit alternatives (`CLAUDE.md`, `.claude/skills/core/SKILL.md`,
+  explicit alternatives (`CLAUDE.md`,
+  `.claude/skills/structsplat-core/SKILL.md`,
   `docs/adr/0002-rs-covariance-parameterization.md`,
   `docs/adr/0003-additive-vs-normalized-renderer.md`).
 - **Reference/optimized seam:** the differentiable PyTorch renderer is the
@@ -50,35 +51,54 @@ port target rather than an implemented backend in this tree (`README.md`,
   factorial and one-factor-at-a-time influence modes. The harness records
   quality, convergence, timing, count/budget, seed, errors, and resumable
   machine-readable rows. BENCH-005 adds isolated native external-reference
-  pipelines; BENCH-006 adds a fixed-storage convergence lane. Treat matched
-  policy analogues and native external runs as different evidence classes.
+  pipelines. BENCH-006 is a completed high-rate, fixed-storage local-policy
+  diagnostic; BENCH-007's actual-rate phase diagram supersedes it for
+  compression decisions. Treat matched policy analogues, actual-rate results,
+  and native external runs as different evidence classes.
 - **Research record:** bounded work lives in `tasks/` and `tasks/INDEX.md`;
   hard-to-reverse decisions live in `docs/adr/`; reproducible run artifacts and
-  negative results live under `ara/evidence/`. The existing `structsplat-core`,
-  `structsplat-task-workflow`, `structsplat-method`, `structsplat-benchmark`, `structsplat-review`, and `structsplat-docs-sync` skills define
-  the handoff from a chosen idea to implementation and evidence.
+  negative results live under `ara/evidence/`. The prefixed skills in
+  `CLAUDE.md` define the handoff from ideation to tasks, implementation,
+  evidence, review, and documentation.
 
 ## High-value research surface (grounded in the active task index)
 
-The active frontier spans unfinished core experiments and stage/fitter evidence
-(ABL-001/002/004/005), boundary-gated and hybrid edge primitives (CORE-007/008),
-quantization and the compression ladder (COMP-001/003), SDS and VSD/multi-particle
-generation (GEN-001/003), exact-CUDA tiling and backward reductions
-(PORT-001/002/003), native-reference comparisons (BENCH-005), and fixed-storage
-convergence (BENCH-006). Several implemented FIT candidates remain opt-in,
-rejected, or promotion-blocked; read their current task status and evidence
-instead of assuming that implemented means preferred.
+The current frontier begins with a negative result, not a promotable method.
+BENCH-007 found a bounded tensor-WSE gain at 0.5 bpp, but the effect vanished at
+1.0 bpp, reached only `-4.5417%` BD-rate against a preregistered `-10%` gate,
+cost `1.4752x`, and exceeded the texture guard (C28;
+`ara/evidence/bench007-stage1-killing-pilot-2026-07-14/run.md`). Stage 2 was
+therefore prohibited:
+BENCH-008 and COMP-005 are not authorized, and CORE-007/008 remain design-only.
+Do not retune the eight exposed Stage-1 images, consume the untouched DIV2K
+validation split as a rescue set, or treat the F5--F9 figure/actual-rate
+infrastructure as held-out method evidence.
+
+Any new method direction must start from a materially different question, null,
+and disjoint development screen with explicit compute and texture guards.
+BENCH-005 may continue native-authentic coverage as independent external-validity
+infrastructure, but it cannot retroactively promote tensor-WSE. The live task
+ledger, rather than this profile, is the queue. At this revision, independent
+open lanes include unfinished ablation evidence (ABL-001/002/004/005), the
+partial FIT-013 regularization candidate, general quantization/compression work
+(COMP-001/003), SDS and VSD/multi-particle generation (GEN-001/003), the
+full-frame and safe-schedule screens (BENCH-017/018 and FIT-028/029), and
+independent confirmation of the fine-detail pursuit path (FIT-042). Owned CUDA
+tiled forward/backward exists, while PORT-001/002/003 still own RHI integration,
+fused-loss/CUDA-graph work, and remaining production validation. Implemented,
+screened, or exposed-image candidates remain controls or opt-in mechanisms
+unless their current task and evidence explicitly authorize promotion.
 
 Especially fertile given this substrate:
 
-- new primitives or support rules that improve discontinuities without hiding
-  extra capacity or changing the renderer semantics silently;
+- materially different representation, ownership, or support questions that do
+  not merely rescue the failed tensor-WSE compression claim;
 - convergence mechanisms whose benefit survives equal-final-count, equal-budget,
   and matched-horizon controls;
 - diagnostics and experimental designs that distinguish initialization,
   optimization, representation, selection, and implementation effects;
-- rate-distortion formulations that connect analytical payload, actual streams,
-  perceptual quality, and convergence without mixing those quantities;
+- rate-distortion formulations with complete-stream byte accounting and strong
+  direct controls, not analytical payload alone;
 - exact or bounded-error GPU formulations whose forward and backward behavior can
   be tested against the reference, including alternatives to atomic reductions;
 - generative and learned initialization ideas that can be isolated from the

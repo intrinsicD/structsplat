@@ -51,7 +51,7 @@ Use this skill when the request concerns research ideation, scientific hypothese
 
 Do not use it for ordinary product features, small optimizations, routine refactoring, or direct implementation of a method the user has already chosen.
 
-This skill proposes and audits research. It does not automatically modify production code. A selected candidate must enter the repository's normal issue, task, ADR, review, and benchmark process first.
+This skill proposes and audits research. It does not automatically modify production code. A selected candidate must enter the repository's normal task, ADR, review, and benchmark process first.
 
 ## Required resources
 
@@ -96,7 +96,7 @@ State unresolved assumptions instead of silently inventing them.
 
 ## 1. Repository and frontier map
 
-Inspect the actual repository before ideating. Read its architecture, current methods, tests, benchmarks, issues/tasks, and research notes. Do not treat the optional repository profile as authoritative when it conflicts with files in the repo.
+Inspect the actual repository before ideating. Read its architecture, current methods, tests, benchmarks, tasks, and research notes. Do not treat the optional repository profile as authoritative when it conflicts with files in the repo.
 
 Construct a compact frontier map. For each important prior method or repository component, capture:
 
