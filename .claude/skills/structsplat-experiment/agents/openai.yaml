@@ -1,0 +1,4 @@
+interface:
+  display_name: "StructSplat Experiment"
+  short_description: "Run reproducible StructSplat experiments"
+  default_prompt: "Use $structsplat-experiment to plan, execute, validate, and report a reproducible StructSplat experiment."
