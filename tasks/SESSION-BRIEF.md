@@ -20,6 +20,8 @@ unless the owning task says so.
 - `COMP-003` — Compression-ratio ladder (scale ranges → planes → LSQ → VQ → entropy) (partial; `tasks/COMP-003-compression-ladder.md`)
 - `ABL-005` — Fitter-knob influence pass at the fair regime (partial; `tasks/ABL-005-fitter-knob-influence-fair-regime.md`)
 - `BENCH-017` — Screen the full-frame pipeline arm against the plain-fit path (todo; `tasks/BENCH-017-full-frame-arm-screen.md`)
+- `FIT-044` — Stage-wise parameter-group activation schedules (todo; `tasks/FIT-044-stagewise-parameter-activation.md`)
+- `FIT-045` — Residual-budgeted densification allocation (todo; `tasks/FIT-045-residual-budgeted-densification.md`)
 - `DOCS-004` — Staged lint/format ratchet (widen `select`, adopt `ruff format`) (todo; `tasks/DOCS-004-lint-format-ratchet.md`)
 
 ## Open tracks with actionable recorded dependencies
@@ -36,6 +38,6 @@ unless the owning task says so.
 
 ## Ledger summary
 
-- 73 active-table outcomes
+- 75 active-table outcomes
 - 45 retired tasks
 - 53 active-table rows already carrying a closed/non-actionable disposition
