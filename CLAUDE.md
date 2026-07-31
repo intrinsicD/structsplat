@@ -13,7 +13,7 @@ targets.
 > `structsplat` is a placeholder project name. If it changes, follow the `structsplat-docs-sync` skill.
 
 ## Skill-aware routing (load the skill, then act)
-This repo ships eight project skills in `.claude/skills/`. Load them by task — do not reimplement
+This repo ships nine project skills in `.claude/skills/`. Load them by task — do not reimplement
 their guidance inline.
 
 | When you are… | Load skill |
@@ -22,7 +22,8 @@ their guidance inline.
 | Picking up or closing a task from `tasks/` | **structsplat-task-workflow** |
 | Adding/changing an init strategy, renderer, sampler, hierarchy | **structsplat-method** |
 | Developing novel research directions, cross-domain transfers, or falsifiable research portfolios | **structsplat-research-ideation** |
-| Running/extending the ablation, or wiring a fitness signal | **structsplat-benchmark** |
+| Planning, running, or reporting a comparison, sweep, killing test, or other result-bearing experiment | **structsplat-experiment** |
+| Extending the maintained benchmark/ablation harness, or wiring a fitness signal | **structsplat-benchmark** |
 | Auditing results, claims, benchmark bundles, or a results-bearing change | **structsplat-results-audit** |
 | Reviewing a diff or self-reviewing before commit | **structsplat-review** |
 | A change touches documented behavior, decisions, or task status | **structsplat-docs-sync** |
@@ -33,12 +34,12 @@ when several repos are open in one agent session. An unprefixed name here (`core
 
 Typical flow: `structsplat-core` → `structsplat-task-workflow` (open the task) →
 `structsplat-method` (if adding a component) → `structsplat-review` (before commit) →
-`structsplat-docs-sync` (same commit). A results-bearing flow inserts `structsplat-benchmark`
-→ `structsplat-results-audit` before `structsplat-review`. Explicit invocation:
+`structsplat-docs-sync` (same commit). A results-bearing flow inserts `structsplat-experiment` →
+`structsplat-benchmark` → `structsplat-results-audit` before `structsplat-review`. Explicit invocation:
 "use the structsplat-method skill". For open-ended research discovery: `structsplat-core` →
 `structsplat-research-ideation`; a selected candidate then re-enters `structsplat-task-workflow`
-→ `structsplat-method` → `structsplat-benchmark` → `structsplat-review` →
-`structsplat-docs-sync`.
+→ `structsplat-method` → `structsplat-experiment` → `structsplat-benchmark` →
+`structsplat-results-audit` → `structsplat-review` → `structsplat-docs-sync`.
 
 ## Session start and task authority
 

@@ -31,9 +31,30 @@ measure the influence of each stage in isolation (quality, convergence rate, spe
 - [x] Canonicalize + dedupe configs whose differing stage is provably inert.
 - [x] Provide CLI entry point: `structsplat stage-search` (`--mode factorial|influence`).
 - [x] Provide screening script: `deprecated_scripts/run_stage_search_screening.sh`.
+- [x] Provide a bounded renderer-screen report driver that retains fields, final and intermediate
+      reconstruction/error images, temporal metrics, aggregate curves, raw metric tables, and a
+      portable `index.html`: `scripts/experiments/abl002_renderer_report.py`.
 - [ ] Run cheap screening on 20-50 COCO images and keep top candidates per stage.
 - [ ] Run final confirmation on 100-200 images, 3 seeds, and multiple budgets.
 - [ ] Compare the final winner against GaussianImage-RS and AIR under the fair protocol.
+
+## Renderer-screen visual diagnostic
+
+The historical lower-level stage-search page is scalar-only and is not a completed experiment
+handoff. Use the bounded report driver when screening the normalized/additive renderer axis:
+
+```bash
+env PYTHONPATH=src:. python scripts/experiments/abl002_renderer_report.py \
+  tests/test_images \
+  results/abl002_additive_visual_coco4_m512_i750_b2k5k_s012_20260731_diagnostic \
+  --budgets 2000 5000 --seeds 0 1 2 --iters 750 --max-side 512 \
+  --log-every 25 --renderers cuda cuda_additive --lpips --device cuda
+python scripts/check_report_bundle.py --allow-dirty \
+  results/abl002_additive_visual_coco4_m512_i750_b2k5k_s012_20260731_diagnostic
+```
+
+This four-image run is a development diagnostic only. It does not satisfy the 20–50-image cheap
+screen or the clean-source/prospective-review requirements for a result-bearing default decision.
 
 ## Depends on
 CORE-001/002, INIT-001/002/003/004, FIT-001, HIER-001, BENCH-001.

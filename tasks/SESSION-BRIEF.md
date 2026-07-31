@@ -7,7 +7,7 @@ unless the owning task says so.
 
 ## Work in progress
 
-- none
+- `DOCS-006` — Repository-native experiment workflow skill (in-progress; `tasks/DOCS-006-experiment-workflow-skill.md`)
 
 ## Actionable with no open recorded task dependency
 
@@ -36,6 +36,6 @@ unless the owning task says so.
 
 ## Ledger summary
 
-- 72 active-table outcomes
+- 73 active-table outcomes
 - 45 retired tasks
 - 53 active-table rows already carrying a closed/non-actionable disposition
