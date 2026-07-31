@@ -22,6 +22,7 @@ unless the owning task says so.
 - `BENCH-017` — Screen the full-frame pipeline arm against the plain-fit path (todo; `tasks/BENCH-017-full-frame-arm-screen.md`)
 - `FIT-044` — Stage-wise parameter-group activation schedules (todo; `tasks/FIT-044-stagewise-parameter-activation.md`)
 - `FIT-045` — Residual-budgeted densification allocation (todo; `tasks/FIT-045-residual-budgeted-densification.md`)
+- `FF-002` — Predict–optimize–distil with permutation-invariant supervision (todo; `tasks/FF-002-predict-optimize-distil.md`)
 - `DOCS-004` — Staged lint/format ratchet (widen `select`, adopt `ruff format`) (todo; `tasks/DOCS-004-lint-format-ratchet.md`)
 
 ## Open tracks with actionable recorded dependencies
@@ -34,10 +35,11 @@ unless the owning task says so.
 - `FIT-028` — Measure the interior coverage budget and decide its default; open dependencies: `BENCH-017` (`tasks/FIT-028-interior-coverage-budget-screen.md`)
 - `FIT-029` — Decide whether `safe_polish` earns its wall-clock; open dependencies: `FIT-028`, `BENCH-017` (`tasks/FIT-029-safe-polish-phase-disposition.md`)
 - `FIT-042` — Independent fine-detail pursuit confirmation; open dependencies: `COMP-001` (`tasks/FIT-042-independent-fine-detail-pursuit-confirmation.md`)
+- `FF-003` — Elastic Gaussian-count predictor; open dependencies: `FF-002` (`tasks/FF-003-elastic-gaussian-budgets.md`)
 - `BENCH-018` — Commit-gate granularity (`block_steps`); open dependencies: `BENCH-017` (`tasks/BENCH-018-commit-gate-granularity.md`)
 
 ## Ledger summary
 
-- 75 active-table outcomes
+- 77 active-table outcomes
 - 45 retired tasks
 - 53 active-table rows already carrying a closed/non-actionable disposition

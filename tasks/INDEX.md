@@ -85,6 +85,8 @@ replay-valid; do not rewrite those task bytes merely to duplicate this table.
 | FIT-043 | Sequential error-then-pursuit tail | completed negative — 51/51 cumulative target hits and rules 2–4 pass, but exact persisted error-prefix equality is 43/44 because one `scale_max` certificate refreshes at stage entry; frozen rule 1 rejects without retuning, no production/default or FIT-042 claim | FIT-031/040/041/042, CORE-012, BENCH-002, ADR-0029/0030 |
 | FIT-044 | Stage-wise parameter-group activation schedules | todo | FIT-016, BENCH-002 |
 | FIT-045 | Residual-budgeted densification allocation | todo | FIT-017/018/030, BENCH-002 |
+| FF-002 | Predict–optimize–distil with permutation-invariant supervision | todo | FF-001, BENCH-002 |
+| FF-003 | Elastic Gaussian-count predictor | todo | FF-002 |
 | BENCH-018 | Commit-gate granularity (`block_steps`) | todo — no code change needed, `--block-steps` already exposed; overall acceptance ~9% with `detail_growth` at 6.2% over ~56% of wall-clock (O88). Interacts with FIT-028 and FIT-027, so sequence after both | BENCH-002, BENCH-017, FIT-023, ADR-0025 |
 | DOCS-004 | Staged lint/format ratchet (widen `select`, adopt `ruff format`) | todo — Stage 1/2 due before the next results-bearing task closes; see the task's Expiry section | DOCS-003 |
 | DOCS-006 | Repository-native experiment workflow skill | in-progress | DOCS-005, BENCH-002/003 |
