@@ -2,9 +2,9 @@
 """Validate a portable report produced by StructSplat's maintained workflows.
 
 This is the evidence-handoff gate for ``scripts/convert.py``, ``benchmark.py``,
-``ablation.py``, ``stage_search.py``, and the BENCH-019 cross-repository analysis. It checks the
-applicable manifest/metrics contract, clean source identity, per-cell artifacts, finite metrics,
-cross-format agreement, and every local HTML link.
+``ablation.py``, ``stage_search.py``, and the BENCH-019/BENCH-020 experiment controllers. It checks
+the applicable manifest/metrics contract, clean source identity, per-cell artifacts, finite
+metrics, cross-format agreement, and every local HTML link.
 
 Dirty-source or error-cell reports remain useful diagnostics, but they are not results-bearing
 by default. ``--allow-dirty`` and ``--allow-error-cells`` make those limitations explicit.
@@ -56,6 +56,7 @@ BENCH019_REQUIRED_ARTIFACTS = (
     "reconstruction",
     "error",
 )
+BENCH020_REPORT_SCHEMA = "structsplat.bench020.report.v1"
 
 
 class _LocalLinkParser(HTMLParser):
@@ -454,8 +455,10 @@ def _check_bench019_bundle(
     except (OSError, json.JSONDecodeError, ValueError) as exc:
         problems.append(f"metrics.json is invalid: {exc}")
         return
-    if not isinstance(metrics, list) or not metrics or not all(
-        isinstance(row, dict) for row in metrics
+    if (
+        not isinstance(metrics, list)
+        or not metrics
+        or not all(isinstance(row, dict) for row in metrics)
     ):
         problems.append("metrics.json must contain a non-empty object-row list")
         return
@@ -491,9 +494,7 @@ def _check_bench019_bundle(
         if not isinstance(row.get("downstream"), dict) or not row["downstream"]:
             problems.append(f"{label}: downstream metrics must be a non-empty object")
         artifacts = row.get("artifacts")
-        if not isinstance(artifacts, dict) or set(artifacts) != set(
-            BENCH019_REQUIRED_ARTIFACTS
-        ):
+        if not isinstance(artifacts, dict) or set(artifacts) != set(BENCH019_REQUIRED_ARTIFACTS):
             problems.append(f"{label}: artifacts do not match the BENCH-019 contract")
             continue
         for name in BENCH019_REQUIRED_ARTIFACTS:
@@ -578,6 +579,24 @@ def check_bundle(
     problems: list[str] = []
     if not root.is_dir():
         return [f"report directory does not exist: {root}"]
+    manifest_path = root / "manifest.json"
+    if manifest_path.is_file():
+        try:
+            early_manifest = _load_json(manifest_path)
+        except (OSError, json.JSONDecodeError, ValueError):
+            early_manifest = None
+        if (
+            isinstance(early_manifest, dict)
+            and early_manifest.get("schema") == BENCH020_REPORT_SCHEMA
+        ):
+            repository_text = str(REPOSITORY_ROOT)
+            if repository_text not in sys.path:
+                sys.path.insert(0, repository_text)
+            from benchmarks.field_semantics_factorial import (  # noqa: PLC0415
+                validate_report_bundle,
+            )
+
+            return validate_report_bundle(root)
     for name in REQUIRED_FILES:
         required = root / name
         if not required.is_file():

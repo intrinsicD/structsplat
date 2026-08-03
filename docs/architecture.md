@@ -16,6 +16,14 @@ supported conversion output, or semantic selection. Raw RGB, alpha matting, inde
 and display clipping remain separate operations, and legacy normalized fields cannot be declared
 exact additive conversions.
 
+BENCH-020's default-off `benchmarks.field_semantics_factorial` controller now provides the sealed
+selection boundary around that object: explicit semantic and alpha-policy records, fixed-row and
+equal-canonical-raw-byte lanes, ordered-geometry prefix seals, three outcome-separated phases,
+capture-cluster killing tests, replayable convergence histories, and a portable audited report.
+It is an experiment substrate rather than a fitter or a decision. Direct, dual, and normalized
+production work remains blocked until disjoint matched data, the BENCH-019 downstream response,
+distinct protocol/results reviews, and sealed confirmation select one contract.
+
 ## Entrypoint (ADR-0025/0028/0029/0030)
 
 `structsplat.pipeline.run_pipeline` is the maintained composition of the current best pipeline,

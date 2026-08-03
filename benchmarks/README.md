@@ -78,6 +78,55 @@ retain BENCH-019's minimum of two frames, three independent capture groups, and 
 seeds. A smaller Janelle-only run can be labelled workload-specific, but cannot authorize a
 general Stage-1 surrogate.
 
+## BENCH-020 field-semantics factorial
+
+`field_semantics_factorial.py` is the default-off controller for selecting Field V2 semantics; the
+task-local wrapper is `scripts/experiments/bench020_field_semantics_factorial.py`. It freezes three
+outcome-separated phases: a fixed-geometry coefficient/DC screen, a matched development factorial,
+and one sealed confirmation after distinct development-results review. The controller plans cells
+for fixed-row and equal-canonical-raw-byte lanes and consumes schema-bound rows from a pinned
+executor; it does not silently substitute a second fitter.
+
+```bash
+python -m benchmarks.field_semantics_factorial template --output protocol.draft.json
+python -m benchmarks.field_semantics_factorial prepare-review \
+  --draft protocol.draft.json --output protocol.review.json
+python -m benchmarks.field_semantics_factorial review-template \
+  --protocol protocol.review.json --output protocol-review.json
+# A distinct outcome-unseen reviewer approves the exact design digest.
+python -m benchmarks.field_semantics_factorial finalize \
+  --reviewed protocol.review.json --review protocol-review.json \
+  --output protocol.frozen.json
+python -m benchmarks.field_semantics_factorial plan \
+  --protocol protocol.frozen.json --phase coefficient_screen \
+  --output coefficient-plan.json
+```
+
+Every successful result row preserves a sealed field payload and binds its format/hash/bytes in the
+semantic manifest alongside the authoritative pre-clamp render, metric receipt, and convergence
+history. First-hit time and normalized PSNR-time AUC replay under
+the frozen wall-time horizon; DC/background, packed alpha, structural mass, factorized opacity,
+and metadata bytes have separate ledgers. Later outcome roots must be empty at each decision
+boundary, and all row artifacts must remain inside their frozen phase root. Missing/error cells
+fail closed. The development gate uses capture-cluster bootstrap comparisons against both the
+incumbent additive and normalized-plain matched controls, then advances only one nondominated
+candidate without a hidden scalar score.
+
+After development analysis, generate a distinct results-review receipt before locking confirmation;
+after confirmation, generate a distinct final audit before any claim-ready report. Both the
+task-local checker and the maintained shared checker accept the portable bundle:
+
+```bash
+python -m benchmarks.field_semantics_factorial check-report results/bench020
+python scripts/check_report_bundle.py results/bench020
+```
+
+This is currently experiment substrate, not a semantic verdict. A general protocol needs disjoint
+development and confirmation data with at least three independent capture groups in each split,
+three seeds, the BENCH-019 downstream response, exact executor contracts, and distinct prospective
+and results reviews. The supplied Janelle frame alone can support only a diagnostic,
+workload-specific comparison.
+
 The canonical four-image COCO fixture used by the matched comparison and regression-bisect
 harnesses lives in `tests/test_images/`. Keep those four files there so benchmark reruns do not
 depend on ignored `results/` artifacts.

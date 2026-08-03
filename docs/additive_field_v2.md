@@ -210,12 +210,46 @@ Affine-color legacy fields fail the constant-coefficient exact adapter rather th
 gradients. A normalized adapter is structurally forbidden from claiming either exactness flag.
 BENCH-020 remains responsible for deciding whether any additive candidate should proceed.
 
+### BENCH-020 experiment substrate
+
+`benchmarks.field_semantics_factorial` now implements the default-off decision harness, but no
+semantic outcome has been run or accepted. It freezes exact direct-additive, incumbent-factorized,
+normalized-plain, and maintained-normalized records; a dual-additive arm is rejected unless
+BENCH-019 supplies an independently supervised structural target. A normalized equation cannot be
+relabeled additive, and the direct coefficient authority cannot be represented as factorized
+opacity in its canonical byte ledger.
+
+The harness separates coefficient-domain screening, development selection, and confirmation into
+distinct outcome roots. Fixed-row and equal-complete-raw-byte lanes share sealed ordered geometry
+banks; DC/background, packed alpha, structural mass, factorized opacity, geometry, appearance, and
+metadata bytes are separately auditable. Alpha-gated and hard-contained arms bind one consistent
+target/loss/gate/profile scope. Result artifacts cannot escape their phase root, and development or
+confirmation artifacts appearing before their lock invalidate the analysis.
+
+Each successful cell preserves its field payload; the semantic manifest binds the payload format,
+hash, byte count, renderer equation, coefficient policy, and authoritative pre-clamp render. The
+frozen convergence contract records first observed attainment of the primary foreground-PSNR
+target and normalized PSNR-time AUC over the full phase wall-time horizon, holding the terminal
+observation after an early finish. Per-cell histories replay both values. Endpoint image,
+alpha/outside, downstream, row/byte, wall-time, renderer-call, and memory records remain separate;
+no endpoint score is used as an unreported convergence proxy.
+
+The killing screen compares an additive candidate with both matched incumbent-additive and
+normalized-plain controls in every gate lane, clusters uncertainty by capture, and advances only
+one nondominated semantic/alpha candidate. A heterogeneous frontier is terminal rather than
+collapsed with a hidden scalar. General scope requires three independent development capture
+groups and three disjoint confirmation capture groups. Because BENCH-019 has no validated Stage-1
+target or formal downstream result and the supplied stage data do not provide those splits, the
+current implementation is plumbing only. INIT-010 and FIT-044--049 remain blocked on a reviewed,
+sealed BENCH-020 outcome.
+
 ## Alpha and boundary policy
 
-Packed alpha is a first-class stream and is counted in every actual-rate result. When alpha is
-available, rendering and downstream queries may gate by it rather than forcing every Gaussian's
-finite support to remain inside the foreground. Hard containment remains a control for consumers
-that require exact support containment.
+Packed alpha is a first-class optional stream and is counted whenever an arm stores or consumes it;
+an arm that omits alpha records zero alpha bytes and cannot use alpha-gated fit, render, or query
+semantics. When alpha is available, rendering and downstream queries may gate by it rather than
+forcing every Gaussian's finite support to remain inside the foreground. Hard containment remains
+a control for consumers that require exact support containment without a stored mask.
 
 BENCH-020 compares alpha-gated and hard-contained policies under the same target, geometry budget,
 and work. Until that result, the proposal assumes only that alpha separation is representable, not

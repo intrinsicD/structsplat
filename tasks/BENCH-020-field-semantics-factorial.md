@@ -67,14 +67,48 @@ separate from the matched semantic arms.
 Bounded driver under `scripts/experiments/`, CORE-013 adapters, maintained report telemetry/tests,
 `docs/adr/`, `docs/additive_field_v2.md`, `ara/evidence/`, this task, and the Index.
 
+## Implementation progress (2026-08-03)
+
+- `benchmarks.field_semantics_factorial` and its task-local wrapper implement the draft → clean
+  source/artifact seal → outcome-unseen distinct review → frozen protocol lifecycle. The design
+  binds disjoint development/confirmation source targets, capture groups, three seeds and seed
+  streams, exact semantic/policy/work contracts, ordered geometry-bank prefixes, two resource
+  lanes, metric/convergence rules, commands, and separate outcome roots.
+- The coefficient screen has an A/A replay and deterministic domain lock. Development compares
+  direct (and conditionally dual) additive candidates against matched incumbent-additive and
+  normalized-plain controls in every frozen lane, with capture-cluster bootstrap intervals and
+  absolute guards. Only one nondominated candidate advances; a heterogeneous frontier is terminal.
+- Raw byte ledgers expose geometry, appearance, independently supervised mass, factorized opacity,
+  DC/background, packed alpha, and metadata separately. Direct coefficients cannot acquire a
+  hidden opacity gauge, counted DC must pay its bytes, and dual mass is impossible without a
+  validated BENCH-019 target and required Stage-1 metric.
+- Successful rows preserve a sealed field payload and bind its format/hash/bytes in a semantic
+  manifest alongside the authoritative pre-clamp render, evaluated render, metric receipt, and
+  convergence history. First-hit iteration/time and normalized
+  PSNR-time AUC replay under the frozen full wall-time horizon. Result artifacts must live under
+  their phase root, and later roots must remain empty until the corresponding lock.
+- Confirmation can be planned only after a distinct development-results approval while its root is
+  empty. A claim-ready portable report additionally requires a distinct final results audit. JSON,
+  JSONL, and CSV rows, analysis/lock digests, protocol bindings, per-cell artifacts, HTML links,
+  and decision state are checked both locally and by `scripts/check_report_bundle.py`.
+- Synthetic lifecycle tests cover split/semantic/policy rejection, conditional dual mass, byte and
+  geometry ledgers, A/A/domain advancement, missing/error/tampered rows, phase leakage, killing and
+  heterogeneous decisions, confirmation locks, convergence replay, audited reports, and
+  cross-format tampering.
+- This is not a semantic result. Formal execution remains blocked on BENCH-019's realtime-gs row
+  exporter and downstream response, complete matched fields, independent development and sealed
+  confirmation capture groups, exact real executor/profile contracts, and distinct prospective,
+  development, and final reviewers. The supplied `frame_00008` comparison is workload-specific
+  diagnostic evidence and cannot satisfy the general gate by itself.
+
 ## Depends on
 
 BENCH-019, CORE-013, BENCH-002, ADR-0003/0006
 
 ## Agent workflow
 
-- Driver: pending
-- Reviewer: pending
+- Driver: codex
+- Reviewer: pending-distinct
 - Turn: driver
 - Reviewed revision: pending
 
