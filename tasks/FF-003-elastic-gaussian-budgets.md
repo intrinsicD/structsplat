@@ -1,61 +1,59 @@
-# FF-003 — Elastic Gaussian-count predictor
+# FF-003 — Complete-byte elastic Field V2 predictor
 
 ## Context
 
-The FF-001 predictor is fixed to one `num_gaussians`: its final layer is a dense
-`num_gaussians * 10` head, so every budget needs its own trained checkpoint and the parameter
-count scales linearly with N. StructSplat's stated goal is compression, which means operating
-points along a rate–distortion curve, not one field size. Once FF-002 has replaced the global
-row-tensor representation with a spatial/occupancy form, budget elasticity becomes a small
-extension instead of a rewrite: the same predictor can be trained across several N and asked for
-any of them at inference.
+An amortized encoder that requires a separate checkpoint for every Gaussian count or byte rate is
+costly to train, store, and maintain. Row count is also the wrong production budget: Field V2
+geometry, appearance, optional structure, alpha, indexes, entropy context, and headers all
+contribute to complete bytes. After FF-002 selects a viable predictor, elasticity should target a
+small complete-byte ladder through one checkpoint and the same COMP-013 decoder.
 
 ## Goal
 
-One predictor supporting `N in {128, 256, 512, 1024}` from a single checkpoint, trained with
-budget sampling and a budget embedding, using one of three frozen output forms (choose one
-before the screen, record the reason):
+One predictor checkpoint that emits deterministic candidates for a frozen ladder of complete-byte
+targets and remains competitive with separately trained per-rate FF-002 checkpoints at matched
+training compute.
 
-- nested outputs — the first 128 slots are valid for every larger budget (strict prefix
-  property);
-- occupancy/confidence logits followed by top-N selection;
-- a spatial candidate map from which N candidates are selected.
+## Method boundary
 
-Evaluated as the complete rate–distortion curve
-`(N, encoded bytes, PSNR, refinement time)` on held-out images, against per-budget dedicated
-FF-002 checkpoints at matched training compute.
+- Choose one output contract before the screen: nested prefix candidates, deterministic
+  confidence/top-N candidates, or a spatial candidate map with a byte-conditioned selector.
+- Condition on target complete bytes (and optionally a discrete rate embedding), then use a
+  bounded COMP-013-aware selection/quantization step to meet the requested rate.
+- Freeze practical active-crop target rates after inspecting only metadata and product/storage
+  constraints. Always report full-canvas bpp and exact bytes too.
 
 ## Non-goals
 
-- Starting before FF-002 reaches a terminal disposition; this task inherits its representation
-  and its held-out protocol.
-- New codec work; encoded bytes use the existing NPZ/SSPL1 persistence as-is.
-- Budgets outside the frozen set or adaptive per-image budget selection (a separate question).
-- Any default change.
+- Starting before FF-002 selects a predictor or modifying COMP-013's grammar.
+- Calling predicted rows, analytical bits, or entropy estimates the achieved rate.
+- Adaptive per-image quality targets, temporal prediction, or production-default promotion.
+- Formal amortization/generalization claims; BENCH-023 owns confirmation.
 
 ## Acceptance criteria
 
-- [ ] One checkpoint serves all four budgets; a test proves the chosen output form's contract
-      (prefix validity, top-N determinism at fixed seed, or candidate-map exact-N selection).
-- [ ] Budget embedding and budget-sampling schedule are logged config; training is reproducible
-      from config + seed.
-- [ ] Held-out rate–distortion table `(N, encoded bytes, PSNR, refinement time)` for the elastic
-      checkpoint versus per-budget dedicated checkpoints at matched training compute, plus
-      elastic-vs-dedicated deltas per budget.
-- [ ] Degradation bound recorded: the elastic checkpoint's PSNR deficit versus dedicated at each
-      N is reported explicitly, including negative outcomes.
-- [ ] Outcome recorded as an ARA observation or claim row; Index status updated in the same
-      commit.
-- [ ] `./scripts/verify.sh` passes.
+- [ ] One checkpoint serves the complete-byte ladder; tests prove prefix/top-N/candidate-map
+      contract, deterministic ties, exact schema, and valid Field V2 output for every rate.
+- [ ] Budget sampling, embeddings, codec-aware selection, training compute, and seeds are fully
+      logged and reproducible. Every evaluation output is encoded and cold-decoded before scoring.
+- [ ] Development RD table reports target/actual complete bytes and active/full bpp,
+      PSNR/MS-SSIM/LPIPS, BENCH-019 downstream objective, `0/50/200/500` refinement latency,
+      encode/decode/query time, memory, and failures for elastic and per-rate dedicated models.
+- [ ] Rate miss and elastic-versus-dedicated quality deficits are explicit at every target; no
+      aggregate hides a failed rate or difficult image.
+- [ ] A frozen rule decides whether the elastic checkpoint advances to BENCH-023, dedicated
+      checkpoints remain, or the learned branch is stopped.
+- [ ] Focused tests, portable report/audit, ARA disposition, docs/task synchronization, and
+      `./scripts/verify.sh` pass.
 
 ## Interfaces touched
 
-`src/structsplat/predictor.py`, training/export drivers under `scripts/experiments/`,
-`src/structsplat/codec.py` (read-only byte accounting), `tests/`, `tasks/INDEX.md`, `ara/`.
+`src/structsplat/predictor.py`, COMP-013 rate/encode API, training/evaluation drivers, tests/report
+artifacts, `docs/additive_field_v2.md`, this task, and the Index.
 
 ## Depends on
 
-FF-002
+FF-002, BENCH-025, COMP-013/014
 
 ## Agent workflow
 
@@ -66,14 +64,10 @@ FF-002
 
 ### Handoff log
 
-Append exact `### Handoff` and `### Review` blocks using the schema in `tasks/README.md`.
-Before a formal result-bearing run, append the prospective `### Protocol review` block from that
-document and bind the exact frozen protocol digest.
+Append exact `### Handoff`, `### Review`, and pre-run `### Protocol review` blocks using
+`tasks/README.md`.
 
 ## Notes
 
-This connects the learned predictor to the compression goal: a single amortized encoder that
-emits any point on the frozen budget ladder. If the elastic checkpoint's deficit versus
-dedicated checkpoints exceeds what the storage savings justify, record that as the negative
-result and keep dedicated checkpoints. BENCH-007's discipline applies: no compression-adjacent
-novelty claim from this task alone.
+The byte ladder replaces the historical `{128,256,512,1024}` row ladder. Row count remains useful
+telemetry but cannot define an equal-rate comparison.

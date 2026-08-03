@@ -1,87 +1,76 @@
-# FF-002 — Predict–optimize–distil with permutation-invariant supervision
+# FF-002 — Field V2 Predict–Optimize–Distil
 
 ## Context
 
-FF-001 closed with an explicit pointer here: "future distillation work should be a new task with
-its own evidence." Its `TinyGaussianPredictorNet` (`src/structsplat/predictor.py`) globally
-average-pools the image and emits a fixed `num_gaussians * 10` tensor trained with row-wise MSE
-against teacher rows from only three Kodak crops. Two of those choices cap the ceiling by
-construction: a Gaussian field is an unordered set, so row-i-to-row-i MSE penalizes correct
-fields in a different row order, and global pooling discards the spatial layout the positions
-must be predicted from. The FF-001 held-out slice quantifies the gap: `learned_tensor` 23.4686 dB
-beats `scratch` 22.9056 dB but sits 1.8563 dB under the hand `quadtree_wse` tensor prior at
-25.3249 dB (`ara/evidence/ff001-multimage-tensor-ablation-2026-07-07/`). Predict–optimize–distil
-plus a set-structured loss is the direct attack on that gap, and several equivalent Gaussian
-decompositions can render nearly the same image, so the render loss — not Gaussian matching —
-must be authoritative.
+FF-001 established a bounded warm-start signal but its global-pooled, fixed-row predictor discards
+spatial layout and uses row-wise MSE for an unordered Gaussian set. Its evidence also predates the
+Field V2 semantic decision, downstream objective, production recipe, and complete-byte codec. The
+next learned method must predict the selected semantic object, keep rendered appearance
+authoritative, and learn from short optimizer corrections without backpropagating through an
+unbounded fitting trajectory.
 
 ## Goal
 
-A spatially structured predictor trained with permutation-invariant supervision and a
-predict–optimize–distil loop, screened as four frozen comparators at matched budgets on held-out
-images:
+A spatial, permutation-invariant predictor for one selected Field V2 operating point, developed as
+four matched comparators and able to initialize the frozen iterative recipe for `0/50/200/500`
+refinement steps.
 
-- **A** — FF-001 `TinyGaussianPredictorNet` + row-wise MSE (frozen baseline).
-- **B** — local predictor + permutation-invariant set loss.
-- **C** — B + differentiable render loss (render authoritative).
-- **D** — C + predict–optimize–distil.
+## Candidate comparators
 
-First architecture is the spatial-grid form: small U-Net/FPN → 16×16 feature map → per-cell
-occupancy + K Gaussian slots → global top-N. A CNN feature pyramid with 256–512 learned queries
-and a tiny 2-layer cross-attention decoder is the recorded alternative if the grid form
-underfits; it is not part of the first screen.
+- **A:** frozen FF-001 predictor/recipe through an explicitly labelled compatibility adapter.
+- **B:** local grid/candidate predictor plus permutation-invariant field supervision.
+- **C:** B plus authoritative Field V2 render loss.
+- **D:** C plus Predict–Optimize–Distil targets produced by short runs of the BENCH-021 recipe.
 
-Loss composition for B–D:
-`L = lambda_render * L_image + lambda_set * L_sinkhorn + lambda_density * L_occupancy +
-lambda_prior * L_orientation`, with set cost
-`c_ij = w_mu ||mu_i - mu_j||^2 + w_sigma d_sigma(Sigma_i, Sigma_j) + w_c ||c_i - c_j||^2 +
-w_alpha |alpha_i - alpha_j|`.
+The first architecture is a compact U-Net/FPN producing a spatial candidate map with occupancy and
+field attributes followed by deterministic top-N selection. A small query decoder is a recorded
+fallback only if a preregistered capacity diagnostic shows grid underfit; it is not another
+outcome-visible arm.
 
-Distil loop (D): predict `G_0` → run the existing fitter 25 or 50 iterations → detach `G_K` →
-train the predictor toward the refined render and refined field → periodically regenerate
-refined targets. No backpropagation through the fitting trajectory in this task; offline or
-periodically refreshed targets only.
+## Loss and teacher contract
 
-Role-separated teachers, one loss component each, never averaged into one target:
-
-- `quadtree_wse` tensor prior teaches placement, orientation, and coverage;
-- the 600-iteration optimized field teaches final appearance;
-- the short-refined student field teaches the corrections the student itself needs.
+Rendered RGB under the BENCH-020 equation is authoritative. Set matching may supervise geometry
+and `rgb_coeff`, but multiple pixel-equivalent decompositions must not be penalized as incorrect.
+`structural_mass`, alpha, density, or downstream-surrogate terms are present only if BENCH-019/020
+defined and validated them. The teacher is the exact BENCH-021 recipe encoded by COMP-013; teacher,
+short-refined student, and hand initializer roles stay separate and are never averaged into one
+ambiguous row target.
 
 ## Non-goals
 
-- Backpropagating through fitter iterations (a possible successor task, only if D wins).
-- Elastic/multi-budget prediction (FF-003 owns it, gated on this task's representation).
-- Changing any shipped initializer default; `strategy=feedforward` stays experimental.
-- Adapterizing or scaling the backbone beyond the two named forms; no SSM/attention rewrites.
+- Backpropagating through optimizer trajectories, elastic budgets (FF-003), or changing defaults.
+- Training a neural decoder required at realtime-gs query time.
+- Row-wise teacher matching as the authoritative loss or normalized/additive semantic relabelling.
+- Formal product-speed claims; BENCH-023 owns held-out confirmation and amortization.
 
 ## Acceptance criteria
 
-- [ ] Comparators A–D are runnable from logged configs + seeds with matched teacher data,
-      training budget, and final N; A reuses the frozen FF-001 checkpoint recipe unchanged.
-- [ ] The set loss is exactly permutation-invariant (test: shuffling predicted rows leaves loss
-      and gradients identical within tolerance) and the Sinkhorn/matching cost implements the
-      frozen `c_ij` weights.
-- [ ] Teacher export extends FF-001's protocol beyond three images to a frozen list large enough
-      for a train/held-out split, with export cost recorded per teacher role.
-- [ ] Held-out screen reports, per comparator: PSNR after 0/25/50/100/200 refinement iterations,
-      time to 22/24/25 dB, teacher export cost, predictor inference time, original-prediction
-      survival after refinement, and final Gaussian count.
-- [ ] NumPy/torch split intact (predictor work stays in torch modules); no init-time module
-      imports torch.
-- [ ] Outcome (positive or negative) recorded as an ARA observation or claim row citing the
-      evidence bundle; Index status updated in the same commit.
-- [ ] `./scripts/verify.sh` passes.
+- [ ] Comparators A–D share frozen data, teacher snapshots, training compute, model-capacity band,
+      selected Field V2/codec version, byte target, seeds, and refinement recipe; incompatibilities
+      in A are reported rather than repaired silently.
+- [ ] Shuffling predicted or teacher rows leaves the set objective invariant within tolerance;
+      rendered-pixel-equivalent fixtures are not forced apart by arbitrary row identity.
+- [ ] Whole frames/captures and cameras are split before teacher generation. Adjacent views/frames
+      cannot cross train/development boundaries; source and teacher provenance is hash-bound.
+- [ ] The POD loop is reproducible: predict, run a frozen short refinement, detach the selected
+      checkpoint, and refresh targets on a recorded cadence without gradient through the fitter.
+- [ ] Development report includes `0/50/200/500` refinement PSNR/MS-SSIM/LPIPS, BENCH-019
+      downstream objective, complete bytes, time-to-target/AUC, inference/refinement latency,
+      teacher/training cost, memory, prediction survival, and failures.
+- [ ] A stepwise killing rule isolates B−A locality/set value, C−B render value, and D−C POD value;
+      one candidate advances to FF-003 or the learned branch stops.
+- [ ] NumPy/torch import split, deterministic top-N, focused tests, portable report/audit, ARA
+      disposition, docs/task synchronization, and `./scripts/verify.sh` pass.
 
 ## Interfaces touched
 
-`src/structsplat/predictor.py` (new predictor classes beside the frozen FF-001 net),
-`src/structsplat/fit.py` (short-refinement hooks only if a seam is missing), teacher
-export/training drivers under `scripts/experiments/`, `tests/`, `tasks/INDEX.md`, `ara/`.
+`src/structsplat/predictor.py`, Field V2/codec and short-fit adapters, teacher/training/experiment
+drivers under `scripts/experiments/`, tests/report artifacts, `docs/additive_field_v2.md`, this task,
+and the Index.
 
 ## Depends on
 
-FF-001, BENCH-002
+FF-001, CORE-013, BENCH-020/021/025, COMP-013/014, BENCH-002
 
 ## Agent workflow
 
@@ -92,14 +81,10 @@ FF-001, BENCH-002
 
 ### Handoff log
 
-Append exact `### Handoff` and `### Review` blocks using the schema in `tasks/README.md`.
-Before a formal result-bearing run, append the prospective `### Protocol review` block from that
-document and bind the exact frozen protocol digest.
+Append exact `### Handoff`, `### Review`, and pre-run `### Protocol review` blocks using
+`tasks/README.md`.
 
 ## Notes
 
-Comparator ordering isolates one mechanism per step: B−A is the set-loss/locality value, C−B is
-render supervision, D−C is distillation. If B fails to beat A, stop and record the negative
-before spending the render/distil budget. Success is a screen win, not a default flip; a win
-authorizes a confirmation task and, afterwards, FF-003. The FF-001 measured negatives
-(image-only input) stay binding: all comparators keep tensor-prior input channels available.
+This task supplies a learned candidate, not a generalization claim. The definitive fast-tier and
+training break-even decision is BENCH-023 after the iterative production profile is confirmed.

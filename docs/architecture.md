@@ -1,5 +1,14 @@
 # Architecture
 
+## Proposed Observation Field V2 (not current)
+
+`docs/additive_field_v2.md` is the detailed, evidence-gated redesign and task graph for a possible
+additive 2D observation field: authoritative RGB coefficients, optional independently defined
+structural mass, first-class alpha, matrix-free fitting, complete-byte coding, cold query/load
+measurement, and downstream realtime-gs validation. It is a proposal only. Until BENCH-020 and the
+later production confirmation authorize a change, the normalized architecture and maintained
+entrypoint below remain current; ADR-0003/0006 are not superseded.
+
 ## Entrypoint (ADR-0025/0028/0029/0030)
 
 `structsplat.pipeline.run_pipeline` is the maintained composition of the current best pipeline,
@@ -148,6 +157,15 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   Result-figure stream replay uses the validated analysis device, so CUDA-frozen semantics are not
   silently forced through CPU tensors. The completed Stage-1 gate is negative; this substrate is
   reusable, but Stage 2 is not authorized for the current tensor-WSE claim.
+- **cross-repository objective gate:** `benchmarks.stage1_downstream_objective` (BENCH-019) is a
+  passive, hash-bound adapter around realtime-gs execution. It freezes the exact field equations,
+  field/source/camera manifests, clean commits and environments, splits, seeds, downstream
+  schedule, metrics, missing policy, and decision thresholds before outcomes exist. It never
+  converts a normalized field into additive arrays. Exported cells must preserve the field
+  semantic digest and one family-independent downstream-factor digest; an A/A replay must pass
+  before frame-ranked, capture-clustered correlations can influence Field V2. Its portable report
+  is a second schema accepted by `scripts/check_report_bundle.py`; this does not make a diagnostic
+  or underscoped run claim-ready.
 
 ## Stage-search (ABL-002, protocol in ADR-0010)
 `benchmarks/stage_search.py` sweeps configurations across every swappable stage — tensor operator,

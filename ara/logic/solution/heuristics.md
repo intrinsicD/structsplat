@@ -179,3 +179,34 @@
 - **Code ref**: [`benchmarks/ssp2v_actual_run.py`, `benchmarks/ssp2v_landlock.py`,
   `tests/test_ssp2v_actual_run_preflight_policy.py`]
 - **From staging**: O80
+
+## H15: Isolate Field Semantics Before Loss and Stage Sweeps
+
+- **Rationale**: When compositor, parameterization, mask/matting, containment, initialization,
+  topology, and commit policy change together, endpoint quality cannot identify the value of a loss
+  or stage order. First compare native additive, direct/dual additive plain fit, normalized plain
+  fit, and the maintained staged control under matched targets, geometry, rows/raw bytes, work, and
+  boundary semantics; only then screen objective and scale/topology order on the selected contract.
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Sensitivity**: high
+- **Code ref**: [`docs/additive_field_v2.md`, `tasks/BENCH-020-field-semantics-factorial.md`,
+  `tasks/FIT-049-field-v2-objective-screen.md`, `tasks/FIT-048-additive-stage-order.md`]
+- **From staging**: O96
+
+## H16: Advance Field V2 Through Killing Gates, Not a Monolithic Pipeline Build
+
+- **Rationale**: Resolve downstream objective and semantics first; separately screen initializer,
+  loss, stage order, parameter schedule, allocation, conditional coefficient solve, and unbiased
+  tile sampling; compose only preregistered interactions; then build direct/conditional structured
+  codecs, byte-priced control, and end-to-end acceleration. Integrate one default-off profile and
+  open sealed production confirmation before any default change. Learned, rich-atom, and temporal
+  lanes stay optional after the base field is confirmed.
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Sensitivity**: high
+- **Code ref**: [`docs/additive_field_v2.md`, `tasks/INDEX.md`,
+  `tasks/BENCH-019-stage1-downstream-objective.md`,
+  `tasks/BENCH-021-additive-convergence-portfolio.md`,
+  `tasks/BENCH-022-additive-production-confirmation.md`]
+- **From staging**: O99

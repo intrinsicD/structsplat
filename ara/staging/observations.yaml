@@ -1037,3 +1037,142 @@ observations:
     promoted_to: "logic/claims.md:C61"
     crystallized_via: artifact-commitment
     stale: false
+  - id: O95
+    timestamp: "2026-08-03T00:46+02:00"
+    provenance: ai-suggested
+    content: "The custom frame_00008 no-boundary arm is not a clean control for boundary specialization: it passes a real mask while disabling only schedule boundary specialization, so masked pixel loss ignores outside pixels but the unchanged commit gate still vetoes outside-render and outside-coverage regressions. Across 26 views those reasons appeared 302 and 254 times, 339/349 global fit blocks were fully rejected, and the selected fields stopped at 6,582 mean rows despite an 11,000-row capacity. Its profile manifest also advertises authoritative mask containment although the resolved fit has mask_contain=false. Treat its endpoint as a mismatched-policy diagnostic, not identified evidence for the normalized no-boundary approach."
+    context: "Read-only audit of the live source-bound three-arm frame_00008 production conversion and every completed no-boundary schedule history. No process was stopped and no fitting code was changed."
+    potential_type: constraint
+    bound_to: [N208]
+    promoted: true
+    promoted_to: "logic/solution/constraints.md:K01"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O96
+    timestamp: "2026-08-03T00:46+02:00"
+    provenance: ai-suggested
+    content: "Attribute the full-resolution quality gap by isolating compositor semantics before sweeping losses: compare equal-count/equal-target native additive, StructSplat additive plain fit, normalized plain fit, and the staged contained schedule; only then test L2 versus L1+SSIM or Charbonnier and stage permutations. The current three arms simultaneously change renderer semantics, containment, mask objective, initialization, count growth, and commit gating, so they cannot identify loss or stage order as the cause."
+    context: "The live audit found no SH loss, an unvalidated stage order, a large additive-versus-normalized confound, and an internally inconsistent no-boundary control."
+    potential_type: heuristic
+    bound_to: [N207, N208]
+    promoted: true
+    promoted_to: "logic/solution/heuristics.md:H15"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O97
+    timestamp: "2026-08-03T01:29+02:00"
+    provenance: ai-suggested
+    content: >
+      The clean-slate production candidate is an alpha-separated, shared-geometry dual field:
+      additive premultiplied RGB coefficients are authoritative for image reconstruction, while a
+      separately defined nonnegative structural mass is authoritative for coverage, ownership,
+      and realtime-gs lifting. Normalized RGB remains a research control. This avoids interpreting
+      the current non-identifiable weight/color factorization as physical density without assuming
+      that the already-rejected bounded unit-weight Adam arm is sufficient.
+    context: >
+      Synthesis of the frame_00008 audit, realtime-gs gauge evidence, the local normalized-renderer
+      frontier, and current additive Gaussian-image methods. No implementation or comparative
+      dual-field experiment has run.
+    potential_type: architecture
+    bound_to: [N207, N208, N209]
+    promoted: true
+    promoted_to: "logic/solution/architecture.md:A01"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O98
+    timestamp: "2026-08-03T01:29+02:00"
+    provenance: ai-suggested
+    content: >
+      A Stage-1 field must be promoted on downstream lift utility as well as image fidelity: first
+      test whether foreground PSNR, perceptual metrics, boundary error, density/query diagnostics,
+      and cross-view track yield predict held-out realtime-gs quality. Compression decisions must
+      use cold-decoded complete-container bytes including alpha, headers, indexes, and codebooks,
+      and report both full-canvas and active-crop bpp so padded canvas area cannot inflate the
+      apparent compression ratio.
+    context: >
+      The current 11k additive fields are strong image reconstructions at about 0.118 full-canvas
+      bpp but about 0.509 mean-active-crop bpp, while downstream code consumes component semantics
+      that RGB reconstruction alone does not identify.
+    potential_type: constraint
+    bound_to: [N208, N209]
+    promoted: true
+    promoted_to: "logic/solution/constraints.md:K02"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O99
+    timestamp: "2026-08-03T01:29+02:00"
+    provenance: ai-suggested
+    content: >
+      The lowest-regret experiment order is: downstream-objective reuse audit; additive versus
+      normalized and alpha-gated versus hard-contained semantic factorial; additive
+      variable-projection, initializer, tile-sampling, and allocation screens; end-to-end fused
+      kernel profile; actual-rate codec ladder; domain-amortized Predict-Optimize-Distill; then
+      equal-byte richer-atom and temporal-sharing tests. Use RGB L2 as the PSNR baseline, postpone
+      perceptual loss changes until representation is isolated, and select topology or precision
+      actions by gain per complete byte rather than row count.
+    context: >
+      Research-ideation synthesis of local positive and negative experiments plus current
+      GaussianImage++, AIR, SGI, LocoADC, WIPES, Faster-GS, GaussianVision, and GTC mechanisms.
+    potential_type: heuristic
+    bound_to: [N207, N208, N209]
+    promoted: true
+    promoted_to: "logic/solution/heuristics.md:H16"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O100
+    timestamp: "2026-08-03T01:29+02:00"
+    provenance: ai-suggested
+    content: >
+      Regional densification plus similarity merging, structured seed/context coding,
+      feed-forward Predict-Optimize-Distill, frequency-bearing atoms, and per-Gaussian fused
+      optimization are occupied respectively by LocoADC, SGI, AIR, WIPES, and Faster-GS. A
+      StructSplat redesign must use these as direct controls and cannot claim those generic
+      mechanisms as novel; the less-occupied research question is a downstream-aware,
+      alpha-separated, query-efficient field and its sequence-level amortization.
+    context: >
+      Primary-source literature audit through 2026-08-03, including papers published after the
+      repository's 2026-07-15 frontier cutoff.
+    potential_type: constraint
+    bound_to: [N209]
+    promoted: true
+    promoted_to: "logic/solution/constraints.md:K03"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O101
+    timestamp: "2026-08-03T02:09+02:00"
+    provenance: ai-suggested
+    content: >
+      Direct attribute entropy coding and seed-generated local structure are distinct compression
+      hypotheses. The negative COMP-008/009 direct-context evidence cannot rule out an SGI-like
+      decoder grammar. Establish the complete direct Field V2 codec first, run a native/oracle
+      structured-necessity gate, and implement one seed grammar only if it improves complete bytes
+      within cold expansion, memory, random-access, query, quality, and downstream guards.
+    context: >
+      The task-graph review checked SGI, COMP-008/009, and the proposed direct codec, then added
+      BENCH-025 and conditional COMP-014 instead of assuming scalar quantization alone can satisfy
+      the requested high-compression objective.
+    potential_type: architecture
+    bound_to: [N209, N210]
+    promoted: true
+    promoted_to: "logic/solution/architecture.md:A02"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O102
+    timestamp: "2026-08-03T02:09+02:00"
+    provenance: ai-suggested
+    content: >
+      Additive coefficient domain and a counted alpha-gated DC/background term are semantic axes,
+      not solver accidents. Field V2 must declare signed versus nonnegative coefficients,
+      background, matting, authoritative pre-clamp render, and evaluation clipping; BENCH-020 must
+      eliminate and confirm these choices before variable projection, loss, codec, or pipeline
+      promotion.
+    context: >
+      Correctness-first review of the proposed additive equation found that an unspecified
+      coefficient domain and omitted DC term would leave solvers, quantizers, and high-compression
+      behavior ambiguous. The architecture and task acceptance criteria were revised accordingly.
+    potential_type: architecture
+    bound_to: [N209, N210]
+    promoted: true
+    promoted_to: "logic/solution/architecture.md:A03"
+    crystallized_via: artifact-commitment
+    stale: false

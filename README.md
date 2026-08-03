@@ -702,6 +702,8 @@ integrity, is in `docs/agent_workflow.md`.
   `tasks/SESSION-BRIEF.md`. Say *"work on INIT-003"* and the `structsplat-task-workflow` skill
   drives the lifecycle.
 - **`docs/adr/`** — architecture decisions the code references by number.
+- **`docs/additive_field_v2.md`** — proposed, non-default Observation Field V2 architecture and
+  evidence-gated task graph; current behavior remains in `docs/architecture.md`.
 - **`ara/`** — the claim and evidence ledger. `ara/logic/claims.md` is where a number becomes a
   claim you may repeat; `scripts/check_ara.py` enforces its structure. See the "Evidence and
   claims" section of `CLAUDE.md`.
@@ -727,7 +729,7 @@ tests/             pytest (NumPy tests run anywhere; torch tests skip without to
 benchmarks/        ablation.py (ABL-001), stage_search.py (ABL-002), rate_distortion.py
                    (COMP-001), coco_fit_compare.py, cross_repo_matrix_compare.py,
                    optimization_followup.py, quadtree_init_compare.py, fitness hooks
-docs/              adr/ · architecture.md · theory.md
+docs/              adr/ · architecture.md · additive_field_v2.md · theory.md
 tasks/             INDEX.md + task files
 ```
 

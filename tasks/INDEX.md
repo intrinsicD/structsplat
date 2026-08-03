@@ -21,7 +21,7 @@ replay-valid; do not rewrite those task bytes merely to duplicate this table.
 | ABL-004 | Killer controls + full ABL-001 run + committed evidence | partial | BENCH-002, ABL-003, FIT-004 |
 | COMP-003 | Compression-ratio ladder (scale ranges → planes → LSQ → VQ → entropy) | partial | COMP-002, BENCH-002 |
 | CORE-007 | Segmentation-free responsibility boundary flux | design-only — BENCH-007 did not authorize the old structure/compression path; any reopening needs a new prior-art-controlled question | INIT-004, CORE-001, BENCH-007 |
-| CORE-008 | Hybrid Gaussian + frequency-bearing primitive control | design-only — WIPES remains the direct primitive baseline and BENCH-007 supplies no promotion signal | CORE-001, INIT-001, FIT-001, BENCH-007 |
+| CORE-008 | Hybrid Gaussian + frequency-bearing primitive control | todo — conditional and off the Field V2 critical path; start only for a BENCH-022 residual with WIPES as the direct primitive control | BENCH-022/025, COMP-013/014, CORE-013, BENCH-002/007 |
 | INIT-009 | Progressive WSE survivor ordering | implemented/confirmed — 32/32 uniform Euclidean prefix wins with identical terminal sets; opt-in for compatibility | INIT-003/005/006, BENCH-002 |
 | PORT-002 | GPU-native tile index + fused loss/backward | partial — index/kernel work correctness-validated and its **preregistered profile passed** (RTX 3050, 2026-07-25, under the ADR-0024 parity amendment) — representative step ratio `0.6308` vs exact `cuda`, all 8 high-N grid cells ≤ 1.00, GPU index share `1.36%`; authorizes the fair-protocol end-to-end fit benchmark only, default stays `cuda`. Fused loss and CUDA graphs still open | PORT-001, FIT-003, ADR-0024 |
 | PORT-003 | Avoid atomics in tiled backward | partial — gradient-validated and measured under PORT-002's passed profile — warp-reduced tiled backward is uniformly faster than exact `cuda` (e.g. 512²/N=8192/ov16/ar6 `5.960 → 2.110 ms`); no default flip authorized | PORT-001, ADR-0024 |
@@ -69,7 +69,7 @@ replay-valid; do not rewrite those task bytes merely to duplicate this table.
 | BENCH-017 | Screen the full-frame pipeline arm against the plain-fit path | todo — preregistration required; decides whether unmasked `convert` keeps the schedule or dispatches to plain fit | CORE-012, ADR-0025, BENCH-002, ABL-006, FIT-015 |
 | FIT-028 | Measure the interior coverage budget and decide its default | todo — mechanism shipped (ADR-0026) with default `0.0`, so behaviour is unchanged; the screen that would authorize a nonzero default has not run. Motivated by O87: 82 of 110 rejected blocks died on `interior_holes_regressed` alone | ADR-0026, ADR-0025, BENCH-002, BENCH-017, FIT-023 |
 | FIT-029 | Decide whether `safe_polish` earns its wall-clock | todo — **blocked on FIT-028 by design**; 0 of 3,276 attempted steps committed across 7/7 unmasked images (O88), but all 7 rejections were the shared interior-hole veto, so veto-driven and tolerance-driven causes are not yet separated | FIT-028, ADR-0026, FIT-023, BENCH-017 |
-| FIT-030 | Rate-aware continuous allocation | design-only — no implementation before FIT-028 and BENCH-018 report; coverage as a proposal-time predicate, detail as residual-driven allocation, `D + lambda*R` in bits rather than rows. Motivated by O87-O89, none of it claimed | FIT-028, BENCH-018, FIT-027, ADR-0026, ADR-0025, COMP-001, COMP-003 |
+| FIT-030 | Byte-priced topology and precision allocation | todo — use estimated marginal gain only for proposals; select and stop on the chosen complete codec bytes and cold-decoded quality | BENCH-021/025, COMP-013/014, FIT-045/046, BENCH-002 |
 | FIT-031 | Error-only fine-detail tail | implemented/screened — one exposed Janelle run accepted 4,608/7,089 requested rows and improved its own pre-tail protected metrics, but the existing default is not count/rate/trajectory matched; default remains off (C58) | FIT-023/025, CORE-012, ADR-0022/0025/0028/0029 |
 | FIT-032 | Gauge-lifted residual dipoles | completed negative — 0/3 frozen budgets pass; ordinary births remain stronger | FIT-007/017/019/020/025/031, BENCH-002, CORE-012, ADR-0029 |
 | FIT-033 | Residual-birth partial color solve | completed exposed-image positive — exact frozen-base solve reaches 6.47% deep high-pass reduction at 128 rows; independent confirmation open | FIT-005/017/025/031/032, CORE-012, BENCH-002 |
@@ -83,13 +83,53 @@ replay-valid; do not rewrite those task bytes merely to duplicate this table.
 | FIT-041 | Equal-base error-tail control | completed — FIT-031 wins global PSNR, pursuit wins deep detail and LPIPS with 3.616x fewer rows on one exposed full frame (C60) | FIT-031/039/040, CORE-012, ADR-0029/0030 |
 | FIT-042 | Independent fine-detail pursuit confirmation | todo — preregistered held-out killing screen plus sealed confirmation; tests FIT-040 against equal-row generic/static controls and FIT-031 as an objective control, with actual-byte/work accounting; no default change authorized | FIT-031/033/037/038/039/040/041, CORE-012, BENCH-001/002, COMP-001, ADR-0029/0030 |
 | FIT-043 | Sequential error-then-pursuit tail | completed negative — 51/51 cumulative target hits and rules 2–4 pass, but exact persisted error-prefix equality is 43/44 because one `scale_max` certificate refreshes at stage entry; frozen rule 1 rejects without retuning, no production/default or FIT-042 claim | FIT-031/040/041/042, CORE-012, BENCH-002, ADR-0029/0030 |
-| FIT-044 | Stage-wise parameter-group activation schedules | todo | FIT-016, BENCH-002 |
-| FIT-045 | Residual-budgeted densification allocation | todo | FIT-017/018/030, BENCH-002 |
-| FF-002 | Predict–optimize–distil with permutation-invariant supervision | todo | FF-001, BENCH-002 |
-| FF-003 | Elastic Gaussian-count predictor | todo | FF-002 |
+| FIT-044 | Stage-wise parameter-group activation schedules | todo — component screen for the selected Field V2 semantics | FIT-016, BENCH-020, CORE-013, BENCH-002 |
+| FIT-045 | Direct-control regional allocation and merge screen | todo — fixed-N/global/uniform/LocoADC-style controls; no novelty claim | FIT-017/018, BENCH-020, CORE-013, BENCH-002 |
+| FF-002 | Field V2 Predict–Optimize–Distil | todo — optional amortized lane after field, recipe, and codec selection | FF-001, CORE-013, BENCH-020/021/025, COMP-013/014, BENCH-002 |
+| FF-003 | Complete-byte elastic Field V2 predictor | todo — one checkpoint over a complete-byte ladder | FF-002, BENCH-025, COMP-013/014 |
 | BENCH-018 | Commit-gate granularity (`block_steps`) | todo — no code change needed, `--block-steps` already exposed; overall acceptance ~9% with `detail_growth` at 6.2% over ~56% of wall-clock (O88). Interacts with FIT-028 and FIT-027, so sequence after both | BENCH-002, BENCH-017, FIT-023, ADR-0025 |
+| BENCH-019 | Stage-1 downstream-objective validity | partial — passive frozen-protocol/A-A/ranking/report substrate implemented and verified; realtime-gs exporter, complete matched data, distinct protocol review, and formal outcome remain open | BENCH-001/002, CORE-012 |
+| CORE-013 | Observation Field V2 semantic contract | todo — default-off typed/lossless boundary; no production semantics or codec decision | BENCH-019, CORE-001/002, COMP-002, ADR-0006 |
+| BENCH-020 | Field semantics and alpha-policy factorial | todo — select direct additive, dual additive, normalized, or no new contract | BENCH-019, CORE-013, BENCH-002, ADR-0003/0006 |
+| INIT-010 | Field V2 initializer transfer screen | todo — re-test deterministic geometry priors under selected semantics and matched early-fit work | BENCH-020, CORE-013, INIT-003/005/006/009, BENCH-002/004 |
+| FIT-046 | Additive appearance variable projection | todo — matrix-free conditional coefficient solve and matched convergence screen | BENCH-020, CORE-013, FIT-005/010, BENCH-002 |
+| FIT-047 | Unbiased tile-sampled fitting | todo — probability-recorded inverse-propensity estimator with full-objective checks | BENCH-020, CORE-013, BENCH-002, ADR-0024 |
+| FIT-048 | Additive scale/topology stage-order screen | todo — full-N/single-scale versus progressive/coarse-to-fine under exact work accounting | BENCH-020, CORE-013, INIT-010, FIT-049, HIER-003/004, BENCH-002/004 |
+| FIT-049 | Field V2 objective and loss screen | todo — isolate RGB, structural, and downstream terms only after semantic selection | BENCH-019/020, CORE-013, FIT-012/016, BENCH-002 |
+| BENCH-021 | Additive convergence portfolio | todo — successive-halving composition gate for initializer/loss/stage and FIT-044/045/046/047 | BENCH-020, INIT-010, FIT-044/045/046/047/048/049, BENCH-002/004 |
+| COMP-013 | Observation Field V2 codec | todo — complete bytes, target-rate control, cold decode/query, strict versioning | CORE-013, BENCH-020, COMP-002/004/008/009, BENCH-002 |
+| PORT-006 | Additive end-to-end acceleration | todo — reference parity plus representative conversion speed, not kernel timing alone | BENCH-020/021, FIT-046/047, ADR-0011/0024 |
+| CORE-014 | Additive production pipeline (default-off) | todo — integrate only the frozen winners under the sole conversion entry point | CORE-013, BENCH-021/025, COMP-013/014, FIT-030, PORT-006, ADR-0006 |
+| BENCH-022 | Additive production confirmation | todo — sealed complete-pipeline go/no-go against native-additive and normalized controls | CORE-014, BENCH-019/020/021/025, COMP-013/014, PORT-006, BENCH-002 |
+| CORE-015 | Promote Observation Field V2 conditionally | todo — change defaults only on BENCH-022's exact positive profile digest; otherwise abandon | BENCH-022, CORE-014 |
+| BENCH-023 | Amortized encoder confirmation | todo — held-out Field V2 quality/rate/latency and training break-even | FF-002/003, BENCH-022/025, COMP-013/014, BENCH-002 |
+| BENCH-024 | Temporal field-reuse killing test | todo — same-camera warm-start/shared-geometry/delta opportunity only | CORE-014, COMP-013/014, BENCH-022/025, BENCH-002 |
+| BENCH-025 | Structured-codec necessity gate | todo — test whether seed-generated local structure beats the complete direct codec at usable cold-query cost | BENCH-020, COMP-008/009/013, CORE-013, BENCH-002 |
+| COMP-014 | Seed-structured Field V2 codec (conditional) | todo — implement one SGI-controlled grammar only after a positive BENCH-025 verdict; otherwise close without code | BENCH-025, COMP-013, CORE-013, BENCH-020, COMP-008/009 |
 | DOCS-004 | Staged lint/format ratchet (widen `select`, adopt `ruff format`) | todo — Stage 1/2 due before the next results-bearing task closes; see the task's Expiry section | DOCS-003 |
 | DOCS-006 | Repository-native experiment workflow skill | in-progress | DOCS-005, BENCH-002/003 |
+
+## Proposed Additive Observation Field V2 execution order (2026-08-03)
+
+The binding proposal and rationale are in `docs/additive_field_v2.md`. This is an evidence-gated
+plan, not a default decision or a measured claim:
+
+1. **Contract gate:** BENCH-019 → CORE-013 → BENCH-020. Stop if no semantic candidate is valid and
+   downstream-favorable.
+2. **Convergence gate:** run INIT-010 and FIT-044/045/046/047/048/049 from the selected contract,
+   then compose only preregistered interactions in BENCH-021.
+3. **Rate and implementation gate:** build direct COMP-013 and PORT-006 around the selected
+   semantics; BENCH-025 decides whether direct coding is enough, and COMP-014 implements one
+   seed-structured grammar only on a positive verdict. FIT-030 prices actions through the selected
+   complete codec.
+4. **Integration gate:** CORE-014 assembles one default-off profile; BENCH-022 gives the sealed
+   end-to-end go/no-go; CORE-015 may change the default only after a positive verdict.
+5. **Optional amortization/research:** FF-002 → FF-003 → BENCH-023, plus BENCH-024 and CORE-008,
+   remain outside the production critical path.
+
+BENCH-017, FIT-028/029, and BENCH-018 continue to answer normalized transactional-pipeline
+questions, but no longer block the additive proposal. FIT-042 remains its independent normalized
+fine-detail confirmation.
 
 ## Retired Done Tasks
 

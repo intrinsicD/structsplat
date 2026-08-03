@@ -59,7 +59,8 @@ approval. The exact cross-harness lifecycle and risk-based review requirements a
 
 ## Layout
 `src/structsplat/` package · `tests/` pytest · `benchmarks/` ablation + fitness ·
-`docs/adr/` decisions (cited as `ADR-NNNN`) · `docs/architecture.md`, `docs/theory.md`,
+`docs/adr/` decisions (cited as `ADR-NNNN`) · `docs/architecture.md`,
+`docs/additive_field_v2.md` (proposed, non-default redesign), `docs/theory.md`,
 `docs/comparison.md` (external-method comparison), `docs/blockers_and_external_techniques.md`
 (known blockers and borrowed techniques), `docs/publication_figures.md` ·
 `docs/agent_workflow.md` (cross-harness workflow) · `docs/research/` dated session records ·

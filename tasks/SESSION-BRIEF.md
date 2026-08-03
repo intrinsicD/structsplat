@@ -20,13 +20,12 @@ unless the owning task says so.
 - `COMP-003` — Compression-ratio ladder (scale ranges → planes → LSQ → VQ → entropy) (partial; `tasks/COMP-003-compression-ladder.md`)
 - `ABL-005` — Fitter-knob influence pass at the fair regime (partial; `tasks/ABL-005-fitter-knob-influence-fair-regime.md`)
 - `BENCH-017` — Screen the full-frame pipeline arm against the plain-fit path (todo; `tasks/BENCH-017-full-frame-arm-screen.md`)
-- `FIT-044` — Stage-wise parameter-group activation schedules (todo; `tasks/FIT-044-stagewise-parameter-activation.md`)
-- `FIT-045` — Residual-budgeted densification allocation (todo; `tasks/FIT-045-residual-budgeted-densification.md`)
-- `FF-002` — Predict–optimize–distil with permutation-invariant supervision (todo; `tasks/FF-002-predict-optimize-distil.md`)
+- `BENCH-019` — Stage-1 downstream-objective validity (partial; `tasks/BENCH-019-stage1-downstream-objective.md`)
 - `DOCS-004` — Staged lint/format ratchet (widen `select`, adopt `ruff format`) (todo; `tasks/DOCS-004-lint-format-ratchet.md`)
 
 ## Open tracks with actionable recorded dependencies
 
+- `CORE-008` — Hybrid Gaussian + frequency-bearing primitive control; open dependencies: `BENCH-022`, `BENCH-025`, `COMP-013`, `COMP-014`, `CORE-013` (`tasks/CORE-008-hybrid-edge-primitives.md`)
 - `PORT-002` — GPU-native tile index + fused loss/backward; open dependencies: `PORT-001` (`tasks/PORT-002-gpu-native-tile-index-fused-loss.md`)
 - `PORT-003` — Avoid atomics in tiled backward; open dependencies: `PORT-001` (`tasks/PORT-003-tiled-backward-reductions.md`)
 - `GEN-003` — VSD / multi-particle distillation; open dependencies: `GEN-001` (`tasks/GEN-003-vsd-multiparticle-distillation.md`)
@@ -34,12 +33,33 @@ unless the owning task says so.
 - `FIT-013` — Geometry-consistent Sobel regularization; open dependencies: `ABL-004` (`tasks/FIT-013-geometry-consistent-regularization.md`)
 - `FIT-028` — Measure the interior coverage budget and decide its default; open dependencies: `BENCH-017` (`tasks/FIT-028-interior-coverage-budget-screen.md`)
 - `FIT-029` — Decide whether `safe_polish` earns its wall-clock; open dependencies: `FIT-028`, `BENCH-017` (`tasks/FIT-029-safe-polish-phase-disposition.md`)
+- `FIT-030` — Byte-priced topology and precision allocation; open dependencies: `BENCH-021`, `BENCH-025`, `COMP-013`, `COMP-014`, `FIT-045`, `FIT-046` (`tasks/FIT-030-rate-aware-continuous-allocation.md`)
 - `FIT-042` — Independent fine-detail pursuit confirmation; open dependencies: `COMP-001` (`tasks/FIT-042-independent-fine-detail-pursuit-confirmation.md`)
-- `FF-003` — Elastic Gaussian-count predictor; open dependencies: `FF-002` (`tasks/FF-003-elastic-gaussian-budgets.md`)
+- `FIT-044` — Stage-wise parameter-group activation schedules; open dependencies: `BENCH-020`, `CORE-013` (`tasks/FIT-044-stagewise-parameter-activation.md`)
+- `FIT-045` — Direct-control regional allocation and merge screen; open dependencies: `BENCH-020`, `CORE-013` (`tasks/FIT-045-residual-budgeted-densification.md`)
+- `FF-002` — Field V2 Predict–Optimize–Distil; open dependencies: `CORE-013`, `BENCH-020`, `BENCH-021`, `BENCH-025`, `COMP-013`, `COMP-014` (`tasks/FF-002-predict-optimize-distil.md`)
+- `FF-003` — Complete-byte elastic Field V2 predictor; open dependencies: `FF-002`, `BENCH-025`, `COMP-013`, `COMP-014` (`tasks/FF-003-elastic-gaussian-budgets.md`)
 - `BENCH-018` — Commit-gate granularity (`block_steps`); open dependencies: `BENCH-017` (`tasks/BENCH-018-commit-gate-granularity.md`)
+- `CORE-013` — Observation Field V2 semantic contract; open dependencies: `BENCH-019` (`tasks/CORE-013-observation-field-v2-contract.md`)
+- `BENCH-020` — Field semantics and alpha-policy factorial; open dependencies: `BENCH-019`, `CORE-013` (`tasks/BENCH-020-field-semantics-factorial.md`)
+- `INIT-010` — Field V2 initializer transfer screen; open dependencies: `BENCH-020`, `CORE-013` (`tasks/INIT-010-field-v2-initializer-transfer.md`)
+- `FIT-046` — Additive appearance variable projection; open dependencies: `BENCH-020`, `CORE-013` (`tasks/FIT-046-additive-variable-projection.md`)
+- `FIT-047` — Unbiased tile-sampled fitting; open dependencies: `BENCH-020`, `CORE-013` (`tasks/FIT-047-unbiased-tile-sampled-fitting.md`)
+- `FIT-048` — Additive scale/topology stage-order screen; open dependencies: `BENCH-020`, `CORE-013`, `INIT-010`, `FIT-049` (`tasks/FIT-048-additive-stage-order.md`)
+- `FIT-049` — Field V2 objective and loss screen; open dependencies: `BENCH-019`, `BENCH-020`, `CORE-013` (`tasks/FIT-049-field-v2-objective-screen.md`)
+- `BENCH-021` — Additive convergence portfolio; open dependencies: `BENCH-020`, `INIT-010`, `FIT-044`, `FIT-045`, `FIT-046`, `FIT-047`, `FIT-048`, `FIT-049` (`tasks/BENCH-021-additive-convergence-portfolio.md`)
+- `COMP-013` — Observation Field V2 codec; open dependencies: `CORE-013`, `BENCH-020` (`tasks/COMP-013-observation-field-v2-codec.md`)
+- `PORT-006` — Additive end-to-end acceleration; open dependencies: `BENCH-020`, `BENCH-021`, `FIT-046`, `FIT-047` (`tasks/PORT-006-additive-end-to-end-acceleration.md`)
+- `CORE-014` — Additive production pipeline (default-off); open dependencies: `CORE-013`, `BENCH-021`, `BENCH-025`, `COMP-013`, `COMP-014`, `FIT-030`, `PORT-006` (`tasks/CORE-014-additive-production-pipeline.md`)
+- `BENCH-022` — Additive production confirmation; open dependencies: `CORE-014`, `BENCH-019`, `BENCH-020`, `BENCH-021`, `BENCH-025`, `COMP-013`, `COMP-014`, `PORT-006` (`tasks/BENCH-022-additive-production-confirmation.md`)
+- `CORE-015` — Promote Observation Field V2 conditionally; open dependencies: `BENCH-022`, `CORE-014` (`tasks/CORE-015-promote-observation-field-v2.md`)
+- `BENCH-023` — Amortized encoder confirmation; open dependencies: `FF-002`, `FF-003`, `BENCH-022`, `BENCH-025`, `COMP-013`, `COMP-014` (`tasks/BENCH-023-amortized-encoder-confirmation.md`)
+- `BENCH-024` — Temporal field-reuse killing test; open dependencies: `CORE-014`, `COMP-013`, `COMP-014`, `BENCH-022`, `BENCH-025` (`tasks/BENCH-024-temporal-field-reuse-killing-test.md`)
+- `BENCH-025` — Structured-codec necessity gate; open dependencies: `BENCH-020`, `COMP-013`, `CORE-013` (`tasks/BENCH-025-structured-codec-necessity.md`)
+- `COMP-014` — Seed-structured Field V2 codec (conditional); open dependencies: `BENCH-025`, `COMP-013`, `CORE-013`, `BENCH-020` (`tasks/COMP-014-seed-structured-field-v2-codec.md`)
 
 ## Ledger summary
 
-- 77 active-table outcomes
+- 95 active-table outcomes
 - 45 retired tasks
-- 53 active-table rows already carrying a closed/non-actionable disposition
+- 51 active-table rows already carrying a closed/non-actionable disposition

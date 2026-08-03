@@ -1,0 +1,67 @@
+{
+  "schema": "structsplat.bench019.preflight_inventory.v1",
+  "observed_at": "2026-08-03T02:49:28+02:00",
+  "classification": "read-only diagnostic inventory; not a frozen protocol or outcome",
+  "repositories": {
+    "structsplat": {
+      "commit": "fb357dea11d78f8d9cd7755268fb8b7451e73fb6",
+      "dirty": true
+    },
+    "realtime_gs": {
+      "commit": "4c1a7a53b6463473155f8c7a48be91a12de13109",
+      "dirty": true
+    }
+  },
+  "capture_root": "/home/alex/Dropbox/Work/Janelle/2025_03_07_stage_with_fabric",
+  "capture_groups": [
+    {
+      "id": "2025_03_07_stage_with_fabric",
+      "frames": [
+        "frame_00008",
+        "frame_00009"
+      ]
+    }
+  ],
+  "frame_00008": {
+    "gaussianimage_fullres": {
+      "rtgsv_files": 26,
+      "manifest_present": true,
+      "manifest_sha256": "e6daeb328000e08343dca2d36a1b817549d632d6b1298de58dd830ad5dffcdcb"
+    },
+    "structsplat_no_boundary_fullres": {
+      "rtgsv_files": 26,
+      "manifest_present": true,
+      "manifest_sha256": "10a1b019fc7b300f1e87fa5d7170378d7855e238bcf8352515d65b96e7958bba"
+    },
+    "structsplat_mask_contained_fullres": {
+      "rtgsv_files": 7,
+      "manifest_present": false,
+      "production_worker_observed": true,
+      "active_view": "C0014"
+    }
+  },
+  "frame_00009": {
+    "top_level_directories": [
+      "gaussians2d",
+      "mask",
+      "rgb"
+    ],
+    "matched_three_provider_11k_directories_present": false
+  },
+  "realtime_gs_protocol": {
+    "task_path": "/home/alex/Documents/realtime-gs/experiments/tasks/20260801_paper_three_provider_fullres_stage_frame00008.json",
+    "task_sha256": "a600cd4741fa543988491fd282733bc7df496373a2cfd7242e31819a1d33795c",
+    "task_status": "draft",
+    "data_manifest_path": "/home/alex/Documents/realtime-gs/experiments/data/stage_frame00008_three_provider_fullres.json",
+    "data_manifest_sha256": "a690401d15c3748b611454a9213ba3aad3ea4728536b8f5266a1f773eaea0a41",
+    "sealed_datasets": 0,
+    "prospective_review_present": false,
+    "downstream_results_run": false
+  },
+  "bench019_general_minimum": {
+    "frames": 2,
+    "independent_capture_groups": 3,
+    "downstream_seeds": 3
+  },
+  "preflight_disposition": "formal protocol cannot yet be frozen; finish/seal matched fields and add independent capture groups or restrict the later comparison to an explicitly workload-specific scope"
+}

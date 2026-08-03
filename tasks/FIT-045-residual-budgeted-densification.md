@@ -1,68 +1,66 @@
-# FIT-045 — Residual-budgeted densification allocation
+# FIT-045 — Direct-control regional allocation and merge screen
 
 ## Context
 
-Residual densification currently selects birth sites from a global per-pixel score
-(`refine_site` residual/residual_tensor with `sampled_add_score` variants, or
-support/responsibility sites) at event triggers. A global ranking lets one high-error region
-absorb an entire event's births while smaller but persistent residual regions receive nothing,
-and threshold-triggered spawning confounds method comparisons when arms create different row
-counts — FIT-017 and FIT-018 both had to enforce matched budgets to stay interpretable. FIT-030
-(design-only) diagnosed the structural version of this — "error is used as a verdict, not a
-map" — but is blocked on FIT-028/BENCH-018 and owns the *rate* question. A cheaper mechanism
-question is answerable now, inside the current event schedule, with total rate fixed: given a
-fixed per-event spawn budget, how should it be *distributed* across residual regions?
+The earlier task proposed distributing a fixed residual-birth budget across tiles, but it depended
+on FIT-030 and therefore put a cheap allocation mechanism behind the rate-controller design that
+needs its result. It also predates LocoADC's region-wise error/gradient-coherence allocation and
+similarity-driven merging. The question remains useful only as a direct-control replication and
+matched mechanism screen, not as a novelty claim.
 
 ## Goal
 
-An opt-in per-event budget allocator for the residual-densification path: partition the frame
-into residual regions (fixed tiles or connected residual components), allocate the event budget
-`B_r ∝ (E_r + eps)^tau` from per-region residual energy, then run the existing site scoring and
-birth machinery within each region's allocation. Screen, at identical total spawned rows per
-event across all arms:
+Determine whether any regional birth/merge policy improves the selected BENCH-020 field at equal
+row, proposal, optimizer-work, and wall-time budgets, and freeze at most one allocator for the
+BENCH-021 recipe and FIT-030's byte-priced controller.
 
-- `global` — the shipped global ranking at the same total per-event budget (status-quo control).
-- `uniform` — equal candidate count per region (regionalization-only control).
-- `residual_proportional` — `tau` in {0.5, 1.0, 2.0}.
-- `residual_x_structure` — residual energy weighted by structure-tensor confidence.
-- `residual_x_expected_gain` — residual energy weighted by a cheap expected-loss-decrease proxy
-  (kernel-matched signed residual from the FIT-017 score axis).
+## Candidate arms
+
+- `fixed_full_n`: initialize the final count and never change topology.
+- `global`: current global residual ranking at the same per-event proposal/birth budget.
+- `uniform_regions`: equal regional allocation followed by unchanged local site selection.
+- `residual_proportional`: deterministic allocation proportional to regional residual energy,
+  with a small predeclared exponent set.
+- `locoadc_direct_control`: reproduce LocoADC-style regional error and gradient-coherence grouping,
+  allocation, and similarity-driven merge as faithfully as the 2D field contract permits.
+- `regional_without_merge` and `regional_with_merge`: isolate allocation from merge value.
+
+Native LocoADC evidence and the local transplant are reported separately. If an exact mechanism is
+unavailable from primary sources/code, label the arm approximate and prohibit a reproduction claim.
 
 ## Non-goals
 
-- Choosing the total spawn rate, capacity, or stopping point (FIT-030's scope; this task feeds
-  its allocation component only).
-- New birth-site scores (FIT-017's axis) or responsibility normalization (FIT-018's axis);
-  within-region selection reuses the existing shipped machinery unchanged.
-- Auction/ownership redesign (BENCH-009) and tail policies (FIT-025/031/040).
-- Any default change; the allocator ships default-off.
+- Choosing the total byte budget, topology stopping point, or precision (FIT-030 owns that).
+- Inventing another residual score; FIT-017/018 supply existing within-region controls.
+- Treating fixed tiles as object segmentation or changing the field/alpha semantics.
+- Changing defaults or claiming regional densification/merging as StructSplat novelty.
 
 ## Acceptance criteria
 
-- [ ] Opt-in allocator in the residual-densification path with region definition (tile size or
-      connectivity) and `tau` in `FitConfig`; default off preserves current behavior on a seeded
-      regression test.
-- [ ] Integer allocation rule is deterministic and documented (largest-remainder or equivalent);
-      unit tests cover proportionality at `tau=1`, zero-residual regions, and regions whose
-      allocation exceeds their candidate count (surplus redistributes, never silently drops).
-- [ ] Total spawned rows per event are asserted identical across arms in the screen harness.
-- [ ] Screen on the maintained benchmark images at fixed budgets and seeds: final PSNR/MS-SSIM,
-      iterations-to-target, post-event per-region residual dispersion (does allocation flatten
-      the error map?), event count, and allocator wall-clock overhead, from logged config + seed.
-- [ ] Outcome (positive or negative) recorded as an ARA observation or claim row, and this task's
-      Index status updated in the same commit.
-- [ ] `./scripts/verify.sh` passes.
+- [ ] A preregistered protocol freezes region construction, update cadence, arms, proposal/birth/
+      merge budgets, row and work matching, seeds, datasets/splits, metrics, and tie/failure rules.
+- [ ] The direct-control provenance table maps every local LocoADC mechanism to primary paper/code
+      behavior and records exact, adapted, unavailable, or omitted status before outcomes.
+- [ ] Deterministic integer allocation/redistribution and merge rules have tests for zero-error,
+      exhausted candidates, ties, disconnected regions, boundary masks, and exact total budgets.
+- [ ] Screen reports PSNR/MS-SSIM/LPIPS, BENCH-019 downstream objective, time-to-target/AUC,
+      regional residual dispersion, births/merges/rows, proposals, renderer work, wall time, and
+      memory on matched development arms.
+- [ ] One frozen allocator/merge policy advances to BENCH-021 only if it clears predeclared quality
+      and overhead guards against `fixed_full_n`, `global`, and `uniform_regions`; otherwise the
+      negative result lowers FIT-030's topology scope.
+- [ ] Portable report, independent results audit, ARA disposition, docs/task synchronization, and
+      `./scripts/verify.sh` pass.
 
 ## Interfaces touched
 
-`src/structsplat/fit.py` (residual site-selection path around `refine_site`/`sampled_add`),
-`src/structsplat/metrics.py` (per-region residual energy only if not already exposed),
-`benchmarks/ablation.py` or a driver under `scripts/experiments/`, `tests/`, `tasks/INDEX.md`,
-`ara/`.
+Residual allocation/merge hooks in the selected fitter, configuration and telemetry, direct-control
+adapter/experiment driver, focused tests, maintained report, `docs/additive_field_v2.md`, this task,
+and the Index.
 
 ## Depends on
 
-FIT-017, FIT-018, FIT-030, BENCH-002
+FIT-017/018, BENCH-020, CORE-013, BENCH-002
 
 ## Agent workflow
 
@@ -73,14 +71,10 @@ FIT-017, FIT-018, FIT-030, BENCH-002
 
 ### Handoff log
 
-Append exact `### Handoff` and `### Review` blocks using the schema in `tasks/README.md`.
-Before a formal result-bearing run, append the prospective `### Protocol review` block from that
-document and bind the exact frozen protocol digest.
+Append exact `### Handoff`, `### Review`, and pre-run `### Protocol review` blocks using
+`tasks/README.md`. Prior-art mapping and protocol review must occur before implementation outcomes.
 
 ## Notes
 
-Fairness is the design constraint: with total rows fixed per event, any measured difference is
-attributable to *where* capacity went, not *how much* was spent — the confound FIT-017/018 had
-to control by hand becomes structural. If no allocation arm beats `global` and `uniform` on the
-frozen screen, record the negative result and leave the global ranking as-is; that outcome would
-also lower the priority of FIT-030's allocation component relative to its rate component.
+This re-scope deliberately removes the dependency on FIT-030. FIT-045 supplies controlled evidence
+about where capacity should move; FIT-030 later decides whether a move is worth its complete bytes.

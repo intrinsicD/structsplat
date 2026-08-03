@@ -36,6 +36,48 @@ requiring the reader to hunt through subfolders.
 JSON/CSV row writing, seed/config helpers, and shared COCO comparison analogue builders. It is not
 a CLI; scripts import it to avoid drifting helper behavior.
 
+## BENCH-019 downstream-objective adapter
+
+`stage1_downstream_objective.py` is the passive cross-repository adapter for the proposed
+Observation Field V2 gate. It does not load, convert, or launch a field. Realtime-gs remains the
+authority for exact additive or normalized `.rtgsv` queries and downstream execution; this module
+hash-binds its task, data, environment, schedule, source-field manifests, source pixels, masks,
+cameras, splits, and clean repository identities. The task-local wrapper is
+`scripts/experiments/bench019_stage1_downstream_objective.py`.
+
+The lifecycle separates exact design review from outcomes:
+
+```bash
+python -m benchmarks.stage1_downstream_objective template --output protocol.draft.json
+python -m benchmarks.stage1_downstream_objective prepare-review \
+  --draft protocol.draft.json --output protocol.review.json
+python -m benchmarks.stage1_downstream_objective review-template \
+  --protocol protocol.review.json --output prospective-review.json
+# A distinct reviewer edits and approves prospective-review.json without outcome access.
+python -m benchmarks.stage1_downstream_objective finalize \
+  --reviewed protocol.review.json --review prospective-review.json \
+  --output protocol.frozen.json
+python -m benchmarks.stage1_downstream_objective plan --protocol protocol.frozen.json
+```
+
+After realtime-gs executes the frozen command and exports
+`structsplat.bench019.cell.v1` rows, analysis is one command:
+
+```bash
+python -m benchmarks.stage1_downstream_objective analyze \
+  --protocol protocol.frozen.json --rows downstream_rows.jsonl \
+  --outdir results/bench019_downstream_objective
+python scripts/check_report_bundle.py results/bench019_downstream_objective
+```
+
+The report averages downstream seeds/initializers inside each frame-family unit, ranks families
+within frames, bootstraps capture groups rather than views, includes leave-one-frame-out and A/A
+semantic/config replay checks, retains missing/error cells, and follows the preregistered
+single-predictor priority without constructing a post-hoc blend. A general-surrogate protocol must
+retain BENCH-019's minimum of two frames, three independent capture groups, and three downstream
+seeds. A smaller Janelle-only run can be labelled workload-specific, but cannot authorize a
+general Stage-1 surrogate.
+
 The canonical four-image COCO fixture used by the matched comparison and regression-bisect
 harnesses lives in `tests/test_images/`. Keep those four files there so benchmark reruns do not
 depend on ignored `results/` artifacts.

@@ -125,3 +125,10 @@ sessions:
     events_count: 1
     claims_touched: []
     open_threads: 0
+  - id: "2026-08-03_001"
+    date: "2026-08-03"
+    summary: "Audited the Janelle conversion and formalized an evidence-gated Observation Field V2 architecture with an actionable downstream-first task graph, conditional structured coding, and no default change."
+    turn_count: 3
+    events_count: 18
+    claims_touched: []
+    open_threads: 6

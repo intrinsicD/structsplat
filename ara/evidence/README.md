@@ -4,6 +4,13 @@ The canonical four-image benchmark fixture is `tests/test_images/`. Older eviden
 still record `results/abl003_coco_train2014` or copied `results/.../selected` paths because those
 paths were the live source location when the historical runs were produced.
 
+- `bench019-downstream-protocol-preflight-2026-08-03`: Read-only inventory before any BENCH-019
+  outcome access. Frame 00008's requested three-provider set was not yet complete, frame 00009 did
+  not have the matched set, the two frames formed only one capture group, and realtime-gs's task
+  and data seal were still draft/empty. The formal general-surrogate protocol therefore remains
+  unfrozen; the active producer was not changed. Evidence note:
+  `ara/evidence/bench019-downstream-protocol-preflight-2026-08-03/run.md`.
+
 - `pytest-2026-07-02`: `python -m pytest -q` in `/home/alex/Documents/structsplat` passed 33 tests in 108.55 seconds.
 - `coco-fit-compare-2026-07-02`: `python benchmarks/coco_fit_compare.py --budget 512 --iters 80 --max-side 160 --outdir results/coco_fit_compare` produced `results/coco_fit_compare/comparison_grid.png`, `metrics.csv`, `metrics.json`, and `summary.md`. Matched reference mean PSNR: StructSplat 24.833, GaussianImage 21.990, GaussianImage++ 20.191, Image-GS 20.996, Instant-GI quadtree 18.350. Annotated by `abl003-regression-bisect-2026-07-03`: this pre-`ef730a9` StructSplat number is not a direct comparator for post-`ef730a9` baselines because spacing-scale semantics changed.
 - `coco-fit-compare-rerun-2026-07-02`: Preserved old outputs as `comparison_grid_before_update.png`, `metrics_before_update.csv`, `metrics_before_update.json`, and `summary_before_update.md`, then reran `python benchmarks/coco_fit_compare.py --budget 512 --iters 80 --max-side 160 --seed 0 --outdir results/coco_fit_compare`. New outputs include `comparison_grid.png`, `metrics.csv`, `metrics.json`, `summary.md`, and `delta_after_update.md`. New matched reference mean PSNR: StructSplat 24.039, GaussianImage 21.991, GaussianImage++ 20.191, Image-GS 20.542, Instant-GI quadtree 18.362. Annotated by `abl003-regression-bisect-2026-07-03`: the StructSplat drop localizes to `ef730a9`, not `a455e98`.

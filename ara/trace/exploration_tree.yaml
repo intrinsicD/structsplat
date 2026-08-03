@@ -4130,3 +4130,79 @@ tree:
       - "remote branch audit after cleanup advertised only refs/heads/main"
     also_depends_on: []
     status: resolved
+  - id: N207
+    type: question
+    title: "Why is the live Janelle 2D-field conversion slow and low quality?"
+    provenance: user
+    timestamp: "2026-08-03T00:46+02:00"
+    description: >
+      Diagnose the active full-resolution frame_00008 conversion: identify its dominant costs,
+      explain the quality gap and whether earlier runs were better, disambiguate density and color
+      losses from spherical harmonics, decide whether retained fields are converged, separate
+      algorithmic from implementation limits, and determine which loss, representation, and stage
+      order should be tested next.
+    status: open
+  - id: N208
+    type: experiment
+    title: "Live frame_00008 receipt audit isolates the StructSplat deficit"
+    provenance: ai-executed
+    timestamp: "2026-08-03T00:46+02:00"
+    result: >
+      A read-only audit of the source-bound conversion protocol, all completed receipts, schedule
+      histories, QA renders, active process, and relevant task evidence found: GaussianImage
+      completed 26/26 views at mean 33.9510 dB foreground PSNR in 1.6956 h; the StructSplat
+      no-boundary arm completed 26/26 at 30.3919 dB in 25.8976 h with 15,895/366,142 accepted
+      steps (4.34%) and only 6,582 mean retained rows; the contained arm had completed 6/26 at
+      28.9471 dB in 6.3812 h with 9,177/98,620 accepted steps (9.31%) and 11,000 rows. Paired
+      no-boundary quality was -3.5591 dB versus GaussianImage; contained was -5.0714 dB on its six
+      completed pairs. The current code uses constant RGB, masked L2, and phase-specific raw-
+      denominator coverage floors, with SSIM, tensor weighting, geometry loss, coverage matching,
+      and SH all absent. The older 26-view contained directory averaged only 23.9283 dB foreground
+      PSNR, so it was not better by that metric; current perceptual metrics are missing. This is an
+      incomplete diagnostic audit, not a general method or default claim.
+    evidence:
+      - "ara/evidence/frame00008-three-arm-audit-2026-08-03/run.md"
+      - "/home/alex/Dropbox/Work/Janelle/2025_03_07_stage_with_fabric/frame_00008/gaussians2d_11k_protocol.json"
+      - "/home/alex/Dropbox/Work/Janelle/2025_03_07_stage_with_fabric/frame_00008/gaussians2d_11k_verification.json"
+    also_depends_on: [N207]
+    status: resolved
+  - id: N209
+    type: question
+    title: "How should StructSplat be redesigned around the current evidence frontier?"
+    provenance: user
+    timestamp: "2026-08-03T01:29+02:00"
+    description: >
+      Design a clean-slate StructSplat pipeline that jointly targets reconstruction quality,
+      encoding performance, fast convergence, and high compression; identify which existing
+      components are reusable, incorporate the newest primary literature, and specify the missing
+      experiments that must resolve representation, objective, stage-order, implementation, and
+      actual-rate uncertainty before a new default is built.
+    status: resolved
+  - id: N210
+    type: decision
+    title: "Formalize the evidence-gated Observation Field V2 roadmap"
+    provenance: user
+    timestamp: "2026-08-03T02:09+02:00"
+    choice: >
+      Convert the clean-slate redesign into one detailed proposed architecture and a complete,
+      dependency-checked task graph. Validate downstream objective and field semantics first;
+      isolate initializer, loss, stage order, convergence mechanisms, complete-rate coding, and
+      implementation speed; integrate default-off; and permit a default change only after sealed
+      end-to-end confirmation. Keep learned, rich-atom, and temporal work conditional.
+    alternatives:
+      - "Leave the redesign as conversational advice without executable task ownership."
+      - "Implement the additive pipeline immediately from the diagnostic frame_00008 comparison."
+      - "Change the current normalized default before semantic, downstream, rate, and performance gates."
+      - "Assume direct-row entropy coding is sufficient without testing seed-generated structure."
+    evidence:
+      - "docs/additive_field_v2.md"
+      - "tasks/INDEX.md"
+      - "tasks/BENCH-019-stage1-downstream-objective.md"
+      - "tasks/BENCH-020-field-semantics-factorial.md"
+      - "tasks/BENCH-021-additive-convergence-portfolio.md"
+      - "tasks/BENCH-022-additive-production-confirmation.md"
+      - "tasks/BENCH-025-structured-codec-necessity.md"
+      - "tasks/CORE-015-promote-observation-field-v2.md"
+      - "./scripts/verify.sh: 1515 passed, 4 skipped; all structural gates OK"
+    also_depends_on: [N207, N208, N209]
+    status: resolved

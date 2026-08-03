@@ -1,0 +1,206 @@
+session:
+  id: "2026-08-03_001"
+  date: "2026-08-03"
+  started: "2026-08-03T00:46+02:00"
+  last_turn: "2026-08-03T02:09+02:00"
+  turn_count: 3
+  summary: "Audited the Janelle conversion and formalized an evidence-gated Observation Field V2 architecture with an actionable downstream-first task graph, conditional structured coding, and no default change."
+
+events_logged:
+  - turn: 1
+    type: question
+    id: "N207"
+    routing: direct
+    provenance: user
+    summary: "Asked why the live frame_00008 field conversion is slow and low quality, whether it converged, and which loss, approach, and stage order are justified."
+  - turn: 1
+    type: experiment
+    id: "N208"
+    routing: direct
+    provenance: ai-executed
+    summary: "Recomputed completed-arm quality, runtime, count, acceptance, phase, convergence, and prior-run comparisons from source-bound receipts and histories."
+  - turn: 1
+    type: observation
+    id: "O95"
+    routing: staged
+    provenance: ai-suggested
+    summary: "The custom no-boundary arm zero-weights outside pixels but retains outside-regression gate vetoes, so it is not a clean boundary control."
+  - turn: 1
+    type: observation
+    id: "O96"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Recommended isolating additive versus normalized representation and plain versus staged fitting before any loss or stage-order sweep."
+  - turn: 2
+    type: question
+    id: "N209"
+    routing: direct
+    provenance: user
+    summary: "Asked for a clean-slate StructSplat architecture and the missing experiments needed to optimize quality, convergence, speed, and compression."
+  - turn: 2
+    type: observation
+    id: "O97"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Proposed additive appearance plus separately defined structural mass on shared geometry, with exact alpha and normalized RGB retained only as a control."
+  - turn: 2
+    type: observation
+    id: "O98"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Required downstream-utility validation and cold complete-container active-crop rate accounting before promotion."
+  - turn: 2
+    type: observation
+    id: "O99"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Ordered objective, semantic, optimization, kernel, codec, amortization, and richer-atom experiments."
+  - turn: 2
+    type: observation
+    id: "O100"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Bound regional allocation, structured coding, amortized prediction, wavelet atoms, and fused optimization to their direct current prior-art controls."
+  - turn: 3
+    type: decision
+    id: "N210"
+    routing: direct
+    provenance: user
+    summary: "Committed the redesign to one proposed architecture and a dependency-checked task graph while retaining evidence gates and the current default."
+  - turn: 3
+    type: constraint
+    id: "O95"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized aligned loss/gate/profile semantics for boundary controls as K01 via artifact commitment."
+  - turn: 3
+    type: heuristic
+    id: "O96"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized representation-first causal isolation before loss/stage sweeps as H15 via artifact commitment."
+  - turn: 3
+    type: architecture
+    id: "O97"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the default-off Observation Field V2 candidate boundary as A01, without selecting dual/direct/normalized semantics."
+  - turn: 3
+    type: constraint
+    id: "O98"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized downstream-utility and complete cold-rate promotion requirements as K02."
+  - turn: 3
+    type: heuristic
+    id: "O99"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the killing-gated Field V2 execution order as H16."
+  - turn: 3
+    type: constraint
+    id: "O100"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the current donor-mechanism prior-art boundary as K03."
+  - turn: 3
+    type: architecture
+    id: "O101"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized direct-codec-first and conditional seed-structured storage as A02."
+  - turn: 3
+    type: architecture
+    id: "O102"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized explicit coefficient-domain and counted DC/background semantics as A03."
+
+ai_actions:
+  - turn: 1
+    action: "Inspected live PIDs/GPU state, source-bound configs, conversion code, all completed receipts and histories, old frame_00008 results, QA renders, pipeline/safe-gate code, and relevant benchmark/task evidence; recomputed aggregate and paired statistics without changing or stopping the job."
+    provenance: ai-executed
+    files_changed:
+      - "ara/evidence/frame00008-three-arm-audit-2026-08-03/run.md"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/sessions/2026-08-03_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 2
+    action: "Audited the local experiment/task frontier and realtime-gs Stage-1 semantics, checked the still-running contained worker without modifying it, reviewed 2024--2026 primary literature, and synthesized a falsifiable redesign and phased experiment portfolio."
+    provenance: ai-executed
+    files_changed:
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/sessions/2026-08-03_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 3
+    action: "Created the detailed proposed Field V2 architecture; added 18 semantic, experiment, method, codec, performance, integration, confirmation, and promotion tasks; rebased seven overlapping legacy tasks; verified current 2026 primary controls; regenerated the session brief; and passed the full repository gate (1,515 tests, 4 skipped, all structural checks) without changing code or defaults."
+    provenance: ai-executed
+    files_changed:
+      - "docs/additive_field_v2.md"
+      - "docs/architecture.md"
+      - "README.md"
+      - "CLAUDE.md"
+      - "tasks/INDEX.md"
+      - "tasks/SESSION-BRIEF.md"
+      - "tasks/BENCH-005-native-reference-pipelines.md"
+      - "tasks/BENCH-019-stage1-downstream-objective.md"
+      - "tasks/BENCH-020-field-semantics-factorial.md"
+      - "tasks/BENCH-021-additive-convergence-portfolio.md"
+      - "tasks/BENCH-022-additive-production-confirmation.md"
+      - "tasks/BENCH-023-amortized-encoder-confirmation.md"
+      - "tasks/BENCH-024-temporal-field-reuse-killing-test.md"
+      - "tasks/BENCH-025-structured-codec-necessity.md"
+      - "tasks/COMP-013-observation-field-v2-codec.md"
+      - "tasks/COMP-014-seed-structured-field-v2-codec.md"
+      - "tasks/CORE-008-hybrid-edge-primitives.md"
+      - "tasks/CORE-013-observation-field-v2-contract.md"
+      - "tasks/CORE-014-additive-production-pipeline.md"
+      - "tasks/CORE-015-promote-observation-field-v2.md"
+      - "tasks/FF-002-predict-optimize-distil.md"
+      - "tasks/FF-003-elastic-gaussian-budgets.md"
+      - "tasks/FIT-030-rate-aware-continuous-allocation.md"
+      - "tasks/FIT-044-stagewise-parameter-activation.md"
+      - "tasks/FIT-045-residual-budgeted-densification.md"
+      - "tasks/FIT-046-additive-variable-projection.md"
+      - "tasks/FIT-047-unbiased-tile-sampled-fitting.md"
+      - "tasks/FIT-048-additive-stage-order.md"
+      - "tasks/FIT-049-field-v2-objective-screen.md"
+      - "tasks/INIT-010-field-v2-initializer-transfer.md"
+      - "tasks/PORT-006-additive-end-to-end-acceleration.md"
+      - "ara/PAPER.md"
+      - "ara/logic/solution/architecture.md"
+      - "ara/logic/solution/constraints.md"
+      - "ara/logic/solution/heuristics.md"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/2026-08-03_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
+
+claims_touched: []
+
+key_context:
+  - turn: 1
+    excerpt: "The user asked for a causal analysis of speed, quality, convergence, implementation versus approach, loss choice, and stage order in the active Janelle conversion."
+  - turn: 2
+    excerpt: "The user asked whether the project now has the parts for a redesigned pipeline that jointly delivers quality, fast convergence, high performance, and high compression, and requested missing experiments before implementation."
+  - turn: 3
+    excerpt: "The user asked to create all necessary tasks and one detailed architecture document binding the redesign together."
+
+open_threads:
+  - "Execute BENCH-019 first to determine whether a Stage-1 surrogate predicts fixed-protocol downstream realtime-gs quality."
+  - "Implement the lossless CORE-013 boundary, then preregister BENCH-020's field/alpha/coefficient/DC semantic factorial."
+  - "Run INIT-010 and FIT-044--049 before composing the frozen convergence recipe in BENCH-021."
+  - "Build direct COMP-013, run BENCH-025, and implement conditional COMP-014 only if decoded structure earns complete bytes and query cost."
+  - "Profile and accelerate the BENCH-021 recipe in PORT-006, price actions through the selected codec in FIT-030, and integrate one default-off CORE-014 profile."
+  - "Use BENCH-022 as the sealed promotion gate; learned, rich-atom, and temporal branches remain optional afterward."
+
+ai_suggestions_pending:
+  - "Use the already-complete GaussianImage arm as the operational production field unless normalized teacher semantics are required downstream."
+  - "Repair the no-boundary mask/loss/gate/profile contract before drawing any conclusion from that arm."
+  - "Benchmark cuda_tiled and smaller commit blocks only after the protected-metric policy is fixed; renderer optimization alone cannot explain the full gap."
+  - "Use the additive 11k field as the near-term production baseline while treating the alpha-separated dual-field format as an untested redesign candidate."

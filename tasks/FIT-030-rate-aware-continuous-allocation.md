@@ -1,84 +1,94 @@
-# FIT-030: Rate-aware continuous allocation (design)
-
-## Status
-
-Design-only. This is the architectural project the other gate tasks are the cheap precursors to.
-**No implementation should start before FIT-028 and BENCH-018 report** — they measure whether the
-current schedule's waste is a tuning problem or a structural one, and that answer changes this
-design.
+# FIT-030 — Byte-priced topology and precision allocation
 
 ## Context
 
-Three observations from the BENCH-017 exploratory pass point at the same structural issue.
+The original design correctly separated coverage, detail, and rate, but it priced rate with a
+future `D + lambda R` concept while depending on normalized transactional-schedule diagnoses.
+Field V2 and COMP-013 provide a cleaner boundary: topology and precision proposals can be screened
+with cheap marginal estimates, then replayed through one complete codec so rows, attributes,
+indexes, alpha, and headers are priced in actual bytes. FIT-045 supplies the regional action
+control; FIT-046 supplies the conditional appearance solve.
 
-**1. Coverage is a veto, not a constraint.** 75% of discarded blocks died on
-`interior_holes_regressed` (ADR-0026). A veto on a global metric vector cannot say "repair this
-locally"; it can only reject everything that happened alongside the regression. Coverage is
-spatially localized and cheap to repair — a hole is some pixels with no support — so paying for it
-with a global rollback of up to 250 steps is a bad exchange rate by construction.
+## Goal
 
-**2. Error is used as a verdict, not a map.** Every attempted step computes a per-pixel residual in
-its backward pass, and the schedule collapses it to five scalars used to accept or reject. The
-signal that would say *where* to place the next Gaussian is already being computed and discarded.
-A per-region residual EMA is nearly free on top of the gradient already being paid for.
+A default-off controller that reaches a requested complete-byte target by choosing among bounded
+topology and per-attribute precision actions according to measured marginal distortion reduction
+per byte, with exact codec replay and matched fixed-N/fixed-precision controls.
 
-**3. Rate is decided implicitly by a quality mechanism.** At `capacity=11,000` the schedule placed
-**8,584 rows and reported converged**. The stopping point of growth — a rate decision — is an
-emergent side effect of the commit gate. For a representation whose point is compression, the
-rate should be chosen, not discovered.
+## Action grammar
 
-Related: the phase structure imposes fixed row targets at 5/11, 8/11, 10/11 of capacity, inherited
-from the Janelle schedule (5,000 / 8,000 / 10,000 / 11,000 rows). Those fractions are a schedule
-where an allocation policy would do better.
+- `noop` / stop;
+- birth or split in an eligible region;
+- merge or prune where coverage/quality feasibility remains satisfied;
+- raise or lower a declared quantization tier for a spatial group or attribute group;
+- re-solve affected additive coefficients after a topology action.
 
-## Direction (not yet a decision)
+The initial grammar is finite and versioned. It does not permit mixed primitive families, temporal
+dependencies, learned code generators, or arbitrary per-row bit widths.
 
-Separate the three concerns the phase structure currently fuses:
+## Objective and controller
 
-- **Coverage as a proposal-time feasibility predicate.** Never accept a birth/death/prune that
-  opens an interior hole; when one opens anyway, repair it locally by re-seeding that region
-  rather than rolling back the block. Cost is bounded by the hole, not by the block.
-- **Detail as continuous residual-driven allocation.** Maintain a per-region residual EMA from the
-  existing backward pass; birth where marginal distortion reduction per **bit** is highest, kill
-  where it is lowest. No phase boundaries and no fixed row targets.
-- **Acceptance as a rare global safety net.** Keep FIT-023 / C50 Pareto-safe checkpointing, which
-  is the part of the gate with confirmed value (+0.502/+0.519 dB). Demote or drop the per-block
-  trial-and-rollback.
+Use an estimated `Delta D / Delta R` only to rank proposals. At every accepted batch, encode the
+complete candidate with COMP-013, measure exact `R`, decode it cold, and recompute full distortion
+and feasibility. Optimize toward a target-byte constraint (with a `D + lambda R` sweep retained as
+a diagnostic), restore the best feasible cold-decoded checkpoint, and stop when no admissible
+action clears the frozen marginal-gain/work rule or the hard budget expires.
 
-And make the objective rate-aware: minimize `D + lambda * R` where **R is bits, not rows**. Rows
-are not equal cost — a Gaussian's bit cost depends on quantization precision for position, scale,
-rotation, and color — so a rate-blind allocator will spend bytes buying negligible dB in regions
-where they are worthless. Consequences: sweep `lambda` rather than `capacity` to produce an RD
-curve, and let precision vary per Gaussian. `codec.py` and `benchmarks/rate_distortion.py` already
-exist; it is the *fitter* that is rate-blind, not the codec.
+## Non-goals
 
-## Open questions (answer before designing further)
+- Selecting field semantics, regional allocation, or codec grammar inside this task.
+- Treating row count, analytical bits, entropy estimates, or tensor-body bytes as actual rate.
+- Replacing alpha with learned occupancy or using per-block global rollback as the controller.
+- Promoting a default before CORE-014 and BENCH-022.
 
-- Does relaxing the veto (FIT-028) recover most of the loss? If yes, this project is a smaller
-  refactor than it looks and should be scoped down.
-- What is the actual cost of a per-region residual EMA at the working resolutions, measured rather
-  than assumed?
-- Does the Pareto-safe checkpoint alone preserve the C50 gain without the per-block gate? That is
-  the load-bearing question for dropping trial-and-rollback, and it is answerable cheaply.
-- Which `lambda` parameterization is stable across images? A fixed `lambda` gives variable rate per
-  image; a rate target gives variable quality. The dome use case likely wants the latter.
+## Acceptance criteria
 
-## Relationship to the boundary
+- [ ] The action grammar, feasibility predicates, proposal estimator, tie order, byte-target
+      tolerance, stopping rule, checkpoint policy, and exact-replay cadence are deterministic and
+      frozen in configuration.
+- [ ] Every accepted decision has a replay ledger containing parent hash, action, estimated
+      `Delta D/Delta R`, complete encoded bytes before/after, cold-decoded metrics, work/time, and
+      accept/reject reason; ledgers replay from source/config/seed.
+- [ ] Unit/property tests cover exact budget boundaries, non-monotone codec bytes, zero/negative
+      gain, overshoot recovery, ties, merge/birth reversals, precision changes, corruption/failure,
+      masks, and best-feasible restoration.
+- [ ] A preregistered screen compares byte-priced joint actions, topology-only, precision-only,
+      fixed-N scalar-QAT, and the strongest fixed-byte control at matched complete byte targets,
+      work limits, data, and seeds.
+- [ ] Report PSNR/MS-SSIM/LPIPS, BENCH-019 downstream objective, complete bytes/bpp, target error,
+      action mix, estimator calibration, encode/decode overhead, convergence/AUC, total wall time,
+      and memory. Estimated and exact rate are never pooled.
+- [ ] The selected controller improves the predeclared complete-byte frontier or is retired; one
+      exact config digest and fallback is passed to CORE-014 only after an independent audit.
+- [ ] Focused tests, portable report, results audit, ARA disposition, docs/task synchronization,
+      and `./scripts/verify.sh` pass.
 
-The masked arm's boundary handling is the one part of the pipeline with confirmed good behaviour,
-and it generalizes: it seeds tangent-aligned Gaussians on a *known discontinuity*. Unmasked images
-have discontinuities too — the structure tensor's edge/corner labels find them, and
-`aniso_onedge` / flanking already target them (ADR-0004, ABL-006). The mask boundary is the special
-case where the discontinuity is known exactly and is infinitely sharp. A unified treatment is
-preferable to two boundary stories, but that unification is downstream of this task, not part of
-it.
+## Interfaces touched
+
+New bounded rate-controller module and fit hooks, COMP-013 encode/decode/rate API, topology and
+quantization configuration, replay ledger/report tooling, tests, `docs/additive_field_v2.md`, this
+task, and the Index.
 
 ## Depends on
 
-FIT-028, BENCH-018, FIT-027, ADR-0026, ADR-0025, COMP-001, COMP-003
+BENCH-021/025, COMP-013/014, FIT-045/046, BENCH-002
+
+## Agent workflow
+
+- Driver: pending
+- Reviewer: pending
+- Turn: driver
+- Reviewed revision: pending
+
+### Handoff log
+
+Append exact `### Handoff`, `### Review`, and pre-run `### Protocol review` blocks using
+`tasks/README.md`. The codec/config digest is part of the frozen protocol.
 
 ## Notes
 
-Everything above is motivated by a single-seed, single-arm exploratory pass on 7 images
-(`ara/staging/observations.yaml` O87-O89). None of it is claimed. The purpose of FIT-028 and
-BENCH-018 is to find out whether this design is solving a real problem before anyone builds it.
+The normalized safe-schedule findings in O87--O89 remain historical motivation, not prerequisites
+or evidence that this controller will win. BENCH-017/FIT-028/029/BENCH-018 continue independently
+for the maintained normalized pipeline.
+If BENCH-025 rejects structured coding, COMP-014's terminal no-code disposition selects COMP-013;
+if it authorizes COMP-014, the marginal-rate oracle must use that completed stream instead.

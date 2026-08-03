@@ -11,6 +11,8 @@ Root manifest for the live research artifact.
 - `logic/problem.md`
 - `logic/claims.md`
 - `logic/concepts.md`
+- `logic/solution/architecture.md`
+- `logic/solution/constraints.md`
 - `logic/solution/heuristics.md`
 - `trace/exploration_tree.yaml`
 - `trace/sessions/session_index.yaml`

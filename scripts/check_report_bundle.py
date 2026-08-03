@@ -2,9 +2,9 @@
 """Validate a portable report produced by StructSplat's maintained workflows.
 
 This is the evidence-handoff gate for ``scripts/convert.py``, ``benchmark.py``,
-``ablation.py``, and ``stage_search.py``. It checks the shared manifest/metrics contract, clean
-source identity, per-cell artifacts, finite metrics, cross-format agreement, and every local
-HTML link.
+``ablation.py``, ``stage_search.py``, and the BENCH-019 cross-repository analysis. It checks the
+applicable manifest/metrics contract, clean source identity, per-cell artifacts, finite metrics,
+cross-format agreement, and every local HTML link.
 
 Dirty-source or error-cell reports remain useful diagnostics, but they are not results-bearing
 by default. ``--allow-dirty`` and ``--allow-error-cells`` make those limitations explicit.
@@ -45,6 +45,17 @@ REQUIRED_OK_ARTIFACTS = (
 HEX_40 = re.compile(r"^[0-9a-f]{40}$")
 HEX_64 = re.compile(r"^[0-9a-f]{64}$")
 CLEAN_STATUS_SHA256 = hashlib.sha256(b"").hexdigest()
+BENCH019_REPORT_SCHEMA = "structsplat.bench019.report.v1"
+BENCH019_PROTOCOL_SCHEMA = "structsplat.bench019.protocol.v1"
+BENCH019_ROW_SCHEMA = "structsplat.bench019.cell.v1"
+BENCH019_REQUIRED_ARTIFACTS = (
+    "field",
+    "history",
+    "config",
+    "target",
+    "reconstruction",
+    "error",
+)
 
 
 class _LocalLinkParser(HTMLParser):
@@ -208,6 +219,354 @@ def _check_html(root: Path, problems: list[str]) -> set[Path]:
     return linked_paths
 
 
+def _check_json_csv_projection(
+    root: Path,
+    metrics: list[dict[str, Any]],
+    problems: list[str],
+) -> None:
+    """Check the common JSON/JSONL/CSV projection shared by both report schemas."""
+    jsonl_rows = _load_jsonl(root / "metrics.jsonl", problems)
+    if jsonl_rows != metrics:
+        problems.append("metrics.jsonl rows do not exactly match metrics.json")
+    try:
+        with (root / "metrics.csv").open(newline="", encoding="utf-8") as stream:
+            reader = csv.DictReader(stream)
+            csv_fields = reader.fieldnames or []
+            csv_rows = list(reader)
+    except (OSError, csv.Error) as exc:
+        problems.append(f"metrics.csv is invalid: {exc}")
+        return
+    expected_fields = sorted(
+        {key for row in metrics for key in row if key not in {"curves", "snapshots"}}
+    )
+    if csv_fields != expected_fields:
+        problems.append("metrics.csv columns do not match the canonical metrics.json projection")
+        return
+    if len(csv_rows) != len(metrics):
+        problems.append(
+            f"metrics.csv row count {len(csv_rows)} does not match metrics.json "
+            f"row count {len(metrics)}"
+        )
+        return
+    for index, (csv_row, json_row) in enumerate(zip(csv_rows, metrics)):
+        for field in expected_fields:
+            expected = _csv_value(json_row.get(field))
+            if csv_row.get(field) != expected:
+                problems.append(
+                    f"metrics.csv row {index} field {field!r} differs from metrics.json"
+                )
+
+
+def _relative_descriptor_path(
+    root: Path,
+    descriptor: Any,
+    label: str,
+    problems: list[str],
+) -> Path | None:
+    if not isinstance(descriptor, dict):
+        problems.append(f"{label}: artifact descriptor must be an object")
+        return None
+    if set(descriptor) != {"path", "sha256", "bytes"}:
+        problems.append(f"{label}: artifact descriptor must contain path/sha256/bytes")
+        return None
+    raw = descriptor.get("path")
+    digest = descriptor.get("sha256")
+    size = descriptor.get("bytes")
+    if not isinstance(raw, str) or not raw or Path(raw).is_absolute():
+        problems.append(f"{label}: artifact path must be non-empty and relative")
+        return None
+    if not isinstance(digest, str) or not HEX_64.fullmatch(digest):
+        problems.append(f"{label}: artifact SHA-256 is missing or malformed")
+    if isinstance(size, bool) or not isinstance(size, int) or size < 0:
+        problems.append(f"{label}: artifact byte count must be a non-negative integer")
+    path = root / raw
+    if not path.is_file() or not _contained(path, root):
+        problems.append(f"{label}: artifact is missing or escapes the report bundle")
+        return None
+    if isinstance(size, int) and path.stat().st_size != size:
+        problems.append(f"{label}: artifact byte count differs")
+    if isinstance(digest, str) and HEX_64.fullmatch(digest) and _sha256(path) != digest:
+        problems.append(f"{label}: artifact SHA-256 differs")
+    return path.resolve()
+
+
+def _canonical_digest_without(payload: dict[str, Any], key: str) -> str:
+    value = dict(payload)
+    value.pop(key, None)
+    encoded = json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _bench019_protocol_bindings(protocol: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Project the protocol's bound files using the writer's stable binding labels."""
+    bindings: dict[str, dict[str, Any]] = {}
+    repositories = protocol.get("repositories")
+    if isinstance(repositories, list):
+        for index, repository in enumerate(repositories):
+            if not isinstance(repository, dict):
+                continue
+            label = f"repository_{repository.get('name', index)}_environment"
+            if isinstance(repository.get("environment"), dict):
+                bindings[label] = repository["environment"]
+    captures = protocol.get("captures")
+    if isinstance(captures, list):
+        for capture_index, capture in enumerate(captures):
+            if not isinstance(capture, dict) or not isinstance(capture.get("frames"), list):
+                continue
+            for frame_index, frame in enumerate(capture["frames"]):
+                if not isinstance(frame, dict):
+                    continue
+                prefix = f"{capture.get('id', capture_index)}_{frame.get('id', frame_index)}"
+                for name in ("pixels", "masks", "cameras"):
+                    if isinstance(frame.get(name), dict):
+                        bindings[f"{prefix}_{name}"] = frame[name]
+                families = frame.get("families")
+                if not isinstance(families, list):
+                    continue
+                for family_index, family in enumerate(families):
+                    if not isinstance(family, dict):
+                        continue
+                    family_prefix = f"{prefix}_{family.get('id', family_index)}"
+                    for name in ("field_manifest", "stage1_metrics"):
+                        if isinstance(family.get(name), dict):
+                            bindings[f"{family_prefix}_{name}"] = family[name]
+    downstream = protocol.get("downstream")
+    if isinstance(downstream, dict):
+        for name in ("task_manifest", "dataset_manifest", "environment", "schedule_config"):
+            if isinstance(downstream.get(name), dict):
+                bindings[f"downstream_{name}"] = downstream[name]
+    review = protocol.get("review")
+    if isinstance(review, dict) and isinstance(review.get("artifact"), dict):
+        bindings["prospective_review"] = review["artifact"]
+    return bindings
+
+
+def _check_bench019_bundle(
+    root: Path,
+    manifest: dict[str, Any],
+    problems: list[str],
+    *,
+    allow_dirty: bool,
+    allow_error_cells: bool,
+) -> None:
+    protocol: dict[str, Any] | None = None
+    expected_bindings: dict[str, dict[str, Any]] = {}
+    command = manifest.get("command")
+    if not isinstance(command, str) or not command.strip():
+        problems.append("manifest.json has no executed command")
+    repositories = manifest.get("repositories")
+    if not isinstance(repositories, list) or len(repositories) < 2:
+        problems.append("BENCH-019 manifest must bind both source repositories")
+    else:
+        names: set[str] = set()
+        for index, repository in enumerate(repositories):
+            _check_repository_identity(
+                repository,
+                f"manifest.json repositories[{index}]",
+                problems,
+                allow_dirty=allow_dirty,
+            )
+            if not isinstance(repository, dict) or not isinstance(repository.get("name"), str):
+                problems.append(f"manifest.json repositories[{index}] has no name")
+            elif repository["name"] in names:
+                problems.append("manifest.json repository names must be unique")
+            else:
+                names.add(repository["name"])
+
+    protocol_raw = manifest.get("protocol_file")
+    if not isinstance(protocol_raw, str) or Path(protocol_raw).is_absolute():
+        problems.append("manifest.json protocol_file must be a relative path")
+        protocol_path = None
+    else:
+        candidate = root / protocol_raw
+        protocol_path = candidate if candidate.is_file() and _contained(candidate, root) else None
+        if protocol_path is None:
+            problems.append("manifest.json protocol_file is missing or escapes the bundle")
+    if protocol_path is not None:
+        recorded_file_digest = manifest.get("protocol_file_sha256")
+        if recorded_file_digest != _sha256(protocol_path):
+            problems.append("manifest.json protocol_file_sha256 differs")
+        try:
+            loaded_protocol = _load_json(protocol_path)
+        except (OSError, json.JSONDecodeError, ValueError) as exc:
+            problems.append(f"protocol file is invalid: {exc}")
+        else:
+            if (
+                not isinstance(loaded_protocol, dict)
+                or loaded_protocol.get("schema") != BENCH019_PROTOCOL_SCHEMA
+            ):
+                problems.append("protocol file has the wrong BENCH-019 schema")
+            else:
+                protocol = loaded_protocol
+                expected_bindings = _bench019_protocol_bindings(protocol)
+            if protocol is not None and protocol.get("state") != "frozen" and not allow_dirty:
+                problems.append("BENCH-019 protocol is not frozen")
+            elif protocol is not None and protocol.get("state") == "frozen":
+                recorded = protocol.get("protocol_sha256")
+                if not isinstance(recorded, str) or recorded != _canonical_digest_without(
+                    protocol, "protocol_sha256"
+                ):
+                    problems.append("protocol file self-digest differs")
+                if manifest.get("protocol_sha256") != recorded:
+                    problems.append("manifest.json binds a different protocol digest")
+
+    bindings = manifest.get("bindings")
+    required_paths: set[Path] = set()
+    if not isinstance(bindings, list) or not bindings:
+        problems.append("BENCH-019 manifest has no portable protocol bindings")
+    else:
+        labels: set[str] = set()
+        observed_bindings: dict[str, dict[str, Any]] = {}
+        for index, binding in enumerate(bindings):
+            if not isinstance(binding, dict) or set(binding) != {
+                "label",
+                "path",
+                "sha256",
+                "bytes",
+            }:
+                problems.append(f"manifest.json bindings[{index}] has invalid fields")
+                continue
+            label = binding.get("label")
+            if not isinstance(label, str) or not label or label in labels:
+                problems.append(f"manifest.json bindings[{index}] has a missing/duplicate label")
+            else:
+                labels.add(label)
+                observed_bindings[label] = binding
+            descriptor = {key: binding[key] for key in ("path", "sha256", "bytes")}
+            path = _relative_descriptor_path(
+                root, descriptor, f"manifest.json bindings[{index}]", problems
+            )
+            if path is not None:
+                required_paths.add(path)
+        if expected_bindings:
+            if set(observed_bindings) != set(expected_bindings):
+                problems.append("portable binding labels differ from the frozen protocol")
+            for label in sorted(set(observed_bindings) & set(expected_bindings)):
+                expected = expected_bindings[label]
+                observed = observed_bindings[label]
+                if observed.get("sha256") != expected.get("sha256"):
+                    problems.append(f"portable binding {label} has the wrong source SHA-256")
+                if observed.get("bytes") != expected.get("bytes"):
+                    problems.append(f"portable binding {label} has the wrong source byte count")
+
+    try:
+        metrics = _load_json(root / "metrics.json")
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        problems.append(f"metrics.json is invalid: {exc}")
+        return
+    if not isinstance(metrics, list) or not metrics or not all(
+        isinstance(row, dict) for row in metrics
+    ):
+        problems.append("metrics.json must contain a non-empty object-row list")
+        return
+    if not _finite(metrics):
+        problems.append("metrics.json contains a non-finite numeric value")
+    _check_json_csv_projection(root, metrics, problems)
+    keys: set[tuple[Any, ...]] = set()
+    for index, row in enumerate(metrics):
+        label = f"metrics.json[{index}]"
+        if row.get("schema") != BENCH019_ROW_SCHEMA:
+            problems.append(f"{label}: wrong BENCH-019 row schema")
+        status = row.get("status")
+        if status not in {"ok", "error", "missing"}:
+            problems.append(f"{label}: status must be ok, error, or missing")
+        if status in {"error", "missing"} and not allow_error_cells:
+            problems.append(
+                f"{label}: {status} cell is not claim-ready; fix/rerun or use "
+                "--allow-error-cells for diagnostics"
+            )
+        if status in {"error", "missing"} and not str(row.get("error", "")).strip():
+            problems.append(f"{label}: non-ok cell must retain a diagnostic")
+        key = tuple(
+            repr(row.get(name))
+            for name in ("frame_id", "family_id", "seed", "initializer", "replicate_id")
+        )
+        if key in keys:
+            problems.append(f"{label}: duplicate stable cell key {key!r}")
+        keys.add(key)
+        if status != "ok":
+            continue
+        if not isinstance(row.get("stage1"), dict) or not row["stage1"]:
+            problems.append(f"{label}: stage1 metrics must be a non-empty object")
+        if not isinstance(row.get("downstream"), dict) or not row["downstream"]:
+            problems.append(f"{label}: downstream metrics must be a non-empty object")
+        artifacts = row.get("artifacts")
+        if not isinstance(artifacts, dict) or set(artifacts) != set(
+            BENCH019_REQUIRED_ARTIFACTS
+        ):
+            problems.append(f"{label}: artifacts do not match the BENCH-019 contract")
+            continue
+        for name in BENCH019_REQUIRED_ARTIFACTS:
+            path = _relative_descriptor_path(
+                root, artifacts[name], f"{label}.artifacts.{name}", problems
+            )
+            if path is not None:
+                required_paths.add(path)
+
+    analysis_files = manifest.get("analysis_files")
+    if not isinstance(analysis_files, list) or not analysis_files:
+        problems.append("manifest.json has no analysis_files")
+    else:
+        for index, raw in enumerate(analysis_files):
+            if not isinstance(raw, str) or Path(raw).is_absolute():
+                problems.append(f"manifest.json analysis_files[{index}] is not relative")
+                continue
+            path = root / raw
+            if not path.is_file() or not _contained(path, root):
+                problems.append(f"manifest.json analysis_files[{index}] is missing")
+            else:
+                required_paths.add(path.resolve())
+    analysis: dict[str, Any] | None = None
+    decision: dict[str, Any] | None = None
+    try:
+        loaded_analysis = _load_json(root / "analysis.json")
+        loaded_decision = _load_json(root / "decision.json")
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        problems.append(f"BENCH-019 analysis/decision JSON is invalid: {exc}")
+    else:
+        if not isinstance(loaded_analysis, dict) or not isinstance(loaded_decision, dict):
+            problems.append("BENCH-019 analysis and decision files must contain objects")
+        else:
+            analysis = loaded_analysis
+            decision = loaded_decision
+            if analysis.get("protocol_sha256") != manifest.get("protocol_sha256"):
+                problems.append("analysis.json binds a different protocol digest")
+            if analysis.get("decision") != decision or manifest.get("decision") != decision:
+                problems.append("manifest/analysis/decision dispositions disagree")
+            row_problems = analysis.get("row_validation_problems")
+            missing = analysis.get("missing_cells")
+            errors = analysis.get("error_cells")
+            aa = analysis.get("aa_replay")
+            if not allow_error_cells:
+                if row_problems:
+                    problems.append("analysis reports result-row binding problems")
+                if missing:
+                    problems.append("analysis reports missing expected cells")
+                if errors:
+                    problems.append("analysis reports error cells")
+                if not isinstance(aa, dict) or aa.get("passed") is not True:
+                    problems.append("analysis A/A replay did not pass")
+            integrity_ready = bool(
+                protocol is not None
+                and protocol.get("state") == "frozen"
+                and not row_problems
+                and not missing
+                and not errors
+                and isinstance(aa, dict)
+                and aa.get("passed") is True
+            )
+            if manifest.get("claim_ready") is not integrity_ready:
+                problems.append("manifest.json claim_ready disagrees with analysis integrity")
+    linked_paths = _check_html(root, problems)
+    if protocol_path is not None:
+        required_paths.add(protocol_path.resolve())
+    for path in sorted(required_paths):
+        if path not in linked_paths:
+            problems.append(
+                f"index.html does not expose BENCH-019 artifact {path.relative_to(root)}"
+            )
+
+
 def check_bundle(
     root: Path,
     *,
@@ -235,6 +594,15 @@ def check_bundle(
         return problems
     if not isinstance(manifest, dict):
         problems.append("manifest.json must contain an object")
+        return problems
+    if manifest.get("schema") == BENCH019_REPORT_SCHEMA:
+        _check_bench019_bundle(
+            root,
+            manifest,
+            problems,
+            allow_dirty=allow_dirty,
+            allow_error_cells=allow_error_cells,
+        )
         return problems
     if manifest.get("schema") != "structsplat.current_pipeline.workflow.v1":
         problems.append("manifest.json has the wrong workflow schema")

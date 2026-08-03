@@ -183,7 +183,9 @@ StructSplat matched-policy default-promotion gate.
    leaderboard target. Native methods must still be evaluated at their real rate definitions, not
    forced into the 168 KiB proxy; this lane cannot retroactively promote tensor-WSE.
 2. Add native Structure-Guided Allocation first if official code is available; it is the direct
-   handcrafted structure baseline. Then prioritize SAD and WIPES as representation controls.
+   handcrafted structure baseline. For the Field V2 graph, prioritize native SGI at its intended
+   high-resolution protocol for BENCH-025, native LocoADC for FIT-045, and WIPES as the rich-atom
+   control. Keep every native row separate from local transplants and centrally rescore it.
 3. Expand GaussianImage++ across multiple native-resolution rates and an iteration/time envelope;
    include its real quantized stream path before actual-bpp claims.
 4. Expand Image-GS release quick-start and native-authentic/full-resolution multi-rate/time-matched

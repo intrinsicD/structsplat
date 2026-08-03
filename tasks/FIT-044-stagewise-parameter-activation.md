@@ -13,6 +13,11 @@ gated the *loss target* coarse-to-fine and was rejected by its 500-step guard; i
 gating *which parameter groups move*. That is the direct test of whether structure-aware
 initialization carries early-convergence value or is merely overwritten.
 
+For the BENCH-020-selected Field V2 semantics, `color` means the authoritative additive
+`rgb_coeff` block and `opacity` is present only if the selected contract contains an independently
+supervised `structural_mass`. The configuration must name semantic groups rather than silently
+carrying normalized-field coupling into an additive experiment.
+
 ## Goal
 
 An opt-in `parameter_schedule` in `FitConfig` — implemented purely as per-group learning-rate
@@ -34,6 +39,7 @@ Screened schedules (phase boundaries as configurable fractions of the nominal sc
 - Changing any default (`joint` remains the shipped behavior).
 - Loss-target curricula (FIT-016 owns that rejected axis) or pyramid schedule redesign.
 - Per-field optimizer dynamics (field-specific beta2/weight-decay is a separate follow-up task).
+- Conditional coefficient solves or variable projection (FIT-046 owns that mechanism).
 - Topology/densification policy changes; schedules interact with densification only through the
   existing event triggers, which stay frozen across arms.
 
@@ -50,7 +56,11 @@ Screened schedules (phase boundaries as configurable fractions of the nominal sc
 - [ ] Screen on the maintained benchmark images at a fixed budget and seeds: final PSNR,
       iterations-to-target, wall-clock-to-target, displacement of original means (px), covariance
       change from initialization, fraction of original rows still contributing, densification
-      event count, and PSNR at the first densification event, all from logged config + seed.
+      event count, PSNR at the first densification event, BENCH-019 downstream objective, canonical
+      raw bytes, renderer work, and peak memory, all from logged config + seed.
+- [ ] The selected semantic contract has an explicit group mapping; absent structural mass cannot
+      be optimized through a legacy opacity placeholder.
+- [ ] BENCH-021 receives one frozen schedule or an explicit negative result.
 - [ ] Outcome (positive or negative) recorded as an ARA observation or claim row, and this task's
       Index status updated in the same commit.
 - [ ] `./scripts/verify.sh` passes.
@@ -64,7 +74,7 @@ Screened schedules (phase boundaries as configurable fractions of the nominal sc
 
 ## Depends on
 
-FIT-016, BENCH-002
+FIT-016, BENCH-020, CORE-013, BENCH-002
 
 ## Agent workflow
 
@@ -88,3 +98,4 @@ confirmation task, not a default flip. If ABL-005's fair-regime shard has report
 time, prefer its regime settings for the screen; its completion is not a prerequisite. The
 realtime-gs repository is running the adjacent 3D-side initialization-preservation question; keep
 terminology aligned but evidence separate.
+This task is a component screen for BENCH-021, not an independent production-default gate.
