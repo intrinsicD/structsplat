@@ -44,3 +44,16 @@
   `tasks/CORE-008-hybrid-edge-primitives.md`]
 - **From staging**: O100
 
+## K04: Downstream rows require paired provenance receipts
+
+- **Constraint**: BENCH-019 aggregation accepts a cell only with its paired exporter receipt and
+  revalidates the exact protocol, family-invariant factor, source manifest, metric-source files,
+  canonical row, and six cell artifacts. Row-schema validity alone cannot establish that metrics
+  came from the frozen raw sources.
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Applies to**: BENCH-019 realtime-gs export, assembly, protocol review, and results audit.
+- **Evidence**: [`realtime-gs@d3e76fe:src/rtgs/bench019.py`,
+  `realtime-gs@d3e76fe:tests/test_bench019_exporter.py`,
+  `tasks/BENCH-019-stage1-downstream-objective.md`]
+- **From staging**: O103

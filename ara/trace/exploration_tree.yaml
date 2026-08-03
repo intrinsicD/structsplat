@@ -4227,3 +4227,43 @@ tree:
       - "./scripts/verify.sh: 1560 passed, 4 skipped; all structural gates OK"
     also_depends_on: [N210]
     status: resolved
+  - id: N212
+    type: decision
+    title: "Implement the general-scope BENCH-019 exporter in isolation"
+    provenance: user
+    timestamp: "2026-08-03T09:52+02:00"
+    choice: >
+      Execute the first roadmap task through a clean realtime-gs worktree: implement a
+      provider-neutral BENCH-019 receipt exporter, acquire and bind disjoint development and
+      confirmation source groups, preserve the dirty RTGS-008 worktree, and stop before formal
+      protocol execution or confirmation outcomes.
+    alternatives:
+      - "Wait for the active workload-specific RTGS-008 worktree to become clean before adding the exporter."
+      - "Run only frame_00008 and accept a workload-specific downstream diagnostic."
+      - "Freeze BENCH-019 before independent source groups and exact receipt export exist."
+    evidence:
+      - "realtime-gs commit d3e76fe44f3afe2044505fdcf1e7043657a4e4b1"
+      - "StructSplat binding commit 5f1b1fb516a10e48af14081c82017ac7388167fb"
+      - "tasks/BENCH-019-stage1-downstream-objective.md"
+    also_depends_on: [N211]
+    status: resolved
+  - id: N213
+    type: experiment
+    title: "Cross-repository BENCH-019 exporter diagnostics pass without outcomes"
+    provenance: ai-executed
+    timestamp: "2026-08-03T09:52+02:00"
+    result: >
+      The isolated realtime-gs implementation passed 18 focused exporter/portfolio tests and both
+      complete CPU repository gates. A synthetic frozen successful cell preserved an integer metric
+      and produced zero StructSplat row-validation problems. A calibrated Stage review-state cell
+      bound the exact GaussianImage manifest and semantic digest, intentionally reported error
+      before downstream execution, and likewise produced zero row-validation problems. The
+      source-only portfolio rehashed 88 files across three development and three confirmation
+      groups; five groups still lack matched fields and no confirmation outcome was opened.
+    evidence:
+      - "realtime-gs commit d3e76fe44f3afe2044505fdcf1e7043657a4e4b1"
+      - "realtime-gs@d3e76fe:experiments/data/structsplat_bench019_capture_portfolio.json sha256 cc9918b835c4c507a7959af0c60270e12b673007cf3605b459e1acc0549f6305"
+      - "StructSplat commit 5f1b1fb516a10e48af14081c82017ac7388167fb"
+      - "./scripts/verify.sh: 1560 passed, 4 skipped; all structural gates OK"
+    also_depends_on: [N211, N212]
+    status: resolved

@@ -632,3 +632,13 @@ entries:
       - "Promoted no claim and added no staged observation because the evidence-gate constraint is already crystallized in H15/H16 and K01/K02, while the newly committed controllers have not generated scientific outcomes."
       - "Bound the implementation handoff to commits efcc18f, 8e5aba8, and c61db61 plus a fresh canonical verification pass: 1,560 tests passed, 4 skipped, with lint and every structural gate green."
       - "Marked no observation stale because this turn actively advances the same downstream, semantic, convergence, rate, and integration program."
+  - turn: "2026-08-03_001#5"
+    notes:
+      - "Routed the user's selection of route 1 as decision N212 because it authorizes the general-scope exporter and independent-source path while retaining the previously adopted evidence-gate order."
+      - "Routed the cross-repository compatibility, portfolio rehash, focused tests, and complete repository gates as engineering diagnostic experiment N213; no downstream scientific outcome, family comparison, or confirmation result was produced."
+      - "Staged O103 and crystallized it as K04 via artifact commitment because the committed assembler and tests now require a paired exporter receipt and revalidate protocol, factor, source, raw metric, row, and artifact provenance."
+      - "Recorded the initial row-only assembly path as a self-review correction, not a completed scientific experiment; the bypass was closed before realtime-gs commit d3e76fe."
+      - "Resolved the prior exporter and 3+3 source-scope threads at the source-contract level only; distinct review, frozen adapters, predictor collection, and five groups of matched fields remain open."
+      - "Did not freeze BENCH-019, change a default, produce a production field, promote a claim, or open confirmation outcomes."
+      - "Bound the checkpoint to realtime-gs commit d3e76fe44f3afe2044505fdcf1e7043657a4e4b1, StructSplat binding commit 5f1b1fb516a10e48af14081c82017ac7388167fb, 18 focused realtime-gs tests, both complete CPU gates, an 88-file rehashed source portfolio, and a fresh StructSplat gate with 1,560 tests passed and 4 skipped."
+      - "Marked no observation stale because this turn directly advances the same downstream-provenance and general-data program on the same session day."

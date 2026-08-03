@@ -1176,3 +1176,21 @@ observations:
     promoted_to: "logic/solution/architecture.md:A03"
     crystallized_via: artifact-commitment
     stale: false
+  - id: O103
+    timestamp: "2026-08-03T09:52+02:00"
+    provenance: ai-suggested
+    content: >
+      A schema-valid BENCH-019 result row is not sufficient provenance for aggregation. Stable
+      assembly must require the paired exporter receipt and revalidate its protocol identity,
+      downstream factor, source manifest, metric-source artifacts, row hash, and six cell
+      artifacts; otherwise a hand-written row can bypass the declared raw-metric boundary.
+    context: >
+      Correctness self-review of the new realtime-gs exporter found that its first assembler draft
+      validated rows but did not require their provenance receipts. The implementation and tests
+      were changed before commit so receipt-free and tampered-receipt assemblies fail closed.
+    potential_type: constraint
+    bound_to: [N212, N213]
+    promoted: true
+    promoted_to: "logic/solution/constraints.md:K04"
+    crystallized_via: artifact-commitment
+    stale: false
