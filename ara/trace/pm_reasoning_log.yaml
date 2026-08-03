@@ -642,3 +642,13 @@ entries:
       - "Did not freeze BENCH-019, change a default, produce a production field, promote a claim, or open confirmation outcomes."
       - "Bound the checkpoint to realtime-gs commit d3e76fe44f3afe2044505fdcf1e7043657a4e4b1, StructSplat binding commit 5f1b1fb516a10e48af14081c82017ac7388167fb, 18 focused realtime-gs tests, both complete CPU gates, an 88-file rehashed source portfolio, and a fresh StructSplat gate with 1,560 tests passed and 4 skipped."
       - "Marked no observation stale because this turn directly advances the same downstream-provenance and general-data program on the same session day."
+  - turn: "2026-08-03_001#6"
+    notes:
+      - "Routed the repeated focused tests, source rehash, and complete repository gate as engineering diagnostic experiment N214 because they produced a new exact provisional-review checkpoint but no downstream scientific outcome."
+      - "Did not route the user's continuation request as a duplicate decision: N211 and N212 already authorize the sequential general-scope path, and this turn did not select a different scientific alternative."
+      - "Preserved the distinction between producer self-review and independent acceptance. Commit f373f41 records provisional acceptance only; it does not authorize archiving RTGS-009, replacing the active task with RTGS-010, or freezing a formal BENCH-019 protocol."
+      - "Treated the one-active-task stop as a workflow authority boundary, not a technical dead end or empirical result. A distinct reviewer or human review remains the resolving action."
+      - "Produced no field, predictor value, downstream row, comparison, claim, default change, protocol freeze, or confirmation access."
+      - "Added no staged observation or crystallized knowledge because the distinct-review rule is existing repository policy rather than a newly inferred research property."
+      - "Bound the provisional checkpoint to realtime-gs commits d3e76fe and f373f41, 18 focused tests, an 88-file portfolio rehash, and a complete green CPU verification gate."
+      - "Marked no observation stale because the same downstream-provenance and general-data thread remains active on the same session day."

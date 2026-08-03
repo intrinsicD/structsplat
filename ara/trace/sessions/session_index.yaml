@@ -127,8 +127,8 @@ sessions:
     open_threads: 0
   - id: "2026-08-03_001"
     date: "2026-08-03"
-    summary: "Audited the Janelle conversion, formalized the evidence-gated Observation Field V2 roadmap, implemented its BENCH-019, CORE-013, and BENCH-020 substrates, and added a receipt-bound realtime-gs exporter plus a disjoint 3+3 source portfolio without opening formal or confirmation outcomes."
-    turn_count: 5
-    events_count: 22
+    summary: "Audited the Janelle conversion, formalized the evidence-gated Observation Field V2 roadmap, implemented its initial protocol substrates and receipt-bound exporter, and provisionally self-reviewed the disjoint 3+3 source checkpoint while preserving the distinct-review, formal-run, and confirmation gates."
+    turn_count: 6
+    events_count: 23
     claims_touched: []
     open_threads: 7

@@ -2,9 +2,9 @@ session:
   id: "2026-08-03_001"
   date: "2026-08-03"
   started: "2026-08-03T00:46+02:00"
-  last_turn: "2026-08-03T09:52+02:00"
-  turn_count: 5
-  summary: "Audited the Janelle conversion, formalized the evidence-gated Observation Field V2 roadmap, implemented its BENCH-019, CORE-013, and BENCH-020 substrates, and added a receipt-bound realtime-gs exporter plus a disjoint 3+3 source portfolio without opening formal or confirmation outcomes."
+  last_turn: "2026-08-03T12:29+02:00"
+  turn_count: 6
+  summary: "Audited the Janelle conversion, formalized the evidence-gated Observation Field V2 roadmap, implemented its initial protocol substrates and receipt-bound exporter, and provisionally self-reviewed the disjoint 3+3 source checkpoint while preserving the distinct-review, formal-run, and confirmation gates."
 
 events_logged:
   - turn: 1
@@ -139,6 +139,12 @@ events_logged:
     routing: crystallized
     provenance: ai-suggested
     summary: "Crystallized paired exporter receipts and full provenance revalidation as K04 after self-review closed a row-only assembly bypass."
+  - turn: 6
+    type: experiment
+    id: "N214"
+    routing: direct
+    provenance: ai-executed
+    summary: "Reproduced RTGS-009's focused tests, 88-file portfolio rehash, and complete CPU gate; recorded only provisional self-review and retained the distinct-review blocker."
 
 ai_actions:
   - turn: 1
@@ -247,6 +253,15 @@ ai_actions:
       - "ara/trace/sessions/2026-08-03_001.yaml"
       - "ara/trace/sessions/session_index.yaml"
       - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 6
+    action: "Resumed the BENCH-019 sequence, inspected the exact realtime-gs task and workflow gates, adversarially self-reviewed commit d3e76fe, re-ran its focused tests and full portfolio rehash, passed the complete CPU verification gate, committed an exact provisional review record as f373f41, and stopped before replacing the one active task because independent acceptance cannot be manufactured by its producer."
+    provenance: ai-executed
+    files_changed:
+      - "../realtime-gs-bench019/.agents/state/current-task.md"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/2026-08-03_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
 
 claims_touched: []
 
@@ -261,6 +276,8 @@ key_context:
     excerpt: "The user directed implementation of the roadmap task by task, with a final matched comparison against the other pipelines on the same data."
   - turn: 5
     excerpt: "The user selected route 1: implement the general-scope BENCH-019 realtime-gs exporter and independent capture-group substrate before continuing the roadmap."
+  - turn: 6
+    excerpt: "The user asked to continue with the next roadmap steps; execution reached the repository's mandatory distinct-review boundary before RTGS-010 can replace the active task."
 
 open_threads:
   - "Obtain a distinct implementation review of realtime-gs commit d3e76fe and the capture-group independence boundary before freezing the formal BENCH-019 protocol."
@@ -276,4 +293,4 @@ ai_suggestions_pending:
   - "Repair the no-boundary mask/loss/gate/profile contract before drawing any conclusion from that arm."
   - "Benchmark cuda_tiled and smaller commit blocks only after the protected-metric policy is fixed; renderer optimization alone cannot explain the full gap."
   - "Use the additive 11k field as the near-term production baseline while treating the alpha-separated dual-field format as an untested redesign candidate."
-  - "Review and accept the receipt-bound exporter checkpoint, then freeze source adapters and produce matched development fields; do not open confirmation outcomes before the prospective locks and development decision."
+  - "Authorize a distinct reviewer agent or provide a human reviewer for RTGS-009; after independent acceptance, open RTGS-010 for adapters and predictor collection without opening confirmation outcomes."

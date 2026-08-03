@@ -4267,3 +4267,24 @@ tree:
       - "./scripts/verify.sh: 1560 passed, 4 skipped; all structural gates OK"
     also_depends_on: [N211, N212]
     status: resolved
+  - id: N214
+    type: experiment
+    title: "RTGS-009 provisional review reproduces its contract but cannot grant independence"
+    provenance: ai-executed
+    timestamp: "2026-08-03T12:29+02:00"
+    result: >
+      A fresh producer-side review of realtime-gs commit d3e76fe re-ran all 18 focused exporter
+      and portfolio tests, rehashed the complete 88-file three-development/three-confirmation
+      source inventory, and passed the complete CPU repository verification gate. The exact
+      implementation record is now provisionally self-reviewed in commit f373f41. Repository
+      policy correctly withholds independent acceptance, RTGS-010 task replacement, formal
+      BENCH-019 protocol authority, matched-field production, and confirmation access until a
+      distinct reviewer acts.
+    evidence:
+      - "realtime-gs commit f373f41: provisional RTGS-009 review record"
+      - "realtime-gs commit d3e76fe44f3afe2044505fdcf1e7043657a4e4b1"
+      - "realtime-gs@f373f41:.agents/state/current-task.md"
+      - "focused exporter/portfolio tests: 18 passed; source portfolio: 88 files"
+      - "realtime-gs ./scripts/verify.sh: OK"
+    also_depends_on: [N212, N213]
+    status: resolved
