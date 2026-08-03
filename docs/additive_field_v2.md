@@ -239,9 +239,11 @@ normalized-plain controls in every gate lane, clusters uncertainty by capture, a
 one nondominated semantic/alpha candidate. A heterogeneous frontier is terminal rather than
 collapsed with a hidden scalar. General scope requires three independent development capture
 groups and three disjoint confirmation capture groups. Because BENCH-019 has no validated Stage-1
-target or formal downstream result and the supplied stage data do not provide those splits, the
-current implementation is plumbing only. INIT-010 and FIT-044--049 remain blocked on a reviewed,
-sealed BENCH-020 outcome.
+target or formal downstream result, the current implementation is plumbing only. A source-only
+portfolio now preassigns three development and three confirmation acquisition groups, but five
+groups still lack matched fields and several lack frozen adapters, keyframes, masks, or splits;
+source acquisition is not benchmark readiness. INIT-010 and FIT-044--049 remain blocked on a
+reviewed, sealed BENCH-020 outcome.
 
 ## Alpha and boundary policy
 
@@ -399,13 +401,21 @@ rank correlations, leave-one-frame-out diagnostics, capture-cluster bootstrap, f
 missing cells, and a portable report/checker contract. This is plumbing, not an outcome. The
 formal protocol and result remain open until a distinct reviewer approves the exact digest.
 
-The currently available stage capture cannot support the general-surrogate branch by itself.
-`frame_00008` is the only frame with the three requested 11k provider families in production, one
-StructSplat family is still being produced, `frame_00009` lacks the matched three-family set, and
-both frames belong to one capture group. Before a general BENCH-019 decision, finish and seal the
-first frame, produce the same families for the second frame, and add two independent capture
-groups. A final comparison restricted to the supplied frame remains useful as an explicitly
-workload-specific pipeline comparison, but it cannot relax the general promotion gate.
+The external realtime-gs driver checkpoint `d3e76fe` supplies the matching passive row exporter:
+exact additive/normalized semantic preservation, family/A-A invariant downstream factors, sealed
+JSON-pointer metrics, six artifact descriptors, explicit error rows, and receipt-required stable
+assembly. Its calibrated diagnostic intentionally stopped before downstream execution and passed
+the StructSplat row validator. The checkpoint and its 3+3 source portfolio remain pending distinct
+implementation review, so neither is an accepted formal executor yet.
+
+The currently available matched-field data cannot support the general-surrogate branch. Stage
+`frame_00008` has two complete 26-view families while the mask-contained family was 13/26 at the
+portfolio snapshot; `frame_00009` lacks the matched three-family set. The other acquired source
+groups have no matched families. Before a general BENCH-019 decision, freeze the source adapters
+and predictor collector, finish matched development production across independently reviewable
+capture groups, and preserve the confirmation lock. A comparison restricted to the supplied
+Stage frame remains useful as an explicitly workload-specific pipeline comparison, but it cannot
+relax the general promotion gate.
 
 ### Gate B — select the convergence recipe
 

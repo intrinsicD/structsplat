@@ -84,12 +84,25 @@ silently made here.
   portable report validation, and artifact tamper detection.
 - Formal evidence is intentionally not started. The live frame-00008 mask-contained production is
   incomplete; frame 00009 has no matched three-provider 11k bundle; and both frames are one capture
-  group. The general claim therefore needs the missing matched frame plus two independent capture
-  groups. A supplied-frame-only run must remain workload-specific.
-- The realtime-gs task currently owns an uncommitted draft driver and does not yet export
-  `structsplat.bench019.cell.v1` predictor/response receipts. Do not add a competing executor here:
-  finish that exporter and the Stage-1 predictor collector under realtime-gs authority after its
-  current RTGS-008 work is stabilized, then bind their exact source/environment in this protocol.
+  group. The general claim therefore still needs complete matched fields on at least three
+  independently approved capture groups; the new source-only portfolio does not satisfy that gate.
+  A supplied-frame-only run must remain workload-specific.
+- Isolated realtime-gs driver checkpoint `d3e76fe` now implements the exact
+  `structsplat.bench019.cell.v1` exporter, verified family/A-A downstream factor, raw JSON-pointer
+  extraction, six-artifact binding, explicit error cells, and receipt-required stable assembly.
+  Synthetic-success and calibrated Stage intentional-error diagnostics both pass this repository's
+  row validator with zero problems. This external checkpoint is a driver handoff pending distinct
+  implementation review; it is not yet an accepted executor or authority to freeze a protocol.
+- The realtime-gs source portfolio at that checkpoint binds 88 files across three development and
+  three disjoint confirmation acquisition groups. Its exact descriptor is 39,474 bytes with
+  SHA-256 `cc9918b835c4c507a7959af0c60270e12b673007cf3605b459e1acc0549f6305`.
+  The portfolio explicitly keeps formal protocol, confirmation outcome, and complete-family gates
+  false: five groups have no matched fields, TUM adapters/keyframes are unfrozen, Karate has no
+  frozen mask policy, and the Stage mask-contained family was only 13/26 at the snapshot.
+- Do not add a competing executor here. After distinct review accepts the realtime-gs checkpoint,
+  implement/freeze the remaining Stage-1 predictor collector and source adapters under their
+  owning repository, produce matched development fields, then bind the accepted commits,
+  environments, portfolio, and exact artifacts into a prospective BENCH-019 protocol.
 
 ## Depends on
 
@@ -100,7 +113,7 @@ BENCH-001/002, CORE-012
 - Driver: codex
 - Reviewer: pending-distinct
 - Turn: driver
-- Reviewed revision: pending
+- Reviewed revision: pending (external driver checkpoint `d3e76fe` is not yet accepted)
 
 ### Handoff log
 

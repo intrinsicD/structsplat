@@ -183,7 +183,11 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   semantic digest and one family-independent downstream-factor digest; an A/A replay must pass
   before frame-ranked, capture-clustered correlations can influence Field V2. Its portable report
   is a second schema accepted by `scripts/check_report_bundle.py`; this does not make a diagnostic
-  or underscoped run claim-ready.
+  or underscoped run claim-ready. The realtime-gs side now has a driver-handoff passive exporter
+  checkpoint: it derives the shared factor, extracts untransformed finite metrics from sealed JSON
+  pointers, binds all six cell artifacts, and requires each assembled row's provenance receipt.
+  That external checkpoint remains pending distinct review. Its source-only 3+3 portfolio records
+  acquired groups and closed gates; it is not matched field data or a frozen execution protocol.
 
 ## Stage-search (ABL-002, protocol in ADR-0010)
 `benchmarks/stage_search.py` sweeps configurations across every swappable stage — tensor operator,
