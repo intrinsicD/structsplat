@@ -104,7 +104,7 @@ appearance:
   background_rgb    optional [3], alpha-gated DC term counted in the stream
 
 structure:
-  structural_mass   optional [N,1], nonnegative and independently defined
+  structural_mass   optional [N], one nonnegative independently defined scalar per row
 
 observation:
   packed_alpha      optional exact or explicitly lossy alpha payload
@@ -160,6 +160,55 @@ selected domain exactly.
 
 Adapters must say whether they preserve pixels, component semantics, both, or neither. A converted
 normalized field is not an exact additive teacher merely because its arrays have compatible shapes.
+
+### CORE-013 reference realization
+
+`src/structsplat/observation_field.py` now implements the default-off schema-`2.0.0` reference
+object and CPU oracle. This is an implementation substrate pending distinct review, not the
+BENCH-020 semantic verdict and not a production/default change. The module is NumPy-only and does
+not import, wrap, or mutate the current torch fitting path.
+
+The reference schema makes the following choices explicit:
+
+- Geometry is crop-local RS geometry: `means_xy [N,2]`, `log_scales_xy [N,2]`, and
+  `rotations_rad [N]`. Optional per-row isotropic covariance variance and global AA dilation are
+  applied in covariance space before inversion.
+- The peak-one kernel records infinite, elliptical-cutoff, or rounded-center covariance-AABB
+  support. The AABB option exactly names the current `render.py` support rectangle, including
+  ties-to-even center rounding, minimum one-pixel radius, sigma cutoff, and optional subtractive
+  tail fade. A future producer cannot call an elliptical cutoff the incumbent support policy.
+- Raw appearance, alpha-matted appearance, structural density/responsibilities, and display
+  clipping are separate functions. `linear_rgb_unclipped` is the oracle space; neither alpha nor
+  `[0,1]` clipping is applied by `appearance_raw` or `render_raw`.
+- Packed alpha is row-major little-bit-order binary data over the fit crop. Its metadata says
+  whether the mask was exact binary input or produced by an explicitly recorded lossy threshold.
+  Boundary policy and output-matting policy are independent declarations.
+- Canvas/crop transforms are integral and bounded. Optional camera data is immutable finite JSON
+  under a source-owned schema name; the contract does not invent a universal camera grammar.
+- Every float array is canonical little-endian float32 or float64, finite, shape-checked, copied,
+  and read-only. Nonnegative coefficients/mass, positive covariance, alpha padding bits, optional
+  field presence, metadata keys, and schema/container versions fail closed.
+
+The lossless reference NPZ stores deterministic NPY members plus canonical JSON metadata,
+per-array hashes, and a semantic-and-array canonical content hash. It preserves values, dtype,
+shape, signed zero, semantics, crop, alpha, and camera metadata exactly. It is deliberately not
+the COMP-013 compressed stream, and its ZIP/NPZ byte count is not rate evidence.
+The current reader rejects unknown members and keys. Schema growth uses explicit version dispatch;
+there is intentionally no generic mixed-atom, executable-generator, or neural-decoder payload
+hidden inside this base contract.
+
+Adapter declarations keep pixel and component exactness separate:
+
+| Source | Output | Pixel exact | Component semantics exact |
+|---|---|---:|---:|
+| authoritative direct additive coefficients | Field V2 | yes | yes |
+| current constant-color factorized additive field | opacity folded into `rgb_coeff` | yes, under the bound current support/filter settings | no; the color/opacity gauge is discarded and opacity is not relabelled mass |
+| current normalized weighted sum | no field by default | no | no |
+| normalized weighted sum with `permit_inexact=True` | named approximate additive control | no | no |
+
+Affine-color legacy fields fail the constant-coefficient exact adapter rather than dropping their
+gradients. A normalized adapter is structurally forbidden from claiming either exactness flag.
+BENCH-020 remains responsible for deciding whether any additive candidate should proceed.
 
 ## Alpha and boundary policy
 

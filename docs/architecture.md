@@ -9,6 +9,13 @@ measurement, and downstream realtime-gs validation. It is a proposal only. Until
 later production confirmation authorize a change, the normalized architecture and maintained
 entrypoint below remain current; ADR-0003/0006 are not superseded.
 
+CORE-013's default-off `structsplat.observation_field` module realizes the proposal's typed
+schema-`2.0.0` boundary, closed-form NumPy oracle, strict lossless reference NPZ, canonical content
+hash, and audited direct/factorized/normalized adapters. It is not a compressed codec, fitter,
+supported conversion output, or semantic selection. Raw RGB, alpha matting, independent mass,
+and display clipping remain separate operations, and legacy normalized fields cannot be declared
+exact additive conversions.
+
 ## Entrypoint (ADR-0025/0028/0029/0030)
 
 `structsplat.pipeline.run_pipeline` is the maintained composition of the current best pipeline,
@@ -79,7 +86,10 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   dart throwing, farthest-point, CVT/Lloyd, Halton, and opt-in terminal-set-preserving progressive
   WSE order), `config`, `mask` (CORE-010/011: exact separable EDT / signed distance / erosion /
   nearest-inside feature transform / boundary color dilation / smoothed-SDF boundary normals for
-  mask-contained fitting and boundary coverage).
+  mask-contained fitting and boundary coverage); `observation_field` is the separate default-off
+  Field V2 semantic boundary and CPU oracle. It stores RS geometry, authoritative additive RGB,
+  optional independent mass/filter/background/packed alpha/camera state, explicit renderer and
+  coordinate semantics, and a lossless hashed reference container without importing torch.
 - **benchmark-only structural controls:** `structural_controls` lazily calls SLIC and keeps the
   SLIC/Sobel complexity ranking, exact-N 6:2:1 allocation, and unresolved upstream-fidelity
   assumptions explicit. `init` registers `local_slic_sobel_control`, but it is not a shipped

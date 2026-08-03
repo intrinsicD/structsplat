@@ -7,6 +7,7 @@ unless the owning task says so.
 
 ## Work in progress
 
+- `CORE-013` — Observation Field V2 semantic contract (in-review; `tasks/CORE-013-observation-field-v2-contract.md`)
 - `DOCS-006` — Repository-native experiment workflow skill (in-progress; `tasks/DOCS-006-experiment-workflow-skill.md`)
 
 ## Actionable with no open recorded task dependency
@@ -40,7 +41,6 @@ unless the owning task says so.
 - `FF-002` — Field V2 Predict–Optimize–Distil; open dependencies: `CORE-013`, `BENCH-020`, `BENCH-021`, `BENCH-025`, `COMP-013`, `COMP-014` (`tasks/FF-002-predict-optimize-distil.md`)
 - `FF-003` — Complete-byte elastic Field V2 predictor; open dependencies: `FF-002`, `BENCH-025`, `COMP-013`, `COMP-014` (`tasks/FF-003-elastic-gaussian-budgets.md`)
 - `BENCH-018` — Commit-gate granularity (`block_steps`); open dependencies: `BENCH-017` (`tasks/BENCH-018-commit-gate-granularity.md`)
-- `CORE-013` — Observation Field V2 semantic contract; open dependencies: `BENCH-019` (`tasks/CORE-013-observation-field-v2-contract.md`)
 - `BENCH-020` — Field semantics and alpha-policy factorial; open dependencies: `BENCH-019`, `CORE-013` (`tasks/BENCH-020-field-semantics-factorial.md`)
 - `INIT-010` — Field V2 initializer transfer screen; open dependencies: `BENCH-020`, `CORE-013` (`tasks/INIT-010-field-v2-initializer-transfer.md`)
 - `FIT-046` — Additive appearance variable projection; open dependencies: `BENCH-020`, `CORE-013` (`tasks/FIT-046-additive-variable-projection.md`)
