@@ -2,9 +2,9 @@ session:
   id: "2026-08-03_001"
   date: "2026-08-03"
   started: "2026-08-03T00:46+02:00"
-  last_turn: "2026-08-03T02:09+02:00"
-  turn_count: 3
-  summary: "Audited the Janelle conversion and formalized an evidence-gated Observation Field V2 architecture with an actionable downstream-first task graph, conditional structured coding, and no default change."
+  last_turn: "2026-08-03T04:46+02:00"
+  turn_count: 4
+  summary: "Audited the Janelle conversion, formalized the evidence-gated Observation Field V2 roadmap, and implemented its BENCH-019, CORE-013, and BENCH-020 protocol/contract substrates without bypassing the unresolved general-data gate."
 
 events_logged:
   - turn: 1
@@ -115,6 +115,12 @@ events_logged:
     routing: crystallized
     provenance: ai-suggested
     summary: "Crystallized explicit coefficient-domain and counted DC/background semantics as A03."
+  - turn: 4
+    type: decision
+    id: "N211"
+    routing: direct
+    provenance: user
+    summary: "Directed sequential implementation of the Field V2 roadmap followed by a matched same-data pipeline comparison, while retaining the architecture's evidence-gate order."
 
 ai_actions:
   - turn: 1
@@ -180,6 +186,28 @@ ai_actions:
       - "ara/trace/sessions/2026-08-03_001.yaml"
       - "ara/trace/sessions/session_index.yaml"
       - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 4
+    action: "Implemented and committed the passive BENCH-019 downstream-objective controller, the lossless NumPy-only CORE-013 Observation Field V2 boundary, and the sealed BENCH-020 semantic-factorial controller; exercised lifecycle, tamper, leakage, convergence, rate, and portable-report tests; passed the full repository gate (1,560 tests, 4 skipped, all structural checks); and then stopped before candidate-fitter implementation because the required general-scope exporter, independent capture groups, completed matched family, and distinct prospective review do not yet exist."
+    provenance: ai-executed
+    files_changed:
+      - "ara/evidence/bench019-downstream-protocol-preflight-2026-08-03/inventory.json"
+      - "ara/evidence/bench019-downstream-protocol-preflight-2026-08-03/run.md"
+      - "benchmarks/README.md"
+      - "benchmarks/stage1_downstream_objective.py"
+      - "benchmarks/field_semantics_factorial.py"
+      - "docs/additive_field_v2.md"
+      - "docs/architecture.md"
+      - "scripts/check_report_bundle.py"
+      - "scripts/experiments/bench019_stage1_downstream_objective.py"
+      - "scripts/experiments/bench020_field_semantics_factorial.py"
+      - "src/structsplat/observation_field.py"
+      - "tasks/BENCH-019-stage1-downstream-objective.md"
+      - "tasks/BENCH-020-field-semantics-factorial.md"
+      - "tasks/CORE-013-observation-field-v2-contract.md"
+      - "tasks/INDEX.md"
+      - "tests/test_stage1_downstream_objective.py"
+      - "tests/test_observation_field.py"
+      - "tests/test_field_semantics_factorial.py"
 
 claims_touched: []
 
@@ -190,10 +218,13 @@ key_context:
     excerpt: "The user asked whether the project now has the parts for a redesigned pipeline that jointly delivers quality, fast convergence, high performance, and high compression, and requested missing experiments before implementation."
   - turn: 3
     excerpt: "The user asked to create all necessary tasks and one detailed architecture document binding the redesign together."
+  - turn: 4
+    excerpt: "The user directed implementation of the roadmap task by task, with a final matched comparison against the other pipelines on the same data."
 
 open_threads:
-  - "Execute BENCH-019 first to determine whether a Stage-1 surrogate predicts fixed-protocol downstream realtime-gs quality."
-  - "Implement the lossless CORE-013 boundary, then preregister BENCH-020's field/alpha/coefficient/DC semantic factorial."
+  - "Provide a BENCH-019 realtime-gs row exporter and source-bound downstream receipts; the active realtime-gs worktree contains unfinished RTGS008 work but no compatible exporter."
+  - "Choose general scope with at least three independent development and three independent confirmation capture groups, or explicitly authorize a frame_00008-only workload-specific diagnostic."
+  - "Complete the matched frame_00008 mask-contained family and obtain distinct prospective/results reviewers before locking and running BENCH-019/BENCH-020."
   - "Run INIT-010 and FIT-044--049 before composing the frozen convergence recipe in BENCH-021."
   - "Build direct COMP-013, run BENCH-025, and implement conditional COMP-014 only if decoded structure earns complete bytes and query cost."
   - "Profile and accelerate the BENCH-021 recipe in PORT-006, price actions through the selected codec in FIT-030, and integrate one default-off CORE-014 profile."
@@ -204,3 +235,4 @@ ai_suggestions_pending:
   - "Repair the no-boundary mask/loss/gate/profile contract before drawing any conclusion from that arm."
   - "Benchmark cuda_tiled and smaller commit blocks only after the protected-metric policy is fixed; renderer optimization alone cannot explain the full gap."
   - "Use the additive 11k field as the near-term production baseline while treating the alpha-separated dual-field format as an untested redesign candidate."
+  - "Prefer completing the provider-neutral realtime-gs exporter and collecting independent capture groups; use frame_00008 alone only as an explicitly workload-specific diagnostic that cannot promote a general default."

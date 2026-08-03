@@ -127,8 +127,8 @@ sessions:
     open_threads: 0
   - id: "2026-08-03_001"
     date: "2026-08-03"
-    summary: "Audited the Janelle conversion and formalized an evidence-gated Observation Field V2 architecture with an actionable downstream-first task graph, conditional structured coding, and no default change."
-    turn_count: 3
-    events_count: 18
+    summary: "Audited the Janelle conversion, formalized the evidence-gated Observation Field V2 roadmap, and implemented its BENCH-019, CORE-013, and BENCH-020 protocol/contract substrates without bypassing the unresolved general-data gate."
+    turn_count: 4
+    events_count: 19
     claims_touched: []
-    open_threads: 6
+    open_threads: 7

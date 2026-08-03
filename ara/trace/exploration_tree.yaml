@@ -4206,3 +4206,24 @@ tree:
       - "./scripts/verify.sh: 1515 passed, 4 skipped; all structural gates OK"
     also_depends_on: [N207, N208, N209]
     status: resolved
+  - id: N211
+    type: decision
+    title: "Execute the Observation Field V2 roadmap sequentially before matched comparison"
+    provenance: user
+    timestamp: "2026-08-03T04:46+02:00"
+    choice: >
+      Implement the evidence-gated Field V2 tasks one after another, then compare the completed
+      candidate against the existing pipelines on the same data. Preserve the declared ordering:
+      downstream-objective and field-semantics gates must resolve before convergence methods,
+      codecs, acceleration, integration, confirmation, or default promotion.
+    alternatives:
+      - "Stop after the architecture and task graph without implementing its executable gates."
+      - "Compare partially implemented protocol substrates as though they were complete pipelines."
+      - "Bypass unresolved semantic and downstream gates and choose a production fitter directly."
+    evidence:
+      - "commit efcc18f: BENCH-019 protocol substrate and Field V2 roadmap"
+      - "commit 8e5aba8: CORE-013 Observation Field V2 contract"
+      - "commit c61db61: BENCH-020 sealed field-semantics factorial"
+      - "./scripts/verify.sh: 1560 passed, 4 skipped; all structural gates OK"
+    also_depends_on: [N210]
+    status: resolved
