@@ -262,6 +262,16 @@ early convergence, and lift work versus interior-consensus placement, but native
 trailing smear/double silhouettes and blur. The scalar gate passes while the mandatory visual gate
 fails; this is causal diagnostic evidence, not a supported pipeline or promotion.
 
+CORE-018 tests a materially different default-off geometry composition: packet-derived DINOv2 and
+local features define a source-excluded coarse/fine depth posterior with a dustbin, then reciprocal
+candidate agreement must hold before a Gaussian is emitted. Its disjoint unmasked
+`karate/frame_00060` killing test rejects the route. The no-reciprocal control starts 1.846 dB above
+interior consensus but loses that advantage by step 500 and remains a visibly smeared volume; median
+posterior entropy is 0.960 and median reciprocal support is zero. The complete arm cannot satisfy
+its frozen 75% support floor and fails closed. The method remains a negative control only; lowering
+the gate or integrating it into conversion is not authorized. See the
+[results audit](docs/research/2026-08-06-core018-ray-posterior-results-audit.md).
+
 ### One image → native 2D Gaussian field → image
 
 `image-to-gaussians2d` is an explicit alias for `fit`. This example writes

@@ -54,7 +54,8 @@ IntrinsicEngine as an RHI pass.
   removes the obvious low-count block lattice and protection helps patch error, but it redistributes
   error at 8k and every overlap cell still fails the local gate; only the HIER-005 delta/touched 8k
   fallback passes. None enters the maintained pipeline.
-- `codec_native_field.py` / `realtime_gs_adapter.py` / `realtime_gs_surface_lift.py` —
+- `codec_native_field.py` / `realtime_gs_adapter.py` / `realtime_gs_surface_lift.py` /
+  `realtime_gs_ray_posterior.py` —
   CORE-016/ADR-0032's separate default-off
   dual-plane packet experiment. A charged conventional image payload is decoded into a continuous
   cardinal-prefiltered Gaussian lattice; an independent sparse nonnegative Field V2 measure owns
@@ -66,7 +67,12 @@ IntrinsicEngine as an RHI pass.
   claims. CORE-017's placement-only alpha-support wrapper and first-maximum surface lift improve
   exposed fixed-5k quality, alpha localization, early convergence, and query work, but residual
   trailing smear/double silhouettes and blur fail its native visual gate; surface cover alone is
-  negative. None of these modules enters maintained conversion.
+  negative. CORE-018's source-excluded DINOv2/local coarse/fine ray posterior improves its raw
+  initial PSNR but has near-maximal entropy and sparse reciprocal support on a disjoint karate
+  scene; the full arm fails its frozen support floor, while the no-reciprocal arm remains a visually
+  smeared volume and loses the fixed-prefix convergence comparison. Retain it only as a negative
+  control: no threshold rescue or maintained integration. None of these modules enters maintained
+  conversion.
 
 ## Invariants (do not break without an ADR)
 1. Init-time math stays **NumPy and importable without torch**. Autograd stays in torch modules.

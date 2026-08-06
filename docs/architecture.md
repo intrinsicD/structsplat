@@ -159,6 +159,24 @@ placement loses 0.703 dB. The scalar gate passes and the mandatory visual gate f
 alpha-shell route is retained only as a causal diagnostic and is not advanced to variable topology,
 full-resolution confirmation, a maintained report, or any default.
 
+CORE-018 then replaces mask support with a source-excluded depth posterior over packet-derived
+DINOv2/local features. A best-two-view likelihood with an explicit dustbin chooses coarse/fine ray
+depth, and independently solved candidate rays provide a reciprocal-consistency gate before
+surface-cover covariance reconciliation. Sparse Field V2 still proposes rays and packet appearance
+still supplies radiance; the posterior owns only geometry. The module and its public appearance-only
+query seam are lazy, default-off research interfaces.
+
+On the disjoint unmasked `karate/frame_00060` diagnostic, the no-reciprocal posterior starts 1.846
+dB above interior consensus and has lower complete pretraining time, but it is 0.846 dB worse after
+the 500-step fixed-topology prefix. It ends only 0.093 dB higher with worse gradient MAE and visibly
+remains a translucent smeared volume. Median normalized posterior entropy is 0.960, mean selected
+confidence is 0.0415, and median reciprocal support is zero. The complete reciprocal arm cannot
+meet its frozen 75% primary-support floor and fails closed before optimization. CORE-018 is therefore
+rejected as a pipeline: retain it only as a negative control, do not relax reciprocity on the
+consumed scene, and require a spatially coherent depth/surface model for a successor. Exact evidence
+and limitations are in
+[`2026-08-06-core018-ray-posterior-results-audit.md`](research/2026-08-06-core018-ray-posterior-results-audit.md).
+
 BENCH-020's default-off `benchmarks.field_semantics_factorial` controller now provides the sealed
 selection boundary around that object: explicit semantic and alpha-policy records, fixed-row and
 equal-canonical-raw-byte lanes, ordered-geometry prefix seals, three outcome-separated phases,
@@ -247,8 +265,11 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   `realtime_gs_adapter` imports torch and realtime-gs lazily to construct their required paired
   structural-field/query-backend view. Its placement-only alpha-support wrapper and the sibling
   `realtime_gs_surface_lift` module compose CORE-017's first-maximum shell and optional surface
-  cover without importing either optional dependency at module import. All three modules remain
-  absent from supported conversion.
+  cover without importing either optional dependency at module import.
+  `realtime_gs_ray_posterior` is CORE-018's separate source-excluded coarse/fine feature scorer,
+  missed-observation posterior, reciprocal candidate filter, and exact-N lift. Its real disjoint
+  diagnostic fails both construction and native visual gates, so it is a negative-control module,
+  not a supported geometry backend. All four modules remain absent from supported conversion.
   `pixel_contraction` is a separate HIER-005 research producer: its default leaf and contraction
   path is NumPy-only, while conversion to `GaussianField`, maintained additive rendering, and the
   optional recovery fits import torch lazily. The default `touched` recovery scope forms
@@ -350,6 +371,10 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   through CompactCarve and 3DGS, and emits checkpoint curves, models, visuals, and explicit scalar
   plus manual gates. Its `surface2x2` profile is CORE-017's one-shared-packet placement/covariance
   factorial. Its schema is likewise task-local and not accepted by the maintained report checker.
+  `scripts/experiments/core018_ray_posterior_downstream.py` writes CORE-018's one-seed disjoint
+  three-arm packet/feature/geometry diagnostic. Its reciprocal arm fails closed, its two rendered
+  arms fail native review, and its custom partial-result schema is intentionally diagnostic rather
+  than accepted by `check_report_bundle.py`.
 - **agent workflow:** `tasks/INDEX.md` and task files are the work authority, while
   `tasks/SESSION-BRIEF.md` is a deterministic derived view. `scripts/check_task_policy.py`
   validates dependency and review state; `scripts/check_agent_workflow.py` checks agreement among

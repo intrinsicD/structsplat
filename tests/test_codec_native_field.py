@@ -248,6 +248,7 @@ def test_base_module_imports_when_torch_is_forbidden() -> None:
         "import structsplat.codec_native_field as m; "
         "import structsplat.realtime_gs_adapter; "
         "import structsplat.realtime_gs_surface_lift; "
+        "import structsplat.realtime_gs_ray_posterior; "
         "assert m.PACKET_SCHEMA.endswith('.v2')"
     )
     result = subprocess.run(

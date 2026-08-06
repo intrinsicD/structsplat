@@ -150,6 +150,16 @@ class CodecNativeObservationBackend:
         color = torch.where(alpha[:, None], color, torch.zeros_like(color))
         return color.to(target_device), alpha.to(target_device), valid.to(target_device)
 
+    def query_appearance(self, xy: Any) -> tuple[Any, Any, Any]:
+        """Query only the continuous appearance/alpha plane without the structural index.
+
+        Placement methods that own an independent geometric likelihood must not pay for, or
+        accidentally interpret, the sparse proposal measure as supervision.  This narrow public
+        seam exposes the already-tested continuous packet reconstruction while preserving the
+        caller's input device for all returned tensors.
+        """
+        return self._appearance_query(xy)
+
     def query(self, xy: Any, component_chunk: int = 4096) -> Any:
         color, alpha, valid = self._appearance_query(xy)
         weight_sum = self.structural_backend.query_weight_sum(

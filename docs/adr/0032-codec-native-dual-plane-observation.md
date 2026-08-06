@@ -101,6 +101,16 @@ native review because trailing smear/double silhouettes and blur remain. It is t
 as causal diagnostic evidence and does not authorize a variable-topology, maintained, or default
 path.
 
+CORE-018 subsequently exposes appearance-only packet queries to a separate default-off
+source-excluded feature posterior. It also changes neither the packet grammar nor this decision:
+structure proposes rays, packet-derived DINOv2/local features score depth with a dustbin, reciprocal
+candidate agreement gates geometry, and packet appearance supplies radiance. On disjoint
+`karate/frame_00060`, the no-reciprocal arm remains a visually smeared volume and the complete arm
+cannot satisfy its frozen 75% reciprocal-support floor. This negative result prohibits relaxing the
+gate on the consumed scene or treating independent ray posteriors as a supported geometry backend.
+The narrow appearance-query seam and posterior code may remain only as research controls; a
+successor must own spatially coherent depth/surface state.
+
 Delete `codec_native_field.py`, `realtime_gs_adapter.py`, the task-local diagnostic and tests, and
 retire CORE-016. No maintained packet, renderer, pipeline, semantic default, or realtime-gs checkout
 must be migrated.
