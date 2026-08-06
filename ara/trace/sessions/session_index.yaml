@@ -148,8 +148,8 @@ sessions:
     open_threads: 10
   - id: "2026-08-06_001"
     date: "2026-08-06"
-    summary: "Implemented and audited HIER-009: 3x3 recovery removes 4k block artifacts but redistributes 8k error; only delta/touched 8k passes."
-    turn_count: 1
-    events_count: 6
+    summary: "Implemented and audited HIER-009, then published the complete DOCS-007/HIER-005--009 research batch to origin/main."
+    turn_count: 2
+    events_count: 7
     claims_touched: []
     open_threads: 5

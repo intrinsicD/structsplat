@@ -4960,3 +4960,24 @@ tree:
       - "tasks/HIER-009-dynamic-overlap-neighborhood-recovery.md#diagnostic-outcome-2026-08-06"
     also_depends_on: [N228, N246, N247]
     status: resolved
+  - id: N249
+    type: decision
+    title: "Publish the complete Gaussian-field research batch to main"
+    provenance: user
+    timestamp: "2026-08-06T08:39+02:00"
+    choice: >
+      Commit the complete project worktree for DOCS-007 and HIER-005 through HIER-009, fast-forward
+      every local branch with unique project commits into main, and push main directly to origin.
+      Exclude only auto-generated IntelliJ duplicate-module files that reference transient results
+      paths and carry no project behavior.
+    alternatives:
+      - "Leave the research changes uncommitted on the topic branch."
+      - "Push only the topic branch and open a draft pull request."
+      - "Publish generated IDE module duplicates with the research code."
+    evidence:
+      - "commit 280697398d540123a88ee3b538ffaf2f7b5d0b51"
+      - "origin/main verified at 280697398d540123a88ee3b538ffaf2f7b5d0b51"
+      - "./scripts/verify.sh: 1662 passed, 4 skipped; all structural gates OK"
+      - "git branch --no-merged main: empty"
+    also_depends_on: [N244, N247, N248]
+    status: resolved

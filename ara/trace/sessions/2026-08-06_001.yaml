@@ -2,9 +2,9 @@ session:
   id: "2026-08-06_001"
   date: "2026-08-06"
   started: "2026-08-06T00:56+02:00"
-  last_turn: "2026-08-06T00:56+02:00"
-  turn_count: 1
-  summary: "Implemented and audited HIER-009: 3x3 recovery removes 4k block artifacts but redistributes 8k error; only delta/touched 8k passes."
+  last_turn: "2026-08-06T08:39+02:00"
+  turn_count: 2
+  summary: "Implemented and audited HIER-009, then published the complete DOCS-007/HIER-005--009 research batch to origin/main."
 
 events_logged:
   - turn: 1
@@ -43,6 +43,12 @@ events_logged:
     routing: staged
     provenance: ai-suggested
     summary: "Staged adaptive halo activation with SSE/pixel/patch Pareto checkpoint acceptance."
+  - turn: 2
+    type: decision
+    id: "N249"
+    routing: direct
+    provenance: user
+    summary: "Authorized committing the complete project worktree, integrating all unique local branch commits into main, and pushing origin/main."
 
 ai_actions:
   - turn: 1
@@ -68,12 +74,18 @@ ai_actions:
       - "ara/trace/sessions/2026-08-06_001.yaml"
       - "ara/trace/sessions/session_index.yaml"
       - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 2
+    action: "Audited the 47-file publish set, excluded 38 transient IntelliJ duplicate-module files, passed the full 1,662-test verification gate, committed as 2806973, fast-forwarded the sole topic branch into main, pushed origin/main, and verified local and remote hashes plus an empty unmerged-branch set."
+    provenance: ai-executed
+    files_changed: []
 
 claims_touched: []
 
 key_context:
   - turn: 1
     excerpt: "The user clarified that recovery should optimize the touched Gaussian plus its direct 3x3 Gaussian neighbors, rather than only the touched row."
+  - turn: 2
+    excerpt: "The user explicitly requested that all current changes and branches be committed, merged into main, and pushed to the remote."
 
 open_threads:
   - "Distinct numerical/scientific review of HIER-009."
