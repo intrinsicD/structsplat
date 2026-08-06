@@ -5097,3 +5097,75 @@ tree:
       - "tasks/CORE-016-codec-native-dual-plane-field.md"
     also_depends_on: [N251, N252, N253]
     status: resolved
+  - id: N255
+    type: experiment
+    title: "First-maximum alpha-shell placement improves the exposed fixed-5k assay"
+    provenance: ai-executed
+    timestamp: "2026-08-06T20:31+02:00"
+    result: >
+      Implemented a placement-only exact-alpha support backend and optional local surface-cover
+      composition, then ran the frozen frame_00009 2x2 factorial with one shared 970,310-byte packet
+      set, 23 training/three reporting cameras, exactly 5,000 Gaussians, seed 0, and 1,000 fixed-
+      topology steps. Relative to interior/inherited, shell/inherited gains 1.5873 dB reporting
+      PSNR and 0.13053 alpha IoU; shell/cover gains 1.3809 dB and 0.14037 alpha IoU while lowering
+      gradient MAE by 0.001347 and outside alpha by 0.01602. Shell placement evaluates zero versus
+      212,517,051 sparse-index depth pairs and reaches the baseline's terminal PSNR at step 200 or
+      500 versus 1,000. All scalar gates pass, but enlarged stored-resolution review still finds
+      directional trailing smear/double silhouettes and fine-detail blur on every reporting view.
+      Independent replay validates 222 receipts and the complete gate passes 1,673 tests.
+    evidence:
+      - "ara/evidence/core017-visibility-ordered-alpha-shell-janelle-2026-08-06/run.md"
+      - "docs/research/2026-08-06-codec-native-dual-plane-results-audit.md"
+      - "results/core017_visibility_surface_janelle_frame00009_2026-08-06_v1/index.html"
+      - "manifest sha256 bf14b8e8d08609bdf89dd3c4474422a7ea8c0281c45cb81de8ba50e17252be2e"
+      - "commit 12fecb8"
+    also_depends_on: [N250, N251, N252, N253, N254]
+    status: resolved
+  - id: N256
+    type: dead_end
+    title: "A single front visual-hull shell is not artifact-free"
+    provenance: ai-executed
+    timestamp: "2026-08-06T20:31+02:00"
+    hypothesis: >
+      Selecting the first maximally alpha-supported depth on every proposed ray, then applying a
+      cover-consistent local covariance, will remove CORE-016's halo, floaters, and double
+      silhouettes while retaining the packet's rate and optimization advantages.
+    failure_mode: >
+      The combined arm passes all declared scalar protections and materially improves every
+      silhouette aggregate, yet visible directional trails/double silhouettes remain around the
+      body and feet and fine detail stays soft. Surface cover alone loses 0.7035 dB and 0.0161 alpha
+      IoU, so extent repair is not sufficient; shell cover also gives up 0.2064 dB versus shell with
+      inherited covariance.
+    lesson: >
+      Retain visibility-ordered placement as a causal control, but reject the exact single-shell
+      route as the artifact-free successor. Do not tune alpha weights or the consumed reporting
+      views. A new mechanism must model view-consistent layered visibility/geometry or otherwise
+      explain directional smear on disjoint data before variable-topology advancement.
+    evidence:
+      - "N255"
+      - "tasks/CORE-017-visibility-ordered-alpha-shell-lift.md"
+      - "ara/evidence/core017-visibility-ordered-alpha-shell-janelle-2026-08-06/run.md"
+    also_depends_on: [N252, N253, N255]
+    status: resolved
+  - id: N257
+    type: decision
+    title: "Retain alpha-shell placement only as a default-off causal control"
+    provenance: ai-executed
+    timestamp: "2026-08-06T20:31+02:00"
+    choice: >
+      Preserve the tested adapter/helper and immutable negative visual result for comparison, but do
+      not advance the route to variable topology, full-resolution confirmation, maintained
+      conversion, or a default. Require distinct review and a prospectively frozen geometry model
+      on disjoint data before the next downstream claim.
+    alternatives:
+      - "Advance because all scalar gates passed."
+      - "Select shell/inherited solely because it has the highest PSNR."
+      - "Retune alpha support, covariance, or reporting views on frame_00009."
+      - "Delete the placement mechanism despite its strong causal improvement."
+    evidence:
+      - "N255"
+      - "N256"
+      - "commit 12fecb8"
+      - "tasks/CORE-017-visibility-ordered-alpha-shell-lift.md"
+    also_depends_on: [N251, N254, N255, N256]
+    status: resolved

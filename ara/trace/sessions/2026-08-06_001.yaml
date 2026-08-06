@@ -2,9 +2,9 @@ session:
   id: "2026-08-06_001"
   date: "2026-08-06"
   started: "2026-08-06T00:56+02:00"
-  last_turn: "2026-08-06T19:36+02:00"
-  turn_count: 4
-  summary: "Published the contraction and CORE-016 batches, then validated the dual plane in exposed 23-view downstream training, retaining matched-10k v4 and rejecting two alpha-cleanup variants."
+  last_turn: "2026-08-06T20:31+02:00"
+  turn_count: 5
+  summary: "Published the contraction/CORE-016 batches, then found alpha-shell placement numerically stronger and faster but still visually unacceptable in exposed downstream training."
 
 events_logged:
   - turn: 1
@@ -103,6 +103,36 @@ events_logged:
     routing: staged
     provenance: ai-executed
     summary: "Staged stronger mask supervision as a measured rate--silhouette tradeoff, not a free artifact repair."
+  - turn: 5
+    type: experiment
+    id: "N255"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented and ran CORE-017; alpha-shell placement passes every scalar gate and removes sparse-index depth pairs, but native artifacts remain."
+  - turn: 5
+    type: dead_end
+    id: "N256"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rejected the exact first-visible single-shell plus surface-cover route as an artifact-free successor."
+  - turn: 5
+    type: decision
+    id: "N257"
+    routing: direct
+    provenance: ai-executed
+    summary: "Retained alpha-shell placement only as a default-off causal control and did not advance or retune it."
+  - turn: 5
+    type: architecture
+    id: "O133"
+    routing: crystallized
+    provenance: ai-executed
+    summary: "Crystallized explicit proposal/support/radiance/extent ownership as mixed diagnostic architecture A14 through artifact commitment."
+  - turn: 5
+    type: claim
+    id: "O134"
+    routing: staged
+    provenance: ai-executed
+    summary: "Staged the exact exposed fixed-5k shell quality/convergence/work improvement with its failed visual boundary."
 
 ai_actions:
   - turn: 1
@@ -160,6 +190,31 @@ ai_actions:
       - "ara/evidence/core016-multiview-downstream-janelle-2026-08-06/run.md"
       - "ara/staging/observations.yaml"
       - "ara/trace/exploration_tree.yaml"
+  - turn: 5
+    action: "Implemented the visibility-ordered alpha-support and surface-cover composition; added a shared-packet 2x2 driver profile and tests; executed, enlarged, visually audited, and independently replayed the exposed frame_00009 bundle; retained the strong scalar mechanism but failed the artifact gate; synchronized code/docs/task/evidence, passed 22 focused and 1,673 portable tests, and committed implementation as 12fecb8."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/realtime_gs_adapter.py"
+      - "src/structsplat/realtime_gs_surface_lift.py"
+      - "scripts/experiments/core016_multiview_downstream.py"
+      - "tests/test_codec_native_field.py"
+      - "tests/test_core017_surface_driver.py"
+      - "tasks/CORE-017-visibility-ordered-alpha-shell-lift.md"
+      - "tasks/INDEX.md"
+      - "tasks/SESSION-BRIEF.md"
+      - "README.md"
+      - "docs/architecture.md"
+      - "docs/adr/0032-codec-native-dual-plane-observation.md"
+      - "docs/research/2026-08-06-codec-native-dual-plane-results-audit.md"
+      - ".claude/skills/structsplat-core/SKILL.md"
+      - "ara/evidence/README.md"
+      - "ara/evidence/core017-visibility-ordered-alpha-shell-janelle-2026-08-06/run.md"
+      - "ara/logic/solution/architecture.md"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/2026-08-06_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
 
 claims_touched: []
 
@@ -172,6 +227,8 @@ key_context:
     excerpt: "The remaining unpublished CORE-016 implementation was completed under the active realtime-gs pipeline objective and included in the requested direct main publication."
   - turn: 4
     excerpt: "The active objective required a competitive realtime-gs-ready Gaussian-field pipeline with no visible artifacts; the exposed full-view assay retained v4 quantitatively but failed that strict visual endpoint."
+  - turn: 5
+    excerpt: "The frozen CORE-017 shell factor passes every scalar protection but still violates the user's no-visible-artifact endpoint, so it is preserved as a causal control rather than advanced."
 
 open_threads:
   - "Distinct numerical/scientific review of HIER-009."
@@ -187,9 +244,12 @@ open_threads:
   - "Geometry/visibility-specific artifact objective for halos, floaters, thin structures, and disocclusions."
   - "Production-matched input generation, final 3D codec bytes, render FPS, and end-to-end timing."
   - "Portable maintained report schema/checker for any reused CORE-016 downstream family."
+  - "Distinct code/scientific review of commit 12fecb8 and CORE-017's visual disposition."
+  - "A prospectively frozen layered or occlusion-aware geometry mechanism on disjoint data, retaining alpha shell as a causal control."
 
 ai_suggestions_pending:
   - "Enable the 3x3 halo only where contraction severity predicts a benefit and otherwise retain touched-only recovery."
   - "Measure per-parameter movement separately for topology-touched and neighbor rows."
   - "Fuse the appearance lattice query into a parity-checked production CUDA or texture backend."
   - "Do not tune alpha weights again on C0004/C0025/C1004; move to disjoint full-resolution data and explicit geometry/visibility errors."
+  - "Keep first-maximum alpha-shell placement as a causal control; test a view-consistent layered/occlusion-aware successor rather than another mask or covariance sweep."

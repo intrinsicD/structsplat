@@ -1777,3 +1777,43 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O133
+    timestamp: "2026-08-06T20:31+02:00"
+    provenance: ai-executed
+    content: >
+      A codec-native realtime-gs lift can separate four responsibilities without new packet bytes:
+      sparse Field V2 mass proposes source rays, exact packet alpha supplies ordered placement
+      support, the continuous appearance plane initializes radiance, and either CompactCarve or a
+      local surface-cover pass owns render extent. The tested implementation keeps all four seams
+      explicit and counter-auditable.
+    context: >
+      CORE-017 implements the composition as a narrow wrapper/helper with CPU/CUDA tests, a frozen
+      2x2 factorial, a tracked task/evidence note, and commit 12fecb8. The combined route remains
+      default-off and visually failed; crystallization records architecture, not performance or
+      promotion.
+    potential_type: architecture
+    bound_to: [N255, N256, N257]
+    promoted: true
+    promoted_to: "logic/solution/architecture.md:A14"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O134
+    timestamp: "2026-08-06T20:31+02:00"
+    provenance: ai-executed
+    content: >
+      On one exposed reduced-resolution fixed-5k Janelle assay, first-maximum alpha-shell placement
+      improves reporting PSNR by 1.5873 dB, alpha IoU by 0.13053, and time-to-interior-terminal PSNR
+      from step 1,000 to step 200 while eliminating 212.5M sparse-index depth pairs. Adding surface
+      cover gives smaller PSNR gain but better LPIPS, gradient MAE, and alpha localization. Despite
+      passing every scalar gate, both shell arms retain visible directional smear/double silhouettes
+      and blur, so no general quality, convergence, speed, geometry, or artifact-free claim follows.
+    context: >
+      Frame_00009 uses 23 training and three reused reporting-only cameras, one seed, reduced
+      resolution, fixed topology, dirty source snapshots, and an internally audited custom report
+      schema. The visual failure prevents advancement and distinct review is pending.
+    potential_type: claim
+    bound_to: [N255, N256, N257]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

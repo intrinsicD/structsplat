@@ -55,7 +55,7 @@ the maintained StructSplat pipeline.
       foreground PSNR over interior/inherited, worsens alpha IoU by more than 0.01, worsens alpha
       outside by more than 0.01, worsens gradient MAE, or retains visible halos/floaters/double
       silhouettes.  Passing only authorizes a separately reviewed variable-topology test.
-- [ ] The task, Index, generated session brief, architecture/research boundary, ARA trace/evidence
+- [x] The task, Index, generated session brief, architecture/research boundary, ARA trace/evidence
       (if the diagnostic is retained), and exact reproduction command are synchronized; focused
       tests and `./scripts/verify.sh` pass.
 
@@ -107,15 +107,132 @@ CORE-016, CORE-013, BENCH-019/020, BENCH-002, ADR-0006/0032
 ## Agent workflow
 
 - Driver: codex-root
-- Reviewer: pending
-- Turn: driver
-- Reviewed revision: pending
+- Reviewer: codex-root
+- Turn: reviewer
+- Reviewed revision: commit `12fecb8`
 
 ### Handoff log
 
 Append exact `### Handoff` and `### Review` blocks using the schema in `tasks/README.md`.  A formal
 result beyond this diagnostic requires a distinct prospective protocol review with no outcome
 access.
+
+### Handoff
+
+#### Objective
+
+Review the default-off visibility-ordered alpha-shell placement backend, optional surface-cover
+composition, and the exposed fixed-5k causal diagnostic without promoting the visually failed route.
+
+#### Changes
+
+Added a calibrated no-extra-payload alpha-support backend and a lazy surface-lift helper that keeps
+sparse ray proposals, alpha placement support, codec radiance, and render extent independently
+owned. Extended the existing CORE-016 driver with one shared-packet 2x2 placement/covariance
+factorial, alpha visuals/curves, fail-closed gates, and exact source/receipt capture. Added synthetic
+CPU/CUDA compatibility and driver-decision tests, executed and audited `frame_00009`, and
+synchronized README, architecture, ADR-0032, task/index/brief, research audit, core skill, and ARA
+evidence.
+
+#### Evidence
+
+The immutable manifest SHA-256 is
+`bf14b8e8d08609bdf89dd3c4474422a7ea8c0281c45cb81de8ba50e17252be2e`. Every arm uses 970,310
+input bytes and ends with 5,000 Gaussians. Shell/inherited gains 1.5873 dB; shell/cover gains 1.3809
+dB and 0.14037 alpha IoU, lowers gradient MAE by 0.001347 and outside alpha by 0.01602, and passes
+all scalar gates. Native review fails for trailing smear/double silhouettes and blur. Independent
+replay validates 222 receipts and exact decision arithmetic; the documented custom report checker
+rejection has four schema errors. The optional realtime-gs slice passes 22 tests. `./scripts/verify.sh`
+passes with 1,673 tests, 15 skips, 514 deselections, and all five structural gates green before
+commit `12fecb8`.
+
+#### Assumptions
+
+The downscale-8 source tensors are the diagnostic target; “native” means unrescaled stored
+evaluation pixels, not full camera resolution. Packet bytes price the shared reconstruction inputs,
+while final model bytes are separate. Reporting-only cameras are excluded from construction and
+training but are exposed development views after inspection.
+
+#### Uncertainties
+
+One frame/seed, reused reporting views, dirty executed source, custom schema, approximate timing,
+masked visual-hull geometry, 48 depth samples, and fixed topology prohibit generalization. The
+method does not recover concavities or physical surfaces, and residual directionally smeared
+geometry remains visually unacceptable despite favorable aggregate metrics.
+
+#### Review focus
+
+Audit the analytic soft-coverage calibration, CPU metadata/CUDA return-device behavior, first-tie
+ordering, structural-counter isolation, surface-cover immutability, exact packet reuse/count gates,
+train/reporting separation, timing boundaries, and every statement distinguishing numerical
+improvement from artifact freedom or production readiness.
+
+#### Protected actions not taken
+
+No realtime-gs source, `.sgdp` grammar, maintained StructSplat conversion path/default/renderer,
+existing CORE-016 result, reporting target, public claim-ledger row, or unrelated IntelliJ file was
+modified. The consumed frame was not retuned and the failed visual result was not overwritten.
+
+#### Recommended next action
+
+Obtain distinct code/scientific review. Do not advance this exact alpha-shell route. A successor
+must change the visibility/geometry model on disjoint data—rather than add alpha weights or retune
+the consumed views—and must retain the shell placement arm as a causal control.
+
+### Review
+
+#### Verdict
+
+Provisionally accepted (self-reviewed)
+
+#### Self-reviewed
+
+Yes
+
+#### Correctness
+
+Commit `12fecb8` preserves the NumPy/torch import split and modifies no differentiable training or
+render equation. The alpha weight is the algebraic inverse of CompactCarve's declared soft-coverage
+mapping, outside-alpha support is zero, wrapper outputs return to the query caller's device, and
+runtime counter checks fail if the structural index is touched. CompactCarve supplies the tested
+first-index `argmax`; cover reconciliation is exact-checked not to change means or SH. Synthetic
+tests cover ties, distinct shell/interior depths, deterministic geometry, finite covariance, exact
+count, malformed pairing, CPU import, and CUDA query plumbing.
+
+#### Evidence quality
+
+The factorial, command, split, budget, seed, metrics, and killing rule were frozen before execution;
+all arms and negatives are preserved. The same packet hashes and bytes are reused, 222 receipts and
+gate arithmetic replay cleanly, and stored-resolution RGB/alpha panels were inspected at enlarged
+pixel scale. Evidence is diagnostic only: dirty source snapshots, one exposed frame/seed, reused
+reporting cameras, reduced resolution, task-local schema, and no independent prospective/results
+review prevent scientific promotion.
+
+#### Simplicity
+
+The implementation adds one narrow wrapper and one composition helper around existing realtime-gs
+interfaces. It reuses CompactCarve for ray proposals/depth sampling and realtime-gs for covariance
+cover instead of duplicating either. The experiment extends the existing bounded driver and adds no
+packet member, production option, format, or default.
+
+#### Missing cases
+
+Distinct review, disjoint multiscene/multiseed/full-resolution evidence, physical-depth or geometry
+truth, concavity/thin-structure/disocclusion strata, non-black backgrounds, production packet
+generation, final-model codec/FPS, and end-to-end latency remain absent. Visual smear survives even
+though the combined scalar gate passes.
+
+#### Required changes
+
+None for retaining the implementation and negative visual disposition as default-off diagnostic
+evidence. Distinct review and a new prospectively frozen geometry mechanism are required before any
+scientific acceptance, variable-topology advancement, or maintained/default integration.
+
+#### Optional improvements
+
+Add a portable checker/schema only if this diagnostic family is reused; provide explicit depth or
+multi-layer visibility evidence on disjoint data; stratify artifacts by silhouette direction and
+occlusion; and account for production packet generation, final 3D coding, and render throughput.
 
 ## Notes
 

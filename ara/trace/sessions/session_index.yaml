@@ -148,8 +148,8 @@ sessions:
     open_threads: 10
   - id: "2026-08-06_001"
     date: "2026-08-06"
-    summary: "Published the contraction and CORE-016 batches, then validated the dual plane in exposed 23-view downstream training, retaining matched-10k v4 and rejecting two alpha-cleanup variants."
-    turn_count: 4
-    events_count: 16
+    summary: "Published the contraction/CORE-016 batches, then found alpha-shell placement numerically stronger and faster but still visually unacceptable in exposed downstream training."
+    turn_count: 5
+    events_count: 21
     claims_touched: []
-    open_threads: 13
+    open_threads: 15

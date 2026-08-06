@@ -286,3 +286,29 @@
   `ara/evidence/core016-multiview-downstream-janelle-2026-08-06/run.md`]
 - **Dependencies**: [N207, N209, N215, N217, N245, N248, N250, N251, N252, N253, N254]
 - **From staging**: O129
+
+## A14: Visibility-ordered lifting keeps proposal, support, radiance, and extent separate
+
+- **Design**: Keep the CORE-016 structural/appearance pair, but split placement further. Sparse
+  structural mass chooses source rays only. A placement-only backend analytically maps exact packet
+  alpha to constant CompactCarve soft coverage and lets first-index `argmax` select the first depth
+  attaining maximal multiview support. The codec-native appearance query still supplies selected
+  radiance. An optional realtime-gs surface-cover pass may replace only covariance/opacity after
+  placement; exact checks preserve means, SH, lineage, count, and packet bytes.
+- **Status**: implemented as default-off CORE-017 and retained as mixed/negative diagnostic
+  architecture. On one exposed fixed-5k factorial the shell substantially improves quality, alpha
+  localization, early target convergence, and depth-query work, while cover-only is negative. The
+  combined arm passes every scalar gate but retains visible directional smear/double silhouettes
+  and blur, so the exact single-shell route is not advanced to variable topology, maintained
+  conversion, confirmation, or a default.
+- **Provenance**: ai-executed
+- **Crystallized via**: artifact-commitment
+- **Evidence**: [`src/structsplat/realtime_gs_adapter.py`,
+  `src/structsplat/realtime_gs_surface_lift.py`,
+  `scripts/experiments/core016_multiview_downstream.py`,
+  `tests/test_codec_native_field.py`, `tests/test_core017_surface_driver.py`,
+  `tasks/CORE-017-visibility-ordered-alpha-shell-lift.md`,
+  `ara/evidence/core017-visibility-ordered-alpha-shell-janelle-2026-08-06/run.md`,
+  `commit 12fecb8`]
+- **Dependencies**: [N250, N251, N252, N253, N254, N255, N256, N257]
+- **From staging**: O133
