@@ -53,11 +53,11 @@ through the final 3D model.
 - [x] Synthetic tests cover a textured front surface, a repeated-texture distractor, one adversarial
       occluded view, a depth tie, a reciprocal inconsistency, exact count, finite covariance, CPU
       determinism, device return semantics, and malformed packets/cameras/configuration.
-- [ ] A diagnostic-only disjoint `karate/frame_00060` comparison reuses one immutable packet set and
+- [x] A diagnostic-only disjoint `karate/frame_00060` comparison reuses one immutable packet set and
       compares ordinary interior consensus, posterior without reciprocity, and the complete
       posterior.  All arms use the same training/reporting cameras, 10,000 initial rows, staged
       500-step fixed-topology plus 1,000-step shared density refinement, and a 30,000-row cap.
-- [ ] The report includes complete original JPEG, packet, shared-model, final-model, and index bytes;
+- [x] The report includes complete original JPEG, packet, shared-model, final-model, and index bytes;
       encode/decode/feature/lift/train/render times; peak host/CUDA memory; Gaussian-count and all
       quality/convergence curves; native target/init/final/RGB-error/alpha/depth-support panels; and
       machine-readable receipts.  It reports both `original_files / packets` and
@@ -113,15 +113,130 @@ CORE-016/017, CORE-013, BENCH-019/020, BENCH-002, ADR-0006/0032
 ## Agent workflow
 
 - Driver: codex-root
-- Reviewer: pending
-- Turn: driver
-- Reviewed revision: pending
+- Reviewer: codex-root
+- Turn: reviewer
+- Reviewed revision: commit `6525f82`
 
 ### Handoff log
 
 Append exact `### Handoff` and `### Review` blocks using the schema in `tasks/README.md`.  Any formal
 confirmation requires the distinct prospective protocol review that this diagnostic deliberately
 does not claim.
+
+### Handoff
+
+#### Objective
+
+Review the default-off packet-derived ray-posterior initializer and the exposed disjoint-view
+diagnostic, preserving the fail-closed reciprocal result and the negative visual disposition.
+
+#### Changes
+
+Added lazy packet-only semantic/detail feature construction, robust source-excluded depth scoring
+with a dustbin, reciprocal mode support, deterministic exact-budget selection, optional surface
+cover, and a narrow continuous-appearance query seam.  Added the frozen three-arm driver, synthetic
+and realtime-gs integration tests, immutable result/audit records, and synchronized architecture,
+ADR, README, task/index/brief, and core-skill boundaries.
+
+#### Evidence
+
+The immutable partial bundle manifest is
+`e11c4a73e8a94afbf149e52b9a1acc889bf22a7beb2ec4bd89c27ac36f8d0610`.
+All 246 recorded path/byte/SHA descriptors replay, and the reporting split is disjoint.  Packet
+decode averages 38.581 dB while 1,360,834 packet bytes replace 15,741,328 original JPEG bytes.  The
+no-reciprocal arm improves initialization by 1.8463 dB but is 0.8459 dB behind interior consensus at
+step 500, reaches that control's terminal PSNR only at step 1,200, worsens gradient MAE, and ends at
+30,000 versus 29,422 rows.  The complete reciprocal arm fails before training at its frozen 75%
+primary-support floor.  Native inspection finds translucent smeared volumes in both completed arms.
+The optional realtime-gs focused suite passes 40 tests; before commit `6525f82`,
+`./scripts/verify.sh` passed with 1,686 tests, 19 skips, 514 deselections, and all structural gates
+green.
+
+#### Assumptions
+
+The downscale-8 calibrated tensors are the diagnostic target.  Shared learned weights are an
+amortized dependency and not per-scene payload, while their provenance remains explicit.  A
+fail-closed arm is a valid protocol outcome, not missing evidence to be rescued by lowering its
+threshold.
+
+#### Uncertainties
+
+This is one consumed development scene and one seed, with dirty executed source, a task-local report
+schema, approximate timing, reduced resolution, no physical geometry truth, and no distinct review.
+Its numerical deltas cannot establish general compression, runtime, or reconstruction quality.
+
+#### Review focus
+
+Audit packet-only feature provenance, reporting-view exclusion, dustbin/evidence semantics,
+reciprocal independence, deterministic balanced selection, exact-count and primary-fraction
+failure behavior, covariance/radiance immutability, byte/time boundaries, convergence arithmetic,
+and the mandatory visual rejection.
+
+#### Protected actions not taken
+
+No realtime-gs source, maintained StructSplat renderer/default, packet grammar, prior immutable
+result, reporting target, public claim row, or unrelated IntelliJ file was changed.  The consumed
+scene was not rerun or retuned after outcome inspection.
+
+#### Recommended next action
+
+Obtain distinct review.  Retire independent per-ray matching as the geometry unit; test a spatially
+coherent multiview geometry prior with calibrated alignment on new disjoint data, keeping the
+interior and no-reciprocal arms as causal controls.
+
+### Review
+
+#### Verdict
+
+Provisionally accepted (self-reviewed)
+
+#### Self-reviewed
+
+Yes
+
+#### Correctness
+
+Commit `6525f82` keeps torch imports lazy, leaves training/render equations untouched, derives
+features only through packet appearance queries, excludes the source view from depth likelihoods,
+and computes reciprocal support from independently selected candidate modes.  Invalid evidence
+enters an explicit dustbin, ties remain deterministic, exact-N selection is balanced, and the
+primary-support floor fails before optimization.  Surface-cover checks forbid changes to means or
+SH.  Focused tests exercise coherent/occluded/repeated-texture depths, ties, no-evidence states,
+reciprocal floaters, exact counts, determinism, finite covariance, device behavior, index isolation,
+malformed ownership, frozen split/configuration, and decision gates.
+
+#### Evidence quality
+
+Question, split, packet set, arms, budgets, seed, telemetry, and killing rule were frozen before the
+first outcome.  Every surviving arm and the full-arm error receipt remain preserved; descriptor
+receipts and decision arithmetic replay.  Evidence remains diagnostic because the bundle is
+partial and dirty-source, the custom checker reports its 42 documented contract mismatches, and
+one exposed scene/seed plus self-review cannot support promotion.
+
+#### Simplicity
+
+The implementation is isolated behind one optional module and one ten-line adapter seam, reusing
+CompactCarve proposals, realtime-gs cameras/Gaussians/surface cover, and the existing packet
+appearance plane.  It changes no format or default.  The negative result prevents further
+threshold or optimizer complexity from accumulating around an ambiguous independent-ray unit.
+
+#### Missing cases
+
+Distinct review, clean-source execution, multiple fresh scenes/seeds, geometry ground truth,
+occlusion/thin-structure strata, full-resolution evidence, a maintained report schema, production
+packet creation, coded final-model rate, render FPS, and end-to-end latency remain absent.
+
+#### Required changes
+
+None for retaining the implementation and negative result as default-off diagnostic evidence.
+Distinct review is required before treating the workflow record as accepted, and a successor must
+change the geometry model rather than tune thresholds on `frame_00060`.
+
+#### Optional improvements
+
+If this family is reused as a control, port its bundle to the maintained report schema and expose a
+small portable receipt checker.  Future geometry tests should measure calibrated camera/depth
+alignment before Gaussian training and reject visually incoherent geometry at step zero.
 
 ## Notes
 
