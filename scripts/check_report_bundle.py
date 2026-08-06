@@ -2,7 +2,8 @@
 """Validate a portable report produced by StructSplat's maintained workflows.
 
 This is the evidence-handoff gate for ``scripts/convert.py``, ``benchmark.py``,
-``ablation.py``, ``stage_search.py``, and the BENCH-019/BENCH-020 experiment controllers. It checks
+``ablation.py``, ``stage_search.py``, the BENCH-019/BENCH-020 experiment controllers, and the
+task-scoped HIER contraction/repair/elimination diagnostics. It checks
 the applicable manifest/metrics contract, clean source identity, per-cell artifacts, finite
 metrics, cross-format agreement, and every local HTML link.
 
@@ -57,6 +58,18 @@ BENCH019_REQUIRED_ARTIFACTS = (
     "error",
 )
 BENCH020_REPORT_SCHEMA = "structsplat.bench020.report.v1"
+HIER005_CONTRACTION_SCHEMA = "structsplat.hier005_pixel_contraction.diagnostic.v1"
+HIER005_REPAIR_SCHEMA = "structsplat.hier005_artifact_repair.diagnostic.v1"
+HIER008_OVERLAP_SCHEMA = "structsplat.hier008_overlap_elimination.diagnostic.v1"
+HIER009_DYNAMIC_SCHEMA = "structsplat.hier009_dynamic_overlap_recovery.diagnostic.v1"
+HIER005_REPORT_SCHEMAS = frozenset(
+    {
+        HIER005_CONTRACTION_SCHEMA,
+        HIER005_REPAIR_SCHEMA,
+        HIER008_OVERLAP_SCHEMA,
+        HIER009_DYNAMIC_SCHEMA,
+    }
+)
 
 
 class _LocalLinkParser(HTMLParser):
@@ -568,6 +581,342 @@ def _check_bench019_bundle(
             )
 
 
+def _check_hier005_snapshot(
+    root: Path,
+    snapshot: Any,
+    label: str,
+    problems: list[str],
+    *,
+    path_key: str,
+    prefix: str = "",
+) -> None:
+    if not isinstance(snapshot, list) or not snapshot:
+        problems.append(f"{label} must be a non-empty list")
+        return
+    for index, record in enumerate(snapshot):
+        item_label = f"{label}[{index}]"
+        if not isinstance(record, dict):
+            problems.append(f"{item_label} must be an object")
+            continue
+        raw = record.get(path_key)
+        if not isinstance(raw, str) or not raw or Path(raw).is_absolute():
+            problems.append(f"{item_label}.{path_key} must be a relative path")
+            continue
+        descriptor = {
+            "path": str(Path(prefix) / raw),
+            "sha256": record.get("sha256"),
+            "bytes": record.get("bytes"),
+        }
+        _relative_descriptor_path(root, descriptor, item_label, problems)
+
+
+def _check_hier005_bundle(
+    root: Path,
+    manifest: dict[str, Any],
+    problems: list[str],
+) -> None:
+    """Validate the portable, explicitly non-claim HIER diagnostic schemas."""
+    schema = manifest.get("schema")
+    is_repair = schema == HIER005_REPAIR_SCHEMA
+    is_overlap = schema == HIER008_OVERLAP_SCHEMA
+    is_dynamic = schema == HIER009_DYNAMIC_SCHEMA
+    if manifest.get("status") != "diagnostic":
+        problems.append("manifest.json HIER status must be diagnostic")
+
+    records = manifest.get("files")
+    observed_paths: set[str] = set()
+    if not isinstance(records, list) or not records:
+        problems.append("manifest.json HIER files must be a non-empty list")
+    else:
+        for index, record in enumerate(records):
+            label = f"manifest.json files[{index}]"
+            path = _relative_descriptor_path(root, record, label, problems)
+            raw = record.get("path") if isinstance(record, dict) else None
+            if isinstance(raw, str):
+                if raw in observed_paths:
+                    problems.append(f"{label}: duplicate manifest path {raw!r}")
+                observed_paths.add(raw)
+            if path is not None and path.name == "manifest.json":
+                problems.append(f"{label}: manifest must not recursively describe itself")
+        actual_paths = {
+            str(path.relative_to(root))
+            for path in root.rglob("*")
+            if path.is_file() and path.name != "manifest.json"
+        }
+        if observed_paths != actual_paths:
+            missing = sorted(actual_paths - observed_paths)
+            extra = sorted(observed_paths - actual_paths)
+            if missing:
+                problems.append(f"manifest.json omits HIER files: {missing!r}")
+            if extra:
+                problems.append(f"manifest.json names nonexistent HIER files: {extra!r}")
+
+    try:
+        config = _load_json(root / "config.json")
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        problems.append(f"config.json is invalid: {exc}")
+        config = None
+    if not isinstance(config, dict):
+        problems.append("config.json must contain an object")
+    else:
+        if config.get("schema") != schema:
+            problems.append("config.json has the wrong HIER diagnostic schema")
+        if config.get("status") != "diagnostic" or config.get("claim_ready") is not False:
+            problems.append("config.json must remain an explicitly non-claim diagnostic")
+        if not isinstance(config.get("command"), str) or not config["command"].strip():
+            problems.append("config.json has no executed command")
+        if not _finite(config):
+            problems.append("config.json contains a non-finite numeric value")
+        if is_repair:
+            revision = config.get("git_head")
+            if not isinstance(revision, str) or not HEX_40.fullmatch(revision):
+                problems.append("config.json git_head must be a 40-character Git SHA")
+            if not isinstance(config.get("git_dirty"), bool):
+                problems.append("config.json git_dirty must be boolean")
+            _check_hier005_snapshot(
+                root,
+                config.get("source_snapshot"),
+                "config.json source_snapshot",
+                problems,
+                path_key="path",
+                prefix="source_snapshot",
+            )
+        else:
+            git = config.get("git")
+            if not isinstance(git, dict):
+                problems.append("config.json git identity must be an object")
+            else:
+                revision = git.get("revision")
+                if not isinstance(revision, str) or not HEX_40.fullmatch(revision):
+                    problems.append("config.json git.revision must be a 40-character Git SHA")
+                if not isinstance(git.get("branch"), str) or not git["branch"]:
+                    problems.append("config.json git.branch must be non-empty")
+                if not isinstance(git.get("dirty"), bool):
+                    problems.append("config.json git.dirty must be boolean")
+            _check_hier005_snapshot(
+                root,
+                config.get("executed_source_snapshot"),
+                "config.json executed_source_snapshot",
+                problems,
+                path_key="snapshot_path",
+            )
+
+    try:
+        payload = _load_json(root / "metrics.json")
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        problems.append(f"metrics.json is invalid: {exc}")
+        return
+    if not isinstance(payload, dict):
+        problems.append("metrics.json must contain a HIER diagnostic payload object")
+        return
+    rows = payload.get("rows")
+    if payload.get("schema") != schema:
+        problems.append("metrics.json has the wrong HIER diagnostic schema")
+    if payload.get("status") != "diagnostic" or payload.get("claim_ready") is not False:
+        problems.append("metrics.json must remain an explicitly non-claim diagnostic")
+    if not isinstance(rows, list) or not rows or not all(isinstance(row, dict) for row in rows):
+        problems.append("metrics.json rows must be a non-empty object-row list")
+        return
+    if payload.get("row_count") != len(rows):
+        problems.append("metrics.json row_count differs from rows")
+    if not _finite(payload):
+        problems.append("metrics.json contains a non-finite numeric value")
+    _check_json_csv_projection(root, rows, problems)
+
+    linked_paths = _check_html(root, problems)
+    required_artifacts: set[Path] = set()
+    stable_keys: set[tuple[Any, ...]] = set()
+    common_files = {
+        "source.png",
+        "reconstruction.png",
+        "error.png",
+        "field.observation.npz",
+        "row.json",
+    }
+    if is_repair:
+        required_files = common_files | {
+            "source_crop.png",
+            "reconstruction_crop.png",
+            "error_crop.png",
+            "rescue_centers.png",
+            "repair_history.json",
+        }
+    elif is_overlap:
+        required_files = common_files | {
+            "preoptimization.png",
+            "preoptimization_error.png",
+            "feature.png",
+            "survivors.png",
+            "source_crop.png",
+            "reconstruction_crop.png",
+            "error_crop.png",
+            "history.json",
+            "optimizer_history.json",
+            "analysis.npz",
+        }
+    elif is_dynamic:
+        required_files = common_files | {
+            "initial_lattice.png",
+            "initial_error.png",
+            "feature_priority.png",
+            "protected.png",
+            "centers.png",
+            "source_crop.png",
+            "reconstruction_crop.png",
+            "error_crop.png",
+            "history.json",
+            "recovery_history.json",
+            "analysis.npz",
+            "config.json",
+        }
+    else:
+        required_files = common_files | {"history.json", "recovery_history.json"}
+    for index, row in enumerate(rows):
+        label = f"metrics.json rows[{index}]"
+        if row.get("schema") != schema or row.get("status") != "diagnostic":
+            problems.append(f"{label}: wrong schema or non-diagnostic status")
+        if is_repair:
+            key = (row.get("image"), row.get("rescue_limit"))
+        elif is_overlap:
+            key = (
+                row.get("image"),
+                row.get("support_arm"),
+                row.get("scheduler"),
+                row.get("target_gaussians"),
+            )
+        elif is_dynamic:
+            key = (
+                row.get("image"),
+                row.get("arm"),
+                row.get("target_gaussians"),
+            )
+        else:
+            key = (row.get("image"), row.get("target_gaussians"))
+        if key in stable_keys:
+            problems.append(f"{label}: duplicate stable row key {key!r}")
+        stable_keys.add(key)
+        for metric in ("psnr_db", "ms_ssim", "total_seconds"):
+            value = row.get(metric)
+            if (
+                not isinstance(value, (int, float))
+                or isinstance(value, bool)
+                or not math.isfinite(float(value))
+            ):
+                problems.append(f"{label}: {metric} must be finite numeric")
+        count = row.get("n_gaussians")
+        if not isinstance(count, int) or isinstance(count, bool) or count <= 0:
+            problems.append(f"{label}: n_gaussians must be a positive integer")
+        pixel_value = row.get("artifact_pixel_rmse_max")
+        pixel_threshold = row.get("artifact_gate_pixel_max_threshold")
+        patch_value = row.get("artifact_patch_rmse_max_7")
+        patch_threshold = row.get("artifact_gate_patch7_max_threshold")
+        gate_values = (pixel_value, pixel_threshold, patch_value, patch_threshold)
+        if not all(
+            isinstance(value, (int, float))
+            and not isinstance(value, bool)
+            and math.isfinite(float(value))
+            for value in gate_values
+        ):
+            problems.append(f"{label}: artifact gate values must be finite numeric")
+        else:
+            pixel_pass = float(pixel_value) <= float(pixel_threshold)
+            patch_pass = float(patch_value) <= float(patch_threshold)
+            if row.get("artifact_gate_pixel_max_pass") is not pixel_pass:
+                problems.append(f"{label}: pixel gate predicate differs")
+            if row.get("artifact_gate_patch7_max_pass") is not patch_pass:
+                problems.append(f"{label}: patch gate predicate differs")
+            if row.get("artifact_gate_pass") is not (pixel_pass and patch_pass):
+                problems.append(f"{label}: combined artifact gate predicate differs")
+        parity = row.get("maintained_render_parity_max_abs")
+        if (
+            not isinstance(parity, (int, float))
+            or isinstance(parity, bool)
+            or not math.isfinite(float(parity))
+            or float(parity) >= 2e-6
+        ):
+            problems.append(f"{label}: maintained-render parity is missing or too large")
+        if is_repair and row.get("base_prefix_bit_exact") is not True:
+            problems.append(f"{label}: repair changed the base-field prefix")
+
+        raw_artifact_dir = row.get("artifact_dir")
+        if (
+            not isinstance(raw_artifact_dir, str)
+            or not raw_artifact_dir
+            or Path(raw_artifact_dir).is_absolute()
+        ):
+            problems.append(f"{label}: artifact_dir must be a non-empty relative path")
+            continue
+        artifact_dir = root / raw_artifact_dir
+        try:
+            artifact_dir.resolve(strict=True).relative_to(root.resolve(strict=True))
+        except (FileNotFoundError, ValueError):
+            problems.append(f"{label}: artifact_dir is missing or escapes the bundle")
+            continue
+        for name in sorted(required_files):
+            artifact = artifact_dir / name
+            if not artifact.is_file() or artifact.stat().st_size <= 0:
+                problems.append(f"{label}: missing required artifact {name}")
+            else:
+                required_artifacts.add(artifact.resolve())
+        field_path = artifact_dir / "field.observation.npz"
+        if field_path.is_file() and row.get("field_file_sha256") != _sha256(field_path):
+            problems.append(f"{label}: field_file_sha256 differs")
+        row_path = artifact_dir / "row.json"
+        if row_path.is_file():
+            try:
+                stored_row = _load_json(row_path)
+            except (OSError, json.JSONDecodeError, ValueError) as exc:
+                problems.append(f"{label}: row.json is invalid: {exc}")
+            else:
+                if stored_row != row:
+                    problems.append(f"{label}: row.json differs from the metrics ledger")
+
+    try:
+        curve_catalog = _load_json(root / "curves" / "catalog.json")
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        problems.append(f"curve catalog is invalid: {exc}")
+    else:
+        curves = curve_catalog.get("curves") if isinstance(curve_catalog, dict) else None
+        if (
+            not isinstance(curve_catalog, dict)
+            or curve_catalog.get("schema") != schema
+            or not isinstance(curves, list)
+            or not curves
+        ):
+            problems.append("curve catalog has the wrong schema or no curves")
+        else:
+            for index, curve in enumerate(curves):
+                raw = curve.get("path") if isinstance(curve, dict) else None
+                artifact = _artifact_path(root, raw)
+                if artifact is None:
+                    problems.append(f"curve catalog[{index}] path is missing or non-portable")
+                else:
+                    required_artifacts.add(artifact)
+
+    if is_repair:
+        try:
+            verification = _load_json(root / "verification.json")
+        except (OSError, json.JSONDecodeError, ValueError) as exc:
+            problems.append(f"verification.json is invalid: {exc}")
+        else:
+            if not isinstance(verification, dict):
+                problems.append("verification.json must contain an object")
+            elif (
+                verification.get("schema") != schema
+                or verification.get("status") != "verified_diagnostic"
+                or verification.get("metric_rows_checked") != len(rows)
+                or verification.get("base_prefix_bit_exact") is not True
+            ):
+                problems.append("verification.json disagrees with the repair ledger")
+
+    for artifact in sorted(required_artifacts):
+        if artifact not in linked_paths:
+            problems.append(
+                f"index.html does not expose required HIER artifact "
+                f"{artifact.relative_to(root)}"
+            )
+
+
 def check_bundle(
     root: Path,
     *,
@@ -613,6 +962,9 @@ def check_bundle(
         return problems
     if not isinstance(manifest, dict):
         problems.append("manifest.json must contain an object")
+        return problems
+    if manifest.get("schema") in HIER005_REPORT_SCHEMAS:
+        _check_hier005_bundle(root, manifest, problems)
         return problems
     if manifest.get("schema") == BENCH019_REPORT_SCHEMA:
         _check_bench019_bundle(

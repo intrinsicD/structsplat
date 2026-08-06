@@ -39,6 +39,21 @@ IntrinsicEngine as an RHI pass.
   `fit`/`image-to-gaussians2d` saves native fields, while `render`/`gaussians2d-to-image`
   reconstructs NPZ or SSPL1 with optional display-referred error metrics and read-only
   fitted-field overlays.
+- `observation_field.py` / `pixel_contraction.py` / `progressive_residual_quadtree.py` /
+  `artifact_first_quadtree.py` / `overlap_elimination.py` — default-off Field V2 semantic oracle
+  plus the HIER-005 reverse-contraction, HIER-006 retained-parent hierarchy, HIER-007 parent-
+  replacing frontier, HIER-008 exact-overlap/feature-elimination controls, and HIER-009 dynamic
+  overlap contraction with direct-neighbor recovery and protected feature leaves.
+  Topology remains NumPy-first; coefficient fitting imports torch lazily. HIER-006 is a negative
+  exposed-image prefix control because retained ancestors consumed most of its budget. HIER-007
+  recovers those active rows, but its frozen 2x2 C0001 screen rejects artifact-first/overlap-local
+  reconciliation: all four 8k arms fail the artifact gate, and the combined arm exposes severe
+  quadtree-aligned artifacts plus prohibitive reference work. HIER-008 finds stable exact overlap
+  prefitting and a large positive overlap factor for quadtree contraction, but every cell still
+  fails locally and fixed-scale WSE/Schur survivors produce dot holes. HIER-009's 3x3 recovery halo
+  removes the obvious low-count block lattice and protection helps patch error, but it redistributes
+  error at 8k and every overlap cell still fails the local gate; only the HIER-005 delta/touched 8k
+  fallback passes. None enters the maintained pipeline.
 
 ## Invariants (do not break without an ADR)
 1. Init-time math stays **NumPy and importable without torch**. Autograd stays in torch modules.

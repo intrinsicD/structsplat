@@ -319,6 +319,155 @@ region-wise densification, and similarity-driven merging. The total row and prop
 matched during the mechanism screen. FIT-030 later prices topology and precision actions in
 complete bytes.
 
+HIER-005 supplies a default-off contraction control for that screen. It treats the one-Gaussian-
+per-active-pixel endpoint procedurally rather than as trainable rows, exposes ready quadtree cells,
+and considers three bounded actions: replace two to four atoms by a moment parent, retain a parent
+plus one analytic detail basis, or merge one pair when needed to reach an exact count. A cheap RGB
+proxy schedules the image-sized region frontier. Within a shortlisted region, candidate appearance
+distortion uses the exact continuous product of peak-one Gaussians,
+
+\[
+ \langle g_i,g_j\rangle =
+ 2\pi\frac{|\Sigma_i|^{1/2}|\Sigma_j|^{1/2}}
+ {|\Sigma_i+\Sigma_j|^{1/2}}
+ \exp\!\left[-\tfrac12(\mu_i-\mu_j)^T
+ (\Sigma_i+\Sigma_j)^{-1}(\mu_i-\mu_j)\right].
+\]
+
+Before an action commits, the implementation removes the old local contribution, solves its one-
+or two-column coefficient system against the true discrete image residual, and measures the exact
+finite-support SSE delta. Only support-disjoint actions share a batch. The default
+`pair_policy=exact_count` favors whole-cell contractions and uses pair actions only when no eligible
+whole-cell action exists; `always` is the slower quality-first control. The resulting direct field
+and its deterministic lossless reference container are test substrates. The configured bytes per
+row, raw array bytes, and reference NPZ bytes are not COMP-013 rate, and no HIER-005 diagnostic may
+advance a semantic/default/compression claim.
+
+An explicitly enabled recovery lane interleaves bounded Adam blocks after fixed fractions of the
+requested row-count reduction. The `touched` scope may move only active atom slots already
+replaced, merged, or retained by a contraction; never-touched pixel leaves are detached into a
+fixed base render and remain bitwise unchanged. Previously touched active rows stay eligible so
+later contractions can repair their interaction. The comparison-only `all_error_weighted` scope
+instead materializes every active row. It computes RGB residual MSE, applies mask-aware Gaussian
+smoothing (blurred masked error divided by blurred mask), and uses one additive-renderer color VJP
+to average that error under every Gaussian without a dense pixel-by-row matrix. Bounded,
+approximately mean-one exposure scores multiply the post-Adam parameter update—not the raw
+gradient, whose fixed scale Adam would mostly cancel.
+
+Both scopes use separate means/scales/rotation/coefficient learning rates and per-checkpoint trust
+regions; the best masked-SSE iterate is committed only on a strict improvement, otherwise the
+entire checkpoint rolls back. An accepted geometry update invalidates and rebuilds the ready
+proposal frontier. Recovery is disabled by default, `touched` remains its default scope, requested
+counts do not change, and neither scope defines a new field semantic. CPU recovery is covered by
+bit-determinism tests; CUDA additive atomic gradients make optimizer trajectories numerically
+non-bit-reproducible and reports label that limitation.
+
+When a fixed-count diagnostic fails its declared localized-artifact gate, HIER-005 can run a
+separately labeled terminal rescue rather than silently weakening the gate. The rescue starts from
+one cold persisted signed direct field; keeps all base means, scales, rotations, and RGB
+coefficients bit-exact; chooses foreground residual peaks with stable ordering and local NMS; and
+adds fixed-scale, fixed-rotation signed rows. Only the new RGB coefficients are optimized. The
+unchanged base competes with every optimizer checkpoint, ordered lexicographically by the larger
+of normalized raw worst-pixel and maximum black-matted 7×7-patch RMSE, then by raw SSE. The final
+cold displayed 8-bit PNG metrics remain the acceptance authority. Rescue rows are explicit count
+and payload overhead, not an exact-count solution, a compressed exception stream, or an
+artifact-free certificate.
+
+The task-local driver can resize a native RGB/mask pair for bounded diagnostics, but it records
+native and evaluation dimensions separately. Original-file/field ratios therefore remain visibly
+resolution-mismatched; same-raster PNG ratios and bits per active foreground pixel are reported in
+parallel. Its HTML reports plot every available quality, localized-artifact, byte-proxy, timing,
+action, recovery/repair, and renderer-parity outcome against achieved count, include full and
+worst-neighborhood visuals, and snapshot the untracked task sources for dirty-run audit.
+
+HIER-006 is the bounded parent-preserving residual-quadtree control for the opposite stage order.
+It begins with every mask-present cell at a declared coarse level. Splitting a selected frontier
+cell retains its parent and appends all mask-present child Gaussians; geometry is the active-pixel
+moment plus fixed leaf variance, and initial signed RGB is the child's mean current residual. Only
+that new coefficient block is fitted against an immutable rendered prefix. Candidate cells use
+mask-normalized Gaussian-smoothed residual energy per appended row. The unchanged prefix and
+optimizer checkpoints are ordered by raw normalized pixel/7×7 violation and then SSE; a
+float32-scale equivalence band prevents unchanged maxima from being misread as regressions across
+different reduction kernels. A cold joint render is the commit authority, so older field rows are
+bit-exact and every accepted count is independently decodable.
+
+That clean progressive property did not make the literal hierarchy competitive on the frozen
+exposed C0001 diagnostic. After correcting and retaining evidence for a cross-domain comparison
+roundoff defect, the unchanged protocol produced 27.805 dB at 3,986 rows and 32.882 dB at 8,192,
+with displayed pixel/7×7 maxima 0.2223/0.0860 and 0.1073/0.0375. Both fail the declared 0.02/0.01
+gate; the existing HIER-005 context is 30.481 dB at 4,096 and 52.356 dB with a passing gate at
+8,192. The hierarchy spends 5,106 terminal rows on retained ancestors and reaches only 3,086
+level-0 leaves, while summed smoothed error leaves the worst isolated boundary cell unsplit at
+level 1. A repeat reproduced the displayed maxima exactly. Therefore this fixed-prefix tree is a
+negative FIT-048/FIT-045 control: future hierarchical work should test quadtree scheduling without
+assuming literal retained Gaussian ancestors are free, and should separately test artifact-first
+allocation, joint/local coefficient reconciliation, or nested detail bases under matched complete
+bytes and work.
+
+HIER-006 reports both the full 32-byte-per-row/canonical/reference sizes and a smaller structural
+proxy containing float32 RGB plus one nominal tree bit per retained node. The proxy assumes a
+shared mask-derived geometry generator and omits a real tree grammar, header, entropy model, and
+cold decoder. Its very large native-JPEG ratio is additionally resolution-mismatched because the
+field is evaluated at 512×443. Neither number is COMP-013 rate.
+
+HIER-007 tests the prescribed scheduler-only successor without mutating HIER-006's negative
+control. A frontier split removes one active parent and activates its complete mask-present child
+group; inactive ancestors are tree/history records rather than rendered rows. A frozen 2x2 factors
+smoothed-energy versus artifact-first priority and new-only versus support-overlap local RGB
+reconciliation. The overlap arm applies mask-normalized smoothed-error row multipliers after Adam,
+freezes all nonlocal coefficients and all geometry, and accepts only a cold full-field artifact/SSE
+improvement. Rejected multi-parent trials back off by deterministic priority-prefix halving.
+
+The exposed C0001 screen rejects the combined mechanism. Parent replacement itself helps: the
+energy/new-only 8,192-row arm reaches 40.035 dB and 0.0472/0.0215 displayed pixel/7x7 maxima versus
+HIER-006's 32.882 dB and 0.1073/0.0375, but it still fails the fixed gate and remains below the
+contextual HIER-005 8,192-row pass. Artifact-first/overlap falls to 26.035 dB with clearly visible
+grid/ring defects, 1,773 attempts, and a 1.21 MB progressive-event proxy. The lexicographic hard-
+maximum commit can accept early SSE regressions, artifact-first allocation over-concentrates fine
+leaves, overlap updates can create late hotspots in coarse cells, and complete-child expansion
+leaves no reserve to repair them at the cap. Therefore Field V2 work must not promote this policy.
+A new screen should combine a smooth commit-aligned patch/tail objective, regional no-new-hotspot
+and SSE trust regions, budget reservation, and a parent/child cross-fade or lifting constraint
+before hard deactivation.
+
+HIER-008 separately tests the user's direct-neighbour overlap and feature-adaptive elimination
+proposal. Its full pixel lattice uses either near-delta `0.18 px` or overlapping `0.50 px`
+Gaussians. A matrix-free least-squares prefit makes both endpoints exact before removal; the
+overlap cell therefore does not confuse blur from reused source RGB with contraction distortion.
+The scheduler factor compares HIER-005 quadtree contraction with nested WSE survivors ranked by
+density-adaptive crowding divided by a same-side local Schur removal price. Every reduced field
+then receives the same bounded all-row RGB/centre/log-scale optimizer, with explicit step-zero
+attribution and a raw pixel/patch non-regression veto.
+
+The frozen exposed C0001 result retains overlap but rejects fixed-scale survivor elimination. At
+8,192 rows overlap raises the quadtree cell by 10.824 dB to 45.953 dB and the optimizer contributes
+2.144 dB, yet the displayed `0.1077/0.0253` maxima fail the artifact gate and remain below the
+contextual HIER-005 touched-recovery pass. The overlap WSE cell reaches only 22.878 dB. Although its
+feature coverage succeeds, q99/max centre gaps of 1.44/2.08 px receive almost no weight from a
+0.50-px Gaussian, producing visible dot holes. At 4,096, overlap/quadtree reaches 31.096 dB but
+retains visible periodic rings. Thus exact overlap prefitting can enter a future HIER-005 recovery
+screen, while any WSE successor must dynamically expand/merge covariance and price actual
+post-removal patch distortion; the frozen static method must not enter FIT-045 or production.
+
+HIER-009 executes that bounded recovery screen. It uses the exact-overlap lattice with HIER-005's
+current-field propose/refit/commit/recover/rebuild loop, then factors touched-only recovery against
+the user's requested direct 3x3 Gaussian-neighbor halo. An optional 5% deterministic reserve keeps
+thin/high-feature pixel-leaf geometry exact while allowing RGB refits. Never-selected rows remain
+a detached fixed base, accepted changed neighbors persist, and overfull protected regions fail
+closed without stopping independent regions.
+
+The 3x3 scope is useful but not a universal replacement. At N=4,096 it changes overlap/touched
+from 39.802 dB and displayed `0.0900/0.0334` pixel/7x7 maxima to 40.801 dB and
+`0.0799/0.0278`; the visible quadtree blocks become much weaker distributed texture error.
+Protection further reaches 41.115 dB and a 0.0251 patch maximum. At N=8,192 the same halo spreads
+error: pixel maximum falls, but PSNR drops from 47.395 to 45.963 dB and 7x7 maximum rises from
+0.0229 to 0.0274. Protection recovers part of this to 46.991 dB/0.0205, still below the
+delta/touched fallback, whose 52.338 dB and `0.0148/0.0053` are the only passing cell. All protected
+means/covariances remain exact and every recovery checkpoint is active. Retain adaptive
+neighborhood recovery and protected detail as successor components, but require an explicit local-
+artifact/Pareto acceptance objective before any wider scope or default. The 159,424/290,496-byte
+uncoded fields remain 5.45x/9.93x larger than the same-raster PNG and are not compression.
+
 ### 5. Quantize and entropy-code the direct field
 
 COMP-013 defines the self-contained Field V2 stream: per-attribute scalar QAT first, spatially
@@ -424,6 +573,10 @@ relax the general promotion gate.
 | INIT-010 | Which deterministic initializer transfers to the selected field semantics? |
 | FIT-049 | Which image/structure/downstream objective earns its compute and trade-offs? |
 | FIT-048 | Does single-scale/full-N or coarse-to-fine/progressive staging converge best? |
+| HIER-005 | Can an implicit pixel endpoint be contracted into an exact-count direct-field control? |
+| HIER-006 | Can a parent-preserving residual quadtree provide artifact-safe progressive prefixes? |
+| HIER-007 | Do parent replacement, artifact-first allocation, and overlap-local RGB reconciliation interact safely? |
+| HIER-008 | Does exact pixel-neighbour overlap or feature/Schur WSE elimination improve contraction without visible holes? |
 | FIT-044 | Does parameter-group staging help on the selected semantics? |
 | FIT-045 | Does regional allocation/merging beat global and fixed-N controls? |
 | FIT-046 | Does additive variable projection improve convergence or quality? |

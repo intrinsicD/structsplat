@@ -1,5 +1,23 @@
 # Concepts
 
+## Pixel-Gaussian endpoint
+
+- **Definition**: For a sampled 2D RGB image, associate one narrow peak-one Gaussian basis with
+  every active pixel center and its RGB sample. With sufficiently small declared width, the sampled
+  render is numerically near the source image, while explicit per-row storage is a worst-rate
+  endpoint. A compact method can be studied as a sequence of accepted contractions away from this
+  endpoint without materializing trainable torch rows for every leaf.
+- **Boundary**: Finite-width Gaussian overlap means the endpoint is not automatically a
+  mathematical interpolant, and a single sampled image does not define a 3D novel-view field.
+  Implicit leaves remove parameter/optimizer storage, not the need to read pixels or maintain
+  contraction bookkeeping. Estimated row bytes do not establish compression.
+- **Provenance**: user
+- **Crystallized via**: artifact-commitment
+- **Evidence**: [`src/structsplat/pixel_contraction.py`,
+  `tests/test_pixel_contraction.py`,
+  `tasks/HIER-005-implicit-pixel-contraction.md`]
+- **From staging**: O105
+
 ## Opacity-split gauge equivalence
 
 - **Definition**: In StructSplat's normalized renderer, replace one row by co-located copies with

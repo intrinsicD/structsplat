@@ -1194,3 +1194,504 @@ observations:
     promoted_to: "logic/solution/constraints.md:K04"
     crystallized_via: artifact-commitment
     stale: false
+  - id: O104
+    timestamp: "2026-08-04T21:27+02:00"
+    provenance: ai-suggested
+    content: >
+      Original-file compression ratio is exact supplied-source bytes divided by complete
+      self-contained cold-package bytes; it is secondary to complete bpp because PNG/JPEG/AVIF,
+      metadata, alpha, and prior lossy encoding change the numerator. Report exact-source,
+      canonical-lossless-PNG, and raw-RGB denominators separately, and count all per-image headers,
+      indexes, codebooks, masks, context/generator state, and side streams. No reviewed 2D Gaussian
+      method currently reports both required byte operands, so no original-file-ratio leader is
+      established.
+    context: >
+      The 2026-08-04 primary-source review audited 22 strict/adjacent methods and separated complete
+      streams from fixed-width, Gaussian-count, raw-RGB, and shared-checkpoint proxies. The frozen
+      report and DOCS-007 handoff now depend on this evaluation boundary.
+    potential_type: constraint
+    bound_to: [N215, N216]
+    promoted: true
+    promoted_to: "logic/solution/constraints.md:K05"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O105
+    timestamp: "2026-08-04T23:26+02:00"
+    provenance: user
+    content: >
+      Use one Gaussian centered at every source pixel as the conceptual maximum-quality endpoint:
+      explicit per-row geometry and appearance make it a worst-rate field, while an interpolatory
+      sampled renderer can approach or attain exact source-view pixels. Test all compact methods as
+      movements away from this endpoint rather than assuming sparse growth is the only search
+      direction.
+    context: >
+      The user introduced the per-pixel construction while reconsidering the competitive pipeline.
+      Exactness still depends on 2D versus 3D scope, kernel overlap, coefficient domain, alpha, and
+      the evaluation sampling convention; no implementation or measurement exists yet.
+    potential_type: concept
+    bound_to: [N218]
+    promoted: true
+    promoted_to: "logic/concepts.md:pixel-gaussian-endpoint"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O106
+    timestamp: "2026-08-04T23:26+02:00"
+    provenance: ai-suggested
+    content: >
+      A competitive reverse-search control can keep the full pixel lattice implicit, represent
+      internal regions by parent Gaussians plus optional signed residual children, and select
+      contractions by distortion increase per complete byte saved. This creates a monotone
+      exact-to-compact path, progressive prefixes, and a diagnostic comparison with sparse birth;
+      it is distinct from the current sparse quadtree initializer and local similarity merge but
+      remains threatened by quadtree coding, adaptive mesh coarsening, wavelet/lifting, Gaussian
+      pyramids, P-GSVC, and SGI prior art.
+    context: >
+      Repository and ideation audit found quadtree aggregation, sparse regional merge, and
+      seed-structured codec gates, but no exact implicit pixel-leaf contraction control. The
+      proposal remains conditional on BENCH-020 semantics and should first be tested on small
+      full-frame images for interpolation error, conditioning, quantization sensitivity,
+      rate-distortion, wall time, expanded memory, and query cost.
+    potential_type: architecture
+    bound_to: [N218]
+    promoted: true
+    promoted_to: "logic/solution/architecture.md:A04"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O107
+    timestamp: "2026-08-04T23:38+02:00"
+    provenance: ai-suggested
+    content: >
+      A scalable rate-distortion contraction controller should separate proposals from authority:
+      keep pixel leaves implicit; construct O(kN) spatial or tree-sibling candidates; initialize a
+      parent by positive-energy spatial moments; eliminate its additive RGB coefficient in closed
+      form using analytic Gaussian-product inner products; rank by estimated distortion increase
+      per estimated complete byte saved; select vertex-disjoint mutual-best batches; validate on the
+      exact local raster and re-solve the parent plus its neighbor ring; then periodically perform
+      full actual encode, cold decode, and global guardrail selection. Estimated rate and continuous
+      L2 are proposal oracles only; complete bytes and the selected discrete objective remain the
+      acceptance authority.
+    context: >
+      The current normalized triage merge already supplies mutual-nearest disjoint pairs,
+      moment/envelope covariance construction, containment recertification, and pool mechanics, but
+      ranks a distance/color/scale/angle proxy and averages opacity-weighted color. FIT-045 owns the
+      controlled merge mechanism screen and FIT-030 already requires estimated proposal rate plus
+      exact codec replay. The proposed direct-additive scoring remains unimplemented and depends on
+      BENCH-020 semantics; normalized fields require coupled numerator/density preservation instead
+      of the additive closed form.
+    potential_type: architecture
+    bound_to: [N218, N219]
+    promoted: true
+    promoted_to: "logic/solution/architecture.md:A05"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O108
+    timestamp: "2026-08-05T02:36+02:00"
+    provenance: ai-suggested
+    content: >
+      Selective optimizer recovery is a promising fixed-row repair for contraction topology
+      artifacts at useful capacities: on the exposed Janelle raster it removed the visible 8,192-row
+      square/tree imprint and raised masked PSNR by 18.263 dB, but it left structured artifacts at
+      2,048/4,096 rows, increased total time, and did not improve uncoded payload size.
+    context: >
+      The user proposed interleaving optimization over merged/teleported rows only after inspecting
+      the no-recovery reconstruction. The resulting dirty one-image diagnostic supports a mechanism
+      observation but has no held-out, matched-work, complete-codec, or independent-review scope.
+    potential_type: claim
+    bound_to: [N222, N224]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O109
+    timestamp: "2026-08-05T02:36+02:00"
+    provenance: user
+    content: >
+      Interleaved contraction recovery should train only active Gaussians whose slots were touched by
+      merge, retained-detail, or teleportation actions; all never-touched pixel Gaussians must stay
+      fixed. Previously touched active rows remain eligible, non-improving checkpoints roll back,
+      and recovery work is spaced by count progress rather than topology-action count.
+    context: >
+      The user's touched-only freeze direction was implemented in HIER-005, then refined after the
+      action-cadence probe exposed unequal optimizer work across target counts. The task, code,
+      tests, driver telemetry, and architecture documents now depend on this boundary.
+    potential_type: architecture
+    bound_to: [N222, N223, N224]
+    promoted: true
+    promoted_to: "logic/solution/architecture.md:A06"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O110
+    timestamp: "2026-08-05T02:36+02:00"
+    provenance: ai-suggested
+    content: >
+      CUDA additive recovery is not a bit-deterministic experiment oracle: atomic-gradient ordering
+      changed every field hash and up to 0.205 dB PSNR across two complete runs. Formal small-effect
+      comparisons must use deterministic CPU recovery or predeclare repeated CUDA runs and report
+      outcome dispersion separately from timing.
+    context: >
+      The Janelle progress-16 repeat audit found negligible high-count drift but material low-count
+      trajectory sensitivity. Driver warnings, report limits, task handoff, and the evidence note now
+      bind this determinism boundary.
+    potential_type: constraint
+    bound_to: [N224]
+    promoted: true
+    promoted_to: "logic/solution/constraints.md:K06"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O111
+    timestamp: "2026-08-05T09:26+02:00"
+    provenance: ai-suggested
+    content: >
+      All-active residual-weighted recovery is a promising low/mid-budget artifact repair on the
+      exposed Janelle raster: it improves masked PSNR by 5.015 and 10.456 dB at 2k/4k versus the
+      touched-only control, but loses 6.310 dB at 8k and has no established smoothing, equal-work,
+      multi-image, convergence-speed, or compression advantage.
+    context: >
+      The user proposed training every active Gaussian with a smoothed error-derived weight. Fresh
+      same-source controls and an 8k repeat show a large mechanism signal but a mixed terminal
+      topology interaction, so the general capability interpretation remains staged.
+    potential_type: claim
+    bound_to: [N225, N226, N227]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O112
+    timestamp: "2026-08-05T09:26+02:00"
+    provenance: user
+    content: >
+      Keep a comparison recovery scope that optimizes every active Gaussian and weights its update
+      by a spatially smoothed error field. Attribute mask-aware smoothed residual energy to rows
+      matrix-free, normalize and bound the row weights, and apply them to actual post-Adam updates
+      while preserving strict SSE rollback and the existing touched-only scope.
+    context: >
+      The user's all-Gaussian, error-weighted, smoothed-error direction is now implemented in the
+      HIER-005 code, tests, driver, telemetry, task contract, and architecture documentation.
+    potential_type: architecture
+    bound_to: [N225, N226]
+    promoted: true
+    promoted_to: "logic/solution/architecture.md:A07"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O113
+    timestamp: "2026-08-05T09:26+02:00"
+    provenance: ai-suggested
+    content: >
+      Strict rollback at each interleaved recovery checkpoint guarantees only immediate masked-SSE
+      improvement. If accepted geometry changes the subsequent contraction frontier, it cannot
+      guarantee that the final topology path dominates a fixed-geometry or touched-only control.
+    context: >
+      Every all-active checkpoint was individually accepted, yet the 8k terminal result lost in
+      two CUDA runs. The task handoff, architecture docs, and proposed hybrid follow-up now depend
+      on this topology-path boundary.
+    potential_type: constraint
+    bound_to: [N226, N227]
+    promoted: true
+    promoted_to: "logic/solution/constraints.md:K07"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O114
+    timestamp: "2026-08-05T09:51+02:00"
+    provenance: ai-suggested
+    content: >
+      Reformulate artifact-safe contraction as constrained feasibility rather than average-error
+      minimization: require bounded multiscale patch error, high-pass/cell-imprint response,
+      foreground coverage, and connected residual components; optimize rate or SSE only inside that
+      feasible set; retain the best artifact-safe checkpoint and declare a requested row count
+      infeasible when no field passes.
+    context: >
+      Aggregate SSE accepted every all-active checkpoint despite a localized 8k regression. The
+      proposed dual/primal weighting would turn violated patch constraints into Gaussian update
+      priorities, while exact post-step evaluation remains the acceptance authority. No thresholds
+      or optimizer have been selected or implemented.
+    potential_type: architecture
+    bound_to: [N228, N229, N230]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O115
+    timestamp: "2026-08-05T09:51+02:00"
+    provenance: ai-suggested
+    content: >
+      The most defensible artifact-safe schedule is topology-stable: screen continuous-support
+      semantics first; perform contraction with analytic or color-only reconciliation; delay
+      all-active geometry optimization until topology is frozen; branch and select only among
+      artifact-safe terminal checkpoints; then locally uncontract or add reserved rescue Gaussians
+      at violated patches, increasing count or preserving exact pixel leaves if repair cannot meet
+      the certificate.
+    context: >
+      This combines the observed benefit of all-active weighting at 4k with the touched-only 8k
+      stability and avoids letting geometry recovery perturb later contraction proposals. It is an
+      unimplemented research architecture, not an adopted task or default.
+    potential_type: architecture
+    bound_to: [N227, N228, N229, N230]
+    promoted: true
+    promoted_to: "logic/solution/architecture.md:A08"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O116
+    timestamp: "2026-08-05T09:51+02:00"
+    provenance: ai-suggested
+    content: >
+      Hard AABB truncation at the current 3-sigma support is a plausible source of square/cell
+      artifacts because a nominal Gaussian contribution is still about 0.0111 at the axis cutoff.
+      A matched refit factorial over full support fade or a smoother compact kernel and a larger
+      cutoff must isolate this from quadtree topology and geometry-path effects before changing the
+      renderer semantic.
+    context: >
+      Visual inspection found cell-aligned 4k residuals and sparse square 8k holes. Code inspection
+      confirmed support_fade_alpha=0 for both runs, but the spatially aligned topology is a strong
+      confounder, so the causal interpretation remains staged.
+    potential_type: claim
+    bound_to: [N229, N230]
+    promoted: true
+    promoted_to: "trace/exploration_tree.yaml:N233"
+    crystallized_via: empirical-resolution
+    stale: false
+  - id: O117
+    timestamp: "2026-08-05T13:18+02:00"
+    provenance: ai-suggested
+    content: >
+      Keep a default-off coarse-to-fine direct-additive control in which every mask-present coarse
+      cell is a deterministic mask-moment Gaussian, high-error frontier splits retain the parent
+      and append all present signed residual children, only the new RGB block is optimized against
+      an immutable prefix, and a cold joint render plus local-artifact/SSE key accepts or rolls back
+      the stage. Every accepted count is an independently renderable prefix; all ancestor rows are
+      still charged in full-field counts and bytes.
+    context: >
+      The user proposed starting near the quadtree root and adding children over coarse Gaussians.
+      HIER-006 code, tests, task, report driver, architecture documents, and corrected diagnostic
+      now depend on this exact research-control boundary, while the current pipeline remains
+      unchanged and the exposed quality result is negative.
+    potential_type: architecture
+    bound_to: [N236, N237, N238]
+    promoted: true
+    promoted_to: "logic/solution/architecture.md:A09"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O118
+    timestamp: "2026-08-05T13:18+02:00"
+    provenance: ai-suggested
+    content: >
+      A lexicographic artifact-violation/SSE checkpoint rule must not compare last-bit values from
+      different reduction precisions as strict mathematical order. Compute competing keys in one
+      numeric domain and define a tolerance tied to renderer/reduction precision before invoking
+      the SSE tie-break; otherwise an unchanged maximum can roll back an improving batch and
+      permanently alter the topology frontier.
+    context: >
+      The first frozen HIER-006 run rejected attempt 9 because the unchanged normalized maximum was
+      18.835389288 in NumPy float64 and 18.835390091 in Torch float32 despite a large SSE decrease.
+      The corrected comparator, regression test, task contract, retained superseded bundle, and
+      unchanged-parameter rerun now bind this numerical safety rule.
+    potential_type: constraint
+    bound_to: [N237]
+    promoted: true
+    promoted_to: "logic/solution/constraints.md:K08"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O119
+    timestamp: "2026-08-05T13:18+02:00"
+    provenance: ai-suggested
+    content: >
+      A stronger successor should keep the quadtree only as an allocation and coding index, add
+      explicit worst-patch/component priority beside smoothed energy, and reconcile coefficients
+      on the new children plus their overlapping ancestor/path neighborhood under drift constraints.
+      Nested zero-moment or lifting-style Gaussian detail atoms and encoded coefficient deltas are
+      alternative controls; every ancestor, delta, tree decision, alpha bit, header, and decoder
+      dependency must enter complete-byte accounting.
+    context: >
+      The corrected HIER-006 trajectory shows that literal immutable ancestors consume 62.3% of the
+      8k row budget and leave the worst isolated boundary cell unsplit. No successor mechanism has
+      been implemented, frozen, or tested, so this remains a staged architecture direction rather
+      than a selected pipeline.
+    potential_type: architecture
+    bound_to: [N237, N238]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O120
+    timestamp: "2026-08-05T15:35+02:00"
+    provenance: ai-suggested
+    content: >
+      Keep a default-off parent-replacing frontier-quadtree diagnostic in which a split removes its
+      active parent, activates every mask-present child, and preserves a mask-partition antichain.
+      Isolate energy versus artifact-first scheduling and new-only versus finite-support-overlap RGB
+      reconciliation from one shared base; freeze geometry and all nonlocal rows; apply mask-aware
+      smoothed-error post-Adam weights; and let a cold pixel/patch-violation-then-SSE transaction
+      accept, back off, or roll back each batch. Report inactive nodes and coefficient revisions in
+      explicit non-codec byte ledgers.
+    context: >
+      The user explicitly affirmed this subset of O119. HIER-007 code, tests, task, report driver,
+      architecture documentation, and the frozen four-arm diagnostic now depend on the exact
+      boundary, while all maintained pipeline defaults remain unchanged and the empirical result
+      is negative.
+    potential_type: architecture
+    bound_to: [N238, N239, N240, N241]
+    promoted: true
+    promoted_to: "logic/solution/architecture.md:A10"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O121
+    timestamp: "2026-08-05T15:35+02:00"
+    provenance: ai-suggested
+    content: >
+      A future hierarchical control should replace the hard maximum-first transaction with a smooth
+      pixel/patch-tail objective aligned to the displayed commit metric, impose regional no-new-
+      hotspot and material-SSE trust regions, reserve capacity for late local repair, and continue
+      parent mass into children through a cross-fade or lifting/zero-moment constraint before hard
+      deactivation. Cache and fuse local support work only after this quality mechanism passes.
+    context: >
+      HIER-007 shows that parent replacement helps relative to retained ancestors, but artifact-
+      first priority plus overlap refitting moves maxima into late coarse regions and accepts large
+      SSE damage while exhausting complete-child capacity. This successor is unimplemented,
+      unfrozen, and untested; it is not a selected task or performance claim.
+    potential_type: architecture
+    bound_to: [N240, N241]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O122
+    timestamp: "2026-08-05T20:09+02:00"
+    provenance: user-revised
+    content: >
+      Meaningful direct-neighborhood overlap is not obtained merely by the current 3x3 support
+      enumeration. HIER-005's 0.18-pixel leaf scale gives an axis-neighbor weight near 2e-7 and is
+      effectively a delta basis. A roughly 0.5-pixel scale gives axis/diagonal weights about
+      0.135/0.018 and a well-conditioned ideal-lattice stencil, but target RGB used directly would
+      blur or brighten the endpoint. The full lattice therefore needs a mask-aware exact color
+      prefilter/solve plus coefficient-range, ringing, and boundary checks before contraction.
+    context: >
+      The user proposed that every Gaussian span its nine-pixel direct neighborhood. Code and
+      analytic stencil inspection separate geometric AABB enumeration from meaningful sampled
+      overlap. No broader-support field or solve was implemented or tested in this turn.
+    potential_type: constraint
+    bound_to: [N242]
+    promoted: true
+    promoted_to: "logic/solution/constraints.md:K09"
+    crystallized_via: verbal-affirmation
+    stale: false
+  - id: O123
+    timestamp: "2026-08-05T20:09+02:00"
+    provenance: user-revised
+    content: >
+      The strongest version is a fixed-lattice, fixed-kernel sparse field rather than another
+      quadtree merge. Build a support-overlap graph, block coefficient transfer across strong
+      structure-tensor or bilateral feature barriers, estimate each removal by a local Schur-
+      complement/variable-projection RGB repair, reject new pixel/patch hotspots and coverage
+      holes, rank admissible removals by exact distortion per saved byte, and use anisotropic WSE
+      competition only to space simultaneous removals. Surviving centers and common support remain
+      implicit, preserving a possible occupancy-plus-coefficient codec path.
+    context: >
+      Current StructSplat WSE is initialization-only and removes the most geometrically crowded
+      candidates before colors are fitted. The proposed dynamic model-reduction use is unimplemented
+      and distinct from HIER-005 quadtree regions and HIER-007 hard parent replacement. Its nearest
+      mechanism donors are WSE, local basis/knot removal, sparse Schur elimination, mesh-decimation
+      error metrics, and feature-aware graph coarsening; no novelty or performance claim is made.
+    potential_type: architecture
+    bound_to: [N242]
+    promoted: true
+    promoted_to: "logic/solution/architecture.md:A11"
+    crystallized_via: verbal-affirmation
+    stale: false
+  - id: O124
+    timestamp: "2026-08-05T21:32+02:00"
+    provenance: ai-suggested
+    content: >
+      On the exposed 512x443 C0001 raster, stable exact 0.50-pixel overlap is a large positive
+      factor for expanding quadtree contraction but does not achieve artifact-free reduction. At
+      8,192 rows it raises the matched terminal-optimizer quadtree cell from 35.129 to 45.953 dB
+      and the common optimizer contributes 2.144 dB, yet pixel/7x7 maxima 0.1077/0.0253 fail. At
+      4,096 it reaches 31.096 dB but retains visible periodic rings. These are diagnostic facts on
+      one exposed image, not a general method, convergence, or compression claim.
+    context: >
+      HIER-008 ran every frozen support-width x scheduler cell once, retained all negatives, passed
+      cold parity and the portable report gate, and recorded complete visuals and optimizer curves.
+      The user has not yet commented on the outcome, distinct review is pending, and prior HIER-005
+      recovery is contextual rather than equal work.
+    potential_type: claim
+    bound_to: [N242, N243, N244]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O125
+    timestamp: "2026-08-05T21:32+02:00"
+    provenance: ai-suggested
+    content: >
+      Any elimination method that deletes lattice centers must adapt effective covariance to the
+      surviving local spacing and evaluate actual post-refit pixel/patch distortion. Structure-
+      feature retention, WSE crowding, or a static initial Schur price alone cannot prevent holes:
+      the frozen overlap WSE cell retains top features but leaves 1.44/2.08-pixel q99/max center
+      gaps, where a 0.50-pixel Gaussian has negligible response. Fixed support is admissible only
+      if an exact coverage veto proves those gaps remain reconstructible.
+    context: >
+      The requirement is encoded in the HIER-008 negative disposition, architecture documentation,
+      evidence note, and recommended successor boundary after visible dot holes at both row caps.
+      It constrains future FIT-045/HIER elimination work without asserting that a dynamic successor
+      will succeed.
+    potential_type: constraint
+    bound_to: [N244, N245]
+    promoted: true
+    promoted_to: "logic/solution/constraints.md:K10"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O126
+    timestamp: "2026-08-05T21:32+02:00"
+    provenance: ai-suggested
+    content: >
+      The smallest justified successor is not a fresh production pipeline: feed the stable overlap
+      prefilter into HIER-005's existing progress-normalized touched-row recovery, retain thin or
+      high-feature leaves through a hard veto or reserved detail budget, and screen that combination
+      against hard3/touched. Revisit WSE only if every removal dynamically expands or merges
+      covariance, performs local appearance variable projection, and commits on actual patch error.
+    context: >
+      This proposal composes the positive HIER-008 overlap factor with the strongest contextual
+      HIER-005 recovery while removing the measured fixed-support failure. It has not been selected
+      by the user, frozen, implemented, or tested and therefore remains staged.
+    potential_type: architecture
+    bound_to: [N224, N244, N245]
+    promoted: true
+    promoted_to: "logic/solution/architecture.md:A12"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O127
+    timestamp: "2026-08-06T00:56+02:00"
+    provenance: ai-suggested
+    content: >
+      On the exposed C0001 raster, direct 3x3 neighborhood recovery is a row-cap-dependent factor:
+      relative to overlap/touched it gains 0.999 dB and lowers pixel/7x7 maxima at 4,096, but loses
+      1.433 dB and worsens 7x7 error at 8,192 despite lowering the isolated maximum. A 5% protected
+      reserve improves PSNR and patch error at both caps but does not make an overlap cell pass.
+      This is a one-image diagnostic, not a general quality or artifact-freedom claim.
+    context: >
+      The frozen HIER-009 report retained every cell, source snapshot, curve, and negative visual.
+      The user has not yet commented on the outcome; CUDA row work is unmatched and distinct review,
+      held-out images, and a complete codec remain absent.
+    potential_type: claim
+    bound_to: [N246, N247, N248]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O128
+    timestamp: "2026-08-06T00:56+02:00"
+    provenance: ai-suggested
+    content: >
+      Neighborhood recovery should be conditional on contraction severity and checkpoint-local
+      artifact behavior. Treat SSE improvement as necessary but insufficient: enable new halo rows
+      only where a predicted local benefit justifies extra work, and accept an optimizer checkpoint
+      only if it is Pareto-safe in SSE, worst displayed pixel, and worst local patch. Otherwise roll
+      back to touched-only recovery for that region or count.
+    context: >
+      HIER-009 accepts every SSE-improving checkpoint, yet the 8k halo worsens patch error while the
+      4k halo removes structured blocks. The adaptive policy and Pareto gate are recommended next
+      work only; no algorithm, threshold, task, or held-out protocol has been selected.
+    potential_type: constraint
+    bound_to: [N228, N247, N248]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

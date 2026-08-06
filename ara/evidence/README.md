@@ -4,6 +4,86 @@ The canonical four-image benchmark fixture is `tests/test_images/`. Older eviden
 still record `results/abl003_coco_train2014` or copied `results/.../selected` paths because those
 paths were the live source location when the historical runs were produced.
 
+- `2d-gaussian-image-fields-sota-review-2026-08-04`: Primary-source literature synthesis through
+  2026-08-04 over strict 2D Gaussian image fields and direct richer-primitive controls. The review
+  separates float/count proxies from complete streams, identifies regime-specific Pareto leaders
+  for quality, convergence, rendering, and storage, and specifies the missing cold-package protocol
+  needed to measure compression against exact original files. It is producer-authored literature
+  evidence, not a native benchmark, default decision, or accepted novelty claim. Artifact:
+  `ara/evidence/2d-gaussian-image-fields-sota-review-2026-08-04.md`.
+
+- `hier005-pixel-contraction-diagnostic-2026-08-05`: Dirty-worktree, single-source implementation
+  smoke for the default-off implicit pixel-field contraction reference. At 1,024 rows on one 64x48
+  local source, the throughput and quality-first pair policies recorded 23.523/24.828 dB in
+  1.982/2.883 contraction seconds; both uncoded 32 KiB fields exceed the 7.8 KiB source PNG. This
+  preserves implementation diagnostics and renderer parity only, not a matched method, actual-rate,
+  semantic, or default result. Evidence note:
+  `ara/evidence/hier005-pixel-contraction-diagnostic-2026-08-05/run.md`.
+- `hier006-progressive-residual-quadtree-janelle-diagnostic-2026-08-05`: Implemented the opposite
+  coarse-to-fine, parent-preserving signed residual hierarchy and retained the original numerical-
+  comparator failure before rerunning the unchanged frozen C0001 protocol with a same-domain
+  float32 tie band. Corrected 3,986/8,192 prefixes reach 27.805/32.882 dB but fail the displayed
+  0.02/0.01 gate at 0.2223/0.0860 and 0.1073/0.0375; 5,106 of 8,192 terminal rows are retained
+  ancestors. The native-JPEG/full-field ratio is resolution-mismatched (49.1x at 8k), while the
+  exact evaluation-PNG/full-field ratio is only 0.101x and even the non-codec structural proxy is
+  0.229x. An identical CUDA repeat preserves displayed metrics exactly. Evidence note:
+  `ara/evidence/hier006-progressive-residual-quadtree-janelle-diagnostic-2026-08-05/run.md`.
+- `hier007-artifact-first-frontier-quadtree-janelle-diagnostic-2026-08-05`: Frozen shared-base
+  2x2 C0001 diagnostic of energy/artifact-first scheduling and new-only/overlap-local RGB
+  reconciliation in a parent-replacing frontier quadtree. All four 8,192-row arms fail the
+  displayed 0.02/0.01 pixel/7x7 gate. Energy/new-only is the strongest HIER-007 row at 40.035 dB
+  and improves substantially over retained-parent HIER-006, but remains behind the passing
+  HIER-005 control; artifact-first/overlap is worst at 26.035 dB with visible square/ring
+  artifacts. Full active fields and even incomplete frontier proxies exceed the same-raster PNG,
+  so no compression claim follows. Evidence note:
+  `ara/evidence/hier007-artifact-first-frontier-quadtree-janelle-diagnostic-2026-08-05/run.md`.
+- `hier008-overlap-lattice-feature-elimination-janelle-diagnostic-2026-08-05`: Frozen 2x2 C0001
+  diagnostic of near-delta/meaningfully overlapping pixel lattices and quadtree/fixed-lattice
+  feature-WSE-Schur reduction, followed by one common bounded all-row optimizer. Exact overlap
+  prefitting is stable and raises matched 8,192-row quadtree PSNR by 10.824 dB to 45.953, with a
+  measured +2.144 dB optimizer contribution, but every cell fails the local artifact gate.
+  Fixed-scale WSE retains top features yet produces severe dot holes and is rejected. Canonical
+  fields remain 5.45--9.93x larger than the same-raster PNG; native JPEG ratios are resolution-
+  mismatched and not compression evidence. Evidence note:
+  `ara/evidence/hier008-overlap-lattice-feature-elimination-janelle-diagnostic-2026-08-05/run.md`.
+
+- `hier009-dynamic-overlap-neighborhood-recovery-janelle-diagnostic-2026-08-06`: Frozen four-arm
+  C0001 diagnostic that replaces static elimination with live HIER-005 contraction and tests
+  touched-only recovery, a direct 3x3 optimization halo, and a 5% hard feature-leaf reserve. The
+  halo removes the obvious 4,096-row quadtree lattice and improves overlap/touched by +0.999 dB,
+  while protection reaches 41.115 dB; both still fail the local gate. At 8,192, unrestricted halo
+  updates redistribute error and trail touched-only, while protection partly recovers the loss.
+  Only the delta/touched fallback passes. Fields are 5.45--9.93x larger than the same-raster PNG,
+  so no compression/default claim follows. Evidence note:
+  `ara/evidence/hier009-dynamic-overlap-neighborhood-recovery-janelle-diagnostic-2026-08-06/run.md`.
+
+- `hier005-selective-recovery-janelle-diagnostic-2026-08-05`: Dirty one-image Janelle diagnostic
+  for progress-normalized optimizer recovery over contraction-touched rows only. At N=8,192 the
+  run removes the visible square/tree holes and changes masked PSNR from 34.076 to 52.339 dB while
+  preserving 5,469 never-touched rows, but low-count artifacts remain, CUDA repeats are not bit
+  deterministic, and every uncoded field is larger than the same-raster PNG. Evidence note:
+  `ara/evidence/hier005-selective-recovery-janelle-diagnostic-2026-08-05/run.md`.
+
+- `hier005-all-active-error-weighted-janelle-diagnostic-2026-08-05`: Fresh same-source comparison
+  of touched-only recovery with recovery over every active row using mask-smoothed residual-energy
+  post-Adam update weights. The all-active arm gains `+5.015/+10.456/-6.310/+2.042 dB` at
+  N=`2,048/4,096/8,192/12,000`; the 8k regression and CUDA probe reversal make it a mixed mechanism
+  result rather than a default or smoothing-selection result. A follow-up localized-error audit
+  finds the bad 8k arm's maximum 7x7 patch RMSE is 6.8x the touched control and records the hard
+  3-sigma AABB cutoff as an unisolated support-discontinuity hypothesis. Equal attempted steps are
+  not equal compute, and unchanged uncoded payloads provide no compression evidence. Evidence note:
+  `ara/evidence/hier005-all-active-error-weighted-janelle-diagnostic-2026-08-05/run.md`.
+
+- `hier005-artifact-safety-janelle-diagnostic-2026-08-05`: Complete exposed-image hard/faded
+  3.0/4.5-sigma support × touched-interleaved/topology-frozen-terminal recovery factorial at exact
+  N=4,096/8,192, followed by the frozen 0/102/205/410 signed local-rescue ladder. All 4k arms and
+  every rescue fail the provisional displayed pixel/7x7-patch gate; hard3 touched is the simplest
+  of three passing 8k rows. Eight 75-file/53-curve matrix reports and the verified 86-entry,
+  36-curve repair v2 retain full/error/crop visuals, negative cells, source snapshots, cold parity,
+  payload overhead, and CUDA-repeat limitations. Diagnostic only: no held-out, semantic, default,
+  convergence-speed, or compression claim. Evidence note:
+  `ara/evidence/hier005-artifact-safety-janelle-diagnostic-2026-08-05/run.md`.
+
 - `bench019-downstream-protocol-preflight-2026-08-03`: Read-only inventory before any BENCH-019
   outcome access. Frame 00008's requested three-provider set was not yet complete, frame 00009 did
   not have the matched set, the two frames formed only one capture group, and realtime-gs's task

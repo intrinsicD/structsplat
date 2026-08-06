@@ -16,6 +16,101 @@ supported conversion output, or semantic selection. Raw RGB, alpha matting, inde
 and display clipping remain separate operations, and legacy normalized fields cannot be declared
 exact additive conversions.
 
+HIER-005's default-off `structsplat.pixel_contraction` is an experimental direct-additive producer
+for that boundary. It starts from procedural pixel leaves, contracts a quadtree frontier with
+moment parents and an optional retained detail basis, re-solves every shortlisted action on its
+exact finite-support pixel patch, and exports `ObservationField2D`. An opt-in recovery schedule can
+interleave short differentiable additive-renderer fits. Its `touched` scope fits every active row
+previously changed by a contraction while leaving never-touched leaves detached and bitwise fixed.
+The separate `all_error_weighted` scope fits every active row and scales each post-Adam row update
+by mask-aware Gaussian-smoothed residual energy averaged under that Gaussian through one
+matrix-free renderer VJP. The default progress schedule prices recovery work by fractions of the
+requested count reduction, and both scopes reject any checkpoint that does not reduce masked SSE.
+For fail-closed artifact diagnostics, the same module also exposes a bounded terminal local-rescue
+API for signed direct fields: it freezes every base array, selects high-error foreground pixels by
+stable residual ranking plus local NMS, appends fixed isotropic geometry, and optimizes only the
+new RGB coefficients. Checkpoints are ordered first by normalized raw worst-pixel/7×7-patch error
+and then by SSE; an unchanged-base checkpoint is always eligible. This may increase row count and
+does not certify artifact freedom—the cold displayed-PNG gate remains authoritative.
+Its row-byte price is an uncoded proposal estimate, its task driver is diagnostic, and it neither
+selects Field V2 semantics nor enters `pipeline.run_pipeline` or `scripts/convert.py`.
+
+HIER-006's separate default-off `structsplat.progressive_residual_quadtree` tests the opposite
+construction direction under the same direct-additive semantics. Mask-present 64-pixel cells form
+the coarse layer; a selected frontier parent stays bit-exact while all mask-present children append
+fixed mask-moment geometry and signed RGB residual coefficients. Only the new coefficient block is
+optimized against the detached prefix. Selection uses mask-aware smoothed residual energy per
+appended row, and cold candidates must improve normalized raw pixel/7×7 violation before the SSE
+tie-break (with an explicit float32 roundoff equivalence band). Every accepted stage is therefore
+an independently renderable prefix, but the tree/coefficients-only size remains a non-codec proxy.
+The frozen exposed C0001 diagnostic rejected this mechanism: the corrected 3,986/8,192-row prefixes
+reached 27.805/32.882 dB and displayed pixel/7×7 maxima of 0.2223/0.0860 and 0.1073/0.0375, failing
+the 0.02/0.01 gate. At 8,192 rows, 5,106 rows were retained ancestors and only 3,086 were level-0
+leaves; the terminal worst boundary pixel remained in an unsplit level-1 cell. An identical CUDA
+repeat preserved displayed gate metrics exactly and changed PSNR by only `1.7e-5` dB. This makes
+the prefix-frozen literal Gaussian quadtree a negative control, not a replacement for HIER-005 or
+evidence for a compression/default claim.
+
+HIER-007's default-off `structsplat.artifact_first_quadtree` keeps that tree only as a scheduler.
+An accepted split deactivates its active parent and activates all mask-present children, so active
+keys remain an antichain that partitions the mask and inactive ancestors do not consume Gaussian
+rows. Its two explicit axes rank splits by either smoothed residual energy or raw worst-pixel/7x7
+artifact priority, and optimize either new RGB rows alone or those rows plus surviving
+finite-support neighbors of the removed parent. Geometry and every nonlocal coefficient stay
+fixed. Mask-normalized smoothed-error exposure supplies post-Adam row multipliers, while cold full-
+field artifact/SSE comparison remains the transaction authority. Rejected batches halve
+deterministically and rejected singleton parents are blocked.
+
+The frozen exposed C0001 2x2 diagnostic rejects the proposed combined policy. At 8,192 active
+rows, energy/new-only is the strongest HIER-007 arm at 40.035 dB and displayed pixel/7x7 maxima
+0.0472/0.0215, but still fails the 0.02/0.01 gate and trails HIER-005's contextual passing 52.356
+dB row. Artifact-first/new-only, energy/overlap, and artifact-first/overlap reach 34.569, 38.830,
+and 26.035 dB; their local maxima also fail, with conspicuous quadtree-aligned defects in the
+combined arm. That arm requires 1,773 trials for 279 accepted stages, leaves its terminal worst
+pixel inside a level-3 cell despite 6,579 active level-0 rows, and takes 1,132.8 seconds in the
+reference implementation. The result supports parent replacement as a better structural control
+than retained ancestors, not artifact-first/overlap reconciliation as formulated. A successor
+needs a commit-aligned smooth local objective, no-new-hotspot or Pareto constraints, a reserved
+late repair budget, and likely a parent-to-children continuation before deactivation.
+
+HIER-008's default-off `structsplat.overlap_elimination` factors actual pixel-neighbour support
+against topology scheduling. A matrix-free normal-equation PCG first solves signed RGB for either
+near-delta (`0.18 px`) or overlapping (`0.50 px`) pixel-centred peak-one Gaussians; source RGB is
+never silently reused under the overlapping kernel. Its experimental WSE branch combines dynamic
+density-adaptive crowding with a static same-side local Schur removal price and emits nested exact-
+count survivor sets. A common bounded optimizer then moves every survivor's RGB, centre, and log
+scale under smoothed-error, structure-feature, and top-tail pixel weights. Step zero is retained,
+and a later checkpoint must lower SSE without increasing either raw worst-pixel or worst-7x7 error.
+
+The frozen exposed C0001 2x2 rejects fixed-lattice/fixed-scale WSE-Schur elimination: even with
+100% top-feature coverage within 1.5 px, its 8,192-row overlap cell reaches only 22.878 dB and has
+visible dot holes. Meaningful overlap is nevertheless a useful factor for expanding quadtree
+contraction. At 8,192 it raises the matched quadtree arm from 35.129 to 45.953 dB and the common
+optimizer earns another 2.144 dB, but displayed pixel/7x7 maxima `0.1077/0.0253` still fail. At
+4,096 it reaches 31.096 dB with visible ring/grid impressions. The exact overlap prefit is stable;
+the WSE failure is instead a support-spacing mismatch after deletion. HIER-008 remains absent from
+maintained dispatch, and its byte values remain uncoded proxies.
+
+HIER-009 keeps the useful exact-overlap endpoint but replaces static elimination with HIER-005's
+live contraction transaction. After every support-disjoint contraction batch, recovery optimizes
+either topology-touched rows alone or those rows plus the direct 3x3 rounded-centre halo around
+newly touched rows; only accepted changed neighbors persist into later checkpoints. Rows outside
+that accumulated scope are a detached fixed base. An optional deterministic 5% feature reserve
+keeps selected pixel-leaf means and covariances exact, permits local RGB refitting, and blocks only
+regions whose protected multiplicity cannot fit the existing two-atom state.
+
+The frozen exposed C0001 four-arm diagnostic finds that this neighborhood scope is useful only in
+the aggressive regime as formulated. At 4,096 rows, overlap/halo gains 0.999 dB over
+overlap/touched (40.801 versus 39.802 dB), lowers displayed pixel/7x7 maxima from
+`0.0900/0.0334` to `0.0799/0.0278`, and removes the obvious block lattice. The protected variant
+reaches 41.115 dB and a 0.0251 7x7 maximum, but every 4k arm still fails the `0.02/0.01` gate. At
+8,192, the halo lowers the isolated maximum but loses 1.433 dB and worsens the 7x7 maximum, showing
+error redistribution; protection partly recovers the loss, yet only the unchanged delta/touched
+fallback passes at 52.338 dB and `0.0148/0.0053`. Protected geometry is exact, every checkpoint is
+active, and target counts are reached. HIER-009 therefore remains default-off: retain the halo and
+protection mechanisms for a local-artifact-aware successor, not as a production or compression
+result.
+
 BENCH-020's default-off `benchmarks.field_semantics_factorial` controller now provides the sealed
 selection boundary around that object: explicit semantic and alpha-policy records, fixed-row and
 equal-canonical-raw-byte lanes, ordered-geometry prefix seals, three outcome-separated phases,
@@ -98,6 +193,37 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   Field V2 semantic boundary and CPU oracle. It stores RS geometry, authoritative additive RGB,
   optional independent mass/filter/background/packed alpha/camera state, explicit renderer and
   coordinate semantics, and a lossless hashed reference container without importing torch.
+  `pixel_contraction` is a separate HIER-005 research producer: its default leaf and contraction
+  path is NumPy-only, while conversion to `GaussianField`, maintained additive rendering, and the
+  optional recovery fits import torch lazily. The default `touched` recovery scope forms
+  never-touched leaves as a detached fixed render. The alternative `all_error_weighted` scope
+  materializes every active row, blurs residual MSE with mask-normalized Gaussian filtering,
+  applies the additive color transpose once to obtain support-averaged row scores, and multiplies
+  post-Adam updates rather than gradients so Adam's normalization does not cancel the weights.
+  Both use bounded parameter trust regions, accept the best non-regressing step, and rebuild the
+  stale proposal frontier after an accepted geometry update. `rescue_observation_field` is a
+  separate topology-frozen fallback: it rejects non-signed or semantically unsupported fields,
+  keeps the persisted base prefix bit-exact, fixes rescue means/scales/rotations, and trains rescue
+  RGB only under a tail-aware residual objective and a worst-local-error checkpoint rule. The
+  task-local diagnostics may apply an explicitly logged LANCZOS/nearest source-mask resize,
+  preserve native-source and executed-source provenance, and plot quality, localized displayed
+  artifact, payload-proxy, active-pixel-rate, timing, action, attribution, recovery, repair, and
+  parity rows. `progressive_residual_quadtree` is the HIER-006 sibling: deterministic quadtree
+  geometry and topology stay NumPy-first, while each newly appended RGB-only residual fit imports
+  torch lazily. Its immutable-prefix and cold-rollback checks make structural failure inspectable,
+  but retained ancestors are charged in full-field counts/bytes and its compact tree number is
+  explicitly only a shared-geometry proxy. Those two producers remain absent from every
+  current-pipeline/default dispatch. `artifact_first_quadtree` is the HIER-007 sibling. It replaces
+  active parents rather than appending them, stores active RGB by node key, and optionally forms a
+  differentiable local block from new children plus support-overlapping survivors. Its common base
+  state is cloned across factorial arms; cold rollback checks topology/coefficient identity and
+  active-frontier partition validity. Final-frontier and progressive coefficient-event byte
+  ledgers remain non-codec proxies. HIER-007 is likewise absent from every maintained dispatch.
+  `overlap_elimination` is the HIER-008 sibling: fixed-geometry forward/transpose products and PCG,
+  structure/radius/Schur analysis, and WSE topology stay NumPy-first; torch is imported lazily only
+  for the common bounded optimizer. It can feed solved full-lattice coefficients into HIER-005 or
+  materialize fixed-lattice survivors as Field V2. Neither branch is a supported initializer,
+  fitter, codec, or current-pipeline stage.
 - **benchmark-only structural controls:** `structural_controls` lazily calls SLIC and keeps the
   SLIC/Sobel complexity ranking, exact-N 6:2:1 allocation, and unresolved upstream-fidelity
   assumptions explicit. `init` registers `local_slic_sobel_control`, but it is not a shipped
@@ -141,6 +267,23 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   source identity, table agreement, finite metrics, contained artifacts/hashes, and portable
   local links before semantic results audit. `deprecated_scripts/` retains
   evidence-bound launchers without presenting them as supported interfaces (ADR-0028/0031, C61).
+  `scripts/experiments/hier005_pixel_contraction.py` is instead a task-local diagnostic: it writes
+  cold-rendered Field V2 rows, source/reference/raw byte ledgers, histories, and HTML, with explicit
+  warnings that none of those byte references is a complete codec rate.
+  `scripts/experiments/hier006_progressive_residual_quadtree.py` writes the corresponding generic
+  workflow report for accepted hierarchy prefixes, including complete stage/checkpoint histories,
+  hierarchy-depth maps, worst-error crops, count/quality/local-error/byte/time curves, dirty-source
+  snapshots, and contextual HIER-005 rows. `check_report_bundle.py --allow-dirty` validates the
+  diagnostic structure without promoting its exposed-image outcomes.
+  `scripts/experiments/hier007_artifact_first_quadtree.py` writes a shared-base 2x2 report for
+  selection and reconciliation scope, with active-frontier depth maps, full/worst-crop visuals,
+  snapshot/stage/checkpoint/attempt curves, cold fields, and separate active/frontier/event byte
+  ledgers. Its corrected packaging-only bundle preserves the original field/metric execution while
+  restoring contextual HIER-005 rows omitted by the executed status filter.
+  `scripts/experiments/hier008_overlap_elimination.py` writes the overlap-support x scheduler 2x2,
+  including exact-prefit and Schur receipts, optimizer attribution, feature/centre/worst-error
+  visuals, every numeric snapshot/checkpoint curve, cold fields, and separated native/evaluation
+  byte ledgers.
 - **agent workflow:** `tasks/INDEX.md` and task files are the work authority, while
   `tasks/SESSION-BRIEF.md` is a deterministic derived view. `scripts/check_task_policy.py`
   validates dependency and review state; `scripts/check_agent_workflow.py` checks agreement among
@@ -188,6 +331,13 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   pointers, binds all six cell artifacts, and requires each assembled row's provenance receipt.
   That external checkpoint remains pending distinct review. Its source-only 3+3 portfolio records
   acquired groups and closed gates; it is not matched field data or a frozen execution protocol.
+- **task-scoped contraction diagnostics:** the HIER-005 contraction/bounded-repair and HIER-008
+  overlap-elimination reports use explicit non-claim schemas accepted by
+  `scripts/check_report_bundle.py`. Their gate checks the
+  exact file manifest, source snapshots, JSON/JSONL/CSV row agreement, finite metrics, displayed
+  artifact-gate arithmetic, field hashes, cold-render parity, curve inventory, and portable links
+  to every field/history/image/row artifact. Structural acceptance preserves the diagnostic scope;
+  it does not turn an exposed-image, dirty-source run into claim-ready evidence.
 
 ## Stage-search (ABL-002, protocol in ADR-0010)
 `benchmarks/stage_search.py` sweeps configurations across every swappable stage — tensor operator,
@@ -208,6 +358,26 @@ that space; everything else is a candidate the screening can promote. `benchmark
 init-strategy × budget sweep.
 
 ## Performance notes (reference is the oracle; these keep it usable at N~20k on CPU)
+- `pixel_contraction` stores at most one float32 atom slot per active source pixel and reuses slots
+  after every contraction. Quadtree cells hold at most two resolved output ids; a ready cell has at
+  most eight active atoms. A cheap RGB proxy keeps the image-sized frontier lightweight, exact
+  Gaussian-product options are cached only after shortlist entry, and exact discrete fits are
+  invalidated only by overlapping accepted support boxes. Support-disjoint actions can commit in
+  one batch. This is a CPU reference design, not a PORT-006 acceleration result.
+- `progressive_residual_quadtree` never renders an accepted prefix during a child optimizer block;
+  it caches that image and renders at most `max_rows_per_stage` new rows per step, then performs one
+  cold joint render for acceptance. The HIER-006 C0001 diagnostic completed its hierarchy build in
+  about 7.3 seconds on the recorded RTX 3050, but that speed is not a competitive result because
+  the artifact gate and quality control failed.
+- `artifact_first_quadtree` caches the current full render and differentiates only a trial's local
+  RGB block, but its current reference still rebuilds/cold-renders the complete canonical frontier
+  for every transaction and recomputes mask-moment support metadata during overlap discovery. The
+  C0001 arms take 357--1,133 seconds; this is a correctness/mechanism oracle, not a production-speed
+  path. Cache/fusion work is justified only after a revised policy passes its quality gate.
+- `overlap_elimination` applies each compact isotropic stencil by image shifts and uses the same
+  operator for the transpose, so PCG never forms a pixel-by-row matrix. The C0001 overlap prefit
+  converges in 22 iterations/1.29 seconds and feature elimination in about 1.56 seconds, but those
+  dirty single-image timings are reference telemetry rather than a PORT-006 result.
 - `sampling.eliminate` builds the WSE conflict graph vectorized over grid-cell offsets (only the
   greedy heap removal stays in Python); the anisotropic search reach is bounded per receiver by the
   metric's minimum eigenvalue, so no long-range along-edge conflict is missed. ~30x faster than the

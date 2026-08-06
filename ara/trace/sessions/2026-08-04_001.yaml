@@ -1,0 +1,132 @@
+session:
+  id: "2026-08-04_001"
+  date: "2026-08-04"
+  started: "2026-08-04T21:27+02:00"
+  last_turn: "2026-08-04T23:38+02:00"
+  turn_count: 4
+  summary: "Produced the current 2D Gaussian review, reconciled it with Field V2, and developed an untested analytic, batched, exact-replay contraction candidate for the implicit pixel-lattice direction."
+
+events_logged:
+  - turn: 1
+    type: question
+    id: "N215"
+    routing: direct
+    provenance: user
+    summary: "Requested a deep current review of image-to-2D-Gaussian methods across quality, convergence, performance, storage, and original-file reduction."
+  - turn: 1
+    type: decision
+    id: "N216"
+    routing: direct
+    provenance: ai-suggested
+    summary: "Separated complete streams, parameter proxies, float fields, amortized encoders, warm renderers, and richer-primitive controls into regime-specific Pareto fronts."
+  - turn: 1
+    type: constraint
+    id: "O104"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized exact supplied-file over complete cold-package accounting, with three explicit source denominators, as K05 via artifact commitment."
+  - turn: 2
+    type: question
+    id: "N217"
+    routing: direct
+    provenance: user
+    summary: "Asked which current StructSplat layers are competitive assets and whether the SOTA review implies a greenfield pipeline or a controlled new method path."
+  - turn: 3
+    type: question
+    id: "N218"
+    routing: direct
+    provenance: user
+    summary: "Opened the question of using one Gaussian per pixel as an exact endpoint for reverse rate-distortion contraction rather than only a worst-rate control."
+  - turn: 3
+    type: concept
+    id: "O105"
+    routing: staged
+    provenance: user
+    summary: "Staged the per-pixel Gaussian lattice as a sampled single-view maximum-quality endpoint, with exactness caveats left unresolved."
+  - turn: 3
+    type: architecture
+    id: "O106"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged an implicit pixel-leaf contraction/residual hierarchy as a candidate reverse-search control, not a selected method or novelty claim."
+  - turn: 4
+    type: question
+    id: "N219"
+    routing: direct
+    provenance: user
+    summary: "Asked for the concrete efficient proposal, scoring, batching, and acceptance algorithm for pixel-field merge/contraction."
+  - turn: 4
+    type: architecture
+    id: "O107"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged analytic additive overlap scoring plus disjoint local validation and periodic actual-codec replay as the contraction controller candidate."
+
+ai_actions:
+  - turn: 1
+    action: "Searched primary literature through 2026-08-04; extracted and cross-checked quantitative tables for 20 accessible papers; wrote an 8,124-word review covering 22 strict/adjacent methods, evidence levels, regime-specific Pareto fronts, outside-codec controls, and a cold-package original-file protocol; registered DOCS-007 and its evidence index entry; synchronized the session brief; self-reviewed the frozen report; and passed the exact-tree repository gate twice, finally with 1,560 tests, 4 skips, and every structural check green."
+    provenance: ai-executed
+    files_changed:
+      - "ara/evidence/2d-gaussian-image-fields-sota-review-2026-08-04.md"
+      - "ara/evidence/README.md"
+      - "tasks/DOCS-007-2d-gaussian-sota-review.md"
+      - "tasks/INDEX.md"
+      - "tasks/SESSION-BRIEF.md"
+      - "ara/logic/solution/constraints.md"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/2026-08-04_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 2
+    action: "Audited the implemented normalized recipe, Field V2 semantic contract, legacy SSPL1 codec, conversion entry point, formal gate/task status, and proposed additive pipeline against the completed literature synthesis; produced a layer-by-layer reuse/replace recommendation and a semantics-first killing-test sequence without changing code, defaults, or scientific task outcomes."
+    provenance: ai-executed
+    files_changed:
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/2026-08-04_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 3
+    action: "Separated the 2D sampled interpolation endpoint from a true 3D novel-view field; audited the repository for per-pixel lattices, dense-to-sparse contraction, quadtree, and merge overlap; and pressure-tested implicit geometry, exact coefficient solving, storage, conditioning, progressive hierarchy, and the cheapest killing experiment without changing code or tasks."
+    provenance: ai-executed
+    files_changed:
+      - "ara/staging/observations.yaml"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/2026-08-04_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 4
+    action: "Inspected the current mutual-nearest moment/envelope triage merge and the FIT-045/FIT-030 ownership boundaries; derived a direct-additive continuous-L2 Gaussian overlap score, variable-projected parent coefficient, spatial candidate graph, disjoint batch selection, exact local acceptance, neighbor coefficient re-solve, and actual-codec checkpoint scheme without implementing or benchmarking it."
+    provenance: ai-executed
+    files_changed:
+      - "ara/staging/observations.yaml"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/2026-08-04_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
+
+claims_touched: []
+
+key_context:
+  - turn: 1
+    excerpt: "The user requested a deep state-of-the-art review of methods that produce 2D Gaussian fields from images while jointly maximizing performance, quality, convergence speed, and compression relative to the original image file."
+  - turn: 2
+    excerpt: "The user asked whether the current StructSplat pipeline is useful for competing, or whether a fresh pipeline and new method combinations are required."
+  - turn: 3
+    excerpt: "The user proposed one Gaussian per pixel as a trivial perfect-quality but worst-efficiency endpoint and asked to reason further before designing the pipeline."
+  - turn: 4
+    excerpt: "The user asked how to perform the actual merge/contraction and accepted-distortion decision efficiently and effectively."
+
+open_threads:
+  - "Obtain a distinct scientific review of report blob 40b771e before treating its Pareto and novelty synthesis as accepted."
+  - "Implement COMP-013 and run a cold-package benchmark that records exact supplied-source, canonical-PNG, and complete Gaussian package bytes; published original-file-ratio leadership remains unresolved."
+  - "Acquire and audit the PA-G2DS primary full quantitative tables, then repeat the post-2026-08-04 date sweep before any publication claim."
+  - "Decide whether to run the per-pixel identity-lattice killing experiment: sampled exactness and continuous behavior versus width, direct/normalized semantics, signed/nonnegative coefficients, implicit/explicit bytes, quantization, and a first contraction curve against current quadtree/WSE controls."
+
+ai_suggestions_pending:
+  - "Use SGI as the complete high-resolution storage control, Image-GS as the editable/random-access control, AIR as the amortized-latency control, and SAD/WIPES as richer-primitive controls rather than selecting one universal winner."
+  - "Build and price the complete direct codec before BENCH-025 can authorize an SGI-like seed grammar."
+  - "Treat the current normalized safe-schedule as a locked incumbent and build the scientific contender as a default-off Field V2 profile through the same CLI, reusing infrastructure while replacing only field semantics, fitting policy, and codec after their gates pass."
+  - "Resolve the additive-versus-normalized semantic killing test before convergence combinations; use successive halving for compatible winners, then optimize the direct codec and end-to-end kernels before learned amortization or richer atoms."
+  - "Treat exact implicit pixel leaves plus byte-priced contraction as a candidate FIT-045/FIT-048 control only after semantic selection; abandon it if the contraction curve is dominated by current sparse fields at equal complete bytes and wall time."
+  - "Use analytic Gaussian inner products and coefficient elimination only to rank direct-additive contraction proposals; require exact local discrete validation and periodic complete cold-stream replay before any contraction becomes claim-bearing."

@@ -132,3 +132,24 @@ sessions:
     events_count: 23
     claims_touched: []
     open_threads: 7
+  - id: "2026-08-04_001"
+    date: "2026-08-04"
+    summary: "Produced the current 2D Gaussian review, reconciled it with Field V2, and developed an untested analytic, batched, exact-replay contraction candidate for the implicit pixel-lattice direction."
+    turn_count: 4
+    events_count: 9
+    claims_touched: []
+    open_threads: 4
+  - id: "2026-08-05_001"
+    date: "2026-08-05"
+    summary: "Implemented and audited HIER-008: exact overlap materially helps expanding contraction, but every cell fails the artifact gate and fixed-scale WSE/Schur elimination is rejected."
+    turn_count: 9
+    events_count: 52
+    claims_touched: []
+    open_threads: 10
+  - id: "2026-08-06_001"
+    date: "2026-08-06"
+    summary: "Implemented and audited HIER-009: 3x3 recovery removes 4k block artifacts but redistributes 8k error; only delta/touched 8k passes."
+    turn_count: 1
+    events_count: 6
+    claims_touched: []
+    open_threads: 5

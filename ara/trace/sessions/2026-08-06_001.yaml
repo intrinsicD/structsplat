@@ -1,0 +1,87 @@
+session:
+  id: "2026-08-06_001"
+  date: "2026-08-06"
+  started: "2026-08-06T00:56+02:00"
+  last_turn: "2026-08-06T00:56+02:00"
+  turn_count: 1
+  summary: "Implemented and audited HIER-009: 3x3 recovery removes 4k block artifacts but redistributes 8k error; only delta/touched 8k passes."
+
+events_logged:
+  - turn: 1
+    type: decision
+    id: "N246"
+    routing: direct
+    provenance: user-revised
+    summary: "Clarified recovery to optimize topology-touched Gaussians plus their direct 3x3 active neighborhood, not touched rows alone."
+  - turn: 1
+    type: experiment
+    id: "N247"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented and ran HIER-009; halo improves and visually deblocks 4k, but redistributes 8k error, and every overlap cell fails."
+  - turn: 1
+    type: dead_end
+    id: "N248"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rejected uniform 3x3 recovery as an artifact-free replacement across both tested row caps."
+  - turn: 1
+    type: architecture
+    id: "O126"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized dynamic overlap contraction, bounded neighbor recovery, and protected detail as mixed diagnostic architecture A12."
+  - turn: 1
+    type: claim
+    id: "O127"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged the one-image cap-dependent halo and protection factor interpretation."
+  - turn: 1
+    type: constraint
+    id: "O128"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged adaptive halo activation with SSE/pixel/patch Pareto checkpoint acceptance."
+
+ai_actions:
+  - turn: 1
+    action: "Added protected feature selection and exact protected topology propagation; implemented persistent accepted 3x3 neighborhood recovery in the live contraction loop; added an eight-cell HIER-009 report driver, schema validation, seven tests, architecture/task/evidence synchronization, full visual and raw-metric audit, and passed 64 focused tests plus the complete 1,662-test repository gate."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/pixel_contraction.py"
+      - "src/structsplat/overlap_elimination.py"
+      - "scripts/experiments/hier009_dynamic_overlap_recovery.py"
+      - "scripts/check_report_bundle.py"
+      - "tests/test_dynamic_overlap_recovery.py"
+      - "docs/architecture.md"
+      - "docs/additive_field_v2.md"
+      - ".claude/skills/structsplat-core/SKILL.md"
+      - "tasks/HIER-009-dynamic-overlap-neighborhood-recovery.md"
+      - "tasks/INDEX.md"
+      - "tasks/SESSION-BRIEF.md"
+      - "ara/evidence/hier009-dynamic-overlap-neighborhood-recovery-janelle-diagnostic-2026-08-06/run.md"
+      - "ara/evidence/README.md"
+      - "ara/logic/solution/architecture.md"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/2026-08-06_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
+
+claims_touched: []
+
+key_context:
+  - turn: 1
+    excerpt: "The user clarified that recovery should optimize the touched Gaussian plus its direct 3x3 Gaussian neighbors, rather than only the touched row."
+
+open_threads:
+  - "Distinct numerical/scientific review of HIER-009."
+  - "Held-out multi-image and multi-seed confirmation of the cap-dependent halo effect."
+  - "Adaptive halo activation and local SSE/pixel/patch Pareto checkpoint acceptance."
+  - "Matched optimized-row FLOP or time-to-target convergence comparison."
+  - "Complete cold codec and exact original-file rate comparison."
+
+ai_suggestions_pending:
+  - "Enable the 3x3 halo only where contraction severity predicts a benefit and otherwise retain touched-only recovery."
+  - "Measure per-parameter movement separately for topology-touched and neighbor rows."

@@ -8,7 +8,13 @@ unless the owning task says so.
 ## Work in progress
 
 - `CORE-013` — Observation Field V2 semantic contract (in-review; `tasks/CORE-013-observation-field-v2-contract.md`)
+- `HIER-005` — Implicit pixel-field contraction (in-progress; `tasks/HIER-005-implicit-pixel-contraction.md`)
+- `HIER-006` — Parent-preserving progressive residual quadtree (in-progress; `tasks/HIER-006-progressive-residual-quadtree.md`)
+- `HIER-007` — Artifact-first frontier quadtree reconciliation (in-progress; `tasks/HIER-007-artifact-first-frontier-quadtree.md`)
+- `HIER-008` — Overlap lattice and feature-safe elimination (in-progress; `tasks/HIER-008-overlap-lattice-feature-elimination.md`)
+- `HIER-009` — Dynamic overlap contraction with neighborhood recovery (in-review; `tasks/HIER-009-dynamic-overlap-neighborhood-recovery.md`)
 - `DOCS-006` — Repository-native experiment workflow skill (in-progress; `tasks/DOCS-006-experiment-workflow-skill.md`)
+- `DOCS-007` — 2D Gaussian image-field state-of-the-art review (in-review; `tasks/DOCS-007-2d-gaussian-sota-review.md`)
 
 ## Actionable with no open recorded task dependency
 
@@ -60,6 +66,6 @@ unless the owning task says so.
 
 ## Ledger summary
 
-- 95 active-table outcomes
+- 101 active-table outcomes
 - 45 retired tasks
 - 51 active-table rows already carrying a closed/non-actionable disposition

@@ -1,0 +1,546 @@
+session:
+  id: "2026-08-05_001"
+  date: "2026-08-05"
+  started: "2026-08-05T00:23+02:00"
+  last_turn: "2026-08-05T21:32+02:00"
+  turn_count: 9
+  summary: "Implemented and audited HIER-008: exact overlap materially helps expanding contraction, but every cell fails the artifact gate and fixed-scale WSE/Schur elimination is rejected."
+
+events_logged:
+  - turn: 1
+    type: decision
+    id: "N220"
+    routing: direct
+    provenance: user
+    summary: "Authorized end-to-end implementation of the pixel-field contraction method as a comparable research path."
+  - turn: 1
+    type: experiment
+    id: "N221"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented, cold-rendered, smoke-compared two pair policies, and passed the full repository verification gate."
+  - turn: 1
+    type: concept
+    id: "O105"
+    routing: crystallized
+    provenance: user
+    summary: "Crystallized the sampled pixel-Gaussian maximum-quality/worst-rate endpoint via implementation commitment."
+  - turn: 1
+    type: architecture
+    id: "O106"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the default-off implicit-leaf contraction control as A04 via implementation commitment."
+  - turn: 1
+    type: architecture
+    id: "O107"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the proposal-versus-exact-acceptance controller boundary as A05 while preserving complete-codec ownership downstream."
+  - turn: 2
+    type: decision
+    id: "N222"
+    routing: direct
+    provenance: user
+    summary: "Selected interleaved optimization of contraction-touched rows while freezing never-touched pixel Gaussians."
+  - turn: 2
+    type: dead_end
+    id: "N223"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rejected action-count recovery cadence as a cross-budget work control and replaced it with fixed count-progress checkpoints."
+  - turn: 2
+    type: experiment
+    id: "N224"
+    routing: direct
+    provenance: ai-executed
+    summary: "Ran the Janelle baseline/recovery sweep; 8k artifacts disappeared with +18.263 dB masked PSNR, but low-count, speed, rate, and CUDA-repeat limits remain."
+  - turn: 2
+    type: claim
+    id: "O108"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged the one-image interpretation that touched-row recovery is promising at useful counts but not a low-capacity or compression solution."
+  - turn: 2
+    type: architecture
+    id: "O109"
+    routing: crystallized
+    provenance: user
+    summary: "Crystallized the selective touched-row/fixed-base recovery boundary as A06 via implementation commitment."
+  - turn: 2
+    type: constraint
+    id: "O110"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized repeat-aware CUDA recovery evidence as K06 after all repeat field hashes changed."
+  - turn: 3
+    type: decision
+    id: "N225"
+    routing: direct
+    provenance: user
+    summary: "Selected a comparison scope that trains every active Gaussian with weights attributed from a smoothed error field."
+  - turn: 3
+    type: experiment
+    id: "N226"
+    routing: direct
+    provenance: ai-executed
+    summary: "Ran same-source controls and probes; all-active weighting gained at 2k/4k/12k but lost 6.310 dB at 8k, while smoothing ordering remained unresolved."
+  - turn: 3
+    type: dead_end
+    id: "N227"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rejected all-active weighted interleaving as a uniform touched-only replacement after two losing 8k trajectories."
+  - turn: 3
+    type: claim
+    id: "O111"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged the bounded interpretation that all-active weighting is promising at low/mid budgets but not generally superior."
+  - turn: 3
+    type: architecture
+    id: "O112"
+    routing: crystallized
+    provenance: user
+    summary: "Crystallized matrix-free mask-smoothed error exposure and post-Adam all-active row weighting as A07 via implementation commitment."
+  - turn: 3
+    type: constraint
+    id: "O113"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the checkpoint-local versus terminal-topology rollback boundary as K07."
+  - turn: 4
+    type: decision
+    id: "N228"
+    routing: direct
+    provenance: user
+    summary: "Made absence of visible artifacts a primary method requirement rather than an aggregate-metric preference."
+  - turn: 4
+    type: question
+    id: "N229"
+    routing: direct
+    provenance: user
+    summary: "Opened and answered the design question of how contraction should fail closed, repair, or fall back when a row budget causes visible defects."
+  - turn: 4
+    type: experiment
+    id: "N230"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rescored localized errors; the bad weighted 8k field has 6.8x the touched field's maximum 7x7 patch RMSE despite locally accepted SSE checkpoints."
+  - turn: 4
+    type: architecture
+    id: "O114"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged constrained multiscale artifact feasibility and fail-closed requested-count handling."
+  - turn: 4
+    type: architecture
+    id: "O115"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged continuous-support screening, topology-stable optimization, terminal branching, and local uncontract/rescue repair."
+  - turn: 4
+    type: claim
+    id: "O116"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged hard 3-sigma AABB truncation as a plausible but confounded source of square/cell artifacts."
+  - turn: 5
+    type: decision
+    id: "N231"
+    routing: direct
+    provenance: user
+    summary: "Authorized the complete artifact-safety factorial, conditional bounded repair, and full visual/curve reporting."
+  - turn: 5
+    type: experiment
+    id: "N232"
+    routing: direct
+    provenance: ai-executed
+    summary: "Completed all 16 fixed-count cells: every 4k row fails, while three touched 8k rows pass and terminal all-active recovery fails at 8k."
+  - turn: 5
+    type: dead_end
+    id: "N233"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rejected larger cutoff or peak-one tail fade as the artifact cure after matched refitting failed to improve the local gate."
+  - turn: 5
+    type: experiment
+    id: "N234"
+    routing: direct
+    provenance: ai-executed
+    summary: "Ran independent 0/102/205/410 fixed-geometry signed-rescue forks; averages improved but all displayed gates failed."
+  - turn: 5
+    type: dead_end
+    id: "N235"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rejected bounded RGB-only rescue as a certificate for the tested 4k budget and declared the operating point infeasible."
+  - turn: 5
+    type: architecture
+    id: "O115"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized topology-stable support screening, terminal branching, local rescue, and fail-closed count handling as A08 via artifact commitment."
+  - turn: 6
+    type: question
+    id: "N236"
+    routing: direct
+    provenance: user
+    summary: "Opened the coarse-to-fine high-error child hierarchy as an alternative to reverse contraction."
+  - turn: 6
+    type: experiment
+    id: "N237"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented, corrected, repeated, and fully reported HIER-006; 3,986/8,192 prefixes fail the artifact gate at 27.805/32.882 dB."
+  - turn: 6
+    type: dead_end
+    id: "N238"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rejected literal immutable Gaussian ancestors as a competitive fixed-cap hierarchy after they consumed 62.3% of the 8k rows and left the worst cell unsplit."
+  - turn: 6
+    type: claim
+    id: "O116"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Bound the hard-cutoff causal hypothesis to the already recorded N233 empirical dead end."
+  - turn: 6
+    type: architecture
+    id: "O117"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the implemented parent-preserving residual-quadtree control as negative architecture A09."
+  - turn: 6
+    type: constraint
+    id: "O118"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized same-domain/tolerance handling for cross-kernel checkpoint ties as K08."
+  - turn: 6
+    type: architecture
+    id: "O119"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged a successor that separates quadtree allocation from the final basis and reconciles overlapping coefficients under artifact-first priorities."
+  - turn: 7
+    type: decision
+    id: "N239"
+    routing: direct
+    provenance: user
+    summary: "Authorized the exact scheduler-only parent-replacement and artifact-first/local-reconciliation factorial."
+  - turn: 7
+    type: experiment
+    id: "N240"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented and ran HIER-007; all four 8k arms fail, although energy/new-only gains 7.153 dB over retained-parent HIER-006."
+  - turn: 7
+    type: dead_end
+    id: "N241"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rejected hard artifact-first scheduling plus overlap-local RGB fitting after it produced the worst metrics and visible square/ring artifacts."
+  - turn: 7
+    type: architecture
+    id: "O120"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized the implemented parent-replacing shared-base factorial as A10 while retaining its negative diagnostic disposition."
+  - turn: 7
+    type: architecture
+    id: "O121"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged commit-aligned smooth tails, regional trust, repair reserve, and continuous parent-child transfer as an unimplemented successor."
+  - turn: 8
+    type: question
+    id: "N242"
+    routing: direct
+    provenance: user
+    summary: "Opened meaningful nine-pixel Gaussian overlap and feature-adaptive WSE-style simplification as alternatives to the exhausted quadtree variants."
+  - turn: 8
+    type: constraint
+    id: "O122"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged the requirement that broader lattice support use an exact color prefilter and coefficient/boundary guards rather than accept a blurred initial endpoint."
+  - turn: 8
+    type: architecture
+    id: "O123"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged fixed-kernel lattice contraction with local projection removal cost, feature barriers, artifact/coverage vetoes, and WSE-spaced batches."
+  - turn: 9
+    type: decision
+    id: "N243"
+    routing: direct
+    provenance: user
+    summary: "Authorized the frozen overlap-width x quadtree/WSE test with feature, optimizer-impact, exact-reduction, and artifact requirements."
+  - turn: 9
+    type: experiment
+    id: "N244"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented and ran HIER-008; overlap strongly helps expanding quadtree contraction, but all eight cells fail the local artifact gate."
+  - turn: 9
+    type: dead_end
+    id: "N245"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rejected fixed-scale feature-aware WSE with static Schur pricing after it retained features but left visible survivor-coverage holes."
+  - turn: 9
+    type: constraint
+    id: "O122"
+    routing: crystallized
+    provenance: user-revised
+    summary: "Crystallized exact guarded broad-support prefiltering as K09 after user affirmation and implementation evidence."
+  - turn: 9
+    type: architecture
+    id: "O123"
+    routing: crystallized
+    provenance: user-revised
+    summary: "Crystallized the implemented fixed-lattice feature-elimination system as negative architecture A11."
+  - turn: 9
+    type: claim
+    id: "O124"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged the bounded one-image quantitative interpretation of the positive overlap factor and remaining artifact failures."
+  - turn: 9
+    type: constraint
+    id: "O125"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized survivor-spacing and actual post-refit patch-distortion requirements as K10 through artifact commitment."
+  - turn: 9
+    type: architecture
+    id: "O126"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged overlap prefit plus HIER-005 touched recovery and protected detail as the smallest untested successor."
+
+ai_actions:
+  - turn: 1
+    action: "Created HIER-005 and implemented a NumPy-first direct-additive contraction engine with procedural leaves, reusable atom slots, quadtree scheduling, moment/detail/pair proposals, exact Gaussian-product scoring, exact local signed/NNLS solves, overlap-safe batching/cache invalidation, exact-count stopping, Field V2 export, and lazy maintained rendering; added a cold diagnostic report driver, 14 focused tests, architecture/task documentation, task handoff, and diagnostic evidence; ran two local policy smokes, an 80-test regression slice, and the complete verification gate with 1,574 passes and 4 skips."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/pixel_contraction.py"
+      - "scripts/experiments/hier005_pixel_contraction.py"
+      - "tests/test_pixel_contraction.py"
+      - "docs/architecture.md"
+      - "docs/additive_field_v2.md"
+      - "tasks/HIER-005-implicit-pixel-contraction.md"
+      - "tasks/INDEX.md"
+      - "tasks/SESSION-BRIEF.md"
+      - "ara/evidence/hier005-pixel-contraction-diagnostic-2026-08-05/run.md"
+      - "ara/evidence/README.md"
+      - "ara/logic/concepts.md"
+      - "ara/logic/solution/architecture.md"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/2026-08-05_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 2
+    action: "Extended HIER-005 with opt-in interleaved touched-row recovery, strict untouched-row freezing, rollback/trust-region/frontier-rebuild safeguards, count-progress work scheduling, telemetry and 39 metric curves; ran tuning probes, a four-budget Janelle baseline/recovery diagnostic and CUDA repeat audit; visually inspected baseline/recovered reconstructions and errors; added six focused checks, synchronized task/design/evidence state, and passed 20 focused tests, an 86-test regression slice, and the complete 1,580-test gate."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/pixel_contraction.py"
+      - "scripts/experiments/hier005_pixel_contraction.py"
+      - "tests/test_pixel_contraction.py"
+      - "docs/architecture.md"
+      - "docs/additive_field_v2.md"
+      - "tasks/HIER-005-implicit-pixel-contraction.md"
+      - "tasks/INDEX.md"
+      - "tasks/SESSION-BRIEF.md"
+      - "ara/evidence/hier005-selective-recovery-janelle-diagnostic-2026-08-05/run.md"
+      - "ara/evidence/README.md"
+      - "ara/logic/solution/architecture.md"
+      - "ara/logic/solution/constraints.md"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/2026-08-05_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 3
+    action: "Added an opt-in all-active recovery scope with mask-aware Gaussian-smoothed residual energy, matrix-free renderer-VJP row attribution, normalized bounded post-Adam update multipliers, telemetry and five additional curves; preserved touched-only behavior; added seven focused checks; ran 256-pixel attribution/smoothing probes, fresh matched four-budget Janelle controls, an 8k repeat, visual inspection, report integrity checks, and the complete 1,587-test verification gate; synchronized task, architecture, skill, and evidence state."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/pixel_contraction.py"
+      - "scripts/experiments/hier005_pixel_contraction.py"
+      - "tests/test_pixel_contraction.py"
+      - "docs/architecture.md"
+      - "docs/additive_field_v2.md"
+      - ".claude/skills/structsplat-core/SKILL.md"
+      - "tasks/HIER-005-implicit-pixel-contraction.md"
+      - "tasks/INDEX.md"
+      - "tasks/SESSION-BRIEF.md"
+      - "ara/evidence/hier005-all-active-error-weighted-janelle-diagnostic-2026-08-05/run.md"
+      - "ara/evidence/README.md"
+      - "ara/logic/solution/architecture.md"
+      - "ara/logic/solution/constraints.md"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/2026-08-05_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 4
+    action: "Inspected the preserved 4k/8k touched and all-active reconstruction/error images, audited the renderer's AABB cutoff/fade semantics, and computed masked pixel-error quantiles plus 3/7/15/31-pixel maximum patch RMSE from the report PNGs; recorded the diagnostic and a staged artifact-safe research architecture without changing method code, tasks, or defaults."
+    provenance: ai-executed
+    files_changed:
+      - "ara/evidence/hier005-all-active-error-weighted-janelle-diagnostic-2026-08-05/run.md"
+      - "ara/evidence/README.md"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/2026-08-05_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 5
+    action: "Added exact displayed pixel/patch artifact metrics and 53-curve matrix reports; implemented fixed-base signed local rescue and a verified 36-curve visual report driver; ran all eight 4k/8k support/recovery arms and the 0/102/205/410 repair ladder, three CUDA repair executions, visual and manifest/link audits, 38 focused tests, a 103-test field/render slice, and the complete 1,598-test gate; corrected declared-alpha matting, preserved the pre-correction report as superseded, and synchronized task, architecture, evidence, and ARA state."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/pixel_contraction.py"
+      - "scripts/experiments/hier005_pixel_contraction.py"
+      - "scripts/experiments/hier005_artifact_repair.py"
+      - "tests/test_pixel_contraction.py"
+      - "docs/architecture.md"
+      - "docs/additive_field_v2.md"
+      - "tasks/HIER-005-implicit-pixel-contraction.md"
+      - "tasks/INDEX.md"
+      - "tasks/SESSION-BRIEF.md"
+      - "ara/evidence/hier005-artifact-safety-janelle-diagnostic-2026-08-05/run.md"
+      - "ara/evidence/README.md"
+      - "ara/logic/solution/architecture.md"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/2026-08-05_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 6
+    action: "Created HIER-006 and implemented a NumPy-first parent-preserving residual quadtree with deterministic mask moments, smoothed-error child selection, immutable prefixes, RGB-only layer optimization, numeric-tie-safe checkpointing, cold rollback/parity, structured byte proxies, and a generic 58-curve visual report; retained and diagnosed the first comparator-defective run, reran unchanged corrected and repeat protocols on C0001, inspected full/error/depth/worst-crop visuals, documented the negative mechanism and rate verdict, added 20 focused tests, passed an 84-test field regression slice and the full 1,618-test gate, and synchronized task, architecture, skill, evidence, and ARA state."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/progressive_residual_quadtree.py"
+      - "scripts/experiments/hier006_progressive_residual_quadtree.py"
+      - "tests/test_progressive_residual_quadtree.py"
+      - "docs/architecture.md"
+      - "docs/additive_field_v2.md"
+      - ".claude/skills/structsplat-core/SKILL.md"
+      - "tasks/HIER-006-progressive-residual-quadtree.md"
+      - "tasks/INDEX.md"
+      - "tasks/SESSION-BRIEF.md"
+      - "ara/evidence/hier006-progressive-residual-quadtree-janelle-diagnostic-2026-08-05/run.md"
+      - "ara/evidence/README.md"
+      - "ara/logic/solution/architecture.md"
+      - "ara/logic/solution/constraints.md"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/2026-08-05_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 7
+    action: "Created HIER-007 and implemented a NumPy-first parent-replacing active-frontier quadtree with deterministic artifact/energy selection, fixed-geometry new-only/overlap RGB reconciliation, mask-smoothed error-weighted post-Adam updates, cold lexicographic transactions, deterministic batch backoff, exact rollback, snapshots and explicit byte ledgers; ran the frozen shared-base four-arm C0001 diagnostic, cold replay and visual audit; preserved a packaging-only HIER-005 context correction; added 18 focused tests and a 79-curve portable report; passed a 142-test field slice and the full 1,636-test gate; synchronized task, architecture, skill, evidence, and ARA state."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/artifact_first_quadtree.py"
+      - "scripts/experiments/hier007_artifact_first_quadtree.py"
+      - "tests/test_artifact_first_quadtree.py"
+      - "docs/architecture.md"
+      - "docs/additive_field_v2.md"
+      - ".claude/skills/structsplat-core/SKILL.md"
+      - "tasks/HIER-007-artifact-first-frontier-quadtree.md"
+      - "tasks/INDEX.md"
+      - "tasks/SESSION-BRIEF.md"
+      - "ara/evidence/hier007-artifact-first-frontier-quadtree-janelle-diagnostic-2026-08-05/run.md"
+      - "ara/evidence/README.md"
+      - "ara/logic/solution/architecture.md"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/2026-08-05_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 8
+    action: "Audited the live WSE sampler, pixel-contraction leaf/support semantics, exact color-solve substrate, Field V2 and rate-controller ownership, and prior negative hierarchy evidence; derived the effective 3x3 stencil conditioning boundary and a focused WSE-scheduled local-elimination hypothesis without changing code, tasks, methods, or defaults."
+    provenance: ai-executed
+    files_changed:
+      - "ara/staging/observations.yaml"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/2026-08-05_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 9
+    action: "Created HIER-008 and implemented a NumPy-first exact overlap prefilter, deterministic feature maps, fixed-lattice WSE/static-Schur elimination, expanding-quadtree integration, exact nested survivor materialization, and a shared smoothed-error/feature-weighted all-row optimizer with geometry/RGB trust and raw-local rollback; ran the frozen eight-cell C0001 diagnostic, inspected reconstructions, errors and worst crops, retained all failures, added 19 focused tests and a portable all-curve report, passed 57 focused tests and the complete 1,655-test gate, and synchronized task, architecture, constraints, evidence, and ARA state."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/overlap_elimination.py"
+      - "src/structsplat/pixel_contraction.py"
+      - "scripts/experiments/hier008_overlap_elimination.py"
+      - "scripts/check_report_bundle.py"
+      - "tests/test_overlap_elimination.py"
+      - "docs/architecture.md"
+      - "docs/additive_field_v2.md"
+      - ".claude/skills/structsplat-core/SKILL.md"
+      - "tasks/HIER-008-overlap-lattice-feature-elimination.md"
+      - "tasks/INDEX.md"
+      - "tasks/SESSION-BRIEF.md"
+      - "ara/evidence/hier008-overlap-lattice-feature-elimination-janelle-diagnostic-2026-08-05/run.md"
+      - "ara/evidence/README.md"
+      - "ara/logic/solution/architecture.md"
+      - "ara/logic/solution/constraints.md"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/trace/sessions/2026-08-05_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
+
+claims_touched: []
+
+key_context:
+  - turn: 1
+    excerpt: "The user asked to implement the promising merge/contraction path end to end so it can be tested against the rest."
+  - turn: 2
+    excerpt: "The user asked to interleave optimizer steps after merge/teleportation, keep untouched Gaussians fixed, rerun the Janelle test, and show reconstruction/error visually."
+  - turn: 3
+    excerpt: "The user proposed optimizing all active Gaussians in proportion to the error they produce, with the error smoothed before it becomes a weight, and asked to try it."
+  - turn: 4
+    excerpt: "The user stated that avoiding visual artifacts is very important and asked what pipeline should be proposed on that basis."
+  - turn: 5
+    excerpt: "The user explicitly authorized the proposed artifact-safety tests and asked for the full visual, error, metric, and curve results."
+  - turn: 6
+    excerpt: "The user proposed starting near the quadtree root and progressively adding and optimizing child Gaussians only where error is high, expecting overlapping levels to help compression and quality."
+  - turn: 7
+    excerpt: "The user explicitly affirmed the proposed scheduler-only parent-replacement hierarchy with artifact-first selection and overlap-local reconciliation."
+  - turn: 8
+    excerpt: "The user proposed meaningful nine-pixel support per Gaussian or a WSE-like criterion for feature-adaptive merging after the tested hierarchy variants ran out of promising combinations."
+  - turn: 9
+    excerpt: "The user affirmed the proposed frozen tests and emphasized overlap, feature representation, optimizer impact, meaningful reduction, and minimal quality loss."
+
+open_threads:
+  - "Obtain a distinct numerical/scientific review of HIER-005 source-set 53c3b32b before accepting the critical contraction/recovery implementation."
+  - "After CORE-013/BENCH-020 semantic selection, preregister FIT-045 matched controls against fixed-N, sparse/global, regional, and incumbent paths."
+  - "Replace estimated row price with COMP-013/FIT-030 complete cold-decoded bytes before any compression or rate-distortion conclusion."
+  - "Prospectively test stronger local uncontraction/preserved pixel leaves or a complete-codec residual exception channel on disjoint images; do not retune the exposed repair ladder."
+  - "Predeclare transferable local-error/observer/display assumptions and repeated or deterministic recovery before treating the provisional C0001 gate as general."
+  - "Obtain distinct numerical/scientific review of HIER-006 source module fd693b24 and its corrected dirty diagnostic before accepting even the negative implementation result."
+  - "Obtain distinct numerical/scientific review of HIER-007 module cfa628f6 and the packaging-corrected dirty diagnostic before accepting its implementation or negative result."
+  - "If hierarchical work continues, preregister parent-child continuation with a smooth commit-aligned tail, regional hotspot/SSE trust, and reserved repair capacity on disjoint data."
+  - "Obtain distinct numerical/scientific review of HIER-008 current module b9d4b7e5 and executed snapshot e5ed8d43 before accepting its positive overlap factor or negative WSE diagnosis."
+  - "If contraction work continues, prospectively freeze overlap-prefilter plus HIER-005 touched recovery and protected-detail leaves against hard3/touched; do not tune HIER-008 on exposed C0001."
+
+ai_suggestions_pending:
+  - "Use exact_count as the throughput control and always-pair as the quality-first control; do not select between them from the single 64x48 smoke."
+  - "Kill the direction if reviewed, equal-complete-byte and equal-wall-time curves are dominated by the existing sparse field controls."
+  - "Use deterministic CPU recovery or predeclared repeated CUDA runs for formal small-effect comparisons."
+  - "Treat selective recovery as topology-artifact repair, then develop a real quantized/entropy-coded stream separately."
+  - "Keep all-active smoothed-error recovery experimental; both interleaved and terminal 8k failures reject it as a uniform touched-only replacement."
+  - "Retain hard3 touched as the simplest exposed 8k passing control; do not interpret the near-identical hard4.5/fade4.5 rows as support evidence."
+  - "Treat no-visible-artifact output as constrained feasibility with a fail-closed count/fallback path; transferable thresholds and stronger repair remain unselected."
+  - "Retain literal immutable Gaussian ancestors as a negative control; do not tune the exposed C0001 hierarchy or report its resolution-mismatched native-JPEG ratio as compression."
+  - "Retain energy/new-only parent replacement as the HIER-007 structural control; reject hard artifact-first plus overlap reconciliation on exposed C0001."
+  - "Before another hierarchy run, align the training and commit objectives, prevent new regional hotspots/SSE damage, reserve repair rows, and cross-fade or lift parent mass into children."
+  - "First require a 0.5-pixel effective-overlap lattice to reconstruct the full pixel endpoint through a stable mask-aware color solve; kill it on ringing, coefficient blow-up, or boundary leakage."
+  - "If the basis passes, compare quadtree simplification with WSE-spaced local Schur elimination; use exact removal distortion as authority and WSE only for feature-aware coverage and batch spacing."
+  - "Retain the exact overlap prefilter as a useful component for expanding contraction, but do not promote any HIER-008 arm because every exposed row fails the local artifact gate."
+  - "Reject fixed-scale/static-Schur WSE elimination; revisit WSE only with survivor-adaptive covariance, local appearance projection, and actual post-refit patch-error commits."
+  - "Use the smallest next killing test—overlap prefilter plus existing touched-row recovery and hard protected detail—before considering a fresh production pipeline."

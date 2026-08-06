@@ -4288,3 +4288,675 @@ tree:
       - "realtime-gs ./scripts/verify.sh: OK"
     also_depends_on: [N212, N213]
     status: resolved
+  - id: N215
+    type: question
+    title: "Which image-to-2D-Gaussian methods define the current multi-objective frontier?"
+    provenance: user
+    timestamp: "2026-08-04T21:27+02:00"
+    description: >
+      Review the state of the art for methods that map images to 2D Gaussian fields, jointly
+      covering reconstruction quality, convergence, encode/render/decode performance, storage,
+      and compression ratio against the original image file.
+    status: resolved
+  - id: N216
+    type: decision
+    title: "Use regime-specific Pareto and complete-byte literature accounting"
+    provenance: ai-suggested
+    timestamp: "2026-08-04T21:27+02:00"
+    choice: >
+      Separate complete coded packages, quantized parameter proxies, float/count representations,
+      amortized encoders, warm renderers, and adjacent richer primitives; identify Pareto leaders
+      only inside compatible operating regimes; and leave original-file compression leadership
+      unresolved until exact source and cold-package bytes are both measured.
+    alternatives:
+      - "Pool cross-paper PSNR, FPS, Gaussian count, and bpp into one universal leaderboard."
+      - "Treat Gaussian count, raw FP16 payload, raw-RGB ratio, or theoretical entropy as an actual file rate."
+      - "Ignore outside-class image codecs and shared-model installation/training cost."
+    evidence:
+      - "ara/evidence/2d-gaussian-image-fields-sota-review-2026-08-04.md"
+      - "tasks/DOCS-007-2d-gaussian-sota-review.md"
+      - "./scripts/verify.sh: 1560 passed, 4 skipped; all structural gates OK"
+    also_depends_on: [N215]
+    status: resolved
+  - id: N217
+    type: question
+    title: "Which StructSplat layers should be reused versus replaced to compete?"
+    provenance: user
+    timestamp: "2026-08-04T23:08+02:00"
+    description: >
+      Reconcile the completed literature review with the implemented repository: inventory the
+      incumbent pipeline, decide whether it remains useful, and determine whether competitiveness
+      requires a greenfield pipeline or a new evidence-gated method path that reuses selected
+      infrastructure and tests new component combinations.
+    also_depends_on: [N210, N216]
+    status: resolved
+  - id: N218
+    type: question
+    title: "Can an exact pixel-Gaussian endpoint support reverse rate-distortion search?"
+    provenance: user
+    timestamp: "2026-08-04T23:26+02:00"
+    description: >
+      Determine whether the trivial single-view endpoint of one Gaussian per image pixel should be
+      used only as a worst-rate/perfect-quality control, or whether its implicit regular lattice can
+      anchor a dense-to-sparse contraction, merge, or residual-hierarchy pipeline with faster and
+      more predictable convergence than sparse initialization followed by births.
+    also_depends_on: [N210, N217]
+    status: open
+  - id: N219
+    type: question
+    title: "How should pixel-field contractions be proposed, scored, and accepted?"
+    provenance: user
+    timestamp: "2026-08-04T23:38+02:00"
+    description: >
+      Design an efficient and effective contraction algorithm for the implicit pixel-Gaussian
+      endpoint: generate local parent candidates without quadratic search, estimate the distortion
+      accepted per byte saved, preserve boundaries and downstream semantics, batch nonconflicting
+      merges, and validate decisions without rerendering and recoding the full field after every
+      individual action.
+    also_depends_on: [N218]
+    status: resolved
+  - id: N220
+    type: decision
+    title: "Implement the implicit pixel-contraction path as a default-off reference"
+    provenance: user
+    timestamp: "2026-08-05T00:23+02:00"
+    choice: >
+      Implement the previously designed merge/contraction method end to end so it can be tested
+      against the other pipelines. Bind it as a separate direct-additive HIER-005 research method,
+      retain exact local acceptance and explicit rate caveats, add a cold-rendering diagnostic
+      driver and tests, and leave current production/default behavior unchanged.
+    alternatives:
+      - "Keep the contraction controller as an unimplemented idea."
+      - "Replace the current maintained pipeline immediately without semantic or matched evidence."
+      - "Fold the experiment into legacy normalized triage and lose a clean direct-additive control."
+      - "Report estimated row bytes as compression before a complete codec exists."
+    evidence:
+      - "tasks/HIER-005-implicit-pixel-contraction.md"
+      - "src/structsplat/pixel_contraction.py"
+      - "scripts/experiments/hier005_pixel_contraction.py"
+      - "tests/test_pixel_contraction.py"
+    also_depends_on: [N210, N218, N219]
+    status: resolved
+  - id: N221
+    type: experiment
+    title: "HIER-005 implementation and single-source diagnostics pass"
+    provenance: ai-executed
+    timestamp: "2026-08-05T00:23+02:00"
+    result: >
+      The default-off implicit pixel-contraction implementation reached exact requested counts on
+      odd/masked fixtures, matched the maintained additive renderer within 2e-6 in focused tests,
+      passed 14 new tests, an 80-test field/render slice, and the complete portable gate (1,574
+      passed, 4 skipped). On one pre-existing local 64x48 source at N=1,024, exact-count and
+      always-pair policies recorded 23.523/24.828 dB in 1.982/2.883 contraction seconds with
+      7.75e-7/5.96e-7 maintained-render max error. Both uncoded 32 KiB fields exceeded the 7.8 KiB
+      source PNG. This dirty, single-source smoke establishes implementation behavior only, not a
+      semantic, comparative, general performance, rate-distortion, compression, or default result.
+    evidence:
+      - "ara/evidence/hier005-pixel-contraction-diagnostic-2026-08-05/run.md"
+      - "source-set sha256 e8ab01da5711828ce3e1bdb19a1ddfcb398fc5c4aaf8aa69ab03d2d634391a1f"
+      - "./scripts/verify.sh: 1574 passed, 4 skipped; all structural gates OK"
+    also_depends_on: [N218, N219, N220]
+    status: resolved
+  - id: N222
+    type: decision
+    title: "Interleave recovery only over contraction-touched rows"
+    provenance: user
+    timestamp: "2026-08-05T02:36+02:00"
+    choice: >
+      Repair the visible quadtree/grid artifacts by interleaving optimizer blocks after merge and
+      teleportation actions, while keeping every Gaussian that has never participated in such an
+      action fixed; rerun the Janelle diagnostic and inspect the reconstruction and error visually.
+    alternatives:
+      - "Optimize the complete active field after every contraction checkpoint."
+      - "Keep the analytic/local contraction output without differentiable recovery."
+      - "Treat the visible grid as a renderer artifact without testing row-selective refinement."
+    evidence:
+      - "User direction in the HIER-005 implementation turn"
+      - "tasks/HIER-005-implicit-pixel-contraction.md"
+    also_depends_on: [N218, N219, N220, N221]
+    status: resolved
+  - id: N223
+    type: dead_end
+    title: "Action-count recovery cadence is not a cross-budget work control"
+    provenance: ai-executed
+    timestamp: "2026-08-05T02:36+02:00"
+    hypothesis: >
+      A fixed recovery checkpoint every 128 contraction actions gives a sufficiently comparable
+      interleaved optimizer schedule across requested Gaussian counts.
+    failure_mode: >
+      Lower target counts execute more topology actions and therefore receive more checkpoints and
+      optimizer steps. The preliminary Janelle curve became non-monotone and mixed topology quality
+      with unequal recovery work, so it could not answer the intended rate--distortion question.
+    lesson: >
+      Space checkpoints by fixed fractions of requested row reduction and report attempted steps;
+      retain action cadence only as an explicitly selected legacy/diagnostic option.
+    evidence:
+      - "results/hier005_janelle_c0001_selective_recovery_sweep_2026-08-05"
+      - "src/structsplat/pixel_contraction.py"
+      - "tests/test_pixel_contraction.py"
+    also_depends_on: [N222]
+    status: resolved
+  - id: N224
+    type: experiment
+    title: "Touched-row recovery removes the 8k Janelle topology imprint"
+    provenance: ai-executed
+    timestamp: "2026-08-05T02:36+02:00"
+    result: >
+      On exposed Janelle C0001 resized to 512x443, four exact-count rows each received 16x50
+      recovery steps. Against the no-recovery diagnostic, masked PSNR changed by +6.771, +5.476,
+      +18.263, and +10.083 dB at N=2,048/4,096/8,192/12,000. At N=8,192 the square/tree holes
+      disappeared visually, LPIPS changed from 0.015007 to 0.00001648, 2,723 touched rows moved,
+      and 5,469 untouched rows remained fixed; N=2,048/4,096 retained structured artifacts. Total
+      time was 1.44x--2.48x baseline. CUDA repeats changed field hashes and up to 0.205 dB at the
+      lowest count. Every 93,888--412,352-byte uncoded field exceeded the 29,263-byte same-raster
+      PNG. This supports implementation-level artifact repair only, not general superiority,
+      convergence speed, compression, semantics, or a default.
+    evidence:
+      - "ara/evidence/hier005-selective-recovery-janelle-diagnostic-2026-08-05/run.md"
+      - "results/hier005_janelle_c0001_selective_recovery_progress16_2026-08-05_v2/index.html"
+      - "source-set sha256 2f4f42bd139be98c27444e598b1ab7fdea17b1771438be7588104d4546e2d778"
+      - "./scripts/verify.sh: 1580 passed, 4 skipped; all structural gates OK"
+    also_depends_on: [N218, N221, N222, N223]
+    status: resolved
+  - id: N225
+    type: decision
+    title: "Test all-active recovery weighted by smoothed residual error"
+    provenance: user
+    timestamp: "2026-08-05T09:26+02:00"
+    choice: >
+      Add a separate recovery scope that optimizes every currently active Gaussian, weights its
+      update by the error attributed to that Gaussian, smooths the pixel error before attribution,
+      and tests the result against touched-only recovery on the exposed Janelle image.
+    alternatives:
+      - "Continue optimizing only rows touched by contraction actions."
+      - "Optimize every active row uniformly without error attribution."
+      - "Use unsmoothed per-pixel error as the attribution field."
+      - "Replace touched-only recovery without a matched comparison."
+    evidence:
+      - "User direction in the HIER-005 recovery follow-up"
+      - "tasks/HIER-005-implicit-pixel-contraction.md"
+      - "ara/evidence/hier005-all-active-error-weighted-janelle-diagnostic-2026-08-05/run.md"
+    also_depends_on: [N218, N222, N224]
+    status: resolved
+  - id: N226
+    type: experiment
+    title: "All-active smoothed-error recovery is strongly budget-dependent on Janelle"
+    provenance: ai-executed
+    timestamp: "2026-08-05T09:26+02:00"
+    result: >
+      A fresh same-source 512x443 comparison used 16x50 attempted recovery steps at each exact
+      count. Relative to touched-only recovery, all-active smoothed-error recovery changed masked
+      PSNR by +5.015, +10.456, -6.310, and +2.042 dB at N=2,048/4,096/8,192/12,000, while total
+      time was 1.15x--1.56x. A separate 8k repeat reached 47.970 dB and remained 4.367 dB below the
+      touched control. At max-side 256/N=1,024, all-active uniform weighting beat touched-only and
+      error weighting beat uniform, but sigma-0 versus sigma-1.5 ordering reversed across CUDA
+      repeats, so a smoothing benefit is unresolved. This dirty, exposed-image diagnostic uses
+      equal attempted steps rather than equal compute, changes no coded payload, and supports no
+      general quality, convergence-speed, compression, semantic, or default claim.
+    evidence:
+      - "ara/evidence/hier005-all-active-error-weighted-janelle-diagnostic-2026-08-05/run.md"
+      - "results/hier005_janelle_c0001_touched_control_progress16_current_2026-08-05/index.html"
+      - "results/hier005_janelle_c0001_all_error_weighted_progress16_2026-08-05/index.html"
+      - "source-set sha256 60eff11c57e3975966e209743529e1e633c4b7eec1c2e02866ed93adef6cdf6b"
+      - "./scripts/verify.sh: 1587 passed, 4 skipped; all structural gates OK"
+    also_depends_on: [N218, N224, N225]
+    status: resolved
+  - id: N227
+    type: dead_end
+    title: "All-active weighted recovery is not a uniform touched-only replacement"
+    provenance: ai-executed
+    timestamp: "2026-08-05T09:26+02:00"
+    hypothesis: >
+      Optimizing every active row with smoothed-error weights can replace touched-only interleaved
+      recovery across Gaussian budgets while retaining its strict checkpoint rollback safeguard.
+    failure_mode: >
+      The all-active arm improved three tested terminal budgets but lost 6.310 dB at N=8,192; a
+      second all-active 8k run also lost 4.367 dB. Individually accepted geometry updates altered
+      later topology proposals, so local checkpoint improvement did not guarantee final-path
+      dominance.
+    lesson: >
+      Preserve touched-only recovery as the control and treat all-active weighting as a bounded
+      polish mechanism. Test a touched-interleaving plus terminal all-active hybrid under matched
+      total work instead of applying all-active updates throughout every contraction trajectory.
+    evidence:
+      - "ara/evidence/hier005-all-active-error-weighted-janelle-diagnostic-2026-08-05/run.md"
+      - "results/hier005_janelle_c0001_all_error_weighted_n8192_repeat_2026-08-05"
+    also_depends_on: [N224, N225, N226]
+    status: resolved
+  - id: N228
+    type: decision
+    title: "Make visible-artifact absence a primary method requirement"
+    provenance: user
+    timestamp: "2026-08-05T09:51+02:00"
+    choice: >
+      Treat the absence of visible reconstruction artifacts as a primary requirement when deciding
+      how the contraction and recovery pipeline should proceed, rather than allowing improved
+      average fidelity metrics to hide structured or localized defects.
+    alternatives:
+      - "Select only by aggregate PSNR, SSE, MS-SSIM, or LPIPS."
+      - "Accept sparse holes or grid/cell imprints when the average metric improves."
+      - "Treat visual inspection as reporting only rather than an acceptance boundary."
+    evidence:
+      - "User priority statement in the HIER-005 artifact follow-up"
+      - "ara/evidence/hier005-all-active-error-weighted-janelle-diagnostic-2026-08-05/run.md"
+    also_depends_on: [N224, N226, N227]
+    status: resolved
+  - id: N229
+    type: question
+    title: "How should contraction fail closed on visible artifacts?"
+    provenance: user
+    timestamp: "2026-08-05T09:51+02:00"
+    description: >
+      Design a recovery and acceptance pipeline that prevents quadtree/cell imprints and localized
+      holes, identifies infeasible row budgets instead of forcing a visually defective output, and
+      preserves a repair or fallback path when compression conflicts with artifact freedom.
+    also_depends_on: [N218, N228]
+    status: resolved
+  - id: N230
+    type: experiment
+    title: "Patch maxima expose the localized 8k artifact regression"
+    provenance: ai-executed
+    timestamp: "2026-08-05T09:51+02:00"
+    result: >
+      A post-hoc rescore of the preserved 8-bit Janelle report PNGs found that at N=8,192 the
+      all-active weighted field had pixel RMSE q99.9/max of 0.0517/0.0686 and maximum 7x7 patch
+      RMSE 0.0359, versus 0.0106/0.0148 and 0.0053 for touched-only. At N=4,096 all-active weighting
+      reduced the touched field's q99.9/max from 0.1311/0.2073 to 0.0708/0.0904 and max 7x7 error
+      from 0.0707 to 0.0465, but did not approach the visually clean 8k control. The current hard
+      AABB support at 3 sigma truncates a nominal 0.0111 boundary weight; spatial alignment makes
+      this a plausible contributor, not a causal result. These post-hoc single-image statistics
+      establish that aggregate SSE is insufficient for acceptance, not a general visual threshold.
+    evidence:
+      - "ara/evidence/hier005-all-active-error-weighted-janelle-diagnostic-2026-08-05/run.md#localized-artifact-follow-up"
+      - "src/structsplat/render.py"
+      - "results/hier005_janelle_c0001_touched_control_progress16_current_2026-08-05"
+      - "results/hier005_janelle_c0001_all_error_weighted_progress16_2026-08-05"
+    also_depends_on: [N226, N227, N228, N229]
+    status: resolved
+  - id: N231
+    type: decision
+    title: "Execute the artifact-safety factorial and bounded repair"
+    provenance: user
+    timestamp: "2026-08-05T11:16+02:00"
+    choice: >
+      Run the proposed hard/faded support and interleaved/terminal recovery tests, execute the
+      bounded local repair only when the fixed-count artifact gate fails, and expose complete
+      reconstruction, error, metric, and curve reports as before.
+    alternatives:
+      - "Select a pipeline from the earlier global PSNR/SSE evidence without the new local gate."
+      - "Tune only one support or recovery arm rather than preserving the full factorial."
+      - "Skip the bounded repair after a fixed-count failure."
+    evidence:
+      - "User authorization in the HIER-005 artifact-safety follow-up"
+      - "tasks/HIER-005-implicit-pixel-contraction.md#artifact-factorial-diagnostic-protocol-2026-08-05"
+    also_depends_on: [N228, N229, N230]
+    status: resolved
+  - id: N232
+    type: experiment
+    title: "Support and topology-frozen recovery factorial leaves 4k infeasible"
+    provenance: ai-executed
+    timestamp: "2026-08-05T11:16+02:00"
+    result: >
+      The exposed 512x443 Janelle C0001 factorial completed all 16 exact-count cells. Every 4k row
+      failed the provisional displayed pixel-max <=0.02 and 7x7-max <=0.01 gate. At 8k, hard3,
+      hard4.5, and fade4.5 touched recovery passed with pixel max 0.0148 and 7x7 max about 0.0053;
+      fade3 touched and all four topology-frozen terminal rows failed. Hard3 touched reached
+      52.356 dB and is the simplest passing row. Larger support had no material local benefit; full
+      fade at 3 sigma worsened the 8k maximum. Every report retained failures, cold/repeated parity,
+      visuals, raw rows, and 53 curves. This is one exposed dirty diagnostic, not a semantic,
+      quality, convergence, rate, or default claim.
+    evidence:
+      - "ara/evidence/hier005-artifact-safety-janelle-diagnostic-2026-08-05/run.md"
+      - "results/hier005_janelle_artifact_hard3_touched_2026-08-05/index.html"
+      - "results/hier005_janelle_artifact_hard3_terminal_2026-08-05/index.html"
+      - "eight matrix manifests: 75/75 files and 73/73 contained links each"
+    also_depends_on: [N226, N227, N228, N229, N230, N231]
+    status: resolved
+  - id: N233
+    type: dead_end
+    title: "Cutoff enlargement or peak-one tail fade does not remove the artifact"
+    provenance: ai-executed
+    timestamp: "2026-08-05T11:16+02:00"
+    hypothesis: >
+      The visible cell/hole morphology is primarily caused by the hard 3-sigma support boundary,
+      so enlarging support to 4.5 sigma or subtractively fading the peak-one kernel tail will make
+      the fixed-count reconstruction pass the local artifact gate after matched refitting.
+    failure_mode: >
+      Hard4.5 is locally indistinguishable from hard3, fade4.5 subtracts a negligible tail, and
+      fade3 changes but worsens the critical 8k pixel maximum. No support variant makes any 4k row
+      pass, and only touched rows pass at 8k.
+    lesson: >
+      Do not change renderer support semantics from this mechanism hypothesis. Preserve hard3
+      touched as the simplest control and treat topology/allocation plus local capacity as the
+      remaining causes to isolate on fresh data.
+    evidence:
+      - "ara/evidence/hier005-artifact-safety-janelle-diagnostic-2026-08-05/run.md#fixed-count-factorial-outcomes"
+    also_depends_on: [N230, N231, N232]
+    status: resolved
+  - id: N234
+    type: experiment
+    title: "Frozen-base signed rescue improves averages but not the 4k artifact gate"
+    provenance: ai-executed
+    timestamp: "2026-08-05T11:16+02:00"
+    result: >
+      Independent 0/102/205/410-row rescue forks of the selected hard3-terminal 4k field preserved
+      all 4,096 base rows bit-exact and maintained-render parity below 2.4e-7. The frozen raw
+      checkpoint rule selected 102 rows: PSNR changed 36.695->36.909 dB, displayed pixel max
+      0.0736->0.0642, 7x7 max 0.0335->0.0283, and normalized raw violation 3.688->3.212, still a
+      failure. The 410-row arm reached 37.506 dB and LPIPS 0.006864 but left pixel max 0.0655. Three
+      CUDA executions preserved the negative verdict and 102-row ordering while the 205-row
+      checkpoint varied slightly. Repair v2 provides four rows, 36 curves, 83 contained links,
+      worst-neighborhood visuals, and verified source/prefix/parity receipts.
+    evidence:
+      - "ara/evidence/hier005-artifact-safety-janelle-diagnostic-2026-08-05/run.md#bounded-local-repair"
+      - "results/hier005_janelle_artifact_local_repair_v2_2026-08-05/index.html"
+      - "source-set sha256 53c3b32baf0d6bb3bddf3ff376a6662002416d89423ed851f0b2d931106eab32"
+      - "./scripts/verify.sh: 1598 passed, 4 skipped; all structural gates OK"
+    also_depends_on: [N228, N229, N231, N232]
+    status: resolved
+  - id: N235
+    type: dead_end
+    title: "Fixed-geometry RGB-only rescue cannot certify the tested 4k budget"
+    provenance: ai-executed
+    timestamp: "2026-08-05T11:16+02:00"
+    hypothesis: >
+      Up to 10% fixed 0.75-pixel signed residual Gaussians, selected at local residual peaks and
+      optimized only in RGB, can make the selected failing 4k field pass the declared local gate
+      without disturbing its base rows.
+    failure_mode: >
+      All three repair sizes remain at least 3.21x over the normalized raw local limit and fail the
+      displayed pixel/patch gate. More rows improve PSNR and diffuse/patch error but do not remove
+      the dominant localized maximum. The largest field is no longer exact-count and its 172,544
+      uncoded bytes are 5.90x the 29,263-byte evaluation PNG.
+    lesson: >
+      Declare the tested 4k method infeasible rather than retune the exposed threshold or choose a
+      high-PSNR failure. Test genuinely stronger local uncontraction/preserved pixel leaves or a
+      complete-codec residual exception channel prospectively on disjoint images.
+    evidence:
+      - "ara/evidence/hier005-artifact-safety-janelle-diagnostic-2026-08-05/run.md#verdict-and-required-next-evidence"
+      - "results/hier005_janelle_artifact_local_repair_v2_2026-08-05/metrics.json"
+    also_depends_on: [N218, N228, N229, N234]
+    status: resolved
+  - id: N236
+    type: question
+    title: "Can coarse-to-fine residual children beat reverse contraction?"
+    provenance: user
+    timestamp: "2026-08-05T13:18+02:00"
+    description: >
+      Test a hierarchical construction that starts near the quadtree root, preserves a low-
+      resolution Gaussian approximation, selectively adds child-layer Gaussians where current
+      error is high, and optimizes after each addition. Determine whether overlapping coarse and
+      fine Gaussians improve quality, convergence, and compression relative to the existing
+      contraction path without permitting visible artifacts.
+    also_depends_on: [N218, N225, N228, N232, N235]
+    status: resolved
+  - id: N237
+    type: experiment
+    title: "Parent-preserving residual quadtree fails the exposed artifact gate"
+    provenance: ai-executed
+    timestamp: "2026-08-05T13:18+02:00"
+    result: >
+      Implemented HIER-006 as a default-off NumPy-first mask-moment quadtree with immutable direct-
+      additive prefixes, signed residual child RGB fits, smoothed-error-per-row selection, cold
+      rollback, fields, complete histories, hierarchy maps, worst crops, and 58 curves. The first
+      frozen run exposed a float64-prefix/float32-checkpoint last-bit comparison defect; it was
+      retained, corrected with one-domain keys plus a float32 tie band, and rerun without changing
+      parameters. Corrected N=3,986/8,192 prefixes reached 27.805/32.882 dB but failed the displayed
+      pixel/7x7 gate at 0.2223/0.0860 and 0.1073/0.0375. At 8k, 5,106 rows were retained ancestors
+      and only 3,086 were level-0 leaves; the worst boundary cell remained at level 1. An exact-
+      parameter CUDA repeat reproduced displayed gate metrics exactly. Full fields were 5.33x/
+      9.93x the 29,263-byte evaluation PNG; even the non-codec structural proxies were 2.62x/4.36x.
+    evidence:
+      - "ara/evidence/hier006-progressive-residual-quadtree-janelle-diagnostic-2026-08-05/run.md"
+      - "results/hier006_janelle_progressive_residual_quadtree_corrected_2026-08-05/index.html"
+      - "results/hier006_janelle_progressive_residual_quadtree_precisionfix_repeat_2026-08-05/index.html"
+      - "executed module sha256 fd693b24055f293f59d8fbb7859865aa02e0728a6d4e29a3cf02fba4ff83ef37"
+      - "./scripts/verify.sh: 1618 passed, 4 skipped; all structural gates OK"
+    also_depends_on: [N225, N228, N232, N235, N236]
+    status: resolved
+  - id: N238
+    type: dead_end
+    title: "Literal immutable Gaussian ancestors are not a competitive hierarchy"
+    provenance: ai-executed
+    timestamp: "2026-08-05T13:18+02:00"
+    hypothesis: >
+      Retaining every coarse parent while selectively stacking and fitting signed Gaussian children
+      will provide compact progressive prefixes that match or improve contraction quality and avoid
+      cell artifacts at 4k and 8k row caps.
+    failure_mode: >
+      The corrected frozen run fails both local gates and is 2.676 dB behind the contextual 4,096-
+      row contraction field and 19.474 dB behind at exactly 8,192 rows. Ancestor retention consumes
+      62.3% of the terminal row budget, summed smoothed-error selection misses the isolated worst
+      boundary leaf before the cap, and fixed earlier coefficients leave visible multiscale grid
+      residuals. Same-raster full and proxy bytes both exceed PNG despite large, resolution-
+      mismatched native-JPEG ratios.
+    lesson: >
+      Preserve HIER-006 as a negative control. A future hierarchy should use the quadtree as an
+      allocation/index schedule rather than assume literal ancestors are free; test artifact-first
+      priority, local or joint coefficient reconciliation, and nested zero-moment detail bases
+      under complete-byte and matched-work accounting on disjoint data.
+    evidence:
+      - "ara/evidence/hier006-progressive-residual-quadtree-janelle-diagnostic-2026-08-05/run.md"
+      - "tasks/HIER-006-progressive-residual-quadtree.md#diagnostic-outcome-2026-08-05"
+    also_depends_on: [N218, N228, N236, N237]
+    status: resolved
+  - id: N239
+    type: decision
+    title: "Execute the scheduler-only artifact-first reconciliation factorial"
+    provenance: user
+    timestamp: "2026-08-05T15:35+02:00"
+    choice: >
+      Implement and test exactly the proposed HIER-006 successor: deactivate split parents, use
+      the quadtree only as the active-frontier scheduler, compare explicit worst-artifact priority
+      with smoothed energy, and compare new-child-only RGB fitting with local joint fitting of
+      finite-support-overlapping active rows in a shared-base four-arm diagnostic.
+    alternatives:
+      - "Retune the exposed parent-preserving HIER-006 trajectory."
+      - "Combine every proposed successor mechanism, including a new lifting primitive, in one arm."
+      - "Abandon hierarchical allocation without isolating retained-parent waste."
+    evidence:
+      - "User affirmation of the proposed HIER-007 successor"
+      - "tasks/HIER-007-artifact-first-frontier-quadtree.md"
+    also_depends_on: [N228, N237, N238]
+    status: resolved
+  - id: N240
+    type: experiment
+    title: "Parent replacement helps, but every HIER-007 arm fails the artifact gate"
+    provenance: ai-executed
+    timestamp: "2026-08-05T15:35+02:00"
+    result: >
+      Implemented the default-off NumPy-first parent-replacing frontier, frozen shared-base 2x2
+      driver, 18 focused tests, cold fields, complete histories, full/error/depth/crop visuals,
+      work and byte ledgers, and 79 curves. At 8,192 active rows, energy/new-only,
+      artifact-first/new-only, energy/overlap, and artifact-first/overlap reach 40.035, 34.569,
+      38.830, and 26.035 dB, with displayed pixel/7x7 maxima 0.0472/0.0215,
+      0.3124/0.1197, 0.1800/0.0944, and 0.3485/0.1722; all fail the frozen 0.02/0.01 gate.
+      Energy/new-only improves 7.153 dB over contextual retained-parent HIER-006 but remains far
+      behind passing HIER-005. Cold replay agrees to 6.2e-8 dB and all partition, rollback,
+      nonlocal-bit-exact, and shared-base checks pass. Every 290,496-byte active field is 9.93x
+      larger than the 29,263-byte evaluation PNG; structural proxies are not codecs. The complete
+      repository gate passes 1,636 tests with 4 skips.
+    evidence:
+      - "ara/evidence/hier007-artifact-first-frontier-quadtree-janelle-diagnostic-2026-08-05/run.md"
+      - "results/hier007_janelle_artifact_first_quadtree_contextfix_2026-08-05/index.html"
+      - "executed module sha256 cfa628f6da5649c1c9272e3cf3a2361b213b4ae84ef9ccb9a3fc50c40fb28599"
+      - "./scripts/verify.sh: 1636 passed, 4 skipped; all structural gates OK"
+    also_depends_on: [N228, N238, N239]
+    status: resolved
+  - id: N241
+    type: dead_end
+    title: "Hard artifact-first priority plus overlap-local refitting"
+    provenance: ai-executed
+    timestamp: "2026-08-05T15:35+02:00"
+    hypothesis: >
+      Selecting the worst pixel/patch regions first and error-weighting RGB updates over new
+      children plus overlapping active neighbors will remove structured hierarchy artifacts and
+      outperform either mechanism alone at a fixed 8,192-row active cap.
+    failure_mode: >
+      The combined arm is worst at 26.035 dB and 0.3485/0.1722 local maxima, with obvious
+      quadtree-aligned square/ring artifacts. It needs 1,773 trials for 279 accepted stages, 1,382
+      batch backoffs, and 112 blocked singletons. Hard max-first commits can reduce the current
+      maximum while materially increasing SSE; overlap updates move the maximum into late coarse
+      cells, and complete-child growth exhausts capacity before those new hotspots can split.
+    lesson: >
+      Retain energy/new-only parent replacement as a structural control, but do not tune or promote
+      the combined policy on C0001. A successor needs a smooth commit-aligned pixel/patch-tail
+      objective, regional no-new-hotspot and SSE trust regions, reserved repair capacity, and
+      continuous parent-to-child mass transfer before implementation-speed work.
+    evidence:
+      - "ara/evidence/hier007-artifact-first-frontier-quadtree-janelle-diagnostic-2026-08-05/run.md"
+      - "results/hier007_janelle_artifact_first_quadtree_contextfix_2026-08-05"
+    also_depends_on: [N228, N239, N240]
+    status: resolved
+  - id: N242
+    type: question
+    title: "Can overlapping lattice Gaussians support feature-safe WSE contraction?"
+    provenance: user
+    timestamp: "2026-08-05T20:09+02:00"
+    description: >
+      Determine whether each pixel-centered Gaussian should meaningfully cover its direct 3x3
+      neighborhood before simplification, and whether Weighted Sample Elimination can be adapted
+      from initialization into a feature-aware model-reduction scheduler whose criterion preserves
+      edges, avoids holes and grid artifacts, locally redistributes coefficients, and improves
+      quality, convergence, performance, and structured rate.
+    also_depends_on: [N218, N228, N240, N241]
+    status: resolved
+  - id: N243
+    type: decision
+    title: "Execute the overlap-lattice feature-elimination killing test"
+    provenance: user
+    timestamp: "2026-08-05T21:32+02:00"
+    choice: >
+      Implement and test the frozen HIER-008 2x2 support-width by scheduler design, requiring
+      meaningful overlap, explicit feature representation and coverage, an optimizer with measured
+      impact and trust bounds, exact nested row reductions, and localized artifact metrics rather
+      than aggregate fidelity alone.
+    alternatives:
+      - "Adopt broader overlap or WSE elimination without isolating their effects."
+      - "Start a new production pipeline before testing the proposed components."
+      - "Tune another exposed quadtree trajectory without a frozen factorial."
+    evidence:
+      - "User affirmation of the proposed overlap x quadtree/WSE diagnostic"
+      - "tasks/HIER-008-overlap-lattice-feature-elimination.md"
+    also_depends_on: [N228, N240, N241, N242]
+    status: resolved
+  - id: N244
+    type: experiment
+    title: "Exact overlap helps expanding contraction, but all HIER-008 cells fail"
+    provenance: ai-executed
+    timestamp: "2026-08-05T21:32+02:00"
+    result: >
+      Implemented a stable mask-aware full-lattice color prefit, deterministic feature-aware WSE
+      with local static Schur pricing, exact nested survivor fields, expanding-quadtree integration,
+      and a common smoothed-error/feature-weighted all-row geometry-and-RGB optimizer. The frozen
+      C0001 eight-cell run shows a large overlap factor: quadtree PSNR changes from 35.129 to 45.953
+      dB at 8,192 rows and from 27.714 to 31.096 dB at 4,096 rows; the selected optimizer adds
+      2.144 and 3.725 dB. Nevertheless every cell fails the displayed 0.02 pixel / 0.01 7x7-patch
+      gate. The best overlap-quadtree row reaches 0.1077/0.0253, the 4k row retains periodic rings,
+      and the WSE rows are much worse. Full fields remain 9.93x/5.45x the same-raster lossless PNG;
+      those are complete field bytes but not a compressed codec. The portable report contains all
+      fields, visuals, losses, curves, manifests, and source snapshots; 57 focused tests and the
+      complete 1,655-pass repository gate succeed.
+    evidence:
+      - "ara/evidence/hier008-overlap-lattice-feature-elimination-janelle-diagnostic-2026-08-05/run.md"
+      - "results/hier008_janelle_overlap_elimination_2026-08-05/index.html"
+      - "executed module sha256 e5ed8d43a4a59e0f2ac39a5edbfc3c689bc2d32a34ce47bd4b676d0df367b02b"
+      - "report manifest sha256 755d51a4332be452fe089b3e0c98e689c6a5052c1d302ca71d824650897e813f"
+      - "./scripts/verify.sh: 1655 passed, 4 skipped; all structural gates OK"
+    also_depends_on: [N224, N228, N232, N242, N243]
+    status: resolved
+  - id: N245
+    type: dead_end
+    title: "Fixed-scale feature-aware WSE with static Schur prices leaves coverage holes"
+    provenance: ai-executed
+    timestamp: "2026-08-05T21:32+02:00"
+    hypothesis: >
+      Feature-weighted WSE crowding, feature barriers, and a same-side local Schur removal price can
+      select a nested fixed-lattice subset that preserves important structure and gives the common
+      optimizer enough freedom to match or beat expanding quadtree contraction without visible
+      holes.
+    failure_mode: >
+      At 8,192 rows the overlap-WSE arm retains full top-feature coverage within 1.5 pixels but has
+      1.44/2.08-pixel q99/max nearest-center gaps. A 0.50-pixel fixed Gaussian contributes almost
+      no response across the largest gaps, and the 0.15 log-scale trust cap cannot bridge them.
+      Visible dot holes remain; terminal optimization improves PSNR by 3.540 dB yet reaches only
+      22.878 dB and 0.2203/0.1357 local maxima. The 4k WSE arm is worse. Static pre-removal prices
+      and point-feature coverage therefore do not represent actual post-refit patch distortion.
+    lesson: >
+      Reject this fixed-scale/static-price elimination path. Any future WSE-style removal must
+      adapt or merge covariance to survivor spacing, perform local appearance variable projection,
+      and commit on actual pixel/patch error with an exact coverage veto. This does not reject WSE
+      as a batch-spacing device inside such a dynamic method.
+    evidence:
+      - "ara/evidence/hier008-overlap-lattice-feature-elimination-janelle-diagnostic-2026-08-05/run.md#mechanism-diagnosis"
+      - "results/hier008_janelle_overlap_elimination_2026-08-05/artifacts/C0001__overlap__feature_wse_schur__n8192/reconstruction.png"
+    also_depends_on: [N228, N242, N243, N244]
+    status: resolved
+  - id: N246
+    type: decision
+    title: "Optimize the touched Gaussian and its direct 3x3 neighborhood"
+    provenance: user-revised
+    timestamp: "2026-08-06T00:56+02:00"
+    choice: >
+      Use the missing HIER-005 live contraction loop and, after each committed batch, optimize every
+      topology-touched active Gaussian plus active Gaussians in its direct 3x3 rounded-center
+      neighborhood. Preserve accepted changed neighbors for later checkpoints rather than limiting
+      recovery to only the newly touched output row.
+    alternatives:
+      - "Optimize only topology-touched rows."
+      - "Optimize every active Gaussian with smoothed-error weights."
+      - "Use an unbounded transitive support-overlap closure."
+    evidence:
+      - "User clarification that touched-only recovery is insufficient and the Gaussian plus 3x3 neighbors should be optimized"
+      - "tasks/HIER-009-dynamic-overlap-neighborhood-recovery.md"
+    also_depends_on: [N224, N228, N244, N245]
+    status: resolved
+  - id: N247
+    type: experiment
+    title: "Dynamic 3x3 recovery removes 4k blocks but redistributes 8k error"
+    provenance: ai-executed
+    timestamp: "2026-08-06T00:56+02:00"
+    result: >
+      Implemented HIER-009 with exact overlap prefit, HIER-005 current-field contraction, persistent
+      accepted direct-neighbor recovery, and exact protected-feature geometry. The frozen C0001
+      four-arm x two-count run reaches every exact target. At 4,096 rows, overlap/halo improves
+      overlap/touched from 39.802 to 40.801 dB and displayed pixel/7x7 maxima from 0.0900/0.0334 to
+      0.0799/0.0278, visibly removing the square block lattice; 5% protection reaches 41.115 dB and
+      0.0251 patch maximum. At 8,192, halo lowers isolated maximum but loses 1.433 dB and worsens
+      7x7 error; protection partly recovers to 46.991 dB/0.0205. Only delta/touched 8,192 passes the
+      0.02/0.01 gate at 52.338 dB and 0.0148/0.0053. All 16 checkpoints are active, protected
+      geometry error is zero, cold parity is <=7.16e-7, and canonical fields remain 5.45--9.93x
+      larger than the same-raster PNG. The report checker, 64 focused tests, and the full 1,662-pass
+      repository gate succeed.
+    evidence:
+      - "ara/evidence/hier009-dynamic-overlap-neighborhood-recovery-janelle-diagnostic-2026-08-06/run.md"
+      - "results/hier009_janelle_dynamic_overlap_recovery_2026-08-06/index.html"
+      - "report manifest sha256 c1d8c488c8200edd8b4d68c103b41f9347c8844a5c4c41607431fbd4be67f60d"
+      - "executed driver/contraction/overlap sha256 3ed96bbe/55812738/a7667c02"
+      - "./scripts/verify.sh: 1662 passed, 4 skipped; all structural gates OK"
+    also_depends_on: [N224, N228, N244, N245, N246]
+    status: resolved
+  - id: N248
+    type: dead_end
+    title: "Uniform 3x3 recovery is not an artifact-free replacement at both row caps"
+    provenance: ai-executed
+    timestamp: "2026-08-06T00:56+02:00"
+    hypothesis: >
+      Giving every touched overlap Gaussian its direct 3x3 optimization neighborhood, optionally
+      with protected feature leaves, will uniformly remove visible contraction artifacts at both
+      8,192 and 4,096 rows while improving aggregate quality.
+    failure_mode: >
+      Every overlap cell still fails the declared local gate. The halo is beneficial at 4,096 but
+      at 8,192 it spreads error: PSNR falls 1.433 dB and 7x7 maximum rises even as the isolated
+      maximum falls. Protection improves patch error but cannot close the gate and slightly worsens
+      the isolated 4k maximum. Equal attempted steps also optimize different row counts.
+    lesson: >
+      Keep the 3x3 halo as a bounded aggressive-reduction mechanism, not a uniform recovery rule.
+      A successor should enable neighborhood freedom adaptively and accept checkpoints only under
+      explicit SSE/worst-pixel/worst-patch Pareto constraints; preserve delta/touched 8k as the
+      fallback until held-out evidence says otherwise.
+    evidence:
+      - "ara/evidence/hier009-dynamic-overlap-neighborhood-recovery-janelle-diagnostic-2026-08-06/run.md"
+      - "tasks/HIER-009-dynamic-overlap-neighborhood-recovery.md#diagnostic-outcome-2026-08-06"
+    also_depends_on: [N228, N246, N247]
+    status: resolved

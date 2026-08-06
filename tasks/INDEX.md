@@ -96,6 +96,11 @@ replay-valid; do not rewrite those task bytes merely to duplicate this table.
 | FIT-047 | Unbiased tile-sampled fitting | todo — probability-recorded inverse-propensity estimator with full-objective checks | BENCH-020, CORE-013, BENCH-002, ADR-0024 |
 | FIT-048 | Additive scale/topology stage-order screen | todo — full-N/single-scale versus progressive/coarse-to-fine under exact work accounting | BENCH-020, CORE-013, INIT-010, FIT-049, HIER-003/004, BENCH-002/004 |
 | FIT-049 | Field V2 objective and loss screen | todo — isolate RGB, structural, and downstream terms only after semantic selection | BENCH-019/020, CORE-013, FIT-012/016, BENCH-002 |
+| HIER-005 | Implicit pixel-field contraction | in-progress — artifact-safety factorial and bounded repair diagnostic complete; 4k fails closed, three touched 8k arms pass the provisional gate; distinct numerical/scientific review still required, with no semantic/rate/default claim | CORE-013, BENCH-002, ADR-0006 |
+| HIER-006 | Parent-preserving progressive residual quadtree | in-progress — implementation and corrected frozen C0001 diagnostic complete; 3,986/8,192 prefixes fail the artifact gate and literal retained ancestors are a negative control; distinct review pending, no rate/default claim | HIER-005, CORE-013, BENCH-002, ADR-0006 |
+| HIER-007 | Artifact-first frontier quadtree reconciliation | in-progress — frozen C0001 2x2 diagnostic complete; energy/new-only improves the retained-parent control but still fails, artifact-first/overlap is rejected with severe grid artifacts; distinct review pending, no rate/default claim | HIER-005/006, CORE-013, BENCH-002, ADR-0006 |
+| HIER-008 | Overlap lattice and feature-safe elimination | in-progress — frozen C0001 2x2 diagnostic complete; exact overlap helps expanding quadtree contraction but all cells fail the artifact gate, and fixed-scale WSE/Schur elimination is rejected; distinct review pending | HIER-005/006/007, CORE-013, BENCH-002, ADR-0006 |
+| HIER-009 | Dynamic overlap contraction with neighborhood recovery | in-review — implementation and frozen 8-cell C0001 diagnostic complete; 3x3 halo removes 4k block artifacts but redistributes 8k error, protection helps patch error, only delta/touched 8k passes; provisional self-review complete, distinct review pending | HIER-005/008, CORE-013, BENCH-002, ADR-0006 |
 | BENCH-021 | Additive convergence portfolio | todo — successive-halving composition gate for initializer/loss/stage and FIT-044/045/046/047 | BENCH-020, INIT-010, FIT-044/045/046/047/048/049, BENCH-002/004 |
 | COMP-013 | Observation Field V2 codec | todo — complete bytes, target-rate control, cold decode/query, strict versioning | CORE-013, BENCH-020, COMP-002/004/008/009, BENCH-002 |
 | PORT-006 | Additive end-to-end acceleration | todo — reference parity plus representative conversion speed, not kernel timing alone | BENCH-020/021, FIT-046/047, ADR-0011/0024 |
@@ -108,6 +113,7 @@ replay-valid; do not rewrite those task bytes merely to duplicate this table.
 | COMP-014 | Seed-structured Field V2 codec (conditional) | todo — implement one SGI-controlled grammar only after a positive BENCH-025 verdict; otherwise close without code | BENCH-025, COMP-013, CORE-013, BENCH-020, COMP-008/009 |
 | DOCS-004 | Staged lint/format ratchet (widen `select`, adopt `ruff format`) | todo — Stage 1/2 due before the next results-bearing task closes; see the task's Expiry section | DOCS-003 |
 | DOCS-006 | Repository-native experiment workflow skill | in-progress | DOCS-005, BENCH-002/003 |
+| DOCS-007 | 2D Gaussian image-field state-of-the-art review | in-review — producer literature artifact complete at report blob `40b771e`; distinct scientific review required | BENCH-005/007, COMP-013, BENCH-025 |
 
 ## Proposed Additive Observation Field V2 execution order (2026-08-03)
 
