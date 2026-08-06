@@ -142,6 +142,23 @@ audit are
 and
 [`2026-08-06-codec-native-dual-plane-results-audit.md`](research/2026-08-06-codec-native-dual-plane-results-audit.md).
 
+CORE-017 isolates that retained artifact mechanism without changing the packet. Sparse Field V2
+mass still proposes source rays, but a placement-only backend reuses exact packet alpha as uniform
+inside-mask support and lets CompactCarve's first-index `argmax` choose the first depth attaining
+maximal multiview silhouette support. Codec appearance still owns radiance. An optional pass then
+replaces only covariance/opacity with realtime-gs's local surface-cover reconciliation; it cannot
+move centers, colors, lineage, or count. Both pieces are lazy, default-off research composition.
+
+On a new exposed `frame_00009` 23-view/three-reporting-view fixed-5k diagnostic, alpha-shell
+placement improves terminal reporting PSNR by 1.587 dB over ordinary interior consensus, raises
+alpha IoU by 0.131, removes all 212.5M sparse-index pair evaluations from depth scoring, and reaches
+the interior baseline's terminal PSNR at step 200 rather than 1,000. Adding surface cover gives
++1.381 dB, +0.140 alpha IoU, -0.00135 gradient MAE, and -0.0160 outside alpha versus baseline, but
+does not remove trailing smear/double-silhouette structure or fine-detail blur. Cover without shell
+placement loses 0.703 dB. The scalar gate passes and the mandatory visual gate fails, so the tested
+alpha-shell route is retained only as a causal diagnostic and is not advanced to variable topology,
+full-resolution confirmation, a maintained report, or any default.
+
 BENCH-020's default-off `benchmarks.field_semantics_factorial` controller now provides the sealed
 selection boundary around that object: explicit semantic and alpha-policy records, fixed-row and
 equal-canonical-raw-byte lanes, ordered-geometry prefix seals, three outcome-separated phases,
@@ -228,7 +245,10 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   charged JPEG/WebP appearance payload, NumPy owns deterministic coefficient prefiltering and the
   finite Gaussian-lattice evaluator, and Field V2 owns only sparse structural proposals.
   `realtime_gs_adapter` imports torch and realtime-gs lazily to construct their required paired
-  structural-field/query-backend view. Both modules remain absent from supported conversion.
+  structural-field/query-backend view. Its placement-only alpha-support wrapper and the sibling
+  `realtime_gs_surface_lift` module compose CORE-017's first-maximum shell and optional surface
+  cover without importing either optional dependency at module import. All three modules remain
+  absent from supported conversion.
   `pixel_contraction` is a separate HIER-005 research producer: its default leaf and contraction
   path is NumPy-only, while conversion to `GaussianField`, maintained additive rendering, and the
   optional recovery fits import torch lazily. The default `touched` recovery scope forms
@@ -328,8 +348,8 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   source-grounded follow-up: it separates reporting-only cameras, snapshots both repositories,
   builds complete candidate packet ledgers, drives the paired CPU-metadata/CUDA-query interface
   through CompactCarve and 3DGS, and emits checkpoint curves, models, visuals, and explicit scalar
-  plus manual gates. Its schema is likewise task-local and not accepted by the maintained report
-  checker.
+  plus manual gates. Its `surface2x2` profile is CORE-017's one-shared-packet placement/covariance
+  factorial. Its schema is likewise task-local and not accepted by the maintained report checker.
 - **agent workflow:** `tasks/INDEX.md` and task files are the work authority, while
   `tasks/SESSION-BRIEF.md` is a deterministic derived view. `scripts/check_task_policy.py`
   validates dependency and review state; `scripts/check_agent_workflow.py` checks agreement among

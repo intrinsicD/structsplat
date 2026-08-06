@@ -254,6 +254,14 @@ resolution compression, artifact freedom, end-to-end speed, or a maintained defa
 [ADR-0032](docs/adr/0032-codec-native-dual-plane-observation.md), and
 [results audit](docs/research/2026-08-06-codec-native-dual-plane-results-audit.md).
 
+CORE-017 adds a second default-off research composition to that adapter: sparse structure proposes
+rays, exact packet alpha chooses the first maximally supported depth, codec appearance supplies
+radiance, and an optional realtime-gs surface-cover pass changes only covariance/opacity. Its
+exposed fixed-5k `frame_00009` factorial materially improves quality, silhouette localization,
+early convergence, and lift work versus interior-consensus placement, but native review still finds
+trailing smear/double silhouettes and blur. The scalar gate passes while the mandatory visual gate
+fails; this is causal diagnostic evidence, not a supported pipeline or promotion.
+
 ### One image → native 2D Gaussian field → image
 
 `image-to-gaussians2d` is an explicit alias for `fit`. This example writes

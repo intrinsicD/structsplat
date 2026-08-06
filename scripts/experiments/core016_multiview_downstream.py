@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Run CORE-016's exposed source-grounded Janelle multiview diagnostic.
+"""Run CORE-016/017 exposed source-grounded Janelle multiview diagnostics.
 
 This driver is intentionally not a BENCH-019 executor. It uses one exposed frame and one seed to
 answer a development question: does the complete dual-plane packet remain useful after the paired
 appearance backend is propagated through realtime-gs CompactCarve and ordinary 3DGS refinement?
 Every arm is evaluated against the same calibrated source RGB/masks; no teacher render is a target.
+The ``surface2x2`` profile extends the same harness with CORE-017's frozen placement/covariance
+factorial and one shared codec-native packet set.
 
 Reproduce from the StructSplat root with::
 
@@ -19,6 +21,7 @@ The output directory is immutable: the driver refuses to overwrite it.
 from __future__ import annotations
 
 import argparse
+import copy
 import csv
 import dataclasses
 import datetime as dt
@@ -56,6 +59,7 @@ from rtgs.lift.compact_carve import (
     build_query_backends,
     make_placement_progress_printer,
 )
+from rtgs.lift.surfel_init import SurfelInitConfig, reconcile_covariances
 from rtgs.optim.density import DensityConfig
 from rtgs.optim.trainer import TrainConfig, Trainer
 from rtgs.render.base import get_rasterizer
@@ -68,6 +72,10 @@ from structsplat.codec_native_field import (
 from structsplat.metrics import LPIPS, ms_ssim
 from structsplat.observation_field import CanvasCropTransform
 from structsplat.realtime_gs_adapter import make_realtime_gs_view
+from structsplat.realtime_gs_surface_lift import (
+    VisibilityOrderedSurfaceLiftConfig,
+    initialize_visibility_ordered_surface,
+)
 
 
 STRUCTSPLAT_ROOT = Path(__file__).resolve().parents[2]
@@ -119,6 +127,17 @@ ARM_LABELS = {
     "rtgsv_control": "RTGSV control (≈5.3k rows/view)",
     "dual_webp92_n512": "dual-plane WebP q92 · 512 structure/view",
     "dual_webp92_n2048": "dual-plane WebP q92 · 2,048 structure/view",
+    "dual_interior_inherited": "interior consensus · inherited covariance",
+    "dual_interior_cover": "interior consensus · surface-cover covariance",
+    "dual_shell_inherited": "alpha shell · inherited covariance",
+    "dual_shell_cover": "alpha shell · surface-cover covariance",
+}
+
+SURFACE_ARM_RECIPES = {
+    "dual_interior_inherited": ("interior", False),
+    "dual_interior_cover": ("interior", True),
+    "dual_shell_inherited": ("alpha_shell", False),
+    "dual_shell_cover": ("alpha_shell", True),
 }
 
 
@@ -239,11 +258,26 @@ PROFILES = {
         reference_candidate_psnr_min_db=24.988010533650714,
         reference_candidate_gradient_mae_max=0.012926414298514525,
     ),
+    "surface2x2": DiagnosticProfile(
+        name="surface2x2",
+        arms=tuple(SURFACE_ARM_RECIPES),
+        iterations=1_000,
+        eval_every=100,
+        densify=False,
+        scope="CORE-017 visibility-ordered alpha-shell x surface-cover mechanism factorial",
+        train_ids=FULL_TRAIN_IDS,
+        heldout_ids=HELDOUT_IDS,
+        n_init_3d=5_000,
+        density_max_gaussians=5_000,
+        mask_alpha_lambda=0.05,
+        outside_alpha_lambda=0.01,
+    ),
 }
 
 STRUCTSPLAT_SOURCES = (
     "src/structsplat/codec_native_field.py",
     "src/structsplat/realtime_gs_adapter.py",
+    "src/structsplat/realtime_gs_surface_lift.py",
     "src/structsplat/observation_field.py",
     "src/structsplat/density.py",
     "src/structsplat/sampling.py",
@@ -251,6 +285,7 @@ STRUCTSPLAT_SOURCES = (
     "src/structsplat/metrics.py",
     "scripts/experiments/core016_multiview_downstream.py",
     "tasks/CORE-016-codec-native-dual-plane-field.md",
+    "tasks/CORE-017-visibility-ordered-alpha-shell-lift.md",
 )
 RTGS_SOURCES = (
     "src/rtgs/core/camera.py",
@@ -263,6 +298,7 @@ RTGS_SOURCES = (
     "src/rtgs/data/reconstruction_inputs.py",
     "src/rtgs/data/scene.py",
     "src/rtgs/lift/compact_carve.py",
+    "src/rtgs/lift/surfel_init.py",
     "src/rtgs/optim/trainer.py",
     "src/rtgs/render/base.py",
     "src/rtgs/render/gsplat_backend.py",
@@ -793,6 +829,52 @@ def _build_candidate_inputs(
     }
 
 
+def _reload_shared_candidate_inputs(
+    shared_record: dict[str, Any],
+    packet_scene: Any,
+    bounds_hint: tuple[torch.Tensor, float],
+    out: Path,
+    train_ids: tuple[str, ...],
+) -> tuple[ReconstructionInputs, list[Any], list[Any], dict[str, Any]]:
+    """Cold-load one arm from CORE-017's single immutable packet set."""
+    if [record["view_id"] for record in shared_record["views"]] != list(train_ids):
+        raise ValueError("shared packet order does not match the selected training views")
+    views = []
+    decode_seconds = 0.0
+    adapter_seconds = 0.0
+    for record in shared_record["views"]:
+        packet_path = out / record["packet"]["path"]
+        started = time.perf_counter()
+        packet = CodecNativeField.load(packet_path)
+        decode_seconds += time.perf_counter() - started
+        started = time.perf_counter()
+        paired = make_realtime_gs_view(packet, device="cpu", query_device="cuda")
+        torch.cuda.synchronize()
+        adapter_seconds += time.perf_counter() - started
+        views.append(paired)
+    inputs = ReconstructionInputs(
+        observations=[view.structural_field for view in views],
+        cameras=list(packet_scene.cameras),
+        view_names=list(train_ids),
+        bounds_hint=(bounds_hint[0].clone(), bounds_hint[1]),
+        name="core017-shared-codec-native-packets",
+    )
+    record = copy.deepcopy(shared_record)
+    record.update(
+        {
+            "kind": "codec_native_dual_plane_v2_shared_packet_set",
+            "shared_packet_set": "arms/surface_shared/inputs",
+            "arm_cold_reload_seconds_excluded_from_pipeline_charge": decode_seconds,
+            "arm_adapter_reload_seconds_excluded_from_pipeline_charge": adapter_seconds,
+            "arm_index_entries": sum(view.query_backend.n_entries for view in views),
+            "arm_index_payload_bytes": sum(
+                view.query_backend.payload_bytes for view in views
+            ),
+        }
+    )
+    return inputs, [view.query_backend for view in views], views, record
+
+
 def _build_control_inputs(
     compact: CompactDataset,
     carve: CompactCarveConfig,
@@ -862,19 +944,29 @@ def _save_heldout_visuals(
             mask = scene.masks[index].cuda().clamp(0.0, 1.0)
             target_matted = target * mask[..., None]
             camera = scene.cameras[index].to("cuda")
-            init_render = renderer.render(initial_cuda, camera).color.clamp(0.0, 1.0)
-            final_render = renderer.render(final_cuda, camera).color.clamp(0.0, 1.0)
+            init_output = renderer.render(initial_cuda, camera)
+            final_output = renderer.render(final_cuda, camera)
+            init_render = init_output.color.clamp(0.0, 1.0)
+            final_render = final_output.color.clamp(0.0, 1.0)
             error = (final_render - target_matted).abs().mul(4.0).clamp(0.0, 1.0)
+            final_alpha = final_output.alpha.clamp(0.0, 1.0)
+            alpha_error = (final_alpha - mask).abs()
+            final_alpha_rgb = final_alpha[..., None].expand(-1, -1, 3)
+            alpha_error_rgb = alpha_error[..., None].expand(-1, -1, 3)
             paths = {
                 "target": root / f"{view_id}_target.png",
                 "initial": root / f"{view_id}_initial.png",
                 "final": root / f"{view_id}_final.png",
                 "error_x4": root / f"{view_id}_error_x4.png",
+                "final_alpha": root / f"{view_id}_final_alpha.png",
+                "alpha_error": root / f"{view_id}_alpha_error.png",
             }
             _save_rgb(paths["target"], target_matted)
             _save_rgb(paths["initial"], init_render)
             _save_rgb(paths["final"], final_render)
             _save_rgb(paths["error_x4"], error)
+            _save_rgb(paths["final_alpha"], final_alpha_rgb)
+            _save_rgb(paths["alpha_error"], alpha_error_rgb)
             artifacts[view_id] = {
                 name: _artifact(path, out) for name, path in paths.items()
             }
@@ -884,6 +976,8 @@ def _save_heldout_visuals(
                     _labeled(init_render, "initial"),
                     _labeled(final_render, "final"),
                     _labeled(error, "|final-target| x4"),
+                    _labeled(final_alpha_rgb, "final alpha"),
+                    _labeled(alpha_error_rgb, "|alpha-mask|"),
                 ]
             )
     sheet_path = root / "heldout_contact_sheet.png"
@@ -900,6 +994,7 @@ def _run_arm(
     scene: Any,
     renderer: Any,
     out: Path,
+    paired_views: list[Any] | None = None,
 ) -> dict[str, Any]:
     root = out / "arms" / arm
     root.mkdir(parents=True, exist_ok=True)
@@ -908,14 +1003,69 @@ def _run_arm(
     torch.cuda.empty_cache()
     torch.cuda.reset_peak_memory_stats()
     lift_started = time.perf_counter()
-    initialization = CompactCarveInitializer(carve).initialize(
-        inputs,
-        backends=backends,
-        progress_callback=make_placement_progress_printer(
-            every_batches=10,
-            every_seconds=20.0,
-        ),
-    )
+    effective_backends = backends
+    surface_recipe = SURFACE_ARM_RECIPES.get(arm)
+    surface_diagnostics = None
+    if surface_recipe is None:
+        initialization = CompactCarveInitializer(carve).initialize(
+            inputs,
+            backends=backends,
+            progress_callback=make_placement_progress_printer(
+                every_batches=10,
+                every_seconds=20.0,
+            ),
+        )
+    else:
+        placement, apply_cover = surface_recipe
+        if paired_views is None:
+            raise ValueError("CORE-017 surface arms require paired codec-native views")
+        if placement == "alpha_shell":
+            surface = initialize_visibility_ordered_surface(
+                inputs,
+                paired_views,
+                carve,
+                VisibilityOrderedSurfaceLiftConfig(
+                    apply_surface_cover=apply_cover,
+                ),
+                progress_callback=make_placement_progress_printer(
+                    every_batches=10,
+                    every_seconds=20.0,
+                ),
+            )
+            initialization = surface.initialization
+            effective_backends = list(surface.support_backends)
+            surface_diagnostics = surface.diagnostics
+        elif placement == "interior":
+            initialization = CompactCarveInitializer(carve).initialize(
+                inputs,
+                backends=backends,
+                progress_callback=make_placement_progress_printer(
+                    every_batches=10,
+                    every_seconds=20.0,
+                ),
+            )
+            if apply_cover:
+                cover_started = time.perf_counter()
+                covered = reconcile_covariances(
+                    initialization.gaussians,
+                    SurfelInitConfig(use_resolution_floor=False),
+                )
+                surface_diagnostics = {
+                    "schema": "structsplat.interior_surface_cover_control.v1",
+                    "placement": "ordinary_compact_carve_interior_consensus",
+                    "surface_cover_seconds": time.perf_counter() - cover_started,
+                    "surface_cover": covered.diagnostics,
+                }
+                initialization = dataclasses.replace(
+                    initialization,
+                    gaussians=covered.gaussians,
+                    diagnostics={
+                        **initialization.diagnostics,
+                        "interior_surface_cover_control": surface_diagnostics,
+                    },
+                )
+        else:  # pragma: no cover - the recipe table is closed above
+            raise RuntimeError(f"unknown surface placement recipe: {placement}")
     torch.cuda.synchronize()
     lift_seconds = time.perf_counter() - lift_started
     initial = initialization.gaussians.to("cpu")
@@ -996,7 +1146,7 @@ def _run_arm(
         out,
     )
     query_records = []
-    for index, backend in enumerate(backends):
+    for index, backend in enumerate(effective_backends):
         structural = getattr(backend, "structural_backend", backend)
         query_records.append(
             {
@@ -1023,6 +1173,8 @@ def _run_arm(
         ),
         "lift_seconds": lift_seconds,
         "lift_diagnostics": initialization.diagnostics,
+        "surface_recipe": surface_recipe,
+        "surface_diagnostics": surface_diagnostics,
         "query_backends": query_records,
         "init_n_gaussians": initial.n,
         "final_n_gaussians": final_cpu.n,
@@ -1106,13 +1258,20 @@ def _terminal_row(record: dict[str, Any]) -> dict[str, Any]:
         "heldout_max_abs_fg": heldout.get("max_abs_fg"),
         "heldout_gradient_mae_fg": heldout.get("gradient_mae_fg"),
         "heldout_alpha_iou": heldout.get("alpha_iou"),
+        "heldout_alpha_inside": heldout.get("alpha_inside"),
+        "heldout_alpha_outside": heldout.get("alpha_outside"),
         "peak_vram_gb": record["peak_vram_gb"],
     }
 
 
 def _decorate_convergence(records: list[dict[str, Any]], rows: list[dict[str, Any]]) -> None:
     by_arm = {row["arm"]: row for row in rows if row.get("status") == "ok"}
-    control_target = by_arm.get("rtgsv_control", {}).get("heldout_psnr_fg")
+    reference_arm = (
+        "dual_interior_inherited"
+        if "dual_interior_inherited" in by_arm
+        else "rtgsv_control"
+    )
+    control_target = by_arm.get(reference_arm, {}).get("heldout_psnr_fg")
     if control_target is None:
         return
     for record in records:
@@ -1150,6 +1309,64 @@ def _decision(
     missing = [name for name in profile.arms if name not in by_arm]
     if missing:
         return {"advance": False, "reason": f"missing successful arms: {missing}", "gates": {}}
+    if profile.name == "surface2x2":
+        baseline = by_arm["dual_interior_inherited"]
+        combined = by_arm["dual_shell_cover"]
+        gates = {
+            "combined_reporting_psnr_gain_at_least_0_5db": (
+                combined["heldout_psnr_fg"] >= baseline["heldout_psnr_fg"] + 0.5
+            ),
+            "combined_alpha_iou_within_0_01": (
+                combined["heldout_alpha_iou"] >= baseline["heldout_alpha_iou"] - 0.01
+            ),
+            "combined_alpha_outside_within_0_01": (
+                combined["heldout_alpha_outside"]
+                <= baseline["heldout_alpha_outside"] + 0.01
+            ),
+            "combined_gradient_mae_no_worse": (
+                combined["heldout_gradient_mae_fg"]
+                <= baseline["heldout_gradient_mae_fg"]
+            ),
+            "all_final_counts_exactly_5000": all(
+                row["final_n_gaussians"] == profile.n_init_3d
+                for row in by_arm.values()
+            ),
+            "all_arms_reuse_identical_complete_packet_bytes": len(
+                {row["input_bytes"] for row in by_arm.values()}
+            )
+            == 1,
+        }
+        comparisons = {}
+        for name, row in by_arm.items():
+            comparisons[name] = {
+                "psnr_delta_db": row["heldout_psnr_fg"]
+                - baseline["heldout_psnr_fg"],
+                "ms_ssim_delta": row["heldout_ms_ssim"]
+                - baseline["heldout_ms_ssim"],
+                "lpips_delta": (
+                    None
+                    if row.get("heldout_lpips") is None
+                    or baseline.get("heldout_lpips") is None
+                    else row["heldout_lpips"] - baseline["heldout_lpips"]
+                ),
+                "gradient_mae_delta": row["heldout_gradient_mae_fg"]
+                - baseline["heldout_gradient_mae_fg"],
+                "alpha_iou_delta": row["heldout_alpha_iou"]
+                - baseline["heldout_alpha_iou"],
+                "alpha_outside_delta": row["heldout_alpha_outside"]
+                - baseline["heldout_alpha_outside"],
+                "lift_seconds_delta": row["lift_seconds"] - baseline["lift_seconds"],
+                "training_seconds_delta": row["training_native_seconds"]
+                - baseline["training_native_seconds"],
+            }
+        return {
+            "advance": False,
+            "scalar_pass": all(gates.values()),
+            "manual_visual_review_required": True,
+            "gates": gates,
+            "reference_arm": "dual_interior_inherited",
+            "comparisons_to_reference": comparisons,
+        }
     control = by_arm["rtgsv_control"]
     compact = by_arm["dual_webp92_n512"]
     if profile.name in {"density", "full", "matched10k", "silhouette", "latepolish"}:
@@ -1275,8 +1492,17 @@ def _decision(
     }
 
 
-def _write_metric_tables(out: Path, rows: list[dict[str, Any]]) -> None:
-    _write_json(out / "metrics.json", {"schema": "core016.multiview.metrics.v1", "rows": rows})
+def _write_metric_tables(
+    profile: DiagnosticProfile,
+    out: Path,
+    rows: list[dict[str, Any]],
+) -> None:
+    schema = (
+        "core017.visibility_surface.metrics.v1"
+        if profile.name == "surface2x2"
+        else "core016.multiview.metrics.v1"
+    )
+    _write_json(out / "metrics.json", {"schema": schema, "rows": rows})
     with (out / "metrics.jsonl").open("w", encoding="utf-8") as stream:
         for row in rows:
             stream.write(json.dumps(row, allow_nan=False) + "\n")
@@ -1294,9 +1520,11 @@ def _plot_curves(records: list[dict[str, Any]], out: Path) -> Path:
         ("heldout", "lpips", "reporting-view LPIPS (lower better)"),
         ("heldout", "gradient_mae_fg", "reporting-view gradient MAE (lower better)"),
         ("heldout", "alpha_iou", "reporting-view alpha IoU"),
+        ("heldout", "alpha_outside", "reporting-view alpha outside (lower better)"),
+        ("heldout", "alpha_inside", "reporting-view alpha inside"),
         ("train", "psnr_fg", "training foreground PSNR (dB)"),
     )
-    figure, axes = plt.subplots(3, 2, figsize=(13, 13), constrained_layout=True)
+    figure, axes = plt.subplots(4, 2, figsize=(13, 17), constrained_layout=True)
     for axis, (split, metric, title) in zip(axes.flat, specs, strict=True):
         for record in records:
             if record["status"] != "ok":
@@ -1329,7 +1557,8 @@ def _plot_rate_quality(
         axis.annotate(row["label"], (row["input_mib"], row["heldout_psnr_fg"]), xytext=(5, 5), textcoords="offset points", fontsize=8)
     axis.set_xlabel(f"complete {len(profile.train_ids)}-view reconstruction input (MiB)")
     axis.set_ylabel("final reporting-view foreground PSNR (dB)")
-    axis.set_title("CORE-016 downstream rate-quality diagnostic")
+    task_id = "CORE-017" if profile.name == "surface2x2" else "CORE-016"
+    axis.set_title(f"{task_id} downstream rate-quality diagnostic")
     axis.grid(alpha=0.25)
     path = out / "rate_quality.png"
     figure.savefig(path, dpi=170)
@@ -1358,7 +1587,7 @@ def _write_html(
         record = by_record[row["arm"]]
         if row.get("status") != "ok":
             table_rows.append(
-                f"<tr><td>{escape(row['label'])}</td><td colspan='11'>ERROR: "
+                f"<tr><td>{escape(row['label'])}</td><td colspan='12'>ERROR: "
                 f"{escape(str(row.get('error')))}</td></tr>"
             )
             continue
@@ -1373,10 +1602,11 @@ def _write_html(
             f"<td>{_fmt(row['heldout_lpips'])}</td>"
             f"<td>{_fmt(row['heldout_gradient_mae_fg'], 5)}</td>"
             f"<td>{_fmt(row['heldout_alpha_iou'])}</td>"
+            f"<td>{_fmt(row['heldout_alpha_outside'])}</td>"
             f"<td>{_fmt(row['lift_seconds'], 2)}</td>"
             f"<td>{_fmt(row['training_native_seconds'], 2)}</td>"
             f"<td>{int(row['final_n_gaussians'])}</td>"
-            f"<td><a href='{escape(sheet)}'>target / init / final / error</a></td>"
+            f"<td><a href='{escape(sheet)}'>target / init / final / RGB+alpha error</a></td>"
             "</tr>"
         )
     gate_rows = "".join(
@@ -1397,20 +1627,21 @@ def _write_html(
             f"<a href='{escape(record['models']['final_ply']['path'])}'>final PLY</a> · "
             f"<a href='{escape(record['models']['final_npz']['path'])}'>final NPZ</a></p></section>"
         )
+    task_id = "CORE-017" if profile.name == "surface2x2" else "CORE-016"
     html = f"""<!doctype html>
-<meta charset='utf-8'><title>CORE-016 multiview downstream diagnostic</title>
+<meta charset='utf-8'><title>{task_id} multiview downstream diagnostic</title>
 <style>
 body{{font:15px system-ui,sans-serif;max-width:1500px;margin:28px auto;padding:0 20px;color:#18212b}}
 .warning{{background:#fff4d6;border-left:5px solid #d98b00;padding:12px}} .pass{{color:#087d40}} .fail{{color:#b42318}}
 table{{border-collapse:collapse;width:100%;font-size:13px}} th,td{{border:1px solid #ccd3da;padding:6px;text-align:right}} th:first-child,td:first-child{{text-align:left}}
 img{{max-width:100%;height:auto;border:1px solid #ccd3da}} section{{margin:30px 0}} a{{color:#005bbb}}
 </style>
-<h1>CORE-016: source-grounded multiview downstream diagnostic ({escape(profile.name)})</h1>
-<p class='warning'><strong>Diagnostic only.</strong> One exposed Janelle frame, one seed, packet input downscale 4, reporting downscale 8, {escape(profile.scope)}. This cannot promote a default or satisfy BENCH-019. Every displayed target comes from common calibrated RGB/masks, never from a candidate or control teacher. The density profile cannot advance until native-pixel visual review is recorded separately.</p>
+<h1>{task_id}: source-grounded multiview downstream diagnostic ({escape(profile.name)})</h1>
+<p class='warning'><strong>Diagnostic only.</strong> One exposed Janelle frame, one seed, packet input downscale 4, reporting downscale 8, {escape(profile.scope)}. This cannot promote a default or satisfy BENCH-019. Every displayed target comes from common calibrated RGB/masks, never from a candidate or control teacher. No profile can advance until native-pixel visual review is recorded separately.</p>
 <p><a href='manifest.json'>manifest</a> · <a href='metrics.json'>metrics JSON</a> · <a href='metrics.jsonl'>JSONL</a> · <a href='metrics.csv'>CSV</a> · <a href='decision.json'>gate decision</a> · <a href='plan.json'>frozen run plan</a></p>
 <h2>Development gate: {('ADVANCE' if decision.get('advance') else 'DO NOT ADVANCE')}</h2><ul>{gate_rows}</ul>
 <h2>Terminal results</h2>
-<table><thead><tr><th>arm</th><th>input B</th><th>held PSNR-FG</th><th>held SSIM</th><th>held MS-SSIM</th><th>held LPIPS</th><th>gradient MAE</th><th>alpha IoU</th><th>lift s</th><th>train s</th><th>3D N</th><th>visual</th></tr></thead><tbody>{''.join(table_rows)}</tbody></table>
+<table><thead><tr><th>arm</th><th>input B</th><th>held PSNR-FG</th><th>held SSIM</th><th>held MS-SSIM</th><th>held LPIPS</th><th>gradient MAE</th><th>alpha IoU</th><th>alpha outside</th><th>lift s</th><th>train s</th><th>3D N</th><th>visual</th></tr></thead><tbody>{''.join(table_rows)}</tbody></table>
 <h2>Curves and rate-quality</h2><p><a href='all_metric_curves.png'><img src='all_metric_curves.png'></a></p><p><a href='rate_quality.png'><img src='rate_quality.png'></a></p>
 <h2>Held-out visuals</h2>{''.join(cards)}
 """
@@ -1476,7 +1707,7 @@ def main(argv: list[str] | None = None) -> int:
     scene.train_indices = list(range(len(profile.train_ids)))
     scene.test_indices = list(range(len(profile.train_ids), len(all_ids)))
     scene.bounds_hint = (compact.bounds_hint[0].clone(), compact.bounds_hint[1])
-    scene.name = "frame_00008-core016-source-grounded"
+    scene.name = f"{frame.name}-{'core017' if profile.name == 'surface2x2' else 'core016'}-source-grounded"
     scene.validate()
     packet_scene.bounds_hint = (compact.bounds_hint[0].clone(), compact.bounds_hint[1])
     by_name = {view.view_id: view for view in compact.views}
@@ -1508,8 +1739,59 @@ def main(argv: list[str] | None = None) -> int:
             "evaluation_image_tensor_sha256": _tensor_sha256(scene.images[index]),
             "evaluation_mask_tensor_sha256": _tensor_sha256(scene.masks[index]),
         }
+    if profile.name == "surface2x2":
+        development_gate = {
+            "combined_reporting_psnr_gain_min_db": 0.5,
+            "combined_alpha_iou_delta_min": -0.01,
+            "combined_alpha_outside_delta_max": 0.01,
+            "combined_gradient_mae_no_worse": True,
+            "all_final_counts": 5_000,
+            "identical_complete_packet_bytes": True,
+            "manual_native_pixel_visual_review_required": True,
+        }
+    elif profile.name == "fixed":
+        development_gate = {
+            "n2048_control_input_ratio_min": 3.0,
+            "n2048_control_heldout_psnr_delta_min_db": -1.0,
+            "n2048_control_heldout_ms_ssim_delta_min": -0.02,
+            "n2048_control_heldout_lpips_delta_max": 0.03,
+            "n512_n2048_heldout_psnr_delta_min_db_for_preference": -0.25,
+        }
+    else:
+        development_gate = {
+            "n512_control_input_ratio_min": 3.0,
+            "n512_control_heldout_psnr_delta_min_db": -0.5,
+            "n512_control_heldout_ms_ssim_delta_min": -0.01,
+            "n512_control_heldout_lpips_delta_max": 0.02,
+            "n512_control_heldout_alpha_iou_delta_min": -0.02,
+            "n512_absolute_heldout_psnr_min_db": (
+                24.0
+                if profile.name in {"full", "matched10k", "silhouette", "latepolish"}
+                else 22.5
+            ),
+            "n512_absolute_heldout_alpha_iou_min": (
+                0.95
+                if profile.name in {"silhouette", "latepolish"}
+                else (
+                    0.93
+                    if profile.name in {"full", "matched10k"}
+                    else 0.90
+                )
+            ),
+            "max_final_gaussians": profile.density_max_gaussians,
+            "n512_final_count_over_control_max": 1.10,
+            "reference_candidate_psnr_min_db": profile.reference_candidate_psnr_min_db,
+            "reference_candidate_gradient_mae_max": (
+                profile.reference_candidate_gradient_mae_max
+            ),
+            "manual_native_pixel_visual_review_required": True,
+        }
     plan = {
-        "schema": "core016.multiview.plan.v1",
+        "schema": (
+            "core017.visibility_surface.plan.v1"
+            if profile.name == "surface2x2"
+            else "core016.multiview.plan.v1"
+        ),
         "created_utc": dt.datetime.now(dt.UTC).isoformat(),
         "scope": "exposed single-frame single-seed reduced-resolution diagnostic only",
         "profile": dataclasses.asdict(profile),
@@ -1541,44 +1823,7 @@ def main(argv: list[str] | None = None) -> int:
             if _polish_config(profile) is None
             else dataclasses.asdict(_polish_config(profile))
         ),
-        "development_gate": (
-            {
-                "n2048_control_input_ratio_min": 3.0,
-                "n2048_control_heldout_psnr_delta_min_db": -1.0,
-                "n2048_control_heldout_ms_ssim_delta_min": -0.02,
-                "n2048_control_heldout_lpips_delta_max": 0.03,
-                "n512_n2048_heldout_psnr_delta_min_db_for_preference": -0.25,
-            }
-            if profile.name == "fixed"
-            else {
-                "n512_control_input_ratio_min": 3.0,
-                "n512_control_heldout_psnr_delta_min_db": -0.5,
-                "n512_control_heldout_ms_ssim_delta_min": -0.01,
-                "n512_control_heldout_lpips_delta_max": 0.02,
-                "n512_control_heldout_alpha_iou_delta_min": -0.02,
-                "n512_absolute_heldout_psnr_min_db": (
-                    24.0
-                    if profile.name in {"full", "matched10k", "silhouette", "latepolish"}
-                    else 22.5
-                ),
-                "n512_absolute_heldout_alpha_iou_min": (
-                    0.95
-                    if profile.name in {"silhouette", "latepolish"}
-                    else (
-                        0.93 if profile.name in {"full", "matched10k"} else 0.90
-                    )
-                ),
-                "max_final_gaussians": profile.density_max_gaussians,
-                "n512_final_count_over_control_max": 1.10,
-                "reference_candidate_psnr_min_db": (
-                    profile.reference_candidate_psnr_min_db
-                ),
-                "reference_candidate_gradient_mae_max": (
-                    profile.reference_candidate_gradient_mae_max
-                ),
-                "manual_native_pixel_visual_review_required": True,
-            }
-        ),
+        "development_gate": development_gate,
     }
     _write_json(out / "plan.json", plan)
 
@@ -1588,13 +1833,41 @@ def main(argv: list[str] | None = None) -> int:
         packed=False,
         antialiased=True,
     )
+    shared_surface_record = None
+    if profile.name == "surface2x2":
+        print("[input] surface_shared", flush=True)
+        shared_inputs, shared_backends, shared_surface_record = _build_candidate_inputs(
+            "surface_shared",
+            512,
+            packet_scene,
+            compact.bounds_hint,
+            frame,
+            out,
+            profile.train_ids,
+        )
+        del shared_inputs, shared_backends
+        gc.collect()
+        torch.cuda.empty_cache()
     records = []
     for arm in profile.arms:
         inputs = None
         backends = None
+        paired_views = None
         try:
             print(f"[input] {arm}", flush=True)
-            if arm == "rtgsv_control":
+            if profile.name == "surface2x2":
+                if shared_surface_record is None:  # pragma: no cover - guarded above
+                    raise RuntimeError("surface2x2 shared packet set was not built")
+                inputs, backends, paired_views, input_record = (
+                    _reload_shared_candidate_inputs(
+                        shared_surface_record,
+                        packet_scene,
+                        compact.bounds_hint,
+                        out,
+                        profile.train_ids,
+                    )
+                )
+            elif arm == "rtgsv_control":
                 inputs, backends, input_record = _build_control_inputs(
                     compact,
                     _carve_config(profile),
@@ -1622,6 +1895,7 @@ def main(argv: list[str] | None = None) -> int:
                 scene,
                 renderer,
                 out,
+                paired_views=paired_views,
             )
         except Exception as error:
             record = {
@@ -1634,14 +1908,14 @@ def main(argv: list[str] | None = None) -> int:
             print(record["traceback"], file=sys.stderr, flush=True)
         records.append(record)
         _write_json(out / "partial_records.json", records)
-        del inputs, backends
+        del inputs, backends, paired_views
         gc.collect()
         torch.cuda.empty_cache()
 
     rows = [_terminal_row(record) for record in records]
     _decorate_convergence(records, rows)
     decision = _decision(profile, rows)
-    _write_metric_tables(out, rows)
+    _write_metric_tables(profile, out, rows)
     _write_json(out / "decision.json", decision)
     curves_path = _plot_curves(records, out)
     rate_quality_path = _plot_rate_quality(profile, rows, out)
@@ -1653,7 +1927,11 @@ def main(argv: list[str] | None = None) -> int:
         retained.pop("curve_rows", None)
         manifest_records.append(retained)
     manifest = {
-        "schema": "core016.multiview.manifest.v1",
+        "schema": (
+            "core017.visibility_surface.manifest.v1"
+            if profile.name == "surface2x2"
+            else "core016.multiview.manifest.v1"
+        ),
         "status": "ok" if all(record["status"] == "ok" for record in records) else "partial",
         "scope": plan["scope"],
         "plan": _artifact(out / "plan.json", out),

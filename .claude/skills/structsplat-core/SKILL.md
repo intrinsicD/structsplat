@@ -54,7 +54,8 @@ IntrinsicEngine as an RHI pass.
   removes the obvious low-count block lattice and protection helps patch error, but it redistributes
   error at 8k and every overlap cell still fails the local gate; only the HIER-005 delta/touched 8k
   fallback passes. None enters the maintained pipeline.
-- `codec_native_field.py` / `realtime_gs_adapter.py` — CORE-016/ADR-0032's separate default-off
+- `codec_native_field.py` / `realtime_gs_adapter.py` / `realtime_gs_surface_lift.py` —
+  CORE-016/ADR-0032's separate default-off
   dual-plane packet experiment. A charged conventional image payload is decoded into a continuous
   cardinal-prefiltered Gaussian lattice; an independent sparse nonnegative Field V2 measure owns
   lift proposals. The lazy adapter must expose both as a structural field/query-backend pair and
@@ -62,7 +63,10 @@ IntrinsicEngine as an RHI pass.
   queries on CUDA. An exposed 23-view matched-10k follow-up supports downstream development utility
   at lower teacher-input bytes, but residual halos/blur/floaters and worse complete lift/training
   resources prohibit continuous-quality, general compression, speed, artifact-free, or BENCH-019
-  claims. Neither module enters maintained conversion.
+  claims. CORE-017's placement-only alpha-support wrapper and first-maximum surface lift improve
+  exposed fixed-5k quality, alpha localization, early convergence, and query work, but residual
+  trailing smear/double silhouettes and blur fail its native visual gate; surface cover alone is
+  negative. None of these modules enters maintained conversion.
 
 ## Invariants (do not break without an ADR)
 1. Init-time math stays **NumPy and importable without torch**. Autograd stays in torch modules.

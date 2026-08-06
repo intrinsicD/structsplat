@@ -174,6 +174,62 @@ bundles, not maintained portable reports. V4's immutable `rate_quality.png` also
 the x-axis as an eight-view input; its numeric bytes are correct and later driver output labels the
 actual profile view count. The artifact is preserved rather than silently repaired.
 
+## CORE-017 visibility-ordered shell follow-up
+
+CORE-017 tests whether CORE-016's residual halo/floaters originate primarily from CompactCarve's
+arbitrary interior-depth selection and broad localization covariance. It uses a new exposed
+`frame_00009`, the same 23 training IDs and three reporting-only IDs, one shared 970,310-byte set of
+quality-92 WebP/512-structure packets, exactly 5,000 fixed-topology Gaussians per arm, seed 0, and
+1,000 common gsplat steps. The 2x2 factorial is `{ordinary interior consensus, first-maximum alpha
+shell}` x `{inherited localization covariance, local surface-cover covariance}`. No reporting view
+enters packet construction or training, but the split is exposed development data rather than
+sealed confirmation.
+
+The placement-only backend analytically reconstructs 0.95 soft coverage inside exact packet alpha,
+adds zero packet/index bytes, preserves codec-native colors, and never calls the sparse structural
+index. Sparse Field V2 mass still proposes the source rays. Across 960,000 sampled world points,
+ordinary placement evaluates 212,517,051 sparse index pairs; shell placement evaluates zero pairs
+and performs 22,080,000 alpha/appearance query points. The selected first-maximum depth index has
+min/p10/median/p90/max `14/20/22/25/38` among 48 ordered samples. Cover reconciliation preserves
+means, SH coefficients, count, and packet bytes exactly.
+
+| metric | interior / inherited | interior / cover | shell / inherited | shell / cover |
+|---|---:|---:|---:|---:|
+| initial reporting PSNR | 14.0186 | 13.6915 | 18.6018 | 17.6160 |
+| final reporting PSNR | 20.7469 | 20.0434 | **22.3342** | 22.1278 |
+| final MS-SSIM | 0.901271 | 0.891446 | **0.941373** | 0.938626 |
+| final LPIPS | 0.163428 | 0.150969 | 0.131568 | **0.104433** |
+| final gradient MAE | 0.016095 | 0.015670 | 0.015708 | **0.014749** |
+| final alpha IoU | 0.790721 | 0.774645 | 0.921256 | **0.931089** |
+| final alpha outside | 0.021650 | 0.027524 | 0.006991 | **0.005634** |
+| lift seconds | 9.420 | 8.951 | **5.810** | 6.246 |
+| native training seconds | 9.831 | **9.270** | 9.752 | 10.159 |
+| available packet-build + lift + train seconds | 28.020 | 26.990 | **24.331** | 25.174 |
+| first step at baseline-terminal PSNR | 1,000 | never | **200** | 500 |
+| final Gaussians | 5,000 | 5,000 | 5,000 | 5,000 |
+
+The combined shell/cover arm passes every frozen numerical guard versus interior/inherited:
++1.3809 dB PSNR, +0.14037 alpha IoU, -0.01602 outside alpha, -0.001347 gradient MAE, exact count,
+and identical packet bytes. The stronger scalar quality arm is shell/inherited at +1.5873 dB.
+Cover alone loses 0.7035 dB and 0.0161 alpha IoU, confirming that covariance repair cannot rescue
+volumetric centers by itself.
+
+Mandatory visual review nevertheless fails. Shell placement removes most broad silhouette glow and
+scattered floaters, but all three reporting views retain conspicuous directional trailing smear or
+double-silhouette structure, especially around the feet/body in `C0004` and `C1004`; fine texture
+is still soft. Surface cover sharpens some local detail and improves perceptual/gradient/alpha
+metrics, but does not eliminate those errors. The route is therefore not advanced or retuned on
+this frame. It establishes a useful causal placement result, not artifact freedom, physical surface
+recovery, general convergence/speed, full-resolution compression, or a production pipeline.
+
+The immutable bundle is
+`results/core017_visibility_surface_janelle_frame00009_2026-08-06_v1/`, with manifest SHA-256
+`bf14b8e8d08609bdf89dd3c4474422a7ea8c0281c45cb81de8ba50e17252be2e`.
+Independent replay validates 222 unique path/byte/SHA receipts, the identical per-view packet hashes
+in every arm, exact counts, finite metrics, and decision arithmetic. The maintained report checker
+returns the same four expected schema-envelope errors as CORE-016; this remains an internally
+audited task-local diagnostic.
+
 ## Claim disposition
 
 | Candidate statement | Disposition | Reason |
@@ -191,6 +247,9 @@ actual profile view count. The artifact is preserved rather than silently repair
 | Candidate converges faster | Narrowed | Reaches control-final PSNR earlier, but full training/lift/VRAM are worse and only one CUDA run exists |
 | Candidate is artifact-free | False | Native review retains halos, fine-detail blur, and sparse floaters |
 | Strong alpha weighting fixes artifacts | Rejected for the tested settings | V5/V6 improve alpha but fail frozen v4 PSNR/gradient retention |
+| First-maximum alpha-shell placement improves this exposed fixed-5k assay | Confirmed narrowly | +1.587 dB, +0.131 alpha IoU, earlier baseline-target hit, and zero sparse-index depth pairs versus interior/inherited |
+| Surface cover alone repairs interior geometry | Rejected for the tested setting | -0.703 dB and -0.016 alpha IoU versus inherited interior covariance |
+| Alpha shell plus surface cover is artifact-free | False | Scalar gate passes, but native trailing smear/double silhouettes and blur remain |
 
 ## Integrity and leakage audit
 

@@ -14,6 +14,7 @@ unless the owning task says so.
 - `HIER-008` — Overlap lattice and feature-safe elimination (in-progress; `tasks/HIER-008-overlap-lattice-feature-elimination.md`)
 - `HIER-009` — Dynamic overlap contraction with neighborhood recovery (in-review; `tasks/HIER-009-dynamic-overlap-neighborhood-recovery.md`)
 - `CORE-016` — Codec-native dual-plane Gaussian observation field (in-review; `tasks/CORE-016-codec-native-dual-plane-field.md`)
+- `CORE-017` — Visibility-ordered alpha-shell surface lift (in-progress; `tasks/CORE-017-visibility-ordered-alpha-shell-lift.md`)
 - `DOCS-006` — Repository-native experiment workflow skill (in-progress; `tasks/DOCS-006-experiment-workflow-skill.md`)
 - `DOCS-007` — 2D Gaussian image-field state-of-the-art review (in-review; `tasks/DOCS-007-2d-gaussian-sota-review.md`)
 
@@ -67,6 +68,6 @@ unless the owning task says so.
 
 ## Ledger summary
 
-- 102 active-table outcomes
+- 103 active-table outcomes
 - 45 retired tasks
 - 51 active-table rows already carrying a closed/non-actionable disposition

@@ -246,6 +246,8 @@ def test_base_module_imports_when_torch_is_forbidden() -> None:
     code = (
         "import sys; sys.modules['torch'] = None; "
         "import structsplat.codec_native_field as m; "
+        "import structsplat.realtime_gs_adapter; "
+        "import structsplat.realtime_gs_surface_lift; "
         "assert m.PACKET_SCHEMA.endswith('.v2')"
     )
     result = subprocess.run(
@@ -292,12 +294,77 @@ def test_realtime_adapter_query_matches_numpy_when_optional_dependency_is_presen
     )
 
 
+def test_alpha_support_backend_is_calibrated_and_skips_structural_index() -> None:
+    pytest.importorskip("rtgs")
+    torch = pytest.importorskip("torch")
+    from structsplat.realtime_gs_adapter import (
+        make_alpha_support_backend,
+        make_realtime_gs_view,
+    )
+
+    image, mask = _fixture()
+    packet = build_codec_native_field(
+        image,
+        config=_config(structural_count=24),
+        mask=mask,
+    )
+    view = make_realtime_gs_view(packet)
+    support = make_alpha_support_backend(
+        view,
+        coverage_scale=4.0,
+        soft_coverage=0.8,
+    )
+    local = np.asarray([[4.0, 3.0], [0.0, 0.0], [10.25, 8.75]], dtype=np.float32)
+    canvas = torch.from_numpy(local + 0.5)
+    pairs_before = view.query_backend.structural_backend.total_pairs_evaluated
+    result = support.query(canvas)
+
+    assert np.isclose(support.reconstructed_soft_coverage(), 0.8, atol=1e-12)
+    assert result.weight_sum[0] == pytest.approx(support.weight_inside)
+    assert result.weight_sum[1] == 0.0
+    assert np.allclose(
+        result.color.detach().cpu().numpy(),
+        packet.query_appearance(local),
+        atol=2e-6,
+    )
+    assert support.n_entries == 0
+    assert support.payload_bytes == 0
+    assert support.total_queries == 1
+    assert support.total_points == 3
+    assert view.query_backend.structural_backend.total_pairs_evaluated == pairs_before
+
+
+@pytest.mark.parametrize(
+    ("changes", "error"),
+    [
+        ({"coverage_scale": 0.0}, "coverage_scale"),
+        ({"soft_coverage": 1.0}, "soft_coverage"),
+    ],
+)
+def test_alpha_support_backend_rejects_invalid_calibration(changes, error: str) -> None:
+    pytest.importorskip("rtgs")
+    pytest.importorskip("torch")
+    from structsplat.realtime_gs_adapter import (
+        make_alpha_support_backend,
+        make_realtime_gs_view,
+    )
+
+    image, mask = _fixture()
+    packet = build_codec_native_field(image, config=_config(structural_count=24), mask=mask)
+    view = make_realtime_gs_view(packet)
+    with pytest.raises(ValueError, match=error):
+        make_alpha_support_backend(view, **changes)
+
+
 def test_realtime_adapter_supports_cpu_metadata_with_cuda_queries() -> None:
     pytest.importorskip("rtgs")
     torch = pytest.importorskip("torch")
     if not torch.cuda.is_available():
         pytest.skip("CUDA query-backend integration requires a CUDA device")
-    from structsplat.realtime_gs_adapter import make_realtime_gs_view
+    from structsplat.realtime_gs_adapter import (
+        make_alpha_support_backend,
+        make_realtime_gs_view,
+    )
 
     image, mask = _fixture()
     packet = build_codec_native_field(
@@ -318,6 +385,14 @@ def test_realtime_adapter_supports_cpu_metadata_with_cuda_queries() -> None:
     assert view.query_backend.total_pairs_evaluated > 0
     assert view.query_backend.peak_pair_chunk > 0
     assert np.allclose(result.color.numpy(), expected, atol=2e-6)
+
+    structural_pairs = view.query_backend.structural_backend.total_pairs_evaluated
+    support = make_alpha_support_backend(view)
+    support_result = support.query(canvas)
+    assert support_result.color.device.type == "cpu"
+    assert support_result.weight_sum.device.type == "cpu"
+    assert support_result.weight_sum.min() > 0
+    assert view.query_backend.structural_backend.total_pairs_evaluated == structural_pairs
 
 
 def test_realtime_adapter_runs_existing_compact_2d_to_3d_initializer() -> None:
@@ -382,3 +457,161 @@ def test_realtime_adapter_runs_existing_compact_2d_to_3d_initializer() -> None:
         "CodecNativeObservationBackend",
         "CodecNativeObservationBackend",
     ]
+
+
+def _surface_lift_fixture(*, camera_offsets: tuple[float, ...]):
+    torch = pytest.importorskip("torch")
+    from rtgs.core.camera import Camera
+    from rtgs.data.reconstruction_inputs import ReconstructionInputs
+
+    from structsplat.realtime_gs_adapter import make_realtime_gs_view
+
+    image = np.full((32, 32, 3), [0.3, 0.6, 0.2], dtype=np.float32)
+    mask = np.ones((32, 32), dtype=bool)
+    packets = [
+        build_codec_native_field(
+            image,
+            config=_config(
+                appearance_codec="webp_lossless",
+                appearance_quality=100,
+                structural_count=40,
+                structural_seed=index + 3,
+            ),
+            mask=mask,
+        )
+        for index in range(len(camera_offsets))
+    ]
+    views = [make_realtime_gs_view(packet) for packet in packets]
+    cameras = [
+        Camera.look_at(
+            torch.tensor([offset, 0.0, -3.0]),
+            torch.zeros(3),
+            width=32,
+            height=32,
+            fov_x_deg=55.0,
+        )
+        for offset in camera_offsets
+    ]
+    inputs = ReconstructionInputs(
+        observations=[view.structural_field for view in views],
+        cameras=cameras,
+        view_names=[f"view-{index}" for index in range(len(views))],
+        bounds_hint=(torch.zeros(3), 1.2),
+        name="visibility-ordered-surface-lift-test",
+    )
+    return inputs, views
+
+
+def test_visibility_ordered_surface_uses_first_maximum_and_preserves_means() -> None:
+    pytest.importorskip("rtgs")
+    torch = pytest.importorskip("torch")
+    from rtgs.lift.compact_carve import CompactCarveConfig
+
+    from structsplat.realtime_gs_surface_lift import initialize_visibility_ordered_surface
+
+    inputs, views = _surface_lift_fixture(camera_offsets=(0.0, 0.0))
+    carve = CompactCarveConfig(
+        n_init_3d=8,
+        candidate_multiplier=8,
+        samples_per_ray=16,
+        query_batch_size=128,
+        seed=17,
+        min_views=2,
+        hull_fraction=1.0,
+        coverage_scale=1.0,
+        coverage_threshold=0.4,
+        color_std_sigma=0.25,
+        min_score=0.01,
+    )
+    first = initialize_visibility_ordered_surface(inputs, views, carve)
+    repeated = initialize_visibility_ordered_surface(inputs, views, carve)
+
+    assert first.initialization.gaussians.n == carve.n_init_3d
+    assert first.diagnostics["selected_depth_index"]["max"] == 0.0
+    assert first.diagnostics["support_index_entries"] == 0
+    assert first.diagnostics["support_new_payload_bytes"] == 0
+    assert first.diagnostics["surface_cover"] is not None
+    assert first.diagnostics["structural_pairs_before"] == first.diagnostics[
+        "structural_pairs_after"
+    ]
+    assert torch.equal(
+        first.initialization.gaussians.means,
+        first.raw_initialization.gaussians.means,
+    )
+    assert torch.equal(
+        first.initialization.gaussians.sh,
+        first.raw_initialization.gaussians.sh,
+    )
+    assert not torch.equal(
+        first.initialization.gaussians.log_scales,
+        first.raw_initialization.gaussians.log_scales,
+    )
+    assert torch.equal(
+        first.initialization.gaussians.means,
+        repeated.initialization.gaussians.means,
+    )
+    assert torch.equal(
+        first.initialization.gaussians.log_scales,
+        repeated.initialization.gaussians.log_scales,
+    )
+    assert bool(torch.isfinite(first.initialization.gaussians.covariance()).all())
+
+
+def test_visibility_ordered_surface_differs_from_interior_consensus() -> None:
+    pytest.importorskip("rtgs")
+    torch = pytest.importorskip("torch")
+    from rtgs.lift.compact_carve import CompactCarveConfig, CompactCarveInitializer
+
+    from structsplat.realtime_gs_surface_lift import (
+        VisibilityOrderedSurfaceLiftConfig,
+        initialize_visibility_ordered_surface,
+    )
+
+    inputs, views = _surface_lift_fixture(camera_offsets=(-0.75, 0.0, 0.75))
+    carve = CompactCarveConfig(
+        n_init_3d=8,
+        candidate_multiplier=8,
+        samples_per_ray=24,
+        query_batch_size=192,
+        seed=23,
+        min_views=2,
+        hull_fraction=2.0 / 3.0,
+        coverage_scale=1.0,
+        coverage_threshold=0.1,
+        color_std_sigma=0.25,
+        min_score=0.001,
+    )
+    interior = CompactCarveInitializer(carve).initialize(
+        inputs,
+        backends=[view.query_backend for view in views],
+    )
+    shell = initialize_visibility_ordered_surface(
+        inputs,
+        views,
+        carve,
+        VisibilityOrderedSurfaceLiftConfig(apply_surface_cover=False),
+    )
+
+    assert shell.initialization.gaussians.n == interior.gaussians.n == carve.n_init_3d
+    assert not torch.equal(shell.initialization.depths, interior.depths)
+    assert shell.initialization.diagnostics["teacher_backend_kinds"] == [
+        "CodecNativeAlphaSupportBackend",
+        "CodecNativeAlphaSupportBackend",
+        "CodecNativeAlphaSupportBackend",
+    ]
+
+
+def test_visibility_ordered_surface_rejects_mismatched_views() -> None:
+    pytest.importorskip("rtgs")
+    pytest.importorskip("torch")
+    from rtgs.lift.compact_carve import CompactCarveConfig
+
+    from structsplat.realtime_gs_surface_lift import initialize_visibility_ordered_surface
+
+    inputs, views = _surface_lift_fixture(camera_offsets=(-0.5, 0.5))
+    with pytest.raises(ValueError, match="one paired codec-native view"):
+        initialize_visibility_ordered_surface(
+            inputs,
+            views[:1],
+            CompactCarveConfig(n_init_3d=4),
+        )

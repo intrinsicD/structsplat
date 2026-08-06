@@ -8,6 +8,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 import hashlib
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -173,6 +174,113 @@ class CodecNativeObservationBackend:
         return torch_where(self._torch, alpha, weight_sum, 0.0)
 
 
+class CodecNativeAlphaSupportBackend:
+    """Placement-only alpha support paired with codec-native appearance queries.
+
+    CORE-016's ordinary backend uses the sparse structural measure as CompactCarve's coverage
+    signal.  That is correct for proposal scoring but does not represent a filled silhouette.
+    This wrapper keeps the same appearance color and crop validity while replacing only
+    ``weight_sum`` with a constant inside the packet's exact alpha mask.  The constant is derived
+    from CompactCarve's soft-coverage equation, so ``soft_coverage`` is the value reconstructed by
+    ``1 - exp(-area * weight / (field_mass * coverage_scale))`` at every inside query.
+
+    The wrapper deliberately never calls ``structural_backend``.  Sparse structure still chooses
+    source rays through ``GaussianObservationField``; alpha supplies placement support; appearance
+    supplies radiance.  It is not a faithful standalone observation backend and must not be used as
+    a training teacher.
+    """
+
+    def __init__(
+        self,
+        appearance_backend: CodecNativeObservationBackend,
+        *,
+        coverage_scale: float = 1.0,
+        soft_coverage: float = 0.95,
+    ) -> None:
+        if not isinstance(appearance_backend, CodecNativeObservationBackend):
+            raise TypeError("appearance_backend must be CodecNativeObservationBackend")
+        if not math.isfinite(coverage_scale) or coverage_scale <= 0.0:
+            raise ValueError("coverage_scale must be finite and positive")
+        if not math.isfinite(soft_coverage) or not 0.0 < soft_coverage < 1.0:
+            raise ValueError("soft_coverage must be finite and lie in (0,1)")
+
+        torch = appearance_backend._torch
+        field = appearance_backend.field
+        fit_width = int(field.fit_window[2])
+        fit_height = int(field.fit_window[3])
+        if fit_width <= 0 or fit_height <= 0:
+            raise ValueError("the structural field must have a positive fit-window area")
+        variances = field.effective_variances()
+        mass = (
+            field.amplitudes
+            * (2.0 * math.pi)
+            * variances.prod(dim=1).sqrt()
+        ).sum()
+        mass_value = float(mass.detach().cpu())
+        if not math.isfinite(mass_value) or mass_value <= 0.0:
+            raise ValueError("the structural field must have finite positive proposal mass")
+
+        area = float(fit_width * fit_height)
+        weight_inside = (
+            -math.log1p(-soft_coverage) * coverage_scale * mass_value / area
+        )
+        if not math.isfinite(weight_inside) or weight_inside <= 0.0:
+            raise RuntimeError("derived alpha-support weight is invalid")
+
+        self._torch = torch
+        self._observation_query = appearance_backend._observation_query
+        self.appearance_backend = appearance_backend
+        self.field = field
+        self.coverage_scale = float(coverage_scale)
+        self.soft_coverage = float(soft_coverage)
+        self.field_mass = mass_value
+        self.fit_window_area = area
+        self.weight_inside = weight_inside
+        # This wrapper allocates no index or packet payload of its own.  The referenced appearance
+        # tensors remain charged once through the parent packet/backend record.
+        self.payload_bytes = 0
+        self.reused_payload_bytes = int(getattr(appearance_backend, "payload_bytes", 0))
+        self.n_entries = 0
+        self.max_candidates = 0
+        self.component_id_dtype = None
+        self.total_queries = 0
+        self.total_points = 0
+        self.total_pairs_evaluated = 0
+        self.last_pair_chunk = 0
+        self.peak_pair_chunk = 0
+
+    def _support_query(self, xy: Any) -> tuple[Any, Any, Any, Any]:
+        color, alpha, valid = self.appearance_backend._appearance_query(xy)
+        weight = self._torch.where(
+            alpha,
+            self._torch.full_like(alpha, self.weight_inside, dtype=color.dtype),
+            self._torch.zeros_like(alpha, dtype=color.dtype),
+        )
+        self.total_queries += 1
+        self.total_points += int(xy.shape[0])
+        return color, weight, alpha, valid
+
+    def query(self, xy: Any, component_chunk: int = 4096) -> Any:
+        del component_chunk
+        color, weight, _alpha, valid = self._support_query(xy)
+        return self._observation_query(
+            color=color,
+            numerator=color * weight[:, None],
+            weight_sum=weight,
+            valid=valid,
+        )
+
+    def query_weight_sum(self, xy: Any, component_chunk: int = 4096) -> Any:
+        del component_chunk
+        _color, weight, _alpha, _valid = self._support_query(xy)
+        return weight
+
+    def reconstructed_soft_coverage(self) -> float:
+        """Return the CompactCarve coverage implied by the derived inside weight."""
+        relative_density = self.fit_window_area * self.weight_inside / self.field_mass
+        return 1.0 - math.exp(-relative_density / self.coverage_scale)
+
+
 def torch_where(torch_module: Any, condition: Any, value: Any, other: float) -> Any:
     """Keep the adapter import-lazy while giving mypy/tests one small tensor helper."""
     return torch_module.where(condition, value, torch_module.full_like(value, other))
@@ -275,3 +383,21 @@ def make_realtime_gs_view(
     )
     alpha = torch.from_numpy(packet.alpha_mask.copy()).to(target_device)
     return RealtimeGSCodecNativeView(field, backend, alpha)
+
+
+def make_alpha_support_backend(
+    view: RealtimeGSCodecNativeView,
+    *,
+    coverage_scale: float = 1.0,
+    soft_coverage: float = 0.95,
+) -> CodecNativeAlphaSupportBackend:
+    """Build CORE-017's no-extra-payload placement-support backend for one paired view."""
+    if not isinstance(view, RealtimeGSCodecNativeView):
+        raise TypeError("view must be RealtimeGSCodecNativeView")
+    if not isinstance(view.query_backend, CodecNativeObservationBackend):
+        raise TypeError("view.query_backend must be CodecNativeObservationBackend")
+    return CodecNativeAlphaSupportBackend(
+        view.query_backend,
+        coverage_scale=coverage_scale,
+        soft_coverage=soft_coverage,
+    )

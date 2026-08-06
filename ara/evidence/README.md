@@ -77,6 +77,14 @@ paths were the live source location when the historical runs were produced.
   full-resolution, end-to-end-speed, or BENCH-019 claims. Evidence note:
   `ara/evidence/core016-multiview-downstream-janelle-2026-08-06/run.md`.
 
+- `core017-visibility-ordered-alpha-shell-janelle-2026-08-06`: Exposed fixed-5k placement x
+  covariance factorial on `frame_00009`. First-maximum packet-alpha support materially improves
+  quality, alpha localization, early convergence, and lift work over interior consensus, while
+  cover-only is negative. Every scalar gate passes for shell/cover, but native trailing
+  smear/double silhouettes and blur fail the mandatory visual gate, so the route is not advanced.
+  The ignored custom bundle is independently receipt-valid but not a maintained report. Evidence
+  note: `ara/evidence/core017-visibility-ordered-alpha-shell-janelle-2026-08-06/run.md`.
+
 - `hier005-selective-recovery-janelle-diagnostic-2026-08-05`: Dirty one-image Janelle diagnostic
   for progress-normalized optimizer recovery over contraction-touched rows only. At N=8,192 the
   run removes the visible square/tree holes and changes masked PSNR from 34.076 to 52.339 dB while

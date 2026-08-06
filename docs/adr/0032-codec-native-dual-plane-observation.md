@@ -93,6 +93,14 @@ integrity checks, and corrections are in
 
 ## Reversal
 
+CORE-017 subsequently composes the same packet into a default-off visibility-ordered alpha-shell
+lift. It changes neither this decision nor the packet grammar: structure proposes rays, packet alpha
+supplies placement support, appearance supplies radiance, and optional surface cover changes only
+covariance/opacity. Its exposed fixed-5k factorial passes the numerical gate but fails mandatory
+native review because trailing smear/double silhouettes and blur remain. It is therefore retained
+as causal diagnostic evidence and does not authorize a variable-topology, maintained, or default
+path.
+
 Delete `codec_native_field.py`, `realtime_gs_adapter.py`, the task-local diagnostic and tests, and
 retire CORE-016. No maintained packet, renderer, pipeline, semantic default, or realtime-gs checkout
 must be migrated.
