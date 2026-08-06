@@ -124,9 +124,20 @@ complete packet is 3,896,344 bytes and is exact below display quantization at de
 centers; its paired backend has NumPy/torch parity and drives a synthetic two-view CompactCarve
 smoke. The apparent 3.662x original-file ratio compares a full source frame with a crop packet; the
 crop-local canonical-PNG ratio is 1.139x. Off-grid bilinear-control sampling still finds 3.784%
-local-envelope escape and 0.0244% global range escape, and no real multiview sufficiency test
-exists. It is therefore implementation evidence, not a general compression, convergence,
-continuous-quality, artifact-freedom, or downstream-3D result. The research boundary and audit are
+local-envelope escape and 0.0244% global range escape.
+
+An exposed reduced-resolution downstream extension now propagates CPU structural metadata plus the
+paired CUDA query backend through real 23-view CompactCarve and common 3DGS refinement. The retained
+matched-cap v4 candidate uses 956,301 input bytes versus 3,850,647 for the existing RTGSV containers
+(`4.0266x`), and both final models contain 10,000 Gaussians. It reaches 25.188 dB reporting
+foreground PSNR versus 24.012 dB for control, with better MS-SSIM, LPIPS, and alpha IoU, and reaches
+the control's terminal PSNR at step 500 versus 1,400. This does not make the end-to-end path faster:
+candidate lifting and full training are slower and peak VRAM is higher. Native review still finds
+soft silhouette halos, fine-detail blur, and sparse floaters; stronger all-run mask supervision and
+a late fixed-topology polish lose more than their frozen quality guards permit. The result is
+therefore development evidence, not a general compression, convergence, continuous-quality,
+artifact-freedom, full-resolution, final-storage, or BENCH-019 result. The research boundary and
+audit are
 [`2026-08-06-codec-native-dual-plane-portfolio.md`](research/2026-08-06-codec-native-dual-plane-portfolio.md)
 and
 [`2026-08-06-codec-native-dual-plane-results-audit.md`](research/2026-08-06-codec-native-dual-plane-results-audit.md).
@@ -313,7 +324,12 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   writes exact packet/component ledgers, pixel/off-grid/structural/query metrics, generic numeric
   curves, worst crops, source snapshots, and contextual controls. Its custom manifest is internally
   hashed but is not a schema accepted by `check_report_bundle.py`; it must not be called a
-  maintained portable report.
+  maintained portable report. `scripts/experiments/core016_multiview_downstream.py` is the bounded
+  source-grounded follow-up: it separates reporting-only cameras, snapshots both repositories,
+  builds complete candidate packet ledgers, drives the paired CPU-metadata/CUDA-query interface
+  through CompactCarve and 3DGS, and emits checkpoint curves, models, visuals, and explicit scalar
+  plus manual gates. Its schema is likewise task-local and not accepted by the maintained report
+  checker.
 - **agent workflow:** `tasks/INDEX.md` and task files are the work authority, while
   `tasks/SESSION-BRIEF.md` is a deterministic derived view. `scripts/check_task_policy.py`
   validates dependency and review state; `scripts/check_agent_workflow.py` checks agreement among

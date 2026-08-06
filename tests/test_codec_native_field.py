@@ -292,6 +292,34 @@ def test_realtime_adapter_query_matches_numpy_when_optional_dependency_is_presen
     )
 
 
+def test_realtime_adapter_supports_cpu_metadata_with_cuda_queries() -> None:
+    pytest.importorskip("rtgs")
+    torch = pytest.importorskip("torch")
+    if not torch.cuda.is_available():
+        pytest.skip("CUDA query-backend integration requires a CUDA device")
+    from structsplat.realtime_gs_adapter import make_realtime_gs_view
+
+    image, mask = _fixture()
+    packet = build_codec_native_field(
+        image,
+        config=_config(structural_count=24),
+        mask=mask,
+    )
+    view = make_realtime_gs_view(packet, device="cpu", query_device="cuda")
+    local = torch.tensor([[4.0, 3.0], [10.25, 8.75]], dtype=torch.float32)
+    canvas = local + 0.5
+    result = view.query_backend.query(canvas)
+    expected = packet.query_appearance(local.numpy())
+
+    assert view.structural_field.device.type == "cpu"
+    assert view.query_backend.structural_backend.device.type == "cuda"
+    assert result.color.device.type == "cpu"
+    assert result.weight_sum.device.type == "cpu"
+    assert view.query_backend.total_pairs_evaluated > 0
+    assert view.query_backend.peak_pair_chunk > 0
+    assert np.allclose(result.color.numpy(), expected, atol=2e-6)
+
+
 def test_realtime_adapter_runs_existing_compact_2d_to_3d_initializer() -> None:
     pytest.importorskip("rtgs")
     torch = pytest.importorskip("torch")

@@ -1735,3 +1735,45 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O131
+    timestamp: "2026-08-06T23:10+02:00"
+    provenance: ai-executed
+    content: >
+      On one exposed reduced-resolution Janelle frame, a paired codec-native q92/512-structure
+      teacher remains useful after real 23-view CompactCarve and 3DGS refinement. Under a common
+      10,000-Gaussian cap it uses 956,301 versus 3,850,647 complete input bytes, reaches 25.188
+      versus 24.012 dB reporting foreground PSNR, improves MS-SSIM/LPIPS/alpha, and reaches the
+      control's terminal PSNR at step 500 versus 1,400. Its lift, full training time, and VRAM are
+      worse, and native review retains soft halos, fine-detail blur, and sparse floaters. This is
+      development utility, not a general compression, speed, quality, or artifact-free claim.
+    context: >
+      V4 uses 23 training and three reporting-only cameras, but the reporting views were inspected
+      and reused for post-hoc development. The inputs are cropped/downscaled and differently
+      preprocessed from the existing RTGSV containers; control production time is unavailable;
+      CUDA density repeats are not bitwise deterministic; the custom report schema is not accepted
+      by the maintained checker; and distinct review/full-resolution confirmation are absent.
+    potential_type: claim
+    bound_to: [N252, N254]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O132
+    timestamp: "2026-08-06T23:10+02:00"
+    provenance: ai-executed
+    content: >
+      Stronger exact-mask supervision is a real rate--silhouette tradeoff, not a free artifact
+      repair in the tested CORE-016 pipeline. Applying it throughout training raises alpha IoU by
+      0.01074 but loses 0.4456 dB and worsens gradient MAE versus v4; a 250-step fixed-topology
+      low-rate polish raises alpha by 0.00519 but loses 0.3161 dB and also worsens gradient MAE.
+      Both settings retain visible residual errors and fail their frozen v4-retention guards.
+    context: >
+      V5/V6 are exposed post-hoc single-run follow-ups on the same reporting cameras. Their original
+      custom reports encoded only within-run control gates and displayed scalar pass; independent
+      cross-run replay rejects both, and the future driver now encodes the missing frozen guards.
+    potential_type: claim
+    bound_to: [N253, N254]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

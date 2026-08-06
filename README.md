@@ -243,9 +243,13 @@ CORE-016/ADR-0032 additionally provides a **default-off research packet** (`.sgd
 third supported conversion format. It stores a fully charged conventional appearance payload and a
 separate sparse structural Field V2 measure, then exposes them to realtime-gs as a required
 structural-field/query-backend pair. The task-local diagnostic is
-`scripts/experiments/core016_codec_native_field.py`; the selected one-image development result
-demonstrates pixel-center replay and interface compatibility, but not held-out compression,
-artifact-free off-grid interpolation, or real multiview quality. See the
+`scripts/experiments/core016_codec_native_field.py`; the downstream follow-up is
+`scripts/experiments/core016_multiview_downstream.py`. The paired adapter can keep realtime-gs
+structural metadata on CPU while executing indexed structure and appearance queries on CUDA. An
+exposed reduced-resolution 23-view matched-10k run supports downstream development utility at
+lower complete teacher-input bytes than RTGSV, but its full lift/training resources are not better
+and native review retains halos, blur, and floaters. Neither diagnostic establishes held-out/full-
+resolution compression, artifact freedom, end-to-end speed, or a maintained default. See the
 [research portfolio](docs/research/2026-08-06-codec-native-dual-plane-portfolio.md),
 [ADR-0032](docs/adr/0032-codec-native-dual-plane-observation.md), and
 [results audit](docs/research/2026-08-06-codec-native-dual-plane-results-audit.md).

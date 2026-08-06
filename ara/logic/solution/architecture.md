@@ -263,19 +263,26 @@
   V2 structural measure with zero RGB and independent nonnegative mass. At the realtime-gs seam,
   require the sparse structural `GaussianObservationField` and the authoritative appearance
   `ObservationQueryBackend` to travel together; neither object alone is a faithful teacher.
-- **Status**: implemented as default-off CORE-016/ADR-0032 and retained as a surviving systems
-  pilot. One exposed post-hoc crop verifies packet, pixel-center and adapter plumbing but leaves
-  off-grid ringing, matched full-frame rate, held-out quality, real multiview structural
-  sufficiency, production query throughput, and distinct numerical/scientific review open. It does
-  not enter maintained conversion or change either repository's defaults.
+- **Status**: implemented as default-off CORE-016/ADR-0032 and retained as a surviving development
+  pilot. One exposed post-hoc crop verifies packet, pixel-center and adapter plumbing. A later
+  exposed reduced-resolution 23-train/three-reporting-view assay carries the pair through real
+  CompactCarve/3DGS and retains a matched-10k point with 4.027x lower teacher-input bytes and better
+  reporting metrics than RTGSV, but candidate lift/full training/VRAM are worse and native review
+  still finds halos, blur, and floaters. Strong-mask and late-polish follow-ups lose protected
+  fidelity. Off-grid ringing, matched full-resolution rate, independent held-out quality,
+  artifact-free multiview sufficiency, final-3D storage, production throughput, and distinct
+  numerical/scientific review remain open. The design does not enter maintained conversion or
+  change either repository's defaults.
 - **Provenance**: ai-executed
 - **Crystallized via**: artifact-commitment
 - **Evidence**: [`src/structsplat/codec_native_field.py`,
   `src/structsplat/realtime_gs_adapter.py`,
   `scripts/experiments/core016_codec_native_field.py`,
+  `scripts/experiments/core016_multiview_downstream.py`,
   `tests/test_codec_native_field.py`,
   `docs/adr/0032-codec-native-dual-plane-observation.md`,
   `tasks/CORE-016-codec-native-dual-plane-field.md`,
-  `ara/evidence/core016-codec-native-dual-plane-janelle-2026-08-06/run.md`]
-- **Dependencies**: [N207, N209, N215, N217, N245, N248, N250, N251]
+  `ara/evidence/core016-codec-native-dual-plane-janelle-2026-08-06/run.md`,
+  `ara/evidence/core016-multiview-downstream-janelle-2026-08-06/run.md`]
+- **Dependencies**: [N207, N209, N215, N217, N245, N248, N250, N251, N252, N253, N254]
 - **From staging**: O129

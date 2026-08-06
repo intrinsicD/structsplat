@@ -67,6 +67,16 @@ paths were the live source location when the historical runs were produced.
   follows. Evidence note:
   `ara/evidence/core016-codec-native-dual-plane-janelle-2026-08-06/run.md`.
 
+- `core016-multiview-downstream-janelle-2026-08-06`: Exposed single-frame downstream extension
+  that propagates the paired codec-native backend through real 23-view CompactCarve and 3DGS. The
+  retained matched-10k v4 candidate uses 4.027x fewer complete teacher-input bytes and improves all
+  reporting metrics versus RTGSV at equal final count, while reaching control-final PSNR earlier.
+  Candidate lift/full training/VRAM are worse and native review retains halos, blur, and floaters;
+  stronger-mask v5 and late-polish v6 fail frozen v4-retention guards. Diagnostic custom schemas,
+  reused reporting views, and non-bitwise CUDA repeats prohibit default, general, artifact-free,
+  full-resolution, end-to-end-speed, or BENCH-019 claims. Evidence note:
+  `ara/evidence/core016-multiview-downstream-janelle-2026-08-06/run.md`.
+
 - `hier005-selective-recovery-janelle-diagnostic-2026-08-05`: Dirty one-image Janelle diagnostic
   for progress-normalized optimizer recovery over contraction-touched rows only. At N=8,192 the
   run removes the visible square/tree holes and changes masked PSNR from 34.076 to 52.339 dB while

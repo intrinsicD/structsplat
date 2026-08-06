@@ -1,7 +1,8 @@
 # CORE-016 codec-native dual-plane results audit
 
-Audit date: 2026-08-06. Disposition: diagnostic plumbing confirmed; scientific and production
-claims narrowed. No claim-ledger promotion or default change is authorized.
+Audit date: 2026-08-06. Disposition: diagnostic plumbing and exposed multiview development utility
+confirmed; scientific and production claims narrowed. No claim-ledger promotion or default change
+is authorized.
 
 ## Audited artifact
 
@@ -83,6 +84,96 @@ This guard exposes rather than resolves cardinal ringing. Bilinear interpolation
 scene ground truth, and the sample is not a proof over the domain. Therefore “no visual artifacts”
 is valid only for the decoded pixel-center display inspected in this artifact.
 
+## Exposed multiview downstream extension
+
+Five immutable follow-ups propagate the required structural-field/appearance-backend pair through
+the current realtime-gs CompactCarve and 3DGS trainer. V1 uses eight training and three reporting-
+only cameras. V2 changes only density control. V3--V6 use all 23 non-reporting cameras for packet
+construction and training, retaining `C0004`, `C0025`, and `C1004` as reporting-only. Packet inputs
+are calibrated/undistorted at downscale 4; common source targets and reporting renders are
+calibrated/undistorted at downscale 8. The reporting cameras were inspected after every run and
+then reused for post-hoc development, so none is confirmation evidence.
+
+### Progression and retained point
+
+| run | decisive outcome |
+|---|---|
+| v1 fixed 835 | Candidate quality exceeds control but all arms are visibly unacceptable; the 2,048-row safety arm is only `2.304x` smaller, failing its 3x rate gate. |
+| v2 8-view density | 512-row candidate reaches 22.403 dB, but misses 22.5 dB / 0.90 alpha floors and finishes with 7,688 versus 5,631 Gaussians. |
+| v3 23-view density | Candidate reaches 25.203 dB and 0.9483 alpha at `4.0266x` lower input bytes, but 11,689 versus 10,022 Gaussians fails the 1.10x count gate. |
+| **v4 matched 10k** | **Both finish at exactly 10,000; every scalar gate passes. This is the retained development Pareto point.** |
+| v5 strong mask | Alpha rises to 0.9604, but candidate loses 0.446 dB and worsens gradient MAE versus v4; frozen cross-run preference fails. |
+| v6 late mask polish | Alpha rises to 0.9548, but candidate loses 0.316 dB and worsens gradient MAE versus v4; frozen cross-run preference fails. |
+
+The executed v5/v6 custom reports say `scalar_pass: true` because their original driver encoded
+only within-run control gates. Independent audit replay applies the separately frozen cross-run v4
+retention gates and returns **false** for both PSNR and gradient-MAE guards. The driver is corrected
+for future execution; immutable bundles were not rewritten.
+
+V4 terminal rows are:
+
+| metric | RTGSV control | dual-plane q92 / 512 | candidate minus control |
+|---|---:|---:|---:|
+| complete 23-view input bytes | 3,850,647 | 956,301 | `4.0266x` smaller |
+| final 3D Gaussians | 10,000 | 10,000 | 0 |
+| reporting foreground PSNR | 24.0119 dB | 25.1880 dB | +1.1761 dB |
+| reporting crop PSNR | 30.0384 dB | 31.5712 dB | +1.5329 dB |
+| reporting MS-SSIM | 0.960839 | 0.967342 | +0.006504 |
+| reporting LPIPS | 0.099172 | 0.079733 | -0.019439 |
+| reporting gradient MAE | 0.014792 | 0.012926 | -0.001865 |
+| reporting alpha IoU | 0.928680 | 0.949653 | +0.020972 |
+| lift time | 4.894 s | 9.467 s | +4.573 s |
+| native full training time | 18.521 s | 20.740 s | +2.219 s |
+| first time at control-final PSNR | step 1,400 / 13.266 s | step 500 / 5.148 s | candidate reaches the lower target earlier |
+| peak VRAM | 0.310 GiB | 0.366 GiB | +0.055 GiB |
+
+The time-to-target row supports only faster convergence to the control's lower terminal reporting
+quality within this run. Candidate lift, full native training, available pipeline time, and VRAM
+are worse. Candidate available-pipeline time includes packet construction, whereas production time
+for the pre-existing RTGSV containers is unavailable; no end-to-end speed ratio is valid.
+
+The candidate packet ledger is 592,784 appearance bytes, 342,484 structure bytes, 13,397 compressed
+manifest bytes, and 7,636 ZIP-framing bytes. The 956,301-byte sum is `1.302` bits per downscale-4
+crop pixel and `3.440` bits per active crop pixel. The contextual canonical crop-PNG sum is
+6,964,513 bytes (`7.283x` larger); the 332,472,461-byte original-JPEG sum is scope-mismatched because
+the packets store cropped, downscaled, calibrated tensors. Neither ratio is a full-resolution image
+codec claim. Final candidate/control NPZ and PLY models are essentially the same size at equal count,
+so the input-teacher rate win is not a final-3D storage-compression result.
+
+### Native-pixel visual disposition
+
+V1 fixed topology has severe blur, long rays/streaks, bright silhouette halos, and missing thin
+anatomy. V2 density control recovers the subject but leaves conspicuous streaks/floaters. Full
+angular support in V3/V4 materially improves anatomy and removes any obvious periodic grid or
+KD-tree imprint. V4 still shows soft silhouette halos, fine-detail blur, and sparse floaters on the
+three reporting views. V5/V6 tighten some silhouettes but do not remove the residual artifacts and
+fail their cross-run fidelity guards. The mandatory manual gate therefore fails for every run.
+
+### Independent integrity replay
+
+The audit recursively rehashed and resized every `{path, bytes, sha256}` receipt in each v2--v6
+plan, record, and manifest: 108 unique receipts for v2 and 213 for each full-capture run. It reloaded
+and byte-identically resaved all 100 candidate packets across those five runs, recomputed every
+packet component sum and complete input sum, verified that packet view IDs equal training IDs and
+exclude all reporting IDs, independently recreated every evaluation image/mask tensor hash, checked
+21 checkpoint rows per arm for v2--v5 and 26 for v6, loaded every final NPZ, and found all arrays
+finite with the declared cardinalities. Every reported input ratio and candidate/control delta
+recomputes to `1e-12` absolute tolerance.
+
+CUDA density trajectories are not bitwise deterministic despite declared seeds: the nominally
+identical v4/v6 base recipes end at nearby but not identical counts/metrics (for example v6 control
+has 9,989 rows before fixed-topology polish versus v4's 10,000). This does not invalidate the
+single-run rows, but it prevents treating small cross-run differences as deterministic effects.
+V5 timing is additionally contaminated by concurrent CPU compilation; its quality rows remain
+valid, but its wall time is excluded from speed interpretation.
+
+`scripts/check_report_bundle.py` rejects every multiview bundle with the same four expected custom-
+schema errors: wrong workflow schema, no recognized executed-command field, unrecognized repository
+identity shape, and unrecognized metrics-row envelope. These are internally audited diagnostic
+bundles, not maintained portable reports. V4's immutable `rate_quality.png` also incorrectly labels
+the x-axis as an eight-view input; its numeric bytes are correct and later driver output labels the
+actual profile view count. The artifact is preserved rather than silently repaired.
+
 ## Claim disposition
 
 | Candidate statement | Disposition | Reason |
@@ -96,6 +187,10 @@ is valid only for the decoded pixel-center display inspected in this artifact.
 | 512 structural rows are sufficient | Unsupported | Coverage sampling is not downstream multiview fidelity |
 | Method is generally high quality/compressed/SOTA | Unsupported | One exposed image, post-hoc choice, no held-out or matched baselines |
 | Maintained report gate passes | False | Custom schema is not accepted by `check_report_bundle.py` |
+| Candidate is useful in real multiview lifting/training | Confirmed narrowly on exposed reduced-resolution v4 | Better reporting metrics and 4.027x lower complete teacher-input bytes at equal 10k output count |
+| Candidate converges faster | Narrowed | Reaches control-final PSNR earlier, but full training/lift/VRAM are worse and only one CUDA run exists |
+| Candidate is artifact-free | False | Native review retains halos, fine-detail blur, and sparse floaters |
+| Strong alpha weighting fixes artifacts | Rejected for the tested settings | V5/V6 improve alpha but fail frozen v4 PSNR/gradient retention |
 
 ## Integrity and leakage audit
 

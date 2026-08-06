@@ -57,9 +57,12 @@ IntrinsicEngine as an RHI pass.
 - `codec_native_field.py` / `realtime_gs_adapter.py` — CORE-016/ADR-0032's separate default-off
   dual-plane packet experiment. A charged conventional image payload is decoded into a continuous
   cardinal-prefiltered Gaussian lattice; an independent sparse nonnegative Field V2 measure owns
-  lift proposals. The lazy adapter must expose both as a structural field/query-backend pair.
-  Pixel-center feasibility on one exposed crop is not a continuous-quality, compression, or
-  downstream-3D claim, and neither module enters maintained conversion.
+  lift proposals. The lazy adapter must expose both as a structural field/query-backend pair and
+  may keep structural metadata/cameras on CPU while placing indexed structure plus appearance
+  queries on CUDA. An exposed 23-view matched-10k follow-up supports downstream development utility
+  at lower teacher-input bytes, but residual halos/blur/floaters and worse complete lift/training
+  resources prohibit continuous-quality, general compression, speed, artifact-free, or BENCH-019
+  claims. Neither module enters maintained conversion.
 
 ## Invariants (do not break without an ADR)
 1. Init-time math stays **NumPy and importable without torch**. Autograd stays in torch modules.

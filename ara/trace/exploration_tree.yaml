@@ -5026,3 +5026,74 @@ tree:
       - "origin/main verified at 8b1aa81774973adadea265b5286fcf03ee607fe6"
     also_depends_on: [N245, N248, N249, N250]
     status: resolved
+  - id: N252
+    type: experiment
+    title: "Codec-native dual plane survives an exposed matched-10k multiview assay"
+    provenance: ai-executed
+    timestamp: "2026-08-06T23:10+02:00"
+    result: >
+      Added the CPU-structural/CUDA-query adapter seam and a source-grounded multiview driver, then
+      ran six immutable Janelle development profiles. The retained v4 uses all 23 non-reporting
+      cameras and a common 10,000-Gaussian cap. Its 23 q92/512-structure packets total 956,301 bytes
+      versus 3,850,647 bytes for the existing RTGSV controls (4.0266x), with reporting PSNR
+      25.1880 versus 24.0119 dB, MS-SSIM 0.967342 versus 0.960839, LPIPS 0.079733 versus 0.099172,
+      gradient MAE 0.012926 versus 0.014792, and alpha IoU 0.949653 versus 0.928680. It reaches
+      control-final PSNR at step 500/5.148 native seconds versus step 1,400/13.266 seconds. Candidate
+      lift/full training/peak VRAM are worse, and native review still finds halos, fine-detail blur,
+      and sparse floaters. Independent replay rehashed 108--213 receipts per v2--v6 bundle,
+      byte-identically resaved 100 packets, reconstructed source tensor hashes, verified reporting
+      exclusion and finite models, and exactly recomputed every decision delta.
+    evidence:
+      - "ara/evidence/core016-multiview-downstream-janelle-2026-08-06/run.md"
+      - "docs/research/2026-08-06-codec-native-dual-plane-results-audit.md"
+      - "results/core016_multiview_full23_matched10k_janelle_2026-08-06_v4/index.html"
+      - "v4 manifest sha256 9c546d5c7b65f483326e525d8080b0a1c0928ff0805f50255b1191c4ff2d651c"
+    also_depends_on: [N209, N215, N217, N247, N250, N251]
+    status: resolved
+  - id: N253
+    type: dead_end
+    title: "Strong exact-mask pressure does not remove multiview artifacts for free"
+    provenance: ai-executed
+    timestamp: "2026-08-06T23:10+02:00"
+    hypothesis: >
+      Raising exact-mask alpha/outside weights throughout training, or applying the same pressure in
+      a short fixed-topology low-learning-rate polish, will remove the matched-10k candidate's halo
+      and floaters without materially degrading its v4 appearance fidelity.
+    failure_mode: >
+      V5 raises alpha IoU from 0.949653 to 0.960395 but loses 0.445559 dB and worsens gradient MAE by
+      0.000269. V6 raises alpha to 0.954845 but loses 0.316067 dB and worsens gradient MAE by
+      0.000194. Both retain residual visual errors and fail the frozen within-0.2-dB/no-worse-
+      gradient v4 guards. Their executed reports omitted those cross-run guards and are corrected
+      by independent replay rather than overwritten.
+    lesson: >
+      Retain the simpler matched-10k v4 development configuration. Treat exact-mask strength as an
+      explicit rate--silhouette operating point, not an artifact repair. Do not tune it again on the
+      exposed reporting views; the next evidence must use distinct full-resolution data and target
+      geometry/visibility errors rather than only alpha pressure.
+    evidence:
+      - "ara/evidence/core016-multiview-downstream-janelle-2026-08-06/run.md"
+      - "results/core016_multiview_full23_silhouette_janelle_2026-08-06_v5/index.html"
+      - "results/core016_multiview_full23_latepolish_janelle_2026-08-06_v6/index.html"
+    also_depends_on: [N252]
+    status: resolved
+  - id: N254
+    type: decision
+    title: "Retain matched-10k v4 as a development Pareto point without promotion"
+    provenance: ai-executed
+    timestamp: "2026-08-06T23:10+02:00"
+    choice: >
+      Keep the q92/512-structure, 23-view, normal-mask, 10,000-cap recipe as CORE-016's simplest
+      surviving downstream development configuration. Preserve it default-off and stop tuning the
+      reused reporting views. Do not claim general compression, artifact freedom, full-resolution
+      quality, end-to-end speed, final-3D storage savings, or BENCH-019 confirmation.
+    alternatives:
+      - "Promote v4 because every scalar gate passed."
+      - "Select v5 or v6 for their higher alpha IoU despite failed fidelity guards."
+      - "Continue post-hoc tuning on C0004/C0025/C1004."
+    evidence:
+      - "N252"
+      - "N253"
+      - "docs/adr/0032-codec-native-dual-plane-observation.md"
+      - "tasks/CORE-016-codec-native-dual-plane-field.md"
+    also_depends_on: [N251, N252, N253]
+    status: resolved

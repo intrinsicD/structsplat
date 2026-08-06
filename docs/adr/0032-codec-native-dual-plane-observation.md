@@ -74,9 +74,21 @@ Costs and risks:
 
 The exposed C0001 development diagnostic selected lossless WebP, sigma `0.45`, radius `3`, eight
 prefilter steps, and 512 structural rows after development sweeps. It demonstrates packet plumbing,
-pixel-center replay, complete-byte accounting, and synthetic realtime-gs lift compatibility. It
-does not establish held-out compression, continuous-scene fidelity, real multiview reconstruction
-quality, or faster matched convergence. Exact numbers and corrections are in
+pixel-center replay, complete-byte accounting, and synthetic realtime-gs lift compatibility.
+
+A later exposed 23-train/three-reporting-view assay carries the paired backend through real CUDA
+CompactCarve and common 3DGS refinement. With a common 10,000-Gaussian cap, the quality-92 WebP /
+512-structure-per-view candidate uses 956,301 complete input bytes versus 3,850,647 for the extant
+RTGSV containers and exceeds the control on reporting PSNR, MS-SSIM, LPIPS, and alpha IoU. It also
+reaches the control's lower terminal PSNR earlier, but its own complete lift/training path is not
+faster, uses more peak VRAM, and retains soft halos, fine-detail blur, and occasional floaters.
+Stronger exact-mask training and a fixed-topology late polish trade PSNR/gradient fidelity for alpha
+and are rejected relative to the simpler matched-cap run.
+
+These reused, reduced-resolution reporting views establish development utility only. They do not
+establish held-out/full-resolution compression, continuous-scene fidelity, artifact-free real
+multiview reconstruction, final-3D storage savings, or general faster convergence. Exact numbers,
+integrity checks, and corrections are in
 [`2026-08-06-codec-native-dual-plane-results-audit.md`](../research/2026-08-06-codec-native-dual-plane-results-audit.md).
 
 ## Reversal

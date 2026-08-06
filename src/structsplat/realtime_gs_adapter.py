@@ -63,7 +63,7 @@ class CodecNativeObservationBackend:
         structural_backend: Any,
         *,
         device: Any,
-        payload_bytes: int = 0,
+        payload_bytes: int | None = None,
     ) -> None:
         try:
             import torch
@@ -77,7 +77,11 @@ class CodecNativeObservationBackend:
         self._observation_query = ObservationQuery
         self.field = structural_field
         self.structural_backend = structural_backend
-        self.payload_bytes = int(payload_bytes)
+        self.payload_bytes = int(
+            getattr(structural_backend, "payload_bytes", 0)
+            if payload_bytes is None
+            else payload_bytes
+        )
         self.n_entries = int(getattr(structural_backend, "n_entries", 0))
         self.max_candidates = int(getattr(structural_backend, "max_candidates", 0))
         self.component_id_dtype = getattr(structural_backend, "component_id_dtype", None)
@@ -100,14 +104,23 @@ class CodecNativeObservationBackend:
         self._offset_y = torch.from_numpy(yy.reshape(1, -1).astype(np.int64)).to(device)
         self._sigma2 = float(packet.config.lattice_sigma_px**2)
 
+    def _sync_structural_counters(self) -> None:
+        """Mirror optional realtime-gs query telemetry through the paired wrapper."""
+        for name in ("total_pairs_evaluated", "last_pair_chunk", "peak_pair_chunk"):
+            value = getattr(self.structural_backend, name, None)
+            if value is not None:
+                setattr(self, name, int(value))
+
     def _appearance_query(self, xy: Any) -> tuple[Any, Any, Any]:
         torch = self._torch
         if not torch.is_tensor(xy) or xy.ndim != 2 or xy.shape[1] != 2:
             raise ValueError("xy must be a torch tensor with shape (S,2)")
-        if xy.device != self._appearance.device or xy.dtype != self._appearance.dtype:
-            raise ValueError("xy must share the codec-native backend device and dtype")
+        if not xy.is_floating_point() or not bool(torch.isfinite(xy).all()):
+            raise ValueError("xy must be finite and floating-point")
+        target_device = xy.device
+        work_xy = xy.to(device=self._appearance.device, dtype=self._appearance.dtype)
         height, width = self._appearance.shape[:2]
-        local = xy - self._origin
+        local = work_xy - self._origin
         base_x = torch.floor(local[:, 0]).to(torch.long)[:, None]
         base_y = torch.floor(local[:, 1]).to(torch.long)[:, None]
         raw_x = base_x + self._offset_x
@@ -125,22 +138,23 @@ class CodecNativeObservationBackend:
             & (local[:, 0] < width - 0.5)
             & (local[:, 1] >= -0.5)
             & (local[:, 1] < height - 0.5)
-            & (denominator > torch.finfo(xy.dtype).tiny)
+            & (denominator > torch.finfo(work_xy.dtype).tiny)
         )
         values = self._appearance[gather_y, gather_x]
         color = (weights[..., None] * values).sum(dim=1)
-        color = color / denominator[:, None].clamp_min(torch.finfo(xy.dtype).tiny)
+        color = color / denominator[:, None].clamp_min(torch.finfo(work_xy.dtype).tiny)
         nearest_x = torch.floor(local[:, 0] + 0.5).to(torch.long).clamp(0, width - 1)
         nearest_y = torch.floor(local[:, 1] + 0.5).to(torch.long).clamp(0, height - 1)
         alpha = self._alpha[nearest_y, nearest_x] & valid
         color = torch.where(alpha[:, None], color, torch.zeros_like(color))
-        return color, alpha, valid
+        return color.to(target_device), alpha.to(target_device), valid.to(target_device)
 
     def query(self, xy: Any, component_chunk: int = 4096) -> Any:
         color, alpha, valid = self._appearance_query(xy)
         weight_sum = self.structural_backend.query_weight_sum(
             xy, component_chunk=component_chunk
         )
+        self._sync_structural_counters()
         weight_sum = torch_where(self._torch, alpha, weight_sum, 0.0)
         numerator = color * weight_sum[:, None]
         return self._observation_query(
@@ -155,6 +169,7 @@ class CodecNativeObservationBackend:
         weight_sum = self.structural_backend.query_weight_sum(
             xy, component_chunk=component_chunk
         )
+        self._sync_structural_counters()
         return torch_where(self._torch, alpha, weight_sum, 0.0)
 
 
@@ -167,15 +182,19 @@ def make_realtime_gs_view(
     packet: CodecNativeField,
     *,
     device: str = "cpu",
+    query_device: str | None = None,
     tile_size: int = 16,
-    payload_bytes: int = 0,
+    payload_bytes: int | None = None,
 ) -> RealtimeGSCodecNativeView:
     """Create the paired current realtime-gs field/backend objects.
 
     The structural object's component colors are sampled from the authoritative appearance plane
     at their centers, which gives existing lifting initializers meaningful source colors.  Full
     teacher colors still come from ``query_backend``; using ``structural_field.query`` instead is a
-    semantic error and is deliberately not hidden by this adapter.
+    semantic error and is deliberately not hidden by this adapter. ``device`` owns the structural
+    metadata while ``query_device`` may independently place the indexed density and appearance
+    queries. In particular, ``device="cpu", query_device="cuda"`` matches realtime-gs's CPU
+    CompactCarve metadata contract while accelerating its pluggable point queries.
     """
     if not isinstance(packet, CodecNativeField):
         raise TypeError("packet must be a CodecNativeField")
@@ -194,6 +213,7 @@ def make_realtime_gs_view(
         means_local, coordinate_space="crop", apply_alpha=False
     ).astype(np.float32)
     target_device = torch.device(device)
+    backend_device = target_device if query_device is None else torch.device(query_device)
 
     def tensor(value: np.ndarray) -> Any:
         return torch.from_numpy(np.ascontiguousarray(value)).to(target_device)
@@ -228,23 +248,29 @@ def make_realtime_gs_view(
         producer_source_digest=_producer_source_digest(),
         fit_config_digest=_config_digest(packet),
     )
-    if target_device.type == "cpu":
+    if backend_device.type == "cpu":
+        if target_device.type != "cpu":
+            raise ValueError(
+                "a CPU codec-native query backend requires a CPU structural field"
+            )
         index = GaussianObservationIndex(field, tile_size=tile_size)
-    elif target_device.type == "cuda":
+    elif backend_device.type == "cuda":
         from rtgs.core.observation2d_cuda import GaussianObservationIndexCuda
 
         index = GaussianObservationIndexCuda.from_field(
             field,
             tile_size=tile_size,
-            device=target_device,
+            device=backend_device,
         )
     else:
-        raise ValueError("the codec-native realtime-gs adapter supports CPU or CUDA devices")
+        raise ValueError(
+            "the codec-native realtime-gs adapter supports CPU or CUDA query devices"
+        )
     backend = CodecNativeObservationBackend(
         packet,
         field,
         index,
-        device=target_device,
+        device=backend_device,
         payload_bytes=payload_bytes,
     )
     alpha = torch.from_numpy(packet.alpha_mask.copy()).to(target_device)
