@@ -5030,7 +5030,7 @@ tree:
     type: experiment
     title: "Codec-native dual plane survives an exposed matched-10k multiview assay"
     provenance: ai-executed
-    timestamp: "2026-08-06T23:10+02:00"
+    timestamp: "2026-08-06T19:36+02:00"
     result: >
       Added the CPU-structural/CUDA-query adapter seam and a source-grounded multiview driver, then
       ran six immutable Janelle development profiles. The retained v4 uses all 23 non-reporting
@@ -5054,7 +5054,7 @@ tree:
     type: dead_end
     title: "Strong exact-mask pressure does not remove multiview artifacts for free"
     provenance: ai-executed
-    timestamp: "2026-08-06T23:10+02:00"
+    timestamp: "2026-08-06T19:36+02:00"
     hypothesis: >
       Raising exact-mask alpha/outside weights throughout training, or applying the same pressure in
       a short fixed-topology low-learning-rate polish, will remove the matched-10k candidate's halo
@@ -5080,7 +5080,7 @@ tree:
     type: decision
     title: "Retain matched-10k v4 as a development Pareto point without promotion"
     provenance: ai-executed
-    timestamp: "2026-08-06T23:10+02:00"
+    timestamp: "2026-08-06T19:36+02:00"
     choice: >
       Keep the q92/512-structure, 23-view, normal-mask, 10,000-cap recipe as CORE-016's simplest
       surviving downstream development configuration. Preserve it default-off and stop tuning the

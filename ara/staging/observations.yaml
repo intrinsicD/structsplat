@@ -1736,7 +1736,7 @@ observations:
     crystallized_via: null
     stale: false
   - id: O131
-    timestamp: "2026-08-06T23:10+02:00"
+    timestamp: "2026-08-06T19:36+02:00"
     provenance: ai-executed
     content: >
       On one exposed reduced-resolution Janelle frame, a paired codec-native q92/512-structure
@@ -1759,7 +1759,7 @@ observations:
     crystallized_via: null
     stale: false
   - id: O132
-    timestamp: "2026-08-06T23:10+02:00"
+    timestamp: "2026-08-06T19:36+02:00"
     provenance: ai-executed
     content: >
       Stronger exact-mask supervision is a real rate--silhouette tradeoff, not a free artifact

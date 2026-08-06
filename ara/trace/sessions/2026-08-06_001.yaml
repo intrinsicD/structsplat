@@ -2,9 +2,9 @@ session:
   id: "2026-08-06_001"
   date: "2026-08-06"
   started: "2026-08-06T00:56+02:00"
-  last_turn: "2026-08-06T18:02+02:00"
-  turn_count: 3
-  summary: "Published the earlier contraction batch, then implemented, audited and merged the default-off CORE-016 codec-native dual-plane pilot."
+  last_turn: "2026-08-06T19:36+02:00"
+  turn_count: 4
+  summary: "Published the contraction and CORE-016 batches, then validated the dual plane in exposed 23-view downstream training, retaining matched-10k v4 and rejecting two alpha-cleanup variants."
 
 events_logged:
   - turn: 1
@@ -73,6 +73,36 @@ events_logged:
     routing: staged
     provenance: ai-executed
     summary: "Staged the exact exposed C0001 packet, pixel-center, rate-scope, ringing, and synthetic-lift result without general promotion."
+  - turn: 4
+    type: experiment
+    id: "N252"
+    routing: direct
+    provenance: ai-executed
+    summary: "Ran six exposed downstream profiles; matched-10k v4 gives 4.027x lower teacher-input bytes and better reporting metrics at equal count, but fails native artifact review and complete-resource speed."
+  - turn: 4
+    type: dead_end
+    id: "N253"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rejected strong exact-mask training and late fixed-topology mask polish because both trade alpha gains for failed v4 PSNR/gradient retention."
+  - turn: 4
+    type: decision
+    id: "N254"
+    routing: direct
+    provenance: ai-executed
+    summary: "Retained normal-loss matched-10k v4 as a default-off development Pareto point and stopped tuning the reused reporting views."
+  - turn: 4
+    type: claim
+    id: "O131"
+    routing: staged
+    provenance: ai-executed
+    summary: "Staged the narrow exposed multiview rate/quality/time/resource interpretation without general promotion."
+  - turn: 4
+    type: claim
+    id: "O132"
+    routing: staged
+    provenance: ai-executed
+    summary: "Staged stronger mask supervision as a measured rate--silhouette tradeoff, not a free artifact repair."
 
 ai_actions:
   - turn: 1
@@ -115,6 +145,21 @@ ai_actions:
       - "docs/research/2026-08-06-codec-native-dual-plane-results-audit.md"
       - "tasks/CORE-016-codec-native-dual-plane-field.md"
       - "ara/evidence/core016-codec-native-dual-plane-janelle-2026-08-06/run.md"
+  - turn: 4
+    action: "Added the CPU-metadata/CUDA-query adapter seam and integration test; implemented and executed the source-grounded CORE-016 v1--v6 downstream driver; visually audited all reporting views; independently replayed v2--v6 receipts, 100 packets, source hashes, curves, models and decisions; retained v4, rejected v5/v6, synchronized docs/task/ADR/ARA, passed two complete 1,673-test gates, and committed the implementation plus provisional self-review as 30f62c9 and 926d5bd."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/realtime_gs_adapter.py"
+      - "tests/test_codec_native_field.py"
+      - "scripts/experiments/core016_multiview_downstream.py"
+      - "tasks/CORE-016-codec-native-dual-plane-field.md"
+      - "docs/research/2026-08-06-codec-native-dual-plane-results-audit.md"
+      - "docs/adr/0032-codec-native-dual-plane-observation.md"
+      - "docs/architecture.md"
+      - "README.md"
+      - "ara/evidence/core016-multiview-downstream-janelle-2026-08-06/run.md"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/exploration_tree.yaml"
 
 claims_touched: []
 
@@ -125,6 +170,8 @@ key_context:
     excerpt: "The user explicitly requested that all current changes and branches be committed, merged into main, and pushed to the remote."
   - turn: 3
     excerpt: "The remaining unpublished CORE-016 implementation was completed under the active realtime-gs pipeline objective and included in the requested direct main publication."
+  - turn: 4
+    excerpt: "The active objective required a competitive realtime-gs-ready Gaussian-field pipeline with no visible artifacts; the exposed full-view assay retained v4 quantitatively but failed that strict visual endpoint."
 
 open_threads:
   - "Distinct numerical/scientific review of HIER-009."
@@ -135,10 +182,14 @@ open_threads:
   - "Distinct numerical/scientific review of CORE-016 and ADR-0032."
   - "Analytic or supersampled phase-stratified continuous-query ringing assay."
   - "Held-out matched full-frame complete-rate comparison against conventional and Gaussian packets."
-  - "Real calibrated multiview realtime-gs lift/training test with independent structural-count sweeps."
+  - "Distinct review of commit 30f62c9 and the exposed multiview evidence boundary."
+  - "Preregistered clean full-resolution multiscene/multiseed test with matched preprocessing and sealed reporting views."
+  - "Geometry/visibility-specific artifact objective for halos, floaters, thin structures, and disocclusions."
+  - "Production-matched input generation, final 3D codec bytes, render FPS, and end-to-end timing."
+  - "Portable maintained report schema/checker for any reused CORE-016 downstream family."
 
 ai_suggestions_pending:
   - "Enable the 3x3 halo only where contraction severity predicts a benefit and otherwise retain touched-only recovery."
   - "Measure per-parameter movement separately for topology-touched and neighbor rows."
   - "Fuse the appearance lattice query into a parity-checked production CUDA or texture backend."
-  - "Kill the dual-plane candidate if frozen ringing, matched-rate, or real multiview guards fail."
+  - "Do not tune alpha weights again on C0004/C0025/C1004; move to disjoint full-resolution data and explicit geometry/visibility errors."
