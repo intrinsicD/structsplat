@@ -283,7 +283,7 @@ CORE-013, BENCH-019, BENCH-020, COMP-013, BENCH-025, HIER-005/009, BENCH-002, AD
 - Driver: codex-root
 - Reviewer: codex-root
 - Turn: reviewer
-- Reviewed revision: source bundle `d88688bd8347a9174992732ae64d5e2181825feedc48b9ba932a3f3fa9b3a494`
+- Reviewed revision: commit `30f62c9`
 
 ### Handoff log
 
@@ -368,7 +368,8 @@ PSNR is 25.188/24.012 dB; all within-run scalar gates pass but native visual rev
 independent v2--v6 replay validates every receipt, 100 byte-identical packet resaves, source tensor
 hashes, split membership, curve counts, finite models, and exact decision arithmetic. The maintained
 report checker rejects the documented custom schema. The focused adapter slice passes 14 tests and
-targeted Ruff/compile/docs/ARA checks pass; the complete verification gate is the pre-commit gate.
+targeted Ruff/compile/docs/ARA checks pass. `./scripts/verify.sh` passes with 1,673 tests, 7 skips,
+514 deselections, and all five structural checkers green before commit `30f62c9`.
 
 #### Assumptions
 
@@ -406,6 +407,62 @@ Obtain distinct code/scientific review. If CORE-016 continues, stop tuning the e
 views and preregister a clean full-resolution multiscene assay with matched preprocessing, multiple
 seeds, production input-generation timing, final 3D byte/FPS accounting, and an explicit
 geometry/visibility artifact objective rather than another global alpha-weight sweep.
+
+### Review
+
+#### Verdict
+
+Provisionally accepted (self-reviewed)
+
+#### Self-reviewed
+
+Yes
+
+#### Correctness
+
+Commit `30f62c9` preserves the NumPy/torch import boundary and the required structural/query pair.
+The adapter keeps CPU metadata valid while moving indexed structure and appearance work to CUDA,
+returns query values to the caller's device, and mirrors realtime-gs telemetry. The new CUDA parity
+test and six executed profiles exercise the real consumer. Review found and corrected the missing
+v5/v6 cross-run gates and the profile-dependent plot label before commit. No differentiable
+StructSplat loss/render path or maintained format/default is changed.
+
+#### Evidence quality
+
+Every protocol was written before its corresponding outcome, negatives were retained, reporting
+views were excluded from packet construction/training, and the independent replay validates hashes,
+bytes, cold packets, source tensors, splits, curves, finite models, and decision arithmetic. Native
+visuals are inspected at stored resolution. Evidence remains diagnostic: one exposed frame/nominal
+seed, reused reporting cameras, unmatched preprocessing/input-production time, non-bitwise CUDA
+density, and an unrecognized custom report schema prohibit confirmation or promotion.
+
+#### Simplicity
+
+The production-facing change is one optional `query_device` seam plus telemetry propagation in the
+existing lazy adapter. All orchestration, profiles, report generation, and post-hoc variants remain
+in one bounded `scripts/experiments/` driver. The retained method is the simpler normal-loss 10k-cap
+v4; v5/v6 machinery remains reproducible negative evidence rather than a default stage.
+
+#### Missing cases
+
+Distinct code/scientific review, clean portable report packaging, multiple scenes/seeds/devices,
+matched full-resolution preprocessing and input production, sealed held-out/confirmation views,
+render FPS, final 3D codec bytes, end-to-end wall time, and a geometry/visibility-specific artifact
+objective remain absent. Thin structures, hair, disocclusions, and non-black backgrounds are not
+separately stratified.
+
+#### Required changes
+
+None for retaining the implementation as a default-off development pilot. Distinct review and a
+new preregistered dataset/protocol are required before any scientific acceptance, default change,
+or broader compression/convergence/artifact claim.
+
+#### Optional improvements
+
+Add a maintained checker/schema if this diagnostic family is reused; isolate RTGSV production time
+with a clean matched producer; make CUDA deterministic or run paired seeds; report final model
+codec/FPS; and test an explicit visibility/geometry regularizer on disjoint full-resolution data
+instead of further alpha-weight tuning on the exposed cameras.
 
 ## Notes
 
