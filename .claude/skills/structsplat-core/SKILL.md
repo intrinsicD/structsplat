@@ -54,6 +54,12 @@ IntrinsicEngine as an RHI pass.
   removes the obvious low-count block lattice and protection helps patch error, but it redistributes
   error at 8k and every overlap cell still fails the local gate; only the HIER-005 delta/touched 8k
   fallback passes. None enters the maintained pipeline.
+- `codec_native_field.py` / `realtime_gs_adapter.py` — CORE-016/ADR-0032's separate default-off
+  dual-plane packet experiment. A charged conventional image payload is decoded into a continuous
+  cardinal-prefiltered Gaussian lattice; an independent sparse nonnegative Field V2 measure owns
+  lift proposals. The lazy adapter must expose both as a structural field/query-backend pair.
+  Pixel-center feasibility on one exposed crop is not a continuous-quality, compression, or
+  downstream-3D claim, and neither module enters maintained conversion.
 
 ## Invariants (do not break without an ADR)
 1. Init-time math stays **NumPy and importable without torch**. Autograd stays in torch modules.

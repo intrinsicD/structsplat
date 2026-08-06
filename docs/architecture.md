@@ -111,6 +111,26 @@ active, and target counts are reached. HIER-009 therefore remains default-off: r
 protection mechanisms for a local-artifact-aware successor, not as a production or compression
 result.
 
+CORE-016/ADR-0032 tests a different ownership boundary instead of another explicit-row
+contraction. Its default-off `.sgdp` packet charges a conventional appearance payload, decodes it
+into signed cardinal-prefiltered coefficients of a finite normalized Gaussian lattice, and stores
+a separate exact-count Field V2 structural measure with zero RGB and nonnegative mass. The two are
+presented to realtime-gs only as a pair: structural `GaussianObservationField` proposals plus an
+appearance `ObservationQueryBackend`. Neither plane enters the maintained StructSplat pipeline,
+and the realtime-gs checkout is not modified.
+
+The exposed C0001 development pilot survives only its narrow systems killing test. The selected
+complete packet is 3,896,344 bytes and is exact below display quantization at decoded pixel
+centers; its paired backend has NumPy/torch parity and drives a synthetic two-view CompactCarve
+smoke. The apparent 3.662x original-file ratio compares a full source frame with a crop packet; the
+crop-local canonical-PNG ratio is 1.139x. Off-grid bilinear-control sampling still finds 3.784%
+local-envelope escape and 0.0244% global range escape, and no real multiview sufficiency test
+exists. It is therefore implementation evidence, not a general compression, convergence,
+continuous-quality, artifact-freedom, or downstream-3D result. The research boundary and audit are
+[`2026-08-06-codec-native-dual-plane-portfolio.md`](research/2026-08-06-codec-native-dual-plane-portfolio.md)
+and
+[`2026-08-06-codec-native-dual-plane-results-audit.md`](research/2026-08-06-codec-native-dual-plane-results-audit.md).
+
 BENCH-020's default-off `benchmarks.field_semantics_factorial` controller now provides the sealed
 selection boundary around that object: explicit semantic and alpha-policy records, fixed-row and
 equal-canonical-raw-byte lanes, ordered-geometry prefix seals, three outcome-separated phases,
@@ -193,6 +213,11 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   Field V2 semantic boundary and CPU oracle. It stores RS geometry, authoritative additive RGB,
   optional independent mass/filter/background/packed alpha/camera state, explicit renderer and
   coordinate semantics, and a lossless hashed reference container without importing torch.
+  `codec_native_field` is the separate CORE-016/ADR-0032 packet/query oracle: Pillow owns the
+  charged JPEG/WebP appearance payload, NumPy owns deterministic coefficient prefiltering and the
+  finite Gaussian-lattice evaluator, and Field V2 owns only sparse structural proposals.
+  `realtime_gs_adapter` imports torch and realtime-gs lazily to construct their required paired
+  structural-field/query-backend view. Both modules remain absent from supported conversion.
   `pixel_contraction` is a separate HIER-005 research producer: its default leaf and contraction
   path is NumPy-only, while conversion to `GaussianField`, maintained additive rendering, and the
   optional recovery fits import torch lazily. The default `touched` recovery scope forms
@@ -284,6 +309,11 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   including exact-prefit and Schur receipts, optimizer attribution, feature/centre/worst-error
   visuals, every numeric snapshot/checkpoint curve, cold fields, and separated native/evaluation
   byte ledgers.
+  `scripts/experiments/core016_codec_native_field.py` is the bounded codec-native diagnostic. It
+  writes exact packet/component ledgers, pixel/off-grid/structural/query metrics, generic numeric
+  curves, worst crops, source snapshots, and contextual controls. Its custom manifest is internally
+  hashed but is not a schema accepted by `check_report_bundle.py`; it must not be called a
+  maintained portable report.
 - **agent workflow:** `tasks/INDEX.md` and task files are the work authority, while
   `tasks/SESSION-BRIEF.md` is a deterministic derived view. `scripts/check_task_policy.py`
   validates dependency and review state; `scripts/check_agent_workflow.py` checks agreement among

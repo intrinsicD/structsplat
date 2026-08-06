@@ -13,6 +13,7 @@ unless the owning task says so.
 - `HIER-007` — Artifact-first frontier quadtree reconciliation (in-progress; `tasks/HIER-007-artifact-first-frontier-quadtree.md`)
 - `HIER-008` — Overlap lattice and feature-safe elimination (in-progress; `tasks/HIER-008-overlap-lattice-feature-elimination.md`)
 - `HIER-009` — Dynamic overlap contraction with neighborhood recovery (in-review; `tasks/HIER-009-dynamic-overlap-neighborhood-recovery.md`)
+- `CORE-016` — Codec-native dual-plane Gaussian observation field (in-progress; `tasks/CORE-016-codec-native-dual-plane-field.md`)
 - `DOCS-006` — Repository-native experiment workflow skill (in-progress; `tasks/DOCS-006-experiment-workflow-skill.md`)
 - `DOCS-007` — 2D Gaussian image-field state-of-the-art review (in-review; `tasks/DOCS-007-2d-gaussian-sota-review.md`)
 
@@ -66,6 +67,6 @@ unless the owning task says so.
 
 ## Ledger summary
 
-- 101 active-table outcomes
+- 102 active-table outcomes
 - 45 retired tasks
 - 51 active-table rows already carrying a closed/non-actionable disposition

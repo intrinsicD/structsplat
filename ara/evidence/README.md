@@ -57,6 +57,16 @@ paths were the live source location when the historical runs were produced.
   so no compression/default claim follows. Evidence note:
   `ara/evidence/hier009-dynamic-overlap-neighborhood-recovery-janelle-diagnostic-2026-08-06/run.md`.
 
+- `core016-codec-native-dual-plane-janelle-2026-08-06`: Default-off exposed C0001 systems pilot
+  for a charged conventional-codec appearance lattice plus 512-row independent structural measure.
+  The 3,896,344-byte packet replays decoded pixel centers below display quantization and has
+  NumPy/realtime-gs query parity plus a synthetic two-view lift smoke. Its 3.662x source ratio mixes
+  a full-frame source with a crop packet (crop-PNG ratio 1.139x), the selected configuration is
+  post-hoc, and off-grid sampling retains measurable envelope escape. This is implementation and
+  killing-test evidence only; no compression, convergence, artifact-free, or downstream-3D claim
+  follows. Evidence note:
+  `ara/evidence/core016-codec-native-dual-plane-janelle-2026-08-06/run.md`.
+
 - `hier005-selective-recovery-janelle-diagnostic-2026-08-05`: Dirty one-image Janelle diagnostic
   for progress-normalized optimizer recovery over contraction-touched rows only. At N=8,192 the
   run removes the visible square/tree holes and changes masked PSNR from 34.076 to 52.339 dB while

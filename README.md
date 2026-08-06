@@ -239,6 +239,17 @@ with camera, fitted window, renderer semantics, source hashes, and optional exac
 formats are not interchangeable, and the 168,000-byte cap applies to the complete `.rtgsv` file,
 not to a native `.npz`.
 
+CORE-016/ADR-0032 additionally provides a **default-off research packet** (`.sgdp`) that is not a
+third supported conversion format. It stores a fully charged conventional appearance payload and a
+separate sparse structural Field V2 measure, then exposes them to realtime-gs as a required
+structural-field/query-backend pair. The task-local diagnostic is
+`scripts/experiments/core016_codec_native_field.py`; the selected one-image development result
+demonstrates pixel-center replay and interface compatibility, but not held-out compression,
+artifact-free off-grid interpolation, or real multiview quality. See the
+[research portfolio](docs/research/2026-08-06-codec-native-dual-plane-portfolio.md),
+[ADR-0032](docs/adr/0032-codec-native-dual-plane-observation.md), and
+[results audit](docs/research/2026-08-06-codec-native-dual-plane-results-audit.md).
+
 ### One image → native 2D Gaussian field → image
 
 `image-to-gaussians2d` is an explicit alias for `fit`. This example writes

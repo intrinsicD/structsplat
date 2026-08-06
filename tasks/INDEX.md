@@ -107,6 +107,7 @@ replay-valid; do not rewrite those task bytes merely to duplicate this table.
 | CORE-014 | Additive production pipeline (default-off) | todo — integrate only the frozen winners under the sole conversion entry point | CORE-013, BENCH-021/025, COMP-013/014, FIT-030, PORT-006, ADR-0006 |
 | BENCH-022 | Additive production confirmation | todo — sealed complete-pipeline go/no-go against native-additive and normalized controls | CORE-014, BENCH-019/020/021/025, COMP-013/014, PORT-006, BENCH-002 |
 | CORE-015 | Promote Observation Field V2 conditionally | todo — change defaults only on BENCH-022's exact positive profile digest; otherwise abandon | BENCH-022, CORE-014 |
+| CORE-016 | Codec-native dual-plane Gaussian observation field | in-progress — default-off continuous appearance/structural-measure killing pilot; no pipeline, semantic, codec, or realtime-gs default claim | CORE-013, BENCH-019/020, COMP-013, BENCH-025, HIER-005/009, BENCH-002, ADR-0006 |
 | BENCH-023 | Amortized encoder confirmation | todo — held-out Field V2 quality/rate/latency and training break-even | FF-002/003, BENCH-022/025, COMP-013/014, BENCH-002 |
 | BENCH-024 | Temporal field-reuse killing test | todo — same-camera warm-start/shared-geometry/delta opportunity only | CORE-014, COMP-013/014, BENCH-022/025, BENCH-002 |
 | BENCH-025 | Structured-codec necessity gate | todo — test whether seed-generated local structure beats the complete direct codec at usable cold-query cost | BENCH-020, COMP-008/009/013, CORE-013, BENCH-002 |
