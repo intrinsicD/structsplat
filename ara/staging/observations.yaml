@@ -1695,3 +1695,43 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O129
+    timestamp: "2026-08-06T18:02+02:00"
+    provenance: ai-executed
+    content: >
+      A realtime-gs-facing 2D observation packet can separate appearance-query fidelity from sparse
+      lift structure without changing either maintained repository. Persist and charge a
+      conventional decoded raster, deterministically derive signed coefficients for a finite
+      normalized Gaussian lattice, store an independent nonnegative structural Field V2 measure,
+      and require consumers to propagate the structural field together with its appearance query
+      backend. Neither plane alone is a faithful replacement for the pair.
+    context: >
+      CORE-016 implements this boundary in a strict v2 packet, adapter, tests, ADR, diagnostic and
+      evidence note. The implementation was committed and merged to main as a default-off pilot;
+      no maintained pipeline, semantic default, codec format, or realtime-gs source was changed.
+    potential_type: architecture
+    bound_to: [N250, N251]
+    promoted: true
+    promoted_to: "logic/solution/architecture.md:A13"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O130
+    timestamp: "2026-08-06T18:02+02:00"
+    provenance: ai-executed
+    content: >
+      On exposed C0001, the post-hoc selected 3,896,344-byte dual-plane packet is below display
+      quantization at decoded pixel centers and passes NumPy/realtime-gs query parity plus a
+      synthetic two-view CompactCarve smoke. Its apparent 3.662x source ratio is scope-mismatched;
+      crop-PNG ratio is 1.139x. Off-grid bilinear-control sampling retains 3.784% local-envelope
+      escape and 0.0244% global range escape. These facts do not establish held-out compression,
+      continuous-scene quality, matched convergence, or real multiview structural sufficiency.
+    context: >
+      The custom diagnostic manifest, exact packet ledger, cold resave, pixel visuals, focused
+      tests and full gate were audited. The setting is exposed and post-hoc, the maintained report
+      checker does not recognize the custom schema, and the user has not commented on the result.
+    potential_type: claim
+    bound_to: [N250, N251]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

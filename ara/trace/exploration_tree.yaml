@@ -4981,3 +4981,48 @@ tree:
       - "git branch --no-merged main: empty"
     also_depends_on: [N244, N247, N248]
     status: resolved
+  - id: N250
+    type: experiment
+    title: "Codec-native dual-plane packet survives a narrow exposed systems pilot"
+    provenance: ai-executed
+    timestamp: "2026-08-06T18:02+02:00"
+    result: >
+      Implemented a strict complete-byte v2 packet with a charged conventional appearance payload,
+      deterministic cardinal-prefiltered finite Gaussian queries, a separate 512-row nonnegative
+      structural Field V2 measure, and a lazy paired realtime-gs backend. On exposed C0001, the
+      selected post-hoc lossless-WebP/sigma-0.45/radius-3/eight-step packet is 3,896,344 bytes,
+      replays decoded pixel centers below display quantization, and matches realtime-gs colors and
+      structural weights within 1.19e-7 and 1.43e-6. Existing CompactCarve consumes two paired
+      backends and deterministically emits four finite 3D rows. The 3.662x source ratio mixes a
+      full-frame JPEG with a crop packet; crop-PNG ratio is 1.139x. Off-grid bilinear-control
+      sampling still gives 3.784% local-envelope and 0.0244% global-range escape. Thirteen focused
+      compatibility tests and the full 1,673-pass repository gate succeed. The task-local custom
+      manifest is independently hash-valid but is not accepted by the maintained report checker.
+    evidence:
+      - "ara/evidence/core016-codec-native-dual-plane-janelle-2026-08-06/run.md"
+      - "docs/research/2026-08-06-codec-native-dual-plane-results-audit.md"
+      - "docs/research/2026-08-06-codec-native-dual-plane-portfolio.md"
+      - "commit 8b1aa81774973adadea265b5286fcf03ee607fe6"
+      - "./scripts/verify.sh: 1673 passed, 6 skipped; all structural gates OK"
+    also_depends_on: [N207, N209, N215, N217, N247, N249]
+    status: resolved
+  - id: N251
+    type: decision
+    title: "Retain the codec-native dual plane as a default-off surviving pilot"
+    provenance: ai-executed
+    timestamp: "2026-08-06T18:02+02:00"
+    choice: >
+      Preserve CORE-016/ADR-0032 as a default-off systems boundary and publish its implementation to
+      main, while withholding compression, convergence, continuous-quality, artifact-freedom,
+      structural-sufficiency, and real downstream-3D claims until matched held-out evidence exists.
+    alternatives:
+      - "Kill the packet because the off-grid ringing guard is not yet resolved."
+      - "Promote the exposed pixel-center result as the maintained conversion pipeline."
+      - "Continue explicit-row contraction without separating appearance and structure."
+    evidence:
+      - "N250"
+      - "docs/adr/0032-codec-native-dual-plane-observation.md"
+      - "tasks/CORE-016-codec-native-dual-plane-field.md"
+      - "origin/main verified at 8b1aa81774973adadea265b5286fcf03ee607fe6"
+    also_depends_on: [N245, N248, N249, N250]
+    status: resolved

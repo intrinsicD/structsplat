@@ -2,9 +2,9 @@ session:
   id: "2026-08-06_001"
   date: "2026-08-06"
   started: "2026-08-06T00:56+02:00"
-  last_turn: "2026-08-06T08:39+02:00"
-  turn_count: 2
-  summary: "Implemented and audited HIER-009, then published the complete DOCS-007/HIER-005--009 research batch to origin/main."
+  last_turn: "2026-08-06T18:02+02:00"
+  turn_count: 3
+  summary: "Published the earlier contraction batch, then implemented, audited and merged the default-off CORE-016 codec-native dual-plane pilot."
 
 events_logged:
   - turn: 1
@@ -49,6 +49,30 @@ events_logged:
     routing: direct
     provenance: user
     summary: "Authorized committing the complete project worktree, integrating all unique local branch commits into main, and pushing origin/main."
+  - turn: 3
+    type: experiment
+    id: "N250"
+    routing: direct
+    provenance: ai-executed
+    summary: "Implemented and audited the codec-native dual-plane packet; exposed pixel-center and RTGS plumbing pass, while off-grid ringing and matched downstream evidence remain open."
+  - turn: 3
+    type: decision
+    id: "N251"
+    routing: direct
+    provenance: ai-executed
+    summary: "Retained CORE-016 as a default-off surviving pilot without promoting compression, convergence, continuous-quality, or downstream-3D claims."
+  - turn: 3
+    type: architecture
+    id: "O129"
+    routing: crystallized
+    provenance: ai-executed
+    summary: "Crystallized the required codec-backed appearance plus sparse structural-backend pair as architecture A13 through merged artifact commitment."
+  - turn: 3
+    type: claim
+    id: "O130"
+    routing: staged
+    provenance: ai-executed
+    summary: "Staged the exact exposed C0001 packet, pixel-center, rate-scope, ringing, and synthetic-lift result without general promotion."
 
 ai_actions:
   - turn: 1
@@ -78,6 +102,19 @@ ai_actions:
     action: "Audited the 47-file publish set, excluded 38 transient IntelliJ duplicate-module files, passed the full 1,662-test verification gate, committed as 2806973, fast-forwarded the sole topic branch into main, pushed origin/main, and verified local and remote hashes plus an empty unmerged-branch set."
     provenance: ai-executed
     files_changed: []
+  - turn: 3
+    action: "Implemented the v2 dual-plane packet, cardinal prefilter, structural allocator, lazy realtime-gs adapter, comprehensive diagnostic and 13 focused tests; audited the exposed result, passed 1,673 portable tests plus all structural gates, committed as 8b1aa81, fast-forwarded main, pushed origin/main, and preserved all unrelated IntelliJ state."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/codec_native_field.py"
+      - "src/structsplat/realtime_gs_adapter.py"
+      - "scripts/experiments/core016_codec_native_field.py"
+      - "tests/test_codec_native_field.py"
+      - "docs/adr/0032-codec-native-dual-plane-observation.md"
+      - "docs/research/2026-08-06-codec-native-dual-plane-portfolio.md"
+      - "docs/research/2026-08-06-codec-native-dual-plane-results-audit.md"
+      - "tasks/CORE-016-codec-native-dual-plane-field.md"
+      - "ara/evidence/core016-codec-native-dual-plane-janelle-2026-08-06/run.md"
 
 claims_touched: []
 
@@ -86,6 +123,8 @@ key_context:
     excerpt: "The user clarified that recovery should optimize the touched Gaussian plus its direct 3x3 Gaussian neighbors, rather than only the touched row."
   - turn: 2
     excerpt: "The user explicitly requested that all current changes and branches be committed, merged into main, and pushed to the remote."
+  - turn: 3
+    excerpt: "The remaining unpublished CORE-016 implementation was completed under the active realtime-gs pipeline objective and included in the requested direct main publication."
 
 open_threads:
   - "Distinct numerical/scientific review of HIER-009."
@@ -93,7 +132,13 @@ open_threads:
   - "Adaptive halo activation and local SSE/pixel/patch Pareto checkpoint acceptance."
   - "Matched optimized-row FLOP or time-to-target convergence comparison."
   - "Complete cold codec and exact original-file rate comparison."
+  - "Distinct numerical/scientific review of CORE-016 and ADR-0032."
+  - "Analytic or supersampled phase-stratified continuous-query ringing assay."
+  - "Held-out matched full-frame complete-rate comparison against conventional and Gaussian packets."
+  - "Real calibrated multiview realtime-gs lift/training test with independent structural-count sweeps."
 
 ai_suggestions_pending:
   - "Enable the 3x3 halo only where contraction severity predicts a benefit and otherwise retain touched-only recovery."
   - "Measure per-parameter movement separately for topology-touched and neighbor rows."
+  - "Fuse the appearance lattice query into a parity-checked production CUDA or texture backend."
+  - "Kill the dual-plane candidate if frozen ringing, matched-rate, or real multiview guards fail."

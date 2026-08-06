@@ -254,3 +254,28 @@
   `ara/evidence/hier009-dynamic-overlap-neighborhood-recovery-janelle-diagnostic-2026-08-06/run.md`]
 - **Dependencies**: [N224, N228, N244, N245, N246, N247, N248]
 - **From staging**: O126
+
+## A13: Codec-native appearance and sparse lift structure form a required pair
+
+- **Design**: Store and charge a conventional image-codec appearance payload, then
+  deterministically derive signed coefficients for a bounded finite normalized Gaussian lattice
+  that answers continuous color queries. Store proposal geometry separately as an exact-count Field
+  V2 structural measure with zero RGB and independent nonnegative mass. At the realtime-gs seam,
+  require the sparse structural `GaussianObservationField` and the authoritative appearance
+  `ObservationQueryBackend` to travel together; neither object alone is a faithful teacher.
+- **Status**: implemented as default-off CORE-016/ADR-0032 and retained as a surviving systems
+  pilot. One exposed post-hoc crop verifies packet, pixel-center and adapter plumbing but leaves
+  off-grid ringing, matched full-frame rate, held-out quality, real multiview structural
+  sufficiency, production query throughput, and distinct numerical/scientific review open. It does
+  not enter maintained conversion or change either repository's defaults.
+- **Provenance**: ai-executed
+- **Crystallized via**: artifact-commitment
+- **Evidence**: [`src/structsplat/codec_native_field.py`,
+  `src/structsplat/realtime_gs_adapter.py`,
+  `scripts/experiments/core016_codec_native_field.py`,
+  `tests/test_codec_native_field.py`,
+  `docs/adr/0032-codec-native-dual-plane-observation.md`,
+  `tasks/CORE-016-codec-native-dual-plane-field.md`,
+  `ara/evidence/core016-codec-native-dual-plane-janelle-2026-08-06/run.md`]
+- **Dependencies**: [N207, N209, N215, N217, N245, N248, N250, N251]
+- **From staging**: O129

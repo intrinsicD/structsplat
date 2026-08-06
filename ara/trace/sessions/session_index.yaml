@@ -148,8 +148,8 @@ sessions:
     open_threads: 10
   - id: "2026-08-06_001"
     date: "2026-08-06"
-    summary: "Implemented and audited HIER-009, then published the complete DOCS-007/HIER-005--009 research batch to origin/main."
-    turn_count: 2
-    events_count: 7
+    summary: "Published the earlier contraction batch, then implemented, audited and merged the default-off CORE-016 codec-native dual-plane pilot."
+    turn_count: 3
+    events_count: 11
     claims_touched: []
-    open_threads: 5
+    open_threads: 9
