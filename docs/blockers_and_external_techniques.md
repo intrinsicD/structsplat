@@ -115,3 +115,9 @@ must stay “not run,” not be replaced by a local analogue under the native na
 
 The exact executable handoff is in
 `ara/prompts/continue-structsplat-actual-rate-research.md`.
+
+A composition-focused pipeline design and ordered evidence program consistent with this order —
+speed, convergence, quality, and complete-stream rate, built only from already-measured mechanisms
+and existing task gates — is recorded in
+[research/2026-08-07-fast-convergent-compressive-pipeline-design.md](research/2026-08-07-fast-convergent-compressive-pipeline-design.md)
+(2026-08-07, proposal only; no claim or default change).
