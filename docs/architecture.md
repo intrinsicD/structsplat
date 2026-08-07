@@ -186,14 +186,15 @@ post-selection contraction moves only close cross-view duplicates, and fused-dep
 strictest-visible-camera footprint cap define surfel extent. The packet grammar, realtime-gs
 optimizer, and supported conversion path remain unchanged.
 
-The exposed `karate/frame_00005` four-arm diagnostic rejects this composition. The complete arm is
-better than the raw-known-ray ablation at terminal quality (+0.371 dB PSNR, higher MS-SSIM, lower
-LPIPS/gradient MAE, and 1,223 fewer final rows), showing that support/WSE is active. It nevertheless
-starts 0.969 dB below ordinary interior consensus instead of the required +2 dB, misses every
-fixed-prefix quality gate, never reaches the interior control's terminal PSNR, and ends 0.644 dB
-below it. Native reporting views contain broad gray sheets, radial streaks, floaters, black holes,
-and erased detail after the common optimizer. The route therefore remains a default-off negative
-control; its coherent field and compiler mechanisms are not a usable or supported geometry backend.
+The exposed `karate/frame_00005` four-arm diagnostic rejects this composition. The complete arm
+changes the raw-known-ray tradeoff (+0.0102 MS-SSIM, -0.0206 LPIPS, and 904 fewer final rows, but
+-0.3075 dB PSNR and worse gradient/p99 error), showing that support/WSE is active without producing
+a uniform quality win. It starts 0.969 dB below ordinary interior consensus instead of the required
++2 dB, misses every fixed-prefix quality gate, never reaches the interior control's terminal PSNR,
+and ends 0.928 dB below it. Replays flip the terminal raw/full PSNR ordering after density events.
+Native reporting views contain broad gray sheets, radial streaks, floaters, black holes, and erased
+detail after the common optimizer. The route therefore remains a default-off negative control; its
+coherent field and compiler mechanisms are not a usable or supported geometry backend.
 
 BENCH-020's default-off `benchmarks.field_semantics_factorial` controller now provides the sealed
 selection boundary around that object: explicit semantic and alpha-policy records, fixed-row and

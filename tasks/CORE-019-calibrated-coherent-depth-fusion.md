@@ -41,31 +41,31 @@ with overlap-safe surfel covariance and complete rate/time/quality accounting.
 
 ## Acceptance criteria
 
-- [ ] A lazy optional module imports without torch, realtime-gs, VGGT, or CUDA and exposes pinned
+- [x] A lazy optional module imports without torch, realtime-gs, VGGT, or CUDA and exposes pinned
       source/checkpoint receipts, injected-predictor tests, mixed-precision inference, bounded
       four-view grouping, and the single OOM fallback frozen below.
-- [ ] Every predicted group is aligned by one Sim(3) from predicted to known camera centers; only
+- [x] Every predicted group is aligned by one Sim(3) from predicted to known camera centers; only
       the group scale converts its depths, while known calibrated rays own back-projection. Views
       appearing in multiple groups use robust confidence-weighted depth fusion and MAD uncertainty.
-- [ ] Candidate acceptance distinguishes projective support, compatible occlusion, free-space
+- [x] Candidate acceptance distinguishes projective support, compatible occlusion, free-space
       contradiction, invalid evidence, and reporting-view exclusion. Output means are continuous
       back-projections/contractions and are never snapped to a pixel, voxel, KD-tree, or quadtree.
-- [ ] Structural and bounded flat-cover proposals carry explicit lineage. Consistency-gated local
+- [x] Structural and bounded flat-cover proposals carry explicit lineage. Consistency-gated local
       contraction and dynamic feature/normal/color-aware WSE produce an exact count, preserve a
       declared per-view cover floor, and report displacement, cluster, crowding, rejection, and
       feature-retention tails.
-- [ ] Degree-0 packet appearance, local normals, tangent coverage, bounded normal thickness, finite
+- [x] Degree-0 packet appearance, local normals, tangent coverage, bounded normal thickness, finite
       SPD covariance, opacity, lineage, depth, uncertainty, and score form a valid realtime-gs
       `CompactInitializationResult`; optional surface-cover reconciliation cannot change means,
       radiance, lineage, or count.
-- [ ] Synthetic tests cover exact calibrated planes/surfaces, group-scale recovery, overlap fusion,
+- [x] Synthetic tests cover exact calibrated planes/surfaces, group-scale recovery, overlap fusion,
       half-pixel conventions, occlusion versus contradiction, depth/color/normal discontinuities,
       deterministic exact-N WSE, continuous non-snapped centers, finite SPD covariance, missing
       evidence, malformed receipts, lazy import, and report-camera isolation.
-- [ ] A development-only four-arm run on the frozen scene/split below cold-reloads identical packet
+- [x] A development-only four-arm run on the frozen scene/split below cold-reloads identical packet
       hashes, uses the common realtime-gs optimizer/schedule, and stores every requested metric,
       curve, native visual, model, byte/time/memory receipt, and a replayable decision.
-- [ ] The complete candidate fails closed on any reporting-view smear, duplicate shell, trail,
+- [x] The complete candidate fails closed on any reporting-view smear, duplicate shell, trail,
       floater/sheet, grid imprint, boundary hole, or thin-feature deletion; scalar averages cannot
       override the native visual gate. No threshold may be rescued on this scene.
 - [ ] Task, Index, generated brief, architecture/ADR boundary, README/core skill where relevant,
@@ -175,15 +175,132 @@ CORE-016/017/018, CORE-013, BENCH-019/020, BENCH-002, ADR-0006/0032
 ## Agent workflow
 
 - Driver: codex-root
-- Reviewer: pending
-- Turn: driver
-- Reviewed revision: pending
+- Reviewer: codex-root
+- Turn: reviewer
+- Reviewed revision: commit `722696c`
 
 ### Handoff log
 
-Append exact `### Handoff` and `### Review` blocks using the schema in `tasks/README.md`. A formal
-confirmation requires a distinct prospective protocol review; self-review can retain only a
-diagnostic result.
+This exposed dirty-source diagnostic has no distinct prospective reviewer. The self-review below
+can retain the implementation and rejection only; it cannot approve a scientific claim or default.
+
+### Handoff
+
+#### Objective
+
+Review the lazy calibrated coherent-depth initializer and its frozen four-arm diagnostic, ensuring
+that the mixed full-vs-raw mechanism evidence cannot override the failed scalar and visual gates.
+
+#### Changes
+
+Added pinned four-view packet-only VGGT inference, per-group Sim(3) scale alignment to known
+calibration, robust overlapping depth/MAD fusion, occlusion-aware projective evidence, structural
+and cover proposals, hard feature anchors, compatibility-aware dynamic WSE, bounded post-selection
+contraction, and depth-normal compatible surfel cover. Added injected-predictor/synthetic/realtime-gs
+tests, the immutable four-arm driver, a portable explicit-nonclaim report schema/checker, and
+synchronized architecture, ADR, README, core skill, task, and research audit boundaries.
+
+#### Evidence
+
+The final immutable bundle is
+`results/core019_coherent_depth_karate_frame00005_2026-08-07_v5/`; manifest SHA-256 is
+`d196b10fc011a436c2b0b0f8b6fec610c7ac9f53c4906a19aa21b52ece0a5af2`. The report checker passes
+with `--allow-dirty`, all four arms cold-reload one packet-hash vector, all initial counts are
+10,000, and every final count is below 30,000. Full versus raw gains 0.01022 MS-SSIM, 0.02062 LPIPS,
+0.00197 SSIM, a better spacing tail, and 904 fewer final rows, but loses 0.3075 dB PSNR and worsens
+gradient/p99 error. Full starts 0.969 dB below interior, fails every step-500 comparison, never
+reaches interior terminal PSNR, and ends 0.928 dB below it. Native inspection finds black holes,
+floaters, broad sheets, radial streaks, and erased thin detail in every coherent reporting view.
+The focused slice passes 47 tests after the gate regression test; before commit `722696c`,
+`./scripts/verify.sh` passed with 1,705 tests, 25 skips, 514 deselections, and all structural gates.
+
+#### Assumptions
+
+The downscale-8 calibrated tensors are the diagnostic targets. Known cameras, not predicted poses,
+own output rays. The 5.03 GB CC-BY-NC-4.0 encoder is amortized dependency state, not per-scene
+payload, and remains separately charged. A failed visual gate controls even when some averaged
+metrics and physical byte ratios pass.
+
+#### Uncertainties
+
+This is one exposed scene and requested seed at reduced resolution, with dirty external source, no
+physical depth truth, and no distinct review. V3/v4/v5 post-density terminal rankings vary despite
+matching construction, so the current CUDA/density path is not bit reproducible and single-run
+terminal deltas are fragile.
+
+#### Review focus
+
+Audit checkpoint/source receipts, reporting-view exclusion, group-scale-only alignment, known-ray
+back-projection, support/occlusion/contradiction signs, exact-N anchored WSE, per-view floors,
+bounded contraction displacement and unchanged lineage/radiance, strictest-visible-camera extent
+cap, decision arithmetic, complete byte accounting, and the controlling native visual rejection.
+
+#### Protected actions not taken
+
+No realtime-gs source, supported StructSplat pipeline/default, renderer/optimizer equation, packet
+grammar, immutable result, public claim, or unrelated IntelliJ file was changed. No method threshold
+or training budget was retuned after reporting outcomes were inspected.
+
+#### Recommended next action
+
+Obtain distinct review. Retain this field/compiler as a negative control only. If research
+continues, use a new disjoint scene to test a globally consistent surface/mesh or regularized
+point-map representation whose topology is held fixed until reporting-safe residual and silhouette
+checks pass; keep interior and raw learned-depth arms as controls.
+
+### Review
+
+#### Verdict
+
+Provisionally accepted (self-reviewed)
+
+#### Self-reviewed
+
+Yes
+
+#### Correctness
+
+Commit `722696c` keeps optional dependencies lazy, rejects malformed/pinned-source mismatches,
+uses only group scale on known calibrated rays, distinguishes compatible occlusion from free-space
+contradiction, preserves exact count/lineage/radiance through WSE/contraction/cover, and marks every
+output row trainable. Focused tests cover scale recovery, fusion, half-pixel sampling, evidence
+signs, discontinuity barriers, anchors/floors/determinism, exact counts, continuous displacement,
+single-row cover, finite SPD covariance, packet ownership, lazy import, frozen split/budgets, every
+quality gate, and report tampering.
+
+#### Evidence quality
+
+Question, cameras, packets, arms, budgets, seed, dependency hashes/license, metrics, visual killing
+rule, and exact command were frozen before the first complete outcome. V5 snapshots exact executed
+sources and every required model/curve/visual artifact; its explicit-nonclaim bundle validates. The
+negative conclusion is robust across v3--v5, while the changing terminal rankings are disclosed as
+instability. Evidence remains diagnostic because the scene is exposed, provenance is dirty, and no
+distinct prospective/results review exists.
+
+#### Simplicity
+
+The experiment is isolated in one default-off optional module and one task-local driver. It reuses
+the packet appearance seam, known realtime-gs cameras/container/trainer, and existing controls. The
+failed result prevents another threshold or optimizer-rescue layer from entering maintained
+conversion.
+
+#### Missing cases
+
+Distinct review, new scenes and multiple effective seeds, deterministic GPU execution, physical
+geometry truth, masks/thin-structure strata, full resolution, host/cold-download memory and latency,
+commercially licensed weights, final deployment encoding/render FPS, and a globally consistent
+surface optimizer remain absent.
+
+#### Required changes
+
+None for retaining the implementation and rejection as default-off diagnostic evidence. Distinct
+review is required before any scientific acceptance, default change, or claim promotion.
+
+#### Optional improvements
+
+If reused, make the common realtime-gs density path deterministic or report multiple trajectories;
+add a fixed-topology surface/mesh control and explicit topology-stability metrics before testing any
+new local selection or contraction mechanism.
 
 ## Notes
 
@@ -218,3 +335,9 @@ replay exposed that the pure full-vs-raw decision helper did not count prespecif
 gradient-MAE, SSIM, or p99 improvements; v5 corrects only that conservative bookkeeping defect and
 is the final committed-source handoff replay, not a threshold or method rescue. See
 `docs/research/2026-08-07-core019-coherent-depth-results-audit.md`.
+
+The immutable v5 bundle validates with the repository checker and preserves the rejection. Its
+corrected full-vs-raw gate passes on SSIM/MS-SSIM/LPIPS plus the spacing tail, but full loses PSNR,
+gradient MAE, p99 error, and time. The v3/v4/v5 terminal PSNR deltas (+0.371/-0.081/-0.307 dB) expose
+post-density trajectory instability; none changes the step-zero, step-500, convergence, or native
+visual failure.

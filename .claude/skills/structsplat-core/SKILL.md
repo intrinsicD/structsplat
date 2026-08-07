@@ -73,9 +73,10 @@ IntrinsicEngine as an RHI pass.
   smeared volume and loses the fixed-prefix convergence comparison. Retain it only as a negative
   control: no threshold rescue or maintained integration. CORE-019's pinned-VGGT successor adds
   calibration-grouped coherent depth, known-ray fusion/support, hard feature anchors, dynamic WSE,
-  bounded post-selection contraction, and compatible depth-normal cover. Its full arm improves on
-  raw-known-ray depth but fails step-zero/fixed-prefix/terminal-control gates and native review with
-  sheets, streaks, floaters, holes, and erased detail. Retain its field/compiler only as another
+  bounded post-selection contraction, and compatible depth-normal cover. Its full arm changes the
+  raw-known-ray metric/count tradeoff without a uniform win, then fails step-zero/fixed-prefix/
+  terminal-control gates and native review with sheets, streaks, floaters, holes, and erased detail.
+  Retain its field/compiler only as another
   default-off negative control. None of these modules enters maintained conversion.
 
 ## Invariants (do not break without an ADR)

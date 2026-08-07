@@ -116,9 +116,10 @@ adapter. It again changes neither the packet grammar nor this decision: packet a
 the predictor raster and radiance, overlapping four-view predictions supply depth hypotheses, one
 group Sim(3) transfers scale, known calibration owns every back-projection, and projective
 support/WSE/contraction compile the exact Gaussian budget. Its exposed `karate/frame_00005`
-diagnostic confirms that the support/WSE compiler improves over raw known-ray depth, but the full
-arm still fails the frozen step-zero and fixed-prefix gates and produces sheets, radial streaks,
-floaters, holes, and lost detail in native reporting views. The composition is therefore also a
+diagnostic confirms that the support/WSE compiler changes raw known-ray depth's quality/count
+tradeoff without a uniform metric win, while the full arm still fails the frozen step-zero and
+fixed-prefix gates and produces sheets, radial streaks, floaters, holes, and lost detail in native
+reporting views. The composition is therefore also a
 negative control. It does not authorize integration, threshold rescue on the consumed frame,
 amortizing the non-commercial public checkpoint into an undisclosed rate, or describing coherent
 depth alone as sufficient geometry for realtime-gs.
