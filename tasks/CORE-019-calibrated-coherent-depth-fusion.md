@@ -159,7 +159,7 @@ PYTHONPATH=/home/alex/Documents/vggt:/home/alex/Documents/realtime-gs/src \
   scripts/experiments/core019_coherent_depth_downstream.py \
   --frame /home/alex/Dropbox/Work/Janelle/karate/frame_00005 \
   --weights /home/alex/.cache/huggingface/hub/models--facebook--VGGT-1B/blobs/f164acf60724910d8fe1578bb499d800850c7bb0948db7555c413f9fbe60467e.repairing-20260807 \
-  --out results/core019_coherent_depth_karate_frame00005_2026-08-07_v4
+  --out results/core019_coherent_depth_karate_frame00005_2026-08-07_v5
 ```
 
 ## Interfaces touched
@@ -213,6 +213,8 @@ and contracting only 96 eliminated cross-view proposals. It nevertheless starts 
 interior consensus, misses the +2 dB and LPIPS step-zero gates, fails every step-500 comparison,
 never reaches the interior terminal PSNR, and ends 0.6437 dB below it. Native review rejects every
 arm: the coherent variants progress from black holes/floaters to broad gray sheets and radial
-streaks with erased detail under the shared optimizer. The result is negative; v4 is only the
-committed-source/schema-clean diagnostic replay required for handoff, not a rescue. See
+streaks with erased detail under the shared optimizer. The result is negative. The schema-clean v4
+replay exposed that the pure full-vs-raw decision helper did not count prespecified MS-SSIM,
+gradient-MAE, SSIM, or p99 improvements; v5 corrects only that conservative bookkeeping defect and
+is the final committed-source handoff replay, not a threshold or method rescue. See
 `docs/research/2026-08-07-core019-coherent-depth-results-audit.md`.

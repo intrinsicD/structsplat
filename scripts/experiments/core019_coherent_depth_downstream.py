@@ -14,7 +14,7 @@ Reproduce from the StructSplat root with::
       scripts/experiments/core019_coherent_depth_downstream.py \
       --frame /home/alex/Dropbox/Work/Janelle/karate/frame_00005 \
       --weights /home/alex/.cache/huggingface/hub/models--facebook--VGGT-1B/blobs/f164acf60724910d8fe1578bb499d800850c7bb0948db7555c413f9fbe60467e.repairing-20260807 \
-      --out results/core019_coherent_depth_karate_frame00005_2026-08-07_v4
+      --out results/core019_coherent_depth_karate_frame00005_2026-08-07_v5
 
 The output directory is immutable: this script refuses to overwrite it.
 """
@@ -430,15 +430,24 @@ def _decision(records: list[dict[str, Any]], rows: list[dict[str, Any]]) -> dict
         and full_spacing_tail is not None
         and full_spacing_tail < raw_spacing_tail
     )
-    quality_or_convergence_better = (
-        complete["reporting_psnr"] > raw["reporting_psnr"]
-        or (
+    quality_or_convergence = {
+        "reporting_psnr": complete["reporting_psnr"] > raw["reporting_psnr"],
+        "reporting_ssim": complete["reporting_ssim"] > raw["reporting_ssim"],
+        "reporting_ms_ssim": complete["reporting_ms_ssim"] > raw["reporting_ms_ssim"],
+        "reporting_lpips": (
             complete["reporting_lpips"] is not None
             and raw["reporting_lpips"] is not None
             and complete["reporting_lpips"] < raw["reporting_lpips"]
-        )
-        or complete["training_native_seconds"] < raw["training_native_seconds"]
-    )
+        ),
+        "reporting_gradient_mae": (
+            complete["reporting_gradient_mae"] < raw["reporting_gradient_mae"]
+        ),
+        "reporting_p99_abs": complete["reporting_p99_abs"] < raw["reporting_p99_abs"],
+        "training_native_seconds": (
+            complete["training_native_seconds"] < raw["training_native_seconds"]
+        ),
+    }
+    quality_or_convergence_better = any(quality_or_convergence.values())
     gates = {
         "step0_psnr_plus_2db_over_interior": (
             complete["initial_reporting_psnr"]
@@ -519,6 +528,21 @@ def _decision(records: list[dict[str, Any]], rows: list[dict[str, Any]]) -> dict
             "spacing_p90_over_median": full_spacing_tail,
             "raw_spacing_p90_over_median": raw_spacing_tail,
             "reporting_psnr_db": complete["reporting_psnr"] - raw["reporting_psnr"],
+            "reporting_ssim": complete["reporting_ssim"] - raw["reporting_ssim"],
+            "reporting_ms_ssim": (
+                complete["reporting_ms_ssim"] - raw["reporting_ms_ssim"]
+            ),
+            "reporting_lpips": complete["reporting_lpips"] - raw["reporting_lpips"],
+            "reporting_gradient_mae": (
+                complete["reporting_gradient_mae"] - raw["reporting_gradient_mae"]
+            ),
+            "reporting_p99_abs": (
+                complete["reporting_p99_abs"] - raw["reporting_p99_abs"]
+            ),
+            "training_native_seconds": (
+                complete["training_native_seconds"] - raw["training_native_seconds"]
+            ),
+            "quality_or_convergence_improvements": quality_or_convergence,
         },
         "convergence_to_control_terminal": {
             "control_step": control_step,

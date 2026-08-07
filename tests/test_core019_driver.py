@@ -345,6 +345,31 @@ def test_core019_decision_rejects_missing_step_zero_gain() -> None:
     assert decision["advance"] is False
 
 
+def test_core019_full_vs_raw_gate_counts_every_prespecified_quality_metric() -> None:
+    driver = _load_driver()
+    rows = _passing_rows(driver)
+    raw = next(row for row in rows if row["arm"] == "vggt_raw_known_ray")
+    candidate = next(row for row in rows if row["arm"] == "vggt_coherent_wse")
+    candidate.update(
+        {
+            "reporting_psnr": raw["reporting_psnr"] - 0.1,
+            "reporting_ssim": raw["reporting_ssim"] - 0.01,
+            "reporting_lpips": raw["reporting_lpips"] + 0.01,
+            "reporting_gradient_mae": raw["reporting_gradient_mae"] + 0.001,
+            "reporting_p99_abs": raw["reporting_p99_abs"] + 0.01,
+            "training_native_seconds": raw["training_native_seconds"] + 1.0,
+        }
+    )
+
+    decision = driver._decision(_records(rows), rows)
+
+    assert candidate["reporting_ms_ssim"] > raw["reporting_ms_ssim"]
+    assert decision["gates"]["full_beats_raw_quality_or_convergence"] is True
+    improvements = decision["full_vs_raw"]["quality_or_convergence_improvements"]
+    assert improvements["reporting_ms_ssim"] is True
+    assert sum(improvements.values()) == 1
+
+
 def test_core019_report_checker_accepts_only_explicit_nonclaim_bundle(tmp_path: Path) -> None:
     from scripts.check_report_bundle import check_bundle
 
