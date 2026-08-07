@@ -177,6 +177,24 @@ consumed scene, and require a spatially coherent depth/surface model for a succe
 and limitations are in
 [`2026-08-06-core018-ray-posterior-results-audit.md`](research/2026-08-06-core018-ray-posterior-results-audit.md).
 
+CORE-019 changes that failed geometry unit to a spatially coherent multiview depth field. A pinned,
+lazy VGGT dependency predicts overlapping calibration-selected four-view groups from packet-decoded
+appearance; one Sim(3) per group transfers scale, while the known cameras still own every output
+ray. Robust depth fusion separates support, compatible occlusion, and free-space contradiction.
+Hard feature anchors plus compatibility-aware dynamic WSE choose exactly 10,000 proposals, bounded
+post-selection contraction moves only close cross-view duplicates, and fused-depth normals plus a
+strictest-visible-camera footprint cap define surfel extent. The packet grammar, realtime-gs
+optimizer, and supported conversion path remain unchanged.
+
+The exposed `karate/frame_00005` four-arm diagnostic rejects this composition. The complete arm is
+better than the raw-known-ray ablation at terminal quality (+0.371 dB PSNR, higher MS-SSIM, lower
+LPIPS/gradient MAE, and 1,223 fewer final rows), showing that support/WSE is active. It nevertheless
+starts 0.969 dB below ordinary interior consensus instead of the required +2 dB, misses every
+fixed-prefix quality gate, never reaches the interior control's terminal PSNR, and ends 0.644 dB
+below it. Native reporting views contain broad gray sheets, radial streaks, floaters, black holes,
+and erased detail after the common optimizer. The route therefore remains a default-off negative
+control; its coherent field and compiler mechanisms are not a usable or supported geometry backend.
+
 BENCH-020's default-off `benchmarks.field_semantics_factorial` controller now provides the sealed
 selection boundary around that object: explicit semantic and alpha-policy records, fixed-row and
 equal-canonical-raw-byte lanes, ordered-geometry prefix seals, three outcome-separated phases,
@@ -269,7 +287,11 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   `realtime_gs_ray_posterior` is CORE-018's separate source-excluded coarse/fine feature scorer,
   missed-observation posterior, reciprocal candidate filter, and exact-N lift. Its real disjoint
   diagnostic fails both construction and native visual gates, so it is a negative-control module,
-  not a supported geometry backend. All four modules remain absent from supported conversion.
+  not a supported geometry backend. `realtime_gs_coherent_depth` is CORE-019's separate pinned-VGGT
+  field, known-ray fusion/support compiler, feature-anchor/WSE selector, bounded contraction, and
+  compatible surfel cover. Its packet-only field is spatially coherent, but the complete frozen arm
+  fails step-zero, fixed-prefix, terminal-control, and native visual gates. All five modules remain
+  absent from supported conversion.
   `pixel_contraction` is a separate HIER-005 research producer: its default leaf and contraction
   path is NumPy-only, while conversion to `GaussianField`, maintained additive rendering, and the
   optional recovery fits import torch lazily. The default `touched` recovery scope forms
@@ -375,6 +397,12 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   three-arm packet/feature/geometry diagnostic. Its reciprocal arm fails closed, its two rendered
   arms fail native review, and its custom partial-result schema is intentionally diagnostic rather
   than accepted by `check_report_bundle.py`.
+  `scripts/experiments/core019_coherent_depth_downstream.py` writes CORE-019's one-seed four-arm
+  packet/coherent-field/geometry diagnostic with immutable JSON/JSONL/CSV metrics, native visuals,
+  models, a replayable scalar decision, and an explicit `claim_ready=false` manifest. Its custom
+  schema is accepted by `check_report_bundle.py --allow-dirty` for portable diagnostic handoff only;
+  the checker cannot convert its exposed-scene visual failure or dirty external dependency into a
+  scientific claim.
 - **agent workflow:** `tasks/INDEX.md` and task files are the work authority, while
   `tasks/SESSION-BRIEF.md` is a deterministic derived view. `scripts/check_task_policy.py`
   validates dependency and review state; `scripts/check_agent_workflow.py` checks agreement among

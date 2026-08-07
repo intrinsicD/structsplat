@@ -272,6 +272,19 @@ its frozen 75% support floor and fails closed. The method remains a negative con
 the gate or integrating it into conversion is not authorized. See the
 [results audit](docs/research/2026-08-06-core018-ray-posterior-results-audit.md).
 
+CORE-019 tests the required coherent successor without changing the packet or maintained pipeline.
+A pinned lazy VGGT predicts overlapping four-view depth fields from packet appearance; group Sim(3)
+alignment supplies scale to known camera rays, and projective support, hard feature anchors,
+compatibility-aware WSE, bounded contraction, and depth-normal surfels compile an exact 10,000-row
+initializer. On exposed `karate/frame_00005`, the full compiler improves over its raw-known-ray
+ablation (+0.371 dB terminal PSNR, better MS-SSIM/LPIPS/gradient MAE, fewer final rows), but it starts
+0.969 dB below interior consensus, misses every fixed-prefix quality gate, never reaches the
+interior terminal PSNR, and ends 0.644 dB below it. Native reporting renders show broad gray sheets,
+radial streaks, floaters, black holes, and erased detail. The method is therefore a default-off
+negative control, not an artifact-free or supported route; the separate 5.03 GB public checkpoint
+is CC-BY-NC-4.0 and is not hidden in the per-scene byte ratio. See the
+[results audit](docs/research/2026-08-07-core019-coherent-depth-results-audit.md).
+
 ### One image → native 2D Gaussian field → image
 
 `image-to-gaussians2d` is an explicit alias for `fit`. This example writes

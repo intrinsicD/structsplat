@@ -111,6 +111,18 @@ gate on the consumed scene or treating independent ray posteriors as a supported
 The narrow appearance-query seam and posterior code may remain only as research controls; a
 successor must own spatially coherent depth/surface state.
 
+CORE-019 supplies that spatially coherent state through a separate default-off pinned-VGGT
+adapter. It again changes neither the packet grammar nor this decision: packet appearance supplies
+the predictor raster and radiance, overlapping four-view predictions supply depth hypotheses, one
+group Sim(3) transfers scale, known calibration owns every back-projection, and projective
+support/WSE/contraction compile the exact Gaussian budget. Its exposed `karate/frame_00005`
+diagnostic confirms that the support/WSE compiler improves over raw known-ray depth, but the full
+arm still fails the frozen step-zero and fixed-prefix gates and produces sheets, radial streaks,
+floaters, holes, and lost detail in native reporting views. The composition is therefore also a
+negative control. It does not authorize integration, threshold rescue on the consumed frame,
+amortizing the non-commercial public checkpoint into an undisclosed rate, or describing coherent
+depth alone as sufficient geometry for realtime-gs.
+
 Delete `codec_native_field.py`, `realtime_gs_adapter.py`, the task-local diagnostic and tests, and
 retire CORE-016. No maintained packet, renderer, pipeline, semantic default, or realtime-gs checkout
 must be migrated.

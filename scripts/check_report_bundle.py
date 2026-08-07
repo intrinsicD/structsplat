@@ -3,7 +3,8 @@
 
 This is the evidence-handoff gate for ``scripts/convert.py``, ``benchmark.py``,
 ``ablation.py``, ``stage_search.py``, the BENCH-019/BENCH-020 experiment controllers, and the
-task-scoped HIER contraction/repair/elimination diagnostics. It checks
+task-scoped HIER contraction/repair/elimination diagnostics, and CORE-019's multi-view coherent-
+depth diagnostic. It checks
 the applicable manifest/metrics contract, clean source identity, per-cell artifacts, finite
 metrics, cross-format agreement, and every local HTML link.
 
@@ -62,6 +63,7 @@ HIER005_CONTRACTION_SCHEMA = "structsplat.hier005_pixel_contraction.diagnostic.v
 HIER005_REPAIR_SCHEMA = "structsplat.hier005_artifact_repair.diagnostic.v1"
 HIER008_OVERLAP_SCHEMA = "structsplat.hier008_overlap_elimination.diagnostic.v1"
 HIER009_DYNAMIC_SCHEMA = "structsplat.hier009_dynamic_overlap_recovery.diagnostic.v1"
+CORE019_REPORT_SCHEMA = "core019.coherent_depth.manifest.v1"
 HIER005_REPORT_SCHEMAS = frozenset(
     {
         HIER005_CONTRACTION_SCHEMA,
@@ -917,6 +919,213 @@ def _check_hier005_bundle(
             )
 
 
+def _check_core019_bundle(
+    root: Path,
+    manifest: dict[str, Any],
+    problems: list[str],
+    *,
+    allow_dirty: bool,
+) -> None:
+    """Validate CORE-019's multi-view, explicitly non-claim development diagnostic."""
+
+    if manifest.get("status") != "ok":
+        problems.append("manifest.json CORE-019 status must be ok")
+    if manifest.get("claim_ready") is not False:
+        problems.append("manifest.json CORE-019 claim_ready must remain false")
+    command = manifest.get("command")
+    if not isinstance(command, str) or not command.strip():
+        problems.append("manifest.json CORE-019 has no executed command")
+    if not _finite(manifest):
+        problems.append("manifest.json CORE-019 contains non-finite numeric values")
+
+    required_links: set[Path] = set()
+
+    def descriptor(value: Any, label: str, *, expose: bool = False) -> Path | None:
+        path = _relative_descriptor_path(root, value, label, problems)
+        if expose and path is not None:
+            required_links.add(path)
+        return path
+
+    plan_path = descriptor(manifest.get("plan"), "manifest.json plan", expose=True)
+    plan = None
+    if plan_path is not None:
+        try:
+            plan = _load_json(plan_path)
+        except (OSError, json.JSONDecodeError, ValueError) as exc:
+            problems.append(f"plan.json is invalid: {exc}")
+    if not isinstance(plan, dict) or plan.get("schema") != "core019.coherent_depth.plan.v1":
+        problems.append("plan.json has the wrong CORE-019 schema")
+    else:
+        if plan.get("command") != command:
+            problems.append("plan.json command differs from manifest.json")
+        repositories = plan.get("repositories")
+        repository = repositories.get("structsplat") if isinstance(repositories, dict) else None
+        if not isinstance(repository, dict):
+            problems.append("plan.json has no StructSplat repository identity")
+        else:
+            revision = repository.get("head")
+            if not isinstance(revision, str) or not HEX_40.fullmatch(revision):
+                problems.append("plan.json StructSplat head must be a 40-character Git SHA")
+            if not isinstance(repository.get("branch"), str) or not repository["branch"]:
+                problems.append("plan.json StructSplat branch must be non-empty")
+            dirty = repository.get("dirty")
+            if not isinstance(dirty, bool):
+                problems.append("plan.json StructSplat dirty must be boolean")
+            elif dirty and not allow_dirty:
+                problems.append(
+                    "plan.json StructSplat repository was dirty; use --allow-dirty only for "
+                    "this explicitly non-claim diagnostic"
+                )
+        train = plan.get("train_camera_ids")
+        report = plan.get("report_camera_ids")
+        if not isinstance(train, list) or not train or not isinstance(report, list) or not report:
+            problems.append("plan.json must declare non-empty construction/report camera lists")
+        elif set(train) & set(report):
+            problems.append("plan.json construction and reporting cameras overlap")
+        vggt = plan.get("vggt")
+        if (
+            not isinstance(vggt, dict)
+            or vggt.get("checkpoint_bytes") != 5_026_367_224
+            or not HEX_64.fullmatch(str(vggt.get("checkpoint_sha256", "")))
+        ):
+            problems.append("plan.json lacks the pinned CORE-019 checkpoint receipt")
+
+    for key in ("shared_packets", "feature_receipt", "report"):
+        descriptor(manifest.get(key), f"manifest.json {key}")
+    field = manifest.get("coherent_depth_field")
+    if not isinstance(field, dict):
+        problems.append("manifest.json lacks coherent-depth-field artifacts")
+    else:
+        for key in ("arrays", "receipt", "contact_sheet"):
+            descriptor(
+                field.get(key),
+                f"manifest.json coherent_depth_field.{key}",
+                expose=key == "contact_sheet",
+            )
+    metric_artifacts = manifest.get("metrics")
+    if not isinstance(metric_artifacts, dict):
+        problems.append("manifest.json lacks metric artifact descriptors")
+    else:
+        for name in ("metrics.json", "metrics.jsonl", "metrics.csv"):
+            descriptor(metric_artifacts.get(name), f"manifest.json metrics.{name}")
+    plots = manifest.get("plots")
+    if not isinstance(plots, dict):
+        problems.append("manifest.json lacks plot artifacts")
+    else:
+        descriptor(plots.get("all_metric_curves"), "manifest.json all_metric_curves")
+
+    try:
+        metrics = _load_json(root / "metrics.json")
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        problems.append(f"metrics.json is invalid: {exc}")
+        return
+    if not isinstance(metrics, list) or len(metrics) != 4 or not all(
+        isinstance(row, dict) for row in metrics
+    ):
+        problems.append("metrics.json must contain exactly four CORE-019 arm rows")
+        return
+    if not _finite(metrics):
+        problems.append("metrics.json contains non-finite numeric values")
+    _check_json_csv_projection(root, metrics, problems)
+    expected_arms = {
+        "interior",
+        "posterior_no_reciprocal",
+        "vggt_raw_known_ray",
+        "vggt_coherent_wse",
+    }
+    if {row.get("arm") for row in metrics} != expected_arms:
+        problems.append("metrics.json does not contain the frozen four CORE-019 arms")
+    for index, row in enumerate(metrics):
+        label = f"metrics.json[{index}]"
+        if row.get("status") != "ok":
+            problems.append(f"{label}: arm status must be ok")
+        for key in (
+            "initial_reporting_psnr",
+            "reporting_psnr",
+            "reporting_ms_ssim",
+            "reporting_lpips",
+            "reporting_gradient_mae",
+            "pretraining_seconds",
+            "training_native_seconds",
+            "original_over_packets_plus_model",
+        ):
+            value = row.get(key)
+            if (
+                not isinstance(value, (int, float))
+                or isinstance(value, bool)
+                or not math.isfinite(float(value))
+            ):
+                problems.append(f"{label}: {key} must be finite numeric")
+        for key in ("initial_n_gaussians", "final_n_gaussians", "final_model_bytes"):
+            value = row.get(key)
+            if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
+                problems.append(f"{label}: {key} must be a positive integer")
+
+    records = manifest.get("records")
+    record_arms: set[Any] = set()
+    packet_sets: set[tuple[Any, ...]] = set()
+    if not isinstance(records, list) or len(records) != 4:
+        problems.append("manifest.json records must contain exactly four arms")
+    else:
+        for index, record in enumerate(records):
+            label = f"manifest.json records[{index}]"
+            if not isinstance(record, dict) or record.get("status") != "ok":
+                problems.append(f"{label}: record must be an ok object")
+                continue
+            arm = record.get("arm")
+            if arm in record_arms:
+                problems.append(f"{label}: duplicate arm {arm!r}")
+            record_arms.add(arm)
+            input_record = record.get("input")
+            packet_hashes = (
+                input_record.get("packet_hashes") if isinstance(input_record, dict) else None
+            )
+            if not isinstance(packet_hashes, list) or not packet_hashes or not all(
+                isinstance(value, str) and HEX_64.fullmatch(value) for value in packet_hashes
+            ):
+                problems.append(f"{label}: packet hashes are missing or malformed")
+            else:
+                packet_sets.add(tuple(packet_hashes))
+            for key in ("curves", "history"):
+                descriptor(record.get(key), f"{label}.{key}", expose=key == "curves")
+            models = record.get("models")
+            if not isinstance(models, dict):
+                problems.append(f"{label}: model artifacts are missing")
+            else:
+                for key in ("initial_npz", "initial_ply", "final_npz", "final_ply"):
+                    descriptor(
+                        models.get(key),
+                        f"{label}.models.{key}",
+                        expose=key == "final_npz",
+                    )
+            visuals = record.get("visuals")
+            if not isinstance(visuals, dict):
+                problems.append(f"{label}: visual artifacts are missing")
+                continue
+            descriptor(
+                visuals.get("contact_sheet"), f"{label}.visuals.contact_sheet", expose=True
+            )
+            view_artifacts = visuals.get("views")
+            if not isinstance(view_artifacts, dict) or len(view_artifacts) != 4:
+                problems.append(f"{label}: exactly four reporting-view visual sets are required")
+                continue
+            for view_name, artifacts in view_artifacts.items():
+                if not isinstance(artifacts, dict):
+                    problems.append(f"{label}: malformed visual set for {view_name}")
+                    continue
+                for key in ("target", "initial", "final", "error_x4", "alpha", "depth_support"):
+                    descriptor(artifacts.get(key), f"{label}.visuals.{view_name}.{key}")
+    if record_arms != expected_arms:
+        problems.append("manifest.json records do not match the frozen CORE-019 arms")
+    if len(packet_sets) != 1:
+        problems.append("CORE-019 arms did not reuse one identical packet set")
+
+    linked_paths = _check_html(root, problems)
+    for path in sorted(required_links):
+        if path not in linked_paths:
+            problems.append(f"index.html does not expose CORE-019 artifact {path.relative_to(root)}")
+
+
 def check_bundle(
     root: Path,
     *,
@@ -965,6 +1174,9 @@ def check_bundle(
         return problems
     if manifest.get("schema") in HIER005_REPORT_SCHEMAS:
         _check_hier005_bundle(root, manifest, problems)
+        return problems
+    if manifest.get("schema") == CORE019_REPORT_SCHEMA:
+        _check_core019_bundle(root, manifest, problems, allow_dirty=allow_dirty)
         return problems
     if manifest.get("schema") == BENCH019_REPORT_SCHEMA:
         _check_bench019_bundle(

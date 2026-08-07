@@ -55,7 +55,7 @@ IntrinsicEngine as an RHI pass.
   error at 8k and every overlap cell still fails the local gate; only the HIER-005 delta/touched 8k
   fallback passes. None enters the maintained pipeline.
 - `codec_native_field.py` / `realtime_gs_adapter.py` / `realtime_gs_surface_lift.py` /
-  `realtime_gs_ray_posterior.py` —
+  `realtime_gs_ray_posterior.py` / `realtime_gs_coherent_depth.py` —
   CORE-016/ADR-0032's separate default-off
   dual-plane packet experiment. A charged conventional image payload is decoded into a continuous
   cardinal-prefiltered Gaussian lattice; an independent sparse nonnegative Field V2 measure owns
@@ -71,8 +71,12 @@ IntrinsicEngine as an RHI pass.
   initial PSNR but has near-maximal entropy and sparse reciprocal support on a disjoint karate
   scene; the full arm fails its frozen support floor, while the no-reciprocal arm remains a visually
   smeared volume and loses the fixed-prefix convergence comparison. Retain it only as a negative
-  control: no threshold rescue or maintained integration. None of these modules enters maintained
-  conversion.
+  control: no threshold rescue or maintained integration. CORE-019's pinned-VGGT successor adds
+  calibration-grouped coherent depth, known-ray fusion/support, hard feature anchors, dynamic WSE,
+  bounded post-selection contraction, and compatible depth-normal cover. Its full arm improves on
+  raw-known-ray depth but fails step-zero/fixed-prefix/terminal-control gates and native review with
+  sheets, streaks, floaters, holes, and erased detail. Retain its field/compiler only as another
+  default-off negative control. None of these modules enters maintained conversion.
 
 ## Invariants (do not break without an ADR)
 1. Init-time math stays **NumPy and importable without torch**. Autograd stays in torch modules.

@@ -16,6 +16,7 @@ unless the owning task says so.
 - `CORE-016` — Codec-native dual-plane Gaussian observation field (in-review; `tasks/CORE-016-codec-native-dual-plane-field.md`)
 - `CORE-017` — Visibility-ordered alpha-shell surface lift (in-review; `tasks/CORE-017-visibility-ordered-alpha-shell-lift.md`)
 - `CORE-018` — Occlusion-aware ray-posterior surface lift (in-review; `tasks/CORE-018-occlusion-aware-ray-posterior-lift.md`)
+- `CORE-019` — Calibrated coherent-depth fusion (in-progress; `tasks/CORE-019-calibrated-coherent-depth-fusion.md`)
 - `DOCS-006` — Repository-native experiment workflow skill (in-progress; `tasks/DOCS-006-experiment-workflow-skill.md`)
 - `DOCS-007` — 2D Gaussian image-field state-of-the-art review (in-review; `tasks/DOCS-007-2d-gaussian-sota-review.md`)
 
@@ -69,6 +70,6 @@ unless the owning task says so.
 
 ## Ledger summary
 
-- 104 active-table outcomes
+- 105 active-table outcomes
 - 45 retired tasks
 - 51 active-table rows already carrying a closed/non-actionable disposition
