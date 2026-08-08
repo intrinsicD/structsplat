@@ -1,0 +1,82 @@
+{
+  "command": "scripts/ablation.py results/datasets/stage_karate_selection_2026-08-07/rgb_stage/frame_00008/C0001.jpg runs/report_abl_stage_C0001_2026-08-07 --mask-dir results/datasets/stage_karate_selection_2026-08-07/mask_stage/frame_00008 --device cuda:0 --max-side 768 --seeds 0 --lpips --quiet",
+  "fine_detail": false,
+  "fine_detail_pursuit": false,
+  "images": [
+    {
+      "mask": "/home/alex/Documents/structsplat/results/datasets/stage_karate_selection_2026-08-07/mask_stage/frame_00008/C0001.png",
+      "path": "/home/alex/Dropbox/Work/Janelle/2025_03_07_stage_with_fabric/frame_00008/rgb/C0001.jpg",
+      "relative": "C0001.jpg"
+    }
+  ],
+  "mask": null,
+  "mask_dir": "/home/alex/Documents/structsplat/results/datasets/stage_karate_selection_2026-08-07/mask_stage/frame_00008",
+  "mask_invert": false,
+  "profile": {
+    "active_limit": 11000,
+    "boundary_contract": "authoritative mask containment + boundary initialization/loss/proposals",
+    "evidence_scope": "single masked image, single seed, one GPU; the full-frame arm is unscreened (BENCH-017)",
+    "fine_detail": false,
+    "fine_detail_estimator": null,
+    "fine_detail_fraction": 0.0,
+    "fine_detail_pursuit": false,
+    "fine_detail_pursuit_max_rows": 0,
+    "fine_detail_pursuit_stop_rule": null,
+    "initial_gaussians": 5000,
+    "mask_margin": 0.75,
+    "masked": true,
+    "masked_boundary_gaussians": 500,
+    "masked_general_gaussians": 4500,
+    "name": "safe-commit-schedule_2026-07-27.1",
+    "physical_capacity": 11000,
+    "recipe": {
+      "choices": {
+        "detail_tail_max_rows": "0 (FIT-025 / C52: generic activation beats the specialized tail)",
+        "event_color_solve": "off (FIT-023 / C50: worse on every protected metric, 7.8% slower)",
+        "init_strategy": "quadtree_wse (ADR-0013, ABL-006 / C05)",
+        "mask_margin": "0.75 px (C56: executed Janelle recipe provenance; no 0.75-vs-1.5 quality claim)",
+        "pareto_safe_checkpoints": "on every 50 steps (FIT-023 / C50: +0.502/+0.519 dB fg/boundary)",
+        "refinement_policy": "global (README: the reproducible baseline; local is experimental)",
+        "renderer": "cuda where available (ADR-0011 / C03; C53 keeps the tiled path opt-in)",
+        "storage_policy": "dynamic (FIT-024 / C51: fixed capacity is quality-neutral, not faster)",
+        "wse_progressive_order": "on (INIT-009 / C25: 32/32 uniform prefix wins, terminal set unchanged)"
+      },
+      "evidence": [
+        "C25",
+        "C50",
+        "C51",
+        "C52",
+        "C56"
+      ],
+      "evidence_scope": "single masked image, single seed, one GPU; the full-frame arm is unscreened (BENCH-017)",
+      "name": "safe-commit-schedule",
+      "summary": "Phase-ordered transactional fit (bootstrap / coverage / detail / boundary / redistribution / polish) with a Pareto-safe commit gate on a full-frame metric vector.",
+      "version": "2026-07-27.1"
+    },
+    "requested_optimizer_steps": 13250,
+    "storage_policy": "dynamic"
+  },
+  "repository": {
+    "branch": "main",
+    "commit": "282b468e81bfe2f15f88d6069c62af43c296928c",
+    "dirty": false,
+    "status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "schema": "structsplat.current_pipeline.workflow.v1",
+  "seeds": [
+    0
+  ],
+  "source": "/home/alex/Dropbox/Work/Janelle/2025_03_07_stage_with_fabric/frame_00008/rgb/C0001.jpg",
+  "title": "Current Pipeline Ablation",
+  "variants": [
+    "full",
+    "no_bootstrap",
+    "no_coverage_growth",
+    "no_detail_growth",
+    "no_closure",
+    "no_redistribution",
+    "no_polish",
+    "no_pareto_checkpoints",
+    "no_boundary_specialization"
+  ]
+}
