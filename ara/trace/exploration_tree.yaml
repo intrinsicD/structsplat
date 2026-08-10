@@ -5444,3 +5444,164 @@ tree:
       - "ara/evidence/bench018-commit-gate-janelle-2026-08-08/run.md"
     also_depends_on: [N264, N266, N267]
     status: resolved
+  - id: N269
+    type: experiment
+    title: "Residual leaf anchors do not improve exact-7k HIER-005 consistently"
+    provenance: ai-executed
+    timestamp: "2026-08-10T11:12+02:00"
+    result: >
+      Implemented HIER-010 as a four-arm exact-7,000 diagnostic on exposed correlated Janelle
+      C0001/C0004 views. A first HIER-005 pass ranks residual pixels by the maximum of q99-normalized
+      pixel and mask-aware 7x7 MSE; a second identical contraction hard-preserves exactly 350 stable
+      radius-one-NMS leaves. A matrix-free PCG finish can update only topology-touched,
+      non-protected RGB under step-zero SSE and displayed-artifact safeguards. Projection alone is
+      safe under its frozen two-objective transaction but small at +0.010944/+0.004361 dB. The full
+      composition loses 0.188360/0.184792 dB and
+      raises masked MSE 4.433/4.347 percent. C0004 local maxima improve, but C0001 pixel/7x7 maxima
+      worsen from 0.026404/0.009518 to 0.034187/0.012089. Every cell reaches exact count; all cold
+      metrics, hashes, provenance masks, and sub-micro-unit renderer parity independently reproduce.
+    evidence:
+      - "ara/evidence/hier010-residual-anchor-projection-janelle-diagnostic-2026-08-10/run.md"
+      - "results/hier010_residual_anchor_projection_janelle_2026-08-10/index.html"
+      - "report manifest sha256 80b84bce9b5ec72e9369fd61474d761c8ecd3f2a9f6ed9495f7cb67f14dd81ba"
+      - "executed driver/refinement/contraction sha256 6c554492/dd209eca/755c6717"
+    also_depends_on: [N224, N247, N248]
+    status: resolved
+  - id: N270
+    type: dead_end
+    title: "A fixed global residual-leaf reserve is not a robust HIER-005 successor"
+    provenance: ai-executed
+    timestamp: "2026-08-10T11:12+02:00"
+    hypothesis: >
+      Preserving the 5 percent source leaves with the largest combined isolated and 7x7 residuals,
+      then exactly projecting touched appearance, will reduce the remaining exact-7k HIER-005 error
+      without worsening local artifacts on both exposed transfer views.
+    failure_mode: >
+      The reserve consumes rows that the contraction would otherwise allocate adaptively and forces
+      the remaining topology to absorb that displaced capacity. It changes the error tradeoff rather
+      than lowering it: LPIPS and local tails improve on selected slices, but global MSE is about 4.4
+      percent worse on both images and local maxima reverse sign across views. The guarded coefficient
+      solve cannot repair a topology allocation error because geometry, protected leaves, and
+      untouched coefficients are correctly frozen.
+    lesson: >
+      Keep touched-row projection only as a bounded cleanup, not a source of material residual
+      reduction. Do not retune a global protected fraction on these consumed views. Any successor
+      should make preservation or local uncontraction part of each count-neutral topology
+      transaction and commit it only on actual global SSE plus worst-pixel and worst-patch benefit,
+      then test prospectively on independently approved unexposed capture groups.
+    evidence:
+      - "N269"
+      - "tasks/HIER-010-residual-anchor-projection.md"
+      - "ara/evidence/hier010-residual-anchor-projection-janelle-diagnostic-2026-08-10/run.md"
+    also_depends_on: [N247, N248, N269]
+    status: resolved
+  - id: N271
+    type: experiment
+    title: "Guarded residual column exchange repairs local tails but misses its transfer gain floor"
+    provenance: ai-executed
+    timestamp: "2026-08-10T12:30+02:00"
+    result: >
+      HIER-011 treats the persisted exact-7k HIER-005 field as an active set. Exact masked deletion
+      prices compete with one-column residual gains, support-disjoint pairs are ranked by reduced
+      cost, and a cold-render transaction requires strict SSE improvement with individually
+      nonworse displayed pixel/7x7 maxima. A bounded C0001 bank preflight selects multiscale
+      oriented atoms before C0004 opens. The frozen run commits 68/5 unique exchanges and stops for
+      no improving pair. Exchange plus touched/new-row PCG gains +0.541598/+0.079863 dB, reduces
+      MSE 11.725/1.822%, and makes both local gates pass. C0004 remains below the declared +0.10 dB
+      floor, so the mechanism gate fails without retuning.
+    evidence:
+      - "ara/evidence/hier011-guarded-residual-column-exchange-janelle-diagnostic-2026-08-10/run.md"
+      - "results/hier011_guarded_residual_column_exchange_janelle_2026-08-10/index.html"
+      - "report manifest sha256 c15d18ee3b1eca4782c4400e2f94ffe35dca6a0b383ba960c6260d396c849bf9"
+      - "tasks/HIER-011-guarded-residual-column-exchange.md"
+    also_depends_on: [N269, N270]
+    status: resolved
+  - id: N272
+    type: experiment
+    title: "Global safeguarded RGB projection dominates the remaining exact-7k error"
+    provenance: ai-executed
+    timestamp: "2026-08-10T12:30+02:00"
+    result: >
+      HIER-012 removes HIER-010's touched-row restriction while preserving its matrix-free PCG,
+      coefficient bound, step-zero fallback, and SSE/displayed-violation checkpoint transaction.
+      All 7,000 RGB rows are trainable; every geometry, alpha, support, filtering, topology, and
+      count array remains bit-exact. On exposed C0001/C0004, direct projection from HIER-005 reaches
+      52.334526/56.470211 dB (+2.237466/+2.096112), cuts MSE 40.262/38.285%, and passes both local
+      gates. Ten-field cold replay reproduces all hashes/counts and local metrics; maximum PSNR
+      drift is 5.16e-7 dB. Exchange plus the same solve has higher MSE on each view, although it
+      retains better C0001 LPIPS and isolated-pixel max.
+    evidence:
+      - "ara/evidence/hier012-global-appearance-projection-janelle-diagnostic-2026-08-10/run.md"
+      - "results/hier012_global_appearance_projection_janelle_2026-08-10/index.html"
+      - "report manifest sha256 3abc28551be8c5a58bf4fc3a2ab4dc4acb11b731e11055e6b63f0673d2ea834b"
+      - "tasks/HIER-012-global-appearance-projection.md"
+    also_depends_on: [N269, N271]
+    status: resolved
+  - id: N273
+    type: decision
+    title: "Select HIER-005 plus global appearance projection as the next development pipeline"
+    provenance: ai-executed
+    timestamp: "2026-08-10T12:30+02:00"
+    choice: >
+      For subsequent clean independent study, use the simpler persisted HIER-005 geometry followed
+      by all-row fail-closed RGB PCG. Do not include HIER-011 exchange in the primary MSE pipeline:
+      it costs topology work and loses MSE on both exposed views once global coefficients are
+      solved. Retain exchange as the direct local-tail/LPIPS attribution control. Do not change a
+      maintained default or treat this as FIT-046/BENCH-020 completion, because both correlated
+      views informed the choice and no complete rate/work or unseen-image gate has run.
+    alternatives:
+      - "Keep touched-only projection because it preserves source-leaf coefficients, despite its negligible gain."
+      - "Select exchange plus global projection for C0001 LPIPS/pixel max, despite worse MSE on both views."
+      - "Append residual rows as in FIT-040/043, violating the exact-count requirement."
+      - "Promote the exposed result directly to maintained dispatch."
+    evidence:
+      - "N271"
+      - "N272"
+      - "ara/evidence/hier012-global-appearance-projection-janelle-diagnostic-2026-08-10/run.md"
+    also_depends_on: [N269, N270, N271, N272]
+    status: resolved
+  - id: N274
+    type: experiment
+    title: "Global appearance projection does not transfer across the repository image bank"
+    provenance: ai-executed
+    timestamp: "2026-08-10T15:24+02:00"
+    result: >
+      HIER-013 freezes HIER-012 without retuning and executes HIER-005, touched projection, global
+      projection, and exchange-plus-global at exact N=7,000 on four COCO and twelve DIV2K images
+      with three CUDA replicates. All 192 cells complete. Direct global projection yields only
+      +0.011700 dB and 0.269 percent geometric-mean MSE reduction; its 95 percent image-bootstrap
+      MSE-ratio interval is [0.9932034, 1.0000000008], aggregate MS-SSIM regresses, and four active
+      cells worsen the 7x7 maximum. Only six cells, covering DIV2K/0268 and DIV2K/0534, enter PCG;
+      the other 42/48 exceed the frozen coefficient limit 16 and return checkpoint zero. Exchange
+      plus global reaches +0.072495 dB and 1.655 percent MSE reduction but remains a weak,
+      higher-work control with visible lattice artifacts. Exact hashes/counts/ledgers replay, while
+      141/192 cold-versus-in-memory CUDA renders fail the 2e-6 parity gate.
+    evidence:
+      - "ara/evidence/hier013-global-projection-test-images-development-2026-08-10/run.md"
+      - "results/hier013_global_projection_test_images_development_2026-08-10/index.html"
+      - "report manifest sha256 e7315213558050b88b72470211a54779e7bb0df6aee3ce06d0d0144cdfe616a3"
+      - "tasks/HIER-013-global-projection-development-screen.md"
+    also_depends_on: [N271, N272, N273]
+    status: resolved
+  - id: N275
+    type: decision
+    title: "Reject direct promotion of HIER-012 and require a bounded coefficient domain"
+    provenance: ai-executed
+    timestamp: "2026-08-10T15:24+02:00"
+    choice: >
+      Do not promote HIER-005 plus frozen global appearance projection, and do not raise its
+      coefficient limit on the 16 consumed images. Treat global projection as a conditional solver
+      component whose useful domain requires bounded, well-conditioned incoming RGB. Retain
+      HIER-011 exchange only as a topology/local-tail control, not as an exceptional successor.
+      Any next experiment must prospectively stabilize or constrain coefficients on new
+      development data or under BENCH-020-selected semantics before FIT-046/BENCH-021 composition.
+    alternatives:
+      - "Raise the coefficient limit after seeing the 42/48 fail-closed cells."
+      - "Promote the small exchange-plus-global aggregate gain despite higher work and visible artifacts."
+      - "Treat numerical equality on COCO as evidence of family-level improvement."
+      - "Repair or loosen the frozen CUDA parity threshold after outcome access."
+    evidence:
+      - "N274"
+      - "ara/evidence/hier013-global-projection-test-images-development-2026-08-10/run.md"
+    also_depends_on: [N272, N273, N274]
+    status: resolved

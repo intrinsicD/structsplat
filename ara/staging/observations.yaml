@@ -2001,3 +2001,94 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O143
+    timestamp: "2026-08-10T11:12+02:00"
+    provenance: ai-executed
+    content: >
+      At exact N=7,000 on the exposed correlated Janelle C0001/C0004 views, a matrix-free RGB
+      projection restricted to HIER-005 topology-touched rows is safe under its frozen
+      SSE/maximum-normalized-violation transaction but only improves PSNR by
+      +0.010944/+0.004361 dB. Rerunning contraction while hard-preserving exactly 350 residual-ranked
+      source leaves loses 0.188360/0.184792 dB after projection. It improves pixel/7x7 maxima on
+      C0004 but worsens both on C0001, and masked MSE is 4.433/4.347 percent worse on both. The full
+      residual-anchor-plus-projection composition therefore fails its frozen two-image gate.
+    context: >
+      Dirty-source, source-snapshotted development diagnostic on two previously consumed views from
+      one capture group, one CUDA trajectory per cell, and no prospective distinct reviewer. All
+      eight saved fields independently reproduce their metrics and provenance, and the report bundle
+      validates. HIER-005 remains unchanged; no general quality, default, rate, convergence, or
+      Field V2 semantic claim follows.
+    potential_type: claim
+    bound_to: [N269, N270]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O144
+    timestamp: "2026-08-10T12:30+02:00"
+    provenance: ai-executed
+    content: >
+      Exact-count residual column exchange is a strong local-artifact repair but not the dominant
+      remaining-error mechanism on the exposed exact-7k HIER-005 fields. With exact deletion
+      prices and cold-render SSE/pixel/7x7 transactions, it accepts 68/5 pivots on C0001/C0004,
+      improves the touched-finish pipeline by +0.541598/+0.079863 dB, reduces MSE 11.725/1.822%,
+      and repairs both local gates. C0004 misses the frozen +0.10 dB floor, so HIER-011 fails its
+      material-gain decision despite being uniformly safe.
+    context: >
+      Dirty-source diagnostic on two correlated, previously exposed Janelle views, with C0001 used
+      to choose the oriented atom bank and no distinct prospective reviewer. The search stops for
+      no improving pair rather than at its cap. The result retains topology exchange as a useful
+      control/local-tail mechanism but authorizes no retuning, default, semantic, or general claim.
+    potential_type: claim
+    bound_to: [N271]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O145
+    timestamp: "2026-08-10T12:30+02:00"
+    provenance: ai-executed
+    content: >
+      On the same exposed exact-7k fields, HIER-005 followed by fail-closed matrix-free projection
+      of all RGB rows reaches 52.334526/56.470211 dB, gains +2.237466/+2.096112 dB, and reduces
+      masked MSE 40.262/38.285%. Every non-RGB array is bit-exact and displayed pixel/7x7 maxima
+      are 0.016010/0.004586 and 0.008163/0.003136, so both artifact gates pass. It has lower MSE
+      than exchange followed by the same global solve on each view, while exchange-plus-global
+      retains better C0001 LPIPS and isolated-pixel max.
+    context: >
+      Both correlated views were feasibility-probed before the HIER-012 packaging run; the result
+      is descriptive pipeline selection rather than prospective confirmation. The portable bundle
+      and independent ten-field cold replay pass, but clean execution, distinct review, unseen
+      images, selected Field V2 semantics, complete work/rate accounting, and FIT-046/BENCH-020
+      remain required before promotion.
+    potential_type: observation
+    bound_to: [N272, N273]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O146
+    timestamp: "2026-08-10T15:24+02:00"
+    provenance: ai-executed
+    content: >
+      On the exact 16-image repository COCO/DIV2K development bank at N=7,000 and three CUDA
+      replicates, frozen HIER-012 global RGB projection improves HIER-005 by only +0.011700 dB
+      and 0.269 percent geometric-mean MSE. Its image-cluster bootstrap MSE-ratio interval is
+      [0.9932034, 1.0000000008], aggregate MS-SSIM decreases by 0.00007767, and four active cells
+      worsen the displayed 7x7 maximum. Only DIV2K/0268 and DIV2K/0534 run PCG: 42/48 global cells
+      exceed the frozen coefficient limit 16 and fail closed at step zero. Exchange plus global is
+      stronger at +0.072495 dB and 1.655 percent MSE reduction but remains small, heterogeneous,
+      higher-work, and visibly lattice-artifacted.
+    context: >
+      Dirty-source development diagnostic on all 16 requested repository images, four arms, and
+      three replicates (192/192 cells complete), without a distinct prospective reviewer. Exact
+      source/field/canonical hashes, counts, and row ledgers replay, but 141/192 maintained
+      cold-versus-in-memory renders exceed the frozen 2e-6 parity threshold, so the report-bundle
+      checker fails and the evidence is not claim-ready. HIER-012 is not promoted; these consumed
+      images must not be rescued by raising the coefficient cap post hoc.
+    potential_type: observation
+    bound_to: [N274, N275]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

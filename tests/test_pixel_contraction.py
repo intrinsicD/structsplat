@@ -203,6 +203,13 @@ def test_contraction_is_bit_deterministic_for_same_input_and_config():
     assert first.field.canonical_hash() == second.field.canonical_hash()
     assert first.history_records() == second.history_records()
     assert np.array_equal(first.reconstruction, second.reconstruction)
+    assert np.array_equal(first.touched_row_mask, second.touched_row_mask)
+    assert np.array_equal(first.protected_row_mask, second.protected_row_mask)
+    assert not first.touched_row_mask.flags.writeable
+    assert not first.protected_row_mask.flags.writeable
+    assert int(first.touched_row_mask.sum()) == first.touched_active_rows
+    assert int((~first.touched_row_mask).sum()) == first.untouched_active_rows
+    assert int(first.protected_row_mask.sum()) == first.protected_active_rows
 
 
 def test_selective_recovery_freezes_untouched_rows_and_telescopes_sse():

@@ -380,6 +380,65 @@ parallel. Its HTML reports plot every available quality, localized-artifact, byt
 action, recovery/repair, and renderer-parity outcome against achieved count, include full and
 worst-neighborhood visuals, and snapshot the untracked task sources for dirty-run audit.
 
+HIER-010 adds a deliberately narrow, count-neutral successor without pre-empting FIT-046. A first
+HIER-005 pass supplies residual evidence only. Pixel and mask-aware 7x7 residual MSE are each
+normalized by their active q99, combined by a maximum, and deterministically thinned to an exact
+protected-leaf reserve. The otherwise identical second contraction must retain those source
+leaves. Active-row touched/protected provenance travels with the contraction result, so no later
+stage guesses which rows are exact from approximate scale or integer-centre tests.
+
+The optional HIER-010 appearance finish solves only the topology-touched, non-protected RGB block.
+It uses sparse-tile additive forward/transpose products and PCG with a small pull to the incoming
+coefficients; geometry, untouched/protected coefficients, alpha, topology, and row count are
+immutable. Its checkpoint transaction minimizes raw masked SSE subject to no regression in the
+stage-zero displayed worst-pixel/7x7 violation and a coefficient bound. This is a source-bound
+diagnostic component, not the general coefficient-domain/alternation/work comparison owned by
+FIT-046, and no result can advance semantics, compression, or a default before the existing
+BENCH-020/021 gates.
+
+On HIER-010's frozen exposed C0001/C0004 exact-7k screen, this projection improves the unchanged
+HIER-005 control by only `+0.0109/+0.0044 dB`. The complete 350-leaf residual-anchor composition
+instead loses `0.1884/0.1848 dB` and increases masked MSE by about `4.4%` on both views. Its local
+effect reverses across images: C0004 pixel/7x7 maxima improve, while C0001's worsen. The fixed
+global reserve is rejected, HIER-005 remains the fallback, and the bounded projection stays
+default-off. A future count-neutral successor must decide preservation or uncontraction inside the
+topology transaction using actual SSE, worst-pixel, and worst-patch effects; it must not retune the
+reserve on these consumed views.
+
+HIER-011 tests that exact topology transaction without changing the semantic contract. Existing
+rows receive exact finite-support deletion prices; signed residual candidates receive exact
+one-column gains; only support-disjoint negative-cost enter/leave pairs reach a cold-render commit.
+Every accepted exchange preserves N=7,000 and must strictly lower raw SSE without worsening either
+displayed local maximum. The exposed report improves HIER-005 by `+0.5416/+0.0799 dB` after the
+touched/new-row finish and repairs C0001's local gate, but C0004 misses the frozen `+0.10 dB`
+material floor. This retains exchange as a default-off fixed-N allocation control rather than a
+selected Field V2 stage.
+
+HIER-012 then removes the task-scoped touched-row restriction from the same matrix-free PCG. All
+7,000 RGB coefficients become trainable while every non-RGB field array remains bit-exact and step
+zero remains the fail-closed return. On the already exposed C0001/C0004 fields, this direct global
+projection gains `+2.2375/+2.0961 dB`, reduces masked MSE `40.26/38.29%`, and passes the displayed
+pixel/7x7 gates. It has lower MSE than exchange followed by the same solve on each view, so the
+simpler HIER-005-plus-global-projection arm is the selected development recipe. C0001
+exchange-plus-global retains better LPIPS and isolated-pixel max, making the objective tradeoff
+explicit.
+
+HIER-013 freezes that selected recipe on all 16 requested repository COCO/DIV2K images with three
+CUDA replicates. The apparent Janelle gain does not transfer: direct global projection improves
+HIER-005 by only `+0.0117 dB`/`0.269%` geometric-mean MSE and activates on two images because 42/48
+cells exceed the coefficient limit 16 and fail closed. Exchange plus global reaches only
+`+0.0725 dB`/`1.655%`, adds topology work, and retains visible lattice artifacts. Exact field
+hashes and counts replay, but 141/192 cold-versus-in-memory renders miss the frozen CUDA parity
+threshold. The result rejects promotion and any post-hoc cap increase; a successor must
+prospectively stabilize or constrain the coefficient domain before another all-row solve.
+
+Taken together, HIER-012/013 show that coefficient scope dominated the two well-conditioned
+Janelle endpoints but is not a general explanation of the exact-7k residual. The unresolved work
+is the prospective coefficient-domain, stage-order, work, and semantic comparison assigned to
+FIT-046/BENCH-020: no complete codec is priced and no default changes. A newly frozen screen must
+first establish bounded incoming coefficients under the eventual selected Field V2 semantics
+before BENCH-021 composes a global solve.
+
 HIER-006 is the bounded parent-preserving residual-quadtree control for the opposite stage order.
 It begins with every mask-present cell at a declared coarse level. Splitting a selected frontier
 cell retains its parent and appends all mask-present child Gaussians; geometry is the active-pixel
@@ -577,6 +636,11 @@ relax the general promotion gate.
 | HIER-006 | Can a parent-preserving residual quadtree provide artifact-safe progressive prefixes? |
 | HIER-007 | Do parent replacement, artifact-first allocation, and overlap-local RGB reconciliation interact safely? |
 | HIER-008 | Does exact pixel-neighbour overlap or feature/Schur WSE elimination improve contraction without visible holes? |
+| HIER-009 | Can dynamic overlap contraction plus neighborhood recovery remove lattice artifacts without moving error elsewhere? |
+| HIER-010 | Do residual-leaf reservation and a guarded touched-row coefficient solve improve exact-count contraction? |
+| HIER-011 | Can Pareto-gated one-for-one residual column exchange repair exact-count local tails materially? |
+| HIER-012 | Does a guarded all-row coefficient solve explain the remaining exposed exact-count error? |
+| HIER-013 | Does that frozen global-projection recipe transfer across a broader repository development bank? |
 | FIT-044 | Does parameter-group staging help on the selected semantics? |
 | FIT-045 | Does regional allocation/merging beat global and fixed-N controls? |
 | FIT-046 | Does additive variable projection improve convergence or quality? |

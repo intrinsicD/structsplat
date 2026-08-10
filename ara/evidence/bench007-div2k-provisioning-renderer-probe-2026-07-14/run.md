@@ -15,7 +15,7 @@ SHA-256: 9d0b9c463f6e35b6c62cc6a930ee2224f670b34c1df841a57670f9acf0f6c335
 ```
 
 `unzip -tq` reported no errors. Only the four preregistered Stage-0b calibration images and eight
-preregistered Stage-1 pilot images were extracted to `results/datasets/DIV2K_train_HR/`. The
+preregistered Stage-1 pilot images were extracted to `../../../tests/test_images/DIV2K_train_HR/`. The
 downloaded archive copy was then removed to retain space for complete SSPL1 candidate streams and
 fitted fields. The source PNG and decoded contiguous RGB-byte identities are:
 

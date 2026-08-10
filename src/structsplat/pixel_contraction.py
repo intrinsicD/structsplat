@@ -467,6 +467,29 @@ class PixelContractionResult:
     protected_initial_rows: int
     protected_active_rows: int
     blocked_regions: int
+    touched_row_mask: np.ndarray
+    protected_row_mask: np.ndarray
+
+    def __post_init__(self) -> None:
+        """Freeze active-row provenance in the same order as ``field`` arrays."""
+
+        for name in ("touched_row_mask", "protected_row_mask"):
+            value = getattr(self, name)
+            if not isinstance(value, np.ndarray) or value.dtype != np.bool_:
+                raise TypeError(f"{name} must be a bool NumPy array")
+            if value.shape != (self.field.n,):
+                raise ValueError(
+                    f"{name} must have shape ({self.field.n},), got {value.shape}"
+                )
+            frozen = np.array(value, dtype=bool, order="C", copy=True)
+            frozen.flags.writeable = False
+            object.__setattr__(self, name, frozen)
+        if int(self.touched_row_mask.sum()) != self.touched_active_rows:
+            raise ValueError("touched_row_mask count disagrees with touched_active_rows")
+        if int((~self.touched_row_mask).sum()) != self.untouched_active_rows:
+            raise ValueError("touched_row_mask count disagrees with untouched_active_rows")
+        if int(self.protected_row_mask.sum()) != self.protected_active_rows:
+            raise ValueError("protected_row_mask count disagrees with protected_active_rows")
 
     def history_records(self) -> list[dict[str, object]]:
         return [event.to_record() for event in self.history]
@@ -2184,6 +2207,7 @@ def contract_image(
             raise RuntimeError("protected leaf covariances changed during contraction or recovery")
     canonical_raw_bytes = sum(array.nbytes for array in field._array_items().values())
     alpha_bytes = 0 if field.packed_alpha is None else int(field.packed_alpha.nbytes)
+    active_ids = np.flatnonzero(engine.active)
     return PixelContractionResult(
         field=field,
         reconstruction_raw=reconstruction_raw,
@@ -2209,6 +2233,8 @@ def contract_image(
         blocked_regions=int(
             sum(np.sum(state == engine._BLOCKED) for state in engine.states)
         ),
+        touched_row_mask=engine.ever_touched[active_ids],
+        protected_row_mask=engine.protected[active_ids],
     )
 
 

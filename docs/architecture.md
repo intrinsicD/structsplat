@@ -111,6 +111,72 @@ active, and target counts are reached. HIER-009 therefore remains default-off: r
 protection mechanisms for a local-artifact-aware successor, not as a production or compression
 result.
 
+HIER-010 is that bounded successor and remains outside maintained dispatch. Its first pass is
+HIER-005's unchanged near-delta/hard3/touched trajectory. It remeasures the cold residual and
+selects an exact count of source-pixel leaves from the pointwise maximum of q99-normalized pixel
+MSE and mask-aware 7x7 mean MSE, using stable row-major ranking, radius-one NMS, and a deterministic
+fill. A second identical contraction reserves those leaves without increasing the final row count.
+`PixelContractionResult` exposes immutable touched/protected row masks aligned with the returned
+field, so the final appearance stage can distinguish topology-changed rows from exact leaves
+without inferring provenance from floating geometry.
+
+`structsplat.contraction_refinement` then applies a task-scoped matrix-free PCG projection only to
+touched, non-protected RGB rows. Means, scales, rotations, untouched leaves, protected leaves,
+alpha, and topology are fixed. Sparse finite-support forward/transpose tile products mirror the
+maintained additive kernel without allocating a dense pixel-by-row matrix. Step zero and every
+iterate are measured; a candidate is selectable only when raw masked SSE and the displayed
+pixel/7x7 normalized violation do not exceed step zero and coefficients remain bounded. The
+lowest-SSE safe checkpoint wins, otherwise the field is returned unchanged. This narrow
+contraction refinement neither implements FIT-046's general variable-projection decision nor
+selects Field V2 semantics. HIER-010's exact-7k exposed-view report remains diagnostic and prices
+its extra first pass explicitly.
+
+The frozen C0001/C0004 diagnostic rejects the full composition. Projection alone is safe under its
+frozen SSE/maximum-normalized-violation transaction but adds only `+0.0109/+0.0044 dB`. The
+350-leaf residual reserve followed by projection loses
+`0.1884/0.1848 dB` and raises masked MSE `4.43/4.35%`; C0004's local maxima improve, while C0001's
+pixel/7x7 maxima worsen. Hard global reservation is therefore not a robust count-neutral policy:
+it displaces capacity elsewhere, and a coefficient-only finish cannot repair that topology choice.
+HIER-005 remains unchanged. Retain the projection as default-off implementation evidence and make
+any future preservation/uncontraction decision inside a locally and globally Pareto-gated topology
+transaction, tested on unexposed capture groups.
+
+HIER-011 implements that count-neutral transaction as a default-off active-set oracle. It prices
+the exact masked SSE cost of deleting each finite-support row, fits one-column signed residual
+atoms at stable high-error sites, and admits only support-disjoint enter/leave pairs with negative
+reduced cost. The maintained cold additive renderer is authoritative: every commit must strictly
+lower raw SSE while individually preserving displayed worst-pixel and worst-7x7 maxima. Entering
+rows are locked, row count and field semantics never change, and the operator remains sparse rather
+than materializing a pixel-by-row matrix.
+
+The exposed exact-7k report confirms that this transaction repairs HIER-005's C0001 local failure
+and improves both views, but it does not pass its frozen material-gain rule. The search exhausts
+safe improving pairs after 68/5 exchanges; exchange plus touched/new-row projection gains
+`+0.5416/+0.0799 dB` and lowers C0001/C0004 pixel maxima to `0.0136/0.0093`. C0004 remains below
+the declared `+0.10 dB` floor. HIER-011 is therefore a useful topology/local-artifact control, not
+maintained dispatch or a promoted successor.
+
+HIER-012 isolates the larger bottleneck: HIER-010's touched-row coefficient mask. It reuses the
+same fail-closed sparse-tile PCG but marks all 7,000 RGB rows trainable while keeping means,
+log-scales, rotations, support, filtering, alpha, topology, and count bit-exact. On the same exposed
+views, direct global projection from the HIER-005 field reaches `52.3345/56.4702 dB`, gains
+`+2.2375/+2.0961 dB`, reduces masked MSE `40.26/38.29%`, and passes both displayed local gates.
+It also has lower MSE than first applying HIER-011 exchange and then the identical global solve,
+although exchange-plus-global retains better C0001 LPIPS and isolated-pixel max. The simpler
+HIER-005-plus-global-projection composition is the selected development pipeline for a future
+clean independent screen. Because both views informed the choice, it remains outside maintained
+dispatch and does not pre-empt FIT-046 or BENCH-020's semantic/work decision.
+
+HIER-013 runs that frozen screen on all 16 requested repository COCO/DIV2K images with three CUDA
+replicates and reverses the development selection. Direct global projection gains only
+`+0.0117 dB`/`0.269%` geometric-mean MSE and activates on two images: 42/48 cells exceed the
+coefficient limit 16 and fail closed at step zero. Exchange plus global is stronger but still only
+`+0.0725 dB`/`1.655%`, costs more topology work, and leaves visible lattice artifacts. Moreover,
+141/192 cold-versus-in-memory maintained renders exceed the frozen `2e-6` parity threshold, so the
+diagnostic bundle is not claim-ready. Global projection remains a conditional, default-off solver;
+the next formulation must prospectively bound or stabilize incoming coefficients rather than
+raising the cap on these consumed images.
+
 CORE-016/ADR-0032 tests a different ownership boundary instead of another explicit-row
 contraction. Its default-off `.sgdp` packet charges a conventional appearance payload, decodes it
 into signed cardinal-prefiltered coefficients of a finite normalized Gaussian lattice, and stores
@@ -465,6 +531,10 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   artifact-gate arithmetic, field hashes, cold-render parity, curve inventory, and portable links
   to every field/history/image/row artifact. Structural acceptance preserves the diagnostic scope;
   it does not turn an exposed-image, dirty-source run into claim-ready evidence.
+  HIER-009 through HIER-013 use the same dynamic-diagnostic artifact contract for neighborhood
+  recovery, residual anchors, exact-count column exchange, global appearance projection, and its
+  repository-image transfer screen; schema registration validates handoff structure only and does
+  not broaden their evidence class.
 
 ## Stage-search (ABL-002, protocol in ADR-0010)
 `benchmarks/stage_search.py` sweeps configurations across every swappable stage — tensor operator,

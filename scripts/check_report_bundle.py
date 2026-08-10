@@ -63,6 +63,10 @@ HIER005_CONTRACTION_SCHEMA = "structsplat.hier005_pixel_contraction.diagnostic.v
 HIER005_REPAIR_SCHEMA = "structsplat.hier005_artifact_repair.diagnostic.v1"
 HIER008_OVERLAP_SCHEMA = "structsplat.hier008_overlap_elimination.diagnostic.v1"
 HIER009_DYNAMIC_SCHEMA = "structsplat.hier009_dynamic_overlap_recovery.diagnostic.v1"
+HIER010_REFINEMENT_SCHEMA = "structsplat.hier010_residual_anchor_projection.diagnostic.v1"
+HIER011_EXCHANGE_SCHEMA = "structsplat.hier011_guarded_residual_column_exchange.diagnostic.v1"
+HIER012_PROJECTION_SCHEMA = "structsplat.hier012_global_appearance_projection.diagnostic.v1"
+HIER013_DEVELOPMENT_SCHEMA = "structsplat.hier013_global_projection_development.diagnostic.v1"
 CORE019_REPORT_SCHEMA = "core019.coherent_depth.manifest.v1"
 HIER005_REPORT_SCHEMAS = frozenset(
     {
@@ -70,6 +74,10 @@ HIER005_REPORT_SCHEMAS = frozenset(
         HIER005_REPAIR_SCHEMA,
         HIER008_OVERLAP_SCHEMA,
         HIER009_DYNAMIC_SCHEMA,
+        HIER010_REFINEMENT_SCHEMA,
+        HIER011_EXCHANGE_SCHEMA,
+        HIER012_PROJECTION_SCHEMA,
+        HIER013_DEVELOPMENT_SCHEMA,
     }
 )
 
@@ -621,7 +629,13 @@ def _check_hier005_bundle(
     schema = manifest.get("schema")
     is_repair = schema == HIER005_REPAIR_SCHEMA
     is_overlap = schema == HIER008_OVERLAP_SCHEMA
-    is_dynamic = schema == HIER009_DYNAMIC_SCHEMA
+    is_dynamic = schema in (
+        HIER009_DYNAMIC_SCHEMA,
+        HIER010_REFINEMENT_SCHEMA,
+        HIER011_EXCHANGE_SCHEMA,
+        HIER012_PROJECTION_SCHEMA,
+        HIER013_DEVELOPMENT_SCHEMA,
+    )
     if manifest.get("status") != "diagnostic":
         problems.append("manifest.json HIER status must be diagnostic")
 

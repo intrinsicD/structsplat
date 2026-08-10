@@ -40,10 +40,11 @@ IntrinsicEngine as an RHI pass.
   reconstructs NPZ or SSPL1 with optional display-referred error metrics and read-only
   fitted-field overlays.
 - `observation_field.py` / `pixel_contraction.py` / `progressive_residual_quadtree.py` /
-  `artifact_first_quadtree.py` / `overlap_elimination.py` — default-off Field V2 semantic oracle
-  plus the HIER-005 reverse-contraction, HIER-006 retained-parent hierarchy, HIER-007 parent-
-  replacing frontier, HIER-008 exact-overlap/feature-elimination controls, and HIER-009 dynamic
-  overlap contraction with direct-neighbor recovery and protected feature leaves.
+  `artifact_first_quadtree.py` / `overlap_elimination.py` / `contraction_refinement.py` /
+  `residual_exchange.py` — default-off Field V2 semantic oracle plus the HIER-005
+  reverse-contraction, HIER-006 retained-parent hierarchy, HIER-007 parent-replacing frontier,
+  HIER-008 exact-overlap/feature-elimination controls, HIER-009 dynamic overlap contraction,
+  HIER-010 guarded coefficient refinement, and HIER-011 exact-count residual exchange.
   Topology remains NumPy-first; coefficient fitting imports torch lazily. HIER-006 is a negative
   exposed-image prefix control because retained ancestors consumed most of its budget. HIER-007
   recovers those active rows, but its frozen 2x2 C0001 screen rejects artifact-first/overlap-local
@@ -53,7 +54,11 @@ IntrinsicEngine as an RHI pass.
   fails locally and fixed-scale WSE/Schur survivors produce dot holes. HIER-009's 3x3 recovery halo
   removes the obvious low-count block lattice and protection helps patch error, but it redistributes
   error at 8k and every overlap cell still fails the local gate; only the HIER-005 delta/touched 8k
-  fallback passes. None enters the maintained pipeline.
+  fallback passes. HIER-010's fixed residual reserve loses quality, while its touched-row solve is
+  safe but negligible. HIER-011 repairs exposed local tails but misses its transfer gain floor.
+  HIER-012's large exposed all-row projection gain does not survive HIER-013's 16-image screen:
+  most cells fail closed on the frozen coefficient bound and the diagnostic bundle also fails
+  renderer parity. None enters the maintained pipeline.
 - `codec_native_field.py` / `realtime_gs_adapter.py` / `realtime_gs_surface_lift.py` /
   `realtime_gs_ray_posterior.py` / `realtime_gs_coherent_depth.py` —
   CORE-016/ADR-0032's separate default-off

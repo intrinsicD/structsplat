@@ -57,6 +57,37 @@ paths were the live source location when the historical runs were produced.
   so no compression/default claim follows. Evidence note:
   `ara/evidence/hier009-dynamic-overlap-neighborhood-recovery-janelle-diagnostic-2026-08-06/run.md`.
 
+- `hier010-residual-anchor-projection-janelle-diagnostic-2026-08-10`: Frozen exact-7k four-arm
+  diagnostic on exposed correlated C0001/C0004 views. Matrix-free touched-row RGB projection is
+  safe under its frozen two-objective transaction and improves HIER-005 by only +0.0109/+0.0044 dB. Preserving a fixed 350 residual
+  leaves loses about 0.19 dB on both views and improves local tails only on C0004, so the full
+  composition fails the two-image gate and HIER-005 stays unchanged. Evidence note:
+  `ara/evidence/hier010-residual-anchor-projection-janelle-diagnostic-2026-08-10/run.md`.
+
+- `hier011-guarded-residual-column-exchange-janelle-diagnostic-2026-08-10`: Exact-7k active-set
+  successor on the same exposed views. Exact deletion pricing plus cold-render Pareto commits
+  accepts 68/5 one-for-one exchanges, improves HIER-005 by +0.5416/+0.0799 dB after touched/new-row
+  projection, and repairs both local gates. C0004 misses the frozen +0.10 dB material floor, so the
+  mechanism gate fails and HIER-005 stays unchanged. Evidence note:
+  `ara/evidence/hier011-guarded-residual-column-exchange-janelle-diagnostic-2026-08-10/run.md`.
+
+- `hier012-global-appearance-projection-janelle-diagnostic-2026-08-10`: Exposed successor and
+  attribution report for the strongest observed exact-7k pipeline. Keeping HIER-005 geometry and
+  projecting all 7,000 RGB rows reaches 52.3345/56.4702 dB (+2.2375/+2.0961), reduces MSE
+  40.26/38.29%, and passes the local/integrity gates. It has lower MSE than exchange plus the same
+  global solve on both views. Both views informed selection, so this is development evidence only,
+  not FIT-046/default/semantic promotion. Evidence note:
+  `ara/evidence/hier012-global-appearance-projection-janelle-diagnostic-2026-08-10/run.md`.
+
+- `hier013-global-projection-test-images-development-2026-08-10`: Frozen transfer screen over
+  four COCO and twelve DIV2K repository images, three CUDA replicates, and four exact-7k arms
+  (192/192 cells complete). Direct global projection improves HIER-005 by only +0.0117 dB/0.269%
+  MSE and activates on just 2/16 images because 42/48 cells exceed the coefficient bound. Exchange
+  plus global reaches +0.0725 dB/1.655% but remains higher-work and visibly artifacted. Exact
+  hashes/counts/ledgers replay, but 141 rows fail frozen CUDA parity, so the bundle checker and
+  development gate fail. No promotion or post-hoc cap increase follows. Evidence note:
+  `ara/evidence/hier013-global-projection-test-images-development-2026-08-10/run.md`.
+
 - `core016-codec-native-dual-plane-janelle-2026-08-06`: Default-off exposed C0001 systems pilot
   for a charged conventional-codec appearance lattice plus 512-row independent structural measure.
   The 3,896,344-byte packet replays decoded pixel centers below display quantization and has

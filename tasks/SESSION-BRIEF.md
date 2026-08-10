@@ -13,6 +13,10 @@ unless the owning task says so.
 - `HIER-007` — Artifact-first frontier quadtree reconciliation (in-progress; `tasks/HIER-007-artifact-first-frontier-quadtree.md`)
 - `HIER-008` — Overlap lattice and feature-safe elimination (in-progress; `tasks/HIER-008-overlap-lattice-feature-elimination.md`)
 - `HIER-009` — Dynamic overlap contraction with neighborhood recovery (in-review; `tasks/HIER-009-dynamic-overlap-neighborhood-recovery.md`)
+- `HIER-010` — Residual-anchored contraction with safe appearance projection (in-review; `tasks/HIER-010-residual-anchor-projection.md`)
+- `HIER-011` — Guarded residual column exchange (in-review; `tasks/HIER-011-guarded-residual-column-exchange.md`)
+- `HIER-012` — Global safeguarded appearance projection (in-review; `tasks/HIER-012-global-appearance-projection.md`)
+- `HIER-013` — Independent-image global projection development screen (in-review; `tasks/HIER-013-global-projection-development-screen.md`)
 - `CORE-016` — Codec-native dual-plane Gaussian observation field (in-review; `tasks/CORE-016-codec-native-dual-plane-field.md`)
 - `CORE-017` — Visibility-ordered alpha-shell surface lift (in-review; `tasks/CORE-017-visibility-ordered-alpha-shell-lift.md`)
 - `CORE-018` — Occlusion-aware ray-posterior surface lift (in-review; `tasks/CORE-018-occlusion-aware-ray-posterior-lift.md`)
@@ -70,6 +74,6 @@ unless the owning task says so.
 
 ## Ledger summary
 
-- 105 active-table outcomes
+- 109 active-table outcomes
 - 45 retired tasks
 - 51 active-table rows already carrying a closed/non-actionable disposition
