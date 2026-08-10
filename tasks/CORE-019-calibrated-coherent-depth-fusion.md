@@ -68,7 +68,7 @@ with overlap-safe surfel covariance and complete rate/time/quality accounting.
 - [x] The complete candidate fails closed on any reporting-view smear, duplicate shell, trail,
       floater/sheet, grid imprint, boundary hole, or thin-feature deletion; scalar averages cannot
       override the native visual gate. No threshold may be rescued on this scene.
-- [ ] Task, Index, generated brief, architecture/ADR boundary, README/core skill where relevant,
+- [x] Task, Index, generated brief, architecture/ADR boundary, README/core skill where relevant,
       tests, evidence disposition, exact command, ARA records, and visual decision are synchronized;
       focused checks and `./scripts/verify.sh` pass.
 
@@ -341,3 +341,11 @@ corrected full-vs-raw gate passes on SSIM/MS-SSIM/LPIPS plus the spacing tail, b
 gradient MAE, p99 error, and time. The v3/v4/v5 terminal PSNR deltas (+0.371/-0.081/-0.307 dB) expose
 post-density trajectory instability; none changes the step-zero, step-500, convergence, or native
 visual failure.
+
+The 2026-08-08 ledger reconciliation closes the outstanding ARA disposition. Every number in the
+handoff above was independently recomputed from the raw bundle rather than copied from prose, and
+`manifest.json` re-hashes to `d196b10f…`. The rejection is now bound to
+`ara/evidence/core019-coherent-depth-karate-2026-08-07/run.md`, trace nodes `N260`/`N261`/`N262`,
+staging `O136`, and refuted claim `C63`. No method, threshold, budget, or result was changed. The
+distinct-review requirement is unchanged and still open; the ledger records a rejection, not an
+acceptance.

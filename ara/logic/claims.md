@@ -1244,3 +1244,236 @@ reference renderer is memory-bound. See `ara/evidence/core005-render-checkpoint-
 - **Tags**: agent-workflow, task-authority, handoff, prospective-review, review, provenance,
   proof-containment, portability, structural-validation, claim-boundary
 - **From staging**: O94
+
+## C62: The independent ray-depth posterior is refuted on its own frozen support floor
+
+- **Statement**: On the disjoint `karate/frame_00060` diagnostic — 28 construction cameras, one
+  shared 1,360,834-byte packet set, four reporting-only cameras, 10,000 initial rows, 500
+  fixed-topology steps, density through step 1,500 under a 30,000-row cap, seed 0, RTX 3050 — an
+  independently scored occlusion-aware per-ray depth posterior does not concentrate depth. Median
+  candidate posterior entropy is `0.95960` of a `1.0` maximum (mean `0.94195`, p10 `0.88193`,
+  p90 `0.99122`) and median reciprocal support is `0.0` (mean `0.53472`, p90 `2.0` of maximum `4`).
+  The complete `posterior_reciprocal` arm therefore fails its frozen `0.75` primary-support floor
+  and is a persisted error cell that emitted no Gaussian; the floor was not lowered. The
+  `posterior_no_reciprocal` arm starts `+1.8463 dB` above interior consensus (`10.5739` versus
+  `8.7276`) with worse LPIPS, **loses the fixed-topology prefix by `-0.8459 dB` at step 500**
+  (`13.4921` versus `14.3380`), and ends only `+0.0928 dB` ahead at step 1,500 (`14.1048` versus
+  `14.0120`) while saturating the 30,000-row cap against 29,422 control rows, with worse gradient
+  MAE (`0.02247` versus `0.02184`), worse p99 absolute error (`0.64339` versus `0.63444`), and
+  `16.312` versus `14.719` seconds native training. Native review finds a translucent smeared
+  volume. The route is rejected without threshold rescue.
+- **Status**: refuted development single-scene geometry-mechanism claim; no threshold rescue
+  authorized
+- **Provenance**: ai-executed and provisionally self-reviewed
+- **Crystallized via**: empirical-resolution
+- **Falsification criteria**: A provenance-valid rerun on the same frame, packets, cameras, seed,
+  and budgets reproduces a selected primary fraction at or above `0.75`; the recorded entropy or
+  reciprocal-support distributions do not recompute from the persisted bundle; the no-reciprocal arm
+  wins rather than loses the step-500 fixed-topology comparison; or an independent visual review of
+  the persisted native reporting views finds surface-like rather than smeared volumetric geometry.
+- **Proof**: [`ara/evidence/core018-ray-posterior-karate-2026-08-06/run.md`,
+  `docs/research/2026-08-06-core018-ray-posterior-results-audit.md`,
+  `docs/research/2026-08-06-core018-geometry-portfolio.md`,
+  `src/structsplat/realtime_gs_ray_posterior.py`,
+  `scripts/experiments/core018_ray_posterior_downstream.py`,
+  `tasks/CORE-018-occlusion-aware-ray-posterior-lift.md`]
+- **Dependencies**: []
+- **Tags**: geometry-lift, ray-posterior, depth, realtime-gs, karate, disjoint-frame, single-scene,
+  single-seed, exposed-data, negative-control, default-off, visual-gate, claim-boundary
+- **From staging**: O135
+
+## C63: Calibrated coherent-depth fusion is refuted against the ordinary interior control
+
+- **Statement**: On the exposed `karate/frame_00005` diagnostic — 26 construction cameras, one
+  shared 1,256,406-byte packet set cold-reloaded identically by all four arms, four
+  calibration-selected reporting cameras, 10,000 initial rows, SH degree 3, 500 fixed-topology steps,
+  density from step 600 through step 1,500 under a 30,000-row cap, seed 0, RTX 3050 — a pinned
+  VGGT-1B coherent-depth candidate with group-scale-only Sim(3) alignment, known-ray back-projection,
+  robust overlapping fusion, occlusion-aware support, hard feature anchors, dynamic exact-N WSE, and
+  bounded contraction fails every control-bearing frozen gate. It is `-0.9691 dB` below interior at
+  step 0 (`6.6860` versus `7.6551`) against a required `+2 dB` and with worse LPIPS; `-2.8561 dB`
+  below the strongest control at step 500 (`10.6497` versus `13.5058`) against a `0.1 dB` tolerance;
+  never reaches interior's terminal PSNR (control step 400 / `2.680` s, candidate `null`); and ends
+  `-0.9284 dB` below it. The full-versus-raw mechanism ablation is mixed, not a win: `+0.010225`
+  MS-SSIM, `+0.001968` SSIM, `-0.020617` LPIPS, spacing p90/median `1.8726` versus `1.9560`, and
+  904 fewer final rows, against `-0.30749 dB` PSNR and worse gradient MAE, p99 absolute error, and
+  training time. Native review of every coherent reporting view finds black holes, floaters, broad
+  gray sheets, radial streaks, and erased thin detail; the mandatory visual gate controls even
+  though `terminal_pareto_nondominated` and conservative
+  `original/(packets + final model) = 3.2476 > 1` pass. The `5,026,367,224`-byte CC-BY-NC-4.0
+  encoder is charged separately and is never per-scene payload. Together with C62 this closes the
+  CORE-016/017/018/019 lift chain: four successive geometry mechanisms failed the same native visual
+  gate while passing selected scalar aggregates.
+- **Status**: refuted development single-scene geometry-mechanism claim; no threshold or optimizer
+  rescue authorized
+- **Provenance**: ai-executed and provisionally self-reviewed
+- **Crystallized via**: empirical-resolution
+- **Falsification criteria**: A provenance-valid rerun on the same frame, packets, cameras, seed,
+  and budgets clears the step-zero `+2 dB`, step-500 `0.1 dB`/`0.01` MS-SSIM, or convergence gates;
+  the recorded checkpoint metrics do not recompute from `partial_records.json`; the manifest SHA-256
+  does not reproduce; an independent visual review of the persisted native reporting views finds no
+  sheets, streaks, floaters, holes, or erased thin detail; or the byte accounting, encoder-separation,
+  or reporting-view exclusion is shown to be misstated.
+- **Proof**: [`ara/evidence/core019-coherent-depth-karate-2026-08-07/run.md`,
+  `docs/research/2026-08-07-core019-coherent-depth-results-audit.md`,
+  `docs/research/2026-08-07-core019-coherent-depth-portfolio.md`,
+  `src/structsplat/realtime_gs_coherent_depth.py`,
+  `scripts/experiments/core019_coherent_depth_downstream.py`,
+  `tasks/CORE-019-calibrated-coherent-depth-fusion.md`]
+- **Dependencies**: [C62]
+- **Tags**: geometry-lift, coherent-depth, vggt, monocular-prior, realtime-gs, karate, exposed-data,
+  single-scene, single-seed, negative-control, default-off, visual-gate, non-reproducible-cuda,
+  claim-boundary
+- **From staging**: O136
+
+## C64: The interior coverage budget is refuted on the masked arm — the veto is a symptom, not the cause
+
+- **Statement**: On the exposed masked Janelle `frame_00008/C0001` development image
+  (SHA-256 `ae24fe99…`) at `--max-side 1200`, shipped recipe, capacity 11,000, `quadtree_wse`,
+  exact CUDA renderer, seeds 0/1/2 on an RTX 3050, no value of ADR-0026's
+  `hole_regression_budget` wins the frozen FIT-028 gate. Paired deltas against the strict
+  `0.0` control are `+0.0865`, `-0.0683`, and `+0.2116 dB` PSNR at `1e-4/5e-4/2e-3`, every 95%
+  Student-t interval at n=3 contains zero, and the response is non-monotonic. Two comparisons are
+  nominally significant in isolation (`budget5e4` fit `+93.3 s`, CI `[+36.7, +149.9]`; `budget2e3`
+  LPIPS `-0.00084`, CI `[-0.00100, -0.00068]`) and neither survives Bonferroni over the 15
+  comparisons at n=3, which needs `|t| ~ 24.4` against their `7.1` and `22.6`. The mechanism itself
+  is sound and monotonic: step acceptance rises `8.71 -> 9.26 -> 9.53 -> 10.48%` and the count of
+  rejected blocks citing `interior_holes_regressed` collapses `63 -> 18 -> 6 -> 0`. **But the number
+  of rejected blocks does not move** (`73 -> 68 -> 72 -> 72`): at `2e-3` the interior-hole veto is
+  eliminated entirely and discarded work is unchanged, because rejections migrate to the CVaR99 tail
+  guard, whose sole-cause count rises `6 -> 16 -> 21 -> 39`. Only 4 of 73 baseline rejected blocks
+  (5.5%) were vetoed by the hole term alone, bounding the recoverable set before any arm ran.
+  `budget2e3` is the sole arm to retain terminal interior holes (`0.00131%` versus `0.00000%`
+  everywhere else), breaching the guardrail declared before the first fit. ADR-0026's premise that
+  the interior-hole veto causes most discarded work therefore does not hold on the masked arm; the
+  binding constraint is the CVaR99 tail guard together with the boundary pixel-error terms.
+- **Status**: refuted development masked-arm claim; `hole_regression_budget` stays `0.0`, no default
+  or full-frame conclusion authorized
+- **Provenance**: ai-executed and provisionally self-reviewed
+- **Crystallized via**: empirical-resolution
+- **Falsification criteria**: A provenance-valid rerun on the same image, mask, capacity, regime, and
+  seeds produces a PSNR win with a 95% interval excluding zero at any budget; the acceptance,
+  citation, or sole-cause ladders do not recompute from the persisted histories; rejected-block totals
+  fall materially as the budget rises; `budget2e3` reproduces with terminal interior holes at or below
+  the control; or the multiplicity arithmetic is shown to be wrong.
+- **Proof**: [`ara/evidence/fit028-hole-budget-janelle-2026-08-08/run.md`,
+  `docs/adr/0026-explicit-interior-coverage-budget.md`,
+  `scripts/experiments/fit028_bench018_gate_screen_report.py`,
+  `src/structsplat/workflows.py`,
+  `tests/test_gate_screen_report.py`,
+  `tests/test_pipeline_workflows.py`,
+  `tasks/FIT-028-interior-coverage-budget-screen.md`]
+- **Dependencies**: []
+- **Tags**: safe-schedule, commit-gate, coverage, interior-holes, cvar99, ADR-0026, Janelle, masked,
+  exposed-data, development-diagnostic, negative-result, multiplicity, guardrail, claim-boundary
+- **From staging**: O138
+
+## C65: `safe_polish` is tolerance-starved on the masked arm, so removal is not indicated
+
+- **Statement**: In the same 12-cell masked FIT-028 grid, `safe_polish` accepted 0 of 1,404 attempted
+  steps under the strict gate, 0 of 1,404 at `1e-4`, **31 of 1,872** at `5e-4` (all in seed 1), and 0
+  of 1,404 at `2e-3`. Every rejection in all 12 cells cites both `boundary_mse_regressed` and
+  `cvar99_mse_regressed` — the tightest tolerances in the schedule, `(5e-3, 3e-3, 1e-3, 3e-3, 1e-3)`
+  with `minimum_relative_gain` `0.002/0.005`. `interior_holes_regressed` appears in `safe_polish`
+  rejections in only 2 of 12 cells and never as the sole reason, so the shared interior veto is not
+  what stops the phase here. `no_material_gain` fires in 3 cells, so `minimum_relative_gain` binds
+  directly. FIT-029 required separating a vetoed phase from a miscalibrated one before any removal;
+  the cause is **tolerance-driven**, and the 31-step acceptance is the first nonzero `safe_polish`
+  acceptance on record against a prior 0 of 3,276 across 7 of 7 unmasked images. The phase is not
+  structurally dead, so it is kept; retuning its tolerances is a separate question and is not tuned on
+  this consumed frame.
+- **Status**: supported development masked-arm mechanism attribution; keep the phase, no tolerance
+  change authorized
+- **Provenance**: ai-executed and provisionally self-reviewed
+- **Crystallized via**: empirical-resolution
+- **Falsification criteria**: A provenance-valid rerun finds `safe_polish` rejections that cite the
+  interior-hole term alone; the per-cell reason lists do not recompute from the persisted histories;
+  `no_material_gain` never fires; the 31-step acceptance does not reproduce at `5e-4` seed 1; or a
+  matched full-frame measurement shows the interior veto is the sole binding term there, making the
+  masked attribution arm-specific in a way this row does not already scope.
+- **Proof**: [`ara/evidence/fit028-hole-budget-janelle-2026-08-08/run.md`,
+  `scripts/experiments/fit028_bench018_gate_screen_report.py`,
+  `src/structsplat/safe_schedule.py`,
+  `tests/test_gate_screen_report.py`,
+  `tasks/FIT-029-safe-polish-phase-disposition.md`]
+- **Dependencies**: [C64]
+- **Tags**: safe-schedule, safe-polish, tolerances, minimum-relative-gain, commit-gate, Janelle,
+  masked, exposed-data, development-diagnostic, small-sample, claim-boundary
+- **From staging**: O139
+
+## C66: Commit-gate acceptance is not a proxy for terminal quality
+
+- **Statement**: On the exposed masked Janelle `frame_00008/C0001` development image at
+  `--max-side 1200`, shipped recipe, capacity 11,000, seeds 0/1/2 on an RTX 3050, commit-gate block
+  size moves two responses monotonically across a 20x range and terminal quality neither. Step
+  acceptance runs `16.52 / 14.33 / 9.65 / 8.77 / 8.18%` at `block_steps` `25 / 50 / 100 / 250 / 500`,
+  and capacity attainment tracks it at `3/3, 3/3, 1/3, 1/3, 0/3` cells reaching the requested 11,000
+  rows, with `block500` short by roughly 18% in every seed (`8,968 / 9,096 / 8,968`). Terminal PSNR
+  runs `26.403 / 26.529 / 25.918 / 26.086 / 26.106`: `block50` is best
+  (`+0.4432 dB`, CI `[+0.111, +0.775]`), `block100` is worst (`-0.1675`), and `block500` is
+  indistinguishable from the inherited 250. No ordering of block sizes is consistent with both
+  acceptance and quality. Four comparisons are nominally significant in isolation — `block50` PSNR,
+  `block25` LPIPS (`-0.0017`), `block100` LPIPS (`+0.0009`, worse), `block500` fit seconds
+  (`-101.9`) — and **none survives** Bonferroni over the 20 comparisons at n=3, which needs
+  `|t| ~ 28` against their `5.8 / 13.3 / 25.8 / 6.9`; different arms clearing different responses is
+  itself the signature of repeated noise sampling. Taken with `C64`, where ADR-0026's budget moved
+  acceptance monotonically (`8.71 -> 10.48%`) and quality not at all, **two independent knobs cleanly
+  control the gate's accept rate and neither converts it into image quality**. For a schedule whose
+  premise is that accepted work is good work, the actionable defect is capacity shortfall under
+  coarse blocks, not any fractional-dB delta. No default changes: BENCH-018's frozen gate requires
+  the paired win on both the masked and full-frame arms, and the full-frame Kodak-24 arm has not run.
+- **Status**: supported development masked-arm mechanism finding; `block_steps` stays 250, no default
+  or full-frame conclusion authorized
+- **Provenance**: ai-executed and provisionally self-reviewed
+- **Crystallized via**: empirical-resolution
+- **Falsification criteria**: A provenance-valid rerun on the same image, mask, capacity, regime, and
+  seeds produces a monotonic PSNR ordering in block size; the acceptance or capacity ladders do not
+  recompute from the persisted rows; `block500` reaches the requested 11,000 rows; a quality response
+  survives multiplicity correction at this n; or a matched full-frame arm shows acceptance and
+  quality moving together, making the non-proxy statement arm-specific in a way this row does not
+  already scope.
+- **Proof**: [`ara/evidence/bench018-commit-gate-janelle-2026-08-08/run.md`,
+  `ara/evidence/fit028-hole-budget-janelle-2026-08-08/run.md`,
+  `scripts/experiments/fit028_bench018_gate_screen_report.py`,
+  `src/structsplat/workflows.py`,
+  `tests/test_pipeline_workflows.py`,
+  `tasks/BENCH-018-commit-gate-granularity.md`]
+- **Dependencies**: [C64]
+- **Tags**: safe-schedule, commit-gate, block-steps, acceptance, capacity, Janelle, masked,
+  exposed-data, development-diagnostic, multiplicity, negative-result, claim-boundary
+- **From staging**: O140
+
+## C67: The transactional gate amplifies CUDA nondeterminism, giving a ~0.46 dB detection floor at n=3
+
+- **Statement**: Three same-config replicate pairs of the shipped recipe on masked Janelle
+  `frame_00008/C0001` at `--max-side 1200`, capacity 11,000, seeds 0/1/2 — the FIT-028 baseline arm
+  re-executed by the BENCH-018 grid — differ by `+0.22497 / -0.14275 / +0.07714 dB` PSNR (mean
+  `+0.053`, sd `0.185`), by `+944 / -48 / -384` Gaussians, and by `+88.3 / -47.0 / -23.3` fit
+  seconds. `target_pixel_sha256` matches in all three pairs and `field_sha256` in none, so the inputs
+  are identical and the fitted fields are not. The mean difference is indistinguishable from zero and
+  the signs alternate, so the two grids are exchangeable and this is symmetric run-to-run
+  nondeterminism rather than drift. **Seed does not pin the trajectory**: CUDA atomic accumulation is
+  not bit-reproducible, and the transactional gate makes threshold comparisons on metrics computed
+  from those reductions, so a ulp-level difference flips a borderline block from accept to reject and
+  changes every subsequent decision — amplifying float noise into a 944-row topology divergence. It
+  follows that the 95% Student-t half-width at n=3 is `4.303 x 0.185 / sqrt(3) ~ 0.46 dB`, which is
+  the smallest PSNR effect either screen can resolve; that resolving a `0.1 dB` difference needs
+  roughly 15--20 seeds; and that **no absolute metric from one grid is portable to another**, so only
+  within-grid paired comparisons are meaningful and even those carry this envelope.
+- **Status**: supported development replication bound; n=3 pairs on one image, regime, and capacity
+- **Provenance**: ai-executed and provisionally self-reviewed
+- **Crystallized via**: empirical-resolution
+- **Falsification criteria**: A provenance-valid rerun of the same configuration reproduces
+  `field_sha256` exactly, or reproduces terminal PSNR within float tolerance; the replicate
+  differences do not recompute from the two persisted bundles; the mean difference proves
+  systematically nonzero, indicating drift rather than symmetric nondeterminism; or a
+  determinism-enforced execution path shows the divergence originates outside the gate's threshold
+  comparisons.
+- **Proof**: [`ara/evidence/bench018-commit-gate-janelle-2026-08-08/run.md`,
+  `ara/evidence/fit028-hole-budget-janelle-2026-08-08/run.md`,
+  `src/structsplat/safe_schedule.py`,
+  `docs/adr/0024-normalized-fade-cutoff-conditioning-parity.md`]
+- **Dependencies**: []
+- **Tags**: reproducibility, determinism, cuda-atomics, commit-gate, replication-envelope,
+  statistical-power, experiment-design, Janelle, masked, development-diagnostic, claim-boundary
+- **From staging**: O141

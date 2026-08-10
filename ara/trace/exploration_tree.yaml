@@ -5169,3 +5169,278 @@ tree:
       - "tasks/CORE-017-visibility-ordered-alpha-shell-lift.md"
     also_depends_on: [N251, N254, N255, N256]
     status: resolved
+  - id: N258
+    type: experiment
+    title: "The independent ray-depth posterior fails its own support floor on a disjoint frame"
+    provenance: ai-executed
+    timestamp: "2026-08-06T21:40+02:00"
+    result: >
+      Implemented a source-excluded DINOv2 plus local coarse/fine ray-depth posterior and ran a
+      frozen three-arm diagnostic on the disjoint karate/frame_00060 with one shared
+      1,360,834-byte 28-view packet set, four reporting-only cameras, 10,000 initial rows, 500
+      fixed-topology steps, density through step 1,500 under a 30,000-row cap, and seed 0. The
+      complete reciprocal arm is a persisted error cell: selected primary fraction fell below the
+      frozen 0.75 floor and no Gaussian was emitted. Candidate posterior entropy is near-maximal
+      (median 0.95960, mean 0.94195, p90 0.99122) and reciprocal support is sparse (median 0.0,
+      mean 0.53472). The no-reciprocal arm gains 1.8463 dB at step 0 but loses the fixed-topology
+      prefix by 0.8459 dB at step 500 and ends only 0.0928 dB ahead at the 30,000-row cap, with
+      worse gradient MAE and p99 error and 16.312 s versus 14.719 s native training.
+    evidence:
+      - "ara/evidence/core018-ray-posterior-karate-2026-08-06/run.md"
+      - "docs/research/2026-08-06-core018-ray-posterior-results-audit.md"
+      - "manifest sha256 e11c4a73e8a94afbf149e52b9a1acc889bf22a7beb2ec4bd89c27ac36f8d0610"
+      - "commit 6525f82"
+    also_depends_on: [N253, N254, N255, N256, N257]
+    status: resolved
+  - id: N259
+    type: dead_end
+    title: "Independently scored per-ray depth does not concentrate into a surface"
+    provenance: ai-executed
+    timestamp: "2026-08-06T21:40+02:00"
+    hypothesis: >
+      Replacing mask/alpha support with an independently scored occlusion-aware depth posterior per
+      ray will resolve the directional smear and double silhouettes that survived CORE-017, because
+      photometric and feature evidence should concentrate probability on the true surface.
+    failure_mode: >
+      The posterior is essentially uninformative on real data: median candidate entropy 0.95960 of a
+      1.0 maximum, and median reciprocal support 0.0. The complete arm therefore cannot meet its own
+      frozen 0.75 support floor and produces nothing, while the arm that runs only by disabling the
+      reciprocal check remains a translucent smeared volume. Its terminal PSNR lead is bought with
+      the row cap and extra wall time after losing the fixed-topology prefix outright.
+    lesson: >
+      Per-ray independence is the defect, not the threshold. Depth evidence must be shared across
+      rays and views before selection, and a support floor that fails closed is worth more than a
+      lowered one. Do not retune entropy temperature, dustbin cost, feature weight, or the floor on
+      frame_00060.
+    evidence:
+      - "N258"
+      - "tasks/CORE-018-occlusion-aware-ray-posterior-lift.md"
+      - "ara/evidence/core018-ray-posterior-karate-2026-08-06/run.md"
+    also_depends_on: [N256, N257, N258]
+    status: resolved
+  - id: N260
+    type: experiment
+    title: "Calibration-grouped coherent depth fails every control-bearing CORE-019 gate"
+    provenance: ai-executed
+    timestamp: "2026-08-07T22:10+02:00"
+    result: >
+      Answered N259's lesson directly: a pinned VGGT-1B predicts spatially coherent depth over
+      deterministic four-view calibration-only groups, one Sim(3) per group supplies scale only,
+      known calibrated rays own back-projection, overlapping views fuse by confidence-weighted
+      robust median with MAD, and acceptance separates support, compatible occlusion, free-space
+      contradiction, and invalid evidence before hard feature anchors, dynamic exact-N WSE, and
+      bounded contraction. On exposed karate/frame_00005 with one shared 1,256,406-byte 26-view
+      packet set and four calibration-selected reporting cameras, the candidate is 0.9691 dB below
+      interior at step 0 against a required +2 dB, 2.8561 dB below the strongest control at step
+      500, never reaches interior's terminal PSNR, and ends 0.9284 dB below it. Full versus raw is
+      mixed: +0.010225 MS-SSIM, +0.001968 SSIM, -0.020617 LPIPS, a better spacing tail, and 904
+      fewer final rows, against -0.30749 dB PSNR and worse gradient MAE, p99 error, and time.
+      Conservative original/(packets+final model) is 3.2476 and is explicitly not a compression
+      claim; the 5,026,367,224-byte CC-BY-NC-4.0 encoder is charged separately. The v3/v4/v5
+      full-vs-raw terminal PSNR deltas of +0.371/-0.081/-0.307 dB expose non-bit-reproducible CUDA
+      density, so only the step-zero, step-500, convergence, and visual failures carry weight.
+    evidence:
+      - "ara/evidence/core019-coherent-depth-karate-2026-08-07/run.md"
+      - "docs/research/2026-08-07-core019-coherent-depth-results-audit.md"
+      - "docs/research/2026-08-07-core019-coherent-depth-portfolio.md"
+      - "manifest sha256 d196b10fc011a436c2b0b0f8b6fec610c7ac9f53c4906a19aa21b52ece0a5af2"
+      - "commit a8e8dde"
+    also_depends_on: [N255, N256, N257, N258, N259]
+    status: resolved
+  - id: N261
+    type: dead_end
+    title: "A coherent multiview depth prior still does not yield surface-like step-zero geometry"
+    provenance: ai-executed
+    timestamp: "2026-08-07T22:10+02:00"
+    hypothesis: >
+      If per-ray independence was CORE-018's defect, then a learned globally coherent multiview
+      depth prior, aligned to known calibration and fused across overlapping groups, will produce
+      visibly surface-like geometry at step zero and carry that advantage through the shared
+      optimizer.
+    failure_mode: >
+      Coherent depth does not transfer into better initial geometry: the candidate starts below the
+      ordinary interior consensus control it was meant to replace and stays below it at every
+      checkpoint. Native review of every coherent reporting view finds black holes, floaters, broad
+      gray sheets, radial streaks, and erased thin detail. The mechanism ablation shows the
+      support/contraction/WSE machinery changes the quality tradeoff at fewer rows without a uniform
+      win, so no component rescues the composition.
+    lesson: >
+      Four successive geometry mechanisms — dual-plane packet carve, alpha shell, ray posterior, and
+      coherent depth fusion — have now failed the same native visual gate while passing selected
+      scalar aggregates. The remaining hypothesis is not another local selection rule but a globally
+      consistent surface or regularized point-map whose topology is held fixed until reporting-safe
+      residual and silhouette checks pass, tested prospectively on data that is not already exposed.
+      Averaged metrics must never override the visual gate.
+    evidence:
+      - "N260"
+      - "tasks/CORE-019-calibrated-coherent-depth-fusion.md"
+      - "ara/evidence/core019-coherent-depth-karate-2026-08-07/run.md"
+    also_depends_on: [N256, N259, N260]
+    status: resolved
+  - id: N262
+    type: decision
+    title: "Close the codec-native lift chain and record both rejections in the ledger"
+    provenance: ai-executed
+    timestamp: "2026-08-08T00:00+02:00"
+    choice: >
+      Stop opening successors to CORE-016/017/018/019 and record CORE-018 and CORE-019 as refuted
+      claims bound to tracked evidence notes, matching the BENCH-007 standard. Retain both
+      default-off modules as negative controls. Do not treat any Janelle frame as confirmation data:
+      frame_00005, frame_00008, frame_00009, and frame_00060 are all consumed and form one capture
+      group, so BENCH-019's three-independent-capture-group requirement cannot be met there.
+    alternatives:
+      - "Open a fifth lift mechanism (global surface/mesh) on the same exposed capture group."
+      - "Leave both rejections as task prose without evidence notes or claim rows."
+      - "Rescue CORE-019 on the favorable full-vs-raw MS-SSIM/LPIPS slice."
+      - "Delete the failed modules and their negative evidence."
+    evidence:
+      - "N259"
+      - "N261"
+      - "ara/evidence/core018-ray-posterior-karate-2026-08-06/run.md"
+      - "ara/evidence/core019-coherent-depth-karate-2026-08-07/run.md"
+      - "tasks/BENCH-019-stage1-downstream-objective.md"
+    also_depends_on: [N257, N259, N261]
+    status: resolved
+  - id: N263
+    type: experiment
+    title: "The interior coverage budget is monotonic in acceptance and inert in quality"
+    provenance: ai-executed
+    timestamp: "2026-08-08T14:20+02:00"
+    result: >
+      Registered the ADR-0026 budget as a `hole_budget` stage in the maintained stage-search
+      registry, added per-phase commit-gate telemetry to the report surface before executing, then
+      ran the frozen masked-arm ladder on Janelle frame_00008/C0001 at max-side 1200 with capacity
+      11,000 and seeds 0/1/2. No arm wins the frozen PSNR gate: paired deltas are +0.0865, -0.0683,
+      and +0.2116 dB with every 95% t interval containing zero, and the response is non-monotonic.
+      Two comparisons are nominally significant in isolation (budget5e4 fit +93.3 s, budget2e3 LPIPS
+      -0.00084) but neither survives Bonferroni over the 15 comparisons at n=3. Step acceptance rises
+      monotonically 8.71/9.26/9.53/10.48 percent and interior-hole block citations collapse
+      63/18/6/0, so the mechanism behaves exactly as designed. Rejected blocks nevertheless hold at
+      73/68/72/72 and CVaR99 sole-cause rejections rise 6/16/21/39. budget2e3 is the only arm to
+      retain terminal interior holes (0.00131% versus 0.00000%), breaching the pre-declared guardrail.
+    evidence:
+      - "ara/evidence/fit028-hole-budget-janelle-2026-08-08/run.md"
+      - "tasks/FIT-028-interior-coverage-budget-screen.md"
+      - "manifest sha256 e46b26b0c6051de76b7ecb4cabb17d2234c9b534f0750d49b58a677bec5ad35a"
+    also_depends_on: []
+    status: resolved
+  - id: N264
+    type: dead_end
+    title: "Relaxing the interior-hole veto recovers no discarded work"
+    provenance: ai-executed
+    timestamp: "2026-08-08T14:20+02:00"
+    hypothesis: >
+      ADR-0026's premise: interior_holes_regressed accounts for most discarded work, so bounding it
+      with an explicit trade-off budget should convert vetoed blocks into terminal quality.
+    failure_mode: >
+      Substitution is complete. At budget2e3 the interior-hole veto is eliminated entirely (0 of 72
+      rejected blocks cite it) and the number of rejected blocks is unchanged; the rejections migrate
+      wholesale to the CVaR99 tail guard and the boundary pixel-error terms. The recoverable set was
+      bounded in advance: only 4 of 73 baseline rejected blocks were vetoed by the hole term alone.
+      The one arm that does buy quality also retains interior holes, which the pre-declared guardrail
+      forbids.
+    lesson: >
+      A Pareto gate with several protected terms cannot be repaired by relaxing one of them; the
+      binding constraint simply moves. Attribute discarded work by sole-cause blocks, never by reason
+      citations or occurrences. On the masked arm the lever is the CVaR99 tail guard plus the boundary
+      pixel-error terms, not interior coverage, which supports ADR-0026's own view that the budget is
+      the cheap half and FIT-030's proposal-time feasibility with local repair is the real fix.
+    evidence:
+      - "N263"
+      - "ara/evidence/fit028-hole-budget-janelle-2026-08-08/run.md"
+      - "docs/adr/0026-explicit-interior-coverage-budget.md"
+    also_depends_on: [N263]
+    status: resolved
+  - id: N265
+    type: decision
+    title: "Keep the coverage budget off and keep safe_polish, for separate reasons"
+    provenance: ai-executed
+    timestamp: "2026-08-08T14:20+02:00"
+    choice: >
+      Keep hole_regression_budget at 0.0 in the ADR-0025 recipe and amend ADR-0026 to record the
+      masked-arm negative plus its two text defects. Keep safe_polish rather than removing it: its
+      masked-arm rejections are tolerance-driven, every one cites boundary and CVaR99 pixel-error
+      terms, no_material_gain binds directly, and one cell accepted 31 steps — the first nonzero
+      acceptance on record. Retuning polish tolerances becomes a separate question and must not be
+      tuned on this consumed frame.
+    alternatives:
+      - "Promote budget2e3 on its +0.212 dB and significant LPIPS gain, ignoring the hole guardrail."
+      - "Promote budget1e4 on its unanimous cost reduction, which fails the ladder at 5e-4."
+      - "Remove safe_polish because it accepts almost nothing."
+      - "Retune the polish tolerances now, on the frame that just measured them."
+    evidence:
+      - "N263"
+      - "N264"
+      - "ara/evidence/fit028-hole-budget-janelle-2026-08-08/run.md"
+      - "tasks/FIT-029-safe-polish-phase-disposition.md"
+    also_depends_on: [N263, N264]
+    status: resolved
+  - id: N266
+    type: experiment
+    title: "Commit-gate granularity moves acceptance and capacity monotonically, quality not at all"
+    provenance: ai-executed
+    timestamp: "2026-08-08T22:40+02:00"
+    result: >
+      Registered a `commit_gate` stage and ran the frozen masked-arm ladder 25/50/100/250/500 on
+      Janelle frame_00008/C0001 at max-side 1200, capacity 11,000, seeds 0/1/2; 15/15 cells, no error
+      cells, bundle passing the structural gate with no provenance divergence. Step acceptance is
+      monotonic across the full 20x range at 16.52/14.33/9.65/8.77/8.18 percent and capacity
+      attainment tracks it at 3/3, 3/3, 1/3, 1/3, 0/3 cells reaching 11,000 rows, with block500
+      missing by roughly 18 percent in every seed. Terminal PSNR is monotonic in neither, running
+      26.403/26.529/25.918/26.086/26.106: block50 is best (+0.4432 dB, CI [+0.111, +0.775]),
+      block100 is worst, and block500 is indistinguishable from the inherited 250. Four comparisons
+      are nominally significant and none survives Bonferroni over the 20 comparisons at n=3, with
+      different arms clearing different responses.
+    evidence:
+      - "ara/evidence/bench018-commit-gate-janelle-2026-08-08/run.md"
+      - "tasks/BENCH-018-commit-gate-granularity.md"
+      - "manifest sha256 753402d1a7b14880c21050ef492ee44f17e9dd1e91eb0e1c37224ce50999f41d"
+    also_depends_on: [N263]
+    status: resolved
+  - id: N267
+    type: experiment
+    title: "The transactional gate amplifies CUDA nondeterminism into topology divergence"
+    provenance: ai-executed
+    timestamp: "2026-08-08T22:40+02:00"
+    result: >
+      The BENCH-018 grid re-ran the shipped configuration at seeds 0/1/2 already executed by
+      FIT-028, giving three same-config replicate pairs. Target pixel hashes match in all three and
+      field hashes match in none. PSNR differences are +0.22497/-0.14275/+0.07714 (mean +0.053, sd
+      0.185), Gaussian counts differ by +944/-48/-384, and fit seconds by +88.3/-47.0/-23.3. The
+      mean is indistinguishable from zero and signs alternate, so the runs are exchangeable and this
+      is symmetric nondeterminism rather than drift. Seed does not pin the trajectory: CUDA atomic
+      accumulation is not bit-reproducible, and the gate makes threshold comparisons on metrics built
+      from those reductions, so a ulp-level difference flips a borderline block and changes every
+      later decision. The implied 95% detection floor at n=3 is about 0.46 dB, and resolving 0.1 dB
+      would need roughly 15--20 seeds.
+    evidence:
+      - "ara/evidence/bench018-commit-gate-janelle-2026-08-08/run.md"
+      - "ara/evidence/fit028-hole-budget-janelle-2026-08-08/run.md"
+    also_depends_on: [N263, N266]
+    status: resolved
+  - id: N268
+    type: decision
+    title: "Keep block_steps at 250 and treat gate acceptance as a non-proxy for quality"
+    provenance: ai-executed
+    timestamp: "2026-08-08T22:40+02:00"
+    choice: >
+      Change no schedule default. BENCH-018's frozen gate requires the paired quality win on both the
+      masked and full-frame arms and the full-frame arm has not run, so block50's significant masked
+      PSNR win cannot promote anything, and it does not survive multiplicity in any case. Record
+      instead the cross-experiment finding that FIT-028 and BENCH-018 together establish: two
+      independent knobs control the gate's accept rate cleanly and monotonically, and neither converts
+      it into terminal quality. Carry the replication envelope forward as a design constraint on every
+      future screen of this pipeline, and treat coarse-block capacity shortfall as the actionable
+      defect rather than any fractional-dB delta.
+    alternatives:
+      - "Promote block50 on its significant masked-arm PSNR win, ignoring the missing full-frame arm."
+      - "Promote block25 on its LPIPS win, or block500 on its wall-clock win."
+      - "Declare a smaller-is-better gradient from the acceptance ladder alone."
+      - "Report the four nominally significant results without multiplicity correction."
+    evidence:
+      - "N266"
+      - "N267"
+      - "N264"
+      - "ara/evidence/bench018-commit-gate-janelle-2026-08-08/run.md"
+    also_depends_on: [N264, N266, N267]
+    status: resolved

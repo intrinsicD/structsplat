@@ -177,8 +177,15 @@ python scripts/stage_search.py ./images/kodim01.png ./results/search_detail \
 
 Stage search requires exactly one image and runs every registered variant of the selected stage
 while freezing the rest of the current recipe. Stages are `initialization`, `storage`,
-`checkpoint`, `bootstrap`, `coverage`, `detail`, `closure`, `redistribution`, and `polish`. Use
-`--variants ...` for a subset and `--help` for the complete interface.
+`checkpoint`, `bootstrap`, `coverage`, `detail`, `closure`, `redistribution`, `polish`,
+`commit_gate`, and `hole_budget`. Use `--variants ...` for a subset and `--help` for the complete
+interface.
+
+`commit_gate` (BENCH-018) varies the transactional block — the unit of discarded work — across
+every gated phase; `hole_budget` (FIT-028) varies the ADR-0026 interior coverage trade-off budget.
+Both keep `current` as the shipped baseline and change nothing else. Every current-profile run card
+reports commit-gate accounting: attempted versus accepted steps per phase, block counts, and the
+schedule's own rejection-reason histogram.
 
 Previous task-specific launchers live in `deprecated_scripts/`. They remain available for
 historical evidence reproduction but are not supported entrypoints. The remaining top-level files

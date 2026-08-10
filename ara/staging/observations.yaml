@@ -1818,6 +1818,162 @@ observations:
     crystallized_via: null
     stale: false
   - id: O135
+    timestamp: "2026-08-06T21:40+02:00"
+    provenance: ai-executed
+    content: >
+      On the disjoint karate/frame_00060 assay, an independently scored per-ray depth posterior is
+      near-uninformative: median candidate entropy is 0.95960 of a 1.0 maximum and median reciprocal
+      support is 0.0. The complete arm fails its own frozen 0.75 primary-support floor and emits no
+      Gaussian. The arm that runs only by disabling the reciprocal check starts 1.8463 dB above
+      interior consensus, then loses the fixed-topology prefix by 0.8459 dB at step 500 and ends
+      only 0.0928 dB ahead while saturating the 30,000-row cap with worse gradient MAE and p99
+      error. Native review shows a translucent smeared volume, not a surface.
+    context: >
+      One frame, one capture group, one seed, reduced resolution, dirty external source, and
+      provisional self-review only. The support floor was left failing closed rather than lowered.
+      No general geometry, quality, convergence, speed, or compression claim follows.
+    potential_type: claim
+    bound_to: [N258, N259]
+    promoted: true
+    promoted_to: "logic/claims.md:C62"
+    crystallized_via: empirical-resolution
+    stale: false
+  - id: O136
+    timestamp: "2026-08-07T22:10+02:00"
+    provenance: ai-executed
+    content: >
+      On exposed karate/frame_00005, pinned-VGGT calibration-grouped coherent depth with known-ray
+      fusion, occlusion-aware support, hard anchors, dynamic WSE, and bounded contraction fails every
+      control-bearing frozen gate: 0.9691 dB below interior at step 0 against a required +2 dB,
+      2.8561 dB below the strongest control at step 500, never reaching interior's terminal PSNR,
+      and 0.9284 dB below it at step 1,500. Native review of every coherent reporting view finds
+      black holes, floaters, gray sheets, radial streaks, and erased thin detail. The full-versus-raw
+      mechanism ablation is mixed rather than a win: +0.010225 MS-SSIM, +0.001968 SSIM, -0.020617
+      LPIPS, a better spacing tail, and 904 fewer final rows, against -0.30749 dB PSNR and worse
+      gradient MAE, p99 error, and time.
+    context: >
+      One exposed scene, one seed, reduced resolution, dirty external source, no physical depth
+      truth, and provisional self-review only. The v3/v4/v5 terminal full-vs-raw PSNR deltas of
+      +0.371/-0.081/-0.307 dB disagree in sign, so the shared CUDA/density path is not bit
+      reproducible and only the step-zero, step-500, convergence, and visual failures — stable
+      across all three replays — carry the conclusion. The 5,026,367,224-byte CC-BY-NC-4.0 encoder
+      is charged separately and is never per-scene payload.
+    potential_type: claim
+    bound_to: [N260, N261]
+    promoted: true
+    promoted_to: "logic/claims.md:C63"
+    crystallized_via: empirical-resolution
+    stale: false
+  - id: O137
+    timestamp: "2026-08-08T00:00+02:00"
+    provenance: ai-executed
+    content: >
+      Every calibrated Janelle frame is now consumed by a StructSplat experiment — frame_00008
+      (CORE-016 and multiple FIT/HIER diagnostics), frame_00009 (CORE-017), karate/frame_00060
+      (CORE-018), and karate/frame_00005 (CORE-019) — and the two captures form one capture group.
+      BENCH-019 requires matched fields on at least three independently approved capture groups, so
+      no further run on this dataset can produce confirmation-grade or general-surrogate evidence,
+      only additional development diagnostics.
+    context: >
+      Recorded during the 2026-08-08 CORE-018/019 ledger reconciliation by enumerating frame
+      references across tasks, docs, and evidence. This is an inventory fact about data exposure, not
+      a measured result; it constrains which gates the existing dataset can ever close.
+    potential_type: constraint
+    bound_to: [N262]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O138
+    timestamp: "2026-08-08T14:20+02:00"
+    provenance: ai-executed
+    content: >
+      On the masked Janelle frame_00008/C0001 arm at max-side 1200 with capacity 11,000 and three
+      seeds, the ADR-0026 interior coverage budget is monotonic in commit acceptance
+      (8.71/9.26/9.53/10.48 percent) and collapses interior-hole block citations 63/18/6/0, but the
+      number of rejected blocks is unchanged at 73/68/72/72 because rejections migrate to the CVaR99
+      tail guard, whose sole-cause count rises 6/16/21/39. Only 4 of 73 baseline rejected blocks were
+      vetoed by the hole term alone. No arm wins the frozen PSNR gate; budget2e3 is the only arm to
+      retain terminal interior holes (0.00131%), breaching the pre-declared guardrail.
+    context: >
+      Development diagnostic: one exposed image, one capture group, three seeds, one RTX 3050, dirty
+      tree, default report gate failing on provenance divergence from concurrent doc edits. Nominally
+      significant timing and LPIPS results fail Bonferroni over 15 comparisons at n=3. The full-frame
+      Kodak-24 arm and distinct review remain open, so no default may change.
+    potential_type: claim
+    bound_to: [N263, N264, N265]
+    promoted: true
+    promoted_to: "logic/claims.md:C64"
+    crystallized_via: empirical-resolution
+    stale: false
+  - id: O139
+    timestamp: "2026-08-08T14:20+02:00"
+    provenance: ai-executed
+    content: >
+      `safe_polish` on the masked arm is tolerance-starved rather than veto-blocked. Across 12 cells
+      every rejection cites both boundary_mse_regressed and cvar99_mse_regressed, the phase's own
+      tightest tolerances; interior_holes_regressed appears in only 2 cells and never alone;
+      no_material_gain fires in 3 cells, so minimum_relative_gain binds directly. One cell
+      (budget5e4, seed 1) accepted 31 of 936 attempted steps, the first nonzero safe_polish
+      acceptance on record against a prior 0 of 3,276 across 7/7 unmasked images.
+    context: >
+      This is the masked measurement FIT-029 required before any removal decision, obtained from the
+      FIT-028 grid at no extra compute. safe_polish receives only 1-2 blocks per cell, so the pattern
+      is consistent over small samples rather than a precise rate. Removal is therefore not indicated;
+      retuning the polish tolerances is a separate question and must not be tuned on this frame.
+    potential_type: claim
+    bound_to: [N263, N265]
+    promoted: true
+    promoted_to: "logic/claims.md:C65"
+    crystallized_via: empirical-resolution
+    stale: false
+  - id: O140
+    timestamp: "2026-08-08T22:40+02:00"
+    provenance: ai-executed
+    content: >
+      On the masked Janelle arm at max-side 1200 with capacity 11,000 and three seeds, commit-gate
+      block size moves step acceptance monotonically across a 20x range
+      (16.52/14.33/9.65/8.77/8.18 percent at 25/50/100/250/500) and capacity attainment with it
+      (3/3, 3/3, 1/3, 1/3, 0/3 cells reaching 11,000 rows; block500 misses by ~18 percent every
+      seed), while terminal PSNR is monotonic in neither
+      (26.403/26.529/25.918/26.086/26.106). With FIT-028's inert budget ladder this gives two
+      independent knobs that cleanly control the gate's accept rate without converting it into image
+      quality.
+    context: >
+      Development diagnostic: one exposed image, three seeds, one RTX 3050, frozen dirty tree, bundle
+      passing the structural gate. Four comparisons are nominally significant and none survives
+      Bonferroni over 20 comparisons at n=3; different arms clear different responses. BENCH-018's
+      frozen gate needs both the masked and full-frame arms, and the full-frame arm has not run, so no
+      default may change.
+    potential_type: claim
+    bound_to: [N266, N268]
+    promoted: true
+    promoted_to: "logic/claims.md:C66"
+    crystallized_via: empirical-resolution
+    stale: false
+  - id: O141
+    timestamp: "2026-08-08T22:40+02:00"
+    provenance: ai-executed
+    content: >
+      Three same-config replicate pairs of the shipped recipe on masked Janelle frame_00008/C0001 at
+      max-side 1200 differ by +0.22497/-0.14275/+0.07714 dB PSNR (mean +0.053, sd 0.185) and by
+      +944/-48/-384 Gaussians, with identical target pixel hashes and differing field hashes. Seed
+      does not pin the trajectory: the transactional gate makes threshold comparisons on
+      nondeterministic CUDA reductions, so a ulp-level difference flips a borderline block and
+      changes all later decisions. The implied 95% detection floor at n=3 is about 0.46 dB.
+    context: >
+      Obtained as a by-product of BENCH-018 re-running FIT-028's baseline configuration. n=3 pairs on
+      one image at one resolution and capacity: this bounds the envelope rather than characterising
+      it. It constrains every screen of this pipeline — absolute metrics are not portable between
+      grids, only within-grid paired comparisons are meaningful, and resolving 0.1 dB needs roughly
+      15--20 seeds.
+    potential_type: constraint
+    bound_to: [N267]
+    promoted: true
+    promoted_to: "logic/claims.md:C67"
+    crystallized_via: empirical-resolution
+    stale: false
+  - id: O142
     timestamp: "2026-08-08T15:30+02:00"
     provenance: ai-executed
     content: >

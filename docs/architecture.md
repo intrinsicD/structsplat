@@ -362,7 +362,14 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   and its diagnostic-only status are ADR-0018.
 - **entry:** `scripts/convert.py` is the sole current-best conversion CLI;
   `scripts/{benchmark,ablation,stage_search}.py` are evaluation workflows. All four write portable
-  report bundles. `scripts/check_report_bundle.py` is their standalone structural handoff gate:
+  report bundles. `workflows.STAGE_VARIANTS` is the registry those workflows share; besides the
+  recipe stages it carries `commit_gate` (BENCH-018's transactional block, applied uniformly to
+  every gated phase and clamped to each phase ceiling) and `hole_budget` (FIT-028's ADR-0026
+  interior coverage trade-off budget). Both register `current` first so the shipped recipe stays
+  the baseline arm. Every current-profile run card also carries `gate_telemetry`: per-phase
+  attempted/accepted steps, block counts, and the schedule's rejection-reason histogram, which is
+  the measured surface FIT-028/FIT-029/BENCH-018 read.
+  `scripts/check_report_bundle.py` is their standalone structural handoff gate:
   report-owned artifact paths serialize relative to the bundle, and the checker validates clean
   source identity, table agreement, finite metrics, contained artifacts/hashes, and portable
   local links before semantic results audit. `deprecated_scripts/` retains
