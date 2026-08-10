@@ -85,6 +85,59 @@ paths were the live source location when the historical runs were produced.
   The ignored custom bundle is independently receipt-valid but not a maintained report. Evidence
   note: `ara/evidence/core017-visibility-ordered-alpha-shell-janelle-2026-08-06/run.md`.
 
+- `bench018-commit-gate-janelle-2026-08-08`: Masked-arm development screen of commit-gate
+  granularity on `frame_00008/C0001`, five block sizes x three seeds, 15/15 cells, bundle passing
+  the structural gate under `--allow-dirty` with no provenance divergence. Step acceptance is
+  monotonic across the full 20x range (16.52->14.33->9.65->8.77->8.18%) and capacity attainment
+  tracks it (3/3, 3/3, 1/3, 1/3, 0/3 cells reaching 11,000 rows; `block500` misses by ~18% every
+  seed), but terminal quality is monotonic in neither: PSNR runs 26.403/26.529/25.918/26.086/26.106
+  with `block50` best and `block100` worst. Four comparisons are nominally significant and none
+  survives Bonferroni over 20 comparisons at n=3. Together with FIT-028 this establishes that gate
+  acceptance is not a proxy for terminal quality. The bundle also yields a same-config replication
+  study: PSNR sd 0.185 dB over three replicate pairs with identical target pixels and differing
+  fields, giving a ~0.46 dB detection floor at n=3 and showing the gate amplifies CUDA
+  nondeterminism into 944-row topology divergence. The task's pre-run cost calibration at max-side
+  256 predicted the wrong sign for the production regime and is corrected. Gate not satisfiable
+  (full-frame arm unrun); no default change. Evidence note:
+  `ara/evidence/bench018-commit-gate-janelle-2026-08-08/run.md`.
+
+- `fit028-hole-budget-janelle-2026-08-08`: Masked-arm development screen of the ADR-0026 interior
+  coverage budget on `frame_00008/C0001` at max-side 1200, three seeds, plus the masked
+  `safe_polish` measurement FIT-029 required. No budget wins the frozen PSNR gate; the response is
+  non-monotonic and the two nominally significant results fail Bonferroni at n=3. The mechanism
+  nevertheless works monotonically: acceptance rises 8.71%->10.48% and interior-hole citations
+  collapse 63->18->6->0, yet rejected blocks hold at 73->68->72->72 because rejections migrate to
+  the CVaR99 tail guard (sole-cause 6->39). Only 4 of 73 baseline rejections were hole-vetoed alone,
+  bounding the recoverable set in advance. `budget2e3` is the only arm to retain interior holes
+  (0.00131%), breaching the pre-declared guardrail. `safe_polish` is tolerance-starved, not
+  veto-blocked, and accepted 31 steps in one cell — the first nonzero acceptance on record — so
+  removal is not indicated. Development diagnostic only: exposed single image, dirty tree, default
+  bundle gate fails on provenance divergence. Evidence note:
+  `ara/evidence/fit028-hole-budget-janelle-2026-08-08/run.md`.
+
+- `core018-ray-posterior-karate-2026-08-06`: Disjoint-frame (`karate/frame_00060`) three-arm
+  diagnostic of an independently scored occlusion-aware ray depth posterior. The complete
+  reciprocal arm is a persisted error cell: it fell below its frozen 0.75 primary-support floor and
+  emitted no Gaussian, with near-maximal candidate entropy (median 0.95960) and sparse reciprocal
+  support (median 0.0). The no-reciprocal arm starts `+1.8463 dB` over interior consensus but loses
+  the fixed-topology prefix by `-0.8459 dB` at step 500 and ends only `+0.0928 dB` ahead while
+  saturating the 30,000-row cap with worse gradient MAE and p99 error. Native review finds a
+  translucent smeared volume. Route rejected without threshold rescue; no default, general, or
+  BENCH-019 claim follows. Evidence note:
+  `ara/evidence/core018-ray-posterior-karate-2026-08-06/run.md`.
+
+- `core019-coherent-depth-karate-2026-08-07`: Exposed `karate/frame_00005` four-arm diagnostic of
+  pinned-VGGT calibration-grouped coherent depth with known-ray fusion, occlusion-aware support,
+  hard feature anchors, dynamic WSE, and bounded contraction. The candidate fails every
+  control-bearing frozen gate: `-0.9691 dB` at step 0 against a required `+2 dB`, `-2.8561 dB` at
+  step 500, never reaches interior's terminal PSNR, and ends `-0.9284 dB` below it. The full-vs-raw
+  mechanism ablation is mixed — `+0.010225` MS-SSIM, `-0.020617` LPIPS, and 904 fewer rows against
+  `-0.30749 dB` PSNR and worse gradient/p99 — and v3/v4/v5 replays of that delta disagree in sign,
+  exposing non-bit-reproducible CUDA density. Native review finds sheets, streaks, floaters, holes,
+  and erased detail in every coherent view. Composition retired, not escalated; the 5.03 GB
+  CC-BY-NC-4.0 encoder is charged separately and is never per-scene payload. Evidence note:
+  `ara/evidence/core019-coherent-depth-karate-2026-08-07/run.md`.
+
 - `hier005-selective-recovery-janelle-diagnostic-2026-08-05`: Dirty one-image Janelle diagnostic
   for progress-normalized optimizer recovery over contraction-touched rows only. At N=8,192 the
   run removes the visible square/tree holes and changes masked PSNR from 34.076 to 52.339 dB while

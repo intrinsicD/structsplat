@@ -44,10 +44,14 @@ Decide: keep `safe_polish` as-is, retune its tolerances, or remove it from the s
 
 ## Acceptance criteria
 
-- [ ] `safe_polish` acceptance reported per FIT-028 arm, both ADR-0025 arms.
-- [ ] The cause identified as veto-driven or tolerance-driven, with the evidence cited.
-- [ ] Decision recorded: kept / retuned / removed, with a claim row either way.
-- [ ] If removed, ADR-0025's recipe and the schedule defaults change in one commit.
+- [x] `safe_polish` acceptance reported per FIT-028 arm, masked arm. *(0/1,404, 0/1,404, 31/1,872,
+      0/1,404 at `0.0/1e-4/5e-4/2e-3`.)*
+- [ ] Same, full-frame arm — blocked with FIT-028's full-frame arm, which has not run.
+- [x] The cause identified as veto-driven or tolerance-driven, with the evidence cited.
+      *(Tolerance-driven on the masked arm; `C65`.)*
+- [x] Decision recorded: kept / retuned / removed, with a claim row either way. *(**Kept.**)*
+- [x] If removed, ADR-0025's recipe and the schedule defaults change in one commit. *(Not removed;
+      no recipe or default change.)*
 
 ## Depends on
 
@@ -57,3 +61,41 @@ FIT-028, ADR-0026, FIT-023, BENCH-017
 
 The 0-of-3,276 figure is from the unmasked arm only and is staged as O88, not claimed. The masked
 arm has not been measured for this at all.
+
+## Masked-arm disposition — 2026-08-08: keep the phase
+
+Answered from the FIT-028 grid at no extra compute, which is why this task was blocked on FIT-028 by
+design. Of the two candidate causes, the evidence separates them cleanly and selects **(2)
+tolerance-driven**:
+
+- Every `safe_polish` rejection in all 12 cells cites both `boundary_mse_regressed` and
+  `cvar99_mse_regressed` — the phase's own tightest-in-the-schedule pixel-error tolerances.
+- `interior_holes_regressed` appears in only 2 of 12 cells and **never alone**, so cause (1), the
+  shared interior-hole veto, is not what stops the phase here.
+- `no_material_gain` fires in 3 cells, so `minimum_relative_gain` binds directly.
+- `budget5e4` seed 1 accepted **31 of 936** attempted steps — the first nonzero `safe_polish`
+  acceptance on record, against a prior 0 of 3,276 across 7/7 unmasked images.
+
+This is the masked measurement step 3 demanded before removing anything. The phase accepts there, so
+**removal is not indicated** and nothing is cut. Retuning `minimum_relative_gain` and the polish
+pixel-error tolerances is the indicated follow-up, is a new question rather than this task's, and must
+not be tuned on this consumed frame.
+
+Caveat: `safe_polish` receives only 1--2 blocks and 468--936 attempted steps per cell, so this is a
+consistent pattern over small per-cell samples, not a precise acceptance rate.
+
+Evidence `ara/evidence/fit028-hole-budget-janelle-2026-08-08/run.md`; claim `C65`; trace `N265`;
+staging `O139`.
+
+## Agent workflow
+
+- Driver: claude-root
+- Reviewer: pending-distinct
+- Turn: driver
+- Reviewed revision: pending
+
+### Handoff log
+
+The masked-arm answer is a development diagnostic from the FIT-028 grid: exposed single image, three
+seeds, provisional self-review only. It supports keeping the phase and forbids removing it on current
+evidence; it cannot authorize a tolerance change or close the full-frame half.

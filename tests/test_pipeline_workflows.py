@@ -19,8 +19,12 @@ from structsplat.pipeline import (
 )
 from structsplat.workflows import (
     ABLATION_ARMS,
+    COMMIT_GATE_BLOCK_STEPS,
+    HOLE_REGRESSION_BUDGETS,
     STAGE_VARIANTS,
+    _gate_telemetry,
     _run_card,
+    _stage_transform,
     _write_metrics,
     build_ablation_parser,
     build_benchmark_parser,
@@ -263,3 +267,160 @@ def test_metric_tables_serialize_report_artifacts_as_relative_paths(tmp_path):
     assert row["field_npz"] == "runs/field.npz"
     assert row["snapshots"][0]["reconstruction"] == "runs/field.npz"
     assert row["original_source_path"] == str(external)
+
+
+def _phase_names(schedule):
+    return ("bootstrap", "coverage", "detail", "boundary", "redistribution", "polish")
+
+
+def test_commit_gate_stage_sets_one_granularity_on_every_gated_phase():
+    strategy, transform = _stage_transform("commit_gate", "block50")
+    assert strategy == "quadtree_wse"
+    schedule = build_current_schedule(boundary_enabled=True)
+    transformed = transform(schedule)
+
+    for name in _phase_names(transformed):
+        phase = getattr(transformed, name)
+        ceiling = getattr(schedule, name).max_steps
+        # BENCH-018's axis is the block, clamped to each phase ceiling; nothing else moves.
+        assert phase.block_steps == max(1, min(50, ceiling))
+        assert phase.max_steps == ceiling
+        assert phase.target_gaussians == getattr(schedule, name).target_gaussians
+    # The source schedule is not mutated in place.
+    assert schedule.detail.block_steps != 50 or transformed is not schedule
+
+
+def test_commit_gate_current_variant_leaves_the_schedule_untouched():
+    strategy, transform = _stage_transform("commit_gate", "current")
+    assert strategy == "quadtree_wse"
+    assert transform is None
+
+
+def test_commit_gate_block_never_exceeds_a_short_phase_ceiling():
+    _, transform = _stage_transform("commit_gate", "block500")
+    schedule = build_current_schedule(boundary_enabled=True)
+    transformed = transform(schedule)
+
+    for name in _phase_names(transformed):
+        phase = getattr(transformed, name)
+        assert 1 <= phase.block_steps <= phase.max_steps
+
+
+def test_hole_budget_stage_only_moves_the_adr0026_budget():
+    schedule = build_current_schedule(boundary_enabled=True)
+    assert schedule.hole_regression_budget == 0.0
+
+    for variant, expected in (
+        ("budget1e4", 1e-4),
+        ("budget5e4", 5e-4),
+        ("budget2e3", 2e-3),
+    ):
+        _, transform = _stage_transform("hole_budget", variant)
+        transformed = transform(schedule)
+        assert transformed.hole_regression_budget == expected
+        for name in _phase_names(transformed):
+            assert getattr(transformed, name) == getattr(schedule, name)
+    # The strict historical gate stays the registered baseline.
+    assert schedule.hole_regression_budget == 0.0
+
+
+def test_new_stages_are_registered_with_current_first():
+    assert STAGE_VARIANTS["commit_gate"][0] == "current"
+    assert STAGE_VARIANTS["hole_budget"][0] == "current"
+    assert set(COMMIT_GATE_BLOCK_STEPS) == set(STAGE_VARIANTS["commit_gate"][1:])
+    assert set(HOLE_REGRESSION_BUDGETS) == set(STAGE_VARIANTS["hole_budget"][1:])
+
+
+def test_gate_telemetry_counts_spent_versus_kept_work_and_reasons():
+    history = [
+        {"phase": "initialization", "event": "initialization", "accepted": True},
+        {
+            "phase": "detail",
+            "event": "global_fit",
+            "accepted": True,
+            "attempted_steps": 250,
+            "accepted_steps": 250,
+            "reasons": [],
+        },
+        {
+            "phase": "detail",
+            "event": "global_fit",
+            "accepted": False,
+            "attempted_steps": 250,
+            "accepted_steps": 0,
+            "reasons": ["interior_holes_regressed", "cvar99_mse_regressed"],
+        },
+        {
+            "phase": "safe_polish",
+            "event": "global_fit",
+            "accepted": False,
+            "attempted_steps": 500,
+            "accepted_steps": 0,
+            "reasons": ["interior_holes_regressed"],
+        },
+        {"phase": "safe_polish", "event": "phase_end", "accepted": True},
+    ]
+
+    telemetry = _gate_telemetry(history)
+
+    detail = telemetry["phases"]["detail"]
+    assert detail["attempted_steps"] == 500
+    assert detail["accepted_steps"] == 250
+    assert detail["step_acceptance"] == 0.5
+    assert detail["accepted_blocks"] == 1
+    assert detail["blocks"] == 2
+    assert detail["rejection_reasons"] == {
+        "interior_holes_regressed": 1,
+        "cvar99_mse_regressed": 1,
+    }
+
+    polish = telemetry["phases"]["safe_polish"]
+    assert polish["step_acceptance"] == 0.0
+    assert polish["accepted_blocks"] == 0
+
+    # phase_end/initialization markers carry no decision and must not inflate the denominator.
+    assert "initialization" not in telemetry["phases"]
+    assert telemetry["attempted_steps"] == 1_000
+    assert telemetry["accepted_steps"] == 250
+    assert telemetry["step_acceptance"] == 0.25
+    assert telemetry["rejection_reasons"]["interior_holes_regressed"] == 2
+
+
+def test_run_card_renders_the_commit_gate_accounting_table(tmp_path):
+    card = _run_card(
+        tmp_path,
+        {
+            "method_label": "gate",
+            "source_id": "img",
+            "seed": 0,
+            "n_gaussians": 11_000,
+            "psnr": 30.0,
+            "ms_ssim": 0.9,
+            "lpips": None,
+            "fit_seconds": 1.0,
+            "total_seconds": 2.0,
+            "gate_telemetry": {
+                "step_acceptance": 0.25,
+                "attempted_steps": 1_000,
+                "accepted_steps": 250,
+                "rejection_reasons": {"interior_holes_regressed": 2},
+                "phases": {
+                    "safe_polish": {
+                        "attempted_steps": 500,
+                        "accepted_steps": 0,
+                        "blocks": 2,
+                        "accepted_blocks": 0,
+                        "step_acceptance": 0.0,
+                        "rejection_reasons": {"interior_holes_regressed": 2},
+                    }
+                },
+            },
+            "curves": [],
+            "snapshots": [],
+        },
+    )
+
+    assert "commit-gate accounting" in card
+    assert "25.0% of attempted steps kept" in card
+    assert "safe_polish" in card
+    assert "interior_holes_regressed x2" in card

@@ -70,9 +70,35 @@ STAGE_VARIANTS: dict[str, tuple[str, ...]] = {
     "closure": ("current", "generic_no_boundary", "disabled"),
     "redistribution": ("current", "events32", "events128", "disabled"),
     "polish": ("current", "steps1000", "steps4000", "disabled"),
+    # BENCH-018: commit-gate granularity. `current` is the schedule's inherited 250.
+    "commit_gate": ("current", "block25", "block50", "block100", "block500"),
+    # FIT-028: ADR-0026 interior coverage trade-off budget. `current` is the strict 0.0 gate.
+    "hole_budget": ("current", "budget1e4", "budget5e4", "budget2e3"),
+}
+# BENCH-018 arm values, keyed by variant name.
+COMMIT_GATE_BLOCK_STEPS: dict[str, int] = {
+    "block25": 25,
+    "block50": 50,
+    "block100": 100,
+    "block500": 500,
+}
+# FIT-028 arm values, keyed by variant name.
+HOLE_REGRESSION_BUDGETS: dict[str, float] = {
+    "budget1e4": 1e-4,
+    "budget5e4": 5e-4,
+    "budget2e3": 2e-3,
 }
 
 ScheduleTransform = Callable[[Any], Any]
+# The transactional phases whose block is the unit of discarded work (BENCH-018).
+_GATED_PHASES = (
+    "bootstrap",
+    "coverage",
+    "detail",
+    "boundary",
+    "redistribution",
+    "polish",
+)
 
 
 def _atomic_text(path: Path, payload: str) -> None:
@@ -327,6 +353,66 @@ def _phase_timings(history: list[dict[str, Any]]) -> dict[str, float]:
         timings[phase] = timings.get(phase, 0.0) + max(0.0, current - previous)
         previous = current
     return timings
+
+
+def _gate_telemetry(history: list[dict[str, Any]]) -> dict[str, Any]:
+    """Per-phase commit-gate accounting for FIT-028/FIT-029/BENCH-018.
+
+    The transactional gate trials a block of steps and rolls it back when the metric vector
+    regresses, so ``attempted`` counts work spent and ``accepted`` counts work kept. Rejection
+    reasons are the schedule's own strings (``interior_holes_regressed`` and friends); a rejected
+    block may cite several at once, so the histogram counts reason occurrences, not blocks.
+    """
+
+    phases: dict[str, dict[str, Any]] = {}
+    reasons_total: dict[str, int] = {}
+    for record in history:
+        # Only gated trial blocks carry a decision; phase_end/initialization markers do not.
+        if not record.get("reasons") and record.get("event") in {
+            "phase_end",
+            "initialization",
+        }:
+            continue
+        phase = str(record.get("phase", "unknown"))
+        bucket = phases.setdefault(
+            phase,
+            {
+                "attempted_steps": 0,
+                "accepted_steps": 0,
+                "blocks": 0,
+                "accepted_blocks": 0,
+                "rejection_reasons": {},
+            },
+        )
+        attempted = int(record.get("attempted_steps", 0) or 0)
+        accepted = int(record.get("accepted_steps", 0) or 0)
+        bucket["attempted_steps"] += attempted
+        bucket["accepted_steps"] += accepted
+        bucket["blocks"] += 1
+        if record.get("accepted"):
+            bucket["accepted_blocks"] += 1
+        for reason in record.get("reasons") or ():
+            name = str(reason)
+            bucket["rejection_reasons"][name] = (
+                bucket["rejection_reasons"].get(name, 0) + 1
+            )
+            reasons_total[name] = reasons_total.get(name, 0) + 1
+    for bucket in phases.values():
+        attempted = bucket["attempted_steps"]
+        bucket["step_acceptance"] = (
+            None if attempted <= 0 else bucket["accepted_steps"] / attempted
+        )
+    attempted_total = sum(bucket["attempted_steps"] for bucket in phases.values())
+    accepted_total = sum(bucket["accepted_steps"] for bucket in phases.values())
+    return {
+        "phases": phases,
+        "attempted_steps": attempted_total,
+        "accepted_steps": accepted_total,
+        "step_acceptance": (
+            None if attempted_total <= 0 else accepted_total / attempted_total
+        ),
+        "rejection_reasons": reasons_total,
+    }
 
 
 def _capture_name(ordinal: int, record: dict[str, Any]) -> str:
@@ -658,6 +744,7 @@ def _run_job(
         "render_seconds": output["timing"]["final_render_seconds"],
         "total_seconds": time.perf_counter() - started,
         "phase_seconds": _phase_timings(history),
+        "gate_telemetry": _gate_telemetry(history),
         "error_tail": schedule_result.get("error_tail"),
         "pursuit_tail": schedule_result.get("pursuit_tail"),
         "render_fps_median": (
@@ -865,6 +952,47 @@ def _run_card(outdir: Path, row: dict[str, Any]) -> str:
         f"<span><b>{float(seconds):.3f}s</b> {html.escape(str(phase))}</span>"
         for phase, seconds in (row.get("phase_seconds") or {}).items()
     )
+    gate = row.get("gate_telemetry") or {}
+    gate_html = ""
+    if gate.get("phases"):
+        overall = gate.get("step_acceptance")
+        overall_text = "n/a" if overall is None else f"{float(overall):.1%}"
+        phase_rows = "".join(
+            "<tr>"
+            f"<td>{html.escape(str(phase))}</td>"
+            f"<td class='n'>{int(stats['attempted_steps']):,}</td>"
+            f"<td class='n'>{int(stats['accepted_steps']):,}</td>"
+            f"<td class='n'>"
+            + (
+                "n/a"
+                if stats.get("step_acceptance") is None
+                else f"{float(stats['step_acceptance']):.1%}"
+            )
+            + "</td>"
+            f"<td class='n'>{int(stats['accepted_blocks']):,}/{int(stats['blocks']):,}</td>"
+            "<td>"
+            + html.escape(
+                ", ".join(
+                    f"{name} x{count}"
+                    for name, count in sorted(
+                        (stats.get("rejection_reasons") or {}).items(),
+                        key=lambda item: -item[1],
+                    )
+                )
+                or "—"
+            )
+            + "</td>"
+            "</tr>"
+            for phase, stats in gate["phases"].items()
+        )
+        gate_html = (
+            "<details open><summary>commit-gate accounting "
+            f"({overall_text} of attempted steps kept)</summary>"
+            "<table class='gate'><thead><tr><th>phase</th><th>attempted</th>"
+            "<th>accepted</th><th>step acceptance</th><th>blocks</th>"
+            "<th>rejection reasons</th></tr></thead>"
+            f"<tbody>{phase_rows}</tbody></table></details>"
+        )
     error_tail = row.get("error_tail") or {}
     error_tail_html = ""
     if error_tail.get("enabled"):
@@ -922,6 +1050,7 @@ def _run_card(outdir: Path, row: dict[str, Any]) -> str:
         "</div>"
         f"<details><summary>phase timings</summary><div class='metrics'>{phase_timings}</div>"
         "</details>"
+        f"{gate_html}"
         f"{error_tail_html}"
         f"{pursuit_tail_html}"
         f"<div class='links'>{' '.join(artifacts)}</div>"
@@ -1048,6 +1177,8 @@ grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:16p
 .chart polyline{{fill:none;stroke-width:3}}.chart text{{font:10px "Liberation Mono",monospace;fill:#6b6b66}}
 .empty{{display:flex;min-height:110px;flex-direction:column;justify-content:center;color:var(--muted)}}
 details{{margin-top:15px}}summary{{cursor:pointer;font-weight:bold}}.errors{{color:#8a251a}}
+table.gate td.n,table.gate th:nth-child(2){{text-align:right}}
+table.gate td:last-child,table.gate th:last-child{{text-align:left;font-size:.78rem}}
 @media(max-width:700px){{header,main{{width:min(100% - 18px,1500px)}}header{{padding-top:32px}}
 .run{{padding:12px;box-shadow:4px 4px 0 rgba(29,37,40,.08)}}table{{display:block;overflow:auto}}}}
 </style></head><body>
@@ -1244,6 +1375,22 @@ def _stage_transform(stage: str, variant: str) -> tuple[str, ScheduleTransform |
                 schedule.polish = replace(schedule.polish, max_steps=4_000)
             elif variant == "disabled":
                 schedule.polish = _phase_disabled(schedule.polish)
+        elif stage == "commit_gate":
+            # BENCH-018 sets one granularity for every gated phase, exactly as
+            # `PipelineConfig.block_steps` does, and clamps it to each phase ceiling.
+            block = COMMIT_GATE_BLOCK_STEPS[variant]
+            for name in _GATED_PHASES:
+                phase = getattr(schedule, name)
+                setattr(
+                    schedule,
+                    name,
+                    replace(
+                        phase,
+                        block_steps=max(1, min(int(block), int(phase.max_steps))),
+                    ),
+                )
+        elif stage == "hole_budget":
+            schedule.hole_regression_budget = HOLE_REGRESSION_BUDGETS[variant]
         else:
             raise ValueError(f"unknown stage: {stage}")
         return schedule

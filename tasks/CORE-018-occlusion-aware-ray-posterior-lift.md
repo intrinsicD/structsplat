@@ -68,7 +68,7 @@ through the final 3D model.
       exceeds twice the control's complete pre-training wall-clock, or fails to reduce the complete
       scene representation below the summed original JPEG bytes.  A pass authorizes only a
       prospectively reviewed multiscene/multiseed confirmation.
-- [ ] Task, Index, generated brief, architecture/ADR boundary, tests, evidence disposition, exact
+- [x] Task, Index, generated brief, architecture/ADR boundary, tests, evidence disposition, exact
       command, and visual decision are synchronized; focused checks and `./scripts/verify.sh` pass.
 
 ## Diagnostic protocol
@@ -264,3 +264,12 @@ volumes on every reporting view.  The full method and the independent-ray geomet
 rejected; lowering the reciprocal threshold on this consumed scene is prohibited.  Exact protocol,
 metrics, hashes, visuals, checker limitations, and causal disposition are in
 `docs/research/2026-08-06-core018-ray-posterior-results-audit.md`.
+
+## Ledger disposition — 2026-08-08
+
+The outstanding ARA disposition is now closed. Every number above was independently recomputed from
+the raw bundle rather than copied from prose, and `manifest.json` re-hashes to `e11c4a73…`. The
+rejection is bound to `ara/evidence/core018-ray-posterior-karate-2026-08-06/run.md`, trace nodes
+`N258`/`N259`/`N262`, staging `O135`, and refuted claim `C62`. No method, threshold, budget, or
+result was changed. The distinct-review requirement is unchanged and still open; the ledger records
+a rejection, not an acceptance.
