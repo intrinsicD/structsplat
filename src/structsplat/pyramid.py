@@ -98,7 +98,8 @@ def prefix_metrics(field: GaussianField, counts: list[int], target: torch.Tensor
                                if cfg.renderer in ("gsplat", "cuda_gsplat") else 0.0
                            ), rotations=sub.rotations,
                            support_fade=cfg.support_fade, sigma_cutoff=cfg.sigma_cutoff,
-                           checkpoint_chunks=cfg.render_checkpoint)
+                           checkpoint_chunks=cfg.render_checkpoint,
+                           normalization_eps=cfg.normalization_eps)
         rows.append({
             "level": lvl,
             "n_gaussians": n,
@@ -185,7 +186,8 @@ def fit_pyramid(img: np.ndarray, target: torch.Tensor, icfg: InitConfig,
                                    ), rotations=field.rotations,
                                    support_fade=fcfg.support_fade,
                                    sigma_cutoff=fcfg.sigma_cutoff,
-                                   checkpoint_chunks=fcfg.render_checkpoint)
+                                   checkpoint_chunks=fcfg.render_checkpoint,
+                                   normalization_eps=fcfg.normalization_eps)
                 residual = (target - cur).abs().cpu().numpy()
             # one tensor drives both density and orientation, under the full level config
             # (previously the density tensor silently used default operator/sigma/thresholds)

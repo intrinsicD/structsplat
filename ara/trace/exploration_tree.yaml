@@ -5605,3 +5605,202 @@ tree:
       - "ara/evidence/hier013-global-projection-test-images-development-2026-08-10/run.md"
     also_depends_on: [N272, N273, N274]
     status: resolved
+  - id: N276
+    type: experiment
+    title: "Conditioned minimum-norm RGB projection is numerically effective but visually insufficient"
+    provenance: ai-executed
+    timestamp: "2026-08-10T17:45+02:00"
+    result: >
+      HIER-014 preserves the legacy projection by default and tests zero-start, zero-centered PCG
+      plus explicit frozen-base construction on four SHA-bound Kodak images at exact N=7,000.
+      Origin/explicit reconditions three of four fields and records geometric-mean MSE ratio
+      0.9927876691 (+0.031436 dB), but mean LPIPS worsens 0.001035, one 7x7 maximum regresses, and
+      kodim13 returns unsafe stage zero under the local guard. Subtractive and explicit-base arms
+      are effectively identical. All 189 manifest entries and 16 row records replay independently.
+    evidence:
+      - "ara/evidence/hier014-conditioned-projection-kodak-diagnostic-2026-08-10/run.md"
+      - "results/hier014_kodak_conditioned_projection_2026-08-10/index.html"
+      - "report manifest sha256 c547e987a6fd72e5ebf65ae1401fbf2a74cd0750a25615a3946b2ce81927592b"
+      - "tasks/HIER-014-conditioned-minimum-norm-projection.md"
+    also_depends_on: [N274, N275]
+    status: resolved
+  - id: N277
+    type: decision
+    title: "Close fixed-geometry conditioning and test geometry escape against direct fit"
+    provenance: ai-executed
+    timestamp: "2026-08-10T17:45+02:00"
+    choice: >
+      Do not run HIER-014 Phase C or tune its Kodak quartet. Retain zero-centered restart as
+      default-off numerical infrastructure, but treat HIER-005 geometry/basis as the remaining
+      bottleneck. The next bounded experiment must alter geometry under a final fail-closed
+      transaction and include a direct exact-count fit control so an additive hierarchy is not
+      retained merely because it improves its own weak baseline.
+    alternatives:
+      - "Increase the coefficient cap or PCG iterations on the exposed Kodak images."
+      - "Promote a 0.031 dB gain despite failed perceptual/local gates."
+      - "Replay the consumed HIER-013 bank despite the Phase-B stop rule."
+      - "Abandon all numerical conditioning even though it successfully removes near-null range."
+    evidence:
+      - "N276"
+      - "ara/evidence/hier014-conditioned-projection-kodak-diagnostic-2026-08-10/run.md"
+    also_depends_on: [N274, N275, N276]
+    status: resolved
+  - id: N278
+    type: experiment
+    title: "Geometry relaxation improves exact-7k additive fields but direct normalized fit is the robust control"
+    provenance: ai-executed
+    timestamp: "2026-08-11T05:20+02:00"
+    result: >
+      HIER-015 ran five exact-7k arms on four mechanically hash-selected COCO images. The selected
+      2x200 appearance/geometry arm gains 3.658 dB and reduces geometric-mean MSE to 0.4307 versus
+      HIER-005, but every full frame retains an obvious lattice. Direct normalized fitting is
+      visually clean and averages +12.061 dB, +0.2859 MS-SSIM, and -0.4802 LPIPS, but one image's
+      displayed worst pixel is 0.0562 worse than HIER-005, so neither arm passes the full frozen
+      gate.
+    evidence:
+      - "ara/evidence/hier015-hier021-exact7k-portfolio-2026-08-10/run.md"
+      - "results/hier015_coco_geometry_escape_2026-08-10/index.html"
+      - "tasks/HIER-015-geometry-escape-direct-fit.md"
+    also_depends_on: [N276, N277]
+    status: resolved
+  - id: N279
+    type: experiment
+    title: "Color-only normalized tail refinement does not repair the low-coverage maximum"
+    provenance: ai-executed
+    timestamp: "2026-08-11T05:20+02:00"
+    result: >
+      HIER-016's complete four-image screen preserves exact count and fixed geometry. The 1% tail
+      always returns step zero; the 0.1% tail changes one image for +0.0074 dB but leaves its
+      HIER-005-relative pixel maximum at 1.1569x. No tail arm clears the frozen development gate,
+      so no consumed replay is authorized.
+    evidence:
+      - "ara/evidence/hier015-hier021-exact7k-portfolio-2026-08-10/run.md"
+      - "results/hier016_coco_normalized_tail_recovery_2026-08-10/index.html"
+      - "tasks/HIER-016-normalized-tail-safe-refinement.md"
+    also_depends_on: [N278]
+    status: resolved
+  - id: N280
+    type: experiment
+    title: "A lower normalization epsilon proves low-coverage attenuation but is not globally safe"
+    provenance: ai-executed
+    timestamp: "2026-08-11T05:20+02:00"
+    result: >
+      HIER-017 threads a default-preserving configurable normalization epsilon and compares 1e-8
+      with 1e-12 on four new hash-selected COCO images. The lower floor repairs every
+      epsilon-sensitive displayed pixel, but refitting at 1e-12 worsens raw MSE on 3/4 images,
+      the 7x7 maximum on 3/4, and the isolated-pixel maximum on 2/4. Five frozen clauses fail.
+    evidence:
+      - "ara/evidence/hier015-hier021-exact7k-portfolio-2026-08-10/run.md"
+      - "results/hier017_coco_normalization_epsilon_recovery_v2_2026-08-10/index.html"
+      - "tasks/HIER-017-normalization-epsilon-coverage.md"
+    also_depends_on: [N278, N279]
+    status: resolved
+  - id: N281
+    type: experiment
+    title: "Counted broad-background rows fix coverage but worsen exact-7k quality"
+    provenance: ai-executed
+    timestamp: "2026-08-11T05:20+02:00"
+    result: >
+      HIER-018 reserves exactly 64 of 7,000 rows for an 8x8 broad background grid. It creates
+      order-one minimum normalized coverage and repairs low-support pixels, but raw MSE worsens
+      3.7--8.5% on all four fresh images; every 7x7 maximum and mean LPIPS regress, two pixel
+      maxima regress, and median pipeline time rises about 20%. The frozen candidate is rejected.
+    evidence:
+      - "ara/evidence/hier015-hier021-exact7k-portfolio-2026-08-10/run.md"
+      - "results/hier018_coco_counted_background_2026-08-10/index.html"
+      - "tasks/HIER-018-counted-background-coverage.md"
+    also_depends_on: [N280]
+    status: resolved
+  - id: N282
+    type: experiment
+    title: "Same-field confidence recovery fixes local error but loses its perceptual transaction"
+    provenance: ai-executed
+    timestamp: "2026-08-11T05:20+02:00"
+    result: >
+      HIER-019 proposes a twice-scale same-field prior only where D < 1e-8. On the one fresh
+      counterexample its 236-pixel proposal improves MSE, MS-SSIM, pixel maximum, and 7x7 maximum,
+      but LPIPS rises 0.000855. The frozen whole-image transaction therefore selects the ordinary
+      render and correctly stops before replay.
+    evidence:
+      - "ara/evidence/hier015-hier021-exact7k-portfolio-2026-08-10/run.md"
+      - "results/hier019_coco_confidence_tail_2026-08-10/index.html"
+      - "tasks/HIER-019-confidence-gated-self-prior.md"
+    also_depends_on: [N280, N281]
+    status: resolved
+  - id: N283
+    type: experiment
+    title: "Pointwise-safe SST1 transfers to 14 of 16 repository images but isolated LPIPS still binds"
+    provenance: ai-executed
+    timestamp: "2026-08-11T05:20+02:00"
+    result: >
+      HIER-020's explicit sorted SST1 selector passes a new four-image screen and a no-refit
+      20-field HIER-015--019 replay, repairing four recorded local failures with 424 selected
+      pixels. On the complete 16-image repository replay, however, source-safe substitutions on
+      COCO 000009 and 000034 raise LPIPS by 0.0002333 and 0.0002725; global rollback leaves their
+      pixel failures and 000034's 7x7 failure. The bounded bank is 14/16 and the claim is rejected.
+    evidence:
+      - "ara/evidence/hier015-hier021-exact7k-portfolio-2026-08-10/run.md"
+      - "results/hier020_tests_test_images_2026-08-10/index.html"
+      - "tasks/HIER-020-sparse-pixel-safe-tail.md"
+    also_depends_on: [N278, N279, N280, N281, N282]
+    status: resolved
+  - id: N284
+    type: experiment
+    title: "Coherent source-RGB SPT1 passes a prospective exact-7k safety screen"
+    provenance: ai-executed
+    timestamp: "2026-08-11T05:20+02:00"
+    result: >
+      HIER-021 freezes radius-3 Chebyshev expansion around D < 1e-8 and stores exact source RGB8
+      only where it strictly improves pointwise raw SSE. A mechanically hash-selected four-image
+      bank completes 8/8 attempts and all numeric/visual gates. Three images select 2,722 records
+      totaling 19,102 bytes; all four field hashes stay unchanged and maximum render/decode parity
+      is 3.58e-7. The bank contains no baseline local failure, so it confirms safety rather than
+      the repair mechanism.
+    evidence:
+      - "ara/evidence/hier015-hier021-exact7k-portfolio-2026-08-10/run.md"
+      - "results/hier021_coco_source_patch_reviewed_2026-08-10/index.html"
+      - "decision sha256 8371e0e1e84efe9692660f084cf9dc3daea597e83d63006ca8cbbbbb9e42125c"
+      - "tasks/HIER-021-low-coverage-rgb-patch-tail.md"
+    also_depends_on: [N283]
+    status: resolved
+  - id: N285
+    type: experiment
+    title: "Frozen SPT1 repairs every recorded exact-7k local failure over 40 no-refit fields"
+    provenance: ai-executed
+    timestamp: "2026-08-11T05:20+02:00"
+    result: >
+      The exact HIER-021 rule replays on 24 persisted HIER-015--020 fresh/lineage fields plus all
+      16 persisted tests/test_images fields. All 80 attempts and frozen gates pass; 24/40 images
+      select 20,137 records totaling 141,343 bytes, all 40 field hashes are unchanged, maximum
+      parity is 4.77e-7, and all nine recorded HIER-005-relative local failures are repaired.
+      Every repository-test pair gains at least 3.073 dB and is noninferior in MSE, MS-SSIM,
+      LPIPS, pixel maximum, and 7x7 maximum. Native producer review finds no new patch artifact.
+    evidence:
+      - "ara/evidence/hier015-hier021-exact7k-portfolio-2026-08-10/run.md"
+      - "results/hier021_replay_40_fields_reviewed_2026-08-10/index.html"
+      - "decision sha256 3dafcc9a5d62f4ff02b643a27434a5835b017bd5d9689eac59e7b7645b92be69"
+    also_depends_on: [N278, N279, N280, N281, N282, N283, N284]
+    status: resolved
+  - id: N286
+    type: decision
+    title: "Retain SPT1 as a bounded residual-layer result and do not promote a pure-field or codec claim"
+    provenance: ai-executed
+    timestamp: "2026-08-11T05:20+02:00"
+    choice: >
+      Keep the typed SPT1 encoder/decoder default-off and retain the passing diagnostic portfolio,
+      but do not change maintained conversion, renderer, codec, or dispatch defaults. Describe the
+      result only as direct exact-7k plus an explicit source-derived RGB exception stream on the
+      measured 4+40 fields. A production successor needs complete-stream accounting, broader
+      multi-seed and independently reviewed evidence, and an explicit source-known RDO policy; a
+      pure-Gaussian successor must reproduce the repair without RGB exceptions.
+    alternatives:
+      - "Call the 141,343-byte sidecar a repair inside the unchanged 7,000-Gaussian field."
+      - "Claim actual-rate compression from raw NPZ plus SPT1 reference bytes."
+      - "Promote a maintained default from one dirty-source seed and producer visual review."
+      - "Discard the passing residual representation because it is not a pure-Gaussian mechanism."
+    evidence:
+      - "N284"
+      - "N285"
+      - "ara/evidence/hier015-hier021-exact7k-portfolio-2026-08-10/run.md"
+    also_depends_on: [N283, N284, N285]
+    status: resolved

@@ -261,6 +261,9 @@ class FitConfig:
     render_chunk: int = 512            # reference renderer: max(render_chunk,64)*4096 elements
     render_checkpoint: bool = False    # checkpoint reference-render slices to reduce backward memory
     renderer: str = "normalized"       # normalized/additive/cuda/cuda_tiled/gsplat variants
+    # Positive denominator floor for normalized compositing.  This is part of the renderer
+    # equation (and therefore persisted with encoded fields), not merely a backward stabilizer.
+    normalization_eps: float = 1e-8
     color_basis: str = "constant"      # constant or affine local color model
     color_grad_l2: float = 1e-4        # affine coefficient L2 regularization
     color_solve_every: int | None = None  # periodic fixed-geometry RGB least-squares solve
@@ -371,6 +374,11 @@ class FitConfig:
         # NaN renders (CORE-004). Reject it at construction rather than mid-fit.
         if self.aa_dilation < 0.0:
             raise ValueError(f"aa_dilation must be >= 0, got {self.aa_dilation}")
+        if not math.isfinite(self.normalization_eps) or self.normalization_eps <= 0.0:
+            raise ValueError(
+                "normalization_eps must be finite and > 0, "
+                f"got {self.normalization_eps}"
+            )
         if not math.isfinite(self.lr_cosine_start_frac) or not (
             0.0 <= self.lr_cosine_start_frac < 1.0
         ):

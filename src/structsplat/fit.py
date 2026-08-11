@@ -1052,7 +1052,8 @@ def _render(field: GaussianField, cfg: FitConfig, H: int, W: int,
                         support_fade=cfg.support_fade, sigma_cutoff=cfg.sigma_cutoff,
                         color_grads=field.color_grads,
                         support_fade_alpha=support_fade_alpha,
-                        checkpoint_chunks=cfg.render_checkpoint)
+                        checkpoint_chunks=cfg.render_checkpoint,
+                        normalization_eps=cfg.normalization_eps)
 
 
 def _qat_enabled(cfg: FitConfig) -> bool:
@@ -1272,7 +1273,7 @@ def _normalized_color_basis_apply(field: GaussianField, colors: torch.Tensor, cf
         if opacities is not None:
             w = w * opacities[gid]
         flat = py * W + px
-        basis = w[:, None] / (den[flat] + _EPS)
+        basis = w[:, None] / (den[flat] + cfg.normalization_eps)
         out.index_add_(0, flat, basis * colors[gid])
     return out.view(H, W, colors.shape[1])
 
@@ -1302,7 +1303,7 @@ def _normalized_color_basis_transpose(field: GaussianField, image: torch.Tensor,
         if opacities is not None:
             w = w * opacities[gid]
         flat = py * W + px
-        basis = w[:, None] / (den[flat] + _EPS)
+        basis = w[:, None] / (den[flat] + cfg.normalization_eps)
         out.index_add_(0, gid, basis * image[py, px].to(dt))
     return out
 
@@ -1604,7 +1605,7 @@ def _responsibility_error_density_scores(
         if opacities is not None:
             weight = weight * opacities[gid]
         flat = py * W + px
-        responsibility = weight / (denominator[flat] + _EPS)
+        responsibility = weight / (denominator[flat] + cfg.normalization_eps)
         mass.index_add_(0, gid, responsibility)
         error.index_add_(0, gid, responsibility * pixel_error[flat])
 
@@ -3874,6 +3875,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             "lr_schedule": cfg.lr_schedule,
             "lr_cosine_start_frac": float(cfg.lr_cosine_start_frac),
             "checkpoint_policy": cfg.checkpoint_policy,
+            "normalization_eps": float(cfg.normalization_eps),
             "checkpoint_history": checkpoint_history,
             "state_checkpoints": state_checkpoints,
             "optimizer_state": (

@@ -41,7 +41,8 @@ IntrinsicEngine as an RHI pass.
   fitted-field overlays.
 - `observation_field.py` / `pixel_contraction.py` / `progressive_residual_quadtree.py` /
   `artifact_first_quadtree.py` / `overlap_elimination.py` / `contraction_refinement.py` /
-  `residual_exchange.py` — default-off Field V2 semantic oracle plus the HIER-005
+  `residual_exchange.py` / `normalized_refinement.py` / `tail_recovery.py` /
+  `source_patch_tail.py` — default-off Field V2 semantic oracle plus the HIER-005
   reverse-contraction, HIER-006 retained-parent hierarchy, HIER-007 parent-replacing frontier,
   HIER-008 exact-overlap/feature-elimination controls, HIER-009 dynamic overlap contraction,
   HIER-010 guarded coefficient refinement, and HIER-011 exact-count residual exchange.
@@ -58,7 +59,11 @@ IntrinsicEngine as an RHI pass.
   safe but negligible. HIER-011 repairs exposed local tails but misses its transfer gain floor.
   HIER-012's large exposed all-row projection gain does not survive HIER-013's 16-image screen:
   most cells fail closed on the frozen coefficient bound and the diagnostic bundle also fails
-  renderer parity. None enters the maintained pipeline.
+  renderer parity. HIER-015--020 isolate direct normalized exact-7k fitting and low-coverage
+  failure controls; epsilon, counted background, color-only, same-field, and pointwise SST1 repairs
+  all retain counterexamples. HIER-021's canonical SPT1 source-RGB patch stream passes its bounded
+  4+40-field diagnostic, but it is an explicit residual outside the unchanged Gaussian field and
+  has no maintained pipeline/codec consumer. None enters the maintained pipeline.
 - `codec_native_field.py` / `realtime_gs_adapter.py` / `realtime_gs_surface_lift.py` /
   `realtime_gs_ray_posterior.py` / `realtime_gs_coherent_depth.py` —
   CORE-016/ADR-0032's separate default-off

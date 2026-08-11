@@ -67,6 +67,13 @@ HIER010_REFINEMENT_SCHEMA = "structsplat.hier010_residual_anchor_projection.diag
 HIER011_EXCHANGE_SCHEMA = "structsplat.hier011_guarded_residual_column_exchange.diagnostic.v1"
 HIER012_PROJECTION_SCHEMA = "structsplat.hier012_global_appearance_projection.diagnostic.v1"
 HIER013_DEVELOPMENT_SCHEMA = "structsplat.hier013_global_projection_development.diagnostic.v1"
+HIER015_GEOMETRY_SCHEMA = "structsplat.hier015_geometry_escape.diagnostic.v1"
+HIER016_TAIL_SCHEMA = "structsplat.hier016_normalized_tail_repair.diagnostic.v1"
+HIER017_EPSILON_SCHEMA = "structsplat.hier017_normalization_epsilon.diagnostic.v1"
+HIER018_BACKGROUND_SCHEMA = "structsplat.hier018_counted_background.diagnostic.v1"
+HIER019_TAIL_SCHEMA = "structsplat.hier019_confidence_tail.diagnostic.v1"
+HIER020_SPARSE_TAIL_SCHEMA = "structsplat.hier020_sparse_pixel_safe_tail.diagnostic.v1"
+HIER021_SOURCE_PATCH_SCHEMA = "structsplat.hier021_source_patch_tail.diagnostic.v1"
 CORE019_REPORT_SCHEMA = "core019.coherent_depth.manifest.v1"
 HIER005_REPORT_SCHEMAS = frozenset(
     {
@@ -78,6 +85,17 @@ HIER005_REPORT_SCHEMAS = frozenset(
         HIER011_EXCHANGE_SCHEMA,
         HIER012_PROJECTION_SCHEMA,
         HIER013_DEVELOPMENT_SCHEMA,
+    }
+)
+HIER015_PLUS_REPORT_SCHEMAS = frozenset(
+    {
+        HIER015_GEOMETRY_SCHEMA,
+        HIER016_TAIL_SCHEMA,
+        HIER017_EPSILON_SCHEMA,
+        HIER018_BACKGROUND_SCHEMA,
+        HIER019_TAIL_SCHEMA,
+        HIER020_SPARSE_TAIL_SCHEMA,
+        HIER021_SOURCE_PATCH_SCHEMA,
     }
 )
 
@@ -933,6 +951,243 @@ def _check_hier005_bundle(
             )
 
 
+def _check_hier015_plus_bundle(
+    root: Path,
+    manifest: dict[str, Any],
+    problems: list[str],
+) -> None:
+    """Validate the immutable HIER-015--017 dirty-source diagnostic bundles.
+
+    These source-bound experiments predate the richer HIER-005 report envelope but retain an
+    exhaustive file manifest, three exact tabular projections, per-cell row mirrors, source
+    snapshots, lossless fields, and portable visual reports.  They are explicitly diagnostic;
+    this checker validates integrity and portability, not claim readiness.
+    """
+    schema = manifest.get("schema")
+    if manifest.get("status") != "diagnostic":
+        problems.append("manifest.json HIER-015+ status must be diagnostic")
+
+    records = manifest.get("files")
+    observed_paths: set[str] = set()
+    if not isinstance(records, list) or not records:
+        problems.append("manifest.json HIER-015+ files must be a non-empty list")
+    else:
+        for index, record in enumerate(records):
+            label = f"manifest.json files[{index}]"
+            _relative_descriptor_path(root, record, label, problems)
+            raw = record.get("path") if isinstance(record, dict) else None
+            if isinstance(raw, str):
+                if raw in observed_paths:
+                    problems.append(f"{label}: duplicate manifest path {raw!r}")
+                observed_paths.add(raw)
+        actual_paths = {
+            str(path.relative_to(root))
+            for path in root.rglob("*")
+            if path.is_file() and path.name != "manifest.json"
+        }
+        if observed_paths != actual_paths:
+            missing = sorted(actual_paths - observed_paths)
+            extra = sorted(observed_paths - actual_paths)
+            if missing:
+                problems.append(f"manifest.json omits HIER-015+ files: {missing!r}")
+            if extra:
+                problems.append(f"manifest.json names nonexistent HIER-015+ files: {extra!r}")
+
+    try:
+        config = _load_json(root / "config.json")
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        problems.append(f"config.json is invalid: {exc}")
+        config = None
+    if not isinstance(config, dict):
+        problems.append("config.json must contain an object")
+    else:
+        if config.get("schema") != schema or config.get("status") != "diagnostic":
+            problems.append("config.json has the wrong HIER-015+ schema or status")
+        if not isinstance(config.get("command"), str) or not config["command"].strip():
+            problems.append("config.json has no executed command")
+        if not _finite(config):
+            problems.append("config.json contains a non-finite numeric value")
+        git = config.get("git")
+        if not isinstance(git, dict):
+            problems.append("config.json git identity must be an object")
+        else:
+            revision = git.get("revision")
+            if not isinstance(revision, str) or not HEX_40.fullmatch(revision):
+                problems.append("config.json git.revision must be a 40-character Git SHA")
+            if not isinstance(git.get("branch"), str) or not git["branch"]:
+                problems.append("config.json git.branch must be non-empty")
+            if not isinstance(git.get("dirty"), bool):
+                problems.append("config.json git.dirty must be boolean")
+        _check_hier005_snapshot(
+            root,
+            config.get("source_snapshots"),
+            "config.json source_snapshots",
+            problems,
+            path_key="snapshot_path",
+        )
+
+    try:
+        payload = _load_json(root / "metrics.json")
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        problems.append(f"metrics.json is invalid: {exc}")
+        return
+    if not isinstance(payload, dict):
+        problems.append("metrics.json must contain a HIER-015+ payload object")
+        return
+    rows = payload.get("rows")
+    if payload.get("schema") != schema or payload.get("status") != "diagnostic":
+        problems.append("metrics.json has the wrong HIER-015+ schema or status")
+    if not isinstance(rows, list) or not rows or not all(isinstance(row, dict) for row in rows):
+        problems.append("metrics.json rows must be a non-empty object-row list")
+        return
+    if not _finite(payload):
+        problems.append("metrics.json contains a non-finite numeric value")
+
+    jsonl_rows = _load_jsonl(root / "metrics.jsonl", problems)
+    if jsonl_rows != rows:
+        problems.append("metrics.jsonl rows do not exactly match metrics.json")
+    try:
+        with (root / "metrics.csv").open(newline="", encoding="utf-8") as stream:
+            reader = csv.DictReader(stream)
+            csv_fields = reader.fieldnames or []
+            csv_rows = list(reader)
+    except (OSError, csv.Error) as exc:
+        problems.append(f"metrics.csv is invalid: {exc}")
+        csv_fields, csv_rows = [], []
+    expected_fields = sorted({key for row in rows for key in row})
+    if csv_fields != expected_fields:
+        problems.append("metrics.csv columns do not match the HIER-015+ metrics projection")
+    if len(csv_rows) != len(rows):
+        problems.append("metrics.csv row count differs from metrics.json")
+    elif csv_fields == expected_fields:
+        for index, (csv_row, json_row) in enumerate(zip(csv_rows, rows)):
+            for field in expected_fields:
+                value = json_row.get(field)
+                if isinstance(value, (dict, list, tuple)):
+                    continue  # legacy writer used Python's stable container projection
+                expected = "" if value is None else str(value)
+                if csv_row.get(field) != expected:
+                    problems.append(
+                        f"metrics.csv row {index} field {field!r} differs from metrics.json"
+                    )
+
+    for filename, key in (("attempts.json", "attempts"), ("decision.json", None)):
+        try:
+            record = _load_json(root / filename)
+        except (OSError, json.JSONDecodeError, ValueError) as exc:
+            problems.append(f"{filename} is invalid: {exc}")
+            continue
+        if not isinstance(record, dict) or record.get("schema") != schema:
+            problems.append(f"{filename} has the wrong HIER-015+ schema")
+        elif not _finite(record):
+            problems.append(f"{filename} contains a non-finite numeric value")
+        if key is not None:
+            attempts = record.get(key) if isinstance(record, dict) else None
+            if not isinstance(attempts, list) or not attempts:
+                problems.append(f"{filename} has no attempt ledger")
+
+    linked_paths = _check_html(root, problems)
+    stable_keys: set[tuple[Any, Any, Any]] = set()
+    for index, row in enumerate(rows):
+        label = f"metrics.json rows[{index}]"
+        if row.get("schema") != schema or row.get("status") != "diagnostic":
+            problems.append(f"{label}: wrong schema or status")
+        key = (row.get("image"), row.get("arm"), row.get("target_gaussians"))
+        if key in stable_keys:
+            problems.append(f"{label}: duplicate stable row key {key!r}")
+        stable_keys.add(key)
+        for metric in (
+            "masked_mse",
+            "psnr_db",
+            "ms_ssim",
+            "lpips",
+            "maintained_render_parity_max_abs",
+            "repeated_render_parity_max_abs",
+        ):
+            value = row.get(metric)
+            if (
+                not isinstance(value, (int, float))
+                or isinstance(value, bool)
+                or not math.isfinite(float(value))
+            ):
+                problems.append(f"{label}: {metric} must be finite numeric")
+        count = row.get("n_gaussians")
+        if not isinstance(count, int) or isinstance(count, bool) or count <= 0:
+            problems.append(f"{label}: n_gaussians must be a positive integer")
+        gaussian_artifact = (
+            isinstance(row.get("artifact_dir"), str)
+            and (root / str(row["artifact_dir"]) / "field.gaussian.npz").is_file()
+        )
+        parity_limit = 2e-5 if gaussian_artifact else 1e-3
+        for parity_name in (
+            "maintained_render_parity_max_abs",
+            "repeated_render_parity_max_abs",
+        ):
+            parity = row.get(parity_name)
+            if isinstance(parity, (int, float)) and float(parity) > parity_limit:
+                problems.append(f"{label}: {parity_name} exceeds {parity_limit:g}")
+
+        raw_artifact_dir = row.get("artifact_dir")
+        if (
+            not isinstance(raw_artifact_dir, str)
+            or not raw_artifact_dir
+            or Path(raw_artifact_dir).is_absolute()
+        ):
+            problems.append(f"{label}: artifact_dir must be a non-empty relative path")
+            continue
+        artifact_dir = root / raw_artifact_dir
+        try:
+            artifact_dir.resolve(strict=True).relative_to(root.resolve(strict=True))
+        except (FileNotFoundError, ValueError):
+            problems.append(f"{label}: artifact_dir is missing or escapes the bundle")
+            continue
+        common = {
+            "source.png",
+            "reconstruction.png",
+            "error.png",
+            "source_crop.png",
+            "reconstruction_crop.png",
+            "error_crop.png",
+            "analysis.npz",
+            "row.json",
+            "projection_history.json",
+            "geometry_history.json",
+        }
+        gaussian = (artifact_dir / "field.gaussian.npz").is_file()
+        required = common | (
+            {"field.gaussian.npz", "fit_history.json"}
+            if gaussian
+            else {"field.observation.npz"}
+        )
+        if gaussian and row.get("normalization_eps") is not None:
+            required |= {"denominator.json", "denominator.npz"}
+        for name in sorted(required):
+            artifact = artifact_dir / name
+            if not artifact.is_file() or artifact.stat().st_size <= 0:
+                problems.append(f"{label}: missing required artifact {name}")
+        field_path = artifact_dir / (
+            "field.gaussian.npz" if gaussian else "field.observation.npz"
+        )
+        if field_path.is_file() and row.get("field_file_sha256") != _sha256(field_path):
+            problems.append(f"{label}: field_file_sha256 differs")
+        row_path = artifact_dir / "row.json"
+        if row_path.is_file():
+            try:
+                stored_row = _load_json(row_path)
+            except (OSError, json.JSONDecodeError, ValueError) as exc:
+                problems.append(f"{label}: row.json is invalid: {exc}")
+            else:
+                if stored_row != row:
+                    problems.append(f"{label}: row.json differs from the metrics ledger")
+        for name in ("source.png", "reconstruction.png", "error.png", "reconstruction_crop.png"):
+            artifact = artifact_dir / name
+            if artifact.is_file() and artifact.resolve() not in linked_paths:
+                problems.append(
+                    f"index.html does not expose HIER-015+ artifact "
+                    f"{artifact.relative_to(root)}"
+                )
+
+
 def _check_core019_bundle(
     root: Path,
     manifest: dict[str, Any],
@@ -1188,6 +1443,9 @@ def check_bundle(
         return problems
     if manifest.get("schema") in HIER005_REPORT_SCHEMAS:
         _check_hier005_bundle(root, manifest, problems)
+        return problems
+    if manifest.get("schema") in HIER015_PLUS_REPORT_SCHEMAS:
+        _check_hier015_plus_bundle(root, manifest, problems)
         return problems
     if manifest.get("schema") == CORE019_REPORT_SCHEMA:
         _check_core019_bundle(root, manifest, problems, allow_dirty=allow_dirty)

@@ -2092,3 +2092,142 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O147
+    timestamp: "2026-08-10T17:45+02:00"
+    provenance: ai-executed
+    content: >
+      On four SHA-bound Kodak development images at exact N=7,000, zero-start/zero-centered global
+      RGB PCG reconditions three HIER-005 fields into the coefficient bound but reduces
+      geometric-mean MSE only 0.721 percent (+0.031436 dB). Mean LPIPS worsens by 0.001035, one
+      accepted result worsens the displayed 7x7 maximum, and kodim13 retains its unsafe stage-zero
+      field because every bounded lower-SSE iterate slightly violates the local transaction.
+      Explicit frozen-base construction is numerically indistinguishable from subtraction.
+    context: >
+      Dirty-source, one-seed development diagnostic without distinct review. All 189 manifest
+      entries and 16 rows replay independently, but the task schema is not registered with the
+      repository report checker. The frozen Kodak gate fails, so HIER-014 does not access the
+      consumed HIER-013 bank. This rejects fixed-geometry coefficient conditioning as a sufficient
+      repair and motivates a geometry/basis or direct-fit comparison, not a default change.
+    potential_type: observation
+    bound_to: [N276, N277]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O148
+    timestamp: "2026-08-11T05:20+02:00"
+    provenance: ai-executed
+    content: >
+      On four mechanically hash-selected COCO images at exact N=7,000, HIER-015's bounded
+      appearance/geometry alternation materially improves HIER-005 but retains a visible Gaussian
+      lattice. The ordinary direct normalized fit is visually clean and averages +12.061 dB,
+      +0.2859 MS-SSIM, and -0.4802 LPIPS versus HIER-005, yet one image's displayed worst pixel is
+      0.0562 worse. This makes direct normalized fitting the robust control while rejecting both
+      exact arms under the literal frozen gate.
+    context: >
+      Dirty-source, one-seed development diagnostic without distinct prospective/outcome review.
+      No maintained dispatch or renderer-semantic decision follows. Evidence and downstream causal
+      sequence are retained in the HIER-015--021 portfolio note.
+    potential_type: observation
+    bound_to: [N278]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O149
+    timestamp: "2026-08-11T05:20+02:00"
+    provenance: ai-executed
+    content: >
+      HIER-016--018 reject three increasingly direct low-coverage repairs on separate four-image
+      banks: color-only tail optimization does not move the known maximum; epsilon 1e-12 repairs
+      epsilon-sensitive pixels but regresses raw/local metrics; and an exact-count 64-row broad
+      background makes coverage order-one while worsening MSE 3.7--8.5% on every image. The
+      low-coverage diagnosis is real, but indiscriminately filling or reallocating coverage is not
+      globally safe.
+    context: >
+      Source-bound one-seed dirty diagnostics, no distinct review and no consumed replay after a
+      failed fresh gate. Defaults stay at normalization_eps=1e-8 with no counted background or
+      normalized RGB tail.
+    potential_type: observation
+    bound_to: [N279, N280, N281]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O150
+    timestamp: "2026-08-11T05:20+02:00"
+    provenance: ai-executed
+    content: >
+      HIER-019 and HIER-020 isolate perceptual coherence as the remaining failure. A 236-site
+      same-field proposal repairs raw and local metrics but raises LPIPS 0.000855. Pointwise-safe
+      SST1 then passes fresh and 20-field lineage screens, yet isolated substitutions on repository
+      images 000009 and 000034 raise LPIPS 0.0002333/0.0002725, forcing rollback and leaving the
+      complete bank at 14/16.
+    context: >
+      HIER-020's tests/test_images bank was fully consumed and retained; its two failures shaped the
+      coherent HIER-021 formulation and therefore cannot serve as held-out confirmation for it.
+      SST1 remains a negative bounded predecessor, not a default or complete codec.
+    potential_type: observation
+    bound_to: [N282, N283]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O151
+    timestamp: "2026-08-11T05:20+02:00"
+    provenance: ai-executed
+    content: >
+      HIER-021's frozen source-RGB SPT1 rule passes a new four-image hash-selected screen: 8/8
+      attempts, 4/4 unchanged exact-7k fields, maximum parity 3.58e-7, and all numeric/producer
+      visual gates. Three images select 2,722 RGB8 records totaling 19,102 raw bytes. Because the
+      fresh bank has no baseline local failure, it validates the safety/selection transaction but
+      does not prospectively demonstrate repair of the known local mechanism.
+    context: >
+      One seed, max-side 512, RTX 3050, dirty executed sources preserved inside the immutable
+      bundle, no distinct prospective or outcome reviewer. SPT1 stores source-derived colors outside
+      the field and is not a pure-Gaussian, actual-rate, or production result.
+    potential_type: observation
+    bound_to: [N284]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O152
+    timestamp: "2026-08-11T05:20+02:00"
+    provenance: ai-executed
+    content: >
+      Without refitting, the frozen HIER-021 rule passes 24 prior HIER-015--020 fields plus all 16
+      persisted repository test fields. It selects SPT1 on 24/40 images, stores 20,137 records in
+      141,343 bytes, preserves all field hashes, and repairs every one of nine recorded
+      direct-versus-HIER-005 local failures. All 16 repository pairs gain at least 3.073 dB and are
+      noninferior in MSE, MS-SSIM, LPIPS, pixel maximum, and 7x7 maximum.
+    context: >
+      This is a frozen consumed replay rather than held-out confirmation: two repository failures
+      motivated radius-3 coherence, only one seed/device was measured, and visual review is by the
+      producer. The exact bounded result is direct normalized exact-7k plus a source-RGB residual
+      stream, not the 7,000-Gaussian field alone.
+    potential_type: observation
+    bound_to: [N285, N286]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O153
+    timestamp: "2026-08-11T05:20+02:00"
+    provenance: ai-executed
+    content: >
+      The HIER-021 results audit found two reporting defects and narrowed them without changing any
+      immutable cell. The task prose incorrectly said 40 prior fields plus 16 tests; the executed
+      ledger is 24 prior plus 16 tests, 40 total. The raw encoder pipeline ratio omitted separately
+      logged target-known metric/RDO time; adding it yields median 1.00656x on the fresh bank and
+      1.00684x on replay (replay max 1.16212x), still below the frozen 1.25x bound.
+    context: >
+      Future driver telemetry charges candidate construction plus metric selection. The raw and
+      reviewed bundles remain immutable, and the evidence note exposes the recalculation. File I/O,
+      complete-stream encode/decode, and production latency remain unmeasured.
+    potential_type: constraint
+    bound_to: [N284, N285, N286]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

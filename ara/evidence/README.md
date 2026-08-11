@@ -88,6 +88,21 @@ paths were the live source location when the historical runs were produced.
   development gate fail. No promotion or post-hoc cap increase follows. Evidence note:
   `ara/evidence/hier013-global-projection-test-images-development-2026-08-10/run.md`.
 
+- `hier014-conditioned-projection-kodak-diagnostic-2026-08-10`: Four-image exact-7k numerical
+  killing test.  Origin restart makes 3/4 HIER-005 fields bounded but improves mean PSNR only
+  `0.0314 dB`, worsens mean LPIPS/local behavior, and fails the frozen gate; the consumed-bank
+  replay remains closed.  Evidence note:
+  `ara/evidence/hier014-conditioned-projection-kodak-diagnostic-2026-08-10/run.md`.
+
+- `hier015-hier021-exact7k-portfolio-2026-08-10`: Source-bound diagnostic record for the
+  HIER-015--021 exact-7k causal sequence. The retained bounded result is an unchanged direct
+  normalized 7,000-Gaussian field plus a target-known SPT1 RGB8 exception stream: the four-image
+  prospective screen and 40-field no-refit replay pass, including all 16 repository test images
+  and all nine recorded local failures. Selected replay payload is 141,343 raw bytes over 20,137
+  pixels. This is explicitly not a pure-Gaussian repair, held-out confirmation, complete codec,
+  actual-rate result, or default decision. Evidence note:
+  `ara/evidence/hier015-hier021-exact7k-portfolio-2026-08-10/run.md`.
+
 - `core016-codec-native-dual-plane-janelle-2026-08-06`: Default-off exposed C0001 systems pilot
   for a charged conventional-codec appearance lattice plus 512-row independent structural measure.
   The 3,896,344-byte packet replays decoded pixel centers below display quantization and has

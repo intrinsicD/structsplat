@@ -1,0 +1,154 @@
+session:
+  id: "2026-08-11_001"
+  date: "2026-08-11"
+  started: "2026-08-11T05:20+02:00"
+  last_turn: "2026-08-11T06:30+02:00"
+  turn_count: 1
+  summary: "Rejected five bounded exact-7k repair routes, then found an explicit source-RGB SPT1 sidecar that repairs all nine recorded local failures across 40 consumed fields without changing the Gaussian fields."
+
+events_logged:
+  - turn: 1
+    type: experiment
+    id: "N278"
+    routing: direct
+    provenance: ai-executed
+    summary: "HIER-015 found geometry escape numerically stronger but visibly latticed, while direct normalized fitting became the robust exact-7k control and still missed one local gate."
+  - turn: 1
+    type: experiment
+    id: "N279"
+    routing: direct
+    provenance: ai-executed
+    summary: "HIER-016 fixed-geometry RGB tail refinement did not repair the direct normalized local maximum."
+  - turn: 1
+    type: experiment
+    id: "N280"
+    routing: direct
+    provenance: ai-executed
+    summary: "HIER-017 attributed low-support attenuation to normalization epsilon but rejected a lower global floor as unsafe."
+  - turn: 1
+    type: experiment
+    id: "N281"
+    routing: direct
+    provenance: ai-executed
+    summary: "HIER-018 counted broad-background rows made coverage order-one but worsened exact-7k quality and timing."
+  - turn: 1
+    type: experiment
+    id: "N282"
+    routing: direct
+    provenance: ai-executed
+    summary: "HIER-019 same-field confidence recovery repaired local error in its proposal but failed the LPIPS transaction."
+  - turn: 1
+    type: experiment
+    id: "N283"
+    routing: direct
+    provenance: ai-executed
+    summary: "HIER-020 pointwise-safe SST1 transferred to 14/16 repository images; LPIPS rollback retained failures on 000009 and 000034."
+  - turn: 1
+    type: experiment
+    id: "N284"
+    routing: direct
+    provenance: ai-executed
+    summary: "HIER-021 coherent radius-3 SPT1 passed the four-image fresh safety screen with unchanged exact-7k fields."
+  - turn: 1
+    type: experiment
+    id: "N285"
+    routing: direct
+    provenance: ai-executed
+    summary: "Frozen no-refit SPT1 passed all gates over 40 persisted fields and repaired all nine recorded HIER-005-relative local failures."
+  - turn: 1
+    type: decision
+    id: "N286"
+    routing: direct
+    provenance: ai-executed
+    summary: "Retained SPT1 as a bounded explicit residual-layer result without promoting a pure-field, actual-rate, codec, or maintained-default claim."
+  - turn: 1
+    type: observation
+    id: "O148"
+    routing: staged
+    provenance: ai-executed
+    summary: "Staged direct normalized fitting as the robust exact-7k control while retaining its one local-gate failure."
+  - turn: 1
+    type: observation
+    id: "O149"
+    routing: staged
+    provenance: ai-executed
+    summary: "Staged the finding that low coverage is causal but indiscriminate tail, epsilon, or broad-background repair is unsafe."
+  - turn: 1
+    type: observation
+    id: "O150"
+    routing: staged
+    provenance: ai-executed
+    summary: "Staged perceptual spatial coherence as the remaining failure exposed by HIER-019 and HIER-020."
+  - turn: 1
+    type: observation
+    id: "O151"
+    routing: staged
+    provenance: ai-executed
+    summary: "Staged the fresh HIER-021 safety result without claiming prospective repair because its baseline has no local failure."
+  - turn: 1
+    type: observation
+    id: "O152"
+    routing: staged
+    provenance: ai-executed
+    summary: "Staged the complete 40-field consumed replay and its explicit source-residual boundary."
+  - turn: 1
+    type: constraint
+    id: "O153"
+    routing: staged
+    provenance: ai-executed
+    summary: "Staged corrected 24+16 field scope and full candidate-construction plus metric/RDO encoder accounting."
+
+ai_actions:
+  - turn: 1
+    action: "Implemented, tested, and executed the HIER-015--021 exact-7k research sequence, including configurable normalization diagnostics, counted coverage, same-field and sparse tails, canonical SPT1 source patches, and fresh/no-refit report drivers."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/normalized_refinement.py"
+      - "src/structsplat/tail_recovery.py"
+      - "src/structsplat/source_patch_tail.py"
+      - "scripts/experiments/hier015_geometry_escape.py"
+      - "scripts/experiments/hier016_normalized_tail_repair.py"
+      - "scripts/experiments/hier017_normalization_epsilon.py"
+      - "scripts/experiments/hier018_counted_background.py"
+      - "scripts/experiments/hier019_confidence_tail.py"
+      - "scripts/experiments/hier020_sparse_pixel_safe_tail.py"
+      - "scripts/experiments/hier021_source_patch_tail.py"
+  - turn: 1
+    action: "Adversarially audited the immutable payloads, decisions, timing, hashes, and native selected renders; corrected the documented replay scope and future encoder/RDO telemetry without rewriting result bundles."
+    provenance: ai-executed
+    files_changed:
+      - "ara/evidence/hier015-hier021-exact7k-portfolio-2026-08-10/run.md"
+      - "tasks/HIER-015-geometry-escape-direct-fit.md"
+      - "tasks/HIER-016-normalized-tail-safe-refinement.md"
+      - "tasks/HIER-017-normalization-epsilon-coverage.md"
+      - "tasks/HIER-018-counted-background-coverage.md"
+      - "tasks/HIER-019-confidence-gated-self-prior.md"
+      - "tasks/HIER-020-sparse-pixel-safe-tail.md"
+      - "tasks/HIER-021-low-coverage-rgb-patch-tail.md"
+      - "docs/architecture.md"
+      - "docs/additive_field_v2.md"
+  - turn: 1
+    action: "Validated seven maintained H20/H21 report bundles, passed 125 focused tests, and passed the complete repository gate with 1,878 tests, 26 skips, 514 deselections, lint, and all structural checks."
+    provenance: ai-executed
+    files_changed:
+      - "scripts/check_report_bundle.py"
+      - "tests/test_source_patch_tail.py"
+      - "tests/test_hier021_source_patch_tail.py"
+      - "tests/test_hier021_replay_persisted.py"
+
+claims_touched: []
+
+key_context:
+  - turn: 1
+    excerpt: "The user asked to continue research on the exact-7k pipeline after weak tests/test_images performance and to seek a route that works across the repository bank."
+
+open_threads:
+  - "Distinct scientific, visual, and code review of HIER-015--021, especially the bounded HIER-021 disposition."
+  - "Prospectively frozen held-out sources that contain baseline local failures, without using 000009 or 000034 for formulation."
+  - "Complete-stream rate-distortion accounting against a standard residual codec, including file I/O and source-known encoder work."
+  - "A pure-Gaussian exact-7k successor that reproduces the repair without source-RGB exceptions."
+  - "Multi-seed, multi-device, and full-resolution confirmation before any maintained integration."
+
+ai_suggestions_pending:
+  - "Treat SPT1 as a diagnostic residual layer, not as proof that the 7,000-Gaussian field itself works everywhere."
+  - "If integration is pursued, open a separate complete-stream task with held-out rate-distortion and independent review."

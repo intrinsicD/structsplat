@@ -17,6 +17,14 @@ unless the owning task says so.
 - `HIER-011` — Guarded residual column exchange (in-review; `tasks/HIER-011-guarded-residual-column-exchange.md`)
 - `HIER-012` — Global safeguarded appearance projection (in-review; `tasks/HIER-012-global-appearance-projection.md`)
 - `HIER-013` — Independent-image global projection development screen (in-review; `tasks/HIER-013-global-projection-development-screen.md`)
+- `HIER-014` — Conditioned minimum-norm appearance projection (in-review; `tasks/HIER-014-conditioned-minimum-norm-projection.md`)
+- `HIER-015` — Geometry escape and robust exact-7k dispatch (in-review; `tasks/HIER-015-geometry-escape-direct-fit.md`)
+- `HIER-016` — Tail-safe normalized exact-7k refinement (in-review; `tasks/HIER-016-normalized-tail-safe-refinement.md`)
+- `HIER-017` — Normalization-epsilon coverage floor (in-review; `tasks/HIER-017-normalization-epsilon-coverage.md`)
+- `HIER-018` — Counted broad-background coverage certificate (in-review; `tasks/HIER-018-counted-background-coverage.md`)
+- `HIER-019` — Confidence-gated same-field tail recovery (in-review; `tasks/HIER-019-confidence-gated-self-prior.md`)
+- `HIER-020` — Sparse pixel-safe confidence-tail payload (in-review; `tasks/HIER-020-sparse-pixel-safe-tail.md`)
+- `HIER-021` — Low-coverage 7x7 RGB exception patches (in-review; `tasks/HIER-021-low-coverage-rgb-patch-tail.md`)
 - `CORE-016` — Codec-native dual-plane Gaussian observation field (in-review; `tasks/CORE-016-codec-native-dual-plane-field.md`)
 - `CORE-017` — Visibility-ordered alpha-shell surface lift (in-review; `tasks/CORE-017-visibility-ordered-alpha-shell-lift.md`)
 - `CORE-018` — Occlusion-aware ray-posterior surface lift (in-review; `tasks/CORE-018-occlusion-aware-ray-posterior-lift.md`)
@@ -74,6 +82,6 @@ unless the owning task says so.
 
 ## Ledger summary
 
-- 109 active-table outcomes
+- 117 active-table outcomes
 - 45 retired tasks
 - 51 active-table rows already carrying a closed/non-actionable disposition

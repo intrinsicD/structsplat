@@ -30,6 +30,13 @@ _NORMALIZED_CUDA_MODES = (
 _ADDITIVE_CUDA_MODES = ("cuda_additive", "cuda_tiled_additive")
 
 
+def _validate_normalization_eps(value: float) -> float:
+    eps = float(value)
+    if not math.isfinite(eps) or eps <= 0.0:
+        raise ValueError(f"normalization_eps must be finite and > 0, got {value}")
+    return eps
+
+
 def _element_budget(chunk: int) -> int:
     """Flat tile-element budget for reference-renderer slices.
 
@@ -174,7 +181,8 @@ def _accumulate(means, conics, colors, radii, H, W, chunk, opacities, normalize:
                 support_fade: bool = False, sigma_cutoff: float = 3.0,
                 color_grads=None, scales=None, rotations=None,
                 support_fade_alpha: float | None = None,
-                checkpoint_chunks: bool = False):
+                checkpoint_chunks: bool = False,
+                normalization_eps: float = _EPS):
     dev, dt = means.device, means.dtype
     num = torch.zeros(H * W, 3, device=dev, dtype=dt)
     den = torch.zeros(H * W, 1, device=dev, dtype=dt) if normalize else None
@@ -223,20 +231,21 @@ def _accumulate(means, conics, colors, radii, H, W, chunk, opacities, normalize:
                 den = den.index_add(0, flat, w[:, None])
 
     if normalize:
-        return (num / (den + _EPS)).view(H, W, 3)
+        return (num / (den + normalization_eps)).view(H, W, 3)
     return num.view(H, W, 3)
 
 
 def render(means, conics, colors, radii, H: int, W: int, chunk: int = 4096, opacities=None,
            support_fade: bool = False, sigma_cutoff: float = 3.0, color_grads=None,
            scales=None, rotations=None, support_fade_alpha: float | None = None,
-           checkpoint_chunks: bool = False):
+           checkpoint_chunks: bool = False, normalization_eps: float = _EPS):
     """Normalized weighted-sum rasterizer (ADR-0003 default)."""
+    normalization_eps = _validate_normalization_eps(normalization_eps)
     return _accumulate(
         means, conics, colors, radii, H, W, chunk, opacities, normalize=True,
         support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
         scales=scales, rotations=rotations, support_fade_alpha=support_fade_alpha,
-        checkpoint_chunks=checkpoint_chunks,
+        checkpoint_chunks=checkpoint_chunks, normalization_eps=normalization_eps,
     )
 
 
@@ -312,14 +321,15 @@ def render_field(means, conics, colors, radii, H: int, W: int,
                  scales=None, rotations=None, support_fade: bool = False,
                  sigma_cutoff: float = 3.0, color_grads=None,
                  support_fade_alpha: float | None = None,
-                 checkpoint_chunks: bool = False):
+                 checkpoint_chunks: bool = False,
+                 normalization_eps: float = _EPS):
     fade_alpha = _resolve_support_fade_alpha(support_fade, support_fade_alpha)
     if mode == "normalized":
         return render(
             means, conics, colors, radii, H, W, chunk, opacities,
             support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
             scales=scales, rotations=rotations, support_fade_alpha=fade_alpha,
-            checkpoint_chunks=checkpoint_chunks,
+            checkpoint_chunks=checkpoint_chunks, normalization_eps=normalization_eps,
         )
     if mode == "additive":
         return render_additive(
@@ -335,7 +345,7 @@ def render_field(means, conics, colors, radii, H: int, W: int,
             means, conics, colors, radii, H, W, chunk, opacities,
             support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
             scales=scales, rotations=rotations, support_fade_alpha=fade_alpha,
-            checkpoint_chunks=checkpoint_chunks,
+            checkpoint_chunks=checkpoint_chunks, normalization_eps=normalization_eps,
         )
     if fade_alpha not in (0.0, 1.0) and mode in _ADDITIVE_CUDA_MODES:
         if not means.is_cuda:
@@ -356,7 +366,7 @@ def render_field(means, conics, colors, radii, H: int, W: int,
             means, conics, colors, radii, H, W, chunk, opacities,
             support_fade=support_fade, sigma_cutoff=sigma_cutoff, color_grads=color_grads,
             scales=scales, rotations=rotations, support_fade_alpha=fade_alpha,
-            checkpoint_chunks=checkpoint_chunks,
+            checkpoint_chunks=checkpoint_chunks, normalization_eps=normalization_eps,
         )
     if color_grads is not None:
         raise ValueError(
@@ -365,14 +375,17 @@ def render_field(means, conics, colors, radii, H: int, W: int,
         )
     if mode in ("cuda", "cuda_normalized"):
         from .cuda_render import render_cuda_exact
+        normalization_eps = _validate_normalization_eps(normalization_eps)
         return render_cuda_exact(means, conics, colors, radii, H, W, opacities=opacities,
-                                 normalize=True, eps=_EPS, support_fade=fade_alpha > 0.0,
+                                 normalize=True, eps=normalization_eps,
+                                 support_fade=fade_alpha > 0.0,
                                  sigma_cutoff=sigma_cutoff)
     if mode == "cuda_block_reduce":
         from .cuda_render import render_cuda_exact
+        normalization_eps = _validate_normalization_eps(normalization_eps)
         return render_cuda_exact(
             means, conics, colors, radii, H, W, opacities=opacities,
-            normalize=True, eps=_EPS, support_fade=fade_alpha > 0.0,
+            normalize=True, eps=normalization_eps, support_fade=fade_alpha > 0.0,
             sigma_cutoff=sigma_cutoff, backward_variant="block_reduce",
         )
     if mode == "cuda_additive":
@@ -382,8 +395,9 @@ def render_field(means, conics, colors, radii, H: int, W: int,
                                  sigma_cutoff=sigma_cutoff)
     if mode in ("cuda_tiled", "cuda_tiled_normalized"):
         from .cuda_render import render_cuda_exact
+        normalization_eps = _validate_normalization_eps(normalization_eps)
         return render_cuda_exact(means, conics, colors, radii, H, W, opacities=opacities,
-                                 normalize=True, eps=_EPS, tiled=True,
+                                 normalize=True, eps=normalization_eps, tiled=True,
                                  support_fade=fade_alpha > 0.0, sigma_cutoff=sigma_cutoff)
     if mode == "cuda_tiled_additive":
         from .cuda_render import render_cuda_exact

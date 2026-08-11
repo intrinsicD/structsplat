@@ -5,6 +5,7 @@ Torch is imported lazily inside the commands so `--help` and the NumPy modules w
 from __future__ import annotations
 import argparse
 import importlib
+import math
 import os
 from pathlib import Path
 import sys
@@ -148,6 +149,7 @@ def build_fit_configs(args):
                      loss_target_full_frac=args.loss_target_full_frac,
                      compute_lpips=args.lpips,
                      renderer=args.renderer,
+                     normalization_eps=args.normalization_eps,
                      color_basis=args.color_basis,
                      color_grad_l2=args.color_grad_l2,
                      color_solve_every=args.color_solve_every,
@@ -364,6 +366,7 @@ def cmd_render(args):
     import torch
 
     from . import metrics as M
+    from .config import FitConfig
     from .gaussians import GaussianField
     from .render import render_field
 
@@ -389,6 +392,10 @@ def cmd_render(args):
         raise SystemExit("--aa-dilation must be non-negative")
     if args.sigma_cutoff is not None and args.sigma_cutoff <= 0.0:
         raise SystemExit("--sigma-cutoff must be positive")
+    if args.normalization_eps is not None and (
+        not math.isfinite(args.normalization_eps) or args.normalization_eps <= 0.0
+    ):
+        raise SystemExit("--normalization-eps must be finite and positive")
     if args.error_out and args.error_scale <= 0.0:
         raise SystemExit("--error-scale must be positive")
     if args.gaussians_out and args.ellipse_limit <= 0:
@@ -405,7 +412,13 @@ def cmd_render(args):
             raise SystemExit(f"--width {args.width} disagrees with SSPL1 width {width}")
         if any(
             value is not None
-            for value in (args.renderer, args.aa_dilation, args.sigma_cutoff, args.chunk)
+            for value in (
+                args.renderer,
+                args.aa_dilation,
+                args.sigma_cutoff,
+                args.chunk,
+                args.normalization_eps,
+            )
         ) or args.support_fade:
             raise SystemExit(
                 "SSPL1 stores its renderer settings; do not pass renderer/support options"
@@ -427,6 +440,11 @@ def cmd_render(args):
         renderer = args.renderer or "normalized"
         aa_dilation = 0.0 if args.aa_dilation is None else float(args.aa_dilation)
         sigma_cutoff = 3.0 if args.sigma_cutoff is None else float(args.sigma_cutoff)
+        normalization_eps = (
+            FitConfig.normalization_eps
+            if args.normalization_eps is None
+            else float(args.normalization_eps)
+        )
         chunk = 512 if args.chunk is None else int(args.chunk)
         scales = field.effective_scales(
             aa_dilation if renderer in ("gsplat", "cuda_gsplat") else 0.0
@@ -447,6 +465,7 @@ def cmd_render(args):
                 support_fade=args.support_fade,
                 sigma_cutoff=sigma_cutoff,
                 color_grads=field.color_grads,
+                normalization_eps=normalization_eps,
             )
         format_name = "GaussianField NPZ"
 
@@ -483,6 +502,10 @@ def cmd_render(args):
             "width": width,
             "height": height,
             "n_gaussians": int(field.n),
+            "normalization_eps": float(
+                header.get("normalization_eps", FitConfig.normalization_eps)
+                if is_sspl1 else normalization_eps
+            ),
             "comparison": "display-referred reconstruction clamped to [0,1]",
             "mse": float(np.mean(np.square(signed_error), dtype=np.float64)),
             "mae": float(np.mean(np.abs(signed_error), dtype=np.float64)),
@@ -722,6 +745,12 @@ def main():
                        "cuda_tiled", "cuda_tiled_additive", "gsplat",
                    ],
                    default="normalized")
+    f.add_argument(
+        "--normalization-eps",
+        type=float,
+        default=FitConfig.normalization_eps,
+        help="positive denominator floor for normalized compositing",
+    )
     f.add_argument("--color-solve-every", type=int, default=None,
                    help="periodically solve fixed-geometry RGB colors with CG; normalized renderer only")
     f.add_argument("--color-solve-schedule", default="every",
@@ -992,6 +1021,12 @@ def main():
     render_parser.add_argument("--chunk", type=int, default=None)
     render_parser.add_argument("--aa-dilation", type=float, default=None)
     render_parser.add_argument("--sigma-cutoff", type=float, default=None)
+    render_parser.add_argument(
+        "--normalization-eps",
+        type=float,
+        default=None,
+        help="NPZ normalized denominator floor (default: 1e-8); SSPL1 stores it",
+    )
     render_parser.add_argument("--support-fade", action="store_true")
     render_parser.add_argument(
         "--error-out",

@@ -208,6 +208,8 @@ def test_gaussians2d_to_image_outputs_reconstruction_error_metrics_and_overlay(
             str(metrics_path),
             "--gaussians-out",
             str(overlay_path),
+            "--normalization-eps",
+            "1e-12",
             "--device",
             "cpu",
         ],
@@ -224,6 +226,7 @@ def test_gaussians2d_to_image_outputs_reconstruction_error_metrics_and_overlay(
     assert metrics["n_gaussians"] == 2
     assert metrics["width"] == width
     assert metrics["height"] == height
+    assert metrics["normalization_eps"] == 1e-12
     assert metrics["mse"] >= 0.0
     assert np.isfinite(metrics["psnr_db"])
     assert "rendered 2 Gaussians" in capsys.readouterr().out

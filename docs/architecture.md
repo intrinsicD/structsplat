@@ -177,6 +177,43 @@ diagnostic bundle is not claim-ready. Global projection remains a conditional, d
 the next formulation must prospectively bound or stabilize incoming coefficients rather than
 raising the cap on these consumed images.
 
+HIER-014 tests that numerical explanation on four SHA-bound Kodak development images.  The
+backward-compatible solver can now restart at zero, regularize toward zero, and render the frozen
+base directly.  This successfully collapses unsafe near-null coefficients on three images (for
+example `183.56` to `7.81`) with sub-micro-unit maintained parity, but it changes geometric-mean
+MSE by only `-0.721%` (`+0.0314 dB`) and worsens mean LPIPS.  One image still returns the exact
+unsafe fallback because every lower-SSE bounded endpoint slightly worsens the displayed local
+guard; another accepted endpoint worsens the 7x7 maximum.  Subtractive and explicit-base results
+are effectively identical.  The fixed-geometry gate therefore fails and the HIER-013 replay stays
+closed.  Coefficient conditioning is reusable opt-in numerical infrastructure, not the missing
+general image-quality mechanism; a successor must change geometry/basis or dispatch to a stronger
+fixed-count representation under a newly frozen comparison.
+
+HIER-015--020 then isolate the exact-7k normalized alternative and its residual failure. Bounded
+additive geometry relaxation remains visibly latticed; direct normalized fitting is much stronger
+and visually clean but can leave isolated low-coverage maxima. `normalized_refinement.py` provides
+the default-off fixed-geometry RGB-tail control, while configurable normalization epsilon, counted
+background rows, and `tail_recovery.py` test lower floors, broad coverage, same-field priors, and
+the explicit pointwise-safe SST1 coordinate payload. None is a general repair: HIER-016--019 fail
+their fresh gates, and HIER-020 stops at 14/16 repository-test images because LPIPS correctly rolls
+back required isolated substitutions.
+
+`source_patch_tail.py` is HIER-021's separate default-off residual representation. The encoder
+finds `D < 1e-8` sites in an unchanged normalized field, expands them by Chebyshev radius 3, and
+stores exact source RGB8 only where the displayed value differs and raw pointwise SSE strictly
+improves. Canonical SPT1 uses a 16-byte raster header plus sorted seven-byte
+`(flat_index, R, G, B)` records. Decode renders the unchanged field once and applies those records;
+it never reads the source image. A whole-image transaction retains ordinary mode unless MSE,
+pixel/7x7 maxima, MS-SSIM, and LPIPS are noninferior.
+
+The source-bound diagnostic passes a four-image prospective safety screen and a frozen no-refit
+24-prior-plus-16-repository-image replay: 24/40 replay fields select 20,137 records/141,343 raw
+side bytes and all nine recorded HIER-005-relative local failures are repaired. This result belongs
+to the **field plus explicit source-RGB sidecar**, not the 7,000-Gaussian field alone. NPZ+SPT1 is
+reference accounting rather than a complete codec, and one dirty-source seed plus producer review
+does not authorize maintained dispatch or an “everywhere” claim. See the
+[HIER-015--021 evidence and results audit](../ara/evidence/hier015-hier021-exact7k-portfolio-2026-08-10/run.md).
+
 CORE-016/ADR-0032 tests a different ownership boundary instead of another explicit-row
 contraction. Its default-off `.sgdp` packet charges a conventional appearance payload, decodes it
 into signed cardinal-prefiltered coefficients of a finite normalized Gaussian lattice, and stores

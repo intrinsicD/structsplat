@@ -29,7 +29,7 @@ import torch
 
 from .config import FitConfig
 from .gaussians import GaussianField
-from .render import render_field
+from .render import _EPS, render_field
 from .fit import _pixel_loss
 from . import metrics as M  # noqa: N812
 
@@ -315,6 +315,10 @@ def encode(field: GaussianField, H: int, W: int, cfg: CodecConfig | None = None,
     # and is needed only when materialization actually occurred.
     if field.filter_variance is not None:
         header_data["covariance_filter_materialized"] = True
+    # Existing default-epsilon blobs already imply 1e-8.  Persist only a non-default equation so
+    # legacy/default codec bytes remain stable while custom normalized fields stay self-describing.
+    if float(fcfg.normalization_eps) != _EPS:
+        header_data["normalization_eps"] = float(fcfg.normalization_eps)
     # Same rule for the alpha marker (FIT-021): alpha-free blobs keep their exact legacy bytes.
     if has_alpha:
         header_data["has_alpha"] = True
@@ -488,10 +492,12 @@ def decode_and_render(blob: bytes, device: str = "cpu") -> torch.Tensor:
     support_fade = bool(h.get("support_fade", False))
     mode = h.get("renderer", "normalized")
     chunk = int(h.get("render_chunk", 512))
+    normalization_eps = float(h.get("normalization_eps", _EPS))
     return render_field(field.means, field.conics(aa), field.colors,
                         field.radii(sigma, aa), H, W, chunk, mode, field.opacity_values(),
                         scales=field.scales(), rotations=field.rotations,
-                        support_fade=support_fade, sigma_cutoff=sigma)
+                        support_fade=support_fade, sigma_cutoff=sigma,
+                        normalization_eps=normalization_eps)
 
 
 def _ste(x: torch.Tensor, lo, hi, bits: int) -> torch.Tensor:
@@ -576,7 +582,8 @@ def qat_finetune(field: GaussianField, target: torch.Tensor, fcfg: FitConfig,
                            qf.radii(fcfg.sigma_cutoff, fcfg.aa_dilation), H, W, fcfg.render_chunk,
                            fcfg.renderer, qf.opacity_values(),
                            scales=qf.scales(), rotations=qf.rotations,
-                           support_fade=fcfg.support_fade, sigma_cutoff=fcfg.sigma_cutoff)
+                           support_fade=fcfg.support_fade, sigma_cutoff=fcfg.sigma_cutoff,
+                           normalization_eps=fcfg.normalization_eps)
         pix = _pixel_loss(img, target, fcfg.pixel_loss, fcfg.charbonnier_eps)
         loss = (1 - fcfg.ssim_weight) * pix + fcfg.ssim_weight * (1 - M.ssim(img, target))
         opt.zero_grad(set_to_none=True)

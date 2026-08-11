@@ -439,6 +439,36 @@ FIT-046/BENCH-020: no complete codec is priced and no default changes. A newly f
 first establish bounded incoming coefficients under the eventual selected Field V2 semantics
 before BENCH-021 composes a global solve.
 
+HIER-014 then isolates coefficient conditioning itself.  Zero-start/zero-centered PCG can enter
+from an unsafe stage zero and explicit frozen-base rendering avoids subtracting two large
+accumulations; the original input-centered/subtractive behavior remains the default.  On four
+SHA-bound Kodak development images, the conditioned arm produces bounded nonzero results on three
+and reduces geometric-mean MSE by `0.721%` (`+0.0314 dB`), but mean LPIPS worsens, one local 7x7
+maximum regresses, and the fourth image safely retains its unbounded input.  Direct versus
+subtractive base construction is numerically immaterial.  The fixed-geometry Phase-B gate fails,
+so the consumed repository bank is not replayed or retuned.  This narrows the next question to
+geometry/basis adequacy and makes a direct fixed-count fit a required control.
+
+HIER-015--020 follow that control through the remaining exact-7k failure. Geometry relaxation
+substantially improves the additive field but keeps its visible lattice. Direct normalized fitting
+is much stronger and clean, yet isolated sites with denominator below `1e-8` can lose to HIER-005's
+literal local maximum. Color-only optimization, a lower normalization floor, and 64 counted broad
+rows either do not move the failure or regress global/local quality. A twice-scale same-field prior
+repairs raw/local error but loses LPIPS; pointwise-safe SST1 transfers further but its isolated
+substitutions still lose LPIPS on repository images `000009` and `000034`, leaving HIER-020 at
+14/16. These negative results reject a general epsilon/background/self-prior solution.
+
+HIER-021 changes the representation boundary explicitly rather than claiming another Gaussian
+repair. It stores exact source RGB8 in canonical SPT1 records over radius-3 neighborhoods of
+`D < 1e-8` sites, with pointwise raw/display safety and a whole-image perceptual transaction. The
+unchanged direct fields plus selected SPT1 pass a four-image prospective diagnostic and all 40
+frozen no-refit fields (24 prior HIER-015--020 fields plus 16 repository tests), repairing all nine
+recorded local failures. The replay selects 20,137 records/141,343 raw bytes on 24 fields. This is
+useful bounded evidence for a sparse residual layer, not for Field V2 semantics, a pure
+7,000-Gaussian representation, actual rate, or production dispatch. Complete-stream integration,
+independent review, broader sources, and multi-seed evidence remain separate work. See the
+[portfolio audit](../ara/evidence/hier015-hier021-exact7k-portfolio-2026-08-10/run.md).
+
 HIER-006 is the bounded parent-preserving residual-quadtree control for the opposite stage order.
 It begins with every mask-present cell at a declared coarse level. Splitting a selected frontier
 cell retains its parent and appends all mask-present child Gaussians; geometry is the active-pixel
@@ -641,6 +671,8 @@ relax the general promotion gate.
 | HIER-011 | Can Pareto-gated one-for-one residual column exchange repair exact-count local tails materially? |
 | HIER-012 | Does a guarded all-row coefficient solve explain the remaining exposed exact-count error? |
 | HIER-013 | Does that frozen global-projection recipe transfer across a broader repository development bank? |
+| HIER-014 | Can a zero-centered minimum-norm solve make fixed HIER-005 geometry robust across images? |
+| HIER-015 | Can bounded appearance/geometry alternation escape the lattice, or should unmasked exact-7k requests dispatch to direct normalized fit? |
 | FIT-044 | Does parameter-group staging help on the selected semantics? |
 | FIT-045 | Does regional allocation/merging beat global and fixed-N controls? |
 | FIT-046 | Does additive variable projection improve convergence or quality? |
