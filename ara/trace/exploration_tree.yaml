@@ -5804,3 +5804,289 @@ tree:
       - "ara/evidence/hier015-hier021-exact7k-portfolio-2026-08-10/run.md"
     also_depends_on: [N283, N284, N285]
     status: resolved
+  - id: N287
+    type: experiment
+    title: "Learned-mass continuation reaches exact additive endpoints but coverage harms quality"
+    provenance: ai-executed
+    timestamp: "2026-08-11T12:34+02:00"
+    result: >
+      HIER-022's frozen 32-cell diagnostic selects coverage weight 0.05. All eight selected fields
+      finish finite at exact lambda zero and N=640, contain no mass or auxiliary RGB payload, have
+      maximum coefficient 2.83049, and cold-replay within 4.768e-7. Coverage MSE falls from
+      0.512504 to 0.014046, but mean PSNR is 25.8371 dB versus 26.2912 for plain additive and
+      26.8399 for normalized; LPIPS and pixel/7x7 maxima also regress. The frozen gate fails.
+    evidence:
+      - "ara/evidence/hier022-additive-continuation-2026-08-11/run.md"
+      - "results/hier022_coco4_s160_n640_i500_s01_diagnostic_2026-08-11/index.html"
+      - "manifest sha256 a334ed4eb21eb2bd635627a8eaeb8f0968905d929397175ace9e6cf6e47ff9fc"
+      - "tasks/HIER-022-normalized-to-additive-continuation.md"
+    also_depends_on: [N278, N280, N281, N286]
+    status: resolved
+  - id: N288
+    type: decision
+    title: "Reject learned coverage mass and isolate an exact unit-gauge continuation"
+    provenance: ai-executed
+    timestamp: "2026-08-11T12:34+02:00"
+    choice: >
+      Retain HIER-022 as a negative default-off diagnostic and do not retune its consumed COCO bank.
+      The admissible successor uses unit masses, no coverage loss, a lambda-one equation exactly
+      equal to ordinary normalized rendering, a lambda-zero equation exactly equal to direct
+      additive rendering, a longer exact-additive tail, and a reset-versus-no-reset Adam ablation
+      on a new task/output/data selection. Maintained renderer and pipeline defaults stay unchanged.
+    alternatives:
+      - "Increase the coverage weight or retune the HIER-022 schedule on the consumed COCO cells."
+      - "Persist learned masses or a denominator and call the result pure additive."
+      - "Conclude from the small negative screen that no pure additive Gaussian solution exists."
+      - "Return immediately to broad background rows despite HIER-018's complete negative gate."
+    evidence:
+      - "N287"
+      - "ara/evidence/hier022-additive-continuation-2026-08-11/run.md"
+      - "docs/research/2026-08-11-pure-gaussian-additive-continuation.md"
+    also_depends_on: [N287]
+    status: resolved
+  - id: N289
+    type: experiment
+    title: "Unit gauge nearly matches additive efficiently but does not retain normalized quality"
+    provenance: ai-executed
+    timestamp: "2026-08-11T13:20+02:00"
+    result: >
+      HIER-023's repaired 32-cell diagnostic passes exact hold, reset, endpoint, persistence, and
+      parity gates. The frozen selector chooses no-reset: 29.0524 dB versus 29.0850 additive, with
+      better mean LPIPS, MS-SSIM, pixel/7x7 maxima, and PSNR-AUC despite only 250 exact-additive
+      steps. Normalized reaches 29.7498 dB, so the candidate closes none of the positive gap; one
+      0343 cell exceeds the +0.01 LPIPS guard. The mechanism gate fails.
+    evidence:
+      - "ara/evidence/hier023-unit-gauge-continuation-2026-08-11/run.md"
+      - "results/hier023_div2k4_s160_n640_i500_s01_diagnostic_rerun1_2026-08-11/index.html"
+      - "manifest sha256 2d8fd2a12c4f02bd70439d300d7193dd06a1d64b42ba77ecd146875b06f6c13c"
+      - "tasks/HIER-023-unit-gauge-additive-continuation.md"
+    also_depends_on: [N287, N288]
+    status: resolved
+  - id: N290
+    type: decision
+    title: "Retain unit gauge as a warm-start signal and test fixed-geometry appearance optimality"
+    provenance: ai-executed
+    timestamp: "2026-08-11T13:20+02:00"
+    choice: >
+      Keep the unit-gauge implementation default-off and do not retune its DIV2K bank. Reject the
+      endpoint Adam reset. Before changing count, topology, or renderer semantics, apply the same
+      existing safeguarded all-row additive RGB solve to plain-additive and no-reset unit-gauge
+      geometries on a new task/output/data selection. A remaining gap is evidence for basis geometry;
+      a gauge-specific gain identifies coefficient optimization as the missing mechanism.
+    alternatives:
+      - "Lengthen or retune the continuation schedule on the consumed HIER-023 images."
+      - "Call near-parity with additive proof that normalization is unnecessary at fixed count."
+      - "Reset Adam despite its -0.0700 dB mean result."
+      - "Change topology before testing the cheaper fixed-geometry appearance explanation."
+    evidence:
+      - "N289"
+      - "ara/evidence/hier023-unit-gauge-continuation-2026-08-11/run.md"
+      - "docs/research/2026-08-11-pure-gaussian-additive-continuation.md"
+    also_depends_on: [N287, N288, N289]
+    status: resolved
+  - id: N291
+    type: experiment
+    title: "Safeguarded RGB projection rejects coefficient optimization as the missing mechanism"
+    provenance: ai-executed
+    timestamp: "2026-08-11T13:22+02:00"
+    result: >
+      HIER-024's valid repaired 40-row diagnostic gives ordinary-additive and no-reset unit-gauge
+      geometries the same all-row PCG and target-known safety transaction. Projection gains
+      0.12996/0.17191 dB and selects 7/8 cells for each arm, but gauge ends only 0.01046 dB above
+      projected additive, closes 1.91% of the normalized gap, and fails mean/per-cell local guards.
+      Geometry, bounded coefficients, pure-additive payloads, parity, and exact rollback all pass.
+    evidence:
+      - "ara/evidence/hier024-gauge-geometry-projection-2026-08-11/run.md"
+      - "results/hier024_div2k4_s160_n640_i500_s01_diagnostic_rerun1_2026-08-11/index.html"
+      - "manifest sha256 f761b2834aa394d5a6c3af5648460ac0b67ea108d252d6ce03a487f06f738b9a"
+      - "tasks/HIER-024-gauge-geometry-appearance-projection.md"
+    also_depends_on: [N289, N290]
+    status: resolved
+  - id: N292
+    type: decision
+    title: "Close the fixed-basis branch and test a counted multiscale additive span"
+    provenance: ai-executed
+    timestamp: "2026-08-11T13:22+02:00"
+    choice: >
+      Retain unit gauge and safeguarded projection only as default-off diagnostics. Do not retune
+      HIER-024's consumed fields or coefficient solver. The next pure-additive task must change basis
+      geometry or topology while preserving exact count and one cold-replayable Gaussian sum; begin
+      with counted broad low-frequency carriers plus anisotropic residual/detail Gaussians and the
+      same projection control on a new mechanically bound selection.
+    alternatives:
+      - "Lengthen PCG or raise its coefficient bound on the consumed HIER-024 cells."
+      - "Treat a 0.01046 dB advantage as evidence that gauge geometry solved the normalized gap."
+      - "Conclude that normalization is universally necessary from one small fixed-basis screen."
+      - "Add an uncounted raster residual or persistent denominator to the pure-additive endpoint."
+    evidence:
+      - "N291"
+      - "ara/evidence/hier024-gauge-geometry-projection-2026-08-11/run.md"
+      - "docs/research/2026-08-11-pure-gaussian-additive-continuation.md"
+    also_depends_on: [N287, N289, N290, N291]
+    status: resolved
+  - id: N293
+    type: experiment
+    title: "Folded low-pass/residual basis is exact but materially blurrier than direct additive"
+    provenance: ai-executed
+    timestamp: "2026-08-11T14:05+02:00"
+    result: >
+      HIER-025's complete 40-row matrix produces exact N=640 one-pass additive endpoints with
+      16/624 accounting, exact coarse-geometry freeze, removed training masks, pure four-array
+      payloads, bounded coefficients, and maximum cold parity 1.79e-6. Folded mean PSNR is
+      30.8734 versus 32.4276 additive; after matched projection it is 31.2239 versus 32.6322.
+      Every declared quality/AUC gate fails and native review finds material diffuse fine-detail
+      blur.
+    evidence:
+      - "ara/evidence/hier025-folded-multiscale-additive-2026-08-11/run.md"
+      - "results/hier025_div2k4_s160_n640_i500_s01_diagnostic_2026-08-11/index.html"
+      - "manifest sha256 36d255c78ae39c9cfc70e8615df1a9821b58bcdd78a35288e8e0cd4816608dcb"
+      - "tasks/HIER-025-folded-multiscale-additive.md"
+    also_depends_on: [N291, N292]
+    status: resolved
+  - id: N294
+    type: decision
+    title: "Reject disconnected folded staging and measure pure-additive capacity progressively"
+    provenance: ai-executed
+    timestamp: "2026-08-11T14:05+02:00"
+    choice: >
+      Retain HIER-025 as a default-off negative diagnostic and do not tune its count split, filter,
+      stage lengths, loss, or residual construction on the consumed bank. Keep Phase C sealed.
+      The next task must preserve a fully optimized additive base, add residual capacity
+      progressively, expose the exact row/work exchange rate against N=640 normalized and additive
+      controls, and use a new output plus previously unopened data binding.
+    alternatives:
+      - "Lengthen the HIER-025 joint stage or unfreeze its coarse geometry on the consumed images."
+      - "Persist separately rendered/scaled levels and call the endpoint one pure Gaussian sum."
+      - "Conclude that normalization is universally necessary from the failed N=640 basis."
+      - "Hide extra residual rows or training work when comparing capacity parity."
+    evidence:
+      - "N293"
+      - "ara/evidence/hier025-folded-multiscale-additive-2026-08-11/run.md"
+      - "docs/research/2026-08-11-pure-gaussian-additive-continuation.md"
+    also_depends_on: [N292, N293]
+    status: resolved
+  - id: N295
+    type: experiment
+    title: "Pure-additive N=896/N=960 capacity is a perceptual near-miss"
+    provenance: ai-executed
+    timestamp: "2026-08-11T15:15+02:00"
+    result: >
+      HIER-026's complete untouched 56-row official-DIV2K matrix validates exact four-array
+      one-pass additive endpoints, shared-base and pre-projection hashes, 640+256 staging,
+      499,200 row updates, bounded coefficients, fail-closed projection, and cold parity.
+      Projected progressive N=896 and cold N=960 beat normalized N=640 by 0.75388/0.94493 dB mean
+      PSNR and improve mean structural/local metrics, but isolated LPIPS/local guards and material
+      forest-detail smear reject both frozen rungs. Same-count projected additive is -0.84193 dB.
+    evidence:
+      - "ara/evidence/hier026-progressive-additive-capacity-2026-08-11/run.md"
+      - "results/hier026_div2kvalid4_s160_capacity_s01_confirmation_2026-08-11/index.html"
+      - "manifest sha256 079976d3425ffbc4660a3d89336a82b997a44023b1126189a045b55b570f61d8"
+      - "tasks/HIER-026-progressive-additive-capacity-parity.md"
+    also_depends_on: [N293, N294]
+    status: resolved
+  - id: N296
+    type: decision
+    title: "Confirm the simpler cold-additive N=1088/N=1152 capacity threshold"
+    provenance: ai-executed
+    timestamp: "2026-08-11T15:20+02:00"
+    choice: >
+      Retain HIER-026 as a strict near-miss and do not relax its perceptual/local gate. Do not
+      promote the progressive topology: cold N=960 has higher mean PSNR, and consumed killing
+      probes show ordinary cold N=1088/N=1152 can clear the exact numeric clauses. Freeze a new
+      untouched source selection with normalized N=640, same-count additive, N=1024 boundary,
+      N=1088 candidate, and N=1152 robust control; preserve the renderer, loss, 500-step fit,
+      projection, four-array endpoint, and quality clauses.
+    alternatives:
+      - "Relax the HIER-026 LPIPS threshold after seeing the forest counterexample."
+      - "Call strong PSNR enough and ignore the predeclared perceptual/visual failure."
+      - "Keep progressive residual staging despite a simpler cold capacity explanation."
+      - "Claim equal-count or equal-byte superiority from higher-count additive fields."
+    evidence:
+      - "N295"
+      - "O159"
+      - "ara/evidence/hier026-progressive-additive-capacity-2026-08-11/run.md"
+      - "docs/research/2026-08-11-pure-gaussian-additive-continuation.md"
+    also_depends_on: [N294, N295]
+    status: resolved
+  - id: N297
+    type: experiment
+    title: "Cold additive capacity dominates globally but misses sparse extrema"
+    provenance: ai-executed
+    timestamp: "2026-08-11T16:39+02:00"
+    result: >
+      HIER-027's complete 112-row untouched official-DIV2K matrix validates exact counts/work,
+      four-array one-pass endpoints, shared pre-projection hashes, coefficient bounds, fail-closed
+      projection, and cold parity. Projected N=1088/N=1152 beat normalized N=640 by
+      1.84883/2.19555 dB mean PSNR and improve every aggregate quality metric, but each has two
+      isolated pixel-maximum cell failures. Neither frozen rung is selected.
+    evidence:
+      - "ara/evidence/hier027-cold-additive-capacity-2026-08-11/run.md"
+      - "results/hier027_div2kvalid8_s160_capacity_s01_confirmation_2026-08-11/index.html"
+      - "manifest sha256 5e808e14599b18cd7369b377ad1818f23106099f86deb419b0ce2e47bf6c21f1"
+      - "tasks/HIER-027-cold-additive-capacity-confirmation.md"
+    also_depends_on: [N295, N296]
+    status: resolved
+  - id: N298
+    type: decision
+    title: "Reject the ordinary capacity ladder and target worst residuals explicitly"
+    provenance: ai-executed
+    timestamp: "2026-08-11T16:39+02:00"
+    choice: >
+      Retain HIER-027 as a strict near-miss and do not relax its local threshold or tune its source
+      bank. Freeze a new source selection and test exactly 64 fixed-scale signed residual rows on
+      the exact projected N=960 base, with normalized N=640 and separately cold-fitted N=1024
+      controls. Require exact base-prefix identity, one-pass four-array persistence, and local
+      non-regression versus the base in every cell.
+    alternatives:
+      - "Average away the isolated worst-pixel failures because every aggregate metric improves."
+      - "Increase cold count again on the consumed HIER-027 images."
+      - "Relax the +0.02 local clause after observing the failing cells."
+      - "Add a residual raster or source payload and call the endpoint pure Gaussian."
+    evidence:
+      - "N297"
+      - "O160"
+      - "ara/evidence/hier027-cold-additive-capacity-2026-08-11/run.md"
+      - "docs/research/2026-08-11-pure-gaussian-additive-continuation.md"
+    also_depends_on: [N296, N297]
+    status: resolved
+  - id: N299
+    type: experiment
+    title: "Residual pursuit confirms a bounded pure-additive fidelity solution"
+    provenance: ai-executed
+    timestamp: "2026-08-11T16:39+02:00"
+    result: >
+      HIER-028's complete 64-row untouched official-DIV2K matrix validates a bit-exact projected
+      N=960 prefix plus 64 deterministic fixed-scale residual rows as one four-array additive
+      field. It gains 1.62037 dB over normalized N=640, with minimum paired gain 1.14979 dB, and
+      passes every frozen numeric, per-cell, local-nonregression, integrity, parity, and native
+      visual clause. A cold same-count N=1024 control fails the per-cell local clause.
+    evidence:
+      - "ara/evidence/hier028-residual-pursuit-additive-2026-08-11/run.md"
+      - "results/hier028_div2kvalid8_s160_residual_pursuit_s01_confirmation_2026-08-11/index.html"
+      - "manifest sha256 e9d36d18147bc46072aadf712b63ca63f041e8cd53fc038ea79726eade4b7c5e"
+      - "tasks/HIER-028-residual-pursuit-additive-confirmation.md"
+    also_depends_on: [N297, N298]
+    status: resolved
+  - id: N300
+    type: decision
+    title: "Accept residual pursuit as default-off bounded evidence; retain normalized default"
+    provenance: ai-executed
+    timestamp: "2026-08-11T16:39+02:00"
+    choice: >
+      Accept N=960+64 residual pursuit as evidence that normalization is unnecessary for the frozen
+      max-side-160 fidelity target when paying 1.60x rows, 1.50x base row-update work, and 64
+      target-known residual scans. Keep the method default-off and the normalized renderer as the
+      maintained row-efficient default. Require distinct review plus equal-byte, full-resolution,
+      broader-corpus, downstream, and actual-rate evidence before any production or semantic change.
+    alternatives:
+      - "Promote pure additive as universally better based on an unequal-count small confirmation."
+      - "Change the maintained renderer default before equal-rate and production gates."
+      - "Persist residual coordinates or source pixels inside the endpoint."
+      - "Discard the positive result because normalization is still more row-efficient."
+    evidence:
+      - "N299"
+      - "O161"
+      - "ara/evidence/hier028-residual-pursuit-additive-2026-08-11/run.md"
+      - "docs/research/2026-08-11-pure-gaussian-additive-continuation.md"
+    also_depends_on: [N297, N298, N299]
+    status: resolved

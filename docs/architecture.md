@@ -214,6 +214,64 @@ reference accounting rather than a complete codec, and one dirty-source seed plu
 does not authorize maintained dispatch or an “everywhere” claim. See the
 [HIER-015--021 evidence and results audit](../ara/evidence/hier015-hier021-exact7k-portfolio-2026-08-10/run.md).
 
+`additive_continuation.py` is HIER-022's default-off training diagnostic. It composes two exact
+additive accumulations with learned positive masses, anneals their normalized quotient to the
+numerator, and persists only the resulting ordinary `GaussianField`. Endpoint/parity tests pass,
+but the frozen COCO4x2 diagnostic rejects the mechanism: coverage weight `0.05` reduces mean
+coverage MSE by 97.3% while the mass-free endpoint trails plain additive fitting by `0.454 dB`,
+worsens LPIPS and both local maxima, and costs `2.25x` fit time. Learned coverage mass is therefore
+not a maintained representation component or pipeline path. A successor must use a new task and
+data selection, and must begin from the exact ordinary normalized equation rather than an
+independently gauged surrogate.
+
+`unit_gauge_continuation.py` is HIER-023's cleaner default-off successor. It calls the maintained
+normalized renderer for a 35% hold, uses unit-mass numerator/denominator accumulations for a 15%
+transition, and calls the maintained additive renderer for the final 50%; only exact additive-tail
+states can persist. The valid DIV2K4x2 diagnostic proves path identity and endpoint integrity. The
+no-reset arm reaches ordinary additive within `0.0326 dB` after only 250 exact-endpoint steps and
+improves mean LPIPS, pixel/7x7 maxima, and PSNR-AUC, but it retains none of normalized rendering's
+`0.6648 dB` mean advantage and one LPIPS cell fails. Adam reset is `0.0700 dB` worse. Unit gauge is
+therefore useful optimization evidence, not a maintained path or proof that normalization is
+dispensable at fixed count.
+
+`endpoint_appearance_projection.py` is HIER-024's default-off fixed-geometry discriminator. It
+adapts an additive `GaussianField` to the existing all-row matrix-free RGB solver, reconstructs the
+result on the unchanged geometry, and applies a target-known fail-closed metric transaction. On a
+new DIV2K4x2 screen, the solve gains `0.1300 dB` on ordinary-additive geometry and `0.1719 dB` on
+unit-gauge geometry, but the projected fields differ by only `0.0105 dB` and remain `0.538 dB`
+below normalized rendering. Local/per-cell guards fail. The wrapper is evidence infrastructure,
+not a maintained fit stage; pure-additive successors must change the basis or topology rather than
+retune coefficients on this consumed bank.
+
+`folded_multiscale_additive.py` is HIER-025's rejected default-off basis test. It fits 16 counted
+grid Gaussians to a factor-two low pass, fits 624 anisotropic WSE rows to the signed residual,
+concatenates them, freezes only coarse geometry during a 100-step full-target polish, and removes
+the training mask before returning one ordinary additive field. The complete remaining-DIV2K4x2
+screen proves exact count, mask removal, payload purity, and one-pass parity, but loses `1.5542 dB`
+to direct additive before projection and `1.4083 dB` after the identical RGB solve; perceptual,
+local, AUC, and fine-detail-blur gates also fail. It is evidence that disconnected proxy-stage
+training produces a worse finite span, not an available maintained hierarchy or proof that all
+pure-additive fields require normalization.
+
+`progressive_additive_capacity.py` is HIER-026's default-off capacity/topology discriminator. It
+fits a shared full-target N=640 additive base, initializes 256 signed residual rows, jointly trains
+all N=896 rows, and materializes both base and candidate as four-array one-pass additive fields by
+stripping training-only scale caps. On prospectively bound official DIV2K validation pixels the
+candidate and a cold N=960 control beat normalized N=640 in every/aggregate PSNR comparison and
+improve mean structural/local metrics, but fail isolated LPIPS/local clauses and exhibit material
+forest-detail smear. It is evidence that normalization buys row efficiency rather than exclusive
+representability; it is not a maintained pipeline path or selected Field V2 count.
+
+`residual_pursuit_additive.py` is HIER-028's default-off sparse allocation method. It accepts an
+already projected pure-additive base, repeatedly selects the row-major highest raw-RGB-MSE pixel,
+and appends one fixed 0.35-pixel isotropic Gaussian carrying that pixel's signed residual. Its
+analytic construction is checked against the ordinary additive renderer, the base prefix remains
+bit-exact, and the returned field persists only means, log-scales, rotations, and signed RGB. On a
+prospectively bound official-DIV2K8x2 confirmation, N=960+64 passes every frozen quality and native
+visual clause while a separately cold-fitted N=1024 control fails local robustness. This proves a
+bounded pure-additive alternative at 1.60x rows, not a maintained pipeline/default, equal-rate,
+full-resolution, or target-free encoder result.
+
 CORE-016/ADR-0032 tests a different ownership boundary instead of another explicit-row
 contraction. Its default-off `.sgdp` packet charges a conventional appearance payload, decodes it
 into signed cardinal-prefiltered coefficients of a finite normalized Gaussian lattice, and stores

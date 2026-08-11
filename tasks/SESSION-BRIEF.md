@@ -25,6 +25,13 @@ unless the owning task says so.
 - `HIER-019` — Confidence-gated same-field tail recovery (in-review; `tasks/HIER-019-confidence-gated-self-prior.md`)
 - `HIER-020` — Sparse pixel-safe confidence-tail payload (in-review; `tasks/HIER-020-sparse-pixel-safe-tail.md`)
 - `HIER-021` — Low-coverage 7x7 RGB exception patches (in-review; `tasks/HIER-021-low-coverage-rgb-patch-tail.md`)
+- `HIER-022` — Normalized-to-additive pure-Gaussian continuation (in-review; `tasks/HIER-022-normalized-to-additive-continuation.md`)
+- `HIER-023` — Unit-gauge normalized-to-additive continuation (in-review; `tasks/HIER-023-unit-gauge-additive-continuation.md`)
+- `HIER-024` — Gauge-geometry safeguarded appearance projection (in-review; `tasks/HIER-024-gauge-geometry-appearance-projection.md`)
+- `HIER-025` — Folded multiscale residual Gaussian sum (in-review; `tasks/HIER-025-folded-multiscale-additive.md`)
+- `HIER-026` — Progressive pure-additive capacity parity (in-review; `tasks/HIER-026-progressive-additive-capacity-parity.md`)
+- `HIER-027` — Cold pure-additive capacity threshold confirmation (in-review; `tasks/HIER-027-cold-additive-capacity-confirmation.md`)
+- `HIER-028` — Residual-pursuit pure-additive confirmation (in-review; `tasks/HIER-028-residual-pursuit-additive-confirmation.md`)
 - `CORE-016` — Codec-native dual-plane Gaussian observation field (in-review; `tasks/CORE-016-codec-native-dual-plane-field.md`)
 - `CORE-017` — Visibility-ordered alpha-shell surface lift (in-review; `tasks/CORE-017-visibility-ordered-alpha-shell-lift.md`)
 - `CORE-018` — Occlusion-aware ray-posterior surface lift (in-review; `tasks/CORE-018-occlusion-aware-ray-posterior-lift.md`)
@@ -82,6 +89,6 @@ unless the owning task says so.
 
 ## Ledger summary
 
-- 117 active-table outcomes
+- 124 active-table outcomes
 - 45 retired tasks
 - 51 active-table rows already carrying a closed/non-actionable disposition

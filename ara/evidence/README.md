@@ -103,6 +103,54 @@ paths were the live source location when the historical runs were produced.
   actual-rate result, or default decision. Evidence note:
   `ara/evidence/hier015-hier021-exact7k-portfolio-2026-08-10/run.md`.
 
+- `hier022-additive-continuation-2026-08-11`: Frozen 32-cell COCO development diagnostic of a
+  learned-mass normalized-to-additive homotopy. All exact additive endpoint/integrity checks pass,
+  but the selected coverage arm is negative: 97.3% lower coverage MSE accompanies `-0.454 dB`
+  versus plain additive, worse LPIPS/local maxima, and `2.25x` fit time. Learned structural mass is
+  rejected; no default, semantic, codec, or representation-limit claim follows. Evidence note:
+  `ara/evidence/hier022-additive-continuation-2026-08-11/run.md`.
+
+- `hier023-unit-gauge-continuation-2026-08-11`: Hash-selected DIV2K4x2 development diagnostic of
+  an exact ordinary-normalized hold, mass-free unit-gauge transition, long exact-additive tail, and
+  endpoint Adam reset. No-reset nearly matches additive (`-0.0326 dB`) with better mean
+  perceptual/local/AUC metrics, but retains none of the `0.6648 dB` normalized advantage and fails
+  one LPIPS cell. Evidence note:
+  `ara/evidence/hier023-unit-gauge-continuation-2026-08-11/run.md`.
+
+- `hier024-gauge-geometry-projection-2026-08-11`: New-DIV2K4x2 fixed-geometry causal diagnostic
+  applying the same safeguarded all-row additive RGB solve to ordinary-additive and unit-gauge
+  endpoints. Projection gains `0.1300/0.1719 dB`; gauge ends only `0.0105 dB` above projected
+  additive, closes 1.91% of the remaining normalized gap, and fails perceptual/local cell guards.
+  Coefficient optimization is rejected as the missing mechanism; basis geometry/topology is next.
+  Evidence note: `ara/evidence/hier024-gauge-geometry-projection-2026-08-11/run.md`.
+
+- `hier025-folded-multiscale-additive-2026-08-11`: Frozen remaining-DIV2K4x2 test of a counted
+  16-row low-pass plus 624-row signed-residual basis folded into one pure additive field. Endpoint
+  integrity passes, but the candidate loses `1.5542 dB` to additive before projection and
+  `1.4083 dB` after the identical safe RGB solve; every quality/AUC gate and the fine-detail-blur
+  visual guard fail. The official validation images remain unopened. Evidence note:
+  `ara/evidence/hier025-folded-multiscale-additive-2026-08-11/run.md`.
+
+- `hier026-progressive-additive-capacity-2026-08-11`: Prospectively bound official-DIV2K-valid4x2
+  pure-additive capacity confirmation. Progressive N=896 and cold N=960 beat normalized N=640 by
+  `+0.7539/+0.9449 dB` mean PSNR with exact four-array one-pass endpoints, but isolated LPIPS and
+  local guards plus forest-detail smear reject both frozen rungs. Consumed follow-up identifies
+  cold N=1088/N=1152 as the next untouched confirmation counts. Evidence note:
+  `ara/evidence/hier026-progressive-additive-capacity-2026-08-11/run.md`.
+
+- `hier027-cold-additive-capacity-2026-08-11`: Prospectively bound official-DIV2K-valid8x2 cold
+  capacity confirmation. Projected N=1088/N=1152 gain `+1.8488/+2.1956 dB` over normalized N=640
+  and improve every aggregate metric, but each has two isolated pixel-maximum cell failures under
+  the unchanged gate. Ordinary capacity is retained as a strict near-miss. Evidence note:
+  `ara/evidence/hier027-cold-additive-capacity-2026-08-11/run.md`.
+
+- `hier028-residual-pursuit-additive-2026-08-11`: Prospectively bound official-DIV2K-valid8x2
+  bounded positive for an exact four-array N=960+64 pure-additive field. Residual pursuit gains
+  `+1.6204 dB` over normalized N=640, passes every frozen numeric/local/native-visual clause, and
+  outperforms a cold same-count control on robust local allocation. It is default-off, unequal-rate,
+  target-known, max-side-160 producer evidence pending distinct review. Evidence note:
+  `ara/evidence/hier028-residual-pursuit-additive-2026-08-11/run.md`.
+
 - `core016-codec-native-dual-plane-janelle-2026-08-06`: Default-off exposed C0001 systems pilot
   for a charged conventional-codec appearance lattice plus 512-row independent structural measure.
   The 3,896,344-byte packet replays decoded pixel centers below display quantization and has

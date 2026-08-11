@@ -74,6 +74,19 @@ HIER018_BACKGROUND_SCHEMA = "structsplat.hier018_counted_background.diagnostic.v
 HIER019_TAIL_SCHEMA = "structsplat.hier019_confidence_tail.diagnostic.v1"
 HIER020_SPARSE_TAIL_SCHEMA = "structsplat.hier020_sparse_pixel_safe_tail.diagnostic.v1"
 HIER021_SOURCE_PATCH_SCHEMA = "structsplat.hier021_source_patch_tail.diagnostic.v1"
+HIER022_CONTINUATION_SCHEMA = "structsplat.hier022_additive_continuation.diagnostic.v1"
+HIER023_UNIT_GAUGE_SCHEMA = "structsplat.hier023_unit_gauge_continuation.diagnostic.v1"
+HIER024_GAUGE_PROJECTION_SCHEMA = "structsplat.hier024_gauge_geometry_projection.diagnostic.v1"
+HIER025_FOLDED_MULTISCALE_SCHEMA = "structsplat.hier025_folded_multiscale_additive.diagnostic.v1"
+HIER026_PROGRESSIVE_CAPACITY_SCHEMA = (
+    "structsplat.hier026_progressive_additive_capacity.confirmation.v1"
+)
+HIER027_COLD_CAPACITY_SCHEMA = (
+    "structsplat.hier027_cold_additive_capacity.confirmation.v1"
+)
+HIER028_RESIDUAL_PURSUIT_SCHEMA = (
+    "structsplat.hier028_residual_pursuit_additive.confirmation.v1"
+)
 CORE019_REPORT_SCHEMA = "core019.coherent_depth.manifest.v1"
 HIER005_REPORT_SCHEMAS = frozenset(
     {
@@ -96,6 +109,13 @@ HIER015_PLUS_REPORT_SCHEMAS = frozenset(
         HIER019_TAIL_SCHEMA,
         HIER020_SPARSE_TAIL_SCHEMA,
         HIER021_SOURCE_PATCH_SCHEMA,
+        HIER022_CONTINUATION_SCHEMA,
+        HIER023_UNIT_GAUGE_SCHEMA,
+        HIER024_GAUGE_PROJECTION_SCHEMA,
+        HIER025_FOLDED_MULTISCALE_SCHEMA,
+        HIER026_PROGRESSIVE_CAPACITY_SCHEMA,
+        HIER027_COLD_CAPACITY_SCHEMA,
+        HIER028_RESIDUAL_PURSUIT_SCHEMA,
     }
 )
 
@@ -951,6 +971,645 @@ def _check_hier005_bundle(
             )
 
 
+def _check_hier026_rows(
+    root: Path,
+    rows: list[dict[str, Any]],
+    problems: list[str],
+) -> None:
+    """Validate HIER-026's frozen source, arm, endpoint, and work bindings."""
+
+    arms = {
+        "normalized_plain_n640": 640,
+        "additive_plain_n640": 640,
+        "additive_projected_n640": 640,
+        "cold_additive_projected_n896": 896,
+        "progressive_residual_n896": 896,
+        "progressive_residual_projected_n896": 896,
+        "cold_additive_projected_n960": 960,
+    }
+    pure_arms = set(arms) - {"normalized_plain_n640"}
+    projected_arms = {
+        "additive_projected_n640",
+        "cold_additive_projected_n896",
+        "progressive_residual_projected_n896",
+        "cold_additive_projected_n960",
+    }
+    progressive_arms = {
+        "progressive_residual_n896",
+        "progressive_residual_projected_n896",
+    }
+    sources = {
+        "0895": (
+            "a1c0888648fed4eb909c6e7f5f5db220ae98861294ebfdfa14b2c72567e96b2b",
+            "0644b064658788ac2695cfa2d57d4c2704d3d5e3173f310daf06262914deb703",
+        ),
+        "0860": (
+            "eac29d623ecfab9e2299c04b49e5da3f282a576eb7f9107d0b88076c972ac3ef",
+            "082cd6a3d95e3b16ec770c3502325c1fcb6cc890e9791a7a27b61614e028ef4e",
+        ),
+        "0898": (
+            "4cd6696b8e59615ceacff729181dd9b0cc5ea936ea9a57e089bb1fe4fe87c347",
+            "0b554a43bfb78b6ebda36539d5d3f2cdd1568a394ac430981ee0ac5d96aaab7c",
+        ),
+        "0847": (
+            "ce39eab49b45fc08177556f7c9ae0d0e928e283fb3cd471bddf0fbf17db8ca73",
+            "10494b910838e73fad90d013d95d07dfc4ffd618f6416f819d372d9788c6d096",
+        ),
+    }
+    archive_sha256 = "20dd31fd84d777bc1cf5d6b7654a3f569c0aec74458ae094122ad1d0489900fc"
+    expected_keys = {
+        (image, seed, arm)
+        for image in sources
+        for seed in (0, 1)
+        for arm in arms
+    }
+    observed_keys = {(row.get("image"), row.get("seed"), row.get("arm")) for row in rows}
+    if observed_keys != expected_keys or len(rows) != len(expected_keys):
+        problems.append("HIER-026 rows do not contain the exact frozen 4x2x7 matrix")
+
+    four_arrays = {"means", "log_scales", "rotations", "colors"}
+    shared: dict[tuple[Any, Any], set[Any]] = {}
+    base_endpoints: dict[tuple[Any, Any], set[Any]] = {}
+    progressive_endpoints: dict[tuple[Any, Any], set[Any]] = {}
+    for index, row in enumerate(rows):
+        label = f"metrics.json rows[{index}]"
+        image = row.get("image")
+        arm = row.get("arm")
+        seed = row.get("seed")
+        if image not in sources or arm not in arms or seed not in (0, 1):
+            continue
+        source_sha256, selection_sha256 = sources[image]
+        if (
+            row.get("phase") != "untouched_confirmation"
+            or row.get("source_sha256") != source_sha256
+            or row.get("selection_sha256") != selection_sha256
+            or row.get("selection_salt") != "HIER-025-confirm-v1:"
+            or row.get("archive_sha256") != archive_sha256
+            or row.get("archive_bytes") != 448_993_893
+        ):
+            problems.append(f"{label}: frozen HIER-026 source/archive binding differs")
+        count = arms[arm]
+        if row.get("target_gaussians") != count or row.get("n_gaussians") != count:
+            problems.append(f"{label}: HIER-026 arm count differs from the frozen contract")
+        receipt = _artifact_path(root, row.get("shared_audit_receipt"))
+        if receipt is None:
+            problems.append(f"{label}: shared audit receipt is missing")
+        elif row.get("shared_audit_receipt_sha256") != _sha256(receipt):
+            problems.append(f"{label}: shared audit receipt hash differs")
+        if arm in pure_arms:
+            keys = row.get("field_npz_keys")
+            if (
+                not isinstance(keys, list)
+                or set(keys) != four_arrays
+                or row.get("pure_additive_endpoint") is not True
+                or row.get("four_array_endpoint_exact") is not True
+                or row.get("training_payload_present") is not False
+                or row.get("renderer") != "cuda_additive"
+                or row.get("selected_lambda") != 0.0
+            ):
+                problems.append(f"{label}: pure-additive four-array endpoint contract differs")
+            for flag in (
+                "mass_payload_present",
+                "denominator_payload_present",
+                "optimizer_payload_present",
+                "auxiliary_rgb_payload_present",
+            ):
+                if row.get(flag) is not False:
+                    problems.append(f"{label}: forbidden pure-endpoint payload flag {flag}")
+        if arm in projected_arms:
+            clauses = row.get("projection_clauses")
+            selected = row.get("projection_selected")
+            selected_safe = (
+                selected is True
+                and isinstance(clauses, dict)
+                and clauses
+                and all(value is True for value in clauses.values())
+            )
+            rolled_back = (
+                selected is False
+                and row.get("final_field_digest") == row.get("incoming_field_digest")
+            )
+            if not (selected_safe or rolled_back):
+                problems.append(f"{label}: projection transaction did not fail closed")
+        if arm in progressive_arms and (
+            row.get("base_count") != 640
+            or row.get("residual_count") != 256
+            or row.get("attempted_steps") != 700
+            or row.get("gaussian_row_updates") != 499_200
+        ):
+            problems.append(f"{label}: progressive count/step/work accounting differs")
+        if arm == "cold_additive_projected_n896" and (
+            row.get("attempted_steps") != 500
+            or row.get("gaussian_row_updates") != 448_000
+        ):
+            problems.append(f"{label}: cold N=896 work accounting differs")
+        if arm == "cold_additive_projected_n960" and (
+            row.get("attempted_steps") != 500
+            or row.get("gaussian_row_updates") != 480_000
+        ):
+            problems.append(f"{label}: cold N=960 work accounting differs")
+
+        pair = (image, seed)
+        if arm in {
+            "additive_plain_n640",
+            "additive_projected_n640",
+            "progressive_residual_n896",
+            "progressive_residual_projected_n896",
+        }:
+            shared.setdefault(pair, set()).add(row.get("base_shared_digest"))
+        if arm in {"additive_plain_n640", "additive_projected_n640"}:
+            base_endpoints.setdefault(pair, set()).add(
+                row.get("preprojection_endpoint_digest")
+            )
+        if arm in progressive_arms:
+            progressive_endpoints.setdefault(pair, set()).add(
+                row.get("preprojection_endpoint_digest")
+            )
+    if any(None in values or len(values) != 1 for values in shared.values()):
+        problems.append("HIER-026 shared base digests differ within an image/seed pair")
+    if any(None in values or len(values) != 1 for values in base_endpoints.values()):
+        problems.append("HIER-026 additive base branches do not share one endpoint")
+    if any(None in values or len(values) != 1 for values in progressive_endpoints.values()):
+        problems.append("HIER-026 progressive branches do not share one endpoint")
+
+    try:
+        attempts = _load_json(root / "attempts.json")
+    except (OSError, json.JSONDecodeError, ValueError):
+        attempts = None
+    attempt_rows = attempts.get("attempts") if isinstance(attempts, dict) else None
+    if (
+        not isinstance(attempt_rows, list)
+        or len(attempt_rows) != 56
+        or any(record.get("status") != "ok" for record in attempt_rows)
+    ):
+        problems.append("HIER-026 attempts ledger is not the exact 56-cell success matrix")
+
+
+def _check_hier027_rows(
+    root: Path,
+    rows: list[dict[str, Any]],
+    problems: list[str],
+) -> None:
+    """Validate HIER-027's frozen source, capacity, endpoint, and work bindings."""
+
+    arms = {
+        "normalized_plain_n640": 640,
+        "additive_plain_n640": 640,
+        "additive_projected_n640": 640,
+        "cold_additive_projected_n1024": 1024,
+        "cold_additive_plain_n1088": 1088,
+        "cold_additive_projected_n1088": 1088,
+        "cold_additive_projected_n1152": 1152,
+    }
+    pure_arms = set(arms) - {"normalized_plain_n640"}
+    projected_arms = {
+        "additive_projected_n640",
+        "cold_additive_projected_n1024",
+        "cold_additive_projected_n1088",
+        "cold_additive_projected_n1152",
+    }
+    sources = {
+        "0859": (
+            "3ada872de7c5def1d408920385db278b1ff3a5a0cfcab83105a789ff540a1827",
+            "03488568c8031c428e16d4365ce5c3241276d460b4eb944204aec6dbe1cdfe42",
+        ),
+        "0833": (
+            "2e9668b3a318284ec90c9bbdd940317ecd2f7b95314e68c48c94d2380fad679a",
+            "03f45d5a4ad1a7e29466b4bf012b4b4ba1ae96cbf1bcecc07cff36ac3c98e8ce",
+        ),
+        "0874": (
+            "11cb511247d70d84adad5557a720254e5f73e3786dbcd399c6053a1982ce1784",
+            "08dafd50533c303e3375e55fa7cb1b04f36067caa8694ffd175506b10c5cc5a3",
+        ),
+        "0880": (
+            "db5773c6e460824c5132c23917492fda7acd370c87e9ae6293a0103fee2b642d",
+            "0a05d43823a705d32c5b2daf099b7901d9ad0a8d1c62d32a976a52c296a02f5b",
+        ),
+        "0802": (
+            "4ad6f3ca8bf740192042978121f05ec493ddbe5a3da5584eaf0d9699c25ee431",
+            "0a31d512d0f0b526a503c3a51eb2f0c274984e156e6bf4eac75479b564cefd99",
+        ),
+        "0808": (
+            "956528ab3e0fadad1ed8ce93f93a30bf9f58c36ffa9dd775e2ad362ffdcf5ace",
+            "0e0d3b42d9d4ee8fbe42f756119af883e9d47ec6ec58e6825c65ae99c2530824",
+        ),
+        "0815": (
+            "c8f278e51f2bc9be7a696935b7e386eb4adafde24572d8ecdd4edf8adf4b4108",
+            "1225e9713eb595e0f3482a4fc07b26459f50c929ea94d48a5ce6648bd7bdebf8",
+        ),
+        "0889": (
+            "a8f73c42065e3193c4deb883dcb3bc432a3f838e9be5bacea708ee39eb2c6e04",
+            "151d9fb642f2afc1b96797072e537accdbfe2798591498e1ff09a59952edfe9d",
+        ),
+    }
+    archive_sha256 = "20dd31fd84d777bc1cf5d6b7654a3f569c0aec74458ae094122ad1d0489900fc"
+    expected_keys = {
+        (image, seed, arm)
+        for image in sources
+        for seed in (0, 1)
+        for arm in arms
+    }
+    observed_keys = {(row.get("image"), row.get("seed"), row.get("arm")) for row in rows}
+    if observed_keys != expected_keys or len(rows) != len(expected_keys):
+        problems.append("HIER-027 rows do not contain the exact frozen 8x2x7 matrix")
+
+    four_arrays = {"means", "log_scales", "rotations", "colors"}
+    n640_endpoints: dict[tuple[Any, Any], set[Any]] = {}
+    n1088_endpoints: dict[tuple[Any, Any], set[Any]] = {}
+    for index, row in enumerate(rows):
+        label = f"metrics.json rows[{index}]"
+        image = row.get("image")
+        arm = row.get("arm")
+        seed = row.get("seed")
+        if image not in sources or arm not in arms or seed not in (0, 1):
+            continue
+        source_sha256, selection_sha256 = sources[image]
+        if (
+            row.get("phase") != "untouched_confirmation"
+            or row.get("source_sha256") != source_sha256
+            or row.get("selection_sha256") != selection_sha256
+            or row.get("selection_salt") != "HIER-027-confirm-v1:"
+            or row.get("archive_sha256") != archive_sha256
+            or row.get("archive_bytes") != 448_993_893
+        ):
+            problems.append(f"{label}: frozen HIER-027 source/archive binding differs")
+        count = arms[arm]
+        if row.get("target_gaussians") != count or row.get("n_gaussians") != count:
+            problems.append(f"{label}: HIER-027 arm count differs from the frozen contract")
+        if (
+            row.get("completed") is not True
+            or row.get("method_status") != "completed"
+            or row.get("attempted_steps") != 500
+            or row.get("gaussian_row_updates") != count * 500
+        ):
+            problems.append(f"{label}: HIER-027 completion/work accounting differs")
+        coefficient_abs_max = row.get("coefficient_abs_max")
+        endpoint_parity = row.get("endpoint_internal_parity_max_abs")
+        if (
+            not isinstance(coefficient_abs_max, (int, float))
+            or isinstance(coefficient_abs_max, bool)
+            or float(coefficient_abs_max) > 16.0
+            or not isinstance(endpoint_parity, (int, float))
+            or isinstance(endpoint_parity, bool)
+            or float(endpoint_parity) > 2e-5
+        ):
+            problems.append(f"{label}: HIER-027 coefficient/parity safety differs")
+        receipt = _artifact_path(root, row.get("shared_audit_receipt"))
+        if receipt is None:
+            problems.append(f"{label}: shared audit receipt is missing")
+        elif row.get("shared_audit_receipt_sha256") != _sha256(receipt):
+            problems.append(f"{label}: shared audit receipt hash differs")
+        if arm in pure_arms:
+            keys = row.get("field_npz_keys")
+            if (
+                not isinstance(keys, list)
+                or set(keys) != four_arrays
+                or row.get("pure_additive_endpoint") is not True
+                or row.get("four_array_endpoint_exact") is not True
+                or row.get("training_payload_present") is not False
+                or row.get("renderer") != "cuda_additive"
+                or row.get("selected_lambda") != 0.0
+            ):
+                problems.append(f"{label}: pure-additive four-array endpoint contract differs")
+            for flag in (
+                "mass_payload_present",
+                "denominator_payload_present",
+                "optimizer_payload_present",
+                "auxiliary_rgb_payload_present",
+            ):
+                if row.get(flag) is not False:
+                    problems.append(f"{label}: forbidden pure-endpoint payload flag {flag}")
+        if arm in projected_arms:
+            clauses = row.get("projection_clauses")
+            selected_safe = (
+                row.get("projection_selected") is True
+                and isinstance(clauses, dict)
+                and clauses
+                and all(value is True for value in clauses.values())
+            )
+            rolled_back = (
+                row.get("projection_selected") is False
+                and row.get("final_field_digest") == row.get("incoming_field_digest")
+            )
+            if not (selected_safe or rolled_back):
+                problems.append(f"{label}: projection transaction did not fail closed")
+
+        pair = (image, seed)
+        if arm in {"additive_plain_n640", "additive_projected_n640"}:
+            n640_endpoints.setdefault(pair, set()).add(
+                row.get("preprojection_endpoint_digest")
+            )
+        if arm in {
+            "cold_additive_plain_n1088",
+            "cold_additive_projected_n1088",
+        }:
+            n1088_endpoints.setdefault(pair, set()).add(
+                row.get("preprojection_endpoint_digest")
+            )
+    if (
+        len(n640_endpoints) != len(sources) * 2
+        or any(None in values or len(values) != 1 for values in n640_endpoints.values())
+    ):
+        problems.append("HIER-027 N=640 branches do not share one endpoint per pair")
+    if (
+        len(n1088_endpoints) != len(sources) * 2
+        or any(None in values or len(values) != 1 for values in n1088_endpoints.values())
+    ):
+        problems.append("HIER-027 N=1088 branches do not share one endpoint per pair")
+
+    try:
+        attempts = _load_json(root / "attempts.json")
+    except (OSError, json.JSONDecodeError, ValueError):
+        attempts = None
+    attempt_rows = attempts.get("attempts") if isinstance(attempts, dict) else None
+    attempt_keys = (
+        {
+            (record.get("image"), record.get("seed"), record.get("arm"))
+            for record in attempt_rows
+        }
+        if isinstance(attempt_rows, list)
+        else set()
+    )
+    if (
+        not isinstance(attempt_rows, list)
+        or len(attempt_rows) != len(expected_keys)
+        or attempt_keys != expected_keys
+        or any(record.get("status") != "ok" for record in attempt_rows)
+    ):
+        problems.append("HIER-027 attempts ledger is not the exact 112-cell success matrix")
+
+    try:
+        decision = _load_json(root / "decision.json")
+    except (OSError, json.JSONDecodeError, ValueError):
+        decision = None
+    if isinstance(decision, dict):
+        selected = decision.get("numeric_selected_arm")
+        valid_selection = (
+            selected is None
+            and decision.get("numeric_pass") is False
+            or selected == "cold_additive_projected_n1088"
+            and decision.get("numeric_pass") is True
+            and decision.get("primary_n1088_numeric") is True
+            or selected == "cold_additive_projected_n1152"
+            and decision.get("numeric_pass") is True
+            and decision.get("primary_n1088_numeric") is False
+            and decision.get("fallback_n1152_numeric") is True
+        )
+        if not valid_selection or (
+            decision.get("normalization_not_required_for_fidelity_numeric")
+            is not decision.get("numeric_pass")
+        ):
+            problems.append("HIER-027 decision does not follow the frozen capacity ladder")
+
+
+def _check_hier028_rows(
+    root: Path,
+    rows: list[dict[str, Any]],
+    problems: list[str],
+) -> None:
+    """Validate HIER-028's frozen sources, pursuit endpoint, and work bindings."""
+
+    arms = {
+        "normalized_plain_n640": (640, 320_000),
+        "cold_additive_projected_n960": (960, 480_000),
+        "residual_pursuit_additive_n1024": (1024, 480_000),
+        "cold_additive_projected_n1024": (1024, 512_000),
+    }
+    pure_arms = set(arms) - {"normalized_plain_n640"}
+    endpoint_projected_arms = {
+        "cold_additive_projected_n960",
+        "cold_additive_projected_n1024",
+    }
+    sources = {
+        "0804": (
+            "16b5fdbe808b868bed0be32f235208a1716d44e271a37b79cbc77ab53d2f6bdb",
+            "0686f57768896183a307e62c52b53806515c65b82856225f0053c3b51c7da0c3",
+        ),
+        "0830": (
+            "4eb18566ab01447a06daf0314a3711aa78cea5ca0eaa47cfedafbceeb6dd0a3e",
+            "0c84c4de7ca7ce6cfb42573327b2c34933b88bc53c939e0b5a403f747e5bca5f",
+        ),
+        "0822": (
+            "a1d308fd62adecb1ea8b0fa8d0c687c92d3cf0d3358e598c8b97aca1b9cf8ad0",
+            "130cdf4d4c1a67dab7b4ce502044a2ecc5f6f1b8bd01365dce3ffc4f11311db3",
+        ),
+        "0812": (
+            "49e45b8922872b44ece90db047756f3a5356612bb6ee30bdc23df2bd208ec861",
+            "132e21bc39e02a6cde90ba28d3a64c12d575bb6d8e2a001c5154924edda6a63c",
+        ),
+        "0810": (
+            "6940c660b97d2c5f1113101c3e6360d1d6886743c5796cad52224b8076b903f8",
+            "1704a6e1b96ad30381b0dfba6e4ab8a5d3ee7a61df23689ac625c9fe46a996fd",
+        ),
+        "0862": (
+            "31a02d7392ee9dadd4b8a2c1b5b9d670943135d0d40e85d4178ab77923c75548",
+            "18240279a254669300683c105df63f9584d1a396417d783ef5db734a05eb2313",
+        ),
+        "0803": (
+            "4b0148a9a1ff877ad9f76e65736a50cc36e10822b5d8ccd2abb2988ff4e1782b",
+            "1a48bfa234e74bd95c2f7875565809acaedf73de995088c0b532c105f1eb0e06",
+        ),
+        "0826": (
+            "b0f675a14e8fe9f2ec0b705bee98d75f8a22478eafdc1a0a0afc0f820bc5ab4d",
+            "1ac09ff808f01c4e326025121790ba7aa336e7889bf4ad34437fc1dc7042729c",
+        ),
+    }
+    archive_sha256 = "20dd31fd84d777bc1cf5d6b7654a3f569c0aec74458ae094122ad1d0489900fc"
+    expected_keys = {
+        (image, seed, arm)
+        for image in sources
+        for seed in (0, 1)
+        for arm in arms
+    }
+    observed_keys = {(row.get("image"), row.get("seed"), row.get("arm")) for row in rows}
+    if observed_keys != expected_keys or len(rows) != len(expected_keys):
+        problems.append("HIER-028 rows do not contain the exact frozen 8x2x4 matrix")
+
+    four_arrays = {"means", "log_scales", "rotations", "colors"}
+    base_endpoints: dict[tuple[Any, Any], Any] = {}
+    pursuit_bases: dict[tuple[Any, Any], Any] = {}
+    for index, row in enumerate(rows):
+        label = f"metrics.json rows[{index}]"
+        image = row.get("image")
+        arm = row.get("arm")
+        seed = row.get("seed")
+        if image not in sources or arm not in arms or seed not in (0, 1):
+            continue
+        source_sha256, selection_sha256 = sources[image]
+        if (
+            row.get("phase") != "untouched_confirmation"
+            or row.get("source_sha256") != source_sha256
+            or row.get("selection_sha256") != selection_sha256
+            or row.get("selection_salt") != "HIER-028-confirm-v1:"
+            or row.get("archive_sha256") != archive_sha256
+            or row.get("archive_bytes") != 448_993_893
+        ):
+            problems.append(f"{label}: frozen HIER-028 source/archive binding differs")
+        count, work = arms[arm]
+        if row.get("target_gaussians") != count or row.get("n_gaussians") != count:
+            problems.append(f"{label}: HIER-028 arm count differs from the frozen contract")
+        if (
+            row.get("completed") is not True
+            or row.get("method_status") != "completed"
+            or row.get("attempted_steps") != 500
+            or row.get("gaussian_row_updates") != work
+        ):
+            problems.append(f"{label}: HIER-028 completion/work accounting differs")
+        coefficient_abs_max = row.get("coefficient_abs_max")
+        endpoint_parity = row.get("endpoint_internal_parity_max_abs")
+        if (
+            not isinstance(coefficient_abs_max, (int, float))
+            or isinstance(coefficient_abs_max, bool)
+            or float(coefficient_abs_max) > 16.0
+            or not isinstance(endpoint_parity, (int, float))
+            or isinstance(endpoint_parity, bool)
+            or float(endpoint_parity) > 2e-5
+        ):
+            problems.append(f"{label}: HIER-028 coefficient/parity safety differs")
+        receipt = _artifact_path(root, row.get("shared_audit_receipt"))
+        if receipt is None:
+            problems.append(f"{label}: shared audit receipt is missing")
+        elif row.get("shared_audit_receipt_sha256") != _sha256(receipt):
+            problems.append(f"{label}: shared audit receipt hash differs")
+        if arm in pure_arms:
+            keys = row.get("field_npz_keys")
+            if (
+                not isinstance(keys, list)
+                or set(keys) != four_arrays
+                or row.get("pure_additive_endpoint") is not True
+                or row.get("four_array_endpoint_exact") is not True
+                or row.get("training_payload_present") is not False
+                or row.get("renderer") != "cuda_additive"
+                or row.get("selected_lambda") != 0.0
+            ):
+                problems.append(f"{label}: pure-additive four-array endpoint contract differs")
+            for flag in (
+                "mass_payload_present",
+                "denominator_payload_present",
+                "optimizer_payload_present",
+                "auxiliary_rgb_payload_present",
+            ):
+                if row.get(flag) is not False:
+                    problems.append(f"{label}: forbidden pure-endpoint payload flag {flag}")
+        if arm in endpoint_projected_arms:
+            clauses = row.get("projection_clauses")
+            selected_safe = (
+                row.get("projection_selected") is True
+                and isinstance(clauses, dict)
+                and clauses
+                and all(value is True for value in clauses.values())
+            )
+            rolled_back = (
+                row.get("projection_selected") is False
+                and row.get("final_field_digest") == row.get("incoming_field_digest")
+            )
+            if not (selected_safe or rolled_back):
+                problems.append(f"{label}: endpoint projection did not fail closed")
+        if arm == "cold_additive_projected_n960":
+            base_endpoints[(image, seed)] = row.get("final_field_digest")
+        if arm == "residual_pursuit_additive_n1024":
+            pursuit_bases[(image, seed)] = row.get("pursuit_base_field_digest")
+            history_path = _artifact_path(root, row.get("pursuit_history_path"))
+            if history_path is None:
+                problems.append(f"{label}: pursuit history is missing")
+            elif row.get("pursuit_history_sha256") != _sha256(history_path):
+                problems.append(f"{label}: pursuit history hash differs")
+            else:
+                try:
+                    history = _load_json(history_path)
+                except (OSError, json.JSONDecodeError, ValueError):
+                    history = None
+                trajectory = history.get("trajectory") if isinstance(history, dict) else None
+                history_config = history.get("config") if isinstance(history, dict) else None
+                if (
+                    not isinstance(history, dict)
+                    or history.get("applied") is not True
+                    or history.get("base_count") != 960
+                    or history.get("tail_count") != 64
+                    or history.get("total_count") != 1024
+                    or not isinstance(trajectory, list)
+                    or len(trajectory) != 64
+                    or not isinstance(history_config, dict)
+                    or history_config.get("scale_px") != 0.35
+                ):
+                    problems.append(f"{label}: pursuit history contract differs")
+            clauses = row.get("projection_clauses")
+            selected_safe = (
+                row.get("projection_selected") is True
+                and isinstance(clauses, dict)
+                and clauses
+                and all(value is True for value in clauses.values())
+            )
+            rolled_back = (
+                row.get("projection_selected") is False
+                and row.get("base_projection_final_digest")
+                == row.get("incoming_field_digest")
+            )
+            if not (selected_safe or rolled_back):
+                problems.append(f"{label}: pursuit base projection did not fail closed")
+            if (
+                row.get("pursuit_applied") is not True
+                or row.get("pursuit_base_count") != 960
+                or row.get("pursuit_tail_count") != 64
+                or row.get("pursuit_base_prefix_bit_exact") is not True
+                or row.get("pursuit_fixed_tail_geometry") is not True
+                or row.get("pursuit_base_field_digest")
+                != row.get("base_projection_final_digest")
+                or not isinstance(
+                    row.get("pursuit_analytic_render_parity_max_abs"), (int, float)
+                )
+                or float(row["pursuit_analytic_render_parity_max_abs"]) > 2e-5
+                or row.get("pursuit_residual_scan_pixel_evaluations")
+                != 64 * int(row.get("height", 0)) * int(row.get("width", 0))
+            ):
+                problems.append(f"{label}: residual-pursuit endpoint contract differs")
+    if (
+        len(base_endpoints) != len(sources) * 2
+        or pursuit_bases != base_endpoints
+        or any(value is None for value in base_endpoints.values())
+    ):
+        problems.append("HIER-028 pursuit rows do not share the exact projected N=960 base")
+
+    try:
+        attempts = _load_json(root / "attempts.json")
+    except (OSError, json.JSONDecodeError, ValueError):
+        attempts = None
+    attempt_rows = attempts.get("attempts") if isinstance(attempts, dict) else None
+    attempt_keys = (
+        {
+            (record.get("image"), record.get("seed"), record.get("arm"))
+            for record in attempt_rows
+        }
+        if isinstance(attempt_rows, list)
+        else set()
+    )
+    if (
+        not isinstance(attempt_rows, list)
+        or len(attempt_rows) != len(expected_keys)
+        or attempt_keys != expected_keys
+        or any(record.get("status") != "ok" for record in attempt_rows)
+    ):
+        problems.append("HIER-028 attempts ledger is not the exact 64-cell success matrix")
+
+    try:
+        decision = _load_json(root / "decision.json")
+    except (OSError, json.JSONDecodeError, ValueError):
+        decision = None
+    if isinstance(decision, dict):
+        selected = decision.get("numeric_selected_arm")
+        valid_selection = (
+            selected is None and decision.get("numeric_pass") is False
+            or selected == "residual_pursuit_additive_n1024"
+            and decision.get("numeric_pass") is True
+            and decision.get("pursuit_robust_numeric") is True
+        )
+        if not valid_selection or (
+            decision.get("normalization_not_required_for_fidelity_numeric")
+            is not decision.get("numeric_pass")
+        ):
+            problems.append("HIER-028 decision does not follow the frozen pursuit gate")
+
+
 def _check_hier015_plus_bundle(
     root: Path,
     manifest: dict[str, Any],
@@ -1092,7 +1751,19 @@ def _check_hier015_plus_bundle(
         label = f"metrics.json rows[{index}]"
         if row.get("schema") != schema or row.get("status") != "diagnostic":
             problems.append(f"{label}: wrong schema or status")
-        key = (row.get("image"), row.get("arm"), row.get("target_gaussians"))
+        key = (
+            (row.get("image"), row.get("seed"), row.get("arm"), row.get("target_gaussians"))
+            if schema in (
+                HIER022_CONTINUATION_SCHEMA,
+                HIER023_UNIT_GAUGE_SCHEMA,
+                HIER024_GAUGE_PROJECTION_SCHEMA,
+                HIER025_FOLDED_MULTISCALE_SCHEMA,
+                HIER026_PROGRESSIVE_CAPACITY_SCHEMA,
+                HIER027_COLD_CAPACITY_SCHEMA,
+                HIER028_RESIDUAL_PURSUIT_SCHEMA,
+            )
+            else (row.get("image"), row.get("arm"), row.get("target_gaussians"))
+        )
         if key in stable_keys:
             problems.append(f"{label}: duplicate stable row key {key!r}")
         stable_keys.add(key)
@@ -1186,6 +1857,12 @@ def _check_hier015_plus_bundle(
                     f"index.html does not expose HIER-015+ artifact "
                     f"{artifact.relative_to(root)}"
                 )
+    if schema == HIER026_PROGRESSIVE_CAPACITY_SCHEMA:
+        _check_hier026_rows(root, rows, problems)
+    if schema == HIER027_COLD_CAPACITY_SCHEMA:
+        _check_hier027_rows(root, rows, problems)
+    if schema == HIER028_RESIDUAL_PURSUIT_SCHEMA:
+        _check_hier028_rows(root, rows, problems)
 
 
 def _check_core019_bundle(

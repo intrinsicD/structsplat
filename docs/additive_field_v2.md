@@ -469,6 +469,77 @@ useful bounded evidence for a sparse residual layer, not for Field V2 semantics,
 independent review, broader sources, and multi-seed evidence remain separate work. See the
 [portfolio audit](../ara/evidence/hier015-hier021-exact7k-portfolio-2026-08-10/run.md).
 
+HIER-022 then tests whether normalization can be discarded after serving as an optimization
+scaffold. Its learned-mass continuation reaches exact, cold-replayable mass-free additive fields
+in all eight natural-image cells, but the mechanism gate is negative. The selected `0.05` coverage
+weight drives mean `(D-1)^2` down 97.3% and still worsens the additive control by `0.454 dB` PSNR,
+`0.0120` LPIPS, and both local maxima; even the no-coverage continuation trails additive by
+`0.246 dB`. This separates coverage regularization from the missing quality mechanism and rejects
+trainable structural mass as a shortcut into Field V2. The next admissible test must preserve the
+ordinary normalized trajectory exactly before annealing, remove mass/coverage auxiliaries, and
+allocate a longer exact-additive tail on a new consumed development selection.
+
+HIER-023 removes that confound. Its first 175 operations call ordinary normalized rendering,
+75 strictly intermediate operations use unit-mass continuation, and 250 operations call ordinary
+additive rendering; no mass or coverage loss exists. Across a new hash-selected DIV2K4x2 screen,
+the maximum hold-trajectory difference is `0.0344 dB` and every endpoint is exact and mass-free.
+No-reset finishes only `0.0326 dB` below a 500-step additive fit while improving mean LPIPS,
+MS-SSIM, pixel/7x7 maxima, and PSNR-AUC. This is a positive convergence signal, but the frozen
+representation gate fails: normalized stays `0.6974 dB` above the candidate, none of the positive
+normalized/additive gap is retained, and one LPIPS cell exceeds the guard. Resetting Adam at the
+endpoint is worse. The next discriminating test gives both additive geometries the same
+safeguarded all-row coefficient solve; only a remaining gap would justify changing the basis or
+topology.
+
+HIER-024 performs that discriminator on a third, mechanically selected DIV2K4x2 bank. The same
+bounded all-row PCG and target-known safety transaction improves ordinary additive by `0.1300 dB`
+and gauge geometry by `0.1719 dB`, selecting 7/8 proposals in each arm. The extra gauge-specific
+gain is only `0.04195 dB`, below the frozen `0.05 dB` threshold, and the final gauge field is just
+`0.01046 dB` above projected additive while remaining `0.53781 dB` below normalized. Mean LPIPS
+and MS-SSIM improve, but mean and per-cell local guards fail. This rejects unsolved RGB coefficients
+as the primary explanation. It does not establish that a denominator is necessary: the next pure
+Gaussian test must change the finite additive span with counted multiscale basis geometry or
+topology, while preserving a single cold-replayable additive sum.
+
+HIER-025 makes that first basis change without changing endpoint semantics. Its 16 low-pass and
+624 signed-residual rows fold into exactly one opacity/mass/denominator/level-free N=640 additive
+field, and every geometry/persistence/transaction check passes. Quality does not: the folded field
+is `1.5542 dB` below ordinary additive, and the matched projection leaves it `1.4083 dB` below
+projected additive while worsening mean MS-SSIM, LPIPS, both local maxima, and PSNR-AUC. Native
+review finds material diffuse detail blur. The `folded_grid16_residual` recipe is therefore
+rejected and its validation phase stays sealed. This narrows the pure-field question to capacity
+or progressive topology; it does not authorize a denominator, residual raster, or hidden level
+payload in Field V2.
+
+HIER-026 then measures that capacity exchange on prospectively bound official validation pixels.
+The default-off `progressive_additive_capacity.py` path fits a full-target N=640 additive base,
+inserts 256 signed residual rows, jointly fits N=896, and strips scale caps so both reported
+endpoints contain only means, log-scales, rotations, and signed RGB. Projected progressive N=896
+and cold N=960 exceed normalized N=640 by `+0.7539/+0.9449 dB` mean PSNR while improving mean
+MS-SSIM and local maxima, proving that the denominator does not own the only high-fidelity finite
+span. They still fail the frozen per-cell perceptual/local and forest-blur guards, so neither count
+is a Field V2 recipe. Same-count additive remains worse. Consumed killing probes route a fresh
+ordinary-additive confirmation to N=1088/N=1152; count/work and complete-byte conclusions remain
+separate.
+
+HIER-027 confirms that ordinary cold capacity is not enough for the strict local contract. On a
+fresh official-DIV2K8x2 bank, projected additive N=1088/N=1152 improves normalized N=640 by
+`+1.8488/+2.1956 dB` mean PSNR and improves every aggregate structural, perceptual, and local
+metric. Both still fail two isolated per-cell pixel-maximum guards. This rejects the ordinary
+capacity ladder without implying that its global approximation is weak.
+
+HIER-028 supplies the first bounded positive pure-field recipe. Starting from an exact projected
+N=960 additive endpoint, `residual_pursuit_additive.py` appends 64 fixed-scale signed Gaussians at
+successive row-major worst raw-RGB residual pixels. The persisted N=1024 endpoint is exactly four
+arrays and one direct additive render; no denominator, opacity, mass, residual raster, target,
+optimizer, or pursuit metadata survives. On another untouched official-DIV2K8x2 bank it gains
+`+1.6204 dB` over normalized N=640, passes every frozen aggregate/per-cell/local clause, improves
+both local maxima over its N=960 base in all 16 cells, and passes native artifact review. A cold
+same-count N=1024 control fails local robustness. This establishes a default-off solution only at
+the measured max-side-160/1.60x-row/target-known-pursuit point; normalization remains the
+row-efficient maintained default pending equal-byte, full-resolution, downstream, and distinct
+review gates.
+
 HIER-006 is the bounded parent-preserving residual-quadtree control for the opposite stage order.
 It begins with every mask-present cell at a declared coarse level. Splitting a selected frontier
 cell retains its parent and appends all mask-present child Gaussians; geometry is the active-pixel

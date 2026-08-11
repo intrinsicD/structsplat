@@ -2231,3 +2231,159 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O154
+    timestamp: "2026-08-11T12:34+02:00"
+    provenance: ai-executed
+    content: >
+      HIER-022 reaches valid mass-free exact-additive endpoints in all eight natural-image cells,
+      but its learned coverage gauge is causally negative. Weight 0.05 reduces mean coverage MSE
+      97.259% while ending 0.45414 dB below plain additive, raising LPIPS 0.011995, worsening both
+      displayed local maxima, and taking 2.2546x the fit time. Even no-coverage continuation ends
+      0.24639 dB below plain additive despite better PSNR-time AUC.
+    context: >
+      Frozen COCO4 x two-seed x four-arm max-side-160/N640/500-step development diagnostic on one
+      RTX 4090, dirty executed sources, producer visual review. Coverage success therefore does not
+      establish image-quality success; the independent learned mass/appearance gauge is rejected.
+      No default, semantic, codec, asymptotic representation, or novelty claim follows.
+    potential_type: observation
+    bound_to: [N287, N288]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O155
+    timestamp: "2026-08-11T13:20+02:00"
+    provenance: ai-executed
+    content: >
+      HIER-023 removes learned mass and reproduces the ordinary normalized hold within 0.03442 dB.
+      Its no-reset exact-additive endpoint reaches plain additive within -0.03259 dB after only 250
+      endpoint steps and improves mean LPIPS, MS-SSIM, pixel/7x7 maxima, and PSNR-AUC. It nevertheless
+      retains none of normalized rendering's 0.66477 dB advantage, and one cell raises LPIPS 0.012264.
+    context: >
+      Frozen hash-selected but historically consumed DIV2K4 x two-seed diagnostic, max-side 160,
+      N=640, 500 attempted steps, one RTX 4090, dirty executed sources and producer visual review.
+      The first incomplete harness output is retained and excluded; the repaired report is
+      checker-valid. The result supports an optimization-efficiency signal, not a fixed-count
+      semantic/default or representation-limit claim.
+    potential_type: observation
+    bound_to: [N289, N290]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O156
+    timestamp: "2026-08-11T13:22+02:00"
+    provenance: ai-executed
+    content: >
+      HIER-024 gives ordinary-additive and unit-gauge geometries the same safeguarded all-row RGB
+      solve. Projection gains 0.12996/0.17191 dB, but projected gauge ends only 0.01046 dB above
+      projected additive and closes 1.91% of the remaining normalized gap. Mean and per-cell local
+      guards fail even though both arms select 7/8 proposals and every rollback/integrity check passes.
+    context: >
+      Frozen third hash-selected, historically consumed DIV2K4 x two-seed diagnostic, max-side 160,
+      N=640, 500 attempted fit steps, one RTX 4090, dirty executed sources and producer visual review.
+      The first harness output is retained invalid; the repaired report is checker-valid. This rejects
+      coefficient optimization for the tested fixed bases, not all pure-additive Gaussian bases.
+    potential_type: observation
+    bound_to: [N291, N292]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O157
+    timestamp: "2026-08-11T14:05+02:00"
+    provenance: ai-executed
+    content: >
+      HIER-025's exact 16/624 folded additive endpoint passes every count, geometry-freeze,
+      payload, projection-transaction, and cold-parity check, but loses 1.55421 dB to direct
+      additive before projection and 1.40831 dB after the same safeguarded RGB solve. Mean
+      MS-SSIM, LPIPS, pixel/7x7 maxima, PSNR-AUC, per-cell guards, and the native fine-detail-blur
+      gate all fail.
+    context: >
+      Frozen fourth historically consumed DIV2K4 x two-seed development diagnostic, max-side 160,
+      N=640, 500 attempted updates, one RTX 4090, dirty executed sources and producer visual review.
+      The official validation files remain unopened. This rejects the disconnected low-pass/
+      residual staging recipe, not all multiscale or higher-capacity pure-additive Gaussian fields.
+    potential_type: observation
+    bound_to: [N293, N294]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O158
+    timestamp: "2026-08-11T15:15+02:00"
+    provenance: ai-executed
+    content: >
+      HIER-026's exact four-array projected progressive N=896 and cold N=960 fields beat normalized
+      N=640 by 0.75388/0.94493 dB mean PSNR, with minimum paired gains 0.04411/0.35273 dB and
+      better mean MS-SSIM and local maxima. Both nevertheless fail the frozen quality gate:
+      progressive raises 0860 seed-0 LPIPS by 0.05447, N=960 has two LPIPS breaches and one local
+      breach, and native review confirms dense-forest directional smear.
+    context: >
+      Prospectively source-bound official DIV2K-valid4 x two-seed confirmation diagnostic,
+      max-side 160, one RTX 4090, dirty executed sources, producer review. Every count/work/hash,
+      projection, payload, and cold-parity gate passes. This is a capacity near-miss, not evidence
+      that additive is better at N=640 or that normalization is necessary.
+    potential_type: observation
+    bound_to: [N295, N296]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O159
+    timestamp: "2026-08-11T15:20+02:00"
+    provenance: ai-executed
+    content: >
+      After HIER-026 was sealed, ordinary projected additive N=1088 passed every HIER-026 numeric
+      clause on its now-consumed eight cells, with mean/minimum PSNR gains 1.68200/0.98761 dB and
+      worst LPIPS delta +0.00335 versus normalized N=640. N=1152 also passed at
+      1.97971/1.04845 dB; N=1024 still failed the forest LPIPS killing cell.
+    context: >
+      Bounded unbundled post-hoc feasibility probe on consumed HIER-026 pixels. It selects only the
+      next untouched confirmation counts and cannot support a quality, default, or generalization
+      claim by itself.
+    potential_type: observation
+    bound_to: [N296]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O160
+    timestamp: "2026-08-11T16:39+02:00"
+    provenance: ai-executed
+    content: >
+      HIER-027's projected cold additive N=1088/N=1152 fields beat normalized N=640 by
+      1.84883/2.19555 dB mean PSNR on a fresh official-DIV2K8x2 bank, with minimum paired gains
+      1.34241/1.55374 dB and better aggregate MS-SSIM, LPIPS, pixel, and 7x7 maxima. Both still fail
+      the unchanged all-cell pixel-maximum clause at two isolated cells, while all paired 7x7 and
+      perceptual guards pass.
+    context: >
+      Prospectively source-bound max-side-160 confirmation on one RTX 4090, dirty executed sources,
+      exact four-array one-pass endpoints, producer review, no threshold relaxation. Ordinary
+      capacity is a strict local near-miss, not evidence for a default or equal-rate advantage.
+    potential_type: observation
+    bound_to: [N297, N298]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O161
+    timestamp: "2026-08-11T16:39+02:00"
+    provenance: ai-executed
+    content: >
+      HIER-028's exact projected-N960-plus-64 residual-pursuit field gains 1.62037 dB over
+      normalized N=640, with minimum paired gain 1.14979 dB, and passes every frozen PSNR,
+      MS-SSIM, LPIPS, pixel, 7x7, integrity, base-prefix, and local-nonregression clause on a new
+      official-DIV2K8x2 bank. Native review finds no material new artifact or tail speckle; a cold
+      same-count N=1024 control fails the per-cell local clause.
+    context: >
+      Prospectively source-bound max-side-160 confirmation on one RTX 4090, dirty executed sources,
+      producer-only review. The endpoint is one denominator/opacity/mass-free four-array additive
+      sum, but costs 1.60x rows, 1.50x base row-update work, and 64 target-known residual scans.
+      This is a bounded default-off solution, not equal-byte/full-resolution/general-corpus proof.
+    potential_type: observation
+    bound_to: [N299, N300]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
