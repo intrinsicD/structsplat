@@ -6309,3 +6309,34 @@ tree:
       stress, downstream 3D stress, and the value of a complete discrete topology transaction.
     also_depends_on: [N306, N309, N310]
     status: open
+  - id: N312
+    type: question
+    title: "Can pixel-gradient anatomy identify the correct operator inside additive HIER?"
+    provenance: user
+    timestamp: "2026-08-12T22:28+02:00"
+    description: >
+      Determine whether the error, image adjoint, and pre-reduction pixel--Gaussian contributions
+      of one or several overlapping 2D Gaussians distinguish move, recolor, resize, rotate, split,
+      clone, birth, merge, prune, teleport, and no-op inside the HIER StructSplat pipeline. Explain
+      cancellation and the meaning of pixelwise subgradients without assuming that low aggregate
+      gradient implies split.
+    also_depends_on: [N311, N306, N309, N310]
+    status: open
+  - id: N313
+    type: experiment
+    title: "Verify additive HIER gradient and split-matrix formulas against autograd"
+    provenance: ai-executed
+    timestamp: "2026-08-12T22:28+02:00"
+    result: >
+      A deterministic CPU-float64 7x7 compact-support additive fixture independently recomputed
+      color, mean, log-scale, and rotation gradients and compared their sums with the repository
+      reference renderer's autograd result. Maximum absolute disagreement was below 9e-16. For
+      symmetric coefficient-halved mean splits at offsets 1e-2, 3e-3, and 1e-3 pixels, observed
+      loss change divided by the additive split-matrix prediction converged from 0.9999574 to
+      0.9999996. This validates the local formulas only, not operator-selection value.
+    evidence:
+      - "ara/evidence/hier-pixel-gradient-anatomy-2026-08-12/run.md"
+      - "ara/evidence/hier-pixel-gradient-anatomy-2026-08-12/result.json"
+      - "ara/evidence/hier-pixel-gradient-anatomy-2026-08-12/check.py"
+    also_depends_on: [N312]
+    status: resolved

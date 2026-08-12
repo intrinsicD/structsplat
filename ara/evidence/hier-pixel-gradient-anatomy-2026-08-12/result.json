@@ -1,0 +1,32 @@
+{
+  "dtype": "float64",
+  "gradient_max_abs_error": {
+    "color": 4.440892098500626e-16,
+    "log_scale": 8.881784197001252e-16,
+    "mean": 4.440892098500626e-16,
+    "rotation": 5.551115123125783e-17
+  },
+  "split_checks": [
+    {
+      "epsilon": 0.01,
+      "observed_loss_change": -0.00011704190242767254,
+      "observed_over_predicted": 0.9999574000149579,
+      "predicted_loss_change": -0.00011704688862337712
+    },
+    {
+      "epsilon": 0.003,
+      "observed_loss_change": -1.0534179587295966e-05,
+      "observed_over_predicted": 0.9999961659422278,
+      "predicted_loss_change": -1.053421997610394e-05
+    },
+    {
+      "epsilon": 0.001,
+      "observed_loss_change": -1.1704683871016641e-06,
+      "observed_over_predicted": 0.9999995735622598,
+      "predicted_loss_change": -1.170468886233771e-06
+    }
+  ],
+  "split_min_eigenvalue": -2.3409377724675418,
+  "torch_version": "2.9.0+cu128",
+  "verdict": "pass"
+}

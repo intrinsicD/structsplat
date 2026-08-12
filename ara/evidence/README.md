@@ -424,3 +424,10 @@ paths were the live source location when the historical runs were produced.
   weak pixels. No method is selected, defaults stay unchanged, and the immutable bundle's expected
   checker failure is preserved. Evidence note:
   `ara/evidence/hier032-coverage-debt-refinement-2026-08-12/run.md`.
+- `hier-pixel-gradient-anatomy-2026-08-12`: Deterministic CPU-float64 implementation check of the
+  constant-color compact-support additive HIER derivative formulas. Analytic color, mean,
+  log-scale, and rotation gradients match the repository renderer's autograd gradients below
+  `9e-16` maximum absolute error, and the finite symmetric coefficient-halved split converges to
+  the predicted split-matrix loss change. This validates one local derivation only; it is not an
+  operator-selection or quality result. Evidence note:
+  `ara/evidence/hier-pixel-gradient-anatomy-2026-08-12/run.md`.

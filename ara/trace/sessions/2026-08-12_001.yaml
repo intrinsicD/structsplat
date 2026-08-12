@@ -2,9 +2,9 @@ session:
   id: "2026-08-12_001"
   date: "2026-08-12"
   started: "2026-08-12T00:11+02:00"
-  last_turn: "2026-08-12T19:11+02:00"
-  turn_count: 3
-  summary: "HIER-032 remains negative; gradient-informed research now proposes a downstream, count-balanced operator-identifiability oracle before any controller change."
+  last_turn: "2026-08-12T22:28+02:00"
+  turn_count: 4
+  summary: "HIER-032 remains negative; additive-HIER gradient anatomy now defines a validated, operator-specific Phase-A oracle before downstream 3D transfer."
 
 events_logged:
   - turn: 1
@@ -91,6 +91,36 @@ events_logged:
     routing: staged
     provenance: ai-suggested
     summary: "Staged a per-lineage gradient packet with operator-specific curvature, removal, and insertion gates."
+  - turn: 4
+    type: question
+    id: "N312"
+    routing: direct
+    provenance: user
+    summary: "Refined the gradient-control question to pixelwise contribution anatomy and operator choice inside additive HIER itself."
+  - turn: 4
+    type: experiment
+    id: "N313"
+    routing: direct
+    provenance: ai-executed
+    summary: "Verified additive color/mean/scale/rotation gradients and symmetric split curvature against the repository renderer and autograd."
+  - turn: 4
+    type: constraint
+    id: "O174"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged that the current post-reduction absgrad proxy cannot observe pixel-gradient cancellation."
+  - turn: 4
+    type: heuristic
+    id: "O175"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged parameter-family pressure moments plus split curvature as an operator-routing hypothesis."
+  - turn: 4
+    type: architecture
+    id: "O176"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged ghost-column births and leave-one-out donors as a complete exact-count transaction architecture."
 
 ai_actions:
   - turn: 1
@@ -154,6 +184,25 @@ ai_actions:
       - "ara/trace/sessions/2026-08-12_001.yaml"
       - "ara/trace/sessions/session_index.yaml"
       - "ara/trace/pm_reasoning_log.yaml"
+  - turn: 4
+    action: "Derived the exact compact-support additive HIER pixel--Gaussian contribution equations, built the error/gradient operator taxonomy, audited direct 2D and 3D density-control prior art, and authored a validated HIER-only research portfolio."
+    provenance: ai-executed
+    files_changed:
+      - "docs/research/2026-08-12-hier-pixel-gradient-anatomy.md"
+      - "docs/research/2026-08-12-gradient-informed-hier-topology-control.md"
+  - turn: 4
+    action: "Added and executed a deterministic repository-renderer/autograd check for all four additive gradient families and the symmetric split matrix, then recorded its bounded evidence and ARA trace."
+    provenance: ai-executed
+    files_changed:
+      - "ara/evidence/hier-pixel-gradient-anatomy-2026-08-12/check.py"
+      - "ara/evidence/hier-pixel-gradient-anatomy-2026-08-12/result.json"
+      - "ara/evidence/hier-pixel-gradient-anatomy-2026-08-12/run.md"
+      - "ara/evidence/README.md"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/sessions/2026-08-12_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
 
 claims_touched: []
 
@@ -164,13 +213,15 @@ key_context:
     excerpt: "The user supplied the frozen HIER-032 implementation/evidence plan and requested committing, merging to main, pushing, and deleting merged branches."
   - turn: 3
     excerpt: "The user redirected the next research step toward using gradients to choose split, clone, merge, teleport, and prune for HIER 2D fields lifted into realtime-gs 3D Gaussians."
+  - turn: 4
+    excerpt: "The user clarified that the same cancellation and per-pixel contribution analysis must first choose operations inside the HIER StructSplat field itself."
 
 open_threads:
   - "Obtain distinct code, scientific, and visual review of HIER-031 and ADR-0033."
   - "Freeze disjoint Janelle images and mask topologies before any integration or generalization claim."
   - "When approximately 57.6k/native scaling is authorized, preserve a certified topology reserve and compare actual marginal allocation at equal count/work."
   - "If arm-5 reopened-debt morphology is investigated, create a new prospectively reviewed task that persists failure-state intermediates to a new immutable bundle."
-  - "Freeze HIER-033 as an operator-identifiability oracle before implementing a live gradient topology controller."
+  - "Freeze HIER-033 Phase A as an additive-HIER operator-identifiability oracle, then run downstream 3D transfer only if Phase A survives."
   - "Measure whether source-field action ranks transfer to downstream 3D and sealed validation views."
 
 ai_suggestions_pending:
@@ -179,3 +230,5 @@ ai_suggestions_pending:
   - "Do not promote positive coverage closure without final-field interior and perceptual preservation."
   - "Use source 2D gradients only to propose sites; decide topology from persistent multi-view 3D evidence."
   - "Compare complete count-balanced edits in one render-loss currency, with curvature for symmetric split and exact top-k trials."
+  - "Do not interpret low aggregate gradient as split evidence until absolute activity, parameter-family moments, and split curvature separate cancellation from support or tangent-space blindness."
+  - "Rename or explicitly document the current absgrad telemetry before any cancellation claim; its absolute value is applied after pixel reduction."

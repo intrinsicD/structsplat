@@ -2605,3 +2605,59 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O174
+    timestamp: "2026-08-12T22:28+02:00"
+    provenance: ai-suggested
+    content: >
+      StructSplat's current absgrad refinement proxy takes the absolute value of
+      field.means.grad only after loss.backward has reduced all pixel contributions. Opposing
+      pixel contributions have therefore already canceled, so this statistic cannot diagnose the
+      AbsGS/GDAGS gradient-collision mechanism.
+    context: >
+      Direct inspection of src/structsplat/fit.py while deriving the additive HIER
+      pixel--Gaussian contribution equations. The broader research portfolio was corrected to call
+      this a post-reduction proxy. No production behavior changed.
+    potential_type: constraint
+    bound_to: [N312]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O175
+    timestamp: "2026-08-12T22:28+02:00"
+    provenance: ai-suggested
+    content: >
+      In the constant-color additive HIER field, mean, log-scale, and rotation gradients are
+      respectively first, diagonal-second, and off-diagonal-second moments of one signed
+      pixel-pressure field. High error with low mean coherence should therefore route first to the
+      strongest action-normalized parameter family; split requires compatible bipolar structure
+      plus negative split curvature or a winning finite split trial.
+    context: >
+      Exact local derivation validated by N313 and audited against AbsGS, GDAGS, SteepGS,
+      structure-aware densification, and the live HIER renderer. Operator predictive value remains
+      untested.
+    potential_type: heuristic
+    bound_to: [N312, N313]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O176
+    timestamp: "2026-08-12T22:28+02:00"
+    provenance: ai-suggested
+    content: >
+      Unsupported pixels and residual directions orthogonal to the current additive basis cannot
+      be located from existing-row gradients. Candidate births need auxiliary ghost columns or
+      explicit residual/coverage banks, while prune and merge need leave-one-out, leverage, or
+      refit damage rather than stationary gradient magnitude; exact-N actions must price the full
+      donor-plus-destination transaction.
+    context: >
+      HIER-only refinement of the gradient topology portfolio, combining additive linear-model
+      normal equations, matching pursuit, HIER-032 donor damage, LocoADC merging, and REFINE
+      removal sensitivity. This is a proposed architecture awaiting HIER-033.
+    potential_type: architecture
+    bound_to: [N312, N313, N309, N310]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
