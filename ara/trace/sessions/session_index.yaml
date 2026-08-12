@@ -162,8 +162,8 @@ sessions:
     open_threads: 10
   - id: "2026-08-12_001"
     date: "2026-08-12"
-    summary: "Exact 7k now has a topology-safe micro reserve on exposed C0001; raw-error equality is rejected as a scaling guarantee."
-    turn_count: 1
-    events_count: 6
+    summary: "Exact-7k coverage closure improves exposed masked edges but collapses protected interior quality; HIER-032 closes with no selected method."
+    turn_count: 2
+    events_count: 10
     claims_touched: []
-    open_threads: 5
+    open_threads: 4

@@ -417,3 +417,10 @@ paths were the live source location when the historical runs were produced.
   and a 732-placement initial certified cover. This freezes the HIER-032 development question; it
   is not a method outcome or general claim. Evidence note:
   `ara/evidence/hier032-coverage-debt-diagnosis-2026-08-12/run.md`.
+- `hier032-coverage-debt-refinement-2026-08-12`: Prospectively reviewed clean-commit exact-N7,000
+  development negative on exposed C0001. Fallback/set-cover/contribution arms close all 743 weak
+  pixels and improve boundary/hair PSNR, but lose 4.92--6.48 dB of interior PSNR versus control and
+  all miss the frozen 35.2631 dB floor; the fixed high-pass arm fails closed after reopening nine
+  weak pixels. No method is selected, defaults stay unchanged, and the immutable bundle's expected
+  checker failure is preserved. Evidence note:
+  `ara/evidence/hier032-coverage-debt-refinement-2026-08-12/run.md`.

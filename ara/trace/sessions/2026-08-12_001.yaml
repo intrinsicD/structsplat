@@ -2,9 +2,9 @@ session:
   id: "2026-08-12_001"
   date: "2026-08-12"
   started: "2026-08-12T00:11+02:00"
-  last_turn: "2026-08-12T00:40+02:00"
-  turn_count: 1
-  summary: "Exact 7k now has a topology-safe micro reserve on exposed C0001; raw-error equality is rejected as a scaling guarantee."
+  last_turn: "2026-08-12T10:09+02:00"
+  turn_count: 2
+  summary: "Exact-7k coverage closure improves exposed masked edges but collapses protected interior quality; HIER-032 closes with no selected method."
 
 events_logged:
   - turn: 1
@@ -43,6 +43,30 @@ events_logged:
     routing: staged
     provenance: ai-executed
     summary: "Staged the distinction between zero raw holes and uniform coverage/sharpness."
+  - turn: 2
+    type: observation
+    id: "O169"
+    routing: staged
+    provenance: ai-executed
+    summary: "Diagnosed 743 weak pixels in 483 components and a 732-placement initial certified cover on the frozen HIER-031 field."
+  - turn: 2
+    type: experiment
+    id: "N309"
+    routing: direct
+    provenance: ai-executed
+    summary: "HIER-032 closed coverage in three successors but every candidate breached the interior floor; the fixed detail arm failed closed after reopening nine pixels."
+  - turn: 2
+    type: decision
+    id: "N310"
+    routing: direct
+    provenance: ai-executed
+    summary: "Closed HIER-032 as a negative, selected no method, and preserved the immutable incomplete-matrix bundle without rescue or rerun."
+  - turn: 2
+    type: constraint
+    id: "O170"
+    routing: crystallized
+    provenance: ai-executed
+    summary: "Crystallized final-field coverage plus protected appearance gates as K11 via artifact commitment."
 
 ai_actions:
   - turn: 1
@@ -72,20 +96,46 @@ ai_actions:
       - "tasks/INDEX.md"
       - "tasks/SESSION-BRIEF.md"
       - "ara/evidence/hier031-exact7k-masked-boundary-detail-2026-08-12/run.md"
+  - turn: 2
+    action: "Implemented and prospectively reviewed the frozen default-off HIER-032 driver, task-specific fail-closed report schema, focused tests, and prior-art portfolio."
+    provenance: ai-executed
+    files_changed:
+      - "scripts/experiments/hier032_coverage_debt_refinement.py"
+      - "scripts/check_report_bundle.py"
+      - "tests/test_hier032_coverage_debt_refinement.py"
+      - "docs/research/2026-08-12-hier032-coverage-debt-portfolio.md"
+  - turn: 2
+    action: "Executed and independently audited the immutable five-arm exact-N7000 evidence run, preserving four valid endpoints and the fifth-arm fail-closed ledger without output repair or rerun."
+    provenance: ai-executed
+    files_changed:
+      - "results/hier032_janelle_c0001_s1200_coverage_debt_s0_development_2026-08-12/"
+      - "ara/evidence/hier032-coverage-debt-refinement-2026-08-12/run.md"
+  - turn: 2
+    action: "Retired HIER-032 with no selected method, synchronized task/ARA receipts, and passed 12 focused tests plus the complete 2,004-test repository gate and all structural checks."
+    provenance: ai-executed
+    files_changed:
+      - "tasks/done/HIER-032-coverage-debt-refinement.md"
+      - "tasks/INDEX.md"
+      - "tasks/SESSION-BRIEF.md"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/staging/observations.yaml"
+      - "ara/logic/solution/constraints.md"
 
 claims_touched: []
 
 key_context:
   - turn: 1
     excerpt: "The user asked whether equally distributed error would make later Gaussian scaling reduce error everywhere, while continuing the exact-7k no-hole/thin-detail research."
+  - turn: 2
+    excerpt: "The user supplied the frozen HIER-032 implementation/evidence plan and requested committing, merging to main, pushing, and deleting merged branches."
 
 open_threads:
   - "Obtain distinct code, scientific, and visual review of HIER-031 and ADR-0033."
   - "Freeze disjoint Janelle images and mask topologies before any integration or generalization claim."
   - "When approximately 57.6k/native scaling is authorized, preserve a certified topology reserve and compare actual marginal allocation at equal count/work."
-  - "Reduce the remaining 743 weak-coverage pixels without sacrificing detail, conditioning, or outside-zero containment."
-  - "Test coefficient conditioning and a true next-row marginal oracle rather than relying on the current proxy."
+  - "If arm-5 reopened-debt morphology is investigated, create a new prospectively reviewed task that persists failure-state intermediates to a new immutable bundle."
 
 ai_suggestions_pending:
   - "Treat zero raw holes as a topology constraint, not proof of uniform coverage, sharpness, or complete hair recovery."
   - "Scale ordinary appearance capacity only after retaining a mask-specific certified micro reserve."
+  - "Do not promote positive coverage closure without final-field interior and perceptual preservation."

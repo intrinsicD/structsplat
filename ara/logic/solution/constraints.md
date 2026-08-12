@@ -155,3 +155,18 @@
   `ara/evidence/hier008-overlap-lattice-feature-elimination-janelle-diagnostic-2026-08-05/run.md`,
   `tasks/HIER-008-overlap-lattice-feature-elimination.md`]
 - **From staging**: O125
+
+## K11: Coverage closure must retain protected appearance quality
+
+- **Constraint**: A masked exact-count refinement cannot be accepted from zero raw holes and a
+  positive unit-coverage floor alone. Re-render coverage after every funding/detail batch and
+  require paired boundary, hair, interior, and perceptual gates on the final persisted field;
+  locally favorable donor-merge error is proposal telemetry, not endpoint quality evidence.
+- **Provenance**: ai-executed
+- **Crystallized via**: artifact-commitment
+- **Applies to**: HIER-032 and any successor that reallocates exact-count rows to masked coverage
+  or thin-structure sites.
+- **Evidence**: [`ara/evidence/hier032-coverage-debt-refinement-2026-08-12/run.md`,
+  `scripts/experiments/hier032_coverage_debt_refinement.py`,
+  `tasks/done/HIER-032-coverage-debt-refinement.md`]
+- **From staging**: O170

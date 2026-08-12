@@ -6254,3 +6254,46 @@ tree:
       - "ara/evidence/hier031-exact7k-masked-boundary-detail-2026-08-12/run.md"
     also_depends_on: [N306, N307]
     status: resolved
+  - id: N309
+    type: experiment
+    title: "Coverage closure trades masked boundary gain for protected interior collapse"
+    provenance: ai-executed
+    timestamp: "2026-08-12T15:30+02:00"
+    result: >
+      HIER-032's prospectively reviewed clean-commit exact-N7,000 C0001 run persists four valid
+      fields and one fail-closed attempt. Fallback, set-cover, and contribution-aware successors
+      all reduce 743 weak pixels to zero and improve boundary/hair PSNR, but interior PSNR falls
+      from 36.0677 dB to 31.1499/31.0584/29.5880 dB, below the frozen 35.2631 dB floor. Set cover
+      saves only five placements versus fallback, contribution-aware local ranking is globally
+      worse, and the fixed 128-row detail batch reopens nine weak pixels. The matrix is incomplete
+      and selected_arm remains null.
+    evidence:
+      - "ara/evidence/hier032-coverage-debt-refinement-2026-08-12/run.md"
+      - "results/hier032_janelle_c0001_s1200_coverage_debt_s0_development_2026-08-12/index.html"
+      - "manifest sha256 598d7f59ed87c2c5f0bbb6d17e32e2c8c236f7b3174640052a85b146392beb14"
+      - "protocol digest 402588c6c32a93ac1dca615ad50d2cf15248892beaaae1bf80cd9f9e253c9898"
+      - "commit f4cc2996d525b128ea511b96e3a7357009f347d7"
+    also_depends_on: [N306, N307, N308]
+    status: resolved
+  - id: N310
+    type: decision
+    title: "Close HIER-032 without selecting coverage-debt refinement"
+    provenance: ai-executed
+    timestamp: "2026-08-12T15:30+02:00"
+    choice: >
+      Preserve the immutable negative bundle and fallback only as its lexicographic best tradeoff;
+      select no method, keep all maintained defaults unchanged, and do not rescue, repair, retune,
+      or rerun HIER-032. Any investigation of the nine reopened pixels requires a new
+      prospectively reviewed task with explicit failure-state persistence and a new output path.
+    alternatives:
+      - "Select fallback because it has the best completed foreground, boundary, and hair PSNR."
+      - "Call set cover successful because it saves five placements."
+      - "Promote contribution-aware donor ranking from lower local merge SSE."
+      - "Relax the interior floor or rescue the detail batch after observing its nine weak pixels."
+    evidence:
+      - "N309"
+      - "O170"
+      - "ara/evidence/hier032-coverage-debt-refinement-2026-08-12/run.md"
+      - "decision sha256 350d5b641287533a41b7bf2d840e9575ea62cea45999e0969b94312fba038da6"
+    also_depends_on: [N309]
+    status: resolved

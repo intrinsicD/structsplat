@@ -167,15 +167,18 @@ new task decision before any rerun.
 
 ## Acceptance criteria
 
-- [ ] Task/Index/session brief and the validated portfolio/prior-art audit are synchronized.
-- [ ] Deterministic components, fallback completeness, greedy cover, station-ball containment,
+- [x] Task/Index/session brief and the validated portfolio/prior-art audit are synchronized.
+- [x] Deterministic components, fallback completeness, greedy cover, station-ball containment,
       contribution-aware ranking, exact count, decision gates, and report schema have focused tests.
-- [ ] Frozen protocol/implementation commit passes focused tests, portfolio validation, task
+- [x] Frozen protocol/implementation commit passes focused tests, portfolio validation, task
       digest review, and `./scripts/verify.sh` before the evidence run.
-- [ ] A new clean-source immutable five-arm bundle passes `scripts/check_report_bundle.py`.
-- [ ] Results receive an adversarial audit; task/docs/ARA receipts preserve either the passing
+- [ ] A new clean-source immutable five-arm bundle passes `scripts/check_report_bundle.py`. This
+      remains explicitly unmet: arm 5 failed closed after reopening nine weak pixels, and the
+      frozen checker correctly rejects the incomplete success matrix.
+- [x] Results receive an adversarial audit; task/docs/ARA receipts preserve either the passing
       selection or the negative no-selection outcome without retuning.
-- [ ] Final self-review and `./scripts/verify.sh` pass with maintained defaults unchanged.
+- [x] Final correctness self-review and `./scripts/verify.sh` pass with maintained defaults
+      unchanged; the scientific outcome review is independent rather than self-reviewed.
 
 ## Interfaces touched
 
@@ -191,18 +194,27 @@ HIER-031/030/029, CORE-010/011/012, FIT-040/046, BENCH-002, ADR-0003/0006/0019/0
 
 - Driver: codex-root
 - Reviewer: codex-hier032-protocol-reviewer
-- Turn: driver
-- Reviewed revision: pending
+- Turn: none
+- Reviewed revision: f4cc2996d525b128ea511b96e3a7357009f347d7
 
 ### Handoff log
 
-Pending implementation freeze, prospective protocol review, evidence, and outcome audit.
+Completed negative after prospective protocol approval and an independent adversarial outcome
+audit. No method was selected.
 
-## Notes
+### Notes
 
 The full report remains ignored under `results/`; only source-bound hashes, conclusions, and the
 reproduction command will be committed under `ara/evidence/`. The `.idea` worktree state is
 unrelated user material and is excluded from every commit.
+
+The immutable outcome is under
+`results/hier032_janelle_c0001_s1200_coverage_debt_s0_development_2026-08-12/`. Four arms persist
+valid exact-N7,000 endpoints; all three successors close coverage and improve boundary/hair PSNR
+but breach the interior floor. The fixed detail arm reopens nine weak pixels and fails closed.
+`selected_arm` is null. The report's manifest SHA-256 is
+`598d7f59ed87c2c5f0bbb6d17e32e2c8c236f7b3174640052a85b146392beb14`; the complete audit is
+`ara/evidence/hier032-coverage-debt-refinement-2026-08-12/run.md`.
 
 ### Protocol review
 
@@ -256,3 +268,92 @@ Controls, leakage boundaries, budgets, metrics, killing rule, source/environment
 implementation alignment, all six first-review blockers, and local-only HTML/crop exposure. The
 reviewer authorized formal execution from the exact committed implementation on the clean named
 branch and frozen RTX device, with a new empty output directory.
+
+### Handoff
+
+#### Objective
+Determine whether certified coverage closure, contribution-aware donor merging, and a fixed
+boundary high-pass batch improve boundary and hair quality at exact N=7,000 without losing the
+protected interior or containment guarantees.
+
+#### Changes
+Added the default-off HIER-032 driver, fail-closed task-specific report checker, twelve focused
+tests, validated research portfolio/prior-art audit, frozen task protocol, and diagnosis/outcome
+ARA receipts. No public API, maintained method, representation, count, mask policy, or default
+changed.
+
+#### Evidence
+Commit `f4cc2996d525b128ea511b96e3a7357009f347d7` passed the pre-run repository gate and exact
+prospective review. The 153-entry manifest is hash-consistent. Four persisted fields independently
+pass exact N/four-array/decoded-state/containment/outside-zero/parity checks. Every completed
+successor closes the 743 weak pixels but fails the 35.2631 dB interior floor; arm 5 fails closed
+after reopening nine pixels. The decision correctly selects no method. Native visuals and the
+portable Chrome-rendered report were inspected.
+
+#### Assumptions
+The known source/mask and 1200x1038 raster are exposed development data; the HIER-031 field is the
+hash-bound control despite its dirty-diagnostic lineage; RTX 3050/source-version replay is not
+bit-exact across other devices.
+
+#### Uncertainties
+One image/seed/device, no persisted arm-5 intermediate morphology, no held-out or statistical
+replication, no native-camera or actual-rate evidence, and no general claim about coverage closure
+or donor ranking.
+
+#### Review focus
+Check the fail-closed checker interpretation, exact field/hash/metric receipts, first-wave
+relationship, interior-floor rejection, null selection, visual interior degradation, and whether
+the immutable error remains unmodified.
+
+#### Protected actions not taken
+No mask relaxation, post-render masking, count change, threshold rescue, selective rerun, output
+repair, default change, method promotion, or `.idea` modification/commit.
+
+#### Recommended next action
+Close HIER-032 as negative. If the nine reopened pixels motivate investigation, create a new
+prospectively reviewed task that persists failure-state intermediates to a new immutable output.
+
+### Review
+
+#### Verdict
+Accepted with follow-up
+
+#### Self-reviewed
+No
+
+#### Correctness
+The clean reviewed commit and immutable bundle are hash-bound and internally consistent. Four
+persisted endpoints independently satisfy the exact 7,000-row four-array, finite-coefficient,
+containment, outside-zero, and renderer-parity contracts. The fifth arm reached its frozen detail
+batch only after the contribution-arm coverage-placement comparison and then failed closed because
+the batch reopened 9 weak pixels. The resulting incomplete matrix, null selection, and checker
+failure follow the prospectively approved error policy; they are not a successful report-gate
+result.
+
+#### Evidence quality
+Accepted as source-, seed-, device-, and resolution-bound negative development evidence. All 153
+manifested files, source snapshots, table projections, field/state hashes, gates, placement
+relationships, and decision arithmetic were independently checked. The completed candidates close
+coverage and improve boundary/hair PSNR, but all breach the frozen interior floor and worsen
+MS-SSIM/LPIPS. Arm 5 has no persisted endpoint or failure morphology, so only its sealed error
+event is supported.
+
+#### Simplicity
+No maintained method or default is selected. The result kills the tested known-component
+relationship at its frozen scope without adding production behavior.
+
+#### Missing cases
+Fresh images, additional seeds/devices, held-out confirmation, native resolution, actual-rate
+accounting, and an independently inspectable arm-5 failure state are absent. The HIER-031 input
+field also retains dirty-diagnostic lineage.
+
+#### Required changes
+Record HIER-032 as a completed negative task in the task, Index, and ARA evidence ledger; preserve
+the exact bundle hashes and explicitly state that `scripts/check_report_bundle.py` does not pass.
+Leave the checker-pass acceptance item unmet, select no method, keep defaults unchanged, and pass
+the final repository verification gate before closure.
+
+#### Optional improvements
+If the reopened-debt morphology motivates future work, create a new prospectively reviewed task
+that persists fail-closed intermediate state to a new immutable output. Do not repair, rerun, or
+retune this bundle.

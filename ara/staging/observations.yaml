@@ -2530,3 +2530,22 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O170
+    timestamp: "2026-08-12T15:30+02:00"
+    provenance: ai-executed
+    content: >
+      On exposed C0001 at exact N=7,000, three frozen coverage-closure successors eliminate all
+      743 pixels below unit coverage 0.05 and improve foreground, boundary, and hair PSNR, but lose
+      4.92--6.48 dB of interior PSNR versus the HIER-031 control and all fail the 35.2631 dB floor;
+      the fixed 128-row detail batch additionally reopens nine weak pixels and fails closed.
+    context: >
+      Prospectively reviewed clean-commit HIER-032 development on one source, seed, and RTX 3050,
+      with exact four-array N=7,000 endpoints, independent hash/metric/visual audit, an immutable
+      error ledger, and no selected method. The HIER-031 input retains dirty-diagnostic lineage;
+      this is negative mechanism evidence, not held-out, default, rate, or general evidence.
+    potential_type: constraint
+    bound_to: [N306, N308, N309, N310]
+    promoted: true
+    promoted_to: "logic/solution/constraints.md:K11"
+    crystallized_via: artifact-commitment
+    stale: false
