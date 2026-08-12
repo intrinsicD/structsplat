@@ -241,7 +241,11 @@ new DIV2K4x2 screen, the solve gains `0.1300 dB` on ordinary-additive geometry a
 unit-gauge geometry, but the projected fields differ by only `0.0105 dB` and remain `0.538 dB`
 below normalized rendering. Local/per-cell guards fail. The wrapper is evidence infrastructure,
 not a maintained fit stage; pure-additive successors must change the basis or topology rather than
-retune coefficients on this consumed bank.
+retune coefficients on this consumed bank. HIER-029 adds an optional encoder-only boolean
+evaluation mask: the matrix-free objective and safety measurements use active pixels, the operator
+parity receipt compares that common active domain, and `reconstruction_raw` remains the actual
+full-crop maintained replay. Omitting the mask preserves the historical solve exactly; neither path
+persists mask state in the endpoint.
 
 `folded_multiscale_additive.py` is HIER-025's rejected default-off basis test. It fits 16 counted
 grid Gaussians to a factor-two low pass, fits 624 anisotropic WSE rows to the signed residual,
@@ -270,7 +274,30 @@ bit-exact, and the returned field persists only means, log-scales, rotations, an
 prospectively bound official-DIV2K8x2 confirmation, N=960+64 passes every frozen quality and native
 visual clause while a separately cold-fitted N=1024 control fails local robustness. This proves a
 bounded pure-additive alternative at 1.60x rows, not a maintained pipeline/default, equal-rate,
-full-resolution, or target-free encoder result.
+full-resolution, or target-free encoder result. HIER-029 optionally restricts its encoder-side
+argmax and reported residual maxima to a boolean selection mask while retaining the same complete
+residual scan and four-array endpoint. On exposed Janelle C0001 at 1200x1038, full-frame pursuit
+gains only `0.00476 dB` over its N=960 base and loses `2.85597 dB` to normalized N=640 amid a
+pervasive additive hole lattice. Masked pursuit improves its additive base by `0.25367 dB` and
+same-count cold control by `0.19945 dB`, but remains `2.60041 dB` below masked normalized and has
+worse perceptual/structural metrics. The max-side-160 positive therefore does not extrapolate to
+this resolution, and both mask hooks remain research-only. HIER-030 adds a default-off C0
+support-fade option whose analytic update exactly matches the additive renderer and runs a
+proportionally scaled N=4,375/6,562+438/7,000 ladder on the same exposed raster. Full-frame pursuit
+reaches `35.00091 dB`, `+21.35407 dB` over HIER-029's literal N=1,024 result and `+1.34819 dB` over
+normalized N=4,375, but cold additive N=7,000 is slightly better in PSNR/MS-SSIM. In the contained
+arm, tail selection is eroded by the full support radius and all fields materialize certified
+scales before discarding mask/cap state: every centre is inside and unit coverage/reconstruction
+outside are exactly zero. The remaining foreground error is boundary-dominated, so this is
+capacity and containment evidence rather than a selected full-resolution method. HIER-031 keeps
+the count at exactly 7,000 and separates representability from appearance allocation. The exposed
+C0001 mask contains ten pixels in three components with no legal centre under the ordinary
+0.35-pixel scale floor; more ordinary rows cannot cover them. ADR-0033 therefore permits a frozen,
+independently certified micro cohort during topology-free local recovery. The selected diagnostic
+endpoint uses 910 such rows plus 6,090 ordinary rows, eliminates raw holes with exact outside-zero
+support, and passes the frozen HIER-030 interior/detail guard. Untouched current-pipeline controls
+are sharper but leave 933--955 raw holes. The hook and method remain default-off, source-exposed,
+and unconfirmed; neither equal-error allocation nor automatic gains from later scaling are claimed.
 
 CORE-016/ADR-0032 tests a different ownership boundary instead of another explicit-row
 contraction. Its default-off `.sgdp` packet charges a conventional appearance payload, decodes it
@@ -494,7 +521,10 @@ unmasked = identical counts/stages with general closure and no boundary-specific
   and gsplat comparator, sharing one accumulator where semantics match), `metrics`, `init`
   (bridge; `build_masked_field` for CORE-010), `fit` (selectable loss/optimizer/LR-schedule/
   split-mode; opt-in mask containment via `_MaskConstraint` with isotropic ADR-0017 or certified
-  anisotropic ADR-0019 caps, under-coverage penalty, boundary tangent densification; opt-in
+  anisotropic ADR-0019 caps, forced cap recertification for terminal and restored best-checkpoint
+  states, under-coverage penalty, boundary tangent densification; ADR-0033's experimental
+  `constraint_exempt_row_mask` preserves an independently certified fixed micro cohort through the
+  ordinary scale floor only when the same rows are frozen and topology is disabled; opt-in
   FIT-022 coverage-matching regularizer — mass-neutral `(S−c)²` on the raw weight sum with
   detached opacities, feature/boundary/error targets and cosine decay), `pool` +
   `triage` (FIT-021/ADR-0020, opt-in via `triage_every`: fixed-capacity pooled row lifecycle with

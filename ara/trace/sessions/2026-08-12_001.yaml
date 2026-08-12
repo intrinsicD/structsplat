@@ -1,0 +1,91 @@
+session:
+  id: "2026-08-12_001"
+  date: "2026-08-12"
+  started: "2026-08-12T00:11+02:00"
+  last_turn: "2026-08-12T00:40+02:00"
+  turn_count: 1
+  summary: "Exact 7k now has a topology-safe micro reserve on exposed C0001; raw-error equality is rejected as a scaling guarantee."
+
+events_logged:
+  - turn: 1
+    type: experiment
+    id: "N306"
+    routing: direct
+    provenance: ai-executed
+    summary: "HIER-031 selected a 910-micro exact-N7000 endpoint with zero raw holes and guarded quality gains; sharper pipeline controls retained 933--955 holes."
+  - turn: 1
+    type: dead_end
+    id: "N307"
+    routing: direct
+    provenance: ai-executed
+    summary: "Rejected equal raw error and more ordinary rows as an unconditional topology/scaling guarantee."
+  - turn: 1
+    type: decision
+    id: "N308"
+    routing: direct
+    provenance: ai-executed
+    summary: "Retained the topology-first mechanism as exposed diagnostic evidence and deferred scaling/default integration to disjoint confirmation."
+  - turn: 1
+    type: heuristic
+    id: "O166"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized representability-before-marginal-allocation as H18 via artifact commitment."
+  - turn: 1
+    type: claim
+    id: "O167"
+    routing: staged
+    provenance: ai-executed
+    summary: "Staged the source-bound zero-hole and quality tradeoff without a general method claim."
+  - turn: 1
+    type: constraint
+    id: "O168"
+    routing: staged
+    provenance: ai-executed
+    summary: "Staged the distinction between zero raw holes and uniform coverage/sharpness."
+
+ai_actions:
+  - turn: 1
+    action: "Froze, implemented, and executed HIER-031's feasibility audit and thirteen exact-N7000 sequential endpoints, including current-pipeline killing controls."
+    provenance: ai-executed
+    files_changed:
+      - "scripts/experiments/hier031_exact7k_masked_boundary_detail.py"
+      - "src/structsplat/fit.py"
+      - "scripts/check_report_bundle.py"
+      - "tests/test_mask.py"
+      - "tests/test_hier031_exact7k_masked_boundary_detail.py"
+  - turn: 1
+    action: "Corrected the report's masked-objective presentation from frozen arrays with a protected-hash finalization ledger; visually audited reconstructions, hair crops, errors, coverage, and holes."
+    provenance: ai-executed
+    files_changed:
+      - "scripts/experiments/hier031_finalize_objective_views.py"
+      - "results/hier031_janelle_c0001_s1200_exact7k_boundary_detail_s0_diagnostic_2026-08-12/index.html"
+      - "results/hier031_janelle_c0001_s1200_exact7k_boundary_detail_s0_diagnostic_2026-08-12/presentation_finalization.json"
+  - turn: 1
+    action: "Synchronized ADR/task/architecture/research/ARA evidence, passed 55 focused tests and the report checker, then passed the complete 1,992-test repository gate and all structural checks."
+    provenance: ai-executed
+    files_changed:
+      - "docs/adr/0033-fixed-certified-micro-row-reserve.md"
+      - "docs/architecture.md"
+      - "docs/research/2026-08-12-exact7k-masked-boundary-detail.md"
+      - "tasks/HIER-031-exact7k-masked-boundary-detail-allocation.md"
+      - "tasks/INDEX.md"
+      - "tasks/SESSION-BRIEF.md"
+      - "ara/evidence/hier031-exact7k-masked-boundary-detail-2026-08-12/run.md"
+
+claims_touched: []
+
+key_context:
+  - turn: 1
+    excerpt: "The user asked whether equally distributed error would make later Gaussian scaling reduce error everywhere, while continuing the exact-7k no-hole/thin-detail research."
+
+open_threads:
+  - "Obtain distinct code, scientific, and visual review of HIER-031 and ADR-0033."
+  - "Freeze disjoint Janelle images and mask topologies before any integration or generalization claim."
+  - "When approximately 57.6k/native scaling is authorized, preserve a certified topology reserve and compare actual marginal allocation at equal count/work."
+  - "Reduce the remaining 743 weak-coverage pixels without sacrificing detail, conditioning, or outside-zero containment."
+  - "Test coefficient conditioning and a true next-row marginal oracle rather than relying on the current proxy."
+
+ai_suggestions_pending:
+  - "Treat zero raw holes as a topology constraint, not proof of uniform coverage, sharpness, or complete hair recovery."
+  - "Scale ordinary appearance capacity only after retaining a mask-specific certified micro reserve."

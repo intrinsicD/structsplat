@@ -2,9 +2,9 @@ session:
   id: "2026-08-11_001"
   date: "2026-08-11"
   started: "2026-08-11T05:20+02:00"
-  last_turn: "2026-08-11T06:30+02:00"
-  turn_count: 1
-  summary: "Rejected five bounded exact-7k repair routes, then found an explicit source-RGB SPT1 sidecar that repairs all nine recorded local failures across 40 consumed fields without changing the Gaussian fields."
+  last_turn: "2026-08-11T21:59+02:00"
+  turn_count: 3
+  summary: "Literal HIER-028 counts fail at Janelle 1200; exact 7k repairs full-frame support and hard containment, exposing a narrow boundary-allocation gap."
 
 events_logged:
   - turn: 1
@@ -97,6 +97,60 @@ events_logged:
     routing: staged
     provenance: ai-executed
     summary: "Staged corrected 24+16 field scope and full candidate-construction plus metric/RDO encoder accounting."
+  - turn: 2
+    type: experiment
+    id: "N301"
+    routing: direct
+    provenance: ai-executed
+    summary: "Audited HIER-028 at origin/main: the full repository gate passes, while the referenced ignored raw report bundle is absent from the current machine."
+  - turn: 2
+    type: constraint
+    id: "O162"
+    routing: staged
+    provenance: ai-executed
+    summary: "Staged raw-bundle recovery or a new clean reviewed run as a prerequisite for independent HIER-028 evidence verification."
+  - turn: 3
+    type: experiment
+    id: "N302"
+    routing: direct
+    provenance: ai-executed
+    summary: "HIER-029 showed that literal N=640/960+64/1024 counts collapse on Janelle 1200 and that loss-only masking is not containment."
+  - turn: 3
+    type: pivot
+    id: "N303"
+    routing: direct
+    provenance: user-revised
+    summary: "Pivoted the successor to exact 7k capacity plus centre/support/reconstruction containment after the user's visual and mask-semantics correction."
+  - turn: 3
+    type: experiment
+    id: "N304"
+    routing: direct
+    provenance: ai-executed
+    summary: "HIER-030 gained 21.3541 dB over literal HIER-029, passed exact outside-zero containment, and localized the remaining foreground error to the boundary."
+  - turn: 3
+    type: decision
+    id: "N305"
+    routing: direct
+    provenance: ai-executed
+    summary: "Accepted count and containment diagnoses without selecting pursuit or tuning exposed pixels; routed follow-up to new-view boundary closure and separate density parity."
+  - turn: 3
+    type: constraint
+    id: "O163"
+    routing: staged
+    provenance: ai-executed
+    summary: "Staged the 1200px count-density boundary and the attribution of HIER-029's hole lattice to literal under-capacity."
+  - turn: 3
+    type: heuristic
+    id: "O164"
+    routing: crystallized
+    provenance: ai-executed
+    summary: "Crystallized terminal/restored-checkpoint containment recertification as H17 via artifact commitment."
+  - turn: 3
+    type: constraint
+    id: "O165"
+    routing: staged
+    provenance: ai-executed
+    summary: "Staged the boundary-dominated strict-containment result and the non-comparability of loss-only-mask scores."
 
 ai_actions:
   - turn: 1
@@ -135,12 +189,53 @@ ai_actions:
       - "tests/test_source_patch_tail.py"
       - "tests/test_hier021_source_patch_tail.py"
       - "tests/test_hier021_replay_persisted.py"
+  - turn: 2
+    action: "Reconstructed the latest HIER-028 task and evidence state, searched for its referenced raw bundle, and reran the complete repository verification gate."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 3
+    action: "Implemented, tested, and executed HIER-029's paired max-side-1200 full-frame/loss-only-mask diagnostic and produced its portable metrics, reconstruction, and error report."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/endpoint_appearance_projection.py"
+      - "src/structsplat/residual_pursuit_additive.py"
+      - "scripts/experiments/hier029_janelle_mask_diagnostic.py"
+      - "tests/test_endpoint_appearance_projection.py"
+      - "tests/test_residual_pursuit_additive.py"
+      - "tests/test_hier029_janelle_mask_diagnostic.py"
+  - turn: 3
+    action: "Froze and executed HIER-030's exact-7k hard-contained successor, preserved its failed stale-cap attempt, fixed terminal/restored anisotropic recertification, and reran the unchanged matrix."
+    provenance: ai-executed
+    files_changed:
+      - "src/structsplat/fit.py"
+      - "src/structsplat/residual_pursuit_additive.py"
+      - "scripts/experiments/hier030_janelle_7k_contained_diagnostic.py"
+      - "tests/test_mask.py"
+      - "tests/test_residual_pursuit_additive.py"
+      - "tests/test_hier030_janelle_7k_contained_diagnostic.py"
+      - "scripts/check_report_bundle.py"
+  - turn: 3
+    action: "Audited native report visuals, exact containment, endpoint parity, boundary-band error, immutable hashes, docs/task/evidence synchronization, 78 focused tests, and the complete 1,985-test repository gate."
+    provenance: ai-executed
+    files_changed:
+      - "tasks/HIER-029-janelle-full-resolution-mask-diagnostic.md"
+      - "tasks/HIER-030-janelle-7k-contained-mask-diagnostic.md"
+      - "tasks/INDEX.md"
+      - "tasks/SESSION-BRIEF.md"
+      - "docs/architecture.md"
+      - "docs/research/2026-08-11-pure-gaussian-additive-continuation.md"
+      - "ara/evidence/hier029-janelle-full-resolution-mask-2026-08-11/run.md"
+      - "ara/evidence/hier030-janelle-7k-contained-mask-2026-08-11/run.md"
 
 claims_touched: []
 
 key_context:
   - turn: 1
     excerpt: "The user asked to continue research on the exact-7k pipeline after weak tests/test_images performance and to seek a route that works across the repository bank."
+  - turn: 2
+    excerpt: "The user asked to continue the latest research and report the current state."
+  - turn: 3
+    excerpt: "The user rejected the weak image, questioned the approximately-7k capacity, and required masked Gaussians to be placed only inside the mask."
 
 open_threads:
   - "Distinct scientific, visual, and code review of HIER-015--021, especially the bounded HIER-021 disposition."
@@ -148,7 +243,15 @@ open_threads:
   - "Complete-stream rate-distortion accounting against a standard residual codec, including file I/O and source-known encoder work."
   - "A pure-Gaussian exact-7k successor that reproduces the repair without source-RGB exceptions."
   - "Multi-seed, multi-device, and full-resolution confirmation before any maintained integration."
+  - "Recover or durably publish the immutable HIER-028 raw report bundle so a distinct reviewer can recompute its quantitative and visual clauses."
+  - "If the original bundle is lost, freeze a clean disjoint rerun with prospective and outcome review rather than treating a replay as the original confirmation."
+  - "Obtain distinct scientific/code/visual review of HIER-029/HIER-030 and their dirty-source report bundles."
+  - "Freeze contained boundary allocation on new Janelle views; do not tune C0001's exposed silhouette ring."
+  - "Evaluate approximately 57,600 rows or native 5328x4608 separately before a density/full-resolution claim."
 
 ai_suggestions_pending:
   - "Treat SPT1 as a diagnostic residual layer, not as proof that the 7,000-Gaussian field itself works everywhere."
   - "If integration is pursued, open a separate complete-stream task with held-out rate-distortion and independent review."
+  - "Do not promote O161 or change the normalized default until raw HIER-028 evidence is available and independently reviewed."
+  - "Treat HIER-030's overall pass as integrity/containment only; cold N=7,000 slightly wins PSNR and no method is selected."
+  - "Prioritize a new-view boundary-closure protocol before spending on a native-camera run if masked foreground fidelity is the immediate goal."

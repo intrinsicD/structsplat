@@ -37,15 +37,20 @@ def _target(device="cpu"):
             dtype=np.float32,
         ),
     )
-    return render_field(
-        target_field.means,
-        target_field.conics(),
-        target_field.colors,
-        target_field.radii(3.0),
-        8,
-        9,
-        mode="additive" if device == "cpu" else "cuda_additive",
-    ).detach().cpu().numpy()
+    return (
+        render_field(
+            target_field.means,
+            target_field.conics(),
+            target_field.colors,
+            target_field.radii(3.0),
+            8,
+            9,
+            mode="additive" if device == "cpu" else "cuda_additive",
+        )
+        .detach()
+        .cpu()
+        .numpy()
+    )
 
 
 def _metrics(**updates):
@@ -131,21 +136,71 @@ def test_cpu_projection_is_deterministic_geometry_exact_and_pure_additive(tmp_pa
     ):
         assert torch.equal(left, right)
 
-    expected = render_field(
-        first.field.means,
-        first.field.conics(),
-        first.field.colors,
-        first.field.radii(3.0),
-        8,
-        9,
-        mode="additive",
-    ).detach().numpy()
+    expected = (
+        render_field(
+            first.field.means,
+            first.field.conics(),
+            first.field.colors,
+            first.field.radii(3.0),
+            8,
+            9,
+            mode="additive",
+        )
+        .detach()
+        .numpy()
+    )
     assert np.allclose(first.reconstruction_raw, expected, atol=1e-6, rtol=1e-6)
     path = tmp_path / "projected.npz"
     first.field.save(str(path))
     with np.load(path) as payload:
         assert "opacities" not in payload.files
         assert all("mass" not in key and "denom" not in key for key in payload.files)
+
+
+def test_projection_mask_ignores_target_changes_outside_active_pixels():
+    source = _field()
+    target = _target()
+    mask = np.zeros(target.shape[:2], dtype=bool)
+    mask[1:7, 1:8] = True
+    changed_outside = np.array(target, copy=True)
+    changed_outside[~mask] = 9.0
+    config = EndpointAppearanceProjectionConfig(render_chunk=1)
+
+    first = project_additive_endpoint(source, target, config=config, mask=mask)
+    second = project_additive_endpoint(source, changed_outside, config=config, mask=mask)
+
+    assert torch.equal(first.field.colors, second.field.colors)
+    assert np.array_equal(first.reconstruction_raw, second.reconstruction_raw)
+    assert first.projection.maintained_render_parity_max_abs < 1e-6
+    assert second.projection.maintained_render_parity_max_abs < 1e-6
+    replay = (
+        render_field(
+            first.field.means,
+            first.field.conics(),
+            first.field.colors,
+            first.field.radii(3.0),
+            *target.shape[:2],
+            mode="additive",
+        )
+        .detach()
+        .numpy()
+    )
+    assert np.allclose(first.reconstruction_raw, replay, atol=1e-6, rtol=1e-6)
+    path_payload = first.field
+    assert path_payload.background_mask is None
+
+
+@pytest.mark.parametrize(
+    "mask",
+    [
+        np.zeros((8, 9), dtype=bool),
+        np.ones((7, 9), dtype=bool),
+        np.ones((8, 9), dtype=np.float32),
+    ],
+)
+def test_projection_mask_rejects_invalid_contracts(mask):
+    with pytest.raises(ValueError, match="mask"):
+        project_additive_endpoint(_field(), _target(), mask=mask)
 
 
 def test_cuda_projection_cold_parity_when_available():
@@ -157,9 +212,7 @@ def test_cuda_projection_cold_parity_when_available():
         result = project_additive_endpoint(
             source,
             target,
-            config=EndpointAppearanceProjectionConfig(
-                renderer="cuda_additive", render_chunk=1
-            ),
+            config=EndpointAppearanceProjectionConfig(renderer="cuda_additive", render_chunk=1),
             device="cuda",
         )
     except RuntimeError as exc:

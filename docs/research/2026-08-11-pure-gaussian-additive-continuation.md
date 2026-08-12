@@ -313,3 +313,69 @@ qualification. Normalization remains more row-efficient and stays the maintained
 same-count additive N=640 is worse, complete bytes are unmeasured, and full-resolution, broad-
 corpus, downstream, and actual-rate behavior remain open. The residual-pursuit method is default-
 off research evidence, not a production-pipeline or novelty promotion.
+
+## HIER-029 outcome: the small-raster positive does not scale to Janelle 1200
+
+HIER-029 tests the entire HIER-028 ladder on the exposed canonical Janelle C0001 source at the
+project's established 1200x1038 full-resolution regime, both on the full RGB frame and under an
+encoder-only foreground mask. The optional mask affects initialization, L1/SSIM supervision,
+coefficient projection, and residual argmax selection but is absent from every four-array endpoint;
+this is not a containment or zero-outside test.
+
+The full-frame result is negative. Pursuit reaches `13.64684 dB`, gains only `0.00476 dB` over its
+exact N=960 base, loses `0.35093 dB` to separately fitted cold N=1024, and loses `2.85597 dB` to
+normalized N=640. It lowers the base's worst-pixel/7x7 maxima from `0.94516/0.90712` to
+`0.89027/0.84028`, but native inspection shows the same pervasive dot/hole coverage lattice over
+the room. Sixty-four local corrections cannot repair a frame-scale basis deficit.
+
+Mask supervision helps the intended subject domain. Masked pursuit gains `0.25367 dB` over its
+N=960 base and `0.19945 dB` over masked cold N=1024, and its foreground PSNR is `1.79868 dB` above
+the full-frame-trained pursuit. It still loses `2.60041 dB` to masked normalized N=640, with worse
+MS-SSIM (`0.91182` versus `0.93974`) and LPIPS (`0.22454` versus `0.20279`). Additive foregrounds
+look sharper than the blocky normalized reconstruction but retain regular stippling. All appearance
+projections roll back; every endpoint/base/payload/parity/work receipt passes.
+
+The checkpoint trajectory exposes a second scaling boundary: normalized selects update 1 and
+masked additive selects update 26 although all fits attempt 500 updates. That is not permission to
+retune an exposed result. It means the fixed small-raster count and optimizer schedule are jointly
+out of regime. HIER-028 remains valid only at its prospectively frozen max-side-160 target;
+full-resolution successors must scale capacity/work with pixel area and freeze a resolution-aware
+optimization schedule on new sources.
+
+## HIER-030 outcome: 7k fixes the frame-scale hole lattice; strict containment exposes a boundary gap
+
+HIER-030 corrects two confounds in the exposed Janelle diagnostic without rewriting HIER-029. It
+scales HIER-028's count proportions to normalized N=4,375, projected additive N=6,562, that exact
+base plus 438 pursuit rows, and separately cold projected N=7,000. The paired masked mode uses
+anisotropic hard containment, a 0.75-pixel margin, C0 support fade, and tail selection eroded by the
+complete 1.8-pixel pursuit support radius. Every endpoint still persists exactly four arrays.
+
+Capacity was the dominant full-frame failure. Pursuit N=7,000 reaches `35.00091 dB`,
+`+21.35407 dB` above HIER-029's literal N=1,024 pursuit and `+1.34819 dB` above normalized
+N=4,375. Native-size review confirms that the pervasive dot/hole lattice is gone. Ordinary cold
+N=7,000 is nevertheless slightly stronger in PSNR/MS-SSIM (`35.05745 dB`/`0.98046` versus
+`35.00091 dB`/`0.97901`); pursuit wins LPIPS and the sparse local maxima. The result attributes
+most of the repair to ordinary capacity, not residual-pursuit topology. Visible face, lace, hair,
+and machinery detail remains smooth, consistent with only one Gaussian per about 178 full-frame
+pixels. Max-side-density parity with HIER-028 would be approximately 57,600 rows.
+
+The corrected masked path satisfies the requested support semantics exactly: all 24,937 centres
+across its four endpoints are inside the raw mask, and maximum unit coverage and reconstruction
+magnitude outside are both `0.0`. A first complete attempt had zero outside centres but failed this
+test because restored best checkpoints could retain anisotropic caps certified at earlier means.
+Forcing terminal and restored-checkpoint cap refresh repairs the defect, and a focused regression
+locks the behavior before the unchanged matrix is rerun.
+
+Strictly contained foreground PSNR is not higher: normalized N=4,375, pursuit N=7,000, and cold
+N=7,000 reach `22.78911`, `20.97452`, and `21.57449 dB`. A post-hoc distance-transform audit of
+the manifest-bound raw arrays explains the apparent contradiction. Within four pixels of the mask
+edge lie `95.70%`, `94.33%`, and `96.27%` of their total foreground SSE, while the corresponding
+greater-than-four-pixel interior PSNRs are `35.908`, `32.893`, and `35.313 dB`. Every uncovered
+foreground pixel is within `3.17 px` of the silhouette. HIER-029's loss-only mask could borrow
+support across the boundary and therefore scored higher while failing the user's placement rule.
+
+The next masked discriminator is not another exposed count or margin retune. It is a prospectively
+frozen boundary-closure schedule on new views: reserve contained tangent-aligned support for the
+eroded silhouette band, use checkpoint selection on the intended foreground domain, and keep the
+same outside-zero and four-array receipts. A separate density-matched or native-camera run is
+required before making a broader full-resolution claim.

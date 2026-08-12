@@ -4,6 +4,7 @@ This default-off research method appends fixed-scale Gaussian rows at the curren
 residuals.  The encoder uses source pixels to construct the rows, but the returned endpoint is a
 plain four-array Gaussian field rendered in one additive pass.  Torch remains a lazy dependency.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -33,9 +34,7 @@ def _integer(value: object, name: str, *, minimum: int = 1) -> int:
 
 
 def _finite_positive(value: object, name: str) -> float:
-    if isinstance(value, bool) or not isinstance(
-        value, (int, float, np.integer, np.floating)
-    ):
+    if isinstance(value, bool) or not isinstance(value, (int, float, np.integer, np.floating)):
         raise TypeError(f"{name} must be a finite number")
     result = float(value)
     if not math.isfinite(result) or result <= 0.0:
@@ -53,6 +52,15 @@ def _image(value: object, name: str) -> np.ndarray:
     return np.array(value, dtype=np.float32, order="C", copy=True)
 
 
+def _selection_mask(value: object, shape: tuple[int, int]) -> np.ndarray:
+    if not isinstance(value, np.ndarray) or value.dtype != np.bool_ or value.shape != shape:
+        raise ValueError(f"selection_mask must be a bool NumPy array with shape {shape}")
+    result = np.array(value, dtype=bool, order="C", copy=True)
+    if not result.any():
+        raise ValueError("selection_mask must contain at least one active pixel")
+    return result
+
+
 def _readonly(value: np.ndarray) -> np.ndarray:
     result = np.array(value, dtype=np.float32, order="C", copy=True)
     result.flags.writeable = False
@@ -67,6 +75,7 @@ class ResidualPursuitAdditiveConfig:
     scale_px: float = 0.35
     coefficient_abs_limit: float = 16.0
     sigma_cutoff: float = 3.0
+    support_fade: bool = False
     render_chunk: int = 256
     renderer: str = "additive"
 
@@ -87,6 +96,8 @@ class ResidualPursuitAdditiveConfig:
                 name,
                 _finite_positive(getattr(self, name), name),
             )
+        if not isinstance(self.support_fade, bool):
+            raise TypeError("support_fade must be bool")
         if self.renderer not in _ADDITIVE_RENDERERS:
             expected = ", ".join(sorted(_ADDITIVE_RENDERERS))
             raise ValueError(f"renderer must use additive semantics; expected one of {expected}")
@@ -122,6 +133,8 @@ class ResidualPursuitAdditiveResult:
     tail_count: int
     total_count: int
     residual_scan_pixel_evaluations: int
+    selection_mask_applied: bool
+    selection_active_pixels: int
     tail_kernel_pixel_updates: int
     renderer_calls: int
     base_prefix_bit_exact: bool
@@ -155,7 +168,9 @@ class ResidualPursuitAdditiveResult:
             raise ValueError("base/tail count allocation is inconsistent")
         if len(self.trajectory) != self.tail_count:
             raise ValueError("trajectory length does not match tail count")
-        if not all(_pure_payload(field) for field in (self.base_field, self.tail_field, self.field)):
+        if not all(
+            _pure_payload(field) for field in (self.base_field, self.tail_field, self.field)
+        ):
             raise ValueError("pursuit endpoints must contain exactly four Gaussian arrays")
 
     @property
@@ -211,7 +226,7 @@ def _render(field: "GaussianField", height: int, width: int, config):
         mode=config.renderer,
         scales=field.scales(),
         rotations=field.rotations,
-        support_fade=False,
+        support_fade=config.support_fade,
         sigma_cutoff=config.sigma_cutoff,
     )
 
@@ -230,8 +245,14 @@ def append_residual_pursuit_gaussians(
     target: np.ndarray,
     *,
     config: ResidualPursuitAdditiveConfig | None = None,
+    selection_mask: np.ndarray | None = None,
 ) -> ResidualPursuitAdditiveResult:
-    """Append deterministic worst-residual Gaussians and return a pure additive endpoint."""
+    """Append deterministic worst-residual Gaussians and return a pure additive endpoint.
+
+    ``selection_mask`` is encoder-only: when supplied, worst-pixel selection and the reported
+    residual maxima are restricted to active pixels. The returned endpoint remains the same
+    four-array Gaussian representation and does not retain the mask.
+    """
 
     started = time.perf_counter()
 
@@ -248,6 +269,11 @@ def append_residual_pursuit_gaussians(
     source = _image(target, "target")
     cfg = config or ResidualPursuitAdditiveConfig()
     height, width = source.shape[:2]
+    active = (
+        np.ones((height, width), dtype=bool)
+        if selection_mask is None
+        else _selection_mask(selection_mask, (height, width))
+    )
     base = field.detached()
     base_coefficient_max = float(torch.max(torch.abs(base.colors)).detach().cpu())
     if base_coefficient_max > cfg.coefficient_abs_limit:
@@ -263,7 +289,7 @@ def append_residual_pursuit_gaussians(
     working = base_raw.astype(np.float64)
     initial_residual = target64 - working
     initial_pixel_max = float(
-        np.sqrt(np.max(np.mean(initial_residual * initial_residual, axis=2)))
+        np.sqrt(np.max(np.mean(initial_residual * initial_residual, axis=2)[active]))
     )
     means: list[tuple[float, float]] = []
     colors: list[np.ndarray] = []
@@ -274,7 +300,11 @@ def append_residual_pursuit_gaussians(
     for step in range(1, cfg.tail_gaussians + 1):
         residual = target64 - working
         pixel_mse = np.mean(residual * residual, axis=2)
-        flat_index = int(np.argmax(pixel_mse))
+        flat_index = int(
+            np.argmax(pixel_mse)
+            if selection_mask is None
+            else np.argmax(np.where(active, pixel_mse, -np.inf))
+        )
         y, x = divmod(flat_index, width)
         coefficient = np.array(residual[y, x], dtype=np.float64, copy=True)
         if not np.isfinite(coefficient).all():
@@ -286,16 +316,19 @@ def append_residual_pursuit_gaussians(
         x0, x1 = max(0, x - radius), min(width, x + radius + 1)
         yy, xx = np.mgrid[y0:y1, x0:x1]
         weight = np.exp(
-            -0.5
-            * ((xx - x) ** 2 + (yy - y) ** 2)
-            / (cfg.scale_px * cfg.scale_px)
+            -0.5 * ((xx - x) ** 2 + (yy - y) ** 2) / (cfg.scale_px * cfg.scale_px)
         )
+        if cfg.support_fade:
+            weight = np.maximum(
+                weight - math.exp(-0.5 * cfg.sigma_cutoff * cfg.sigma_cutoff),
+                0.0,
+            )
         working[y0:y1, x0:x1] += weight[:, :, None] * coefficient
         updates = int((y1 - y0) * (x1 - x0))
         kernel_updates += updates
         post_residual = target64 - working
         post_pixel_max = float(
-            np.sqrt(np.max(np.mean(post_residual * post_residual, axis=2)))
+            np.sqrt(np.max(np.mean(post_residual * post_residual, axis=2)[active]))
         )
         means.append((float(x), float(y)))
         colors.append(coefficient)
@@ -325,20 +358,14 @@ def append_residual_pursuit_gaussians(
         final_tensor = _render(endpoint, height, width, cfg)
     final_raw = final_tensor.detach().cpu().numpy().astype(np.float32, copy=False)
     analytic_raw = working.astype(np.float32)
-    parity = float(
-        np.max(
-            np.abs(
-                final_raw.astype(np.float64) - analytic_raw.astype(np.float64)
-            )
-        )
-    )
+    parity = float(np.max(np.abs(final_raw.astype(np.float64) - analytic_raw.astype(np.float64))))
     if not np.isfinite(final_raw).all() or parity > _PARITY_LIMIT:
         raise RuntimeError(
             f"residual-pursuit cold render failed finite/parity safety ({parity:.6g})"
         )
     final_residual = source.astype(np.float64) - final_raw.astype(np.float64)
     final_pixel_max = float(
-        np.sqrt(np.max(np.mean(final_residual * final_residual, axis=2)))
+        np.sqrt(np.max(np.mean(final_residual * final_residual, axis=2)[active]))
     )
     coefficient_abs_max = float(torch.max(torch.abs(endpoint.colors)).detach().cpu())
     fixed_geometry = bool(
@@ -363,6 +390,8 @@ def append_residual_pursuit_gaussians(
         tail_count=tail.n,
         total_count=endpoint.n,
         residual_scan_pixel_evaluations=cfg.tail_gaussians * height * width,
+        selection_mask_applied=selection_mask is not None,
+        selection_active_pixels=int(active.sum()),
         tail_kernel_pixel_updates=kernel_updates,
         renderer_calls=2,
         base_prefix_bit_exact=_prefix_equal(endpoint, base),

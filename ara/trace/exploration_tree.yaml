@@ -6090,3 +6090,167 @@ tree:
       - "docs/research/2026-08-11-pure-gaussian-additive-continuation.md"
     also_depends_on: [N297, N298, N299]
     status: resolved
+  - id: N301
+    type: experiment
+    title: "HIER-028 checkout audit finds green code but unavailable raw evidence"
+    provenance: ai-executed
+    timestamp: "2026-08-11T20:28+02:00"
+    result: >
+      At commit addf24f, which matches origin/main, the complete repository gate passes Ruff,
+      1,961 portable tests with 26 skips, and every docs, ARA, task, script-layout, and workflow
+      checker. The HIER-028 task, implementation, aggregate evidence note, and recorded manifest
+      hash are tracked, but the referenced 1,334-file report directory is absent under the
+      workspace, /home/alex, and /tmp and results/ is gitignored. The bounded numerical result
+      therefore cannot be independently recomputed or visually re-audited from the current
+      checkout.
+    evidence:
+      - "commit addf24fd8dfae41bce5f23596143263498115f23"
+      - "tasks/HIER-028-residual-pursuit-additive-confirmation.md"
+      - "ara/evidence/hier028-residual-pursuit-additive-2026-08-11/run.md"
+      - ".gitignore"
+      - "./scripts/verify.sh: 1961 passed, 26 skipped, 514 deselected"
+    also_depends_on: [N299, N300]
+    status: resolved
+  - id: N302
+    type: experiment
+    title: "Literal HIER-028 counts collapse on the 1200px Janelle raster"
+    provenance: ai-executed
+    timestamp: "2026-08-11T21:59+02:00"
+    result: >
+      HIER-029 completes the exposed C0001 1200x1038 two-mode/four-arm diagnostic with exact
+      N=640/960+64/1024 HIER-028 counts. Full pursuit reaches only 13.64684 dB, gains 0.00476 dB
+      over its N=960 base, and loses 2.85597 dB to normalized. Loss-only foreground masking raises
+      pursuit to 22.61468 dB but explicitly does not contain centres or support. All eight cells,
+      four-array payloads, base-prefix, parity, and report checks pass.
+    evidence:
+      - "ara/evidence/hier029-janelle-full-resolution-mask-2026-08-11/run.md"
+      - "results/hier029_janelle_c0001_s1200_mask_factorial_s0_diagnostic_2026-08-11/index.html"
+      - "manifest sha256 b5c772fd2ab972b6169f3e08f720d8369797bf8b4d63ed6ee593b21b023aa52d"
+      - "tasks/HIER-029-janelle-full-resolution-mask-diagnostic.md"
+    also_depends_on: [N299, N300, N301]
+    status: resolved
+  - id: N303
+    type: pivot
+    title: "Correct Janelle scaling to 7k rows and hard mask containment"
+    provenance: user-revised
+    timestamp: "2026-08-11T21:59+02:00"
+    from: "Literal max-side-160 row counts and loss-only foreground masking at 1200x1038."
+    to: >
+      An exact-7,000 proportionally scaled ladder with paired full-frame and mask-contained arms,
+      including centre, complete support, and outside-reconstruction certificates.
+    trigger: >
+      The user identified the visible result as implausibly weak, questioned the effective
+      approximately-7k capacity, and required masked Gaussians to be placed only inside the mask;
+      HIER-029 then confirmed that its largest field actually had only 1,024 rows.
+    also_depends_on: [N302]
+    status: resolved
+  - id: N304
+    type: experiment
+    title: "Seven thousand rows repair full-frame support and pass exact containment"
+    provenance: ai-executed
+    timestamp: "2026-08-11T21:59+02:00"
+    result: >
+      HIER-030's complete C0001 1200x1038 two-mode/four-arm run scales counts to
+      N=4,375/6,562+438/7,000. Full pursuit reaches 35.00091 dB, +21.35407 dB over HIER-029 and
+      +1.34819 dB over normalized, while cold N=7,000 is 0.05654 dB higher in PSNR. Every masked
+      centre lies inside and unit support/reconstruction outside are exactly zero. A preserved
+      first attempt exposed stale anisotropic caps on restored checkpoints; forced terminal/restore
+      recertification plus a regression test repaired the defect before the unchanged rerun. A
+      post-hoc audit places 94--96% of foreground SSE within four pixels of the boundary.
+    evidence:
+      - "ara/evidence/hier030-janelle-7k-contained-mask-2026-08-11/run.md"
+      - "results/hier030_janelle_c0001_s1200_7k_contained_s0_diagnostic_2026-08-11/index.html"
+      - "manifest sha256 80c9c64a3b59730e9ab3fdd4dddbd3b55cfd8f50088054f5416b9764fe83f840"
+      - "tasks/HIER-030-janelle-7k-contained-mask-diagnostic.md"
+      - "./scripts/verify.sh: 1985 passed, 26 skipped, 514 deselected"
+    also_depends_on: [N302, N303]
+    status: resolved
+  - id: N305
+    type: decision
+    title: "Accept the capacity and containment diagnoses without selecting pursuit"
+    provenance: ai-executed
+    timestamp: "2026-08-11T21:59+02:00"
+    choice: >
+      Treat HIER-029's poor full-frame image as chiefly a literal-count failure and retain the
+      corrected checkpoint recertification as a containment invariant. Do not select pursuit over
+      cold additive, change a maintained default, or tune the exposed boundary result. Route any
+      successor to prospectively frozen contained boundary allocation on new views; evaluate
+      approximately 57,600 rows or native camera size separately for density/full-resolution proof.
+    alternatives:
+      - "Promote residual pursuit because it has better full-frame LPIPS and local maxima."
+      - "Use loss-only masking because it reports a higher foreground PSNR."
+      - "Retune margin, counts, or schedule on the exposed C0001 boundary failure."
+      - "Call 7,000 rows density-equivalent to HIER-028 at max-side 160."
+    evidence:
+      - "N304"
+      - "ara/evidence/hier030-janelle-7k-contained-mask-2026-08-11/run.md"
+      - "docs/research/2026-08-11-pure-gaussian-additive-continuation.md"
+    also_depends_on: [N302, N303, N304]
+    status: resolved
+  - id: N306
+    type: experiment
+    title: "Certified micro reserve closes exact-7k mask topology with guarded quality"
+    provenance: ai-executed
+    timestamp: "2026-08-12T00:40+02:00"
+    result: >
+      HIER-031's exposed C0001 1200x1038 feasibility audit finds 980 foreground pixels outside
+      isotropic reach from a legal ordinary 0.35-pixel centre and, as a hard count-independent
+      lower bound, ten pixels in three components with no legal ordinary centre. A 0.08-pixel row
+      is certified at every mask pixel. Among thirteen exact-N7,000 endpoints, the selected
+      910-micro/6,090-ordinary deep-only-plus-terminal-closure field eliminates 869 raw holes,
+      retains exact outside-zero support, and gains 2.2844/2.3560/0.7546 dB in
+      overall/boundary/interior PSNR over the HIER-030 cold control while reducing high-pass MSE
+      6.31%. Untouched current-pipeline controls are sharper but leave 933--955 raw holes.
+    evidence:
+      - "ara/evidence/hier031-exact7k-masked-boundary-detail-2026-08-12/run.md"
+      - "results/hier031_janelle_c0001_s1200_exact7k_boundary_detail_s0_diagnostic_2026-08-12/index.html"
+      - "manifest sha256 34afcdcf29b56adcb457e5838e2f2cc40efff0398725dbedee5b8b1ac6ea0d98"
+      - "tasks/HIER-031-exact7k-masked-boundary-detail-allocation.md"
+      - "./scripts/verify.sh: 1992 passed, 26 skipped, 514 deselected"
+    also_depends_on: [N304, N305]
+    status: resolved
+  - id: N307
+    type: dead_end
+    title: "Equal raw error and more ordinary rows are not a topology guarantee"
+    provenance: ai-executed
+    timestamp: "2026-08-12T00:40+02:00"
+    hypothesis: >
+      Spatially equal reconstruction error would make a later Gaussian-count increase reduce error
+      everywhere, and an unchanged ordinary contained field would eventually fill every hole.
+    failure_mode: >
+      Raw error is not the resource-allocation optimum, the selected endpoint's deterministic
+      next-row-gain proxy is no more uniform than the control, and three mask components remain
+      unrepresentable at any ordinary-row count under the 0.35-pixel floor and current margin.
+    lesson: >
+      Establish representability with a certified topology cohort first; allocate remaining rows
+      toward marginal loss reduction subject to coverage/detail guards rather than equal raw error.
+    evidence:
+      - "N306"
+      - "docs/research/2026-08-12-exact7k-masked-boundary-detail.md"
+      - "ara/evidence/hier031-exact7k-masked-boundary-detail-2026-08-12/run.md"
+    also_depends_on: [N306]
+    status: resolved
+  - id: N308
+    type: decision
+    title: "Retain topology-first 7k mechanism and defer count scaling"
+    provenance: ai-executed
+    timestamp: "2026-08-12T00:40+02:00"
+    choice: >
+      Retain the fixed certified micro cohort plus deep-only recovery and terminal closure as a
+      mechanism-positive exposed diagnostic. Keep all maintained defaults unchanged and stop
+      C0001 method development. Require disjoint mask/image confirmation before integration; when
+      approximately 57.6k or native scaling is later tested, preserve a certified topology reserve
+      and measure marginal allocation rather than assuming automatic uniform improvement.
+    alternatives:
+      - "Promote the sharper current pipeline despite 933--955 raw holes."
+      - "Lower the global ordinary scale floor from one exposed mask."
+      - "Continue outcome-dependent tuning on C0001 after the Stage-9 guard passes."
+      - "Treat zero raw holes as uniform coverage or complete hair recovery."
+    evidence:
+      - "N306"
+      - "N307"
+      - "O166"
+      - "docs/adr/0033-fixed-certified-micro-row-reserve.md"
+      - "ara/evidence/hier031-exact7k-masked-boundary-detail-2026-08-12/run.md"
+    also_depends_on: [N306, N307]
+    status: resolved

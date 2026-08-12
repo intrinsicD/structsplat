@@ -4,6 +4,7 @@ This default-off wrapper adapts an opacity-free ``GaussianField`` exactly to Obs
 invokes the existing matrix-free coefficient projector, and converts the result back without
 changing geometry or renderer semantics.  Torch remains a lazy dependency.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field as dataclass_field
@@ -41,13 +42,20 @@ def _positive_integer(value: object, name: str) -> int:
 
 
 def _finite_nonnegative(value: object, name: str) -> float:
-    if isinstance(value, bool) or not isinstance(
-        value, (int, float, np.integer, np.floating)
-    ):
+    if isinstance(value, bool) or not isinstance(value, (int, float, np.integer, np.floating)):
         raise TypeError(f"{name} must be a finite number")
     result = float(value)
     if not math.isfinite(result) or result < 0.0:
         raise ValueError(f"{name} must be finite and >= 0, got {result}")
+    return result
+
+
+def _projection_mask(value: object, shape: tuple[int, int]) -> np.ndarray:
+    if not isinstance(value, np.ndarray) or value.dtype != np.bool_ or value.shape != shape:
+        raise ValueError(f"mask must be a bool NumPy array with shape {shape}")
+    result = np.array(value, dtype=bool, order="C", copy=True)
+    if not result.any():
+        raise ValueError("mask must contain at least one active pixel")
     return result
 
 
@@ -84,9 +92,7 @@ class EndpointAppearanceProjectionConfig:
             self, "render_chunk", _positive_integer(self.render_chunk, "render_chunk")
         )
         for name in ("sigma_cutoff", "support_fade_alpha", "aa_dilation_px2"):
-            object.__setattr__(
-                self, name, _finite_nonnegative(getattr(self, name), name)
-            )
+            object.__setattr__(self, name, _finite_nonnegative(getattr(self, name), name))
         if self.sigma_cutoff <= 0.0:
             raise ValueError("sigma_cutoff must be > 0")
         if self.support_fade_alpha > 1.0:
@@ -136,9 +142,7 @@ class ProjectionSafetyConfig:
             "lpips_tolerance",
             "local_tolerance",
         ):
-            object.__setattr__(
-                self, name, _finite_nonnegative(getattr(self, name), name)
-            )
+            object.__setattr__(self, name, _finite_nonnegative(getattr(self, name), name))
         if self.coefficient_abs_limit <= 0.0:
             raise ValueError("coefficient_abs_limit must be > 0")
 
@@ -168,9 +172,7 @@ def _metric_record(value: object, name: str) -> dict[str, float]:
     record = {}
     for key in sorted(_SAFETY_KEYS):
         item = value[key]
-        if isinstance(item, bool) or not isinstance(
-            item, (int, float, np.integer, np.floating)
-        ):
+        if isinstance(item, bool) or not isinstance(item, (int, float, np.integer, np.floating)):
             raise TypeError(f"{name}.{key} must be numeric")
         record[key] = float(item)
     return record
@@ -198,16 +200,13 @@ def select_safe_projection(
     clauses = {
         "finite": proposal_finite and all_metrics_finite and math.isfinite(coefficient),
         "bounded": math.isfinite(coefficient) and coefficient <= cfg.coefficient_abs_limit,
-        "strict_lower_raw_mse": (
-            all_metrics_finite and proposal["raw_mse"] < incoming["raw_mse"]
-        ),
+        "strict_lower_raw_mse": (all_metrics_finite and proposal["raw_mse"] < incoming["raw_mse"]),
         "ms_ssim_safe": (
             all_metrics_finite
             and proposal["ms_ssim"] >= incoming["ms_ssim"] - cfg.ms_ssim_tolerance
         ),
         "lpips_safe": (
-            all_metrics_finite
-            and proposal["lpips"] <= incoming["lpips"] + cfg.lpips_tolerance
+            all_metrics_finite and proposal["lpips"] <= incoming["lpips"] + cfg.lpips_tolerance
         ),
         "pixel_max_safe": (
             all_metrics_finite
@@ -230,8 +229,13 @@ def project_additive_endpoint(
     *,
     config: EndpointAppearanceProjectionConfig | None = None,
     device: str = "cpu",
+    mask: np.ndarray | None = None,
 ) -> EndpointAppearanceProjectionResult:
-    """Run the existing all-row coefficient solve without changing Gaussian geometry."""
+    """Run the existing all-row coefficient solve without changing Gaussian geometry.
+
+    ``mask`` limits the encoder-side least-squares objective. It is not persisted in the pure
+    additive endpoint. Omitting it preserves the historical full-canvas solve.
+    """
 
     from .gaussians import GaussianField
     import torch
@@ -248,6 +252,11 @@ def project_additive_endpoint(
         raise ValueError("target must contain finite numeric values")
     source = np.asarray(target, dtype=np.float32)
     height, width = source.shape[:2]
+    active = (
+        np.ones((height, width), dtype=bool)
+        if mask is None
+        else _projection_mask(mask, (height, width))
+    )
     cfg = config or EndpointAppearanceProjectionConfig()
     adaptation = adapt_factorized_additive_gaussian_field(
         field,
@@ -263,7 +272,7 @@ def project_additive_endpoint(
     projection = project_contracted_coefficients(
         observation,
         source,
-        np.ones((height, width), dtype=bool),
+        active,
         all_rows,
         no_rows,
         config=cfg.solver,
@@ -275,9 +284,7 @@ def project_additive_endpoint(
         np.array_equal(projection.field.means_xy, observation.means_xy)
         and np.array_equal(projection.field.log_scales_xy, observation.log_scales_xy)
         and np.array_equal(projection.field.rotations_rad, observation.rotations_rad)
-        and np.array_equal(
-            projection.field.filter_variance_px2, observation.filter_variance_px2
-        )
+        and np.array_equal(projection.field.filter_variance_px2, observation.filter_variance_px2)
     )
     projected = GaussianField(
         field.means.detach().clone(),
@@ -289,19 +296,13 @@ def project_additive_endpoint(
             dtype=field.colors.dtype,
         ).clone(),
         opacities=None,
-        scale_max=(
-            None if field.scale_max is None else field.scale_max.detach().clone()
-        ),
+        scale_max=(None if field.scale_max is None else field.scale_max.detach().clone()),
         color_grads=None,
         background_mask=(
-            None
-            if field.background_mask is None
-            else field.background_mask.detach().clone()
+            None if field.background_mask is None else field.background_mask.detach().clone()
         ),
         filter_variance=(
-            None
-            if field.filter_variance is None
-            else field.filter_variance.detach().clone()
+            None if field.filter_variance is None else field.filter_variance.detach().clone()
         ),
     )
     geometry_exact = bool(

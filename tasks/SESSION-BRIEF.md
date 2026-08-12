@@ -32,6 +32,9 @@ unless the owning task says so.
 - `HIER-026` — Progressive pure-additive capacity parity (in-review; `tasks/HIER-026-progressive-additive-capacity-parity.md`)
 - `HIER-027` — Cold pure-additive capacity threshold confirmation (in-review; `tasks/HIER-027-cold-additive-capacity-confirmation.md`)
 - `HIER-028` — Residual-pursuit pure-additive confirmation (in-review; `tasks/HIER-028-residual-pursuit-additive-confirmation.md`)
+- `HIER-029` — Janelle full-resolution HIER-028 mask diagnostic (in-review; `tasks/HIER-029-janelle-full-resolution-mask-diagnostic.md`)
+- `HIER-030` — Janelle 7k capacity and contained-mask diagnostic (in-review; `tasks/HIER-030-janelle-7k-contained-mask-diagnostic.md`)
+- `HIER-031` — Exact-7k masked boundary and thin-detail allocation (in-review; `tasks/HIER-031-exact7k-masked-boundary-detail-allocation.md`)
 - `CORE-016` — Codec-native dual-plane Gaussian observation field (in-review; `tasks/CORE-016-codec-native-dual-plane-field.md`)
 - `CORE-017` — Visibility-ordered alpha-shell surface lift (in-review; `tasks/CORE-017-visibility-ordered-alpha-shell-lift.md`)
 - `CORE-018` — Occlusion-aware ray-posterior surface lift (in-review; `tasks/CORE-018-occlusion-aware-ray-posterior-lift.md`)
@@ -89,6 +92,6 @@ unless the owning task says so.
 
 ## Ledger summary
 
-- 124 active-table outcomes
+- 127 active-table outcomes
 - 45 retired tasks
 - 51 active-table rows already carrying a closed/non-actionable disposition

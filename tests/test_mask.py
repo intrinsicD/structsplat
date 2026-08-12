@@ -399,6 +399,50 @@ def test_anisotropic_fit_keeps_exact_zero_outside_and_unlocks_tangent_scales():
     assert float((caps.max(dim=1).values / caps.min(dim=1).values).max()) > 1.2
 
 
+def test_best_checkpoint_forces_terminal_anisotropic_cap_recertification(monkeypatch):
+    from structsplat import metrics as metrics_module
+
+    img, inside = _disk()
+    target = torch.as_tensor(img)
+    icfg = InitConfig(strategy="quadtree_wse", num_gaussians=80, seed=0)
+    fcfg = FitConfig(
+        iters=2,
+        mask_contain=True,
+        mask_cap_mode="anisotropic",
+        mask_cap_refresh_every=10,
+        support_fade=True,
+        loss_weighting="mask",
+        checkpoint_policy="best_psnr_final_count",
+        log_every=1,
+        ssim_weight=0.0,
+    )
+    field = build_masked_field(
+        img,
+        inside,
+        icfg,
+        sigma_cutoff=fcfg.sigma_cutoff,
+        mask_margin=fcfg.mask_margin,
+        cap_mode="anisotropic",
+    )
+    calls: list[bool] = []
+    original_apply = _MaskConstraint.apply
+
+    def tracked_apply(self, *args, **kwargs):
+        calls.append(bool(kwargs.get("refresh", True)))
+        return original_apply(self, *args, **kwargs)
+
+    monkeypatch.setattr(_MaskConstraint, "apply", tracked_apply)
+    scores = iter([100.0, 10.0, 100.0])
+    monkeypatch.setattr(metrics_module, "psnr", lambda _render, _target: next(scores))
+
+    out = fit(field, target, fcfg, mask=inside, verbose=False)
+
+    assert out["selected_from_checkpoint"]
+    assert calls[-2:] == [True, True]
+    render = out["render"].detach().cpu().numpy()
+    assert float(np.abs(render[~inside]).max()) == 0.0
+
+
 def test_undercoverage_penalty_pulls_gaussians_toward_uncovered_band():
     inside = _halfplane(H=32, W=32, edge=16)
     mc = _MaskConstraint.from_mask(inside, torch.device("cpu"), torch.float32, 3.0, 1.5,
@@ -516,6 +560,93 @@ def test_boundary_add_requires_mask():
                                      mask_boundary_add_count=4), verbose=False)
     with pytest.raises(ValueError):
         fit(field, target, FitConfig(iters=1, mask_undercoverage_weight=1.0), verbose=False)
+
+
+def test_fixed_certified_micro_row_can_be_exempted_from_ordinary_constraint():
+    inside = _halfplane(H=20, W=20, edge=10)
+    target = torch.zeros(20, 20, 3)
+    field = GaussianField(
+        means=torch.tensor([[5.0, 10.0], [9.0, 10.0]]),
+        log_scales=torch.log(torch.tensor([[0.7, 0.7], [0.08, 0.08]])),
+        rotations=torch.zeros(2),
+        colors=torch.tensor([[0.0, 0.0, 0.0], [0.7, 0.4, 0.2]]),
+    )
+    cfg = FitConfig(
+        iters=2,
+        mask_contain=True,
+        mask_margin=0.75,
+        mask_cap_mode="anisotropic",
+        mask_cap_refresh_every=1,
+        support_fade=True,
+        loss_weighting="mask",
+        ssim_weight=0.0,
+        log_every=10,
+    )
+    constraint = _MaskConstraint.from_mask(
+        inside,
+        torch.device("cpu"),
+        torch.float32,
+        cfg.sigma_cutoff,
+        cfg.mask_margin,
+        min_scale=0.35,
+        cap_mode="anisotropic",
+    )
+    micro_before = field.subset(torch.tensor([1]))
+    out = fit(
+        field,
+        target,
+        cfg,
+        mask=inside,
+        trainable_row_mask=torch.tensor([True, False]),
+        constraint_exempt_row_mask=torch.tensor([False, True]),
+        mask_constraint_override=constraint,
+        verbose=False,
+    )
+    micro_after = out["field"].subset(torch.tensor([1]))
+    assert torch.equal(micro_after.means, micro_before.means)
+    assert torch.equal(micro_after.log_scales, micro_before.log_scales)
+    assert torch.equal(micro_after.rotations, micro_before.rotations)
+    assert torch.equal(micro_after.colors, micro_before.colors)
+    assert float(torch.exp(micro_after.log_scales).max()) < 0.081
+    rendered = out["render"].detach().numpy()
+    assert float(np.abs(rendered[~inside]).max()) == 0.0
+
+
+def test_constraint_exempt_rows_must_be_frozen():
+    target = torch.zeros(8, 8, 3)
+    field = GaussianField(
+        torch.tensor([[3.0, 3.0], [4.0, 4.0]]),
+        torch.zeros(2, 2),
+        torch.zeros(2),
+        torch.zeros(2, 3),
+    )
+    with pytest.raises(ValueError, match="requires trainable_row_mask"):
+        fit(
+            field,
+            target,
+            FitConfig(iters=1),
+            constraint_exempt_row_mask=torch.tensor([False, True]),
+            verbose=False,
+        )
+
+
+def test_constraint_exempt_rows_reject_dynamic_topology():
+    target = torch.zeros(8, 8, 3)
+    field = GaussianField(
+        torch.tensor([[3.0, 3.0], [4.0, 4.0]]),
+        torch.zeros(2, 2),
+        torch.zeros(2),
+        torch.zeros(2, 3),
+    )
+    with pytest.raises(ValueError, match="requires topology-free fitting"):
+        fit(
+            field,
+            target,
+            FitConfig(iters=2, prune_every=1),
+            trainable_row_mask=torch.tensor([True, False]),
+            constraint_exempt_row_mask=torch.tensor([False, True]),
+            verbose=False,
+        )
 
 
 def test_config_validation_boundary_fields():

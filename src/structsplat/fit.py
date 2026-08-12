@@ -2691,6 +2691,7 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         trainable_row_mask: torch.Tensor | None = None,
         return_optimizer_state: bool = False,
         mask_constraint_override: _MaskConstraint | None = None,
+        constraint_exempt_row_mask: torch.Tensor | None = None,
         state_checkpoint_every: int = 0,
         active_row_count: int | None = None) -> dict:
     """Optimize one Gaussian field.
@@ -2700,6 +2701,9 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
     moments across short commit blocks; a row mask performs local recovery by freezing every
     non-selected row (including its moment-driven update). ``mask_constraint_override`` reuses
     one already-built exact mask EDT across such blocks; normal one-shot callers leave it unset.
+    ``constraint_exempt_row_mask`` preserves a fixed, independently certified cohort through the
+    ordinary scale floor and mask projection. Exempt rows must also be frozen by
+    ``trainable_row_mask``; this is used by fixed-budget experiments with sub-pixel compact rows.
     ``state_checkpoint_every`` additionally returns state-matched field/Adam snapshots for a
     caller that wants to apply a multi-metric transaction gate to intermediate states. It is
     disabled by default and therefore does not alter historical trajectories.
@@ -2713,6 +2717,24 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
     """
     if state_checkpoint_every < 0:
         raise ValueError("state_checkpoint_every must be non-negative")
+    if constraint_exempt_row_mask is not None:
+        topology_controls = {
+            "triage_every": cfg.triage_every,
+            "prune_every": cfg.prune_every,
+            "split_every": cfg.split_every,
+            "relocate_every": cfg.relocate_every,
+            "mask_boundary_add_every": cfg.mask_boundary_add_every,
+        }
+        active_controls = [
+            name for name, value in topology_controls.items() if value is not None
+        ]
+        if cfg.adaptive_count:
+            active_controls.append("adaptive_count")
+        if active_controls:
+            raise ValueError(
+                "constraint_exempt_row_mask requires topology-free fitting so row identities "
+                "remain stable; unset " + ", ".join(active_controls)
+            )
     if active_row_count is not None:
         active_row_count = int(active_row_count)
         if not 0 < active_row_count <= int(field.n):
@@ -2836,15 +2858,39 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         )
         fixed_inactive[:active_row_count] = False
 
+    constraint_exempt = None
+    if constraint_exempt_row_mask is not None:
+        if active_row_count is not None:
+            raise ValueError(
+                "constraint_exempt_row_mask is not supported with active_row_count"
+            )
+        constraint_exempt = torch.as_tensor(
+            constraint_exempt_row_mask,
+            device=field.means.device,
+            dtype=torch.bool,
+        ).reshape(-1)
+        if int(constraint_exempt.numel()) != int(field.n):
+            raise ValueError(
+                "constraint_exempt_row_mask must have one entry per Gaussian, "
+                f"got {constraint_exempt.numel()} for {field.n} rows"
+            )
+        if not bool(constraint_exempt.any()):
+            raise ValueError("constraint_exempt_row_mask must exempt at least one row")
+
     def _parked_exempt():
         # Recomputed at each use: the live mask flips as triage parks/activates rows.
         if pool_state is not None:
             # FIT-021 compacts immediately before terminal evaluation; after that boundary the
             # capacity-length live mask no longer indexes the returned compact field.
             if int(pool_state.live.numel()) == int(field.n):
-                return ~pool_state.live
-            return None
-        return fixed_inactive
+                parked = ~pool_state.live
+            else:
+                parked = None
+        else:
+            parked = fixed_inactive
+        if constraint_exempt is None:
+            return parked
+        return constraint_exempt if parked is None else (parked | constraint_exempt)
 
     # FIT-022 coverage-matching regularizer: static feature-weighted target profile (one
     # structure-tensor pass); the mass normalization is per-evaluation.
@@ -2939,6 +2985,15 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             )
         if not bool(trainable_row_mask.any()):
             raise ValueError("trainable_row_mask must enable at least one row")
+    if constraint_exempt is not None:
+        if trainable_row_mask is None:
+            raise ValueError(
+                "constraint_exempt_row_mask requires trainable_row_mask so exempt rows are frozen"
+            )
+        if bool((constraint_exempt & trainable_row_mask).any()):
+            raise ValueError(
+                "constraint-exempt rows must be frozen by trainable_row_mask"
+            )
     if fixed_inactive is not None:
         active_mask = ~fixed_inactive
         trainable_row_mask = (
@@ -3293,7 +3348,14 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         )
         with torch.no_grad():
             fit_field = _fit_field_view()
-            fit_field.log_scales.clamp_(lo, hi)
+            fit_field.log_scales.clamp_(max=hi)
+            if constraint_exempt is None:
+                fit_field.log_scales.clamp_(min=lo)
+            else:
+                ordinary_rows = ~constraint_exempt[: fit_field.n]
+                fit_field.log_scales[ordinary_rows] = fit_field.log_scales[
+                    ordinary_rows
+                ].clamp_min(lo)
             if getattr(fit_field, "scale_max", None) is not None:
                 cap = torch.log(torch.clamp(fit_field.scale_max, min=1e-3))
                 torch.minimum(
@@ -3755,7 +3817,11 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
         terminal_field = field
         terminal_iter = last_iter + 1
         if mask_constraint is not None and cfg.mask_contain:
-            _apply_fit_constraint()
+            # The returned terminal field must carry caps certified at its exact terminal means.
+            # In anisotropic mode the ordinary between-step path deliberately reuses caps until
+            # the refresh cadence; force the documented terminal recertification here even when
+            # the final iteration was not itself a refresh point.
+            _apply_fit_constraint(refresh=True)
         record_state_checkpoint(terminal_iter, terminal=True)
         terminal_img = _render(
             _fit_field_view(),
@@ -3786,7 +3852,10 @@ def fit(field: GaussianField, target: torch.Tensor, cfg: FitConfig, verbose: boo
             if selected_record["field"] is not None:
                 field = selected_record["field"].trainable()
                 if mask_constraint is not None and cfg.mask_contain:
-                    _apply_fit_constraint()
+                    # A checkpoint may have been captured between anisotropic refresh points.
+                    # Re-derive caps from the restored means before rendering or returning it;
+                    # retaining the checkpoint's stale caps can leak support outside the mask.
+                    _apply_fit_constraint(refresh=True)
                 img = _render(
                     _fit_field_view(),
                     cfg,

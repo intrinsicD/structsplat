@@ -210,3 +210,36 @@
   `tasks/BENCH-021-additive-convergence-portfolio.md`,
   `tasks/BENCH-022-additive-production-confirmation.md`]
 - **From staging**: O99
+
+## H17: Recertify Position-Dependent Containment After State Restoration
+
+- **Rationale**: An anisotropic support cap is certified for particular Gaussian means. If means
+  move between cap-refresh points, a terminal state or restored best checkpoint cannot safely reuse
+  the prior cap. Force a full cap refresh after every state restoration and immediately before
+  terminal checkpoint/export, then cold-render the materialized four-array endpoint and require
+  exact-zero support outside the mask.
+- **Provenance**: ai-executed
+- **Crystallized via**: artifact-commitment
+- **Sensitivity**: high
+- **Code ref**: [`src/structsplat/fit.py`, `tests/test_mask.py`,
+  `tasks/HIER-030-janelle-7k-contained-mask-diagnostic.md`,
+  `ara/evidence/hier030-janelle-7k-contained-mask-2026-08-11/run.md`]
+- **From staging**: O164
+
+## H18: Establish Representability Before Marginal Row Allocation
+
+- **Rationale**: Under hard mask containment, an unchanged minimum scale and margin can leave
+  foreground components with no legal ordinary centre, so increasing ordinary count cannot repair
+  them. First reserve a frozen, independently certified compact cohort for otherwise
+  unrepresentable topology. Allocate the remaining rows by estimated marginal reduction in the
+  guarded loss—not by equal raw pixel error—and continue reporting weak coverage, detail, and
+  conditioning separately from the zero-hole constraint.
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Sensitivity**: high
+- **Code ref**: [`src/structsplat/fit.py`,
+  `scripts/experiments/hier031_exact7k_masked_boundary_detail.py`,
+  `tests/test_mask.py`, `tests/test_hier031_exact7k_masked_boundary_detail.py`,
+  `docs/adr/0033-fixed-certified-micro-row-reserve.md`,
+  `ara/evidence/hier031-exact7k-masked-boundary-detail-2026-08-12/run.md`]
+- **From staging**: O166

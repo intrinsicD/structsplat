@@ -2387,3 +2387,128 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O162
+    timestamp: "2026-08-11T20:28+02:00"
+    provenance: ai-executed
+    content: >
+      The current tracked HIER-028 checkout preserves the method, task, aggregate evidence note,
+      and recorded manifest/metrics/decision hashes, but not the 1,334-file raw report bundle.
+      Independent metric, field, source-snapshot, and visual verification is unavailable until the
+      original immutable bundle is recovered or a new clean, separately reviewed run is executed.
+    context: >
+      Read-only evidence-availability audit at addf24f: the exact report directory is absent from
+      the workspace, /home/alex, and /tmp, results/ is gitignored, and the repository verification
+      gate is otherwise green with 1,961 passes and every structural checker passing.
+    potential_type: constraint
+    bound_to: [N299, N301]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O163
+    timestamp: "2026-08-11T21:59+02:00"
+    provenance: ai-executed
+    content: >
+      At 1200x1038, HIER-028's literal N=1,024 endpoint is grossly under-capacity: scaling the same
+      count proportions to N=7,000 raises full-frame pursuit by 21.35407 dB and removes the global
+      dot/hole lattice. Same-count cold additive is nevertheless 0.05654 dB higher in PSNR, and
+      7,000 rows remain far below the approximately 57,600 rows needed to preserve max-side-160
+      row-per-pixel density.
+    context: >
+      Exposed single-image/seed/device HIER-029/HIER-030 comparison at max-side 1200 with unequal
+      method counts/work, dirty executed sources, target-known pursuit, producer visual audit, and
+      checker-valid portable reports. This is a resolution/count boundary, not broad-corpus,
+      equal-rate, native-camera, or default evidence.
+    potential_type: constraint
+    bound_to: [N302, N304, N305]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O164
+    timestamp: "2026-08-11T21:59+02:00"
+    provenance: ai-executed
+    content: >
+      Any containment certificate whose caps depend on optimized means must be recomputed after
+      restoring a checkpoint and immediately before terminal export; a cap valid at an earlier
+      position is not a certificate for the restored or terminal state.
+    context: >
+      HIER-030's preserved first attempt had zero outside centres but leaked support because a best
+      checkpoint captured between anisotropic refreshes retained stale caps. The fitter now forces
+      terminal/restored refresh, a focused regression verifies exact-zero outside, and the unchanged
+      evidence run passes all containment receipts.
+    potential_type: heuristic
+    bound_to: [N304, N305]
+    promoted: true
+    promoted_to: "logic/solution/heuristics.md:H17"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O165
+    timestamp: "2026-08-11T21:59+02:00"
+    provenance: ai-executed
+    content: >
+      Exact support containment changes the masked approximation problem at the silhouette: on the
+      HIER-030 C0001 fields, 94.33--96.27% of normalized/pursuit/cold-N7k foreground SSE lies within
+      four pixels of the mask boundary, while greater-than-four-pixel interior PSNR is
+      32.893--35.908 dB. Higher loss-only-mask PSNR cannot be used as containment evidence because
+      that objective may borrow support across the boundary.
+    context: >
+      Descriptive post-hoc Euclidean distance-transform audit over the corrected report's
+      manifest-bound raw arrays. It did not affect selection and covers one exposed raster, so a
+      boundary-aware contained schedule must be frozen on new views before generalization.
+    potential_type: constraint
+    bound_to: [N304, N305]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O166
+    timestamp: "2026-08-12T00:40+02:00"
+    provenance: ai-suggested
+    content: >
+      Before scaling a hard-contained Gaussian field, separate representability from approximation:
+      reserve independently certified compact rows for mask topology outside the ordinary grammar,
+      then allocate the remaining rows toward approximately equal marginal loss reduction rather
+      than equal raw pixel error.
+    context: >
+      HIER-031 proves a count-independent ordinary-scale hole lower bound on exposed C0001, adds a
+      frozen certified micro cohort, and commits the rule to ADR-0033, fit validation, tests, the
+      task decision, and the scaling-readiness interpretation.
+    potential_type: heuristic
+    bound_to: [N306, N307, N308]
+    promoted: true
+    promoted_to: "logic/solution/heuristics.md:H18"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O167
+    timestamp: "2026-08-12T00:40+02:00"
+    provenance: ai-executed
+    content: >
+      On exposed C0001 at exact N=7,000, the selected 910-micro topology-reserve endpoint has zero
+      raw holes and improves overall, boundary, interior, high-pass, Sobel, and LPIPS metrics over
+      HIER-030 cold additive, while the untouched pipeline remains sharper but leaves 933 raw holes.
+    context: >
+      Dirty-source sequential HIER-031 development on one image, seed, and RTX 3050; Laplacian MSE
+      and coefficient conditioning remain counter-evidence, and no distinct review exists.
+    potential_type: claim
+    bound_to: [N306, N308]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O168
+    timestamp: "2026-08-12T00:40+02:00"
+    provenance: ai-executed
+    content: >
+      Zero raw support holes is a topology constraint, not a uniform-coverage or sharpness metric:
+      HIER-031's selected endpoint still has 743 foreground pixels below 0.05 coverage, is visibly
+      softer than the current pipeline, and has larger additive coefficients.
+    context: >
+      Producer visual/results audit of the objective-corrected HIER-031 report; retained to prevent
+      zero-hole language from being promoted into a complete hair/fidelity claim.
+    potential_type: constraint
+    bound_to: [N306, N308]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

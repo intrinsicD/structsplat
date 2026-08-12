@@ -70,6 +70,7 @@ def _fixtures(size: int = 6) -> dict[str, np.ndarray]:
         ({"scale_px": 0.0}, "scale_px"),
         ({"coefficient_abs_limit": 0.0}, "coefficient_abs_limit"),
         ({"sigma_cutoff": 0.0}, "sigma_cutoff"),
+        ({"support_fade": 1}, "support_fade"),
         ({"render_chunk": 0}, "render_chunk"),
         ({"renderer": "normalized"}, "additive semantics"),
     ],
@@ -95,6 +96,84 @@ def test_row_major_tie_break_and_signed_residual_coefficients():
     assert result.final_pixel_rmse_max <= result.initial_pixel_rmse_max
 
 
+def test_selection_mask_restricts_worst_pixel_and_is_not_persisted(tmp_path):
+    target = np.zeros((5, 5, 3), dtype=np.float32)
+    target[0, 0] = 3.0
+    target[3, 2] = np.asarray([0.6, -0.4, 0.2], dtype=np.float32)
+    mask = np.zeros((5, 5), dtype=bool)
+    mask[2:, 1:4] = True
+
+    result = append_residual_pursuit_gaussians(
+        _base(),
+        target,
+        selection_mask=mask,
+        config=ResidualPursuitAdditiveConfig(tail_gaussians=1, render_chunk=8),
+    )
+
+    assert (result.trajectory[0].x, result.trajectory[0].y) == (2, 3)
+    assert result.selection_mask_applied
+    assert result.selection_active_pixels == int(mask.sum())
+    path = tmp_path / "masked-selection-endpoint.npz"
+    result.field.save(str(path))
+    with np.load(path) as payload:
+        assert set(payload.files) == {"means", "log_scales", "rotations", "colors"}
+
+
+def test_support_fade_matches_analytic_construction_and_zeros_tail_outside_cutoff():
+    target = np.zeros((9, 9, 3), dtype=np.float32)
+    target[4, 4] = 1.0
+    selection = np.zeros((9, 9), dtype=bool)
+    selection[4, 4] = True
+
+    result = append_residual_pursuit_gaussians(
+        _base(),
+        target,
+        selection_mask=selection,
+        config=ResidualPursuitAdditiveConfig(
+            tail_gaussians=1,
+            scale_px=0.35,
+            support_fade=True,
+            render_chunk=8,
+        ),
+    )
+
+    assert result.analytic_render_parity_max_abs <= 2e-5
+    tail = result.tail_field
+    rendered = render_field(
+        tail.means,
+        tail.conics(),
+        tail.colors,
+        tail.radii(3.0),
+        9,
+        9,
+        mode="additive",
+        chunk=8,
+        scales=tail.scales(),
+        rotations=tail.rotations,
+        support_fade=True,
+        sigma_cutoff=3.0,
+    ).detach().numpy()
+    assert np.max(np.abs(rendered[0])) == 0.0
+
+
+@pytest.mark.parametrize(
+    "mask",
+    [
+        np.zeros((5, 5), dtype=bool),
+        np.ones((4, 5), dtype=bool),
+        np.ones((5, 5), dtype=np.float32),
+    ],
+)
+def test_selection_mask_rejects_invalid_contracts(mask):
+    with pytest.raises(ValueError, match="selection_mask"):
+        append_residual_pursuit_gaussians(
+            _base(),
+            np.zeros((5, 5, 3), dtype=np.float32),
+            selection_mask=mask,
+            config=ResidualPursuitAdditiveConfig(tail_gaussians=1, render_chunk=8),
+        )
+
+
 def test_pursuit_is_deterministic_pure_and_preserves_the_base_prefix(tmp_path):
     target = _fixtures()["blob"]
     field = _base()
@@ -109,6 +188,8 @@ def test_pursuit_is_deterministic_pure_and_preserves_the_base_prefix(tmp_path):
     assert first.tail_count == 8
     assert first.total_count == 9
     assert first.residual_scan_pixel_evaluations == 8 * 6 * 6
+    assert not first.selection_mask_applied
+    assert first.selection_active_pixels == 6 * 6
     assert first.renderer_calls == 2
     assert first.base_prefix_bit_exact
     assert first.fixed_tail_geometry

@@ -151,6 +151,29 @@ paths were the live source location when the historical runs were produced.
   target-known, max-side-160 producer evidence pending distinct review. Evidence note:
   `ara/evidence/hier028-residual-pursuit-additive-2026-08-11/run.md`.
 
+- `hier029-janelle-full-resolution-mask-2026-08-11`: Exposed C0001 max-side-1200 diagnostic that
+  applies HIER-028's literal N=640/960+64/1024 ladder unchanged. Full pursuit reaches only
+  `13.6468 dB`, while loss-only masking improves the foreground but does not contain centres or
+  support. This is the immutable under-capacity/non-containment control for HIER-030. Evidence
+  note: `ara/evidence/hier029-janelle-full-resolution-mask-2026-08-11/run.md`.
+
+- `hier030-janelle-7k-contained-mask-2026-08-11`: Exposed C0001 max-side-1200 diagnostic scaling
+  the ladder to N=4,375/6,562+438/7,000 and enforcing exact mask containment. Full pursuit reaches
+  `35.0009 dB` (`+21.3541 dB` over literal HIER-029), but cold N=7,000 is slightly better in PSNR.
+  Every masked centre is inside and support/reconstruction outside are exactly zero; 94--96% of
+  remaining foreground SSE lies within four pixels of the mask boundary. Evidence note:
+  `ara/evidence/hier030-janelle-7k-contained-mask-2026-08-11/run.md`.
+
+- `hier031-exact7k-masked-boundary-detail-2026-08-12`: Exposed C0001 max-side-1200 exact-N7,000
+  topology/detail diagnostic. The 0.35-pixel ordinary scale floor leaves ten pixels in three mask
+  components with no legal centre, so ordinary count alone cannot guarantee coverage. A selected
+  910-row certified micro reserve plus 6,090 ordinary rows has zero raw holes and exact outside-zero
+  support, while gaining `+2.2844/+2.3560/+0.7546 dB` overall/boundary/interior over HIER-030 cold
+  additive and reducing deep high-pass MSE 6.31%. Untouched pipelines are sharper but leave
+  933--955 raw holes. This is a dirty-source, sequential, self-reviewed mechanism result, not a
+  default/full-resolution/generalization claim. Evidence note:
+  `ara/evidence/hier031-exact7k-masked-boundary-detail-2026-08-12/run.md`.
+
 - `core016-codec-native-dual-plane-janelle-2026-08-06`: Default-off exposed C0001 systems pilot
   for a charged conventional-codec appearance lattice plus 512-row independent structural measure.
   The 3,896,344-byte packet replays decoded pixel centers below display quantization and has

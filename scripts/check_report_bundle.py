@@ -81,11 +81,14 @@ HIER025_FOLDED_MULTISCALE_SCHEMA = "structsplat.hier025_folded_multiscale_additi
 HIER026_PROGRESSIVE_CAPACITY_SCHEMA = (
     "structsplat.hier026_progressive_additive_capacity.confirmation.v1"
 )
-HIER027_COLD_CAPACITY_SCHEMA = (
-    "structsplat.hier027_cold_additive_capacity.confirmation.v1"
+HIER027_COLD_CAPACITY_SCHEMA = "structsplat.hier027_cold_additive_capacity.confirmation.v1"
+HIER028_RESIDUAL_PURSUIT_SCHEMA = "structsplat.hier028_residual_pursuit_additive.confirmation.v1"
+HIER029_JANELLE_MASK_SCHEMA = "structsplat.hier029_janelle_mask_diagnostic.diagnostic.v1"
+HIER030_JANELLE_7K_CONTAINED_SCHEMA = (
+    "structsplat.hier030_janelle_7k_contained.diagnostic.v1"
 )
-HIER028_RESIDUAL_PURSUIT_SCHEMA = (
-    "structsplat.hier028_residual_pursuit_additive.confirmation.v1"
+HIER031_EXACT7K_MASKED_BOUNDARY_DETAIL_SCHEMA = (
+    "structsplat.hier031_exact7k_masked_boundary_detail.diagnostic.v1"
 )
 CORE019_REPORT_SCHEMA = "core019.coherent_depth.manifest.v1"
 HIER005_REPORT_SCHEMAS = frozenset(
@@ -116,6 +119,9 @@ HIER015_PLUS_REPORT_SCHEMAS = frozenset(
         HIER026_PROGRESSIVE_CAPACITY_SCHEMA,
         HIER027_COLD_CAPACITY_SCHEMA,
         HIER028_RESIDUAL_PURSUIT_SCHEMA,
+        HIER029_JANELLE_MASK_SCHEMA,
+        HIER030_JANELLE_7K_CONTAINED_SCHEMA,
+        HIER031_EXACT7K_MASKED_BOUNDARY_DETAIL_SCHEMA,
     }
 )
 
@@ -966,8 +972,7 @@ def _check_hier005_bundle(
     for artifact in sorted(required_artifacts):
         if artifact not in linked_paths:
             problems.append(
-                f"index.html does not expose required HIER artifact "
-                f"{artifact.relative_to(root)}"
+                f"index.html does not expose required HIER artifact {artifact.relative_to(root)}"
             )
 
 
@@ -1017,12 +1022,7 @@ def _check_hier026_rows(
         ),
     }
     archive_sha256 = "20dd31fd84d777bc1cf5d6b7654a3f569c0aec74458ae094122ad1d0489900fc"
-    expected_keys = {
-        (image, seed, arm)
-        for image in sources
-        for seed in (0, 1)
-        for arm in arms
-    }
+    expected_keys = {(image, seed, arm) for image in sources for seed in (0, 1) for arm in arms}
     observed_keys = {(row.get("image"), row.get("seed"), row.get("arm")) for row in rows}
     if observed_keys != expected_keys or len(rows) != len(expected_keys):
         problems.append("HIER-026 rows do not contain the exact frozen 4x2x7 matrix")
@@ -1085,9 +1085,8 @@ def _check_hier026_rows(
                 and clauses
                 and all(value is True for value in clauses.values())
             )
-            rolled_back = (
-                selected is False
-                and row.get("final_field_digest") == row.get("incoming_field_digest")
+            rolled_back = selected is False and row.get("final_field_digest") == row.get(
+                "incoming_field_digest"
             )
             if not (selected_safe or rolled_back):
                 problems.append(f"{label}: projection transaction did not fail closed")
@@ -1099,13 +1098,11 @@ def _check_hier026_rows(
         ):
             problems.append(f"{label}: progressive count/step/work accounting differs")
         if arm == "cold_additive_projected_n896" and (
-            row.get("attempted_steps") != 500
-            or row.get("gaussian_row_updates") != 448_000
+            row.get("attempted_steps") != 500 or row.get("gaussian_row_updates") != 448_000
         ):
             problems.append(f"{label}: cold N=896 work accounting differs")
         if arm == "cold_additive_projected_n960" and (
-            row.get("attempted_steps") != 500
-            or row.get("gaussian_row_updates") != 480_000
+            row.get("attempted_steps") != 500 or row.get("gaussian_row_updates") != 480_000
         ):
             problems.append(f"{label}: cold N=960 work accounting differs")
 
@@ -1118,9 +1115,7 @@ def _check_hier026_rows(
         }:
             shared.setdefault(pair, set()).add(row.get("base_shared_digest"))
         if arm in {"additive_plain_n640", "additive_projected_n640"}:
-            base_endpoints.setdefault(pair, set()).add(
-                row.get("preprojection_endpoint_digest")
-            )
+            base_endpoints.setdefault(pair, set()).add(row.get("preprojection_endpoint_digest"))
         if arm in progressive_arms:
             progressive_endpoints.setdefault(pair, set()).add(
                 row.get("preprojection_endpoint_digest")
@@ -1203,12 +1198,7 @@ def _check_hier027_rows(
         ),
     }
     archive_sha256 = "20dd31fd84d777bc1cf5d6b7654a3f569c0aec74458ae094122ad1d0489900fc"
-    expected_keys = {
-        (image, seed, arm)
-        for image in sources
-        for seed in (0, 1)
-        for arm in arms
-    }
+    expected_keys = {(image, seed, arm) for image in sources for seed in (0, 1) for arm in arms}
     observed_keys = {(row.get("image"), row.get("seed"), row.get("arm")) for row in rows}
     if observed_keys != expected_keys or len(rows) != len(expected_keys):
         problems.append("HIER-027 rows do not contain the exact frozen 8x2x7 matrix")
@@ -1287,33 +1277,26 @@ def _check_hier027_rows(
                 and clauses
                 and all(value is True for value in clauses.values())
             )
-            rolled_back = (
-                row.get("projection_selected") is False
-                and row.get("final_field_digest") == row.get("incoming_field_digest")
-            )
+            rolled_back = row.get("projection_selected") is False and row.get(
+                "final_field_digest"
+            ) == row.get("incoming_field_digest")
             if not (selected_safe or rolled_back):
                 problems.append(f"{label}: projection transaction did not fail closed")
 
         pair = (image, seed)
         if arm in {"additive_plain_n640", "additive_projected_n640"}:
-            n640_endpoints.setdefault(pair, set()).add(
-                row.get("preprojection_endpoint_digest")
-            )
+            n640_endpoints.setdefault(pair, set()).add(row.get("preprojection_endpoint_digest"))
         if arm in {
             "cold_additive_plain_n1088",
             "cold_additive_projected_n1088",
         }:
-            n1088_endpoints.setdefault(pair, set()).add(
-                row.get("preprojection_endpoint_digest")
-            )
-    if (
-        len(n640_endpoints) != len(sources) * 2
-        or any(None in values or len(values) != 1 for values in n640_endpoints.values())
+            n1088_endpoints.setdefault(pair, set()).add(row.get("preprojection_endpoint_digest"))
+    if len(n640_endpoints) != len(sources) * 2 or any(
+        None in values or len(values) != 1 for values in n640_endpoints.values()
     ):
         problems.append("HIER-027 N=640 branches do not share one endpoint per pair")
-    if (
-        len(n1088_endpoints) != len(sources) * 2
-        or any(None in values or len(values) != 1 for values in n1088_endpoints.values())
+    if len(n1088_endpoints) != len(sources) * 2 or any(
+        None in values or len(values) != 1 for values in n1088_endpoints.values()
     ):
         problems.append("HIER-027 N=1088 branches do not share one endpoint per pair")
 
@@ -1323,10 +1306,7 @@ def _check_hier027_rows(
         attempts = None
     attempt_rows = attempts.get("attempts") if isinstance(attempts, dict) else None
     attempt_keys = (
-        {
-            (record.get("image"), record.get("seed"), record.get("arm"))
-            for record in attempt_rows
-        }
+        {(record.get("image"), record.get("seed"), record.get("arm")) for record in attempt_rows}
         if isinstance(attempt_rows, list)
         else set()
     )
@@ -1415,12 +1395,7 @@ def _check_hier028_rows(
         ),
     }
     archive_sha256 = "20dd31fd84d777bc1cf5d6b7654a3f569c0aec74458ae094122ad1d0489900fc"
-    expected_keys = {
-        (image, seed, arm)
-        for image in sources
-        for seed in (0, 1)
-        for arm in arms
-    }
+    expected_keys = {(image, seed, arm) for image in sources for seed in (0, 1) for arm in arms}
     observed_keys = {(row.get("image"), row.get("seed"), row.get("arm")) for row in rows}
     if observed_keys != expected_keys or len(rows) != len(expected_keys):
         problems.append("HIER-028 rows do not contain the exact frozen 8x2x4 matrix")
@@ -1499,10 +1474,9 @@ def _check_hier028_rows(
                 and clauses
                 and all(value is True for value in clauses.values())
             )
-            rolled_back = (
-                row.get("projection_selected") is False
-                and row.get("final_field_digest") == row.get("incoming_field_digest")
-            )
+            rolled_back = row.get("projection_selected") is False and row.get(
+                "final_field_digest"
+            ) == row.get("incoming_field_digest")
             if not (selected_safe or rolled_back):
                 problems.append(f"{label}: endpoint projection did not fail closed")
         if arm == "cold_additive_projected_n960":
@@ -1540,11 +1514,9 @@ def _check_hier028_rows(
                 and clauses
                 and all(value is True for value in clauses.values())
             )
-            rolled_back = (
-                row.get("projection_selected") is False
-                and row.get("base_projection_final_digest")
-                == row.get("incoming_field_digest")
-            )
+            rolled_back = row.get("projection_selected") is False and row.get(
+                "base_projection_final_digest"
+            ) == row.get("incoming_field_digest")
             if not (selected_safe or rolled_back):
                 problems.append(f"{label}: pursuit base projection did not fail closed")
             if (
@@ -1553,11 +1525,8 @@ def _check_hier028_rows(
                 or row.get("pursuit_tail_count") != 64
                 or row.get("pursuit_base_prefix_bit_exact") is not True
                 or row.get("pursuit_fixed_tail_geometry") is not True
-                or row.get("pursuit_base_field_digest")
-                != row.get("base_projection_final_digest")
-                or not isinstance(
-                    row.get("pursuit_analytic_render_parity_max_abs"), (int, float)
-                )
+                or row.get("pursuit_base_field_digest") != row.get("base_projection_final_digest")
+                or not isinstance(row.get("pursuit_analytic_render_parity_max_abs"), (int, float))
                 or float(row["pursuit_analytic_render_parity_max_abs"]) > 2e-5
                 or row.get("pursuit_residual_scan_pixel_evaluations")
                 != 64 * int(row.get("height", 0)) * int(row.get("width", 0))
@@ -1576,10 +1545,7 @@ def _check_hier028_rows(
         attempts = None
     attempt_rows = attempts.get("attempts") if isinstance(attempts, dict) else None
     attempt_keys = (
-        {
-            (record.get("image"), record.get("seed"), record.get("arm"))
-            for record in attempt_rows
-        }
+        {(record.get("image"), record.get("seed"), record.get("arm")) for record in attempt_rows}
         if isinstance(attempt_rows, list)
         else set()
     )
@@ -1598,7 +1564,8 @@ def _check_hier028_rows(
     if isinstance(decision, dict):
         selected = decision.get("numeric_selected_arm")
         valid_selection = (
-            selected is None and decision.get("numeric_pass") is False
+            selected is None
+            and decision.get("numeric_pass") is False
             or selected == "residual_pursuit_additive_n1024"
             and decision.get("numeric_pass") is True
             and decision.get("pursuit_robust_numeric") is True
@@ -1608,6 +1575,405 @@ def _check_hier028_rows(
             is not decision.get("numeric_pass")
         ):
             problems.append("HIER-028 decision does not follow the frozen pursuit gate")
+
+
+def _check_hier029_rows(
+    root: Path,
+    rows: list[dict[str, Any]],
+    problems: list[str],
+) -> None:
+    """Validate HIER-029's exposed Janelle raster, paired modes, and pure endpoints."""
+
+    modes = {"full_frame", "masked_foreground"}
+    arms = {
+        "normalized_plain_n640": (640, 320_000),
+        "cold_additive_projected_n960": (960, 480_000),
+        "residual_pursuit_additive_n1024": (1024, 480_000),
+        "cold_additive_projected_n1024": (1024, 512_000),
+    }
+    pure_arms = set(arms) - {"normalized_plain_n640"}
+    projected_arms = {
+        "cold_additive_projected_n960",
+        "cold_additive_projected_n1024",
+    }
+    expected_keys = {(mode, arm) for mode in modes for arm in arms}
+    observed_keys = {(row.get("mode"), row.get("arm")) for row in rows}
+    if len(rows) != 8 or observed_keys != expected_keys:
+        problems.append("HIER-029 rows do not contain the exact frozen 2x4 matrix")
+
+    source_sha256 = "ae24fe99d3f8edbd04cd2c85ebc4fe9bfd95abe878c22abb7691cadcfc5c411b"
+    mask_sha256 = "94dcbf7005dbeb1d183e259a569d783aa5df900255e763385bed91f02d3b80c3"
+    four_arrays = {"means", "log_scales", "rotations", "colors"}
+    base_endpoints: dict[Any, Any] = {}
+    pursuit_bases: dict[Any, Any] = {}
+    for index, row in enumerate(rows):
+        label = f"metrics.json rows[{index}]"
+        mode, arm = row.get("mode"), row.get("arm")
+        if mode not in modes or arm not in arms:
+            continue
+        count, work = arms[arm]
+        if (
+            row.get("image") != "C0001"
+            or row.get("seed") != 0
+            or row.get("phase") != "exposed_single_image_full_resolution_diagnostic"
+            or row.get("source_sha256") != source_sha256
+            or row.get("mask_sha256") != mask_sha256
+            or row.get("original_width") != 5328
+            or row.get("original_height") != 4608
+            or row.get("width") != 1200
+            or row.get("height") != 1038
+        ):
+            problems.append(f"{label}: frozen HIER-029 source/raster binding differs")
+        if (
+            row.get("target_gaussians") != count
+            or row.get("n_gaussians") != count
+            or row.get("attempted_steps") != 500
+            or row.get("gaussian_row_updates") != work
+            or row.get("completed") is not True
+            or row.get("method_status") != "completed"
+        ):
+            problems.append(f"{label}: HIER-029 count/completion/work contract differs")
+        active = row.get("active_pixels")
+        mask_active = row.get("mask_active_pixels")
+        if (
+            mode == "full_frame"
+            and active != 1200 * 1038
+            or mode == "masked_foreground"
+            and active != mask_active
+            or not isinstance(mask_active, int)
+            or isinstance(mask_active, bool)
+            or mask_active <= 0
+        ):
+            problems.append(f"{label}: HIER-029 objective active-pixel accounting differs")
+        if mode == "masked_foreground" and row.get("mask_encoder_only") is not True:
+            problems.append(f"{label}: masked objective did not declare encoder-only mask")
+        if arm in pure_arms:
+            if (
+                set(row.get("field_npz_keys", [])) != four_arrays
+                or row.get("pure_additive_endpoint") is not True
+                or row.get("four_array_endpoint_exact") is not True
+                or row.get("training_payload_present") is not False
+                or row.get("renderer") != "cuda_additive"
+                or row.get("selected_lambda") != 0.0
+            ):
+                problems.append(f"{label}: HIER-029 pure four-array endpoint differs")
+            for flag in (
+                "mass_payload_present",
+                "denominator_payload_present",
+                "optimizer_payload_present",
+                "auxiliary_rgb_payload_present",
+            ):
+                if row.get(flag) is not False:
+                    problems.append(f"{label}: forbidden endpoint payload flag {flag}")
+        if arm in projected_arms:
+            clauses = row.get("projection_clauses")
+            selected_safe = (
+                row.get("projection_selected") is True
+                and isinstance(clauses, dict)
+                and clauses
+                and all(value is True for value in clauses.values())
+            )
+            rolled_back = row.get("projection_selected") is False and row.get(
+                "final_field_digest"
+            ) == row.get("incoming_field_digest")
+            if not (selected_safe or rolled_back):
+                problems.append(f"{label}: HIER-029 endpoint projection did not fail closed")
+            if row.get("projection_mask_applied") is not (mode == "masked_foreground"):
+                problems.append(f"{label}: HIER-029 projection mask flag differs")
+        if arm == "cold_additive_projected_n960":
+            base_endpoints[mode] = row.get("final_field_digest")
+        if arm == "residual_pursuit_additive_n1024":
+            pursuit_bases[mode] = row.get("pursuit_base_field_digest")
+            expected_masked = mode == "masked_foreground"
+            if (
+                row.get("pursuit_applied") is not True
+                or row.get("pursuit_base_count") != 960
+                or row.get("pursuit_tail_count") != 64
+                or row.get("pursuit_base_prefix_bit_exact") is not True
+                or row.get("pursuit_fixed_tail_geometry") is not True
+                or row.get("pursuit_selection_mask_applied") is not expected_masked
+                or row.get("pursuit_selection_active_pixels")
+                != (mask_active if expected_masked else 1200 * 1038)
+                or row.get("pursuit_base_field_digest") != row.get("base_projection_final_digest")
+                or row.get("pursuit_residual_scan_pixel_evaluations") != 64 * 1200 * 1038
+            ):
+                problems.append(f"{label}: HIER-029 residual-pursuit contract differs")
+        receipt = _artifact_path(root, row.get("shared_audit_receipt"))
+        if receipt is None:
+            problems.append(f"{label}: HIER-029 shared audit receipt is missing")
+        elif row.get("shared_audit_receipt_sha256") != _sha256(receipt):
+            problems.append(f"{label}: HIER-029 shared audit receipt hash differs")
+        artifact_dir = root / str(row.get("artifact_dir", ""))
+        for name in (
+            "mask.png",
+            "objective_source.png",
+            "objective_reconstruction.png",
+            "objective_error.png",
+            "foreground_source.png",
+            "foreground_reconstruction.png",
+            "foreground_error.png",
+            "learning_curve.svg",
+            "pursuit_history.json",
+        ):
+            if not (artifact_dir / name).is_file():
+                problems.append(f"{label}: missing HIER-029 artifact {name}")
+    if base_endpoints != pursuit_bases or set(base_endpoints) != modes:
+        problems.append("HIER-029 pursuit rows do not share each mode's projected N=960 base")
+
+    try:
+        attempts = _load_json(root / "attempts.json")
+    except (OSError, json.JSONDecodeError, ValueError):
+        attempts = None
+    attempt_rows = attempts.get("attempts") if isinstance(attempts, dict) else None
+    attempt_keys = (
+        {(record.get("mode"), record.get("arm")) for record in attempt_rows}
+        if isinstance(attempt_rows, list)
+        else set()
+    )
+    if (
+        not isinstance(attempt_rows, list)
+        or len(attempt_rows) != 8
+        or attempt_keys != expected_keys
+        or any(record.get("status") != "ok" for record in attempt_rows)
+    ):
+        problems.append("HIER-029 attempts ledger is not the exact 8-cell success matrix")
+    try:
+        decision = _load_json(root / "decision.json")
+    except (OSError, json.JSONDecodeError, ValueError):
+        decision = None
+    if not isinstance(decision, dict) or (
+        decision.get("all_cells_present") is not True
+        or decision.get("integrity_pass") is not True
+        or decision.get("overall_pass") is not False
+        or decision.get("formal_claim_ready") is not False
+    ):
+        problems.append("HIER-029 decision must remain a complete non-claim diagnostic")
+
+
+def _check_hier030_rows(
+    root: Path,
+    rows: list[dict[str, Any]],
+    problems: list[str],
+) -> None:
+    """Validate HIER-030's scaled ladder and hard mask-containment receipts."""
+
+    modes = {"full_frame", "masked_contained"}
+    arms = {
+        "normalized_plain_n4375": (4375, 2_187_500),
+        "cold_additive_projected_n6562": (6562, 3_281_000),
+        "residual_pursuit_additive_n7000": (7000, 3_281_000),
+        "cold_additive_projected_n7000": (7000, 3_500_000),
+    }
+    normalized_arm = "normalized_plain_n4375"
+    base_arm = "cold_additive_projected_n6562"
+    pursuit_arm = "residual_pursuit_additive_n7000"
+    cold_arm = "cold_additive_projected_n7000"
+    projected_arms = {base_arm, cold_arm}
+    expected_keys = {(mode, arm) for mode in modes for arm in arms}
+    observed_keys = {(row.get("mode"), row.get("arm")) for row in rows}
+    if len(rows) != 8 or observed_keys != expected_keys:
+        problems.append("HIER-030 rows do not contain the exact frozen 2x4 matrix")
+
+    source_sha256 = "ae24fe99d3f8edbd04cd2c85ebc4fe9bfd95abe878c22abb7691cadcfc5c411b"
+    mask_sha256 = "94dcbf7005dbeb1d183e259a569d783aa5df900255e763385bed91f02d3b80c3"
+    four_arrays = {"means", "log_scales", "rotations", "colors"}
+    base_endpoints: dict[Any, Any] = {}
+    pursuit_bases: dict[Any, Any] = {}
+    for index, row in enumerate(rows):
+        label = f"metrics.json rows[{index}]"
+        mode, arm = row.get("mode"), row.get("arm")
+        if mode not in modes or arm not in arms:
+            continue
+        count, work = arms[arm]
+        if (
+            row.get("image") != "C0001"
+            or row.get("seed") != 0
+            or row.get("phase") != "exposed_single_image_7k_containment_diagnostic"
+            or row.get("source_sha256") != source_sha256
+            or row.get("mask_sha256") != mask_sha256
+            or row.get("original_width") != 5328
+            or row.get("original_height") != 4608
+            or row.get("width") != 1200
+            or row.get("height") != 1038
+        ):
+            problems.append(f"{label}: frozen HIER-030 source/raster binding differs")
+        if (
+            row.get("target_gaussians") != count
+            or row.get("n_gaussians") != count
+            or row.get("attempted_steps") != 500
+            or row.get("gaussian_row_updates") != work
+            or row.get("completed") is not True
+            or row.get("method_status") != "completed"
+        ):
+            problems.append(f"{label}: HIER-030 count/completion/work contract differs")
+        expected_fit_count = 6562 if arm == pursuit_arm else count
+        if row.get("fit_gaussians") != expected_fit_count:
+            problems.append(f"{label}: HIER-030 fitted-count accounting differs")
+        if (
+            set(row.get("field_npz_keys", [])) != four_arrays
+            or row.get("four_array_endpoint_exact") is not True
+            or row.get("training_payload_present") is not False
+            or row.get("mask_payload_present") is not False
+            or row.get("scale_cap_payload_present") is not False
+        ):
+            problems.append(f"{label}: HIER-030 four-array endpoint contract differs")
+        for flag in (
+            "mass_payload_present",
+            "denominator_payload_present",
+            "optimizer_payload_present",
+            "auxiliary_rgb_payload_present",
+        ):
+            if row.get(flag) is not False:
+                problems.append(f"{label}: forbidden endpoint payload flag {flag}")
+        active = row.get("active_pixels")
+        mask_active = row.get("mask_active_pixels")
+        if (
+            mode == "full_frame"
+            and active != 1200 * 1038
+            or mode == "masked_contained"
+            and active != mask_active
+            or not isinstance(mask_active, int)
+            or isinstance(mask_active, bool)
+            or mask_active <= 0
+        ):
+            problems.append(f"{label}: HIER-030 objective active-pixel accounting differs")
+        if mode == "masked_contained":
+            if (
+                row.get("mask_contained") is not True
+                or row.get("support_fade") is not True
+                or row.get("containment_pass") is not True
+                or row.get("centres_inside_mask") != count
+                or row.get("centres_outside_mask") != 0
+                or not isinstance(row.get("unit_coverage_outside_abs_max"), (int, float))
+                or float(row["unit_coverage_outside_abs_max"]) > 1e-7
+                or not isinstance(row.get("reconstruction_outside_abs_max"), (int, float))
+                or float(row["reconstruction_outside_abs_max"]) > 1e-7
+            ):
+                problems.append(f"{label}: HIER-030 hard containment receipt failed")
+        elif row.get("mask_contained") is not False or row.get("support_fade") is not False:
+            problems.append(f"{label}: HIER-030 full-frame semantics differ")
+
+        artifact_dir = root / str(row.get("artifact_dir", ""))
+        for name in (
+            "containment.json",
+            "placement.png",
+            "unit_coverage.png",
+            "outside_support.png",
+            "pursuit_history.json",
+        ):
+            path = artifact_dir / name
+            if not path.is_file() or path.stat().st_size <= 0:
+                problems.append(f"{label}: missing HIER-030 artifact {name}")
+
+        if arm in projected_arms:
+            clauses = row.get("projection_clauses")
+            selected_safe = (
+                row.get("projection_selected") is True
+                and isinstance(clauses, dict)
+                and clauses
+                and all(value is True for value in clauses.values())
+            )
+            rolled_back = row.get("projection_selected") is False and row.get(
+                "final_field_digest"
+            ) == row.get("incoming_field_digest")
+            if not (selected_safe or rolled_back):
+                problems.append(f"{label}: HIER-030 endpoint projection did not fail closed")
+        if arm == base_arm:
+            base_endpoints[mode] = row.get("final_field_digest")
+        if arm == pursuit_arm:
+            pursuit_bases[mode] = row.get("pursuit_base_field_digest")
+            history_path = _artifact_path(root, row.get("pursuit_history_path"))
+            if history_path is None:
+                problems.append(f"{label}: pursuit history is missing")
+            elif row.get("pursuit_history_sha256") != _sha256(history_path):
+                problems.append(f"{label}: pursuit history hash differs")
+            else:
+                try:
+                    history = _load_json(history_path)
+                except (OSError, json.JSONDecodeError, ValueError):
+                    history = None
+                trajectory = history.get("trajectory") if isinstance(history, dict) else None
+                history_config = history.get("config") if isinstance(history, dict) else None
+                expected_mask = mode == "masked_contained"
+                if (
+                    not isinstance(history, dict)
+                    or history.get("applied") is not True
+                    or history.get("base_count") != 6562
+                    or history.get("tail_count") != 438
+                    or history.get("total_count") != 7000
+                    or not isinstance(trajectory, list)
+                    or len(trajectory) != 438
+                    or not isinstance(history_config, dict)
+                    or history_config.get("scale_px") != 0.35
+                    or history_config.get("support_fade") is not expected_mask
+                    or history.get("selection_mask_applied") is not expected_mask
+                ):
+                    problems.append(f"{label}: HIER-030 pursuit history contract differs")
+            clauses = row.get("projection_clauses")
+            selected_safe = (
+                row.get("projection_selected") is True
+                and isinstance(clauses, dict)
+                and clauses
+                and all(value is True for value in clauses.values())
+            )
+            rolled_back = row.get("projection_selected") is False and row.get(
+                "base_projection_final_digest"
+            ) == row.get("incoming_field_digest")
+            if not (selected_safe or rolled_back):
+                problems.append(f"{label}: HIER-030 pursuit base projection did not fail closed")
+            if (
+                row.get("pursuit_applied") is not True
+                or row.get("pursuit_base_count") != 6562
+                or row.get("pursuit_tail_count") != 438
+                or row.get("pursuit_base_prefix_bit_exact") is not True
+                or row.get("pursuit_fixed_tail_geometry") is not True
+                or row.get("pursuit_base_field_digest") != row.get("base_projection_final_digest")
+                or not isinstance(row.get("pursuit_analytic_render_parity_max_abs"), (int, float))
+                or float(row["pursuit_analytic_render_parity_max_abs"]) > 2e-5
+                or row.get("pursuit_residual_scan_pixel_evaluations")
+                != 438 * int(row.get("height", 0)) * int(row.get("width", 0))
+            ):
+                problems.append(f"{label}: HIER-030 residual-pursuit contract differs")
+        if arm == normalized_arm and row.get("projection_applied") is not False:
+            problems.append(f"{label}: normalized HIER-030 arm unexpectedly projected")
+
+    if (
+        set(base_endpoints) != modes
+        or pursuit_bases != base_endpoints
+        or any(value is None for value in base_endpoints.values())
+    ):
+        problems.append("HIER-030 pursuit rows do not share the exact projected N=6562 base")
+
+    try:
+        attempts = _load_json(root / "attempts.json")
+    except (OSError, json.JSONDecodeError, ValueError):
+        attempts = None
+    attempt_rows = attempts.get("attempts") if isinstance(attempts, dict) else None
+    attempt_keys = (
+        {(record.get("mode"), record.get("arm")) for record in attempt_rows}
+        if isinstance(attempt_rows, list)
+        else set()
+    )
+    if (
+        not isinstance(attempt_rows, list)
+        or len(attempt_rows) != len(expected_keys)
+        or attempt_keys != expected_keys
+        or any(record.get("status") != "ok" for record in attempt_rows)
+    ):
+        problems.append("HIER-030 attempts ledger is not the exact eight-cell success matrix")
+
+    try:
+        decision = _load_json(root / "decision.json")
+    except (OSError, json.JSONDecodeError, ValueError):
+        decision = None
+    if (
+        not isinstance(decision, dict)
+        or decision.get("all_cells_present") is not True
+        or decision.get("integrity_pass") is not True
+        or decision.get("containment_pass") is not True
+        or decision.get("formal_claim_ready") is not False
+    ):
+        problems.append("HIER-030 decision must remain a complete contained non-claim diagnostic")
 
 
 def _check_hier015_plus_bundle(
@@ -1746,14 +2112,28 @@ def _check_hier015_plus_bundle(
                 problems.append(f"{filename} has no attempt ledger")
 
     linked_paths = _check_html(root, problems)
-    stable_keys: set[tuple[Any, Any, Any]] = set()
+    stable_keys: set[tuple[Any, ...]] = set()
     for index, row in enumerate(rows):
         label = f"metrics.json rows[{index}]"
         if row.get("schema") != schema or row.get("status") != "diagnostic":
             problems.append(f"{label}: wrong schema or status")
         key = (
-            (row.get("image"), row.get("seed"), row.get("arm"), row.get("target_gaussians"))
-            if schema in (
+            (
+                row.get("image"),
+                row.get("seed"),
+                row.get("mode"),
+                row.get("arm"),
+                row.get("target_gaussians"),
+            )
+            if schema in (HIER029_JANELLE_MASK_SCHEMA, HIER030_JANELLE_7K_CONTAINED_SCHEMA)
+            else (
+                row.get("image"),
+                row.get("seed"),
+                row.get("arm"),
+                row.get("target_gaussians"),
+            )
+            if schema
+            in (
                 HIER022_CONTINUATION_SCHEMA,
                 HIER023_UNIT_GAUGE_SCHEMA,
                 HIER024_GAUGE_PROJECTION_SCHEMA,
@@ -1826,9 +2206,7 @@ def _check_hier015_plus_bundle(
         }
         gaussian = (artifact_dir / "field.gaussian.npz").is_file()
         required = common | (
-            {"field.gaussian.npz", "fit_history.json"}
-            if gaussian
-            else {"field.observation.npz"}
+            {"field.gaussian.npz", "fit_history.json"} if gaussian else {"field.observation.npz"}
         )
         if gaussian and row.get("normalization_eps") is not None:
             required |= {"denominator.json", "denominator.npz"}
@@ -1836,9 +2214,7 @@ def _check_hier015_plus_bundle(
             artifact = artifact_dir / name
             if not artifact.is_file() or artifact.stat().st_size <= 0:
                 problems.append(f"{label}: missing required artifact {name}")
-        field_path = artifact_dir / (
-            "field.gaussian.npz" if gaussian else "field.observation.npz"
-        )
+        field_path = artifact_dir / ("field.gaussian.npz" if gaussian else "field.observation.npz")
         if field_path.is_file() and row.get("field_file_sha256") != _sha256(field_path):
             problems.append(f"{label}: field_file_sha256 differs")
         row_path = artifact_dir / "row.json"
@@ -1854,8 +2230,7 @@ def _check_hier015_plus_bundle(
             artifact = artifact_dir / name
             if artifact.is_file() and artifact.resolve() not in linked_paths:
                 problems.append(
-                    f"index.html does not expose HIER-015+ artifact "
-                    f"{artifact.relative_to(root)}"
+                    f"index.html does not expose HIER-015+ artifact {artifact.relative_to(root)}"
                 )
     if schema == HIER026_PROGRESSIVE_CAPACITY_SCHEMA:
         _check_hier026_rows(root, rows, problems)
@@ -1863,6 +2238,10 @@ def _check_hier015_plus_bundle(
         _check_hier027_rows(root, rows, problems)
     if schema == HIER028_RESIDUAL_PURSUIT_SCHEMA:
         _check_hier028_rows(root, rows, problems)
+    if schema == HIER029_JANELLE_MASK_SCHEMA:
+        _check_hier029_rows(root, rows, problems)
+    if schema == HIER030_JANELLE_7K_CONTAINED_SCHEMA:
+        _check_hier030_rows(root, rows, problems)
 
 
 def _check_core019_bundle(
@@ -1965,8 +2344,10 @@ def _check_core019_bundle(
     except (OSError, json.JSONDecodeError, ValueError) as exc:
         problems.append(f"metrics.json is invalid: {exc}")
         return
-    if not isinstance(metrics, list) or len(metrics) != 4 or not all(
-        isinstance(row, dict) for row in metrics
+    if (
+        not isinstance(metrics, list)
+        or len(metrics) != 4
+        or not all(isinstance(row, dict) for row in metrics)
     ):
         problems.append("metrics.json must contain exactly four CORE-019 arm rows")
         return
@@ -2026,8 +2407,12 @@ def _check_core019_bundle(
             packet_hashes = (
                 input_record.get("packet_hashes") if isinstance(input_record, dict) else None
             )
-            if not isinstance(packet_hashes, list) or not packet_hashes or not all(
-                isinstance(value, str) and HEX_64.fullmatch(value) for value in packet_hashes
+            if (
+                not isinstance(packet_hashes, list)
+                or not packet_hashes
+                or not all(
+                    isinstance(value, str) and HEX_64.fullmatch(value) for value in packet_hashes
+                )
             ):
                 problems.append(f"{label}: packet hashes are missing or malformed")
             else:
@@ -2048,9 +2433,7 @@ def _check_core019_bundle(
             if not isinstance(visuals, dict):
                 problems.append(f"{label}: visual artifacts are missing")
                 continue
-            descriptor(
-                visuals.get("contact_sheet"), f"{label}.visuals.contact_sheet", expose=True
-            )
+            descriptor(visuals.get("contact_sheet"), f"{label}.visuals.contact_sheet", expose=True)
             view_artifacts = visuals.get("views")
             if not isinstance(view_artifacts, dict) or len(view_artifacts) != 4:
                 problems.append(f"{label}: exactly four reporting-view visual sets are required")
@@ -2069,7 +2452,9 @@ def _check_core019_bundle(
     linked_paths = _check_html(root, problems)
     for path in sorted(required_links):
         if path not in linked_paths:
-            problems.append(f"index.html does not expose CORE-019 artifact {path.relative_to(root)}")
+            problems.append(
+                f"index.html does not expose CORE-019 artifact {path.relative_to(root)}"
+            )
 
 
 def check_bundle(

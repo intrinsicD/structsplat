@@ -4,6 +4,7 @@ This module is a deterministic, default-off research reference.  It keeps the di
 Observation Field V2 geometry fixed and never materializes the dense pixel-by-Gaussian matrix.
 Torch is imported lazily so the package's NumPy-only analysis boundary remains intact.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field as dataclass_field, replace
@@ -33,9 +34,7 @@ def _integer(value: object, name: str, *, minimum: int = 0) -> int:
 
 
 def _finite(value: object, name: str, *, minimum: float = 0.0, strict: bool = False) -> float:
-    if isinstance(value, bool) or not isinstance(
-        value, (int, float, np.integer, np.floating)
-    ):
+    if isinstance(value, bool) or not isinstance(value, (int, float, np.integer, np.floating)):
         raise TypeError(f"{name} must be a finite number")
     result = float(value)
     invalid = result <= minimum if strict else result < minimum
@@ -229,9 +228,7 @@ class CoefficientProjectionConfig:
             "pixel_rmse_threshold",
             "patch7_rmse_threshold",
         ):
-            object.__setattr__(
-                self, name, _finite(getattr(self, name), name, strict=True)
-            )
+            object.__setattr__(self, name, _finite(getattr(self, name), name, strict=True))
         for name in ("ridge", "sse_relative_tolerance", "violation_absolute_tolerance"):
             object.__setattr__(self, name, _finite(getattr(self, name), name))
         object.__setattr__(
@@ -248,9 +245,7 @@ class CoefficientProjectionConfig:
         if not isinstance(self.allow_unsafe_stage_zero_reconditioning, bool):
             raise TypeError("allow_unsafe_stage_zero_reconditioning must be bool")
         if self.selection_mode not in ("transaction", "bounded_intermediate"):
-            raise ValueError(
-                "selection_mode must be 'transaction' or 'bounded_intermediate'"
-            )
+            raise ValueError("selection_mode must be 'transaction' or 'bounded_intermediate'")
 
 
 @dataclass(frozen=True)
@@ -383,13 +378,9 @@ def project_contracted_coefficients(
     trainable_ids = torch.as_tensor(
         np.flatnonzero(trainable_numpy), device=torch_device, dtype=torch.long
     )
-    local_of_global = torch.full(
-        (field.n,), -1, device=torch_device, dtype=torch.long
-    )
+    local_of_global = torch.full((field.n,), -1, device=torch_device, dtype=torch.long)
     if trainable_ids.numel():
-        local_of_global[trainable_ids] = torch.arange(
-            trainable_ids.numel(), device=torch_device
-        )
+        local_of_global[trainable_ids] = torch.arange(trainable_ids.numel(), device=torch_device)
     x0 = gaussian.colors.detach()[trainable_ids].clone()
 
     x0_bounds = _tile_bounds(means, radii, height, width)
@@ -481,8 +472,8 @@ def project_contracted_coefficients(
 
     with torch.no_grad():
         maintained_raw = maintained_apply(gaussian.colors.detach())
-        initial_variable = basis_apply(x0) if trainable_ids.numel() else torch.zeros_like(
-            maintained_raw
+        initial_variable = (
+            basis_apply(x0) if trainable_ids.numel() else torch.zeros_like(maintained_raw)
         )
         if cfg.frozen_base_mode == "explicit":
             if trainable_ids.numel() == field.n:
@@ -514,7 +505,8 @@ def project_contracted_coefficients(
             left = torch.sum(basis_apply(probe_x) * probe_y)
             right = torch.sum(probe_x * basis_transpose(probe_y))
             adjoint_relative_error = float(
-                (left - right).abs()
+                (left - right)
+                .abs()
                 .div(torch.maximum(left.abs(), right.abs()).clamp_min(1.0))
                 .cpu()
             )
@@ -577,11 +569,7 @@ def project_contracted_coefficients(
                 <= float(initial_display_metrics["normalized_violation"])
                 + cfg.violation_absolute_tolerance
             )
-            selectable = bool(
-                transaction_safe
-                if cfg.selection_mode == "transaction"
-                else bounded
-            )
+            selectable = bool(transaction_safe if cfg.selection_mode == "transaction" else bounded)
             checkpoints.append(
                 CoefficientProjectionCheckpoint(
                     iteration=iteration,
@@ -647,10 +635,7 @@ def project_contracted_coefficients(
             # Stage zero is the unconditional fail-closed return even when the incoming field is
             # already outside the optional coefficient bound.  In that case retain its explicit
             # non-selectable record, run no iterations, and select the unchanged field below.
-            if (
-                checkpoints[0].selectable
-                or cfg.allow_unsafe_stage_zero_reconditioning
-            ):
+            if checkpoints[0].selectable or cfg.allow_unsafe_stage_zero_reconditioning:
                 epsilon = torch.finfo(dtype).eps
                 for iteration in range(1, cfg.max_iterations + 1):
                     if bool(torch.all(relative <= cfg.tolerance)):
@@ -658,9 +643,7 @@ def project_contracted_coefficients(
                     product = normal(direction)
                     denominator = torch.sum(direction * product, dim=0)
                     valid = (denominator > epsilon) & (relative > cfg.tolerance)
-                    safe_denominator = torch.where(
-                        valid, denominator, torch.ones_like(denominator)
-                    )
+                    safe_denominator = torch.where(valid, denominator, torch.ones_like(denominator))
                     alpha = torch.where(
                         valid, residual_dot / safe_denominator, torch.zeros_like(residual_dot)
                     )
@@ -670,9 +653,7 @@ def project_contracted_coefficients(
                     updated_dot = torch.sum(residual * updated_dot_input, dim=0)
                     relative = torch.sqrt(torch.sum(residual.square(), dim=0)) / right_norm
                     candidate = frozen_base + basis_apply(x)
-                    append_checkpoint(
-                        iteration, x, candidate, float(torch.max(relative).cpu())
-                    )
+                    append_checkpoint(iteration, x, candidate, float(torch.max(relative).cpu()))
                     safe_residual_dot = torch.where(
                         residual_dot.abs() > epsilon,
                         residual_dot,
@@ -706,7 +687,15 @@ def project_contracted_coefficients(
         renderer=renderer,
         render_chunk=chunk,
     )
-    parity = float(np.max(np.abs(maintained - reconstruction)))
+    # The matrix-free operator is intentionally restricted to ``active`` pixels, so its
+    # candidate buffer is undefined (zero apart from an explicit frozen base) elsewhere.
+    # Certify parity on that common domain, then expose the actual maintained full-crop replay
+    # as ``reconstruction_raw`` and retain the black-matted view as ``reconstruction``.
+    parity = float(np.max(np.abs(maintained[active] - reconstruction_raw[active])))
+    reconstruction_raw = maintained.astype(np.float32, copy=False)
+    reconstruction = np.where(active[:, :, None], reconstruction_raw, 0.0).astype(
+        np.float32, copy=False
+    )
     return CoefficientProjectionResult(
         field=projected_field,
         reconstruction_raw=reconstruction_raw,
@@ -954,9 +943,7 @@ def relax_contracted_geometry(
         with torch.no_grad():
             mean_delta = gaussian.means - anchor_means
             mean_norm = torch.linalg.vector_norm(mean_delta, dim=1, keepdim=True)
-            mean_factor = torch.clamp(
-                cfg.max_mean_shift_px / mean_norm.clamp_min(1e-12), max=1.0
-            )
+            mean_factor = torch.clamp(cfg.max_mean_shift_px / mean_norm.clamp_min(1e-12), max=1.0)
             gaussian.means.copy_(anchor_means + mean_delta * mean_factor)
             gaussian.means[:, 0].clamp_(min=0.0, max=float(width - 1))
             gaussian.means[:, 1].clamp_(min=0.0, max=float(height - 1))
@@ -964,9 +951,7 @@ def relax_contracted_geometry(
                 anchor_log_scales - cfg.max_log_scale_shift,
                 anchor_log_scales + cfg.max_log_scale_shift,
             )
-            gaussian.log_scales.clamp_(
-                min=math.log(1e-3), max=math.log(float(max(height, width)))
-            )
+            gaussian.log_scales.clamp_(min=math.log(1e-3), max=math.log(float(max(height, width))))
             gaussian.rotations.clamp_(
                 anchor_rotations - cfg.max_rotation_shift_rad,
                 anchor_rotations + cfg.max_rotation_shift_rad,
@@ -1005,9 +990,7 @@ def relax_contracted_geometry(
 
     checkpoints[best_index] = replace(checkpoints[best_index], selected=True)
     best_means, best_log_scales, best_rotations = best_state
-    relaxed_field = _field_from_geometry(
-        field, best_means, best_log_scales, best_rotations
-    )
+    relaxed_field = _field_from_geometry(field, best_means, best_log_scales, best_rotations)
     reconstruction_raw = best_render.cpu().numpy().astype(np.float32, copy=False)
     reconstruction = np.where(active[:, :, None], reconstruction_raw, 0.0).astype(
         np.float32, copy=False
@@ -1035,9 +1018,7 @@ def relax_contracted_geometry(
             if field.n
             else 0.0
         ),
-        rotation_shift_max_rad=(
-            float(torch.max(rotation_shift).cpu()) if field.n else 0.0
-        ),
+        rotation_shift_max_rad=(float(torch.max(rotation_shift).cpu()) if field.n else 0.0),
         maintained_render_parity_max_abs=parity,
         elapsed_seconds=time.perf_counter() - started,
     )
@@ -1323,9 +1304,7 @@ def alternate_projected_geometry(
     checkpoints[best_index] = replace(checkpoints[best_index], selected=True)
     selected_field, selected_raw = candidates[best_index]
     selected = checkpoints[best_index]
-    selected_masked = np.where(active[:, :, None], selected_raw, 0.0).astype(
-        np.float32, copy=False
-    )
+    selected_masked = np.where(active[:, :, None], selected_raw, 0.0).astype(np.float32, copy=False)
     maintained = render_observation_field(
         selected_field,
         device=device,
