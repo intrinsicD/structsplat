@@ -411,3 +411,9 @@ paths were the live source location when the historical runs were produced.
   review: context for BENCH-017/FIT-028/FIT-029/BENCH-018, not an outcome, comparison, or default
   decision. Full image-bearing reports remain local under `runs/report_*_2026-08-07/index.html`.
   Evidence note: `ara/evidence/report-battery-stage-karate-2026-08-07/run.md`.
+- `hier032-coverage-debt-diagnosis-2026-08-12`: Read-only, hash-bound derivation from HIER-031's
+  selected exact-N7,000 field. It records 743 pixels below unit coverage 0.05 in 483 deterministic
+  8-connected components, 461 in the fixed hair crop, 38.816% of foreground SSE on the weak set,
+  and a 732-placement initial certified cover. This freezes the HIER-032 development question; it
+  is not a method outcome or general claim. Evidence note:
+  `ara/evidence/hier032-coverage-debt-diagnosis-2026-08-12/run.md`.

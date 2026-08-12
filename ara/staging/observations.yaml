@@ -2512,3 +2512,21 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O169
+    timestamp: "2026-08-12T12:00+02:00"
+    provenance: ai-executed
+    content: >
+      HIER-031's hash-bound selected exact-N7,000 endpoint has 743 foreground pixels below unit
+      coverage 0.05 in 483 deterministic 8-connected components; 461 lie in the fixed hair crop,
+      and the weak set contributes 38.816% of foreground SSE. The frozen HIER-032 candidate bank
+      selects 732 initial placements, so most defects remain isolated capacity demands.
+    context: >
+      Read-only post-hoc derivation from the exposed dirty-source HIER-031 C0001 bundle, bound to
+      ara/evidence/hier032-coverage-debt-diagnosis-2026-08-12/run.md. It freezes a development
+      question and is not a HIER-032 outcome, held-out result, default, or general claim.
+    potential_type: observation
+    bound_to: [N306, N308]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

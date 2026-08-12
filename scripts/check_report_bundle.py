@@ -17,16 +17,20 @@ Run: python scripts/check_report_bundle.py RESULTS_DIR
 from __future__ import annotations
 
 import argparse
+import ast
 import csv
 import hashlib
 from html.parser import HTMLParser
+import io
 import json
 import math
 from pathlib import Path
 import re
+import struct
 import sys
 from typing import Any
 from urllib.parse import unquote, urlsplit
+import zipfile
 
 REPOSITORY_ROOT = Path(__file__).resolve().parent.parent
 REQUIRED_FILES = (
@@ -90,6 +94,10 @@ HIER030_JANELLE_7K_CONTAINED_SCHEMA = (
 HIER031_EXACT7K_MASKED_BOUNDARY_DETAIL_SCHEMA = (
     "structsplat.hier031_exact7k_masked_boundary_detail.diagnostic.v1"
 )
+HIER032_COVERAGE_DEBT_REFINEMENT_SCHEMA = (
+    "structsplat.hier032_coverage_debt_refinement.diagnostic.v1"
+)
+HIER032_PROTOCOL_DIGEST = "402588c6c32a93ac1dca615ad50d2cf15248892beaaae1bf80cd9f9e253c9898"
 CORE019_REPORT_SCHEMA = "core019.coherent_depth.manifest.v1"
 HIER005_REPORT_SCHEMAS = frozenset(
     {
@@ -122,6 +130,7 @@ HIER015_PLUS_REPORT_SCHEMAS = frozenset(
         HIER029_JANELLE_MASK_SCHEMA,
         HIER030_JANELLE_7K_CONTAINED_SCHEMA,
         HIER031_EXACT7K_MASKED_BOUNDARY_DETAIL_SCHEMA,
+        HIER032_COVERAGE_DEBT_REFINEMENT_SCHEMA,
     }
 )
 
@@ -168,6 +177,78 @@ def _sha256(path: Path) -> str:
     with path.open("rb") as stream:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _npy_payload(blob: bytes) -> tuple[str, tuple[int, ...], bytes]:
+    """Read the dtype/shape/raw bytes needed for a torch-free canonical field hash."""
+
+    stream = io.BytesIO(blob)
+    if stream.read(6) != b"\x93NUMPY":
+        raise ValueError("NPY member has the wrong magic")
+    version = stream.read(2)
+    if version == b"\x01\x00":
+        raw_length = stream.read(2)
+        if len(raw_length) != 2:
+            raise ValueError("NPY v1 member has a truncated header length")
+        header_length = struct.unpack("<H", raw_length)[0]
+    elif version in {b"\x02\x00", b"\x03\x00"}:
+        raw_length = stream.read(4)
+        if len(raw_length) != 4:
+            raise ValueError("NPY v2+ member has a truncated header length")
+        header_length = struct.unpack("<I", raw_length)[0]
+    else:
+        raise ValueError(f"unsupported NPY version {tuple(version)!r}")
+    header_bytes = stream.read(header_length)
+    if len(header_bytes) != header_length:
+        raise ValueError("NPY member has a truncated header")
+    encoding = "utf-8" if version == b"\x03\x00" else "latin1"
+    header = ast.literal_eval(header_bytes.decode(encoding).strip())
+    if not isinstance(header, dict):
+        raise ValueError("NPY header is not a mapping")
+    dtype = header.get("descr")
+    shape = header.get("shape")
+    if (
+        not isinstance(dtype, str)
+        or not isinstance(shape, tuple)
+        or not all(isinstance(value, int) and value >= 0 for value in shape)
+        or header.get("fortran_order") is not False
+    ):
+        raise ValueError("NPY field member has unsupported dtype/shape/order")
+    itemsize_match = re.search(r"(\d+)$", dtype)
+    if itemsize_match is None:
+        raise ValueError(f"NPY dtype has no item size: {dtype!r}")
+    raw = stream.read()
+    expected_bytes = math.prod(shape) * int(itemsize_match.group(1))
+    if len(raw) != expected_bytes:
+        raise ValueError(
+            f"NPY raw length {len(raw)} differs from shape/dtype length {expected_bytes}"
+        )
+    return dtype, shape, raw
+
+
+def _gaussian_four_array_state_sha256(path: Path) -> str:
+    """Recompute HIER-032's exact decoded-state digest from a four-array NPZ."""
+
+    keys = ("colors", "log_scales", "means", "rotations")
+    with zipfile.ZipFile(path) as archive:
+        if set(archive.namelist()) != {f"{name}.npy" for name in keys}:
+            raise ValueError("Gaussian endpoint is not the exact four-array payload")
+        digest = hashlib.sha256(b"structsplat.gaussian-field-four-array-state.v1\0")
+        for name in keys:
+            dtype, shape, raw = _npy_payload(archive.read(f"{name}.npy"))
+            encoded_name = name.encode("ascii")
+            descriptor = json.dumps(
+                {"dtype": dtype, "shape": list(shape)},
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("ascii")
+            digest.update(len(encoded_name).to_bytes(4, "little"))
+            digest.update(encoded_name)
+            digest.update(len(descriptor).to_bytes(8, "little"))
+            digest.update(descriptor)
+            digest.update(len(raw).to_bytes(8, "little"))
+            digest.update(raw)
     return digest.hexdigest()
 
 
@@ -1976,6 +2057,314 @@ def _check_hier030_rows(
         problems.append("HIER-030 decision must remain a complete contained non-claim diagnostic")
 
 
+def _hier032_expected_gates(
+    row: dict[str, Any],
+    control: dict[str, Any],
+) -> dict[str, bool]:
+    """Recompute HIER-032's frozen gate without trusting stored booleans."""
+
+    def numeric(value: object, fallback: float) -> float:
+        return (
+            float(value)
+            if isinstance(value, (int, float))
+            and not isinstance(value, bool)
+            and math.isfinite(float(value))
+            else fallback
+        )
+
+    return {
+        "exact_count": row.get("n_gaussians") == 7_000,
+        "four_array_payload": row.get("four_array_endpoint_exact") is True,
+        "zero_raw_holes": row.get("raw_hole_pixels") == 0,
+        "zero_weak_pixels": row.get("coverage_lt_005_pixels") == 0,
+        "support_outside": numeric(row.get("unit_coverage_outside_abs_max"), math.inf)
+        <= 1e-7,
+        "reconstruction_outside": numeric(
+            row.get("reconstruction_outside_abs_max"), math.inf
+        )
+        <= 1e-7,
+        "field_parity": numeric(
+            row.get("maintained_render_parity_max_abs"), math.inf
+        )
+        <= 2e-5,
+        "boundary_improved": numeric(
+            row.get("boundary_le4_psnr_db"), -math.inf
+        )
+        > numeric(control.get("boundary_le4_psnr_db"), math.inf),
+        "hair_improved": numeric(row.get("hair_psnr_db"), -math.inf)
+        > numeric(control.get("hair_psnr_db"), math.inf),
+        "interior_floor": numeric(row.get("interior_gt4_psnr_db"), -math.inf)
+        >= 35.2631,
+    }
+
+
+def _check_hier032_rows(
+    root: Path,
+    rows: list[dict[str, Any]],
+    problems: list[str],
+) -> None:
+    """Validate HIER-032's frozen exact-N coverage-debt protocol and decision receipts."""
+
+    arms = (
+        "hier031_selected_control_n7000",
+        "fallback_per_weak_pixel_n7000",
+        "component_set_cover_n7000",
+        "component_set_cover_contribution_merge_n7000",
+        "coverage_then_boundary_highpass_n7000",
+    )
+    four_arrays = {"means", "log_scales", "rotations", "colors"}
+    row_arms = [row.get("arm") for row in rows]
+    if row_arms != list(arms):
+        problems.append("HIER-032 rows are not the exact ordered five-arm success matrix")
+    by_arm = {str(row.get("arm")): row for row in rows}
+    control = by_arm.get(arms[0])
+    expected_gates: dict[str, dict[str, bool]] = {}
+    for index, row in enumerate(rows):
+        label = f"metrics.json rows[{index}]"
+        clauses = row.get("acceptance_clauses")
+        if row.get("arm") == arms[0]:
+            if clauses is not None or row.get("acceptance_pass") is not None:
+                problems.append(f"{label}: control must not carry a candidate acceptance gate")
+        elif control is None:
+            problems.append(f"{label}: HIER-032 candidate has no paired control")
+        else:
+            expected = _hier032_expected_gates(row, control)
+            expected_gates[str(row.get("arm"))] = expected
+            if clauses != expected:
+                problems.append(
+                    f"{label}: HIER-032 acceptance clauses differ from recomputed metrics"
+                )
+            if row.get("acceptance_pass") is not all(expected.values()):
+                problems.append(f"{label}: acceptance_pass differs from recomputed clauses")
+        if (
+            row.get("target_gaussians") != 7_000
+            or row.get("n_gaussians") != 7_000
+            or row.get("four_array_endpoint_exact") is not True
+            or set(row.get("field_npz_keys", [])) != four_arrays
+        ):
+            problems.append(f"{label}: exact-N four-array endpoint contract differs")
+        if (
+            row.get("containment_pass") is not True
+            or not isinstance(row.get("unit_coverage_outside_abs_max"), (int, float))
+            or float(row["unit_coverage_outside_abs_max"]) > 1e-7
+            or not isinstance(row.get("reconstruction_outside_abs_max"), (int, float))
+            or float(row["reconstruction_outside_abs_max"]) > 1e-7
+        ):
+            problems.append(f"{label}: HIER-032 containment receipt differs")
+        if (
+            not isinstance(row.get("in_memory_field_state_sha256"), str)
+            or not HEX_64.fullmatch(row["in_memory_field_state_sha256"])
+            or row.get("decoded_field_state_sha256")
+            != row.get("in_memory_field_state_sha256")
+            or row.get("decoded_field_state_max_abs") != 0.0
+        ):
+            problems.append(f"{label}: decoded four-array field-state receipt differs")
+        coefficient = row.get("coefficient_abs_max")
+        if (
+            not isinstance(coefficient, (int, float))
+            or isinstance(coefficient, bool)
+            or not math.isfinite(float(coefficient))
+            or float(coefficient) > 16.0
+        ):
+            problems.append(f"{label}: coefficient bound exceeds the frozen limit")
+        for metric in (
+            "coverage_lt_005_pixels",
+            "coverage_lt_005_components",
+            "coverage_deficit_mass",
+            "hair_psnr_db",
+            "boundary_le4_psnr_db",
+            "interior_gt4_psnr_db",
+            "detail_highpass_mse",
+            "detail_laplacian_mse",
+            "coverage_detector_seconds",
+            "candidate_selector_seconds",
+            "donor_selector_seconds",
+        ):
+            value = row.get(metric)
+            if (
+                not isinstance(value, (int, float))
+                or isinstance(value, bool)
+                or not math.isfinite(float(value))
+            ):
+                problems.append(f"{label}: {metric} must be finite numeric")
+        artifact_dir = root / str(row.get("artifact_dir", ""))
+        for name in (
+            "absolute_error.png",
+            "coverage_debt.png",
+            "components.png",
+            "placement.png",
+            "donors.png",
+            "unit_coverage.png",
+            "hair_source_crop.png",
+            "hair_reconstruction_crop.png",
+            "hair_error_crop.png",
+            "boundary_source_crop.png",
+            "boundary_reconstruction_crop.png",
+            "boundary_error_crop.png",
+            "candidate_history.json",
+        ):
+            path = artifact_dir / name
+            if not path.is_file() or path.stat().st_size <= 0:
+                problems.append(f"{label}: missing HIER-032 artifact {name}")
+        field_path = artifact_dir / "field.gaussian.npz"
+        if field_path.is_file():
+            try:
+                recomputed_state_sha256 = _gaussian_four_array_state_sha256(field_path)
+            except (OSError, ValueError, zipfile.BadZipFile) as exc:
+                problems.append(f"{label}: cannot recompute decoded field state: {exc}")
+            else:
+                if row.get("decoded_field_state_sha256") != recomputed_state_sha256:
+                    problems.append(
+                        f"{label}: decoded field-state hash differs from the persisted arrays"
+                    )
+    relationship_receipts = (
+        (arms[3], "first_wave_matches_hier031_funding_arm"),
+        (arms[4], "coverage_placement_matches_contribution_arm"),
+    )
+    for arm, key in relationship_receipts:
+        path = root / "artifacts" / arm / "geometry_history.json"
+        try:
+            record = _load_json(path)
+        except (OSError, json.JSONDecodeError, ValueError):
+            record = None
+        if (
+            not isinstance(record, dict)
+            or not isinstance(record.get("metadata"), dict)
+            or record["metadata"].get(key) is not True
+        ):
+            problems.append(f"HIER-032 {arm} lacks mandatory relationship receipt {key}")
+
+    try:
+        config = _load_json(root / "config.json")
+    except (OSError, json.JSONDecodeError, ValueError):
+        config = None
+    base = config.get("base_field") if isinstance(config, dict) else None
+    git = config.get("git") if isinstance(config, dict) else None
+    source = config.get("source") if isinstance(config, dict) else None
+    mask = config.get("mask") if isinstance(config, dict) else None
+    arguments = config.get("arguments") if isinstance(config, dict) else None
+    if (
+        not isinstance(config, dict)
+        or config.get("formal_source_clean") is not True
+        or config.get("formal_claim_ready") is not False
+        or config.get("protocol_digest") != HIER032_PROTOCOL_DIGEST
+        or not isinstance(base, dict)
+        or base.get("sha256")
+        != "a0a080ccbd255ce51f11489cd504956a1c5181a495bbca2b4bf74ecb0995c1db"
+        or base.get("decision_sha256")
+        != "52016532a23290b12c45b2b9a75c2fc7e3fb0d3001cd19924f30a1a52eb8e2a8"
+        or not isinstance(git, dict)
+        or git.get("dirty") is not False
+        or git.get("branch") != "agent/hier032-coverage-debt-refinement"
+        or not isinstance(source, dict)
+        or source.get("sha256")
+        != "ae24fe99d3f8edbd04cd2c85ebc4fe9bfd95abe878c22abb7691cadcfc5c411b"
+        or not isinstance(mask, dict)
+        or mask.get("sha256")
+        != "94dcbf7005dbeb1d183e259a569d783aa5df900255e763385bed91f02d3b80c3"
+        or not isinstance(arguments, dict)
+        or arguments.get("max_side") != 1200
+        or arguments.get("seed") != 0
+        or arguments.get("device") != "cuda"
+        or arguments.get("render_chunk") != 256
+        or arguments.get("error_scale") != 4.0
+        or arguments.get("lpips") is not True
+    ):
+        problems.append("HIER-032 config does not bind the clean protocol/base-field contract")
+    try:
+        environment = _load_json(root / "environment.json")
+    except (OSError, json.JSONDecodeError, ValueError):
+        environment = None
+    gpu = environment.get("gpu") if isinstance(environment, dict) else None
+    if (
+        not isinstance(environment, dict)
+        or environment.get("cuda_available") is not True
+        or not isinstance(gpu, dict)
+        or gpu.get("name") != "NVIDIA GeForce RTX 3050"
+    ):
+        problems.append("HIER-032 environment does not bind the frozen RTX 3050 device")
+    try:
+        protocol = _load_json(root / "protocol.json")
+    except (OSError, json.JSONDecodeError, ValueError):
+        protocol = None
+    protocol_payload = protocol.get("protocol") if isinstance(protocol, dict) else None
+    recomputed_digest = (
+        hashlib.sha256(
+            json.dumps(
+                protocol_payload, sort_keys=True, separators=(",", ":")
+            ).encode("utf-8")
+        ).hexdigest()
+        if isinstance(protocol_payload, dict)
+        else None
+    )
+    if (
+        not isinstance(protocol, dict)
+        or protocol.get("digest") != HIER032_PROTOCOL_DIGEST
+        or recomputed_digest != HIER032_PROTOCOL_DIGEST
+        or not isinstance(config, dict)
+        or protocol.get("digest") != config.get("protocol_digest")
+        or not isinstance(protocol_payload, dict)
+        or protocol_payload.get("arms") != list(arms)
+    ):
+        problems.append("HIER-032 protocol receipt differs from config/arm order")
+    try:
+        attempts = _load_json(root / "attempts.json")
+    except (OSError, json.JSONDecodeError, ValueError):
+        attempts = None
+    attempt_rows = attempts.get("attempts") if isinstance(attempts, dict) else None
+    if (
+        not isinstance(attempt_rows, list)
+        or len(attempt_rows) != len(arms)
+        or [row.get("arm") for row in attempt_rows] != list(arms)
+        or any(row.get("status") != "ok" for row in attempt_rows)
+    ):
+        problems.append("HIER-032 attempts ledger is not the exact ordered five-arm success matrix")
+    try:
+        decision = _load_json(root / "decision.json")
+    except (OSError, json.JSONDecodeError, ValueError):
+        decision = None
+    if not isinstance(decision, dict):
+        problems.append("HIER-032 decision is missing")
+    else:
+        selected = decision.get("selected_arm")
+        passing = [
+            by_arm[arm]
+            for arm in arms[1:]
+            if arm in by_arm and all(expected_gates.get(arm, {}).values())
+        ]
+        passing.sort(
+            key=lambda row: (-float(row["psnr_db"]), arms.index(str(row["arm"])))
+        )
+        expected_selected = passing[0]["arm"] if passing else None
+        tradeoffs = [by_arm[arm] for arm in arms[1:] if arm in by_arm]
+        tradeoffs.sort(
+            key=lambda row: (
+                int(row["coverage_lt_005_pixels"]),
+                -float(row["boundary_le4_psnr_db"]),
+                -float(row["hair_psnr_db"]),
+                -float(row["psnr_db"]),
+                arms.index(str(row["arm"])),
+            )
+        )
+        expected_tradeoff = tradeoffs[0]["arm"] if tradeoffs else None
+        if (
+            decision.get("complete") is not True
+            or decision.get("all_arms_succeeded") is not True
+            or decision.get("formal_claim_ready") is not False
+            or decision.get("selected_method") is not (selected is not None)
+            or selected != expected_selected
+            or decision.get("best_tradeoff_arm") != expected_tradeoff
+            or decision.get("gates") != expected_gates
+            or decision.get("control_arm") != arms[0]
+            or decision.get("control_boundary_psnr_db")
+            != (None if control is None else control.get("boundary_le4_psnr_db"))
+            or decision.get("control_hair_psnr_db")
+            != (None if control is None else control.get("hair_psnr_db"))
+            or decision.get("interior_psnr_floor_db") != 35.2631
+        ):
+            problems.append("HIER-032 decision does not follow the frozen acceptance matrix")
+
+
 def _check_hier015_plus_bundle(
     root: Path,
     manifest: dict[str, Any],
@@ -2242,6 +2631,8 @@ def _check_hier015_plus_bundle(
         _check_hier029_rows(root, rows, problems)
     if schema == HIER030_JANELLE_7K_CONTAINED_SCHEMA:
         _check_hier030_rows(root, rows, problems)
+    if schema == HIER032_COVERAGE_DEBT_REFINEMENT_SCHEMA:
+        _check_hier032_rows(root, rows, problems)
 
 
 def _check_core019_bundle(
