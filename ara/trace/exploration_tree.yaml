@@ -6297,3 +6297,15 @@ tree:
       - "decision sha256 350d5b641287533a41b7bf2d840e9575ea62cea45999e0969b94312fba038da6"
     also_depends_on: [N309]
     status: resolved
+  - id: N311
+    type: question
+    title: "Can gradients identify useful HIER topology transactions after 2D-to-3D lift?"
+    provenance: user
+    timestamp: "2026-08-12T19:11+02:00"
+    description: >
+      Determine whether gradient information can identify both where capacity is needed and which
+      split, clone, merge, teleport, or prune operation should be applied when HIER 2D Gaussian
+      fields initialize persistent multi-view 3D Gaussians in realtime-gs. Separate source-field
+      stress, downstream 3D stress, and the value of a complete discrete topology transaction.
+    also_depends_on: [N306, N309, N310]
+    status: open

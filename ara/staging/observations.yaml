@@ -2549,3 +2549,59 @@ observations:
     promoted_to: "logic/solution/constraints.md:K11"
     crystallized_via: artifact-commitment
     stale: false
+  - id: O171
+    timestamp: "2026-08-12T19:11+02:00"
+    provenance: ai-suggested
+    content: >
+      Raw aggregated parameter gradients measure stress inside the current Gaussian
+      parameterization but do not identify the value of a discrete topology rewrite. A useful
+      controller should rank complete count-balanced transactions by their finite render
+      perturbation against the downstream image-loss gradient, then exact-render and recover only
+      the best few proposals.
+    context: >
+      Mechanism synthesis from the StructSplat normalized renderer, safe-schedule transactions,
+      HIER-032's donor/destination tradeoff, realtime-gs density-controller evidence, and current
+      gradient-informed densification literature. The proposal is documented but unimplemented and
+      empirically unresolved.
+    potential_type: architecture
+    bound_to: [N309, N310, N311]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O172
+    timestamp: "2026-08-12T19:11+02:00"
+    provenance: ai-suggested
+    content: >
+      Source 2D-field gradients cannot by themselves determine downstream 3D topology because they
+      do not identify depth, occlusion order, or cross-view correspondence. Source scores should
+      remain proposal priors; the acceptance signal must aggregate persistent-lineage evidence in
+      a common world frame across training views and be evaluated under the downstream 3D loss.
+    context: >
+      Boundary condition for transferring HIER density signals into realtime-gs. It is a proposed
+      safety rule awaiting the source-versus-downstream action-ranking experiment.
+    potential_type: constraint
+    bound_to: [N311]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O173
+    timestamp: "2026-08-12T19:11+02:00"
+    provenance: ai-suggested
+    content: >
+      Stream per-lineage signed gradient, absolute gradient mass, directional second moment,
+      responsibility, leverage, and visibility statistics. Use coherence as clone-versus-split
+      evidence, a negative splitting-matrix eigenvalue for symmetric split, removal sensitivity for
+      prune/merge, and an auxiliary zero-influence gate plus multiview consistency for teleport
+      destinations; always retain no-op and exact transaction gates.
+    context: >
+      Candidate gradient spectrum packet and operator interpretation synthesized from AbsGS,
+      GDAGS, SteepGS, Revising Densification, REFINE, matching pursuit, and the local topology seams.
+      No production implementation or benchmark outcome exists.
+    potential_type: heuristic
+    bound_to: [N311]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

@@ -2,9 +2,9 @@ session:
   id: "2026-08-12_001"
   date: "2026-08-12"
   started: "2026-08-12T00:11+02:00"
-  last_turn: "2026-08-12T10:09+02:00"
-  turn_count: 2
-  summary: "Exact-7k coverage closure improves exposed masked edges but collapses protected interior quality; HIER-032 closes with no selected method."
+  last_turn: "2026-08-12T19:11+02:00"
+  turn_count: 3
+  summary: "HIER-032 remains negative; gradient-informed research now proposes a downstream, count-balanced operator-identifiability oracle before any controller change."
 
 events_logged:
   - turn: 1
@@ -67,6 +67,30 @@ events_logged:
     routing: crystallized
     provenance: ai-executed
     summary: "Crystallized final-field coverage plus protected appearance gates as K11 via artifact commitment."
+  - turn: 3
+    type: question
+    id: "N311"
+    routing: direct
+    provenance: user
+    summary: "Opened whether gradients can locate and choose split, clone, merge, teleport, or prune for HIER-derived 3D Gaussians."
+  - turn: 3
+    type: architecture
+    id: "O171"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged a shared render-loss auction over complete count-balanced topology transactions."
+  - turn: 3
+    type: constraint
+    id: "O172"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged source-2D gradients as proposal priors rather than downstream 3D topology decisions."
+  - turn: 3
+    type: heuristic
+    id: "O173"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Staged a per-lineage gradient packet with operator-specific curvature, removal, and insertion gates."
 
 ai_actions:
   - turn: 1
@@ -120,6 +144,16 @@ ai_actions:
       - "ara/trace/exploration_tree.yaml"
       - "ara/staging/observations.yaml"
       - "ara/logic/solution/constraints.md"
+  - turn: 3
+    action: "Audited StructSplat and realtime-gs density/topology paths, searched current primary densification literature, and authored a validated gradient-informed HIER research portfolio."
+    provenance: ai-executed
+    files_changed:
+      - "docs/research/2026-08-12-gradient-informed-hier-topology-control.md"
+      - "ara/trace/exploration_tree.yaml"
+      - "ara/staging/observations.yaml"
+      - "ara/trace/sessions/2026-08-12_001.yaml"
+      - "ara/trace/sessions/session_index.yaml"
+      - "ara/trace/pm_reasoning_log.yaml"
 
 claims_touched: []
 
@@ -128,14 +162,20 @@ key_context:
     excerpt: "The user asked whether equally distributed error would make later Gaussian scaling reduce error everywhere, while continuing the exact-7k no-hole/thin-detail research."
   - turn: 2
     excerpt: "The user supplied the frozen HIER-032 implementation/evidence plan and requested committing, merging to main, pushing, and deleting merged branches."
+  - turn: 3
+    excerpt: "The user redirected the next research step toward using gradients to choose split, clone, merge, teleport, and prune for HIER 2D fields lifted into realtime-gs 3D Gaussians."
 
 open_threads:
   - "Obtain distinct code, scientific, and visual review of HIER-031 and ADR-0033."
   - "Freeze disjoint Janelle images and mask topologies before any integration or generalization claim."
   - "When approximately 57.6k/native scaling is authorized, preserve a certified topology reserve and compare actual marginal allocation at equal count/work."
   - "If arm-5 reopened-debt morphology is investigated, create a new prospectively reviewed task that persists failure-state intermediates to a new immutable bundle."
+  - "Freeze HIER-033 as an operator-identifiability oracle before implementing a live gradient topology controller."
+  - "Measure whether source-field action ranks transfer to downstream 3D and sealed validation views."
 
 ai_suggestions_pending:
   - "Treat zero raw holes as a topology constraint, not proof of uniform coverage, sharpness, or complete hair recovery."
   - "Scale ordinary appearance capacity only after retaining a mask-specific certified micro reserve."
   - "Do not promote positive coverage closure without final-field interior and perceptual preservation."
+  - "Use source 2D gradients only to propose sites; decide topology from persistent multi-view 3D evidence."
+  - "Compare complete count-balanced edits in one render-loss currency, with curvature for symmetric split and exact top-k trials."
