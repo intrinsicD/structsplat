@@ -24,12 +24,34 @@ HIER-031/032, ADR-0006
 ## Agent workflow
 - Driver: codex-root
 - Reviewer: codex-overnight-protocol-reviewer
-- Turn: driver
-- Reviewed revision: pending
+- Turn: reviewer
+- Reviewed revision: 7417be6
 
 ### Handoff log
-The finite protocol is prospectively approved at the digest below. Formal outcomes have not
-been accessed; clean-source execution and independent results review remain pending.
+The finite protocol is prospectively approved at the digest below. Frozen-source execution
+has finished; the distinct artifact audit is in progress. This handoff envelope was recorded
+while replay review was underway, not before that review request; no disposition was promoted.
+
+### Handoff
+
+#### Objective
+Audit the finite operator atlas and its predeclared same-case selection gate.
+#### Changes
+Analytic packet, count-funded finite bank, identical recovery, portable driver and validator.
+#### Evidence
+Source7417be6; results/hier033_operator_oracle_2026-09-05 and its exact manifest/digest.
+The source checkpoint passed2114portable tests and all repository structural gates.
+#### Assumptions
+Procedural additive reference semantics only; finite bank and donor budget remain explicit.
+#### Uncertainties
+Independent interpretation and ARA disposition remain pending; no general topology policy.
+#### Review focus
+Regenerate fixtures/bank; cold decode and raw-image replay; both-phase regret, cancellation,
+fixed count, donor costs, work counters, complete artifacts and frozen protocol identity.
+#### Protected actions not taken
+No default change, sealed/natural-image access, selective rerun, artifact repair, push or merge.
+#### Recommended next action
+Finish the distinct scientific audit, then bind its bounded findings into the claim/evidence ledger.
 
 ## Notes
 Design: docs/research/2026-08-12-hier-pixel-gradient-anatomy.md.

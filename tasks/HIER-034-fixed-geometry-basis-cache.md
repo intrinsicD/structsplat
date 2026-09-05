@@ -27,7 +27,9 @@ HIER-031/032/014, ADR-0006
 - Reviewed revision: pending
 
 ### Handoff log
-Protocol and implementation in preparation; no formal outcome exists.
+Protocol and implementation are prospectively approved at the digest below. The clean source
+checkpoint is4b2c79f2a97e0bde5109d11ab717edd5881a1ca1. Formal timing remains unlaunched while an
+unrelated GPU workload is active; no other process was stopped and no speed claim is made.
 
 ## Notes
 Overnight research authorized September 5, 2026.

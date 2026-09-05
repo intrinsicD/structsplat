@@ -1,4 +1,4 @@
-"""Portable evidence plumbing shared only by HIER-033/034/035 experiments.
+"""Portable evidence plumbing shared only by HIER-033/034/035/036 experiments.
 
 Does not select methods or define scientific protocols; those stay in each task and driver.
 All outputs are new directories, with an exact file hash manifest after completion.
@@ -22,11 +22,12 @@ from PIL import Image
 
 
 SCHEMA = "structsplat.hier_research.report.v1"
-TASKS = {"HIER-033", "HIER-034", "HIER-035"}
+TASKS = {"HIER-033", "HIER-034", "HIER-035", "HIER-036"}
 TASK_PATHS = {
     "HIER-033": "tasks/HIER-033-pixel-gradient-operator-oracle.md",
     "HIER-034": "tasks/HIER-034-fixed-geometry-basis-cache.md",
     "HIER-035": "tasks/HIER-035-additive-convergence-controls.md",
+    "HIER-036": "tasks/HIER-036-dense-coupling-oracle.md",
 }
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -220,7 +221,7 @@ def _check_protocol_identity(root, manifest, problems):
                     for r in range(repeats) for b in protocol["backends"]}
         if expected != set(manifest["expected_cells"]) or len(expected) != len(manifest["expected_cells"]):
             problems.append("declared matrix disagrees with frozen executable protocol")
-    elif manifest.get("task") == "HIER-035":
+    elif manifest.get("task") in ("HIER-035", "HIER-036"):
         protocol = manifest["protocol"]
         workloads = [(f, s) for f in protocol["families"] for s in protocol["seeds"]]
         if manifest.get("diagnostic"):
@@ -350,6 +351,8 @@ def _validate_convergence_cell(root, row, protocol, diagnostic, problems):
     expected.update(arm="adam" if row["method"].startswith("adam") else row["method"],
                     adam_multiplier=protocol["adam_multipliers"].get(row["method"], 1.0),
                     steps=3 if diagnostic else protocol["config"]["steps"])
+    if protocol["task"] == "HIER-036" and not row["method"].startswith("adam"):
+        expected["arm"] = "block"
     if config.get("control") != expected:
         problems.append(f"resolved convergence config differs: {row['cell_id']}")
     history = json.loads((directory / "history.json").read_text())
@@ -398,6 +401,95 @@ def _validate_convergence_cell(root, row, protocol, diagnostic, problems):
     for key in ("lpips", "cold_render_max_abs"):
         if isinstance(row.get(key), bool) or not isinstance(row.get(key), (int, float)) or row[key] < 0:
             problems.append(f"invalid convergence {key}: {row['cell_id']}")
+
+
+def _validate_coupling_cell(root, row, protocol, diagnostic, problems):
+    """HIER-036's factorial configuration, bounds, ceiling, and complete inner-work contract."""
+    _validate_convergence_cell(root, row, protocol, diagnostic, problems)
+    directory = root / "cells" / row["cell_id"]
+    config = json.loads((directory / "config.json").read_text())
+    method = row["method"]
+    curvature = not method.startswith("adam")
+    if (config.get("dense_mode") != (method if curvature else None)
+            or config.get("dense_limits") != protocol["dense_limits"]
+            or config.get("precision") != protocol["precision"]):
+        problems.append(f"coupling mode/limits/precision mismatch: {row['cell_id']}")
+    stratum = next((k for k, seeds in protocol["strata"].items() if row["seed"] in seeds), "diagnostic")
+    if row.get("stratum") != stratum:
+        problems.append(f"coupling exposure stratum mismatch: {row['cell_id']}")
+    trace = json.loads((directory / "history.json").read_text())["checkpoints"]
+    progress = [json.loads(line) for line in (directory / "progress.jsonl").read_text().splitlines()]
+    if progress != trace:
+        problems.append(f"coupling progress/history mismatch: {row['cell_id']}")
+    horizon = 3 if diagnostic else protocol["config"]["steps"]
+    forwards = 1
+    for step, item in enumerate(trace):
+        trials = item["line_search_trials"]
+        if (item["gradient_evaluations"] != step
+                or not isinstance(item["accepted"], bool)
+                or (step == 0 and trials != 0)
+                or (step > 0 and curvature and not 1 <= trials <= protocol["config"]["max_backtracks"])
+                or (not curvature and (trials != 0 or not item["accepted"]))):
+            problems.append(f"coupling trace gradient/trials/acceptance mismatch: {row['cell_id']}")
+        if step:
+            forwards += trials if curvature else 1
+        if item["forward_evaluations"] != forwards:
+            problems.append(f"coupling forward work mismatch: {row['cell_id']}")
+        if curvature:
+            if item["jacobian_constructions"] != step or item["linear_solves"] != step:
+                problems.append(f"coupling dense inner-work mismatch: {row['cell_id']}")
+            if step and (item["objective"] > trace[step - 1]["objective"]
+                         or (not item["accepted"] and
+                             item["objective"] != trace[step - 1]["objective"])):
+                problems.append(f"coupling finite-acceptance violation: {row['cell_id']}")
+    if (row["forward_evaluations"] != forwards
+            or row["jacobian_constructions"] != (horizon if curvature else 0)
+            or row["linear_solves"] != (horizon if curvature else 0)
+            or row["rejected_updates"] != sum(not r["accepted"] for r in trace[1:])):
+        problems.append(f"coupling terminal work mismatch: {row['cell_id']}")
+    n = protocol["n_gaussians"]
+    j_bytes = math.prod(protocol["shape"]) * 3 * n * 8 * 4 if curvature else 0
+    gram_bytes = (n * 8) ** 2 * 4 if curvature else 0
+    if (row["retained_jacobian_bytes"] != j_bytes or row["retained_gram_bytes"] != gram_bytes
+            or j_bytes > protocol["dense_limits"]["max_jacobian_bytes"]
+            or row["peak_allocated_bytes"] < j_bytes):
+        problems.append(f"coupling retained/peak memory mismatch: {row['cell_id']}")
+    warm = row["warmup_forward_evaluations"]
+    if (not 21 <= warm <= 61
+            or row["warmup_gradient_evaluations"] != 14
+            or row["warmup_jacobian_constructions"] != 8 or row["warmup_linear_solves"] != 8
+            or row["fixture_render_evaluations"] != 4 or row["cold_forward_evaluations"] != 1
+            or row["initial_diagnostic_forward_evaluations"] != 1
+            or row["worker_forward_evaluations"] != warm + 6 + forwards):
+        problems.append(f"coupling worker render ledger mismatch: {row['cell_id']}")
+    mse = row["raw_mse"]
+    if (row["psnr_ceiling_applied"] is not (mse < 1e-12)
+            or (mse == 0 and row["psnr_uncapped"] is not None)
+            or (mse > 0 and (row["psnr_uncapped"] is None
+                            or abs(row["psnr_uncapped"] + 10 * math.log10(mse)) > 1e-6))):
+        problems.append(f"coupling uncapped scoring mismatch: {row['cell_id']}")
+    if row["cold_render_max_abs"] > protocol["cold_parity_max_abs"]:
+        problems.append(f"coupling cold parity exceeded: {row['cell_id']}")
+    initial_raw = np.load(directory / "initial_reconstruction.npy", allow_pickle=False)
+    target = np.load(directory / "target.npy", allow_pickle=False)
+    if initial_raw.shape != target.shape or not np.isfinite(initial_raw).all():
+        problems.append(f"coupling initial image invalid: {row['cell_id']}")
+    else:
+        initial_mse = float(np.square(initial_raw.astype(np.float64) - target.astype(np.float64)).mean())
+        if abs(-10 * math.log10(max(initial_mse, 1e-12)) - row["initial_psnr"]) > 1e-3:
+            problems.append(f"coupling initial image/trace mismatch: {row['cell_id']}")
+    for name in ("input_field.npz", "field.npz"):
+        with np.load(directory / name, allow_pickle=False) as field:
+            for key, shape in (("means", (n, 2)), ("log_scales", (n, 2)),
+                               ("rotations", (n,)), ("colors", (n, 3))):
+                if field[key].shape != shape or not np.isfinite(field[key]).all():
+                    problems.append(f"coupling serialized field invalid: {row['cell_id']}/{name}")
+            if (np.any(field["means"] < 0) or np.any(field["means"][:, 0] > protocol["shape"][1] - 1)
+                    or np.any(field["means"][:, 1] > protocol["shape"][0] - 1)
+                    or np.any(field["log_scales"] < math.log(protocol["config"]["scale_min"]) - 1e-6)
+                    or np.any(field["log_scales"] > math.log(protocol["config"]["scale_max"]) + 1e-6)
+                    or np.any(np.abs(field["colors"]) > protocol["config"]["color_limit"])):
+                problems.append(f"coupling parameter bounds violated: {row['cell_id']}/{name}")
 
 
 def validate_bundle(root, *, allow_dirty=False, allow_error_cells=False):
@@ -479,6 +571,8 @@ def validate_bundle(root, *, allow_dirty=False, allow_error_cells=False):
                             problems.append(f"invalid {key}: {row['cell_id']}")
                 elif manifest["task"] == "HIER-035":
                     _validate_convergence_cell(root, row, manifest["protocol"], manifest["diagnostic"], problems)
+                elif manifest["task"] == "HIER-036":
+                    _validate_coupling_cell(root, row, manifest["protocol"], manifest["diagnostic"], problems)
                 elif manifest["task"] == "HIER-033":
                     _validate_oracle_cell(root, row, manifest["protocol"], manifest["diagnostic"], problems)
             for name in row.get("artifacts", {}).values():

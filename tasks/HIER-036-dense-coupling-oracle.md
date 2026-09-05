@@ -29,13 +29,40 @@ HIER-033/035, ADR-0006
 - Driver: codex-root
 - Reviewer: codex-overnight-protocol-reviewer
 - Turn: driver
-- Reviewed revision: pending
+- Reviewed revision: protocol-sha256:524da500f133c294248bd0e8f2f20a54271d79163d48b935d8366704ce78ea1e
 
 ### Handoff log
 Design reviewed independently before implementation. Executable approval and outcomes pending.
 
-## Proposed protocol
-Freeze in the driver before prospective source review; this section does not authorize execution.
+### Handoff
+
+#### Objective
+Prospectively review the exact dense coupling/cap factorial before formal execution.
+#### Changes
+Bounded dense GN oracle, seven-arm driver, matched numerical bridges, strict artifact/gate tests.
+#### Evidence
+The source digest above;78focused tests pass, including CPU/CUDA system and update bridges.
+No formal HIER-036 outcomes exist; reviewer must not inspect diagnostic results.
+#### Assumptions
+Known additive GN equations, finite support, proceduralN16 scope and explicit charged inner work.
+#### Uncertainties
+Whether coupling or cap choice changes terminal quality; no performance or scalability inference.
+#### Review focus
+Identical full/block gradient, ridge, bounds and line search; only coupling/cap axes differ.
+Whole-matrix failure closure, separate strata/comparators, exact counters and raw scoring.
+#### Protected actions not taken
+No formal execution before approval, default change, sealed access, artifact repair, push or merge.
+#### Recommended next action
+Independently recompute source digest and approve or reject prospectively; then finish full
+verification and clean-source commit before any formal run.
+
+## Frozen protocol
+Executable authority: PROTOCOL plus every SOURCES hash in
+`scripts/experiments/hier036_coupling.py`. Recompute with --print-protocol-digest. Formal
+execution requires a distinct Approved digest receipt committed with clean source.
+Command: python scripts/experiments/hier036_coupling.py
+results/hier036_coupling_2026-09-05 --approved-protocol-digest EXACT_DIGEST.
+Diagnostic --smoke uses translated77 and cannot establish a formal outcome.
 
 - Same HIER-035 overlap/texture fixtures,64x64,N16. Exposed conditions0/1/2 and additional
   procedural conditions3/4/5 form separate reporting strata. They are not natural or statistically
@@ -62,6 +89,10 @@ Freeze in the driver before prospective source review; this section does not aut
   This is not a peak-memory bound: record allocated CUDA peak including Gram/solve work,
   worker RSS, retained J/Gram bytes, every Jacobian construction, solve and trial render.
   Complete-fit seconds are descriptive on the shared GPU, not a speed result.
+  The worker ledger additionally counts all seven two-update warmups, four fixture-generation
+  renders, one initial diagnostic render and one cold replay. Warmup has14 backwards/Jacobians
+  in total, including8 dense constructions/solves; its trial-render count is measured.
+  Perceptual network work is separate. Partial errors are preserved, not assigned zero work.
 - Same-state bridge tests: dense gradient vs autograd and diagonal blocks vs analytic packet;
   dense block_row step vs HIER-035 step. CPU float64 tolerances rtol1e-6/atol1e-8; CUDA
   float32 gradient/Gram rtol1e-5/atol1e-7 and update rtol1e-3/atol1e-3, at condition77.
@@ -85,3 +116,29 @@ Dense GN is a known diagnostic, not a new algorithm. Relevant primary implementa
 [3DGS-LM](https://lukashoel.github.io/3DGS-LM/). Their 3D pipelines are not matched native
 baselines here. Any matrix-free or sparse production transfer requires a separate task.
 
+### Protocol review
+
+#### Reviewer
+codex-overnight-protocol-reviewer
+
+#### Verdict
+Approved
+
+#### Protocol digest
+524da500f133c294248bd0e8f2f20a54271d79163d48b935d8366704ce78ea1e
+
+#### Digest scope
+Canonical executable PROTOCOL and every SOURCES hash: both task drivers, dense and local
+control fitters, analytic packet, field/render/owned CUDA sources, metrics, report and checker.
+Independently reproduced without accessing HIER-036 outcomes.
+
+#### Outcomes accessed
+No
+
+#### Review focus
+Independent86focused tests passed: CPU/CUDA system and old-update bridges, owned-CUDA gradient
+parity, factorial isolation, memory guards, finite rejection, ownership/work accounting,
+report contracts and HIER-035 regressions. No blocking correction identified. Row-wise caps
+need not preserve a full-system descent direction; finite-loss backtracking is authoritative.
+Positive results can establish only a conditional toy-system coupling effect, not scalability,
+practical visual improvement near the PSNR ceiling, speed, or held-out confirmation.

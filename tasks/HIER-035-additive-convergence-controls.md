@@ -24,11 +24,36 @@ HIER-033, ADR-0006
 ## Agent workflow
 - Driver: codex-root
 - Reviewer: codex-overnight-protocol-reviewer
-- Turn: driver
-- Reviewed revision: pending
+- Turn: reviewer
+- Reviewed revision: 6feb630e2a9bb44260a4618dc6a2d1cfbcd67fa4
 
 ### Handoff log
 Design in preparation; no formal outcome exists.
+
+### Handoff
+
+#### Objective
+Audit terminal convergence controls against the strongest per-condition Adam envelope.
+#### Changes
+Opt-in diagonal/local-block GN controls, complete inner-work traces, portable evidence driver.
+#### Evidence
+Source6feb630e2a9bb44260a4618dc6a2d1cfbcd67fa4;
+results/hier035_convergence_2026-09-05 and its exact source-bound manifest.
+The source checkpoint passed2079portable tests and all structural gates.
+#### Assumptions
+Fixed-count procedural additive semantics, identical bounds and terminal iteration budget.
+Shared-GPU times are descriptive, never an isolated speed comparison.
+#### Uncertainties
+Natural-image transfer, practical perceptual benefit, and the cause of family-specific behavior.
+#### Review focus
+Regenerate every fixture; verify serialized fields, raw metrics, all learning curves,
+charged curvature/trial work, strongest-Adam selection and family/perceptual gates.
+#### Protected actions not taken
+No default change, sealed-image access, selective rerun, artifact repair, push or merge.
+#### Recommended next action
+Record the completed distinct audit and its scope in ARA before promoting any task conclusion.
+This structured envelope is recorded after the artifact review request and audit, not as a
+retrospective claim that the handoff preceded them. Prospective protocol approval did precede execution.
 
 ## Notes
 Overnight research authorized September 5, 2026.

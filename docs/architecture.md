@@ -146,6 +146,13 @@ It returns the exact terminal step and complete work trace, not a best checkpoin
 procedural additive convergence assay; shared-workstation times are descriptive, not a speed
 claim or a replacement for the maintained fitter.
 
+HIER-036's `benchmarks.hier_coupling_oracle` is a bounded dense diagnostic of cross-Gaussian
+Gram entries and row/shared trust caps. It reuses the same additive equations, parameter bounds
+and terminal-step convention. Its64MiB limit covers retained image-Jacobian storage only,
+with a separate256-parameter ceiling; neither is a peak-memory or production-scalability claim.
+The factorial driver retains three Adam learning-rate controls and exposes every dense solve
+and finite trial. No maintained fitter or default is changed.
+
 The frozen C0001/C0004 diagnostic rejects the full composition. Projection alone is safe under its
 frozen SSE/maximum-normalized-violation transaction but adds only `+0.0109/+0.0044 dB`. The
 350-leaf residual reserve followed by projection loses
