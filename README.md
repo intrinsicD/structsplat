@@ -29,6 +29,10 @@ The [overnight findings and handoff](docs/research/2026-09-05-overnight-findings
 independently audited mixed/negative results, numerical-polish and rollback caveats, and an
 unrun simple-fallback design (ARA C68–C72). No maintained pipeline or default is promoted.
 
+The follow-up [code-driven portfolio](docs/research/2026-09-05-code-driven-portfolio.md)
+selects guarded color refinement (FIT-050) and same-call quality-measurement reuse (PORT-007)
+for bounded experiments. These active investigations do not authorize a default change.
+
 > This is a PyTorch **research reference** with an opt-in exact CUDA extension for the same
 > normalized/additive equations. The remaining production port is a tiled CUDA/Vulkan/RHI path
 > (`tasks/PORT-001-cuda-rasterizer.md`, ADR-0011).

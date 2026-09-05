@@ -1329,7 +1329,9 @@ def _solve_colors_normalized(field: GaussianField, target: torch.Tensor, cfg: Fi
             "affine color coefficients are optimized with Adam"
         )
     if field.n == 0:
-        return {"iterations": 0, "relative_residual": 0.0}
+        return {"iterations": 0, "relative_residual": 0.0,
+                "normal_matvec_calls": 0, "basis_apply_calls": 0,
+                "basis_transpose_calls": 0, "denominator_calls": 0}
 
     den = _normalized_color_denominator(
         field, cfg, H, W, support_fade_alpha=support_fade_alpha
@@ -1342,7 +1344,11 @@ def _solve_colors_normalized(field: GaussianField, target: torch.Tensor, cfg: Fi
     if lam > 0.0:
         b = b + lam * x0
 
+    normal_matvec_calls = 0
+
     def normal_matvec(x: torch.Tensor) -> torch.Tensor:
+        nonlocal normal_matvec_calls
+        normal_matvec_calls += 1
         ax = _normalized_color_basis_apply(
             field, x, cfg, H, W, den, support_fade_alpha=support_fade_alpha
         )
@@ -1385,6 +1391,10 @@ def _solve_colors_normalized(field: GaussianField, target: torch.Tensor, cfg: Fi
     return {
         "iterations": iterations,
         "relative_residual": float(rel.max().detach().cpu()),
+        "normal_matvec_calls": normal_matvec_calls,
+        "basis_apply_calls": normal_matvec_calls,
+        "basis_transpose_calls": 1 + normal_matvec_calls,
+        "denominator_calls": 1,
     }
 
 

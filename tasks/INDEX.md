@@ -13,6 +13,8 @@ replay-valid; do not rewrite those task bytes merely to duplicate this table.
 
 | ID | Title | Status | Depends on |
 |----|-------|--------|-----------|
+| FIT-050 | Safeguarded normalized color-ray refinement | in-progress — code-derived design; executable review and outcomes pending | ADR-0003/0011 |
+| PORT-007 | Same-call coverage and tail quality evaluation | in-progress — code-derived reuse; exact gate parity and complete-cost experiments pending | ADR-0003/0011/0025 |
 | ABL-001 | Init-strategy x budget sweep (the core experiment + fitness) | partial | INIT-003/004, BENCH-001 |
 | ABL-002 | Full stage-combination search | partial | CORE, INIT, FIT, HIER, BENCH |
 | GEN-001 | Generative 2D Gaussians via SDS distillation (no dataset) | todo | CORE-001, ADR-0006 |

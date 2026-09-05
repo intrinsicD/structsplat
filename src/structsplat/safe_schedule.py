@@ -527,6 +527,34 @@ def _safe_quantile(values: torch.Tensor, q: float) -> torch.Tensor:
     return torch.kthvalue(flat, k).values
 
 
+@torch.no_grad()
+def _tail_error_stats(values: torch.Tensor, backend: str = "reference"):
+    """CVaR99 and p99, optionally sharing a sorted upper-tail selection.
+
+    The opt-in arithmetic follows torch 2.9's input-dtype rank and lerp quantile.
+    Nonfinite inputs and the existing large-input nearest-rank contract fall back.
+    """
+    flat = values.reshape(-1)
+    count = int(flat.numel())
+    if count == 0:
+        raise ValueError("tail statistics require nonempty values")
+    if backend not in {"reference", "shared"}:
+        raise ValueError("unknown quality tail backend")
+    k = max(1, int(math.ceil(0.01 * count)))
+    if (backend == "reference" or count > _QUANTILE_MAX_ELEMENTS
+            or flat.dtype not in {torch.float32, torch.float64}
+            or not bool(torch.isfinite(flat).all())):
+        return torch.topk(flat, k=k).values.mean(), _safe_quantile(flat, 0.99)
+    # Two extra entries cover both interpolation neighbours, including rank rounding.
+    tail = torch.topk(flat, k=min(count, k + 2), sorted=True).values
+    rank = flat.new_tensor(0.99) * (count - 1)
+    below = rank.to(dtype=torch.long)
+    above = rank.ceil().to(dtype=torch.long)
+    low = tail.gather(0, (count - 1 - below).reshape(1)).squeeze(0)
+    high = tail.gather(0, (count - 1 - above).reshape(1)).squeeze(0)
+    return tail[:k].mean(), low.lerp_(high, rank - below)
+
+
 def _logical_n(field: GaussianField, active_n: int | None) -> int:
     return int(field.n if active_n is None else active_n)
 
@@ -837,6 +865,53 @@ def _boundary_defect_summary(
 
 
 @torch.no_grad()
+def _coverage_requires_reference(denominator, mask, coverage_tau):
+    flags = torch.stack((
+        ~torch.isfinite(denominator).all(),
+        (denominator < 0).any(),
+        ((denominator - float(coverage_tau)).abs() <= 1e-5).any(),
+        (denominator[~mask] != 0).any(),
+    ))
+    return bool(flags.any())
+
+
+@torch.no_grad()
+def _quality_render_inputs(active, cfg, H, W, mask, coverage_tau):
+    """PORT-007 same-call reuse, with conservative reference coverage fallback.
+
+    The 1e-5 threshold band is an empirical guard, not a universal roundoff bound.
+    Nonzero outside coverage retains the reference's sensitive containment measurement.
+    Neither the renderer equation nor the training backward path changes.
+    """
+    supported = (
+        cfg.quality_coverage_backend == "renderer"
+        and cfg.renderer in ("cuda", "cuda_normalized")
+        and active.means.is_cuda
+        and active.means.dtype == torch.float32
+        and active.color_grads is None
+    )
+    if supported:
+        from .cuda_render import render_cuda_exact_with_coverage
+
+        render, denominator = render_cuda_exact_with_coverage(
+            active.means, active.conics(cfg.aa_dilation), active.colors,
+            active.radii(cfg.sigma_cutoff, cfg.aa_dilation), H, W,
+            opacities=active.opacity_values(), eps=cfg.normalization_eps,
+            # evaluate_quality always requests alpha=1, including cfg.support_fade=False.
+            support_fade=True, sigma_cutoff=cfg.sigma_cutoff,
+        )
+        fallback = _coverage_requires_reference(denominator, mask, coverage_tau)
+        if not fallback:
+            return render, denominator
+    else:
+        render = _render(active, cfg, H, W, support_fade_alpha=1.0)
+    denominator = _raw_weight_map_field(
+        active, cfg, H, W, support_fade_alpha=1.0
+    ).reshape(H, W)
+    return render, denominator
+
+
+@torch.no_grad()
 def evaluate_quality(
     field: GaussianField,
     target: torch.Tensor,
@@ -850,7 +925,21 @@ def evaluate_quality(
 
     active = _active_field(field, active_n)
     H, W = target.shape[:2]
-    render = _render(active, cfg, H, W, support_fade_alpha=1.0)
+    render, denominator = _quality_render_inputs(active, cfg, H, W, mask, coverage_tau)
+    return _quality_from_render(
+        render, target, denominator, mask, constraint, coverage_tau, int(active.n),
+        tail_backend=cfg.quality_tail_backend,
+    ), render
+
+
+@torch.no_grad()
+def _quality_from_render(render, target, denominator, mask, constraint, coverage_tau,
+                         n_gaussians, *, tail_backend="reference"):
+    """Evaluate the unchanged complete gate vector on an already materialized image.
+
+    Callers own image/coverage provenance. FIT-050 must revalidate an interpolated image
+    through the actual renderer before committing a field.
+    """
     pixel_mse = (render - target).square().mean(dim=2)
     fg_values = pixel_mse[mask]
     boundary = _visible_boundary(mask)
@@ -859,13 +948,7 @@ def evaluate_quality(
         boundary_values = fg_values
     if fg_values.numel() == 0:
         raise ValueError("safe schedule mask contains no foreground pixels")
-    tail_count = max(1, int(math.ceil(0.01 * int(fg_values.numel()))))
-    tail = torch.topk(fg_values.reshape(-1), k=tail_count).values
-    p99 = _safe_quantile(fg_values, 0.99)
-    denominator = _raw_weight_map_field(
-        active, cfg, H, W, support_fade_alpha=1.0
-    ).reshape(H, W)
-
+    cvar, p99 = _tail_error_stats(fg_values, tail_backend)
     def hole_fraction(indices: torch.Tensor) -> float:
         if indices.numel() == 0:
             return 0.0
@@ -878,10 +961,10 @@ def evaluate_quality(
     outside_render = render[~mask].abs()
     outside_den = denominator[~mask].abs()
     metrics = QualityMetrics(
-        n_gaussians=int(active.n),
+        n_gaussians=int(n_gaussians),
         foreground_mse=float(fg_values.mean()),
         boundary_mse=float(boundary_values.mean()),
-        cvar99_mse=float(tail.mean()),
+        cvar99_mse=float(cvar),
         p99_mse=float(p99),
         interior_hole_fraction=hole_fraction(constraint.interior_flat),
         boundary_hole_fraction=hole_fraction(constraint.band_flat),
@@ -896,7 +979,7 @@ def evaluate_quality(
             and torch.isfinite(denominator).all()
         ),
     )
-    return metrics, render
+    return metrics
 
 
 def safe_commit_decision(

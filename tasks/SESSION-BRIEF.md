@@ -7,6 +7,8 @@ unless the owning task says so.
 
 ## Work in progress
 
+- `FIT-050` — Safeguarded normalized color-ray refinement (in-progress; `tasks/FIT-050-safe-color-ray.md`)
+- `PORT-007` — Same-call coverage and tail quality evaluation (in-progress; `tasks/PORT-007-joint-render-coverage.md`)
 - `CORE-013` — Observation Field V2 semantic contract (in-review; `tasks/CORE-013-observation-field-v2-contract.md`)
 - `HIER-005` — Implicit pixel-field contraction (in-progress; `tasks/HIER-005-implicit-pixel-contraction.md`)
 - `HIER-006` — Parent-preserving progressive residual quadtree (in-progress; `tasks/HIER-006-progressive-residual-quadtree.md`)
@@ -92,6 +94,6 @@ unless the owning task says so.
 
 ## Ledger summary
 
-- 127 active-table outcomes
+- 129 active-table outcomes
 - 50 retired tasks
 - 51 active-table rows already carrying a closed/non-actionable disposition

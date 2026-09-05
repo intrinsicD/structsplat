@@ -186,6 +186,9 @@ class InitConfig:
 @dataclass
 class FitConfig:
     iters: int = 2000
+    # PORT-007: no-grad safe-schedule quality checks only; training renderer is unchanged.
+    quality_coverage_backend: str = "reference"  # reference or renderer (opt-in CUDA reuse)
+    quality_tail_backend: str = "reference"  # reference or shared (opt-in order-statistic reuse)
     # LRs are ~pixels/step for means under Adam; the old 2e-3 left positions nearly frozen.
     # Retuned on the init sweep (ADR-0008): ~6x faster to a target PSNR, +2 dB at fixed iters.
     lr_means: float = 5e-2
@@ -427,6 +430,10 @@ class FitConfig:
             raise ValueError(
                 "support_fade_crossfade_iters must be >= 0, "
                 f"got {self.support_fade_crossfade_iters}")
+        if self.quality_coverage_backend not in ("reference", "renderer"):
+            raise ValueError("quality_coverage_backend must be reference or renderer")
+        if self.quality_tail_backend not in ("reference", "shared"):
+            raise ValueError("quality_tail_backend must be reference or shared")
         if self.color_solve_every is not None and self.color_solve_every < 0:
             raise ValueError(
                 f"color_solve_every must be >= 0 or None, got {self.color_solve_every}")

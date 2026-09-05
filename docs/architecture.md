@@ -169,6 +169,12 @@ preference over strongest Adam. Near-ceiling overlap/easy-fixture gains are nume
 The projected-gradient rescue design remains unrun. The task-scoped evidence packager preserves
 an explicitly partial, hash-bound archive without modifying any complete original report.
 
+The [code-driven follow-up](research/2026-09-05-code-driven-portfolio.md) proposes two bounded,
+default-off investigations: FIT-050 tests a fixed-geometry normalized color ray with actual-render
+revalidation; PORT-007 tests same-call coverage and tail-statistic reuse in quality evaluation.
+Their task files own the prospective protocols. Neither changes the normalized equation,
+training backward, maintained schedule, or default policy; results and promotion remain pending.
+
 The frozen C0001/C0004 diagnostic rejects the full composition. Projection alone is safe under its
 frozen SSE/maximum-normalized-violation transaction but adds only `+0.0109/+0.0044 dB`. The
 350-leaf residual reserve followed by projection loses

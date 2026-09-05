@@ -98,6 +98,8 @@ class PipelineConfig:
     seed: int = 0
     device: str | None = None                 # default: cuda when available, else cpu
     renderer: str | None = None               # default: cuda when on a CUDA device, else normalized
+    quality_coverage_backend: str = "reference"  # PORT-007 opt-in same-render coverage
+    quality_tail_backend: str = "reference"      # PORT-007 opt-in shared tail selection
     step_scale: float = 1.0                   # scales every phase's step ceiling
     block_steps: int | None = None            # commit-gate granularity; default: schedule default
     storage_policy: str = "dynamic"
@@ -139,6 +141,10 @@ class PipelineConfig:
         )
 
     def validate(self) -> None:
+        if self.quality_coverage_backend not in ("reference", "renderer"):
+            raise ValueError("quality_coverage_backend must be reference or renderer")
+        if self.quality_tail_backend not in ("reference", "shared"):
+            raise ValueError("quality_tail_backend must be reference or shared")
         if self.capacity <= 0:
             raise ValueError(f"capacity must be positive, got {self.capacity}")
         initial = self.resolved_initial()
@@ -270,6 +276,8 @@ def build_fit_config(cfg: PipelineConfig, device: str) -> FitConfig:
     return FitConfig(
         iters=1,
         renderer=_resolve_renderer(cfg.renderer, device),
+        quality_coverage_backend=cfg.quality_coverage_backend,
+        quality_tail_backend=cfg.quality_tail_backend,
         render_chunk=512,
         pixel_loss="l2",
         ssim_weight=0.0,

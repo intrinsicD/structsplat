@@ -226,6 +226,33 @@ def _build_tile_index(means: torch.Tensor, radii: torch.Tensor, H: int, W: int,
     return gids, offsets.contiguous()
 
 
+@torch.no_grad()
+def render_cuda_exact_with_coverage(means, conics, colors, radii, H: int, W: int,
+                                    opacities=None, eps: float = 1e-8,
+                                    support_fade: bool = False,
+                                    sigma_cutoff: float = 3.0):
+    """PORT-007: return normalized RGB and raw coverage from one untiled forward.
+
+    This is deliberately inference-only. It reuses the existing kernel, introduces no
+    persistent cache, and does not change the autograd Function or its backward contract.
+    Coverage is the raw opacity-weighted denominator, without normalization epsilon.
+    """
+    from .render import _validate_normalization_eps
+
+    if not means.is_cuda:
+        raise RuntimeError("joint CUDA rendering requires CUDA tensors")
+    if any(t.dtype != torch.float32 for t in (means, conics, colors)):
+        raise RuntimeError("joint CUDA rendering requires float32 tensors")
+    eps = _validate_normalization_eps(eps)
+    if opacities is None:
+        opacities = means.new_empty(0)
+    return tuple(_load_extension().forward(
+        means.contiguous(), conics.contiguous(), colors.contiguous(), radii.contiguous(),
+        opacities.contiguous(), int(H), int(W), True, eps,
+        bool(support_fade), float(sigma_cutoff),
+    ))
+
+
 def render_cuda_exact(means, conics, colors, radii, H: int, W: int,
                       opacities=None, normalize: bool = True, eps: float = 1e-8,
                       tiled: bool = False, tile_size: int = 16,

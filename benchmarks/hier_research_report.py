@@ -1,4 +1,4 @@
-"""Portable evidence plumbing shared only by HIER-033/034/035/036 experiments.
+"""Portable evidence plumbing for explicitly registered bounded research experiments.
 
 Does not select methods or define scientific protocols; those stay in each task and driver.
 All outputs are new directories, with an exact file hash manifest after completion.
@@ -22,12 +22,14 @@ from PIL import Image
 
 
 SCHEMA = "structsplat.hier_research.report.v1"
-TASKS = {"HIER-033", "HIER-034", "HIER-035", "HIER-036"}
+TASKS = {"HIER-033", "HIER-034", "HIER-035", "HIER-036", "FIT-050", "PORT-007"}
 TASK_PATHS = {
     "HIER-033": "tasks/HIER-033-pixel-gradient-operator-oracle.md",
     "HIER-034": "tasks/HIER-034-fixed-geometry-basis-cache.md",
     "HIER-035": "tasks/HIER-035-additive-convergence-controls.md",
     "HIER-036": "tasks/HIER-036-dense-coupling-oracle.md",
+    "FIT-050": "tasks/FIT-050-safe-color-ray.md",
+    "PORT-007": "tasks/PORT-007-joint-render-coverage.md",
 }
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -129,8 +131,9 @@ class ResearchBundle:
             writer.writeheader()
             for row in rows:
                 writer.writerow({key: csv_value(row.get(key)) for key in fields})
-        columns = [key for key in ("cell_id", "status", "n_gaussians", "iterations_run",
-                   "selected_iteration", "psnr", "ms_ssim", "total_seconds", "cache_bytes")
+        columns = [key for key in ("cell_id", "method", "image_id", "image", "seed", "status",
+                   "n_gaussians", "iterations_run", "selected_iteration", "psnr", "ms_ssim",
+                   "lpips", "total_seconds", "cache_bytes")
                    if any(key in row for row in rows)]
         table = "<tr>" + "".join(f"<th>{html.escape(key)}</th>" for key in columns) + "</tr>"
         cards = []
@@ -149,6 +152,14 @@ class ResearchBundle:
             cards.append(f'<section><h2>{html.escape(row["cell_id"])}</h2>' + error + '<p>'
                          + " · ".join(links) + '</p><div class="images">'
                          + "".join(pictures) + "</div></section>")
+        extra_links = "".join(
+            f' · <a href="{name}">{label}</a>'
+            for name, label in (("summary.json", "Frozen gate summary"),
+                                ("decision.json", "Frozen gate decision"),
+                                ("occupancy.json", "Resource observations"),
+                                ("parent_source.json", "Parent provenance"))
+            if (self.root / name).is_file()
+        )
         page = ('<!doctype html><html lang="en"><meta charset="utf-8"><title>'
                 + html.escape(title) + '</title><style>body{font:15px system-ui;margin:32px;'
                 'background:#fafafa;color:#152535}table{border-collapse:collapse;font-size:12px}'
@@ -157,7 +168,8 @@ class ResearchBundle:
                 'max-height:300px}a{color:#125fab}figcaption{font-size:12px}</style><h1>'
                 + html.escape(title) + '</h1><p>' + html.escape(interpretation)
                 + '</p><p><a href="manifest.json">Manifest</a> · <a href="metrics.json">JSON</a>'
-                ' · <a href="metrics.jsonl">JSONL</a> · <a href="metrics.csv">CSV</a></p><pre>'
+                ' · <a href="metrics.jsonl">JSONL</a> · <a href="metrics.csv">CSV</a>'
+                + extra_links + '</p><pre>'
                 + html.escape(self.manifest["command"]) + '</pre><table>' + table + '</table>'
                 + "".join(cards) + '</html>')
         (self.root / "index.html").write_text(page)
@@ -553,6 +565,251 @@ def _validate_shared_cache_scope(root, manifest, rows, problems):
             problems.append(f"shared cache occupancy interval mismatch: {row['cell_id']}")
 
 
+
+def _validate_port_artifacts(root, rows, protocol, problems):
+    """Reconstruct PORT-007 decisions from retained arrays/records, not success flags."""
+    from dataclasses import asdict, replace
+    from benchmarks.fit050_controls import parent_configs
+    from benchmarks.port007_controls import (
+        BACKENDS, coefficient_of_variation, discrete_projection, signature, summarize,
+    )
+    from scripts.experiments.port007_quality_reuse import decision, ellipse_mask, load_image
+    from structsplat.safe_schedule import CommitTolerances
+    from structsplat.pipeline import PipelineConfig, build_fit_config, build_schedule
+    from structsplat.fit import _MaskConstraint
+    from structsplat.safe_schedule import _quality_from_render
+    import torch
+
+    def read(path):
+        return json.loads(path.read_text())
+
+    def check(condition, message):
+        if not condition:
+            problems.append("PORT-007 artifact mismatch: " + message)
+
+    def psnr(raw, target):
+        mse = float(np.square(raw.astype(np.float64) - target.astype(np.float64)).mean())
+        return -10 * math.log10(max(mse, 1e-12))
+
+    def close(first, second):
+        return math.isclose(first, second, rel_tol=1e-9, abs_tol=1e-8)
+
+    def metric_close(first, second):
+        return math.isclose(first, second, rel_tol=protocol["artifact_metric_rtol"],
+                            abs_tol=protocol["artifact_metric_atol"])
+
+    def quality_from_arrays(rgb, den, target, mask, cfg, count):
+        if den.shape != target.shape[:2] or rgb.shape != target.shape or mask.shape != den.shape:
+            raise ValueError("PORT-007 quality array shape mismatch")
+        constraint = _MaskConstraint.from_mask(mask, "cpu", torch.float32, cfg.sigma_cutoff,
+            cfg.mask_margin, aa_dilation=cfg.aa_dilation, cap_mode=cfg.mask_cap_mode,
+            undercoverage_band=cfg.mask_undercoverage_band)
+        return _quality_from_render(torch.from_numpy(rgb), torch.from_numpy(target),
+            torch.from_numpy(den), torch.from_numpy(mask), constraint, .05, count).to_dict()
+
+    def check_quality(actual, stored, label):
+        check(set(actual) == set(stored), label + " complete quality keys")
+        for key, value in actual.items():
+            check((stored.get(key) == value if isinstance(value, (bool, int))
+                   else metric_close(stored.get(key, math.inf), value)), label + " scalar " + key)
+
+    def field_equal(first, second):
+        with np.load(first, allow_pickle=False) as a, np.load(second, allow_pickle=False) as b:
+            return set(a.files) == set(b.files) and all(np.array_equal(a[k], b[k]) for k in a.files)
+
+    def timing(snapshots):
+        return bool(snapshots) and all(
+            snap.get("error") is None
+            and all(p["pid"] == snap["pid"] for p in snap["compute_processes"])
+            for snap in snapshots
+        )
+
+    check(read(root / "summary.json") == summarize(rows), "frozen summary")
+    source = read(root / "parent_source.json")
+    manifest = source["source_identity"]
+    encoded = (json.dumps(manifest, indent=2, sort_keys=True, allow_nan=False) + "\n").encode()
+    check(hashlib.sha256(encoded).hexdigest() == source["manifest_sha256"], "parent manifest hash")
+    check(manifest["task"] == "FIT-050" and not manifest["diagnostic"]
+          and manifest["repository"] == source["repository"], "parent identity")
+    check(source["repository"]["commit"] == read(root / "RUNNING.json")["repository"]["commit"],
+          "same-commit parent transfer")
+    required_parents = {
+        f"parents/coco{i:012d}_s{s}/{name}"
+        for i in protocol["images"] for s in protocol["same_state"]["seeds"]
+        for name in ("initial_field.npz", "field.npz", "history.json", "config.json",
+                     "target.npy", "optimizer_state.pt")
+    }
+    check(set(source["files"]) == required_parents, "complete eight-parent transfer")
+    for name, digest in source["files"].items():
+        path = (root / name).resolve()
+        check(path.is_relative_to(root) and path.is_file()
+              and sha256(path) == digest == manifest["files"].get(name), "parent bytes " + name)
+    for row in rows:
+        if row.get("status") != "ok":
+            continue
+        label = row["cell_id"]
+        directory = (root / "cells" / label).resolve()
+        if not directory.is_relative_to(root):
+            check(False, "escaped cell")
+            continue
+        config = read(directory / "config.json")
+        history = read(directory / "history.json")
+        stored = read(directory / "row.json")
+        check(stored == row, label + " saved row")
+        request = config["request"]
+        check(all(request.get(k) == row.get(k) for k in
+                  ("cell_id", "kind", "image", "seed", "method")), label + " request")
+        with np.load(directory / "field.npz", allow_pickle=False) as field:
+            check(field["means"].shape[0] == row["n_gaussians"], label + " field count")
+        raw = np.load(directory / "reconstruction.npy", allow_pickle=False)
+        target = np.load(directory / "target.npy", allow_pickle=False)
+        check(raw.shape == target.shape and np.isfinite(raw).all()
+              and np.isfinite(target).all(), label + " raw images")
+        check(close(psnr(raw, target), row["psnr"]), label + " raw PSNR")
+        check(metric_close(float(np.square(raw.astype(np.float64) - target.astype(np.float64)).mean()),
+                           row["mse"]), label + " raw MSE")
+        check(metric_close(float(np.abs(raw.astype(np.float64) - target.astype(np.float64)).mean()),
+                           row["mae"]), label + " raw MAE")
+        check(row["timing_eligible"] == timing(config["gpu_snapshots"]), label + " timing provenance")
+        coverage, tail = BACKENDS[row["method"]]
+        if row["kind"] == "same":
+            _, cfg = parent_configs(row["seed"])
+            expected_cfg = asdict(replace(cfg, quality_coverage_backend=coverage,
+                                          quality_tail_backend=tail))
+            check(config["fit"] == expected_cfg, label + " resolved fit")
+            parent = root / "parents" / config["parent_id"]
+            check(config["parent_config"] == read(parent / "config.json"), label + " parent config")
+            check(np.array_equal(target, np.load(parent / "target.npy", allow_pickle=False)),
+                  label + " paired target")
+            parent_field = "initial_field.npz" if row["state"] == "initial" else "field.npz"
+            check(sha256(directory / "field.npz") == sha256(parent / parent_field), label + " fixed field")
+            measurements = read(directory / "measurements.json")
+            parity = read(directory / "parity.json")
+            prefix = f"same_coco{row['image']:012d}_s{row['seed']}_"
+            base_dir = root / "cells" / (prefix + row["state"] + "_legacy_a")
+            base_measurements = read(base_dir / "measurements.json")
+            other = "terminal" if row["state"] == "initial" else "initial"
+            other_measurements = read(root / "cells" / (prefix + other + "_legacy_a") / "measurements.json")
+            checks, decisions, deltas = [], [], []
+            with np.load(directory / "measurements.npz", allow_pickle=False) as data, \
+                    np.load(base_dir / "measurements.npz", allow_pickle=False) as baseline:
+                arrays = {key: data[key] for key in data.files}
+                base_arrays = {key: baseline[key] for key in baseline.files}
+                check(all(value.shape[0] == 10 for value in arrays.values()),
+                      label + " ten raw measurements")
+                check(np.array_equal(arrays["renders"][-1], raw), label + " selected measurement")
+                for index, (record, base) in enumerate(zip(measurements, base_measurements)):
+                    check(record["round"] == index, label + " round order")
+                    null = decision(base["quality"], record["quality"], CommitTolerances())
+                    null_control = decision(base["quality"], base["quality"], CommitTolerances())
+                    changed_before = other_measurements[index]["quality"]
+                    changed = decision(changed_before, record["quality"], CommitTolerances())
+                    changed_control = decision(changed_before, base["quality"], CommitTolerances())
+                    decisions.append({"round": index, "null": null, "null_control": null_control,
+                        "changed": changed, "changed_control": changed_control,
+                        "changed_direction": f"{other}_to_{row['state']}"})
+                    rgb = float(np.max(np.abs(arrays["renders"][index] - base_arrays["renders"][index])))
+                    replay = float(np.max(np.abs(arrays["replay_renders"][index] - base_arrays["replay_renders"][index])))
+                    holes = bool(np.array_equal(arrays["hole_masks"][index], base_arrays["hole_masks"][index]))
+                    check(np.array_equal(arrays["hole_masks"][index],
+                                         arrays["raw_denominators"][index] < .05),
+                          label + " denominator classification")
+                    mask = np.ones(target.shape[:2], dtype=bool)
+                    check_quality(quality_from_arrays(arrays["renders"][index],
+                        arrays["raw_denominators"][index], target, mask, cfg, row["n_gaussians"]),
+                        record["quality"], label + " measured")
+                    check_quality(quality_from_arrays(arrays["replay_renders"][index],
+                        arrays["raw_denominators"][index], target, mask, cfg, row["n_gaussians"]),
+                        record["replay_quality"], label + " replay")
+                    finite = bool(record["quality"]["finite"] and record["replay_quality"]["finite"]
+                        and all(np.isfinite(arrays[key][index]).all() for key in
+                                ("renders", "replay_renders", "raw_denominators")))
+                    checks.append({"round": index, "max_rgb_error": rgb,
+                        "max_replay_rgb_error": replay, "hole_mask_equal": holes,
+                        "null_decision_equal": null == null_control,
+                        "changed_decision_equal": changed == changed_control, "finite": finite,
+                        "pass": bool(finite and rgb <= 2e-5 and replay <= 2e-5 and holes
+                                     and null == null_control and changed == changed_control)})
+                    deltas.append({key: record["quality"][key] - base["quality"][key]
+                        for key in record["quality"]
+                        if isinstance(record["quality"][key], (float, int))
+                        and not isinstance(record["quality"][key], bool)})
+                    check(close(psnr(arrays["renders"][index], target),
+                                history["checkpoints"][index]["psnr"]), label + " temporal PSNR")
+            check(parity == {"checks": checks, "decisions": decisions, "quality_deltas": deltas},
+                  label + " parity recomputation")
+            times = [point["seconds"] for point in measurements]
+            check(len(measurements) == 10 and row["call_seconds"] == times
+                  and row["total_seconds"] == sum(times)
+                  and row["call_time_cv"] == coefficient_of_variation(times),
+                  label + " complete call timings")
+            check(row["quality"] == measurements[-1]["quality"]
+                  and row["parity_pass"] == all(point["pass"] for point in checks),
+                  label + " measured decision")
+        else:
+            expected_cfg = {**protocol["pipeline"]["config"], "seed": row["seed"],
+                            "quality_coverage_backend": coverage, "quality_tail_backend": tail}
+            check(config["pipeline"] == expected_cfg, label + " pipeline config")
+            pipeline_cfg = PipelineConfig(**expected_cfg)
+            schedule = build_schedule(pipeline_cfg)
+            schedule = replace(schedule, boundary_enabled=row["image"] != 9,
+                boundary=replace(schedule.boundary, name="general_closure" if row["image"] == 9
+                                 else "boundary_closure"))
+            fit_cfg = replace(build_fit_config(pipeline_cfg, pipeline_cfg.device),
+                pixel_loss="l2", ssim_weight=0., loss_weighting="mask",
+                mask_contain=schedule.boundary_enabled, mask_cap_mode="anisotropic",
+                mask_undercoverage_band=float(schedule.boundary_band),
+                mask_undercoverage_tau=float(schedule.coverage_tau), support_fade=True,
+                coverage_match_weight=0., checkpoint_policy="terminal", triage_every=None,
+                target_file_bytes=None, pool_capacity=None, split_every=None, relocate_every=None,
+                prune_every=None, mask_boundary_add_every=None, adaptive_count=False, compute_lpips=False)
+            check(config["fit"] == json.loads(json.dumps(asdict(fit_cfg))), label + " derived fit")
+            check(config["schedule"] == json.loads(json.dumps(asdict(schedule))), label + " derived schedule")
+            mask = np.load(directory / "mask.npy", allow_pickle=False)
+            expected_mask = (np.ones(target.shape[:2], dtype=bool) if row["image"] == 9
+                             else ellipse_mask(*target.shape[:2]))
+            check(np.array_equal(mask, expected_mask)
+                  and config["mask_sha256"] == sha256(directory / "mask.npy"), label + " mask")
+            check(np.array_equal(target, load_image(row["image"]) * expected_mask[..., None]),
+                  label + " masked input")
+            reference = np.load(directory / "reference_reconstruction.npy", allow_pickle=False)
+            denominator = np.load(directory / "reference_denominator.npy", allow_pickle=False)
+            check(row["final_reference_rgb_max_error"] == float(np.max(np.abs(reference - raw))),
+                  label + " actual replay error")
+            check_quality(quality_from_arrays(reference, denominator, target, expected_mask, fit_cfg,
+                                               row["n_gaussians"]), row["quality"], label + " final")
+            native = history["native_events"]
+            trajectory = discrete_projection(native)
+            check(read(directory / "trajectory.json") == trajectory
+                  and row["trajectory_sha256"] == signature(trajectory), label + " trajectory")
+            check(row["iterations_run"] == history["attempted_steps"]
+                  and row["accepted_steps"] == history["accepted_steps"]
+                  and row["event_count"] == len(native) == len(history["checkpoints"]),
+                  label + " attempted/accepted work")
+            attempted = accepted = 0
+            for event in native:
+                attempted += event.get("attempted_steps", 0)
+                accepted += event.get("accepted_steps", 0)
+                check(event["global_attempted_steps"] == attempted
+                      and event["global_accepted_steps"] == accepted, label + " cumulative event work")
+            check(attempted == history["attempted_steps"] and accepted == history["accepted_steps"],
+                  label + " actual total work")
+            check(bool(native) and field_equal(directory / "field.npz", directory / "snapshots" /
+                                               f"field_{len(native) - 1:04d}.npz"), label + " final selected field")
+            selected = max((event["global_attempted_steps"] for event in native
+                            if event["accepted"]), default=0)
+            check(row["selected_iteration"] == selected, label + " selected step")
+            check(row["observer_seconds"] == config["observer_seconds"]
+                  and row["total_seconds"] == config["instrumented_total_seconds"],
+                  label + " inclusive timing")
+            for index, (event, point) in enumerate(zip(native, history["checkpoints"])):
+                check(point["attempted_steps"] == event["global_attempted_steps"]
+                      and all(point[k] == v for k, v in event["selected"].items()),
+                      label + " native checkpoint")
+                with np.load(directory / "snapshots" / f"field_{index:04d}.npz", allow_pickle=False) as field:
+                    check(field["means"].shape[0] == event["selected"]["n_gaussians"],
+                          label + " snapshot count")
+
 def validate_bundle(root, *, allow_dirty=False, allow_error_cells=False):
     """Validate immutable bytes, full matrix, finite rows, links, and clean source identity."""
     from scripts.check_report_bundle import _check_html, _check_repository_identity, _finite
@@ -581,6 +838,24 @@ def validate_bundle(root, *, allow_dirty=False, allow_error_cells=False):
             problems.append("JSON and JSONL rows disagree")
         if manifest["protocol"].get("execution_profile") == "shared_correctness":
             _validate_shared_cache_scope(root, manifest, rows, problems)
+        if manifest["task"] in {"FIT-050", "PORT-007"}:
+            from importlib import import_module
+            module = import_module({
+                "FIT-050": "scripts.experiments.fit050_color_ray",
+                "PORT-007": "benchmarks.port007_controls",
+            }[manifest["task"]])
+            if manifest["task"] == "FIT-050":
+                module.validate_rows(rows, manifest["protocol"], problems,
+                                     diagnostic=manifest["diagnostic"])
+                module.validate_artifacts(root, rows, manifest["protocol"], problems,
+                                          diagnostic=manifest["diagnostic"])
+                declared = module.expected_cells(manifest["protocol"], manifest["diagnostic"])
+            else:
+                module.validate_rows(rows, manifest["protocol"], problems)
+                _validate_port_artifacts(root, rows, manifest["protocol"], problems)
+                declared = module.expected_cells()
+            if sorted(declared) != sorted(expected):
+                problems.append("declared matrix disagrees with task executable protocol")
         with (root / "metrics.csv").open(newline="") as stream:
             reader = csv.DictReader(stream)
             fields = sorted({key for row in rows for key in row})
