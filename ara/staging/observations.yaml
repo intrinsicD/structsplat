@@ -119,7 +119,7 @@ observations:
     promoted: false
     promoted_to: null
     crystallized_via: null
-    stale: false
+    stale: true
   - id: O12
     timestamp: "2026-07-02T23:27"
     provenance: ai-suggested
@@ -2657,6 +2657,111 @@ observations:
       removal sensitivity. This is a proposed architecture awaiting HIER-033.
     potential_type: architecture
     bound_to: [N312, N313, N309, N310]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O177
+    timestamp: "2026-09-05T05:22+02:00"
+    provenance: ai-suggested
+    content: >
+      The frozen HIER-033 mixed selector reaches joint low regret in13/18 constructed cases, below its >=80% gate; immediate and recovered rankings can disagree.
+    context: >
+      User-authorized overnight research; exact frozen clean-source matrices and distinct audits
+      are recorded in ara/evidence/overnight-method-research-2026-09-05/run.md.
+      Interpretation is AI-derived, not user-affirmed; unrun proposals are not empirical findings.
+    potential_type: claim
+    bound_to: [N317, N318, N322]
+    promoted: true
+    promoted_to: "logic/claims.md:C68"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O178
+    timestamp: "2026-09-05T05:22+02:00"
+    provenance: ai-suggested
+    content: >
+      In the finite N3 HIER-033 bank, nine cancellation cases favor a continuous edit over every donor-funded split immediately; low coherence can also favor split in other cases, and uncovered support-gap residuals need a nonlocal birth proposal.
+    context: >
+      User-authorized overnight research; exact frozen clean-source matrices and distinct audits
+      are recorded in ara/evidence/overnight-method-research-2026-09-05/run.md.
+      Interpretation is AI-derived, not user-affirmed; unrun proposals are not empirical findings.
+    potential_type: claim
+    bound_to: [N317, N322]
+    promoted: true
+    promoted_to: "logic/claims.md:C69"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O179
+    timestamp: "2026-09-05T05:22+02:00"
+    provenance: ai-suggested
+    content: >
+      HIER-035 local curvature passes terminal quality gates on translated/anisotropic fixtures but loses every overlap/texture condition; positive gains are chiefly near-ceiling numerical polishing, not demonstrated visual or speed improvements.
+    context: >
+      User-authorized overnight research; exact frozen clean-source matrices and distinct audits
+      are recorded in ara/evidence/overnight-method-research-2026-09-05/run.md.
+      Interpretation is AI-derived, not user-affirmed; unrun proposals are not empirical findings.
+    potential_type: claim
+    bound_to: [N315, N322]
+    promoted: true
+    promoted_to: "logic/claims.md:C70"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O180
+    timestamp: "2026-09-05T05:22+02:00"
+    provenance: ai-suggested
+    content: >
+      HIER-036 cross-Gaussian coupling helps realizable overlap under both cap conventions, but its texture coupling gain does not persist to additional conditions and every full-curvature texture endpoint loses to strongest Adam.
+    context: >
+      User-authorized overnight research; exact frozen clean-source matrices and distinct audits
+      are recorded in ara/evidence/overnight-method-research-2026-09-05/run.md.
+      Interpretation is AI-derived, not user-affirmed; unrun proposals are not empirical findings.
+    potential_type: claim
+    bound_to: [N319, N322]
+    promoted: true
+    promoted_to: "logic/claims.md:C71"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O181
+    timestamp: "2026-09-05T05:22+02:00"
+    provenance: ai-suggested
+    content: >
+      Both HIER-034 profiles fail general interchangeability; all passing irregular calls return unchanged checkpoint0. Original nominal time ratios concern rollback calls under observed contention; streaming itself has large local repeat variability.
+    context: >
+      User-authorized overnight research; exact frozen clean-source matrices and distinct audits
+      are recorded in ara/evidence/overnight-method-research-2026-09-05/run.md.
+      Interpretation is AI-derived, not user-affirmed; unrun proposals are not empirical findings.
+    potential_type: claim
+    bound_to: [N320, N321, N322]
+    promoted: true
+    promoted_to: "logic/claims.md:C72"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O182
+    timestamp: "2026-09-05T05:22+02:00"
+    provenance: ai-suggested
+    content: >
+      A simple projected-gradient fallback after six failed full-GN trials may improve texture terminal quality more than twelve GN backtracking trials; a54-cell separate-stratum design is specified but unimplemented and unrun.
+    context: >
+      User-authorized overnight research; exact frozen clean-source matrices and distinct audits
+      are recorded in ara/evidence/overnight-method-research-2026-09-05/run.md.
+      Interpretation is AI-derived, not user-affirmed; unrun proposals are not empirical findings.
+    potential_type: heuristic
+    bound_to: [N319, N323]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O183
+    timestamp: "2026-09-05T05:22+02:00"
+    provenance: ai-suggested
+    content: >
+      The simpler-first portfolio prioritizes bounded operator specialization and optimizer controls while retaining representability certificates, donor-recipient coupling and image-space proposals as untested formulation candidates; novelty remains unestablished.
+    context: >
+      User-authorized overnight research; exact frozen clean-source matrices and distinct audits
+      are recorded in ara/evidence/overnight-method-research-2026-09-05/run.md.
+      Interpretation is AI-derived, not user-affirmed; unrun proposals are not empirical findings.
+    potential_type: unknown
+    bound_to: [N314, N323]
     promoted: false
     promoted_to: null
     crystallized_via: null

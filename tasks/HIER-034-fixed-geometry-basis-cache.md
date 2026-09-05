@@ -10,8 +10,8 @@ Compare streaming, cached scatter, and sparse operators with build cost, memory,
 - No maintained default change, count/rate claim, or cache reuse after geometry changes.
 
 ## Acceptance criteria
-- [ ] Bounded immutable cache and forward/transpose oracle tests.
-- [ ] Frozen protocol, distinct prospective review, and clean-source evidence.
+- [x] Bounded immutable cache and forward/transpose oracle tests.
+- [x] Frozen protocol, distinct prospective review, and clean-source evidence.
 - [ ] Portable report, independent audit, synchronized docs/ARA, full verification.
 
 ## Interfaces touched
@@ -23,11 +23,11 @@ HIER-031/032/014, ADR-0006
 ## Agent workflow
 - Driver: codex-root
 - Reviewer: codex-overnight-protocol-reviewer
-- Turn: driver
-- Reviewed revision: protocol-sha256:9e3dc020572b724646f0f323a73d9457839f31a1c674b2ae799031787b2ff439
+- Turn: reviewer
+- Reviewed revision: 50396b6e06a3ff668fbea641ab6ae20c52ecaf1f
 
 ### Handoff log
-Protocol and implementation are prospectively approved at the digest below. The clean source
+Historical entry at the original freeze: protocol and implementation are prospectively approved at the digest below. The clean source
 checkpoint is4b2c79f2a97e0bde5109d11ab717edd5881a1ca1. Formal timing remains unlaunched while an
 unrelated GPU workload is active; no other process was stopped and no speed claim is made.
 
@@ -54,6 +54,66 @@ selective rerun, in-place repair, push or merge.
 #### Recommended next action
 Approve or reject the amended digest prospectively; require full verification and clean source
 before launching the separately named immutable shared-correctness bundle.
+
+### Handoff
+
+#### Objective
+Independently audit the shared-profile correctness bundle, then the preserved original timing
+matrix when it completes. Keep the two protocol dispositions separate.
+#### Changes
+No post-approval numerical change. Shared execution used clean50396b6e06a3ff668fbea641ab6ae20c52ecaf1f.
+The original complete matrix uses preserved clean4b2c79f2a97e0bde5109d11ab717edd5881a1ca1.
+#### Evidence
+At this handoff, results/hier034_shared_correctness_2026-09-05 was complete. The original
+results/hier034_basis_cache_2026-09-05 was running; its external observational sidecar is
+results/hier034_timing_occupancy_2026-09-05. Both retain their original approved digests.
+The latest source checkpoint passed2158portable tests and all structural gates.
+#### Assumptions
+Shared-profile speed eligibility remains false regardless of observed occupancy or ratios.
+The original assay is not an independent numerical confirmation: it uses the same frozen matrix.
+#### Uncertainties
+Backend transaction equivalence; float32 path sensitivity; generalization and isolated timing.
+A fresh preflight found no GPU compute process, but an unrelated CPU compilation was later
+observed. Point-sampled GPU occupancy does not prove complete workstation exclusivity.
+#### Review focus
+All source/input/metric/configuration bindings, checkpoint predicates and selected iterations,
+paired raw rasters, complete matrix and paired timing gates, occupancy chronology, bounded
+memory scope, repeated baseline variability, and native display artifacts.
+#### Protected actions not taken
+No foreign process stopped, selective repeat, threshold change, failed-artifact repair,
+default promotion, push or merge. Original timing execution was approved prospectively before
+either formal cache outcome and explicitly admitted by the reviewer as the unanswered assay.
+#### Recommended next action
+Lightweight shared-bundle inspection may proceed now. Defer GPU and heavy CPU replays until
+the original timing matrix finishes, then return a separate scientific verdict for both scopes.
+
+### Handoff
+
+#### Objective
+Review the final evidence/claim/documentation integration for this completed bounded assay.
+#### Changes
+No post-freeze numerical change. Added the independent audit receipt, explicitly partial tracked
+archive, scoped ARA findings and morning handoff; kept all maintained defaults unchanged.
+#### Evidence
+ara/evidence/overnight-method-research-2026-09-05/run.md and archive/archive_manifest.json;
+docs/research/2026-09-05-overnight-findings.md; ARA C68–C72 as applicable.
+The exact staged integration tree and final full-gate result are bound at review dispatch.
+#### Assumptions
+Each claim retains its own frozen protocol, source, data, comparator and resource scope.
+The two cache profiles are not independent numerical confirmation.
+#### Uncertainties
+Generalization, meaningful visual improvement, isolated speed, accepted-update cache utility,
+baseline repeat mechanism and the unrun gradient-rescue design remain unresolved.
+#### Review focus
+Check that the ledger faithfully records your distinct audits, preserves nominal failed/passing
+gates, and includes numerical-polish, rollback, within-baseline variability and contention caveats.
+Review the archive helper's immutable-input and sidecar fixes; do not rerun optimization.
+#### Protected actions not taken
+No default change, new formal matrix, selective rerun, original-artifact edit, foreign-process
+termination, sealed-data access, push or merge.
+#### Recommended next action
+Accept or require a bounded correction to the integrated record. Retire this task only after
+the distinct verdict and full verification; keep future hypotheses explicitly unrun.
 
 ## Notes
 Overnight research authorized September 5, 2026.
@@ -106,7 +166,7 @@ docs/research/2026-09-05-overnight-research-portfolio.md records the research al
 
 ## Prospective shared-resource amendment
 
-The occupied GPU prevents an exclusive-resource timing interpretation. Before any formal
+At this prospective amendment, the occupied GPU prevented an exclusive-resource timing interpretation. Before any formal
 HIER-034 outcome exists, narrow the next run to correctness/parity and descriptive resource
 telemetry. Preserve the original timing protocol/source at4b2c79f2a97e0bde5109d11ab717edd5881a1ca1
 and /tmp/structsplat-overnight-VmVXmg/source; it remains unrun.

@@ -431,3 +431,11 @@ paths were the live source location when the historical runs were produced.
   the predicted split-matrix loss change. This validates one local derivation only; it is not an
   operator-selection or quality result. Evidence note:
   `ara/evidence/hier-pixel-gradient-anatomy-2026-08-12/run.md`.
+- `overnight-method-research-2026-09-05`: Four simpler-first routes, five prospectively approved
+  clean-source matrices and distinct numerical/visual audits. The finite action selector misses
+  its gate; local curvature and dense coupling provide conditional numerical-polish evidence,
+  not general texture preference; cache parity passes only rollback-to-input workloads and
+  timing remains qualified by resource observations. Claims C68–C72 preserve these boundaries.
+  No maintained default changes. Evidence and audit:
+  `ara/evidence/overnight-method-research-2026-09-05/run.md`; explicitly partial portable archive:
+  `ara/evidence/overnight-method-research-2026-09-05/archive/index.html`.

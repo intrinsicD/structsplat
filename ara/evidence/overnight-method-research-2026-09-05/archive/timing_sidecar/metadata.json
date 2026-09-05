@@ -1,0 +1,17 @@
+{
+  "command": [
+    "/home/alex/miniconda3/bin/python",
+    "scripts/experiments/hier034_basis_cache.py",
+    "/home/alex/Documents/structsplat/results/hier034_basis_cache_2026-09-05",
+    "--base-bundle",
+    "/home/alex/Documents/structsplat/results/hier031_janelle_c0001_s1200_exact7k_boundary_detail_s0_diagnostic_2026-08-12",
+    "--approved-protocol-digest",
+    "a5be4997c39a13d59eada1962a67837ff447bf9145e44b5dcca3eaaaacb66436"
+  ],
+  "source_worktree": "/tmp/structsplat-overnight-VmVXmg/source",
+  "monitor_sha256": "f2205151d35db779a55af863af47c9c11b97e1ec611747013f0c4ff37c11df69",
+  "sampling_interval_seconds": 1,
+  "sampling_timeout_seconds": 5,
+  "scope": "External observational sidecar; scientific source and frozen complete matrix unchanged.",
+  "limitations": "Point samples do not prove continuous exclusivity; no CPU occupancy inference."
+}

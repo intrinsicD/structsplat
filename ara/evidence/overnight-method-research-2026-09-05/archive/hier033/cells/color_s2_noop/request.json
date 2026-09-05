@@ -1,0 +1,7 @@
+{
+  "action": "noop",
+  "cell_id": "color_s2_noop",
+  "family": "color",
+  "seed": 2,
+  "smoke": false
+}

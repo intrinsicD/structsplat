@@ -1,0 +1,7 @@
+{
+  "action": "noop",
+  "cell_id": "two_lobes_s2_noop",
+  "family": "two_lobes",
+  "seed": 2,
+  "smoke": false
+}

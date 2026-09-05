@@ -14,9 +14,9 @@ separate comparisons against the strongest Adam control.
 - No retuning after seeing formal outcomes; no uncharged Jacobian or trial-render work.
 
 ## Acceptance criteria
-- [ ] Bound the dense oracle and test Jacobian, Gram, update, ownership, and work semantics.
-- [ ] Freeze executable protocol and obtain distinct prospective digest approval.
-- [ ] Clean immutable complete run, native artifacts/curves, and independent results audit.
+- [x] Bound the dense oracle and test Jacobian, Gram, update, ownership, and work semantics.
+- [x] Freeze executable protocol and obtain distinct prospective digest approval.
+- [x] Clean immutable complete run, native artifacts/curves, and independent results audit.
 - [ ] Synchronize task/docs/ARA and pass the full verification gate.
 
 ## Interfaces touched
@@ -32,7 +32,7 @@ HIER-033/035, ADR-0006
 - Reviewed revision: 4cd0331bdbb357df295a271e62736024feafdea9
 
 ### Handoff log
-Design reviewed independently before implementation. Executable approval and outcomes pending.
+Historical initial entry: design reviewed before implementation; executable approval and outcomes were then pending.
 
 ### Handoff
 
@@ -78,6 +78,34 @@ No default change, matrix-limit increase, selective repeat, held-out access, art
 foreign-process termination, push or merge.
 #### Recommended next action
 Return a distinct scientific verdict and bind only its scoped findings into ARA.
+
+### Handoff
+
+#### Objective
+Review the final evidence/claim/documentation integration for this completed bounded assay.
+#### Changes
+No post-freeze numerical change. Added the independent audit receipt, explicitly partial tracked
+archive, scoped ARA findings and morning handoff; kept all maintained defaults unchanged.
+#### Evidence
+ara/evidence/overnight-method-research-2026-09-05/run.md and archive/archive_manifest.json;
+docs/research/2026-09-05-overnight-findings.md; ARA C68–C72 as applicable.
+The exact staged integration tree and final full-gate result are bound at review dispatch.
+#### Assumptions
+Each claim retains its own frozen protocol, source, data, comparator and resource scope.
+The two cache profiles are not independent numerical confirmation.
+#### Uncertainties
+Generalization, meaningful visual improvement, isolated speed, accepted-update cache utility,
+baseline repeat mechanism and the unrun gradient-rescue design remain unresolved.
+#### Review focus
+Check that the ledger faithfully records your distinct audits, preserves nominal failed/passing
+gates, and includes numerical-polish, rollback, within-baseline variability and contention caveats.
+Review the archive helper's immutable-input and sidecar fixes; do not rerun optimization.
+#### Protected actions not taken
+No default change, new formal matrix, selective rerun, original-artifact edit, foreign-process
+termination, sealed-data access, push or merge.
+#### Recommended next action
+Accept or require a bounded correction to the integrated record. Retire this task only after
+the distinct verdict and full verification; keep future hypotheses explicitly unrun.
 
 ## Frozen protocol
 Executable authority: PROTOCOL plus every SOURCES hash in

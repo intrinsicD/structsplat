@@ -1,0 +1,48 @@
+{
+  "control": {
+    "adam_multiplier": 1.0,
+    "arm": "block",
+    "color_limit": 2.0,
+    "damping": 0.01,
+    "max_backtracks": 6,
+    "max_pairs": 65536,
+    "scale_max": 16.0,
+    "scale_min": 0.35,
+    "steps": 160,
+    "trust": [
+      1.0,
+      1.0,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1
+    ]
+  },
+  "cuda": "12.8",
+  "dense_limits": {
+    "max_jacobian_bytes": 67108864,
+    "max_parameters": 256
+  },
+  "dense_mode": "block_row",
+  "gpu": "NVIDIA GeForce RTX 3050",
+  "gpu_processes_after": "449881, /home/alex/miniconda3/bin/python, 186",
+  "gpu_processes_before": "",
+  "input_field_sha256": "c9a684ef801745dcb36faa7f95bb5e6ac49849a25cb42844a6da59f4fb119b90",
+  "numpy": "2.1.3",
+  "precision": {
+    "allow_tf32": false,
+    "float32_matmul_precision": "highest"
+  },
+  "request": {
+    "cell_id": "overlap_s2_block_row",
+    "family": "overlap",
+    "method": "block_row",
+    "seed": 2,
+    "smoke": false
+  },
+  "target_sha256": "9082f7584a1775217bcc2b392b283864e06904dfd15d1839bbe94c2dd2823f19",
+  "torch": "2.9.0+cu128",
+  "worker_pid": 449881
+}

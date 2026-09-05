@@ -1,0 +1,7 @@
+{
+  "cell_id": "anisotropic_s2_block",
+  "family": "anisotropic",
+  "method": "block",
+  "seed": 2,
+  "smoke": false
+}

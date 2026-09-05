@@ -1,0 +1,7 @@
+{
+  "cell_id": "overlap_s3_adam_0p3",
+  "family": "overlap",
+  "method": "adam_0p3",
+  "seed": 3,
+  "smoke": false
+}

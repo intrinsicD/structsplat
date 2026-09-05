@@ -1,0 +1,2973 @@
+{
+  "default_promotion": false,
+  "records": [
+    {
+      "backend": "scatter",
+      "family": "hier031",
+      "integrity_eligible": false,
+      "median_paired_speedup": 1.1469018822835173,
+      "pairs": [
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": false,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.004820346832275391,
+          "paired_speedup": 1.7893482266846088,
+          "pass": false,
+          "pixel_max_abs": 0.032562077045440674,
+          "raw_sse_difference": -0.0017188791498483624,
+          "repeat": 0
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": false,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.006678104400634766,
+          "paired_speedup": 1.2793071873235853,
+          "pass": false,
+          "pixel_max_abs": 0.02920711040496826,
+          "raw_sse_difference": -0.0018820179745944188,
+          "repeat": 1
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": false,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.04449176788330078,
+          "paired_speedup": 1.1521091786986364,
+          "pass": false,
+          "pixel_max_abs": 0.06844814121723175,
+          "raw_sse_difference": -0.011601023489674844,
+          "repeat": 2
+        },
+        {
+          "checkpoint_disagreements": [
+            {
+              "candidate": true,
+              "iteration": 27,
+              "key": "selectable",
+              "off": false
+            },
+            {
+              "candidate": true,
+              "iteration": 27,
+              "key": "transaction_safe",
+              "off": false
+            },
+            {
+              "candidate": true,
+              "iteration": 27,
+              "key": "bounded",
+              "off": false
+            }
+          ],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": false,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": false,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 0.13065719604492188,
+          "paired_speedup": 1.1377365387982028,
+          "pass": false,
+          "pixel_max_abs": 0.08821222186088562,
+          "raw_sse_difference": -0.08554672538775776,
+          "repeat": 3
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": false,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.007515430450439453,
+          "paired_speedup": 1.1293537410991927,
+          "pass": false,
+          "pixel_max_abs": 0.03379166126251221,
+          "raw_sse_difference": 0.0002665429399257846,
+          "repeat": 4
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": false,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0350189208984375,
+          "paired_speedup": 1.1416945858683982,
+          "pass": false,
+          "pixel_max_abs": 0.03244265913963318,
+          "raw_sse_difference": -0.008971472304438066,
+          "repeat": 5
+        }
+      ],
+      "passes_speed_gate": false,
+      "seed": 0,
+      "speedup_max": 1.7893482266846088,
+      "speedup_min": 1.1293537410991927
+    },
+    {
+      "backend": "csr",
+      "family": "hier031",
+      "integrity_eligible": false,
+      "median_paired_speedup": 1.1346465936825698,
+      "pairs": [
+        {
+          "checkpoint_disagreements": [
+            {
+              "candidate": true,
+              "iteration": 27,
+              "key": "selectable",
+              "off": false
+            },
+            {
+              "candidate": true,
+              "iteration": 27,
+              "key": "transaction_safe",
+              "off": false
+            },
+            {
+              "candidate": true,
+              "iteration": 27,
+              "key": "bounded",
+              "off": false
+            }
+          ],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": false,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": false,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 0.14486980438232422,
+          "paired_speedup": 1.7559749874609787,
+          "pass": false,
+          "pixel_max_abs": 0.05858588218688965,
+          "raw_sse_difference": -0.08898818009606657,
+          "repeat": 0
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": false,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.009555816650390625,
+          "paired_speedup": 1.1432181354945716,
+          "pass": false,
+          "pixel_max_abs": 0.04286623001098633,
+          "raw_sse_difference": -0.0013063116673492914,
+          "repeat": 1
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": false,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.04449462890625,
+          "paired_speedup": 1.1558392149864318,
+          "pass": false,
+          "pixel_max_abs": 0.06809897720813751,
+          "raw_sse_difference": -0.013254913574655802,
+          "repeat": 2
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": false,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0026035308837890625,
+          "paired_speedup": 1.1260750518705678,
+          "pass": false,
+          "pixel_max_abs": 0.01071786880493164,
+          "raw_sse_difference": -0.0011635852117706236,
+          "repeat": 3
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": false,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.004679679870605469,
+          "paired_speedup": 1.1152733806640007,
+          "pass": false,
+          "pixel_max_abs": 0.020546674728393555,
+          "raw_sse_difference": -0.00032269786697725067,
+          "repeat": 4
+        },
+        {
+          "checkpoint_disagreements": [
+            {
+              "candidate": false,
+              "iteration": 27,
+              "key": "selectable",
+              "off": true
+            },
+            {
+              "candidate": false,
+              "iteration": 27,
+              "key": "transaction_safe",
+              "off": true
+            },
+            {
+              "candidate": false,
+              "iteration": 27,
+              "key": "bounded",
+              "off": true
+            }
+          ],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": false,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": false,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 0.09070110321044922,
+          "paired_speedup": 1.1114220461414202,
+          "pass": false,
+          "pixel_max_abs": 0.07511600852012634,
+          "raw_sse_difference": 0.06761901243271495,
+          "repeat": 5
+        }
+      ],
+      "passes_speed_gate": false,
+      "seed": 0,
+      "speedup_max": 1.7559749874609787,
+      "speedup_min": 1.1114220461414202
+    },
+    {
+      "backend": "scatter",
+      "family": "irregular",
+      "integrity_eligible": true,
+      "median_paired_speedup": 1.691310335745856,
+      "pairs": [
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.8848156544804466,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": -4.625699148164131e-07,
+          "repeat": 0
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.9564945116741914,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": 3.905574885720853e-07,
+          "repeat": 1
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.4214031751938057,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": -2.3577808860864025e-07,
+          "repeat": 2
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.7502013023811076,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": -9.178097570838872e-08,
+          "repeat": 3
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.3542371052151765,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": 2.6699626687332056e-07,
+          "repeat": 4
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.6324193691106048,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": -1.2891039204987464e-06,
+          "repeat": 5
+        }
+      ],
+      "passes_speed_gate": true,
+      "seed": 0,
+      "speedup_max": 1.9564945116741914,
+      "speedup_min": 1.3542371052151765
+    },
+    {
+      "backend": "csr",
+      "family": "irregular",
+      "integrity_eligible": true,
+      "median_paired_speedup": 1.707764302574717,
+      "pairs": [
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.9521290466371777,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": 9.90627086139284e-07,
+          "repeat": 0
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.9711342750519902,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": 7.590165296278428e-08,
+          "repeat": 1
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.4633995585122563,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": -4.6732156988582574e-07,
+          "repeat": 2
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 2.2270520190836374,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": -3.263096459704684e-07,
+          "repeat": 3
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.288446855315711,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": 3.059919890802121e-07,
+          "repeat": 4
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.3821239252996695,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": -3.2635625757393427e-07,
+          "repeat": 5
+        }
+      ],
+      "passes_speed_gate": true,
+      "seed": 0,
+      "speedup_max": 2.2270520190836374,
+      "speedup_min": 1.288446855315711
+    },
+    {
+      "backend": "scatter",
+      "family": "irregular",
+      "integrity_eligible": true,
+      "median_paired_speedup": 1.7020424436521102,
+      "pairs": [
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.5368388881463078,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": 4.926087058265693e-07,
+          "repeat": 0
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.7309263206432788,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": -7.241583261929918e-07,
+          "repeat": 1
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.6731585666609414,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": 1.1110705600003712e-07,
+          "repeat": 2
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.8916150276315633,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": 4.668822839448694e-07,
+          "repeat": 3
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.8844286653843636,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": 4.2173905967501923e-07,
+          "repeat": 4
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.594723605652866,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": 1.5779057775944239e-06,
+          "repeat": 5
+        }
+      ],
+      "passes_speed_gate": true,
+      "seed": 1,
+      "speedup_max": 1.8916150276315633,
+      "speedup_min": 1.5368388881463078
+    },
+    {
+      "backend": "csr",
+      "family": "irregular",
+      "integrity_eligible": true,
+      "median_paired_speedup": 2.008821595817097,
+      "pairs": [
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.7102697772389093,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": 7.341652690229239e-07,
+          "repeat": 0
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 2.2268788160385764,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": -2.539611614338355e-07,
+          "repeat": 1
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.955500754561474,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": -4.007692950835917e-07,
+          "repeat": 2
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.853211178683168,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": -6.21387016508379e-07,
+          "repeat": 3
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 2.485751653505446,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": 4.710727807832882e-08,
+          "repeat": 4
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 2.062142437072721,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": 6.576087798748631e-07,
+          "repeat": 5
+        }
+      ],
+      "passes_speed_gate": true,
+      "seed": 1,
+      "speedup_max": 2.485751653505446,
+      "speedup_min": 1.7102697772389093
+    },
+    {
+      "backend": "scatter",
+      "family": "irregular",
+      "integrity_eligible": true,
+      "median_paired_speedup": 1.9562676842248816,
+      "pairs": [
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 2.0481408418071063,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": 2.893725650210399e-07,
+          "repeat": 0
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.9719373100131106,
+          "pass": true,
+          "pixel_max_abs": 8.940696716308594e-08,
+          "raw_sse_difference": -6.917189239175059e-07,
+          "repeat": 1
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.9405980584366525,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": 5.553588380280416e-07,
+          "repeat": 2
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.6238962518082014,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": 4.156049726589117e-07,
+          "repeat": 3
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.9313585608008448,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": 5.091017101221951e-07,
+          "repeat": 4
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 2.1004175685141777,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": -1.4700412975798827e-07,
+          "repeat": 5
+        }
+      ],
+      "passes_speed_gate": true,
+      "seed": 2,
+      "speedup_max": 2.1004175685141777,
+      "speedup_min": 1.6238962518082014
+    },
+    {
+      "backend": "csr",
+      "family": "irregular",
+      "integrity_eligible": true,
+      "median_paired_speedup": 1.9564904568606853,
+      "pairs": [
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.9430505629093777,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": 2.2346875994117e-07,
+          "repeat": 0
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 2.022375093008995,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": -8.923764198698336e-07,
+          "repeat": 1
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.969930350811993,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": 8.878555490809958e-08,
+          "repeat": 2
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.6112694554358769,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": 1.1822771739389282e-06,
+          "repeat": 3
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 1.915738782566188,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": 7.154517334129196e-08,
+          "repeat": 4
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 0.0,
+          "paired_speedup": 2.0276724419657044,
+          "pass": true,
+          "pixel_max_abs": 5.960464477539063e-08,
+          "raw_sse_difference": 6.006539479130879e-07,
+          "repeat": 5
+        }
+      ],
+      "passes_speed_gate": true,
+      "seed": 2,
+      "speedup_max": 2.0276724419657044,
+      "speedup_min": 1.6112694554358769
+    },
+    {
+      "backend": "scatter",
+      "family": "smooth",
+      "integrity_eligible": false,
+      "median_paired_speedup": 2.1739783060022457,
+      "pairs": [
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 1.6689300537109375e-05,
+          "paired_speedup": 2.657283322324866,
+          "pass": true,
+          "pixel_max_abs": 7.212162017822266e-06,
+          "raw_sse_difference": -3.8429568860465224e-07,
+          "repeat": 0
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.4916062355041504e-05,
+          "paired_speedup": 1.4241495728208946,
+          "pass": false,
+          "pixel_max_abs": 8.165836334228516e-06,
+          "raw_sse_difference": 5.688728919039931e-07,
+          "repeat": 1
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.7464160919189453e-05,
+          "paired_speedup": 2.4691147988485085,
+          "pass": false,
+          "pixel_max_abs": 6.556510925292969e-06,
+          "raw_sse_difference": 5.187552005736507e-07,
+          "repeat": 2
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.5556812286376953e-05,
+          "paired_speedup": 3.4237262080130852,
+          "pass": false,
+          "pixel_max_abs": 7.510185241699219e-06,
+          "raw_sse_difference": -2.7212365694140317e-07,
+          "repeat": 3
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.2964010238647461e-05,
+          "paired_speedup": 1.8788418131559832,
+          "pass": false,
+          "pixel_max_abs": 6.735324859619141e-06,
+          "raw_sse_difference": 2.153205826971316e-07,
+          "repeat": 4
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.627206802368164e-05,
+          "paired_speedup": 1.4647347579630476,
+          "pass": false,
+          "pixel_max_abs": 6.9141387939453125e-06,
+          "raw_sse_difference": -4.5131740478154825e-07,
+          "repeat": 5
+        }
+      ],
+      "passes_speed_gate": false,
+      "seed": 0,
+      "speedup_max": 3.4237262080130852,
+      "speedup_min": 1.4241495728208946
+    },
+    {
+      "backend": "csr",
+      "family": "smooth",
+      "integrity_eligible": false,
+      "median_paired_speedup": 2.042302637421357,
+      "pairs": [
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.1652708053588867e-05,
+          "paired_speedup": 2.8469824859197566,
+          "pass": false,
+          "pixel_max_abs": 5.543231964111328e-06,
+          "raw_sse_difference": 9.271060719129309e-08,
+          "repeat": 0
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 1.6450881958007812e-05,
+          "paired_speedup": 2.2248329922673835,
+          "pass": true,
+          "pixel_max_abs": 7.68899917602539e-06,
+          "raw_sse_difference": 3.463307507445279e-08,
+          "repeat": 1
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.4096498489379883e-05,
+          "paired_speedup": 1.8597722825753302,
+          "pass": false,
+          "pixel_max_abs": 5.602836608886719e-06,
+          "raw_sse_difference": 6.533674365982733e-07,
+          "repeat": 2
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.4156103134155273e-05,
+          "paired_speedup": 3.4406758669723376,
+          "pass": false,
+          "pixel_max_abs": 7.867813110351562e-06,
+          "raw_sse_difference": 9.721685501062893e-08,
+          "repeat": 3
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.6063451766967773e-05,
+          "paired_speedup": 1.469061630113467,
+          "pass": false,
+          "pixel_max_abs": 6.318092346191406e-06,
+          "raw_sse_difference": 8.084343079417522e-07,
+          "repeat": 4
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.621246337890625e-05,
+          "paired_speedup": 1.3274567518988891,
+          "pass": false,
+          "pixel_max_abs": 1.2159347534179688e-05,
+          "raw_sse_difference": -4.342694808201486e-07,
+          "repeat": 5
+        }
+      ],
+      "passes_speed_gate": false,
+      "seed": 0,
+      "speedup_max": 3.4406758669723376,
+      "speedup_min": 1.3274567518988891
+    },
+    {
+      "backend": "scatter",
+      "family": "smooth",
+      "integrity_eligible": false,
+      "median_paired_speedup": 1.9946372674953738,
+      "pairs": [
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.0951032638549805e-05,
+          "paired_speedup": 2.1727211945128313,
+          "pass": false,
+          "pixel_max_abs": 1.0907649993896484e-05,
+          "raw_sse_difference": 8.177730705938302e-07,
+          "repeat": 0
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.5482306480407715e-05,
+          "paired_speedup": 1.3101118028478502,
+          "pass": false,
+          "pixel_max_abs": 8.344650268554688e-06,
+          "raw_sse_difference": 4.1544552686900715e-08,
+          "repeat": 1
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.5888363122940063e-05,
+          "paired_speedup": 1.5403356543996587,
+          "pass": false,
+          "pixel_max_abs": 1.0192394256591797e-05,
+          "raw_sse_difference": -9.207282118950388e-07,
+          "repeat": 2
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.059340476989746e-05,
+          "paired_speedup": 4.284998987505336,
+          "pass": false,
+          "pixel_max_abs": 1.2487173080444336e-05,
+          "raw_sse_difference": 1.387568445920806e-06,
+          "repeat": 3
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.0503997802734375e-05,
+          "paired_speedup": 1.8985567157718315,
+          "pass": false,
+          "pixel_max_abs": 8.940696716308594e-06,
+          "raw_sse_difference": 1.2003679756844576e-06,
+          "repeat": 4
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.399219036102295e-05,
+          "paired_speedup": 2.0907178192189164,
+          "pass": false,
+          "pixel_max_abs": 8.881092071533203e-06,
+          "raw_sse_difference": 2.6879939696300426e-07,
+          "repeat": 5
+        }
+      ],
+      "passes_speed_gate": false,
+      "seed": 1,
+      "speedup_max": 4.284998987505336,
+      "speedup_min": 1.3101118028478502
+    },
+    {
+      "backend": "csr",
+      "family": "smooth",
+      "integrity_eligible": false,
+      "median_paired_speedup": 2.1517074873684656,
+      "pairs": [
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.84476375579834e-05,
+          "paired_speedup": 2.156844482719272,
+          "pass": false,
+          "pixel_max_abs": 9.834766387939453e-06,
+          "raw_sse_difference": -6.464372859227296e-07,
+          "repeat": 0
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 1.1414289474487305e-05,
+          "paired_speedup": 1.1045800614069479,
+          "pass": true,
+          "pixel_max_abs": 5.364418029785156e-06,
+          "raw_sse_difference": 3.4261316272932163e-07,
+          "repeat": 1
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.7352402210235596e-05,
+          "paired_speedup": 2.3685767285154546,
+          "pass": false,
+          "pixel_max_abs": 1.3902783393859863e-05,
+          "raw_sse_difference": -1.8308800946442716e-06,
+          "repeat": 2
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 1.0281801223754883e-05,
+          "paired_speedup": 4.307728730291154,
+          "pass": true,
+          "pixel_max_abs": 4.559755325317383e-06,
+          "raw_sse_difference": 1.2243632028230422e-06,
+          "repeat": 3
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.2977590560913086e-05,
+          "paired_speedup": 2.146570492017659,
+          "pass": false,
+          "pixel_max_abs": 1.150369644165039e-05,
+          "raw_sse_difference": 1.721528519738058e-08,
+          "repeat": 4
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.3573637008666992e-05,
+          "paired_speedup": 2.0423340647850146,
+          "pass": false,
+          "pixel_max_abs": 1.0192394256591797e-05,
+          "raw_sse_difference": -5.000927671972022e-08,
+          "repeat": 5
+        }
+      ],
+      "passes_speed_gate": false,
+      "seed": 1,
+      "speedup_max": 4.307728730291154,
+      "speedup_min": 1.1045800614069479
+    },
+    {
+      "backend": "scatter",
+      "family": "smooth",
+      "integrity_eligible": false,
+      "median_paired_speedup": 2.148210123132942,
+      "pairs": [
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 3.3289194107055664e-05,
+          "paired_speedup": 1.937817478892912,
+          "pass": false,
+          "pixel_max_abs": 1.5854835510253906e-05,
+          "raw_sse_difference": -9.594210581553853e-07,
+          "repeat": 0
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.806020736694336e-05,
+          "paired_speedup": 2.3133094356952792,
+          "pass": false,
+          "pixel_max_abs": 8.046627044677734e-06,
+          "raw_sse_difference": 4.522461551914603e-07,
+          "repeat": 1
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.5228986740112305e-05,
+          "paired_speedup": 2.2341927733096636,
+          "pass": false,
+          "pixel_max_abs": 1.0967254638671875e-05,
+          "raw_sse_difference": 3.3453987668963237e-07,
+          "repeat": 2
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.4930963516235352e-05,
+          "paired_speedup": 2.1358077235506774,
+          "pass": false,
+          "pixel_max_abs": 9.417533874511719e-06,
+          "raw_sse_difference": 7.220599655965998e-07,
+          "repeat": 3
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.1652708053588867e-05,
+          "paired_speedup": 1.885555014629952,
+          "pass": false,
+          "pixel_max_abs": 9.000301361083984e-06,
+          "raw_sse_difference": 5.6992334407368617e-08,
+          "repeat": 4
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.9431114196777344e-05,
+          "paired_speedup": 2.1606125227152067,
+          "pass": false,
+          "pixel_max_abs": 1.0311603546142578e-05,
+          "raw_sse_difference": 7.710492724299911e-07,
+          "repeat": 5
+        }
+      ],
+      "passes_speed_gate": false,
+      "seed": 2,
+      "speedup_max": 2.3133094356952792,
+      "speedup_min": 1.885555014629952
+    },
+    {
+      "backend": "csr",
+      "family": "smooth",
+      "integrity_eligible": false,
+      "median_paired_speedup": 2.1418441273176247,
+      "pairs": [
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.473592758178711e-05,
+          "paired_speedup": 1.9569068946458186,
+          "pass": false,
+          "pixel_max_abs": 1.615285873413086e-05,
+          "raw_sse_difference": -3.154596015519928e-07,
+          "repeat": 0
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 1.8388032913208008e-05,
+          "paired_speedup": 2.1373829902566963,
+          "pass": true,
+          "pixel_max_abs": 7.987022399902344e-06,
+          "raw_sse_difference": 7.015625840267603e-07,
+          "repeat": 1
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 1.1399388313293457e-05,
+          "paired_speedup": 2.1438198329673117,
+          "pass": true,
+          "pixel_max_abs": 5.185604095458984e-06,
+          "raw_sse_difference": 6.006348911569148e-07,
+          "repeat": 2
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 1.0520219802856445e-05,
+          "paired_speedup": 2.139868421667938,
+          "pass": true,
+          "pixel_max_abs": 5.900859832763672e-06,
+          "raw_sse_difference": -6.16167284306357e-07,
+          "repeat": 3
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.4007091522216797e-05,
+          "paired_speedup": 2.195914792025416,
+          "pass": false,
+          "pixel_max_abs": 1.0192394256591797e-05,
+          "raw_sse_difference": 1.1377247233212984e-07,
+          "repeat": 4
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.150369644165039e-05,
+          "paired_speedup": 2.205308903776055,
+          "pass": false,
+          "pixel_max_abs": 8.508563041687012e-06,
+          "raw_sse_difference": 4.058618969793315e-07,
+          "repeat": 5
+        }
+      ],
+      "passes_speed_gate": false,
+      "seed": 2,
+      "speedup_max": 2.205308903776055,
+      "speedup_min": 1.9569068946458186
+    },
+    {
+      "backend": "scatter",
+      "family": "thin",
+      "integrity_eligible": false,
+      "median_paired_speedup": 2.100946002181031,
+      "pairs": [
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.850724220275879e-05,
+          "paired_speedup": 1.9866487168929061,
+          "pass": false,
+          "pixel_max_abs": 1.683831214904785e-05,
+          "raw_sse_difference": 1.3126414160069544e-06,
+          "repeat": 0
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.084672451019287e-05,
+          "paired_speedup": 2.075998661989392,
+          "pass": false,
+          "pixel_max_abs": 1.5497207641601562e-05,
+          "raw_sse_difference": 7.536254997830838e-08,
+          "repeat": 1
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.1085143089294434e-05,
+          "paired_speedup": 1.9885128143286284,
+          "pass": false,
+          "pixel_max_abs": 1.5527009963989258e-05,
+          "raw_sse_difference": 5.59418822376756e-07,
+          "repeat": 2
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.8075108528137207e-05,
+          "paired_speedup": 2.12589334237267,
+          "pass": false,
+          "pixel_max_abs": 1.609325408935547e-05,
+          "raw_sse_difference": 1.658297605899861e-06,
+          "repeat": 3
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.811981201171875e-05,
+          "paired_speedup": 2.2197504424034866,
+          "pass": false,
+          "pixel_max_abs": 1.7315149307250977e-05,
+          "raw_sse_difference": -1.8340920178161468e-06,
+          "repeat": 4
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 3.203749656677246e-06,
+          "paired_speedup": 2.1388265046741597,
+          "pass": false,
+          "pixel_max_abs": 2.4437904357910156e-06,
+          "raw_sse_difference": 1.8751693460217211e-06,
+          "repeat": 5
+        }
+      ],
+      "passes_speed_gate": false,
+      "seed": 0,
+      "speedup_max": 2.2197504424034866,
+      "speedup_min": 1.9866487168929061
+    },
+    {
+      "backend": "csr",
+      "family": "thin",
+      "integrity_eligible": false,
+      "median_paired_speedup": 2.053488224387122,
+      "pairs": [
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.9103288650512695e-05,
+          "paired_speedup": 2.082791695264867,
+          "pass": false,
+          "pixel_max_abs": 1.659989356994629e-05,
+          "raw_sse_difference": 1.6881913325050846e-06,
+          "repeat": 0
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.086162567138672e-05,
+          "paired_speedup": 1.7367554763951054,
+          "pass": false,
+          "pixel_max_abs": 1.609325408935547e-05,
+          "raw_sse_difference": 2.5904050744429696e-06,
+          "repeat": 1
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": true
+          },
+          "coefficient_max_abs": 2.816319465637207e-06,
+          "paired_speedup": 1.967238355176993,
+          "pass": true,
+          "pixel_max_abs": 1.9073486328125e-06,
+          "raw_sse_difference": -3.861532150040148e-06,
+          "repeat": 2
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.2351741790771484e-06,
+          "paired_speedup": 2.067249426139563,
+          "pass": false,
+          "pixel_max_abs": 1.9669532775878906e-06,
+          "raw_sse_difference": 1.0216217560810037e-06,
+          "repeat": 3
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.8209218978881836e-05,
+          "paired_speedup": 2.1704126198316405,
+          "pass": false,
+          "pixel_max_abs": 1.671910285949707e-05,
+          "raw_sse_difference": -1.143006102211075e-06,
+          "repeat": 4
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.8864870071411133e-05,
+          "paired_speedup": 2.039727022634681,
+          "pass": false,
+          "pixel_max_abs": 1.6480684280395508e-05,
+          "raw_sse_difference": 6.002696864015888e-07,
+          "repeat": 5
+        }
+      ],
+      "passes_speed_gate": false,
+      "seed": 0,
+      "speedup_max": 2.1704126198316405,
+      "speedup_min": 1.7367554763951054
+    },
+    {
+      "backend": "scatter",
+      "family": "thin",
+      "integrity_eligible": false,
+      "median_paired_speedup": 1.9365186186683592,
+      "pairs": [
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.7881393432617188e-06,
+          "paired_speedup": 2.1664639580936034,
+          "pass": false,
+          "pixel_max_abs": 1.6093254089355469e-06,
+          "raw_sse_difference": -2.590142685221508e-06,
+          "repeat": 0
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 3.0338764190673828e-05,
+          "paired_speedup": 0.6658186724416592,
+          "pass": false,
+          "pixel_max_abs": 2.1755695343017578e-05,
+          "raw_sse_difference": 1.0870485311897937e-06,
+          "repeat": 1
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.8848648071289062e-05,
+          "paired_speedup": 1.9092885074750465,
+          "pass": false,
+          "pixel_max_abs": 2.0742416381835938e-05,
+          "raw_sse_difference": -1.8725877453107387e-06,
+          "repeat": 2
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 3.0994415283203125e-06,
+          "paired_speedup": 1.4807328016249355,
+          "pass": false,
+          "pixel_max_abs": 2.4437904357910156e-06,
+          "raw_sse_difference": 9.832911018747836e-07,
+          "repeat": 3
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.1457672119140625e-06,
+          "paired_speedup": 2.068140361746474,
+          "pass": false,
+          "pixel_max_abs": 2.0265579223632812e-06,
+          "raw_sse_difference": 3.4317190511501394e-07,
+          "repeat": 4
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.5497207641601562e-06,
+          "paired_speedup": 1.9637487298616718,
+          "pass": false,
+          "pixel_max_abs": 1.4901161193847656e-06,
+          "raw_sse_difference": -1.5006721696408931e-06,
+          "repeat": 5
+        }
+      ],
+      "passes_speed_gate": false,
+      "seed": 1,
+      "speedup_max": 2.1664639580936034,
+      "speedup_min": 0.6658186724416592
+    },
+    {
+      "backend": "csr",
+      "family": "thin",
+      "integrity_eligible": false,
+      "median_paired_speedup": 1.8511630727758974,
+      "pairs": [
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.6689300537109375e-06,
+          "paired_speedup": 2.1807268080673716,
+          "pass": false,
+          "pixel_max_abs": 1.6689300537109375e-06,
+          "raw_sse_difference": -2.613850028865272e-06,
+          "repeat": 0
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 1.3113021850585938e-06,
+          "paired_speedup": 0.6061081486533803,
+          "pass": false,
+          "pixel_max_abs": 1.3709068298339844e-06,
+          "raw_sse_difference": 1.3158455658413004e-06,
+          "repeat": 1
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.9385089874267578e-05,
+          "paired_speedup": 1.9571678172635982,
+          "pass": false,
+          "pixel_max_abs": 2.086162567138672e-05,
+          "raw_sse_difference": 1.0980693332385272e-06,
+          "repeat": 2
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 7.146596908569336e-05,
+          "paired_speedup": 1.5245224104784365,
+          "pass": false,
+          "pixel_max_abs": 5.626678466796875e-05,
+          "raw_sse_difference": 4.326956968725426e-06,
+          "repeat": 3
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.8252601623535156e-05,
+          "paired_speedup": 1.7451583282881968,
+          "pass": false,
+          "pixel_max_abs": 2.0265579223632812e-05,
+          "raw_sse_difference": 3.499467311485205e-07,
+          "repeat": 4
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.872943878173828e-05,
+          "paired_speedup": 2.155066635937168,
+          "pass": false,
+          "pixel_max_abs": 2.0682811737060547e-05,
+          "raw_sse_difference": 4.06407707487233e-09,
+          "repeat": 5
+        }
+      ],
+      "passes_speed_gate": false,
+      "seed": 1,
+      "speedup_max": 2.1807268080673716,
+      "speedup_min": 0.6061081486533803
+    },
+    {
+      "backend": "scatter",
+      "family": "thin",
+      "integrity_eligible": false,
+      "median_paired_speedup": 1.993185534149919,
+      "pairs": [
+        {
+          "checkpoint_disagreements": [
+            {
+              "difference": 0.002322285060053275,
+              "iteration": 10,
+              "key": "violation"
+            }
+          ],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": false,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 3.993511199951172e-06,
+          "paired_speedup": 1.972093811918394,
+          "pass": false,
+          "pixel_max_abs": 2.384185791015625e-06,
+          "raw_sse_difference": -6.711425157845952e-07,
+          "repeat": 0
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.384185791015625e-06,
+          "paired_speedup": 2.0074615305452075,
+          "pass": false,
+          "pixel_max_abs": 1.9073486328125e-06,
+          "raw_sse_difference": -3.3756045922928024e-06,
+          "repeat": 1
+        },
+        {
+          "checkpoint_disagreements": [
+            {
+              "difference": 0.002322285060053275,
+              "iteration": 10,
+              "key": "violation"
+            }
+          ],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": false,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.86102294921875e-06,
+          "paired_speedup": 2.0196512849836723,
+          "pass": false,
+          "pixel_max_abs": 2.3245811462402344e-06,
+          "raw_sse_difference": 7.314561116800178e-07,
+          "repeat": 2
+        },
+        {
+          "checkpoint_disagreements": [
+            {
+              "difference": 0.002322285060053275,
+              "iteration": 10,
+              "key": "violation"
+            }
+          ],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": false,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 4.0531158447265625e-06,
+          "paired_speedup": 2.2232421725739613,
+          "pass": false,
+          "pixel_max_abs": 2.562999725341797e-06,
+          "raw_sse_difference": 2.4365249373659026e-06,
+          "repeat": 3
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.086162567138672e-06,
+          "paired_speedup": 1.9789095377546306,
+          "pass": false,
+          "pixel_max_abs": 1.6689300537109375e-06,
+          "raw_sse_difference": 3.648737219918985e-06,
+          "repeat": 4
+        },
+        {
+          "checkpoint_disagreements": [
+            {
+              "difference": 0.002322285060053275,
+              "iteration": 10,
+              "key": "violation"
+            }
+          ],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": false,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 3.516674041748047e-06,
+          "paired_speedup": 1.93185508185571,
+          "pass": false,
+          "pixel_max_abs": 2.0265579223632812e-06,
+          "raw_sse_difference": -3.371624188730493e-07,
+          "repeat": 5
+        }
+      ],
+      "passes_speed_gate": false,
+      "seed": 2,
+      "speedup_max": 2.2232421725739613,
+      "speedup_min": 1.93185508185571
+    },
+    {
+      "backend": "csr",
+      "family": "thin",
+      "integrity_eligible": false,
+      "median_paired_speedup": 1.9675899983241931,
+      "pairs": [
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.175569534301758e-06,
+          "paired_speedup": 1.9258583805252962,
+          "pass": false,
+          "pixel_max_abs": 1.6093254089355469e-06,
+          "raw_sse_difference": -1.0347794159315526e-06,
+          "repeat": 0
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.205371856689453e-06,
+          "paired_speedup": 1.98364081011156,
+          "pass": false,
+          "pixel_max_abs": 1.7881393432617188e-06,
+          "raw_sse_difference": -1.797170625650324e-07,
+          "repeat": 1
+        },
+        {
+          "checkpoint_disagreements": [
+            {
+              "difference": 0.002322285060053275,
+              "iteration": 10,
+              "key": "violation"
+            }
+          ],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": false,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.9802322387695312e-06,
+          "paired_speedup": 1.9180060718692722,
+          "pass": false,
+          "pixel_max_abs": 2.4437904357910156e-06,
+          "raw_sse_difference": 1.3793096513836645e-06,
+          "repeat": 2
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.3245811462402344e-06,
+          "paired_speedup": 1.9883429068375875,
+          "pass": false,
+          "pixel_max_abs": 1.9371509552001953e-06,
+          "raw_sse_difference": 3.089402980549494e-06,
+          "repeat": 3
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 3.769993782043457e-05,
+          "paired_speedup": 1.9574134798145117,
+          "pass": false,
+          "pixel_max_abs": 2.7239322662353516e-05,
+          "raw_sse_difference": -2.1591686163446866e-06,
+          "repeat": 4
+        },
+        {
+          "checkpoint_disagreements": [],
+          "clauses": {
+            "coefficient_bound": true,
+            "cold_and_maintained_parity": true,
+            "exact_count_geometry": true,
+            "finite_positive_time": true,
+            "nontrivial_work": true,
+            "paired_pixel_parity": true,
+            "paired_sse_parity": true,
+            "retained_memory_bound": true,
+            "same_checkpoint_decisions": true,
+            "same_inputs": true,
+            "same_selected_iteration": false
+          },
+          "coefficient_max_abs": 2.7418136596679688e-06,
+          "paired_speedup": 1.9777665168338745,
+          "pass": false,
+          "pixel_max_abs": 2.1457672119140625e-06,
+          "raw_sse_difference": -2.4139117158483714e-06,
+          "repeat": 5
+        }
+      ],
+      "passes_speed_gate": false,
+      "seed": 2,
+      "speedup_max": 1.9883429068375875,
+      "speedup_min": 1.9180060718692722
+    }
+  ],
+  "scope": "workload-specific exposed/synthetic projection only"
+}

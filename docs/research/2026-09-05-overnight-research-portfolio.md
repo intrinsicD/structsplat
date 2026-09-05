@@ -367,3 +367,41 @@ Primary sources (concise paraphrases above; no borrowed numerical speed claims):
 - [Atkinson–Fedorov discriminating experiments](https://academic.oup.com/biomet/article-abstract/62/2/289/337065): experimental model discrimination.
 - [Robust discriminating designs](https://arxiv.org/abs/1309.4652): robustness of competing-model designs.
 - [Cousot–Cousot, abstract interpretation](https://www.di.ens.fr/~cousot/COUSOTpapers/POPL77.shtml): conservative abstract semantics and sound approximation.
+
+## 12. Unrun follow-up sketch: direction rescue versus deeper backtracking
+
+Status: ai-suggested design, independently critiqued by codex-overnight-protocol-reviewer;
+not implemented, executable-approved, or run. HIER-036 is prior exposed evidence, not a
+prospective confirmation set for this sketch. Create a new task and freeze an executable
+digest before any future formal execution. This is a known optimization safeguard, not a
+novel method claim or an explanation of the observed texture behavior.
+
+- Question: after a full-coupling GN direction exhausts its trial budget, does changing
+  direction help terminal quality more than merely extending that same backtracking sequence?
+- Proposed matrix: the unchanged HIER-036 texture generator at64x64/N16; exposed conditions0–5
+  and additional procedural conditions6–8, reported separately. Six arms: Adam multipliers
+  .3/1/3, full_shared GN with6trials, GN with12trials, and GN6 followed by6projected-gradient
+  rescue trials only after every GN trial rejects. All54cells required;160terminal attempts.
+- Retain HIER-036 objective, renderer, bounds, damping and trust vector. Let D=diag(trust),
+  s=maxabs(Dg). Rescue direction is -D²g/s if s>0, otherwise exactly zero. Every trial starts
+  from the same unchanged pre-update state. GN12 tries factors2^0 through2^-11; the hybrid
+  tries GN factors2^0 through2^-5, then restarts the gradient sequence at2^0 through2^-5.
+  Finite non-increasing loss, including ties and zero movement, is acceptable; all-failure
+  retains exact state. Reuse the existing gradient/Jacobian/solve for the fallback.
+- Fairness: GN12 and the hybrid share a worst-case ceiling of12trial renders, not equal
+  realized computation. Each curvature arm constructs160Jacobians and solves160systems;
+  Adam performs160backward evaluations. Charge every render. Record GN/rescue trial counts,
+  fallback activations, acceptance route, rejection, and g·actual_displacement after bounds
+  projection for every proposal, including whether projection changed the proposal.
+- Proposed separate gates: hybrid versus GN12 and hybrid versus strongest-Adam envelope,
+  each per stratum, median terminal gain>=.5dB, no condition loss>.1dB, MS-SSIM loss<=.005,
+  LPIPS increase<=.01, with whole-matrix integrity. Preference requires both comparisons in
+  both strata. Hybrid versus GN6 stays descriptive. No speed or matched-compute claim.
+- Required tests: all arms share their first six GN trials at the same state; rejection
+  ownership and counters; zero gradient and completely blocked movement; a constrained
+  quadratic where box-clipped GN loses descent but projected gradient can decrease loss.
+  For example g=(1,1), H=[[5,3],[3,2]] gives unconstrained d=(1,-2); blocking negative motion
+  in coordinate2 leaves (1,0). This generic example is not a diagnosis of the texture cases.
+- Limits: this does not isolate the ultimate failure cause. A standalone projected-gradient
+  arm would be required before a GN–gradient synergy claim. Natural-image transfer, dense
+  scalability and practical perceptual relevance remain separate future questions.

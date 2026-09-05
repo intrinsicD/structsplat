@@ -1,0 +1,42 @@
+{
+  "action_family": "birth",
+  "base_field_sha256": "54b9e691f0e4c138a7aaa6bda5d1bdec3800ea3228a2d33a5404d16bb5f97c9a",
+  "cpu": "11th Gen Intel(R) Core(TM) i9-11900KF @ 3.50GHz",
+  "donor": 2,
+  "input_field_sha256": "5773284b07b17d64061f5be6b74845c59cf0e8e3cc7e077fe738221336e1e723",
+  "magnitude": 1.0,
+  "numpy": "2.1.3",
+  "platform": "Linux-6.14.0-37-generic-x86_64-with-glibc2.39",
+  "predicted_gain": -3.777422898565419e-05,
+  "recovery": {
+    "adam_multiplier": 1.0,
+    "arm": "adam",
+    "color_limit": 2.0,
+    "damping": 0.01,
+    "max_backtracks": 6,
+    "max_pairs": 65536,
+    "scale_max": 16.0,
+    "scale_min": 0.35,
+    "steps": 20,
+    "trust": [
+      1.0,
+      1.0,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1
+    ]
+  },
+  "request": {
+    "action": "birth_d2",
+    "cell_id": "width_s0_birth_d2",
+    "family": "width",
+    "seed": 0,
+    "smoke": false
+  },
+  "target_sha256": "01551d5cc8ffee90e3efc460d47d0c24bb974c3e76e6aa9a1e6ba76ee5176327",
+  "threads": 1,
+  "torch": "2.9.0+cu128"
+}

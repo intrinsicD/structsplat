@@ -1,0 +1,7 @@
+{
+  "cell_id": "anisotropic_s1_diagonal",
+  "family": "anisotropic",
+  "method": "diagonal",
+  "seed": 1,
+  "smoke": false
+}

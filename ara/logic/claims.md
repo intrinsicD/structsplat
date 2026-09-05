@@ -1477,3 +1477,111 @@ reference renderer is memory-bound. See `ara/evidence/core005-render-checkpoint-
 - **Tags**: reproducibility, determinism, cuda-atomics, commit-gate, replication-envelope,
   statistical-power, experiment-design, Janelle, masked, development-diagnostic, claim-boundary
 - **From staging**: O141
+
+## C68: The frozen operator selector misses its joint finite-bank gate
+
+- **Statement**: HIER-033's exact N=3,18-condition,15-action bank yields joint immediate-and-recovered
+  normalized regret<=0.1 in13/18 cases (72.22%), below the frozen>=80% threshold. Immediate-only
+  and recovered-only counts are14/18 and16/18. All270 cells pass the independent artifact audit.
+  This is a negative result for the frozen mixed selector and finite bank, not every gradient
+  topology controller; recovered edit benefit must use the equally recovered no-op comparator.
+- **Status**: supported bounded negative selector result
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: Recomputing the complete frozen decision changes the joint pass count or threshold outcome,
+  exposes an invalid fixture/donor/recovery comparison, or fails independent raw-field replay.
+- **Proof**: [`ara/evidence/overnight-method-research-2026-09-05/run.md`,
+  `ara/evidence/overnight-method-research-2026-09-05/archive/hier033/decision.json`,
+  `ara/evidence/overnight-method-research-2026-09-05/archive/archive_manifest.json`]
+- **Dependencies**: []
+- **Tags**: operator-selection, exact-count, finite-bank, negative-result, recovery-budget
+- **From staging**: O177
+
+## C69: Cancellation does not identify an edit family in the count-funded oracle
+
+- **Statement**: In HIER-033, nine width/rotation/color cases have position activity>1e-8 and coherence<0.01
+  while a continuous edit beats every donor-funded split plus no-op immediately. Two-lobe cases
+  show that similarly low coherence can instead favor a funded split. Three uncovered-support
+  cases have zero existing-row gradients while a residual-seeded funded birth wins both phases.
+  These are constructed finite-bank counterexamples at fixed N=3, not an unrestricted splitting
+  theorem, population result, or downstream3D guarantee.
+- **Status**: supported constructed counterexample finding
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: The stored packets or finite action gains do not reproduce those counterexamples; an edit
+  fails exact count/donor accounting; or purportedly zero-gradient support-gap cases are
+  differentiably reachable under the frozen renderer.
+- **Proof**: [`ara/evidence/overnight-method-research-2026-09-05/run.md`,
+  `ara/evidence/overnight-method-research-2026-09-05/archive/hier033/decision.json`,
+  `ara/evidence/overnight-method-research-2026-09-05/archive/archive_manifest.json`]
+- **Dependencies**: []
+- **Tags**: pixel-gradient, cancellation, finite-support, donor-cost, counterexample, scope-bound
+- **From staging**: O178
+
+## C70: Local curvature produces numerical polish but loses the harder fixture families
+
+- **Statement**: Under HIER-035's160-terminal-attempt,64x64/N16 protocol, diagonal/local-block GN pass
+  translated and anisotropic family gates versus per-condition strongest three-rate Adam,
+  but lose every overlap and texture condition. Median gains are+20.325/+20.325dB translated,
+  +16.196/+17.359 anisotropic,-18.167/-8.603 overlap and-1.138/-2.490 texture. Positive families
+  are near precision limits:11/12 curvature cells hit the120dB reporting ceiling and all12
+  PNGs equal the target, while Adam is already about99–104dB. Extra trial/Gram work is charged;
+  no practical perceptual, isolated speed, natural-image or default improvement is established.
+- **Status**: supported mixed procedural terminal-quality result
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: Independent recomputation changes a family/perceptual gate, strongest-Adam pairing, terminal
+  convention, raw/ceiling interpretation, native-image assessment or charged work ledger.
+- **Proof**: [`ara/evidence/overnight-method-research-2026-09-05/run.md`,
+  `ara/evidence/overnight-method-research-2026-09-05/archive/hier035/decision.json`,
+  `ara/evidence/overnight-method-research-2026-09-05/archive/archive_manifest.json`]
+- **Dependencies**: []
+- **Tags**: gauss-newton, diagonal, block, strong-control, numerical-polish, procedural
+- **From staging**: O179
+
+## C71: Dense coupling helps realizable overlap but does not establish texture optimizer preference
+
+- **Statement**: HIER-036's84-cell coupling/cap factorial passes full-versus-block and full-versus-Adam
+  gates on realizable overlap in both exposed0–2 and additional3–5 strata; large gains are mainly
+  numerical polish, with10/12 full-overlap cells at the120dB ceiling. On texture, shared-cap
+  coupling passes exposed conditions (+1.270dB median) but fails additional conditions
+  (-1.509dB); row-cap coupling fails both. Every full-curvature texture cell loses terminal
+  PSNR to strongest Adam. Full texture fits reject106–151 of160 attempts and charge691–916
+  fit renders versus161 for Adam. Cause beyond the tested coupling/cap interventions is
+  unresolved; bounded dense N16 evidence is not a scalable optimizer or speed result.
+- **Status**: supported conditional procedural coupling finding
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: The matched factorial systems or updates differ beyond the frozen coupling/cap axes,
+  a stratum/comparator gate fails to reproduce, raw replay or counters disagree, or the
+  stated precision/visual boundary is unsupported by the stored outputs.
+- **Proof**: [`ara/evidence/overnight-method-research-2026-09-05/run.md`,
+  `ara/evidence/overnight-method-research-2026-09-05/archive/hier036/decision.json`,
+  `ara/evidence/overnight-method-research-2026-09-05/archive/archive_manifest.json`]
+- **Dependencies**: []
+- **Tags**: cross-gaussian-coupling, factorial, cap-control, numerical-polish, texture, no-default
+- **From staging**: O180
+
+## C72: The tested cache profiles do not establish general interchangeability or accepted-solve acceleration
+
+- **Statement**: Each HIER-034 profile passes interchangeability in only6/20 backend/workload records:
+  both caches on irregular seeds0–2. All54 corresponding cells per profile execute48PCG
+  iterations but return unchanged checkpoint0. Every non-irregular record fails; every natural
+  cached/off pair fails pixel parity. Streaming itself fails all15 within-backend natural repeat
+  pairs per profile (maximum local differences0.11785 shared/0.13440 original), so failure is
+  not uniquely attributable to caching. Original nominal passing time ratios1.691–2.009x are
+  observed-workstation rollback-call ratios under documented foreign activity, not isolated
+  or accepted-refinement acceleration. Shared timing remains ineligible; neither profile
+  justifies a general speed claim or default promotion.
+- **Status**: supported bounded negative interchangeability result
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: All paired/within-baseline pixel, checkpoint and selection predicates do not reproduce;
+  a passing irregular cell does not preserve input coefficients; occupancy or byte/work
+  accounting fails; or a stored gate/ratio was selectively omitted or reinterpreted as isolated.
+- **Proof**: [`ara/evidence/overnight-method-research-2026-09-05/run.md`,
+  `ara/evidence/overnight-method-research-2026-09-05/archive/hier034_timing/decision.json`,
+  `ara/evidence/overnight-method-research-2026-09-05/archive/archive_manifest.json`]
+- **Dependencies**: []
+- **Tags**: basis-cache, pcg, rollback, reproducibility, local-parity, contention, no-default
+- **From staging**: O181

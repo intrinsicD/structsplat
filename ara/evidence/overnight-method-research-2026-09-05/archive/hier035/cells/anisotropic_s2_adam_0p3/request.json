@@ -1,0 +1,7 @@
+{
+  "cell_id": "anisotropic_s2_adam_0p3",
+  "family": "anisotropic",
+  "method": "adam_0p3",
+  "seed": 2,
+  "smoke": false
+}

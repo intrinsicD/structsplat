@@ -1,0 +1,7 @@
+{
+  "cell_id": "texture_s4_adam_1",
+  "family": "texture",
+  "method": "adam_1",
+  "seed": 4,
+  "smoke": false
+}

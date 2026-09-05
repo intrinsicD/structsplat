@@ -143,7 +143,11 @@ These experiments do not change rendering or fitting defaults.
 HIER-034 also has a separately frozen shared-resource correctness profile. It keeps the same
 projection/matrix/numerical gates, records worker and parent-monitor GPU occupancy, and makes
 timing eligibility unconditionally false. Its elapsed times cannot authorize acceleration;
-the original exclusive-resource timing source is retained for a separate future run.
+the original timing source was later executed as its separately preserved complete assay.
+Its observed foreign-resource activity and rollback-to-input passing cases prevent an isolated
+or accepted-refinement speed interpretation; neither profile establishes general interchangeability.
+The streaming baseline itself has local repeat variability, so caching is not an isolated cause
+(ARA C72; [audit](../ara/evidence/overnight-method-research-2026-09-05/run.md)).
 
 HIER-035's task-scoped `benchmarks.hier_additive_controls` compares parameter-group Adam with
 diagonal and local-block Gauss–Newton updates under explicit bounds and charged backtracking.
@@ -157,6 +161,13 @@ and terminal-step convention. Its64MiB limit covers retained image-Jacobian stor
 with a separate256-parameter ceiling; neither is a peak-memory or production-scalability claim.
 The factorial driver retains three Adam learning-rate controls and exposes every dense solve
 and finite trial. No maintained fitter or default is changed.
+
+The completed HIER-033–036 findings are scoped in ARA C68–C72 and the
+[morning handoff](research/2026-09-05-overnight-findings.md): the finite selector misses its gate,
+local curvature has mixed procedural outcomes, and full coupling does not establish texture
+preference over strongest Adam. Near-ceiling overlap/easy-fixture gains are numerical polishing.
+The projected-gradient rescue design remains unrun. The task-scoped evidence packager preserves
+an explicitly partial, hash-bound archive without modifying any complete original report.
 
 The frozen C0001/C0004 diagnostic rejects the full composition. Projection alone is safe under its
 frozen SSE/maximum-normalized-violation transaction but adds only `+0.0109/+0.0044 dB`. The

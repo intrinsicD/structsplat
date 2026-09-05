@@ -1,0 +1,7 @@
+{
+  "action": "noop",
+  "cell_id": "translation_s2_noop",
+  "family": "translation",
+  "seed": 2,
+  "smoke": false
+}

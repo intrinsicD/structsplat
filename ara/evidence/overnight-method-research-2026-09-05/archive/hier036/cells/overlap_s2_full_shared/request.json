@@ -1,0 +1,7 @@
+{
+  "cell_id": "overlap_s2_full_shared",
+  "family": "overlap",
+  "method": "full_shared",
+  "seed": 2,
+  "smoke": false
+}

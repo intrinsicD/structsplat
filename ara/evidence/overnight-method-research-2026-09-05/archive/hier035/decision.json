@@ -1,0 +1,335 @@
+{
+  "default_promotion": false,
+  "records": [
+    {
+      "family": "anisotropic",
+      "median_terminal_gain_db": 16.195929912548877,
+      "method": "diagonal",
+      "pairs": [
+        {
+          "adam_envelope_method": "adam_3",
+          "common_seconds": 0.647832857001049,
+          "complete": true,
+          "descriptive_matched_time_gain_db": -20.671268053359285,
+          "gain_db": 14.97233675230666,
+          "integrity": true,
+          "lpips_difference": -3.848535357064975e-08,
+          "ms_ssim_difference": 0.0,
+          "seed": 0
+        },
+        {
+          "adam_envelope_method": "adam_3",
+          "common_seconds": 0.6285887260019081,
+          "complete": true,
+          "descriptive_matched_time_gain_db": 15.17530659748077,
+          "gain_db": 16.195929912548877,
+          "integrity": true,
+          "lpips_difference": -6.325883150637424e-08,
+          "ms_ssim_difference": 0.0,
+          "seed": 1
+        },
+        {
+          "adam_envelope_method": "adam_1",
+          "common_seconds": 0.6315217230003327,
+          "complete": true,
+          "descriptive_matched_time_gain_db": -10.055754461702676,
+          "gain_db": 17.358910487914926,
+          "integrity": true,
+          "lpips_difference": -5.23068166558005e-08,
+          "ms_ssim_difference": 0.0,
+          "seed": 2
+        }
+      ],
+      "passes_iteration_quality_gate": true
+    },
+    {
+      "family": "anisotropic",
+      "median_terminal_gain_db": 17.358910487914926,
+      "method": "block",
+      "pairs": [
+        {
+          "adam_envelope_method": "adam_3",
+          "common_seconds": 0.647832857001049,
+          "complete": true,
+          "descriptive_matched_time_gain_db": -17.445526152980605,
+          "gain_db": 17.770015297197617,
+          "integrity": true,
+          "lpips_difference": -4.545360599017556e-08,
+          "ms_ssim_difference": 0.0,
+          "seed": 0
+        },
+        {
+          "adam_envelope_method": "adam_3",
+          "common_seconds": 0.6285887260019081,
+          "complete": true,
+          "descriptive_matched_time_gain_db": 16.32621630279226,
+          "gain_db": 16.195929912548877,
+          "integrity": true,
+          "lpips_difference": -6.388067586016177e-08,
+          "ms_ssim_difference": 0.0,
+          "seed": 1
+        },
+        {
+          "adam_envelope_method": "adam_1",
+          "common_seconds": 0.6315217230003327,
+          "complete": true,
+          "descriptive_matched_time_gain_db": 4.942055518086633,
+          "gain_db": 17.358910487914926,
+          "integrity": true,
+          "lpips_difference": -5.4297927931656886e-08,
+          "ms_ssim_difference": 0.0,
+          "seed": 2
+        }
+      ],
+      "passes_iteration_quality_gate": true
+    },
+    {
+      "family": "overlap",
+      "median_terminal_gain_db": -18.16652697033885,
+      "method": "diagonal",
+      "pairs": [
+        {
+          "adam_envelope_method": "adam_3",
+          "common_seconds": 0.6358065669992357,
+          "complete": true,
+          "descriptive_matched_time_gain_db": -25.373112078098373,
+          "gain_db": -18.716608695125302,
+          "integrity": true,
+          "lpips_difference": 0.0005830576938024024,
+          "ms_ssim_difference": -0.001204371452331543,
+          "seed": 0
+        },
+        {
+          "adam_envelope_method": "adam_3",
+          "common_seconds": 0.653357679999317,
+          "complete": true,
+          "descriptive_matched_time_gain_db": -24.621985978077113,
+          "gain_db": -18.16652697033885,
+          "integrity": true,
+          "lpips_difference": 0.0006814698863308877,
+          "ms_ssim_difference": -0.0010271668434143066,
+          "seed": 1
+        },
+        {
+          "adam_envelope_method": "adam_3",
+          "common_seconds": 0.6380241480001132,
+          "complete": true,
+          "descriptive_matched_time_gain_db": -20.125143591791577,
+          "gain_db": -14.479900180034484,
+          "integrity": true,
+          "lpips_difference": 0.0007902593388280366,
+          "ms_ssim_difference": -0.0012198686599731445,
+          "seed": 2
+        }
+      ],
+      "passes_iteration_quality_gate": false
+    },
+    {
+      "family": "overlap",
+      "median_terminal_gain_db": -8.60279934720517,
+      "method": "block",
+      "pairs": [
+        {
+          "adam_envelope_method": "adam_3",
+          "common_seconds": 0.6358065669992357,
+          "complete": true,
+          "descriptive_matched_time_gain_db": -19.504290152457024,
+          "gain_db": -12.657926319924258,
+          "integrity": true,
+          "lpips_difference": 0.00018607981655804906,
+          "ms_ssim_difference": -0.00023978948593139648,
+          "seed": 0
+        },
+        {
+          "adam_envelope_method": "adam_3",
+          "common_seconds": 0.653357679999317,
+          "complete": true,
+          "descriptive_matched_time_gain_db": -19.88921966982913,
+          "gain_db": -6.053492164887182,
+          "integrity": true,
+          "lpips_difference": 3.720708264154382e-05,
+          "ms_ssim_difference": -4.8279762268066406e-05,
+          "seed": 1
+        },
+        {
+          "adam_envelope_method": "adam_3",
+          "common_seconds": 0.6380241480001132,
+          "complete": true,
+          "descriptive_matched_time_gain_db": -15.744000421274663,
+          "gain_db": -8.60279934720517,
+          "integrity": true,
+          "lpips_difference": 0.00016970935757854022,
+          "ms_ssim_difference": -0.0002741813659667969,
+          "seed": 2
+        }
+      ],
+      "passes_iteration_quality_gate": false
+    },
+    {
+      "family": "texture",
+      "median_terminal_gain_db": -1.138052942916353,
+      "method": "diagonal",
+      "pairs": [
+        {
+          "adam_envelope_method": "adam_3",
+          "common_seconds": 0.6522852140005853,
+          "complete": true,
+          "descriptive_matched_time_gain_db": -5.584218878920048,
+          "gain_db": -1.0514801914292207,
+          "integrity": true,
+          "lpips_difference": 0.0051844557747244835,
+          "ms_ssim_difference": -0.009025990962982178,
+          "seed": 0
+        },
+        {
+          "adam_envelope_method": "adam_3",
+          "common_seconds": 0.6355868730024667,
+          "complete": true,
+          "descriptive_matched_time_gain_db": -6.389581812574946,
+          "gain_db": -1.138052942916353,
+          "integrity": true,
+          "lpips_difference": 0.004567083902657032,
+          "ms_ssim_difference": -0.006432056427001953,
+          "seed": 1
+        },
+        {
+          "adam_envelope_method": "adam_3",
+          "common_seconds": 0.6460526699993352,
+          "complete": true,
+          "descriptive_matched_time_gain_db": -6.30366315057849,
+          "gain_db": -1.4077128357684465,
+          "integrity": true,
+          "lpips_difference": 0.006730268709361553,
+          "ms_ssim_difference": -0.0057395100593566895,
+          "seed": 2
+        }
+      ],
+      "passes_iteration_quality_gate": false
+    },
+    {
+      "family": "texture",
+      "median_terminal_gain_db": -2.4896545561392145,
+      "method": "block",
+      "pairs": [
+        {
+          "adam_envelope_method": "adam_3",
+          "common_seconds": 0.6522852140005853,
+          "complete": true,
+          "descriptive_matched_time_gain_db": -4.669552351981945,
+          "gain_db": -2.212421809359398,
+          "integrity": true,
+          "lpips_difference": 0.009473496116697788,
+          "ms_ssim_difference": -0.018646419048309326,
+          "seed": 0
+        },
+        {
+          "adam_envelope_method": "adam_3",
+          "common_seconds": 0.6355868730024667,
+          "complete": true,
+          "descriptive_matched_time_gain_db": -5.234190282702237,
+          "gain_db": -3.0129670586565105,
+          "integrity": true,
+          "lpips_difference": 0.009664882905781269,
+          "ms_ssim_difference": -0.019137978553771973,
+          "seed": 1
+        },
+        {
+          "adam_envelope_method": "adam_3",
+          "common_seconds": 0.6460526699993352,
+          "complete": true,
+          "descriptive_matched_time_gain_db": -5.006523432950026,
+          "gain_db": -2.4896545561392145,
+          "integrity": true,
+          "lpips_difference": 0.011240913532674313,
+          "ms_ssim_difference": -0.017215430736541748,
+          "seed": 2
+        }
+      ],
+      "passes_iteration_quality_gate": false
+    },
+    {
+      "family": "translated",
+      "median_terminal_gain_db": 20.32495245227875,
+      "method": "diagonal",
+      "pairs": [
+        {
+          "adam_envelope_method": "adam_3",
+          "common_seconds": 0.629816986998776,
+          "complete": true,
+          "descriptive_matched_time_gain_db": 17.295291035490834,
+          "gain_db": 18.711969582700775,
+          "integrity": true,
+          "lpips_difference": -3.046522834004861e-08,
+          "ms_ssim_difference": 0.0,
+          "seed": 0
+        },
+        {
+          "adam_envelope_method": "adam_3",
+          "common_seconds": 0.6322239359978994,
+          "complete": true,
+          "descriptive_matched_time_gain_db": 18.873582020061633,
+          "gain_db": 20.546747026691904,
+          "integrity": true,
+          "lpips_difference": -3.9567616738622746e-08,
+          "ms_ssim_difference": 0.0,
+          "seed": 1
+        },
+        {
+          "adam_envelope_method": "adam_3",
+          "common_seconds": 0.6122607469987997,
+          "complete": true,
+          "descriptive_matched_time_gain_db": 13.806628859977195,
+          "gain_db": 20.32495245227875,
+          "integrity": true,
+          "lpips_difference": -7.489321474096755e-08,
+          "ms_ssim_difference": 0.0,
+          "seed": 2
+        }
+      ],
+      "passes_iteration_quality_gate": true
+    },
+    {
+      "family": "translated",
+      "median_terminal_gain_db": 20.32495245227875,
+      "method": "block",
+      "pairs": [
+        {
+          "adam_envelope_method": "adam_3",
+          "common_seconds": 0.629816986998776,
+          "complete": true,
+          "descriptive_matched_time_gain_db": 18.711969738296844,
+          "gain_db": 18.711969582700775,
+          "integrity": true,
+          "lpips_difference": -3.185692065699186e-08,
+          "ms_ssim_difference": 0.0,
+          "seed": 0
+        },
+        {
+          "adam_envelope_method": "adam_3",
+          "common_seconds": 0.6322239359978994,
+          "complete": true,
+          "descriptive_matched_time_gain_db": 21.7828389492837,
+          "gain_db": 20.546747026691904,
+          "integrity": true,
+          "lpips_difference": -3.9567616738622746e-08,
+          "ms_ssim_difference": 0.0,
+          "seed": 1
+        },
+        {
+          "adam_envelope_method": "adam_3",
+          "common_seconds": 0.6122607469987997,
+          "complete": true,
+          "descriptive_matched_time_gain_db": 24.212768175726097,
+          "gain_db": 20.32495245227875,
+          "integrity": true,
+          "lpips_difference": -7.801970536291947e-08,
+          "ms_ssim_difference": 0.0,
+          "seed": 2
+        }
+      ],
+      "passes_iteration_quality_gate": true
+    }
+  ],
+  "scope": "procedural fixed-count 160-step development only",
+  "speed_claim": false
+}

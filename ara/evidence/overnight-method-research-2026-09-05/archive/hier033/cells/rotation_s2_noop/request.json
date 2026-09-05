@@ -1,0 +1,7 @@
+{
+  "action": "noop",
+  "cell_id": "rotation_s2_noop",
+  "family": "rotation",
+  "seed": 2,
+  "smoke": false
+}

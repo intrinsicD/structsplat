@@ -1,0 +1,976 @@
+{"monotonic_ns": 26959744721773, "phase": "start", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:07:18.736560+00:00"}
+{"monotonic_ns": 26960763956324, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 10", "status": "ok", "wall_time_utc": "2026-09-05T02:07:19.755792+00:00"}
+{"monotonic_ns": 26961786827888, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:20.778661+00:00"}
+{"monotonic_ns": 26962801953092, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:21.793780+00:00"}
+{"monotonic_ns": 26963817529449, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:22.809362+00:00"}
+{"monotonic_ns": 26964832410155, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:23.824242+00:00"}
+{"monotonic_ns": 26965847020605, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:24.838853+00:00"}
+{"monotonic_ns": 26966861965204, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:25.853792+00:00"}
+{"monotonic_ns": 26967876705608, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:26.868538+00:00"}
+{"monotonic_ns": 26968891674811, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:27.883507+00:00"}
+{"monotonic_ns": 26969906206284, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:28.898038+00:00"}
+{"monotonic_ns": 26970921068873, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:29.912896+00:00"}
+{"monotonic_ns": 26971935783835, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:30.927611+00:00"}
+{"monotonic_ns": 26972950599957, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:31.942433+00:00"}
+{"monotonic_ns": 26973965559331, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:32.957393+00:00"}
+{"monotonic_ns": 26974979951290, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:33.971785+00:00"}
+{"monotonic_ns": 26975994337967, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:34.986169+00:00"}
+{"monotonic_ns": 26977009290130, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:36.001123+00:00"}
+{"monotonic_ns": 26978023341840, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:37.015174+00:00"}
+{"monotonic_ns": 26979042008483, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:38.033835+00:00"}
+{"monotonic_ns": 26980062192209, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:39.054024+00:00"}
+{"monotonic_ns": 26981081880561, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:40.073713+00:00"}
+{"monotonic_ns": 26982102157582, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:41.093990+00:00"}
+{"monotonic_ns": 26983121866691, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:42.113695+00:00"}
+{"monotonic_ns": 26984140589656, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:43.132422+00:00"}
+{"monotonic_ns": 26985160576953, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:44.152410+00:00"}
+{"monotonic_ns": 26986178674958, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:45.170508+00:00"}
+{"monotonic_ns": 26987197601492, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:46.189436+00:00"}
+{"monotonic_ns": 26988214765314, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:47.206599+00:00"}
+{"monotonic_ns": 26989232968418, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:48.224803+00:00"}
+{"monotonic_ns": 26990250941494, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:49.242776+00:00"}
+{"monotonic_ns": 26991268379902, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:50.260213+00:00"}
+{"monotonic_ns": 26992287668794, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:51.279501+00:00"}
+{"monotonic_ns": 26993306829762, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:52.298663+00:00"}
+{"monotonic_ns": 26994324028144, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:53.315862+00:00"}
+{"monotonic_ns": 26995341435702, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:54.333271+00:00"}
+{"monotonic_ns": 26996358831215, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:55.350665+00:00"}
+{"monotonic_ns": 26997376545444, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:56.368378+00:00"}
+{"monotonic_ns": 26998394918698, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:57.386751+00:00"}
+{"monotonic_ns": 26999415271784, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:58.407104+00:00"}
+{"monotonic_ns": 27000435109905, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:07:59.426943+00:00"}
+{"monotonic_ns": 27001452981048, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:00.444816+00:00"}
+{"monotonic_ns": 27002473265769, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:01.465099+00:00"}
+{"monotonic_ns": 27003492179685, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:02.484013+00:00"}
+{"monotonic_ns": 27004511008381, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:03.502836+00:00"}
+{"monotonic_ns": 27005529157506, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:04.520991+00:00"}
+{"monotonic_ns": 27006549315105, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:05.541148+00:00"}
+{"monotonic_ns": 27007567859383, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:06.559687+00:00"}
+{"monotonic_ns": 27008586384791, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:07.578218+00:00"}
+{"monotonic_ns": 27009603928199, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:08.595762+00:00"}
+{"monotonic_ns": 27010621807402, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:09.613641+00:00"}
+{"monotonic_ns": 27011639691352, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:08:10.631526+00:00"}
+{"monotonic_ns": 27012654042140, "phase": "sample", "processes": "492141, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:08:11.645874+00:00"}
+{"monotonic_ns": 27013668596102, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:08:12.660429+00:00"}
+{"monotonic_ns": 27014682921771, "phase": "sample", "processes": "492474, /home/alex/miniconda3/bin/python, 122", "status": "ok", "wall_time_utc": "2026-09-05T02:08:13.674757+00:00"}
+{"monotonic_ns": 27015698423784, "phase": "sample", "processes": "492474, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:08:14.690261+00:00"}
+{"monotonic_ns": 27016713382690, "phase": "sample", "processes": "492474, [No data], 132", "status": "ok", "wall_time_utc": "2026-09-05T02:08:15.705213+00:00"}
+{"monotonic_ns": 27017736694892, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:08:16.728532+00:00"}
+{"monotonic_ns": 27018762255206, "phase": "sample", "processes": "492534, /home/alex/miniconda3/bin/python, 130", "status": "ok", "wall_time_utc": "2026-09-05T02:08:17.754090+00:00"}
+{"monotonic_ns": 27019777084184, "phase": "sample", "processes": "492534, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:08:18.768919+00:00"}
+{"monotonic_ns": 27020791672362, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:08:19.783509+00:00"}
+{"monotonic_ns": 27021806341240, "phase": "sample", "processes": "492611, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:08:20.798175+00:00"}
+{"monotonic_ns": 27022823503643, "phase": "sample", "processes": "492611, /home/alex/miniconda3/bin/python, 132\n492659, /home/alex/miniconda3/bin/python, 10", "status": "ok", "wall_time_utc": "2026-09-05T02:08:21.815336+00:00"}
+{"monotonic_ns": 27023844020854, "phase": "sample", "processes": "492611, /home/alex/miniconda3/bin/python, 132\n492659, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:22.835843+00:00"}
+{"monotonic_ns": 27024860537990, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:23.852371+00:00"}
+{"monotonic_ns": 27025875985416, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:24.867819+00:00"}
+{"monotonic_ns": 27026890993372, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:25.882825+00:00"}
+{"monotonic_ns": 27027905675091, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:26.897507+00:00"}
+{"monotonic_ns": 27028920798301, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:27.912628+00:00"}
+{"monotonic_ns": 27029935774980, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:28.927609+00:00"}
+{"monotonic_ns": 27030950170008, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:29.942002+00:00"}
+{"monotonic_ns": 27031965646587, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:30.957479+00:00"}
+{"monotonic_ns": 27032981180963, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:31.973014+00:00"}
+{"monotonic_ns": 27033995700584, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:32.987531+00:00"}
+{"monotonic_ns": 27035010663160, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:34.002496+00:00"}
+{"monotonic_ns": 27036025464347, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:35.017298+00:00"}
+{"monotonic_ns": 27037040445581, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:36.032279+00:00"}
+{"monotonic_ns": 27038055161437, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:37.046995+00:00"}
+{"monotonic_ns": 27039069316467, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:38.061150+00:00"}
+{"monotonic_ns": 27040083325757, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:39.075157+00:00"}
+{"monotonic_ns": 27041098590968, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:40.090424+00:00"}
+{"monotonic_ns": 27042113121274, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:41.104953+00:00"}
+{"monotonic_ns": 27043127390520, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:42.119222+00:00"}
+{"monotonic_ns": 27044146811341, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:43.138645+00:00"}
+{"monotonic_ns": 27045166036610, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:44.157868+00:00"}
+{"monotonic_ns": 27046186260331, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:45.178088+00:00"}
+{"monotonic_ns": 27047205541701, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:46.197370+00:00"}
+{"monotonic_ns": 27048223764530, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:47.215598+00:00"}
+{"monotonic_ns": 27049243960722, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:48.235795+00:00"}
+{"monotonic_ns": 27050263688586, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:49.255523+00:00"}
+{"monotonic_ns": 27051282636919, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:50.274467+00:00"}
+{"monotonic_ns": 27052301487870, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:51.293320+00:00"}
+{"monotonic_ns": 27053320294110, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:52.312129+00:00"}
+{"monotonic_ns": 27054339659841, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:53.331489+00:00"}
+{"monotonic_ns": 27055358534626, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:54.350368+00:00"}
+{"monotonic_ns": 27056377223099, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:55.369058+00:00"}
+{"monotonic_ns": 27057396330068, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:56.388165+00:00"}
+{"monotonic_ns": 27058415577065, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:57.407412+00:00"}
+{"monotonic_ns": 27059433066437, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:58.424893+00:00"}
+{"monotonic_ns": 27060451436791, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:08:59.443263+00:00"}
+{"monotonic_ns": 27061470827822, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:00.462657+00:00"}
+{"monotonic_ns": 27062491127842, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:01.482961+00:00"}
+{"monotonic_ns": 27063510187446, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:02.502020+00:00"}
+{"monotonic_ns": 27064530108746, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:03.521943+00:00"}
+{"monotonic_ns": 27065549639075, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:04.541472+00:00"}
+{"monotonic_ns": 27066567785165, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:05.559618+00:00"}
+{"monotonic_ns": 27067585779168, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:06.577614+00:00"}
+{"monotonic_ns": 27068603868899, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:07.595703+00:00"}
+{"monotonic_ns": 27069621628928, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:08.613461+00:00"}
+{"monotonic_ns": 27070640199551, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:09.632034+00:00"}
+{"monotonic_ns": 27071660734863, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:10.652568+00:00"}
+{"monotonic_ns": 27072680102731, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 96\n492757, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:11.671936+00:00"}
+{"monotonic_ns": 27073698903598, "phase": "sample", "processes": "492659, /home/alex/miniconda3/bin/python, 188\n492757, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:09:12.690739+00:00"}
+{"monotonic_ns": 27074714605388, "phase": "sample", "processes": "492757, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:09:13.706441+00:00"}
+{"monotonic_ns": 27075730033080, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:09:14.721867+00:00"}
+{"monotonic_ns": 27076755932167, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:15.747764+00:00"}
+{"monotonic_ns": 27077770661705, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:16.762494+00:00"}
+{"monotonic_ns": 27078786374509, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:17.778206+00:00"}
+{"monotonic_ns": 27079801717662, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:18.793549+00:00"}
+{"monotonic_ns": 27080816475995, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:19.808309+00:00"}
+{"monotonic_ns": 27081831540320, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:20.823372+00:00"}
+{"monotonic_ns": 27082846349069, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:21.838182+00:00"}
+{"monotonic_ns": 27083861319339, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:22.853152+00:00"}
+{"monotonic_ns": 27084875735959, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:23.867568+00:00"}
+{"monotonic_ns": 27085890202876, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:24.882036+00:00"}
+{"monotonic_ns": 27086904909193, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:25.896743+00:00"}
+{"monotonic_ns": 27087919561719, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:26.911394+00:00"}
+{"monotonic_ns": 27088934244181, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:27.926076+00:00"}
+{"monotonic_ns": 27089949938202, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:28.941772+00:00"}
+{"monotonic_ns": 27090964875580, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:29.956712+00:00"}
+{"monotonic_ns": 27091979797478, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:30.971630+00:00"}
+{"monotonic_ns": 27092994341079, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:31.986173+00:00"}
+{"monotonic_ns": 27094009018616, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:33.000840+00:00"}
+{"monotonic_ns": 27095028547733, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:34.020380+00:00"}
+{"monotonic_ns": 27096047854040, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:35.039686+00:00"}
+{"monotonic_ns": 27097066643477, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:36.058477+00:00"}
+{"monotonic_ns": 27098085534737, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:37.077368+00:00"}
+{"monotonic_ns": 27099104378739, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:38.096210+00:00"}
+{"monotonic_ns": 27100123773395, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:39.115606+00:00"}
+{"monotonic_ns": 27101144077481, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:40.135911+00:00"}
+{"monotonic_ns": 27102162518767, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:41.154351+00:00"}
+{"monotonic_ns": 27103181053983, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:42.172889+00:00"}
+{"monotonic_ns": 27104199360414, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:43.191193+00:00"}
+{"monotonic_ns": 27105217688127, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:44.209523+00:00"}
+{"monotonic_ns": 27106235992146, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:45.227826+00:00"}
+{"monotonic_ns": 27107255872005, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:46.247704+00:00"}
+{"monotonic_ns": 27108275409937, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:47.267243+00:00"}
+{"monotonic_ns": 27109294213095, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:48.286047+00:00"}
+{"monotonic_ns": 27110312382277, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:49.304216+00:00"}
+{"monotonic_ns": 27111330707808, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:50.322541+00:00"}
+{"monotonic_ns": 27112348855733, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:51.340689+00:00"}
+{"monotonic_ns": 27113367380775, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:52.359214+00:00"}
+{"monotonic_ns": 27114388014250, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:53.379839+00:00"}
+{"monotonic_ns": 27115409499792, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:54.401332+00:00"}
+{"monotonic_ns": 27116428050504, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:55.419881+00:00"}
+{"monotonic_ns": 27117447790815, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:56.439625+00:00"}
+{"monotonic_ns": 27118466401514, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:57.458234+00:00"}
+{"monotonic_ns": 27119485266062, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:58.477098+00:00"}
+{"monotonic_ns": 27120504438693, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:09:59.496273+00:00"}
+{"monotonic_ns": 27121524545149, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:10:00.516379+00:00"}
+{"monotonic_ns": 27122544932802, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:10:01.536769+00:00"}
+{"monotonic_ns": 27123563435143, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:10:02.555268+00:00"}
+{"monotonic_ns": 27124581608922, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:10:03.573442+00:00"}
+{"monotonic_ns": 27125599958162, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:10:04.591791+00:00"}
+{"monotonic_ns": 27126618582422, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:10:05.610414+00:00"}
+{"monotonic_ns": 27127636249077, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:10:06.628085+00:00"}
+{"monotonic_ns": 27128650907677, "phase": "sample", "processes": "493227, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:10:07.642740+00:00"}
+{"monotonic_ns": 27129666032435, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:10:08.657866+00:00"}
+{"monotonic_ns": 27130680279592, "phase": "sample", "processes": "493982, /home/alex/miniconda3/bin/python, 122", "status": "ok", "wall_time_utc": "2026-09-05T02:10:09.672114+00:00"}
+{"monotonic_ns": 27131694929288, "phase": "sample", "processes": "493982, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:10:10.686765+00:00"}
+{"monotonic_ns": 27132709417924, "phase": "sample", "processes": "493982, [No data], 132", "status": "ok", "wall_time_utc": "2026-09-05T02:10:11.701250+00:00"}
+{"monotonic_ns": 27133733095409, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:10:12.724930+00:00"}
+{"monotonic_ns": 27134775159904, "phase": "sample", "processes": "494040, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:10:13.766996+00:00"}
+{"monotonic_ns": 27135789427209, "phase": "sample", "processes": "494040, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:10:14.781258+00:00"}
+{"monotonic_ns": 27136804875149, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:10:15.796708+00:00"}
+{"monotonic_ns": 27137819625967, "phase": "sample", "processes": "494165, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:10:16.811460+00:00"}
+{"monotonic_ns": 27138834853398, "phase": "sample", "processes": "494165, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:10:17.826685+00:00"}
+{"monotonic_ns": 27139850411606, "phase": "sample", "processes": "494165, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:10:18.842244+00:00"}
+{"monotonic_ns": 27140865267135, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:10:19.857102+00:00"}
+{"monotonic_ns": 27141910137903, "phase": "sample", "processes": "494269, /home/alex/miniconda3/bin/python, 130", "status": "ok", "wall_time_utc": "2026-09-05T02:10:20.901968+00:00"}
+{"monotonic_ns": 27142925401338, "phase": "sample", "processes": "494269, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:10:21.917237+00:00"}
+{"monotonic_ns": 27143940345558, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:10:22.932177+00:00"}
+{"monotonic_ns": 27144954821071, "phase": "sample", "processes": "494340, /home/alex/miniconda3/bin/python, 124", "status": "ok", "wall_time_utc": "2026-09-05T02:10:23.946655+00:00"}
+{"monotonic_ns": 27145970782221, "phase": "sample", "processes": "494340, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:10:24.962619+00:00"}
+{"monotonic_ns": 27146985190698, "phase": "sample", "processes": "494340, [No data], 132", "status": "ok", "wall_time_utc": "2026-09-05T02:10:25.977023+00:00"}
+{"monotonic_ns": 27148000071071, "phase": "sample", "processes": "494472, /home/alex/miniconda3/bin/python, 10", "status": "ok", "wall_time_utc": "2026-09-05T02:10:26.991906+00:00"}
+{"monotonic_ns": 27149021097426, "phase": "sample", "processes": "494472, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:10:28.012933+00:00"}
+{"monotonic_ns": 27150035992107, "phase": "sample", "processes": "494472, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:10:29.027825+00:00"}
+{"monotonic_ns": 27151051166759, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:10:30.043002+00:00"}
+{"monotonic_ns": 27152065335562, "phase": "sample", "processes": "494561, /home/alex/miniconda3/bin/python, 124", "status": "ok", "wall_time_utc": "2026-09-05T02:10:31.057171+00:00"}
+{"monotonic_ns": 27153081268676, "phase": "sample", "processes": "494561, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:10:32.073106+00:00"}
+{"monotonic_ns": 27154095722134, "phase": "sample", "processes": "494561, [No data], 132", "status": "ok", "wall_time_utc": "2026-09-05T02:10:33.087555+00:00"}
+{"monotonic_ns": 27155111134267, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:10:34.102971+00:00"}
+{"monotonic_ns": 27156143637009, "phase": "sample", "processes": "494618, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:10:35.135470+00:00"}
+{"monotonic_ns": 27157158423155, "phase": "sample", "processes": "494618, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:10:36.150256+00:00"}
+{"monotonic_ns": 27158173212095, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:10:37.165044+00:00"}
+{"monotonic_ns": 27159187816950, "phase": "sample", "processes": "494695, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:10:38.179651+00:00"}
+{"monotonic_ns": 27160202817050, "phase": "sample", "processes": "494695, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:10:39.194652+00:00"}
+{"monotonic_ns": 27161217761458, "phase": "sample", "processes": "494695, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:10:40.209595+00:00"}
+{"monotonic_ns": 27162232933149, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:10:41.224770+00:00"}
+{"monotonic_ns": 27163246983533, "phase": "sample", "processes": "494776, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:10:42.238821+00:00"}
+{"monotonic_ns": 27164261531575, "phase": "sample", "processes": "494776, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:10:43.253364+00:00"}
+{"monotonic_ns": 27165276667542, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:10:44.268501+00:00"}
+{"monotonic_ns": 27166290945552, "phase": "sample", "processes": "494885, /home/alex/miniconda3/bin/python, 122", "status": "ok", "wall_time_utc": "2026-09-05T02:10:45.282778+00:00"}
+{"monotonic_ns": 27167306489227, "phase": "sample", "processes": "494885, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:10:46.298322+00:00"}
+{"monotonic_ns": 27168321300238, "phase": "sample", "processes": "494885, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:10:47.313131+00:00"}
+{"monotonic_ns": 27169336197886, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:10:48.328033+00:00"}
+{"monotonic_ns": 27170377910082, "phase": "sample", "processes": "494998, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:10:49.369745+00:00"}
+{"monotonic_ns": 27171392535220, "phase": "sample", "processes": "494998, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:10:50.384369+00:00"}
+{"monotonic_ns": 27172407646783, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:10:51.399479+00:00"}
+{"monotonic_ns": 27173421901625, "phase": "sample", "processes": "495139, /home/alex/miniconda3/bin/python, 116", "status": "ok", "wall_time_utc": "2026-09-05T02:10:52.413736+00:00"}
+{"monotonic_ns": 27174437154979, "phase": "sample", "processes": "495139, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:10:53.428991+00:00"}
+{"monotonic_ns": 27175451722073, "phase": "sample", "processes": "495139, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:10:54.443554+00:00"}
+{"monotonic_ns": 27176466264635, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:10:55.458097+00:00"}
+{"monotonic_ns": 27177480853813, "phase": "sample", "processes": "495249, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:10:56.472687+00:00"}
+{"monotonic_ns": 27178496131069, "phase": "sample", "processes": "495249, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:10:57.487965+00:00"}
+{"monotonic_ns": 27179510851530, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:10:58.502684+00:00"}
+{"monotonic_ns": 27180525757247, "phase": "sample", "processes": "495359, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:10:59.517591+00:00"}
+{"monotonic_ns": 27181540819614, "phase": "sample", "processes": "495359, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:00.532655+00:00"}
+{"monotonic_ns": 27182555623659, "phase": "sample", "processes": "495359, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:01.547452+00:00"}
+{"monotonic_ns": 27183571127010, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:11:02.562963+00:00"}
+{"monotonic_ns": 27184585070180, "phase": "sample", "processes": "495496, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:11:03.576907+00:00"}
+{"monotonic_ns": 27185599899720, "phase": "sample", "processes": "495496, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:04.591733+00:00"}
+{"monotonic_ns": 27186616033221, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:11:05.607867+00:00"}
+{"monotonic_ns": 27187633431499, "phase": "sample", "processes": "495677, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:11:06.625263+00:00"}
+{"monotonic_ns": 27188648968048, "phase": "sample", "processes": "495677, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:07.640805+00:00"}
+{"monotonic_ns": 27189664260281, "phase": "sample", "processes": "495677, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:08.656091+00:00"}
+{"monotonic_ns": 27190679854910, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:11:09.671691+00:00"}
+{"monotonic_ns": 27191693617878, "phase": "sample", "processes": "495872, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:11:10.685455+00:00"}
+{"monotonic_ns": 27192707862783, "phase": "sample", "processes": "495872, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:11.699696+00:00"}
+{"monotonic_ns": 27193722443347, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:11:12.714278+00:00"}
+{"monotonic_ns": 27194737061526, "phase": "sample", "processes": "495996, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:11:13.728896+00:00"}
+{"monotonic_ns": 27195751503133, "phase": "sample", "processes": "495996, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:14.743338+00:00"}
+{"monotonic_ns": 27196765881142, "phase": "sample", "processes": "495996, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:15.757714+00:00"}
+{"monotonic_ns": 27197781111627, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:11:16.772947+00:00"}
+{"monotonic_ns": 27198795377849, "phase": "sample", "processes": "496109, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:11:17.787215+00:00"}
+{"monotonic_ns": 27199809567562, "phase": "sample", "processes": "496109, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:18.801401+00:00"}
+{"monotonic_ns": 27200824052351, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:11:19.815890+00:00"}
+{"monotonic_ns": 27201838716774, "phase": "sample", "processes": "496234, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:11:20.830552+00:00"}
+{"monotonic_ns": 27202854269749, "phase": "sample", "processes": "496234, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:21.846106+00:00"}
+{"monotonic_ns": 27203869638516, "phase": "sample", "processes": "496234, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:22.861471+00:00"}
+{"monotonic_ns": 27204884876569, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:11:23.876712+00:00"}
+{"monotonic_ns": 27205900007631, "phase": "sample", "processes": "496293, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:11:24.891832+00:00"}
+{"monotonic_ns": 27206915451083, "phase": "sample", "processes": "496293, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:25.907285+00:00"}
+{"monotonic_ns": 27207930314538, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:11:26.922146+00:00"}
+{"monotonic_ns": 27208945533420, "phase": "sample", "processes": "496379, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:11:27.937368+00:00"}
+{"monotonic_ns": 27209960340174, "phase": "sample", "processes": "496379, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:11:28.952141+00:00"}
+{"monotonic_ns": 27210979667273, "phase": "sample", "processes": "496379, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:29.971503+00:00"}
+{"monotonic_ns": 27211995030029, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:11:30.986865+00:00"}
+{"monotonic_ns": 27213025188186, "phase": "sample", "processes": "496537, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:11:32.017021+00:00"}
+{"monotonic_ns": 27214040112783, "phase": "sample", "processes": "496537, /home/alex/miniconda3/bin/python, 130", "status": "ok", "wall_time_utc": "2026-09-05T02:11:33.031941+00:00"}
+{"monotonic_ns": 27215056672056, "phase": "sample", "processes": "496537, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:34.048509+00:00"}
+{"monotonic_ns": 27216070627662, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:11:35.062463+00:00"}
+{"monotonic_ns": 27217085746206, "phase": "sample", "processes": "496692, /home/alex/miniconda3/bin/python, 124", "status": "ok", "wall_time_utc": "2026-09-05T02:11:36.077579+00:00"}
+{"monotonic_ns": 27218101186307, "phase": "sample", "processes": "496692, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:37.093022+00:00"}
+{"monotonic_ns": 27219115530614, "phase": "sample", "processes": "496692, [No data], 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:38.107363+00:00"}
+{"monotonic_ns": 27220130983865, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:11:39.122817+00:00"}
+{"monotonic_ns": 27221145629297, "phase": "sample", "processes": "496752, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:11:40.137453+00:00"}
+{"monotonic_ns": 27222160034600, "phase": "sample", "processes": "496752, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:41.151869+00:00"}
+{"monotonic_ns": 27223174519735, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:11:42.166353+00:00"}
+{"monotonic_ns": 27224188871049, "phase": "sample", "processes": "496898, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:11:43.180706+00:00"}
+{"monotonic_ns": 27225203726628, "phase": "sample", "processes": "496898, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:44.195563+00:00"}
+{"monotonic_ns": 27226218553756, "phase": "sample", "processes": "496898, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:45.210386+00:00"}
+{"monotonic_ns": 27227234139435, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:11:46.225971+00:00"}
+{"monotonic_ns": 27228248594736, "phase": "sample", "processes": "496955, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:11:47.240426+00:00"}
+{"monotonic_ns": 27229264032484, "phase": "sample", "processes": "496955, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:48.255867+00:00"}
+{"monotonic_ns": 27230297161326, "phase": "sample", "processes": "496955, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:49.288992+00:00"}
+{"monotonic_ns": 27231312036257, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:11:50.303869+00:00"}
+{"monotonic_ns": 27232341774919, "phase": "sample", "processes": "497076, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:11:51.333609+00:00"}
+{"monotonic_ns": 27233357032357, "phase": "sample", "processes": "497076, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:52.348867+00:00"}
+{"monotonic_ns": 27234372621304, "phase": "sample", "processes": "497076, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:53.364454+00:00"}
+{"monotonic_ns": 27235387299814, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:11:54.379137+00:00"}
+{"monotonic_ns": 27236401195972, "phase": "sample", "processes": "497166, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:11:55.393032+00:00"}
+{"monotonic_ns": 27237416885441, "phase": "sample", "processes": "497166, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:11:56.408719+00:00"}
+{"monotonic_ns": 27238431479473, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:11:57.423309+00:00"}
+{"monotonic_ns": 27239448351075, "phase": "sample", "processes": "497222, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:11:58.440187+00:00"}
+{"monotonic_ns": 27240463138439, "phase": "sample", "processes": "497222, /home/alex/miniconda3/bin/python, 130", "status": "ok", "wall_time_utc": "2026-09-05T02:11:59.454973+00:00"}
+{"monotonic_ns": 27241478261570, "phase": "sample", "processes": "497222, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:00.470098+00:00"}
+{"monotonic_ns": 27242492931560, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:12:01.484765+00:00"}
+{"monotonic_ns": 27243507331992, "phase": "sample", "processes": "497345, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:12:02.499168+00:00"}
+{"monotonic_ns": 27244521782132, "phase": "sample", "processes": "497345, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:12:03.513617+00:00"}
+{"monotonic_ns": 27245536422568, "phase": "sample", "processes": "497345, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:12:04.528259+00:00"}
+{"monotonic_ns": 27246550993724, "phase": "sample", "processes": "497345, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:05.542827+00:00"}
+{"monotonic_ns": 27247565761696, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:12:06.557596+00:00"}
+{"monotonic_ns": 27248580295314, "phase": "sample", "processes": "497436, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:12:07.572125+00:00"}
+{"monotonic_ns": 27249596136791, "phase": "sample", "processes": "497436, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:08.587970+00:00"}
+{"monotonic_ns": 27250610494663, "phase": "sample", "processes": "497436, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:09.602321+00:00"}
+{"monotonic_ns": 27251625365566, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:12:10.617203+00:00"}
+{"monotonic_ns": 27252639829379, "phase": "sample", "processes": "497557, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:12:11.631666+00:00"}
+{"monotonic_ns": 27253654839073, "phase": "sample", "processes": "497557, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:12.646676+00:00"}
+{"monotonic_ns": 27254669305652, "phase": "sample", "processes": "497557, [No data], 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:13.661138+00:00"}
+{"monotonic_ns": 27255683912795, "phase": "sample", "processes": "497721, /home/alex/miniconda3/bin/python, 10", "status": "ok", "wall_time_utc": "2026-09-05T02:12:14.675749+00:00"}
+{"monotonic_ns": 27256711444974, "phase": "sample", "processes": "497721, /home/alex/miniconda3/bin/python, 130", "status": "ok", "wall_time_utc": "2026-09-05T02:12:15.703278+00:00"}
+{"monotonic_ns": 27257726421439, "phase": "sample", "processes": "497721, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:16.718254+00:00"}
+{"monotonic_ns": 27258741195007, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:12:17.733031+00:00"}
+{"monotonic_ns": 27259755897796, "phase": "sample", "processes": "497776, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:12:18.747732+00:00"}
+{"monotonic_ns": 27260770946104, "phase": "sample", "processes": "497776, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:19.762783+00:00"}
+{"monotonic_ns": 27261785565013, "phase": "sample", "processes": "497776, [No data], 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:20.777397+00:00"}
+{"monotonic_ns": 27262814186767, "phase": "sample", "processes": "497937, /home/alex/miniconda3/bin/python, 82", "status": "ok", "wall_time_utc": "2026-09-05T02:12:21.806019+00:00"}
+{"monotonic_ns": 27263837557934, "phase": "sample", "processes": "497937, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:12:22.829367+00:00"}
+{"monotonic_ns": 27264869613229, "phase": "sample", "processes": "497937, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:23.861443+00:00"}
+{"monotonic_ns": 27265885031993, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:12:24.876866+00:00"}
+{"monotonic_ns": 27266913360254, "phase": "sample", "processes": "497991, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:12:25.905194+00:00"}
+{"monotonic_ns": 27267927944597, "phase": "sample", "processes": "497991, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:26.919781+00:00"}
+{"monotonic_ns": 27268950166289, "phase": "sample", "processes": "497991, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:27.941998+00:00"}
+{"monotonic_ns": 27269965576547, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:12:28.957413+00:00"}
+{"monotonic_ns": 27270980056426, "phase": "sample", "processes": "498101, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:12:29.971892+00:00"}
+{"monotonic_ns": 27271994774490, "phase": "sample", "processes": "498101, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:30.986609+00:00"}
+{"monotonic_ns": 27273009758793, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:12:32.001596+00:00"}
+{"monotonic_ns": 27274029213296, "phase": "sample", "processes": "498221, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:12:33.021049+00:00"}
+{"monotonic_ns": 27275044078589, "phase": "sample", "processes": "498221, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:34.035912+00:00"}
+{"monotonic_ns": 27276067501839, "phase": "sample", "processes": "498221, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:35.059333+00:00"}
+{"monotonic_ns": 27277081990413, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:12:36.073827+00:00"}
+{"monotonic_ns": 27278096451491, "phase": "sample", "processes": "498328, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:12:37.088288+00:00"}
+{"monotonic_ns": 27279110994398, "phase": "sample", "processes": "498328, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:38.102828+00:00"}
+{"monotonic_ns": 27280127032839, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:12:39.118867+00:00"}
+{"monotonic_ns": 27281154463255, "phase": "sample", "processes": "498383, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:12:40.146296+00:00"}
+{"monotonic_ns": 27282169252895, "phase": "sample", "processes": "498383, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:12:41.161058+00:00"}
+{"monotonic_ns": 27283185343622, "phase": "sample", "processes": "498383, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:42.177179+00:00"}
+{"monotonic_ns": 27284200049434, "phase": "sample", "processes": "498383, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:43.191880+00:00"}
+{"monotonic_ns": 27285215245449, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:12:44.207082+00:00"}
+{"monotonic_ns": 27286229335614, "phase": "sample", "processes": "498456, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:12:45.221170+00:00"}
+{"monotonic_ns": 27287244151653, "phase": "sample", "processes": "498456, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:46.235987+00:00"}
+{"monotonic_ns": 27288259033714, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:12:47.250868+00:00"}
+{"monotonic_ns": 27289287481649, "phase": "sample", "processes": "498511, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:12:48.279314+00:00"}
+{"monotonic_ns": 27290301863983, "phase": "sample", "processes": "498511, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:49.293701+00:00"}
+{"monotonic_ns": 27291316600739, "phase": "sample", "processes": "498511, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:50.308432+00:00"}
+{"monotonic_ns": 27292331555461, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:12:51.323392+00:00"}
+{"monotonic_ns": 27293346088588, "phase": "sample", "processes": "498574, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:12:52.337919+00:00"}
+{"monotonic_ns": 27294361936652, "phase": "sample", "processes": "498574, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:53.353770+00:00"}
+{"monotonic_ns": 27295377085101, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:12:54.368918+00:00"}
+{"monotonic_ns": 27296401338529, "phase": "sample", "processes": "498687, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:12:55.393171+00:00"}
+{"monotonic_ns": 27297416030059, "phase": "sample", "processes": "498687, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:56.407865+00:00"}
+{"monotonic_ns": 27298443198348, "phase": "sample", "processes": "498687, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:12:57.435029+00:00"}
+{"monotonic_ns": 27299458104089, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:12:58.449940+00:00"}
+{"monotonic_ns": 27300472945342, "phase": "sample", "processes": "498773, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:12:59.464738+00:00"}
+{"monotonic_ns": 27301494515028, "phase": "sample", "processes": "498773, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:13:00.486324+00:00"}
+{"monotonic_ns": 27302509473969, "phase": "sample", "processes": "498773, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:01.501308+00:00"}
+{"monotonic_ns": 27303523958671, "phase": "sample", "processes": "498773, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:02.515790+00:00"}
+{"monotonic_ns": 27304539095217, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:13:03.530932+00:00"}
+{"monotonic_ns": 27305553044336, "phase": "sample", "processes": "498948, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:13:04.544878+00:00"}
+{"monotonic_ns": 27306568088094, "phase": "sample", "processes": "498948, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:05.559923+00:00"}
+{"monotonic_ns": 27307582805101, "phase": "sample", "processes": "498948, [No data], 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:06.574638+00:00"}
+{"monotonic_ns": 27308646014474, "phase": "sample", "processes": "499020, /home/alex/miniconda3/bin/python, 82", "status": "ok", "wall_time_utc": "2026-09-05T02:13:07.637844+00:00"}
+{"monotonic_ns": 27309668736284, "phase": "sample", "processes": "499020, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:13:08.660574+00:00"}
+{"monotonic_ns": 27310685457061, "phase": "sample", "processes": "499020, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:09.677293+00:00"}
+{"monotonic_ns": 27311700603660, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:13:10.692440+00:00"}
+{"monotonic_ns": 27312715045334, "phase": "sample", "processes": "499074, /home/alex/miniconda3/bin/python, 124", "status": "ok", "wall_time_utc": "2026-09-05T02:13:11.706881+00:00"}
+{"monotonic_ns": 27313730100578, "phase": "sample", "processes": "499074, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:12.721937+00:00"}
+{"monotonic_ns": 27314744574905, "phase": "sample", "processes": "499074, [No data], 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:13.736406+00:00"}
+{"monotonic_ns": 27315759280836, "phase": "sample", "processes": "499148, /home/alex/miniconda3/bin/python, 10", "status": "ok", "wall_time_utc": "2026-09-05T02:13:14.751118+00:00"}
+{"monotonic_ns": 27316779780482, "phase": "sample", "processes": "499148, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:13:15.771589+00:00"}
+{"monotonic_ns": 27317804474932, "phase": "sample", "processes": "499148, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:13:16.796281+00:00"}
+{"monotonic_ns": 27318826106870, "phase": "sample", "processes": "499148, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:17.817941+00:00"}
+{"monotonic_ns": 27319840501996, "phase": "sample", "processes": "499148, [No data], 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:18.832335+00:00"}
+{"monotonic_ns": 27320863556000, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:13:19.855390+00:00"}
+{"monotonic_ns": 27321885420730, "phase": "sample", "processes": "499226, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:13:20.877257+00:00"}
+{"monotonic_ns": 27322899807396, "phase": "sample", "processes": "499226, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:21.891641+00:00"}
+{"monotonic_ns": 27323914464190, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:13:22.906296+00:00"}
+{"monotonic_ns": 27324928167303, "phase": "sample", "processes": "499281, /home/alex/miniconda3/bin/python, 116", "status": "ok", "wall_time_utc": "2026-09-05T02:13:23.920000+00:00"}
+{"monotonic_ns": 27325942751630, "phase": "sample", "processes": "499281, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:24.934587+00:00"}
+{"monotonic_ns": 27326957127588, "phase": "sample", "processes": "499281, [No data], 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:25.948960+00:00"}
+{"monotonic_ns": 27327971648840, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:13:26.963484+00:00"}
+{"monotonic_ns": 27328985513625, "phase": "sample", "processes": "499340, /home/alex/miniconda3/bin/python, 130", "status": "ok", "wall_time_utc": "2026-09-05T02:13:27.977348+00:00"}
+{"monotonic_ns": 27329999988980, "phase": "sample", "processes": "499340, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:28.991822+00:00"}
+{"monotonic_ns": 27331014444518, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:13:30.006281+00:00"}
+{"monotonic_ns": 27332029177695, "phase": "sample", "processes": "499395, /home/alex/miniconda3/bin/python, 124", "status": "ok", "wall_time_utc": "2026-09-05T02:13:31.021011+00:00"}
+{"monotonic_ns": 27333044370113, "phase": "sample", "processes": "499395, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:32.036207+00:00"}
+{"monotonic_ns": 27334059021923, "phase": "sample", "processes": "499395, [No data], 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:33.050853+00:00"}
+{"monotonic_ns": 27335074536446, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:13:34.066372+00:00"}
+{"monotonic_ns": 27336089343044, "phase": "sample", "processes": "499538, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:13:35.081176+00:00"}
+{"monotonic_ns": 27337105518121, "phase": "sample", "processes": "499538, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:36.097349+00:00"}
+{"monotonic_ns": 27338120783115, "phase": "sample", "processes": "499538, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:37.112615+00:00"}
+{"monotonic_ns": 27339135899571, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:13:38.127732+00:00"}
+{"monotonic_ns": 27340150541210, "phase": "sample", "processes": "499593, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:13:39.142377+00:00"}
+{"monotonic_ns": 27341165490466, "phase": "sample", "processes": "499593, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:40.157308+00:00"}
+{"monotonic_ns": 27342180890809, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:13:41.172724+00:00"}
+{"monotonic_ns": 27343196383713, "phase": "sample", "processes": "499648, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:13:42.188214+00:00"}
+{"monotonic_ns": 27344212227476, "phase": "sample", "processes": "499648, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:43.204064+00:00"}
+{"monotonic_ns": 27345227469997, "phase": "sample", "processes": "499648, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:44.219302+00:00"}
+{"monotonic_ns": 27346242627069, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:13:45.234463+00:00"}
+{"monotonic_ns": 27347257432703, "phase": "sample", "processes": "499796, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:13:46.249270+00:00"}
+{"monotonic_ns": 27348272034188, "phase": "sample", "processes": "499796, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:47.263868+00:00"}
+{"monotonic_ns": 27349287034608, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:13:48.278868+00:00"}
+{"monotonic_ns": 27350309506336, "phase": "sample", "processes": "499849, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:13:49.301342+00:00"}
+{"monotonic_ns": 27351324413302, "phase": "sample", "processes": "499849, /home/alex/miniconda3/bin/python, 130", "status": "ok", "wall_time_utc": "2026-09-05T02:13:50.316246+00:00"}
+{"monotonic_ns": 27352339282023, "phase": "sample", "processes": "499849, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:51.331117+00:00"}
+{"monotonic_ns": 27353354412073, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:13:52.346244+00:00"}
+{"monotonic_ns": 27354369281772, "phase": "sample", "processes": "499908, /home/alex/miniconda3/bin/python, 122", "status": "ok", "wall_time_utc": "2026-09-05T02:13:53.361104+00:00"}
+{"monotonic_ns": 27355385970554, "phase": "sample", "processes": "499908, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:13:54.377805+00:00"}
+{"monotonic_ns": 27356400497710, "phase": "sample", "processes": "499908, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:13:55.392330+00:00"}
+{"monotonic_ns": 27357414888817, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:13:56.406721+00:00"}
+{"monotonic_ns": 27358441154346, "phase": "sample", "processes": "500052, /home/alex/miniconda3/bin/python, 82", "status": "ok", "wall_time_utc": "2026-09-05T02:13:57.432987+00:00"}
+{"monotonic_ns": 27359459525670, "phase": "sample", "processes": "500052, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:13:58.451360+00:00"}
+{"monotonic_ns": 27360473985712, "phase": "sample", "processes": "500052, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:13:59.465822+00:00"}
+{"monotonic_ns": 27361488594420, "phase": "sample", "processes": "500052, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:00.480429+00:00"}
+{"monotonic_ns": 27362503041372, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:14:01.494873+00:00"}
+{"monotonic_ns": 27363518163554, "phase": "sample", "processes": "500112, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:14:02.509996+00:00"}
+{"monotonic_ns": 27364533793027, "phase": "sample", "processes": "500112, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:03.525630+00:00"}
+{"monotonic_ns": 27365548307225, "phase": "sample", "processes": "500112, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:04.540138+00:00"}
+{"monotonic_ns": 27366563626197, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:14:05.555462+00:00"}
+{"monotonic_ns": 27367578512301, "phase": "sample", "processes": "500269, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:14:06.570346+00:00"}
+{"monotonic_ns": 27368593016363, "phase": "sample", "processes": "500269, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:07.584851+00:00"}
+{"monotonic_ns": 27369607626182, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:14:08.599461+00:00"}
+{"monotonic_ns": 27370621308513, "phase": "sample", "processes": "500468, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:14:09.613142+00:00"}
+{"monotonic_ns": 27371636405218, "phase": "sample", "processes": "500468, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:14:10.628238+00:00"}
+{"monotonic_ns": 27372651015209, "phase": "sample", "processes": "500468, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:14:11.642845+00:00"}
+{"monotonic_ns": 27373665363124, "phase": "sample", "processes": "500468, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:12.657197+00:00"}
+{"monotonic_ns": 27374783903993, "phase": "sample", "processes": "500468, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:13.775736+00:00"}
+{"monotonic_ns": 27375799255034, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:14:14.791091+00:00"}
+{"monotonic_ns": 27376813842477, "phase": "sample", "processes": "500566, /home/alex/miniconda3/bin/python, 124", "status": "ok", "wall_time_utc": "2026-09-05T02:14:15.805678+00:00"}
+{"monotonic_ns": 27377828827725, "phase": "sample", "processes": "500566, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:16.820662+00:00"}
+{"monotonic_ns": 27378843649015, "phase": "sample", "processes": "500566, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:17.835480+00:00"}
+{"monotonic_ns": 27379859128776, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:14:18.850960+00:00"}
+{"monotonic_ns": 27380874956923, "phase": "sample", "processes": "500692, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:14:19.866793+00:00"}
+{"monotonic_ns": 27381889756787, "phase": "sample", "processes": "500692, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:20.881591+00:00"}
+{"monotonic_ns": 27382904422339, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:14:21.896246+00:00"}
+{"monotonic_ns": 27383929306962, "phase": "sample", "processes": "500768, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:14:22.921141+00:00"}
+{"monotonic_ns": 27384944353005, "phase": "sample", "processes": "500768, /home/alex/miniconda3/bin/python, 130", "status": "ok", "wall_time_utc": "2026-09-05T02:14:23.936186+00:00"}
+{"monotonic_ns": 27385961050172, "phase": "sample", "processes": "500768, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:24.952886+00:00"}
+{"monotonic_ns": 27386976896143, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:14:25.968728+00:00"}
+{"monotonic_ns": 27387991475407, "phase": "sample", "processes": "500899, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:14:26.983309+00:00"}
+{"monotonic_ns": 27389006845943, "phase": "sample", "processes": "500899, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:27.998681+00:00"}
+{"monotonic_ns": 27390021894022, "phase": "sample", "processes": "500899, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:29.013725+00:00"}
+{"monotonic_ns": 27391037443013, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:14:30.029278+00:00"}
+{"monotonic_ns": 27392052317438, "phase": "sample", "processes": "500966, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:14:31.044144+00:00"}
+{"monotonic_ns": 27393067498646, "phase": "sample", "processes": "500966, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:14:32.059335+00:00"}
+{"monotonic_ns": 27394082943786, "phase": "sample", "processes": "500966, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:33.074775+00:00"}
+{"monotonic_ns": 27395098205720, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:14:34.090032+00:00"}
+{"monotonic_ns": 27396112550200, "phase": "sample", "processes": "501106, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:14:35.104385+00:00"}
+{"monotonic_ns": 27397127715063, "phase": "sample", "processes": "501106, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:36.119550+00:00"}
+{"monotonic_ns": 27398142989882, "phase": "sample", "processes": "501106, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:37.134820+00:00"}
+{"monotonic_ns": 27399158036261, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:14:38.149871+00:00"}
+{"monotonic_ns": 27400172222051, "phase": "sample", "processes": "501184, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:14:39.164058+00:00"}
+{"monotonic_ns": 27401187382503, "phase": "sample", "processes": "501184, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:40.179218+00:00"}
+{"monotonic_ns": 27402208031294, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:14:41.199866+00:00"}
+{"monotonic_ns": 27403237470652, "phase": "sample", "processes": "501327, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:14:42.229305+00:00"}
+{"monotonic_ns": 27404252982581, "phase": "sample", "processes": "501327, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:43.244818+00:00"}
+{"monotonic_ns": 27405285159534, "phase": "sample", "processes": "501327, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:44.276991+00:00"}
+{"monotonic_ns": 27406301158178, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:14:45.292959+00:00"}
+{"monotonic_ns": 27407322047715, "phase": "sample", "processes": "501448, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:14:46.313876+00:00"}
+{"monotonic_ns": 27408337424639, "phase": "sample", "processes": "501448, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:14:47.329258+00:00"}
+{"monotonic_ns": 27409354446355, "phase": "sample", "processes": "501448, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:48.346279+00:00"}
+{"monotonic_ns": 27410370294667, "phase": "sample", "processes": "501448, [No data], 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:49.362115+00:00"}
+{"monotonic_ns": 27411433253457, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:14:50.425086+00:00"}
+{"monotonic_ns": 27412450624014, "phase": "sample", "processes": "501760, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:14:51.442458+00:00"}
+{"monotonic_ns": 27413467559277, "phase": "sample", "processes": "501760, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:52.459390+00:00"}
+{"monotonic_ns": 27414484494276, "phase": "sample", "processes": "501760, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:53.476320+00:00"}
+{"monotonic_ns": 27415501629161, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:14:54.493461+00:00"}
+{"monotonic_ns": 27416517157666, "phase": "sample", "processes": "502151, /home/alex/miniconda3/bin/python, 124", "status": "ok", "wall_time_utc": "2026-09-05T02:14:55.508982+00:00"}
+{"monotonic_ns": 27417534386569, "phase": "sample", "processes": "502151, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:56.526217+00:00"}
+{"monotonic_ns": 27418550922958, "phase": "sample", "processes": "502151, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:14:57.542751+00:00"}
+{"monotonic_ns": 27419568295203, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:14:58.560128+00:00"}
+{"monotonic_ns": 27420584178611, "phase": "sample", "processes": "502477, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:14:59.576010+00:00"}
+{"monotonic_ns": 27421602033365, "phase": "sample", "processes": "502477, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:00.593867+00:00"}
+{"monotonic_ns": 27422632686686, "phase": "sample", "processes": "502477, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:01.624517+00:00"}
+{"monotonic_ns": 27423649605720, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:15:02.641436+00:00"}
+{"monotonic_ns": 27424666385767, "phase": "sample", "processes": "502853, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:15:03.658215+00:00"}
+{"monotonic_ns": 27425683791912, "phase": "sample", "processes": "502853, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:15:04.675621+00:00"}
+{"monotonic_ns": 27426700688934, "phase": "sample", "processes": "502853, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:05.692523+00:00"}
+{"monotonic_ns": 27427718574116, "phase": "sample", "processes": "502853, [No data], 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:06.710401+00:00"}
+{"monotonic_ns": 27428736144723, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:15:07.727979+00:00"}
+{"monotonic_ns": 27429752172479, "phase": "sample", "processes": "503270, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:15:08.743993+00:00"}
+{"monotonic_ns": 27430769164224, "phase": "sample", "processes": "503270, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:09.760998+00:00"}
+{"monotonic_ns": 27431784460062, "phase": "sample", "processes": "503270, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:10.776291+00:00"}
+{"monotonic_ns": 27432802325107, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:15:11.794155+00:00"}
+{"monotonic_ns": 27433818387726, "phase": "sample", "processes": "503666, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:15:12.810215+00:00"}
+{"monotonic_ns": 27434835530235, "phase": "sample", "processes": "503666, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:13.827362+00:00"}
+{"monotonic_ns": 27435852771371, "phase": "sample", "processes": "503666, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:14.844603+00:00"}
+{"monotonic_ns": 27436869278829, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:15:15.861103+00:00"}
+{"monotonic_ns": 27437885987602, "phase": "sample", "processes": "504069, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:15:16.877820+00:00"}
+{"monotonic_ns": 27438903333619, "phase": "sample", "processes": "504069, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:17.895164+00:00"}
+{"monotonic_ns": 27439920611836, "phase": "sample", "processes": "504069, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:18.912435+00:00"}
+{"monotonic_ns": 27440938324999, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:15:19.930153+00:00"}
+{"monotonic_ns": 27441966678765, "phase": "sample", "processes": "504523, /home/alex/miniconda3/bin/python, 82", "status": "ok", "wall_time_utc": "2026-09-05T02:15:20.958505+00:00"}
+{"monotonic_ns": 27442989782490, "phase": "sample", "processes": "504523, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:15:21.981613+00:00"}
+{"monotonic_ns": 27444005922446, "phase": "sample", "processes": "504523, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:22.997754+00:00"}
+{"monotonic_ns": 27445022048731, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:15:24.013874+00:00"}
+{"monotonic_ns": 27446039239429, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:15:25.031070+00:00"}
+{"monotonic_ns": 27447055898890, "phase": "sample", "processes": "504880, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:15:26.047732+00:00"}
+{"monotonic_ns": 27448072769498, "phase": "sample", "processes": "504880, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:27.064595+00:00"}
+{"monotonic_ns": 27449089813609, "phase": "sample", "processes": "504880, [No data], 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:28.081642+00:00"}
+{"monotonic_ns": 27450113726666, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:15:29.105561+00:00"}
+{"monotonic_ns": 27451129964858, "phase": "sample", "processes": "505236, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:15:30.121789+00:00"}
+{"monotonic_ns": 27452148592343, "phase": "sample", "processes": "505236, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:31.140420+00:00"}
+{"monotonic_ns": 27453166227877, "phase": "sample", "processes": "505236, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:32.158062+00:00"}
+{"monotonic_ns": 27454182802966, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:15:33.174637+00:00"}
+{"monotonic_ns": 27455199287671, "phase": "sample", "processes": "505608, /home/alex/miniconda3/bin/python, 116", "status": "ok", "wall_time_utc": "2026-09-05T02:15:34.191109+00:00"}
+{"monotonic_ns": 27456216340580, "phase": "sample", "processes": "505608, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:35.208170+00:00"}
+{"monotonic_ns": 27457243201340, "phase": "sample", "processes": "505608, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:36.235036+00:00"}
+{"monotonic_ns": 27458260451719, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:15:37.252283+00:00"}
+{"monotonic_ns": 27459276300361, "phase": "sample", "processes": "506008, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:15:38.268135+00:00"}
+{"monotonic_ns": 27460291813086, "phase": "sample", "processes": "506008, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:39.283650+00:00"}
+{"monotonic_ns": 27461307343703, "phase": "sample", "processes": "506008, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:40.299180+00:00"}
+{"monotonic_ns": 27462323126968, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:15:41.314959+00:00"}
+{"monotonic_ns": 27463338714885, "phase": "sample", "processes": "506318, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:15:42.330542+00:00"}
+{"monotonic_ns": 27464355048811, "phase": "sample", "processes": "506318, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:43.346882+00:00"}
+{"monotonic_ns": 27465382187405, "phase": "sample", "processes": "506318, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:44.374020+00:00"}
+{"monotonic_ns": 27466399293116, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:15:45.391110+00:00"}
+{"monotonic_ns": 27467416555229, "phase": "sample", "processes": "506616, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:15:46.408387+00:00"}
+{"monotonic_ns": 27468434119249, "phase": "sample", "processes": "506616, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:15:47.425951+00:00"}
+{"monotonic_ns": 27469450080371, "phase": "sample", "processes": "506616, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:48.441913+00:00"}
+{"monotonic_ns": 27470466022512, "phase": "sample", "processes": "506616, [No data], 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:49.457854+00:00"}
+{"monotonic_ns": 27471521321152, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:15:50.513154+00:00"}
+{"monotonic_ns": 27472538618691, "phase": "sample", "processes": "507033, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:15:51.530452+00:00"}
+{"monotonic_ns": 27473554900079, "phase": "sample", "processes": "507033, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:52.546734+00:00"}
+{"monotonic_ns": 27474571271379, "phase": "sample", "processes": "507033, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:53.563089+00:00"}
+{"monotonic_ns": 27475589025124, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:15:54.580855+00:00"}
+{"monotonic_ns": 27476604992618, "phase": "sample", "processes": "507360, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:15:55.596826+00:00"}
+{"monotonic_ns": 27477621941908, "phase": "sample", "processes": "507360, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:56.613775+00:00"}
+{"monotonic_ns": 27478637900985, "phase": "sample", "processes": "507360, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:15:57.629733+00:00"}
+{"monotonic_ns": 27479654291800, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:15:58.646113+00:00"}
+{"monotonic_ns": 27480670709330, "phase": "sample", "processes": "507730, /home/alex/miniconda3/bin/python, 124", "status": "ok", "wall_time_utc": "2026-09-05T02:15:59.662543+00:00"}
+{"monotonic_ns": 27481687832835, "phase": "sample", "processes": "507730, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:00.679667+00:00"}
+{"monotonic_ns": 27482705115981, "phase": "sample", "processes": "507730, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:01.696942+00:00"}
+{"monotonic_ns": 27483721325973, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:16:02.713158+00:00"}
+{"monotonic_ns": 27484737315926, "phase": "sample", "processes": "508118, /home/alex/miniconda3/bin/python, 116", "status": "ok", "wall_time_utc": "2026-09-05T02:16:03.729145+00:00"}
+{"monotonic_ns": 27485756054766, "phase": "sample", "processes": "508118, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:04.747879+00:00"}
+{"monotonic_ns": 27486784400357, "phase": "sample", "processes": "508118, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:05.776231+00:00"}
+{"monotonic_ns": 27487801773803, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:16:06.793604+00:00"}
+{"monotonic_ns": 27488817918322, "phase": "sample", "processes": "508488, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:16:07.809750+00:00"}
+{"monotonic_ns": 27489835194939, "phase": "sample", "processes": "508488, /home/alex/miniconda3/bin/python, 130", "status": "ok", "wall_time_utc": "2026-09-05T02:16:08.827023+00:00"}
+{"monotonic_ns": 27490852032121, "phase": "sample", "processes": "508488, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:09.843846+00:00"}
+{"monotonic_ns": 27491869034263, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:16:10.860867+00:00"}
+{"monotonic_ns": 27492897277259, "phase": "sample", "processes": "508798, /home/alex/miniconda3/bin/python, 82", "status": "ok", "wall_time_utc": "2026-09-05T02:16:11.889112+00:00"}
+{"monotonic_ns": 27493918521457, "phase": "sample", "processes": "508798, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:16:12.910357+00:00"}
+{"monotonic_ns": 27494934354419, "phase": "sample", "processes": "508798, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:13.926187+00:00"}
+{"monotonic_ns": 27495950297004, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:16:14.942127+00:00"}
+{"monotonic_ns": 27496967376212, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:16:15.959209+00:00"}
+{"monotonic_ns": 27497984420528, "phase": "sample", "processes": "509187, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:16:16.976254+00:00"}
+{"monotonic_ns": 27499001107450, "phase": "sample", "processes": "509187, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:17.992941+00:00"}
+{"monotonic_ns": 27500017545815, "phase": "sample", "processes": "509187, [No data], 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:19.009378+00:00"}
+{"monotonic_ns": 27501049477175, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:16:20.041311+00:00"}
+{"monotonic_ns": 27502065475134, "phase": "sample", "processes": "509514, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:16:21.057307+00:00"}
+{"monotonic_ns": 27503082601033, "phase": "sample", "processes": "509514, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:22.074425+00:00"}
+{"monotonic_ns": 27504099787042, "phase": "sample", "processes": "509514, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:23.091618+00:00"}
+{"monotonic_ns": 27505116639467, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:16:24.108473+00:00"}
+{"monotonic_ns": 27506133109439, "phase": "sample", "processes": "509929, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:16:25.124941+00:00"}
+{"monotonic_ns": 27507150805007, "phase": "sample", "processes": "509929, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:26.142640+00:00"}
+{"monotonic_ns": 27508166852406, "phase": "sample", "processes": "509929, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:27.158676+00:00"}
+{"monotonic_ns": 27509183719216, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:16:28.175551+00:00"}
+{"monotonic_ns": 27510199969955, "phase": "sample", "processes": "510285, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:16:29.191796+00:00"}
+{"monotonic_ns": 27511217203269, "phase": "sample", "processes": "510285, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:16:30.209038+00:00"}
+{"monotonic_ns": 27512233715038, "phase": "sample", "processes": "510285, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:31.225543+00:00"}
+{"monotonic_ns": 27513249381035, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:16:32.241211+00:00"}
+{"monotonic_ns": 27514271505198, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:16:33.263341+00:00"}
+{"monotonic_ns": 27515287205083, "phase": "sample", "processes": "510674, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:16:34.279038+00:00"}
+{"monotonic_ns": 27516302537319, "phase": "sample", "processes": "510674, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:35.294373+00:00"}
+{"monotonic_ns": 27517318043804, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:16:36.309874+00:00"}
+{"monotonic_ns": 27518342990694, "phase": "sample", "processes": "510912, /home/alex/miniconda3/bin/python, 20", "status": "ok", "wall_time_utc": "2026-09-05T02:16:37.334818+00:00"}
+{"monotonic_ns": 27519360234654, "phase": "sample", "processes": "510912, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:16:38.352069+00:00"}
+{"monotonic_ns": 27520376752304, "phase": "sample", "processes": "510912, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:39.368585+00:00"}
+{"monotonic_ns": 27521393062884, "phase": "sample", "processes": "510912, [No data], 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:40.384878+00:00"}
+{"monotonic_ns": 27522458581592, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:16:41.450401+00:00"}
+{"monotonic_ns": 27523476245962, "phase": "sample", "processes": "511287, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:16:42.468080+00:00"}
+{"monotonic_ns": 27524493773204, "phase": "sample", "processes": "511287, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:43.485583+00:00"}
+{"monotonic_ns": 27525510351834, "phase": "sample", "processes": "511287, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:44.502182+00:00"}
+{"monotonic_ns": 27526527228516, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:16:45.519062+00:00"}
+{"monotonic_ns": 27527543166247, "phase": "sample", "processes": "511704, /home/alex/miniconda3/bin/python, 124", "status": "ok", "wall_time_utc": "2026-09-05T02:16:46.534996+00:00"}
+{"monotonic_ns": 27528561387485, "phase": "sample", "processes": "511704, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:47.553221+00:00"}
+{"monotonic_ns": 27529577776506, "phase": "sample", "processes": "511704, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:48.569608+00:00"}
+{"monotonic_ns": 27530595224664, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:16:49.587056+00:00"}
+{"monotonic_ns": 27531611866806, "phase": "sample", "processes": "512181, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:16:50.603701+00:00"}
+{"monotonic_ns": 27532628847138, "phase": "sample", "processes": "512181, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:16:51.620684+00:00"}
+{"monotonic_ns": 27533643798509, "phase": "sample", "processes": "512181, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:52.635626+00:00"}
+{"monotonic_ns": 27534659987837, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:16:53.651821+00:00"}
+{"monotonic_ns": 27535675582066, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:16:54.667403+00:00"}
+{"monotonic_ns": 27536692731231, "phase": "sample", "processes": "512567, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:16:55.684563+00:00"}
+{"monotonic_ns": 27537709230298, "phase": "sample", "processes": "512567, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:56.701065+00:00"}
+{"monotonic_ns": 27538725321317, "phase": "sample", "processes": "512567, [No data], 132", "status": "ok", "wall_time_utc": "2026-09-05T02:16:57.717154+00:00"}
+{"monotonic_ns": 27539747364779, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:16:58.739195+00:00"}
+{"monotonic_ns": 27540764168791, "phase": "sample", "processes": "512953, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:16:59.756002+00:00"}
+{"monotonic_ns": 27541780958172, "phase": "sample", "processes": "512953, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:00.772787+00:00"}
+{"monotonic_ns": 27542797017030, "phase": "sample", "processes": "512953, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:01.788832+00:00"}
+{"monotonic_ns": 27543813862602, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:17:02.805698+00:00"}
+{"monotonic_ns": 27544829959529, "phase": "sample", "processes": "513301, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:17:03.821788+00:00"}
+{"monotonic_ns": 27545847041927, "phase": "sample", "processes": "513301, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:04.838875+00:00"}
+{"monotonic_ns": 27546863465469, "phase": "sample", "processes": "513301, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:05.855278+00:00"}
+{"monotonic_ns": 27547880428745, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:17:06.872259+00:00"}
+{"monotonic_ns": 27548897050405, "phase": "sample", "processes": "513686, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:17:07.888874+00:00"}
+{"monotonic_ns": 27549913030025, "phase": "sample", "processes": "513686, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:08.904864+00:00"}
+{"monotonic_ns": 27550928194760, "phase": "sample", "processes": "513686, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:09.920024+00:00"}
+{"monotonic_ns": 27551944053458, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:17:10.935885+00:00"}
+{"monotonic_ns": 27552960159639, "phase": "sample", "processes": "514030, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:17:11.951985+00:00"}
+{"monotonic_ns": 27553977350244, "phase": "sample", "processes": "514030, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:12.969187+00:00"}
+{"monotonic_ns": 27554993280123, "phase": "sample", "processes": "514030, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:13.985113+00:00"}
+{"monotonic_ns": 27556009330365, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:17:15.001158+00:00"}
+{"monotonic_ns": 27557025296010, "phase": "sample", "processes": "514344, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:17:16.017124+00:00"}
+{"monotonic_ns": 27558041836558, "phase": "sample", "processes": "514344, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:17.033667+00:00"}
+{"monotonic_ns": 27559057694141, "phase": "sample", "processes": "514344, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:18.049519+00:00"}
+{"monotonic_ns": 27560075132218, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:17:19.066962+00:00"}
+{"monotonic_ns": 27561090612506, "phase": "sample", "processes": "514836, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:17:20.082447+00:00"}
+{"monotonic_ns": 27562108041471, "phase": "sample", "processes": "514836, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:21.099872+00:00"}
+{"monotonic_ns": 27563136848241, "phase": "sample", "processes": "514836, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:22.128680+00:00"}
+{"monotonic_ns": 27564152432355, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:17:23.144262+00:00"}
+{"monotonic_ns": 27565168976340, "phase": "sample", "processes": "515179, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:17:24.160809+00:00"}
+{"monotonic_ns": 27566186042932, "phase": "sample", "processes": "515179, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:25.177873+00:00"}
+{"monotonic_ns": 27567213842214, "phase": "sample", "processes": "515179, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:26.205661+00:00"}
+{"monotonic_ns": 27568229811614, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:17:27.221645+00:00"}
+{"monotonic_ns": 27569245147588, "phase": "sample", "processes": "515429, /home/alex/miniconda3/bin/python, 116", "status": "ok", "wall_time_utc": "2026-09-05T02:17:28.236984+00:00"}
+{"monotonic_ns": 27570260464432, "phase": "sample", "processes": "515429, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:29.252296+00:00"}
+{"monotonic_ns": 27571275676285, "phase": "sample", "processes": "515429, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:30.267504+00:00"}
+{"monotonic_ns": 27572290716804, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:17:31.282553+00:00"}
+{"monotonic_ns": 27573305378838, "phase": "sample", "processes": "515502, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:17:32.297216+00:00"}
+{"monotonic_ns": 27574319972185, "phase": "sample", "processes": "515502, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:33.311805+00:00"}
+{"monotonic_ns": 27575335960999, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:17:34.327794+00:00"}
+{"monotonic_ns": 27576350169690, "phase": "sample", "processes": "515673, /home/alex/miniconda3/bin/python, 122", "status": "ok", "wall_time_utc": "2026-09-05T02:17:35.342003+00:00"}
+{"monotonic_ns": 27577364707571, "phase": "sample", "processes": "515673, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:36.356544+00:00"}
+{"monotonic_ns": 27578379652252, "phase": "sample", "processes": "515673, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:37.371485+00:00"}
+{"monotonic_ns": 27579394961441, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:17:38.386798+00:00"}
+{"monotonic_ns": 27580410024412, "phase": "sample", "processes": "515809, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:17:39.401859+00:00"}
+{"monotonic_ns": 27581424645940, "phase": "sample", "processes": "515809, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:40.416480+00:00"}
+{"monotonic_ns": 27582439148733, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:17:41.430982+00:00"}
+{"monotonic_ns": 27583453591414, "phase": "sample", "processes": "515989, /home/alex/miniconda3/bin/python, 122", "status": "ok", "wall_time_utc": "2026-09-05T02:17:42.445425+00:00"}
+{"monotonic_ns": 27584468922608, "phase": "sample", "processes": "515989, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:43.460759+00:00"}
+{"monotonic_ns": 27585484369834, "phase": "sample", "processes": "515989, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:44.476202+00:00"}
+{"monotonic_ns": 27586499383771, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:17:45.491220+00:00"}
+{"monotonic_ns": 27587513248939, "phase": "sample", "processes": "516125, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:17:46.505085+00:00"}
+{"monotonic_ns": 27588527726113, "phase": "sample", "processes": "516125, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:47.519561+00:00"}
+{"monotonic_ns": 27589542229265, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:17:48.534062+00:00"}
+{"monotonic_ns": 27590556823454, "phase": "sample", "processes": "516179, /home/alex/miniconda3/bin/python, 122", "status": "ok", "wall_time_utc": "2026-09-05T02:17:49.548660+00:00"}
+{"monotonic_ns": 27591572065414, "phase": "sample", "processes": "516179, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:50.563901+00:00"}
+{"monotonic_ns": 27592586779752, "phase": "sample", "processes": "516179, [No data], 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:51.578610+00:00"}
+{"monotonic_ns": 27593601512781, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:17:52.593350+00:00"}
+{"monotonic_ns": 27594617443919, "phase": "sample", "processes": "516234, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:53.609278+00:00"}
+{"monotonic_ns": 27595632609078, "phase": "sample", "processes": "516234, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:54.624446+00:00"}
+{"monotonic_ns": 27596646737182, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:17:55.638573+00:00"}
+{"monotonic_ns": 27597660886852, "phase": "sample", "processes": "516287, /home/alex/miniconda3/bin/python, 124", "status": "ok", "wall_time_utc": "2026-09-05T02:17:56.652724+00:00"}
+{"monotonic_ns": 27598676523710, "phase": "sample", "processes": "516287, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:57.668356+00:00"}
+{"monotonic_ns": 27599691499522, "phase": "sample", "processes": "516287, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:17:58.683331+00:00"}
+{"monotonic_ns": 27600706270631, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:17:59.698106+00:00"}
+{"monotonic_ns": 27601721394506, "phase": "sample", "processes": "516439, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:18:00.713232+00:00"}
+{"monotonic_ns": 27602736188301, "phase": "sample", "processes": "516439, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:01.728023+00:00"}
+{"monotonic_ns": 27603751054891, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:18:02.742888+00:00"}
+{"monotonic_ns": 27604765505362, "phase": "sample", "processes": "516641, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:18:03.757339+00:00"}
+{"monotonic_ns": 27605780215228, "phase": "sample", "processes": "516641, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:04.772052+00:00"}
+{"monotonic_ns": 27606794705882, "phase": "sample", "processes": "516641, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:05.786539+00:00"}
+{"monotonic_ns": 27607809800440, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:18:06.801636+00:00"}
+{"monotonic_ns": 27608824237168, "phase": "sample", "processes": "516712, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:18:07.816074+00:00"}
+{"monotonic_ns": 27609838645971, "phase": "sample", "processes": "516712, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:08.830480+00:00"}
+{"monotonic_ns": 27610853072807, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:18:09.844905+00:00"}
+{"monotonic_ns": 27611867126366, "phase": "sample", "processes": "516766, /home/alex/miniconda3/bin/python, 116", "status": "ok", "wall_time_utc": "2026-09-05T02:18:10.858960+00:00"}
+{"monotonic_ns": 27612882283031, "phase": "sample", "processes": "516766, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:11.874118+00:00"}
+{"monotonic_ns": 27613896947533, "phase": "sample", "processes": "516766, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:12.888780+00:00"}
+{"monotonic_ns": 27614912044879, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:18:13.903878+00:00"}
+{"monotonic_ns": 27615926828941, "phase": "sample", "processes": "516928, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:18:14.918643+00:00"}
+{"monotonic_ns": 27616949367987, "phase": "sample", "processes": "516928, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:18:15.941181+00:00"}
+{"monotonic_ns": 27617968359824, "phase": "sample", "processes": "516928, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:16.960195+00:00"}
+{"monotonic_ns": 27618983109751, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:18:17.974946+00:00"}
+{"monotonic_ns": 27619997552504, "phase": "sample", "processes": "517113, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:18:18.989387+00:00"}
+{"monotonic_ns": 27621011947253, "phase": "sample", "processes": "517113, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:20.003784+00:00"}
+{"monotonic_ns": 27622026277932, "phase": "sample", "processes": "517113, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:21.018109+00:00"}
+{"monotonic_ns": 27623041131828, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:18:22.032922+00:00"}
+{"monotonic_ns": 27624056303626, "phase": "sample", "processes": "517233, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:18:23.048137+00:00"}
+{"monotonic_ns": 27625070909983, "phase": "sample", "processes": "517233, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:24.062743+00:00"}
+{"monotonic_ns": 27626085665194, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:18:25.077497+00:00"}
+{"monotonic_ns": 27627099721075, "phase": "sample", "processes": "517301, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:18:26.091555+00:00"}
+{"monotonic_ns": 27628114155231, "phase": "sample", "processes": "517301, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:27.105991+00:00"}
+{"monotonic_ns": 27629128549608, "phase": "sample", "processes": "517301, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:28.120383+00:00"}
+{"monotonic_ns": 27630143446249, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:18:29.135282+00:00"}
+{"monotonic_ns": 27631157587014, "phase": "sample", "processes": "517461, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:18:30.149394+00:00"}
+{"monotonic_ns": 27632179997265, "phase": "sample", "processes": "517461, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:18:31.171832+00:00"}
+{"monotonic_ns": 27633195084883, "phase": "sample", "processes": "517461, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:32.186922+00:00"}
+{"monotonic_ns": 27634209592358, "phase": "sample", "processes": "517461, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:33.201424+00:00"}
+{"monotonic_ns": 27635225030246, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:18:34.216868+00:00"}
+{"monotonic_ns": 27636239113448, "phase": "sample", "processes": "517562, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:18:35.230948+00:00"}
+{"monotonic_ns": 27637253881963, "phase": "sample", "processes": "517562, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:36.245717+00:00"}
+{"monotonic_ns": 27638268537096, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:18:37.260373+00:00"}
+{"monotonic_ns": 27639283040476, "phase": "sample", "processes": "517616, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:18:38.274862+00:00"}
+{"monotonic_ns": 27640298496792, "phase": "sample", "processes": "517616, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:39.290332+00:00"}
+{"monotonic_ns": 27641313039793, "phase": "sample", "processes": "517616, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:40.304871+00:00"}
+{"monotonic_ns": 27642328267475, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:18:41.320101+00:00"}
+{"monotonic_ns": 27643343028131, "phase": "sample", "processes": "517675, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:18:42.334865+00:00"}
+{"monotonic_ns": 27644357468076, "phase": "sample", "processes": "517675, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:43.349301+00:00"}
+{"monotonic_ns": 27645372179284, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:18:44.364011+00:00"}
+{"monotonic_ns": 27646386107166, "phase": "sample", "processes": "517835, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:18:45.377942+00:00"}
+{"monotonic_ns": 27647401045925, "phase": "sample", "processes": "517835, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:46.392883+00:00"}
+{"monotonic_ns": 27648416605034, "phase": "sample", "processes": "517835, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:47.408438+00:00"}
+{"monotonic_ns": 27649431702848, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:18:48.423539+00:00"}
+{"monotonic_ns": 27650475135439, "phase": "sample", "processes": "517892, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:18:49.466973+00:00"}
+{"monotonic_ns": 27651490222119, "phase": "sample", "processes": "517892, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:50.482058+00:00"}
+{"monotonic_ns": 27652504588484, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:18:51.496422+00:00"}
+{"monotonic_ns": 27653519014819, "phase": "sample", "processes": "517951, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:18:52.510846+00:00"}
+{"monotonic_ns": 27654533581355, "phase": "sample", "processes": "517951, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:53.525415+00:00"}
+{"monotonic_ns": 27655548424019, "phase": "sample", "processes": "517951, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:54.540257+00:00"}
+{"monotonic_ns": 27656563975153, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:18:55.555811+00:00"}
+{"monotonic_ns": 27657577930333, "phase": "sample", "processes": "518044, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:18:56.569767+00:00"}
+{"monotonic_ns": 27658592685672, "phase": "sample", "processes": "518044, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:18:57.584520+00:00"}
+{"monotonic_ns": 27659607482191, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:18:58.599316+00:00"}
+{"monotonic_ns": 27660621496231, "phase": "sample", "processes": "518129, /home/alex/miniconda3/bin/python, 124", "status": "ok", "wall_time_utc": "2026-09-05T02:18:59.613332+00:00"}
+{"monotonic_ns": 27661636362838, "phase": "sample", "processes": "518129, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:00.628200+00:00"}
+{"monotonic_ns": 27662650711751, "phase": "sample", "processes": "518129, [No data], 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:01.642546+00:00"}
+{"monotonic_ns": 27663710225836, "phase": "sample", "processes": "518187, /home/alex/miniconda3/bin/python, 82", "status": "ok", "wall_time_utc": "2026-09-05T02:19:02.702057+00:00"}
+{"monotonic_ns": 27664726688282, "phase": "sample", "processes": "518187, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:19:03.718526+00:00"}
+{"monotonic_ns": 27665741319908, "phase": "sample", "processes": "518187, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:04.733155+00:00"}
+{"monotonic_ns": 27666756370604, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:19:05.748206+00:00"}
+{"monotonic_ns": 27667770551314, "phase": "sample", "processes": "518268, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:19:06.762386+00:00"}
+{"monotonic_ns": 27668785430775, "phase": "sample", "processes": "518268, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:07.777267+00:00"}
+{"monotonic_ns": 27669799735855, "phase": "sample", "processes": "518268, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:08.791568+00:00"}
+{"monotonic_ns": 27670815230567, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:19:09.807068+00:00"}
+{"monotonic_ns": 27671851910953, "phase": "sample", "processes": "518324, /home/alex/miniconda3/bin/python, 130", "status": "ok", "wall_time_utc": "2026-09-05T02:19:10.843745+00:00"}
+{"monotonic_ns": 27672866078907, "phase": "sample", "processes": "518324, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:11.857913+00:00"}
+{"monotonic_ns": 27673881105491, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:19:12.872941+00:00"}
+{"monotonic_ns": 27674895172788, "phase": "sample", "processes": "518393, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:19:13.887004+00:00"}
+{"monotonic_ns": 27675910935492, "phase": "sample", "processes": "518393, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:14.902771+00:00"}
+{"monotonic_ns": 27676925513724, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:19:15.917348+00:00"}
+{"monotonic_ns": 27677940501690, "phase": "sample", "processes": "518519, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:19:16.932336+00:00"}
+{"monotonic_ns": 27678955512847, "phase": "sample", "processes": "518519, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:17.947349+00:00"}
+{"monotonic_ns": 27679969970111, "phase": "sample", "processes": "518519, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:18.961803+00:00"}
+{"monotonic_ns": 27680984639455, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:19:19.976477+00:00"}
+{"monotonic_ns": 27681998879838, "phase": "sample", "processes": "518574, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:19:20.990715+00:00"}
+{"monotonic_ns": 27683013988679, "phase": "sample", "processes": "518574, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:22.005825+00:00"}
+{"monotonic_ns": 27684029031631, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:19:23.020865+00:00"}
+{"monotonic_ns": 27685055630553, "phase": "sample", "processes": "518627, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:19:24.047463+00:00"}
+{"monotonic_ns": 27686070018878, "phase": "sample", "processes": "518627, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:25.061853+00:00"}
+{"monotonic_ns": 27687084415470, "phase": "sample", "processes": "518627, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:26.076249+00:00"}
+{"monotonic_ns": 27688099355623, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:19:27.091191+00:00"}
+{"monotonic_ns": 27689113621613, "phase": "sample", "processes": "518682, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:19:28.105454+00:00"}
+{"monotonic_ns": 27690128605512, "phase": "sample", "processes": "518682, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:29.120440+00:00"}
+{"monotonic_ns": 27691142687914, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:19:30.134520+00:00"}
+{"monotonic_ns": 27692156417629, "phase": "sample", "processes": "518737, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:19:31.148252+00:00"}
+{"monotonic_ns": 27693170588893, "phase": "sample", "processes": "518737, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:32.162424+00:00"}
+{"monotonic_ns": 27694185148487, "phase": "sample", "processes": "518737, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:33.176980+00:00"}
+{"monotonic_ns": 27695200173384, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:19:34.192008+00:00"}
+{"monotonic_ns": 27696214486923, "phase": "sample", "processes": "518793, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:19:35.206324+00:00"}
+{"monotonic_ns": 27697228774213, "phase": "sample", "processes": "518793, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:36.220609+00:00"}
+{"monotonic_ns": 27698243783647, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:19:37.235617+00:00"}
+{"monotonic_ns": 27699258080137, "phase": "sample", "processes": "518846, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:19:38.249915+00:00"}
+{"monotonic_ns": 27700272498266, "phase": "sample", "processes": "518846, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:39.264334+00:00"}
+{"monotonic_ns": 27701286903564, "phase": "sample", "processes": "518846, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:40.278730+00:00"}
+{"monotonic_ns": 27702302025184, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:19:41.293843+00:00"}
+{"monotonic_ns": 27703316029951, "phase": "sample", "processes": "518901, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:19:42.307867+00:00"}
+{"monotonic_ns": 27704330061469, "phase": "sample", "processes": "518901, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:43.321868+00:00"}
+{"monotonic_ns": 27705345773824, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:19:44.337606+00:00"}
+{"monotonic_ns": 27706359787472, "phase": "sample", "processes": "518954, /home/alex/miniconda3/bin/python, 124", "status": "ok", "wall_time_utc": "2026-09-05T02:19:45.351623+00:00"}
+{"monotonic_ns": 27707375072005, "phase": "sample", "processes": "518954, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:46.366903+00:00"}
+{"monotonic_ns": 27708390395519, "phase": "sample", "processes": "518954, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:47.382229+00:00"}
+{"monotonic_ns": 27709404792339, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:19:48.396628+00:00"}
+{"monotonic_ns": 27710420687859, "phase": "sample", "processes": "519011, /home/alex/miniconda3/bin/python, 130", "status": "ok", "wall_time_utc": "2026-09-05T02:19:49.412523+00:00"}
+{"monotonic_ns": 27711435745821, "phase": "sample", "processes": "519011, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:50.427580+00:00"}
+{"monotonic_ns": 27712450878354, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:19:51.442711+00:00"}
+{"monotonic_ns": 27713464654644, "phase": "sample", "processes": "519068, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:19:52.456491+00:00"}
+{"monotonic_ns": 27714479728209, "phase": "sample", "processes": "519068, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:53.471565+00:00"}
+{"monotonic_ns": 27715494318272, "phase": "sample", "processes": "519068, [No data], 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:54.486150+00:00"}
+{"monotonic_ns": 27716509292954, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:19:55.501129+00:00"}
+{"monotonic_ns": 27717523690486, "phase": "sample", "processes": "519140, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:56.515523+00:00"}
+{"monotonic_ns": 27718538802189, "phase": "sample", "processes": "519140, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:19:57.530637+00:00"}
+{"monotonic_ns": 27719553514428, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:19:58.545351+00:00"}
+{"monotonic_ns": 27720568027275, "phase": "sample", "processes": "519225, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:19:59.559864+00:00"}
+{"monotonic_ns": 27721582540943, "phase": "sample", "processes": "519225, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:20:00.574377+00:00"}
+{"monotonic_ns": 27722597030555, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:20:01.588865+00:00"}
+{"monotonic_ns": 27723631164953, "phase": "sample", "processes": "519288, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:20:02.622997+00:00"}
+{"monotonic_ns": 27724646714509, "phase": "sample", "processes": "519288, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:20:03.638551+00:00"}
+{"monotonic_ns": 27725660810790, "phase": "sample", "processes": "519288, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:20:04.652642+00:00"}
+{"monotonic_ns": 27726676380207, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:20:05.668216+00:00"}
+{"monotonic_ns": 27727690791589, "phase": "sample", "processes": "519383, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:20:06.682627+00:00"}
+{"monotonic_ns": 27728705402857, "phase": "sample", "processes": "519383, /home/alex/miniconda3/bin/python, 132", "status": "ok", "wall_time_utc": "2026-09-05T02:20:07.697238+00:00"}
+{"monotonic_ns": 27729719619151, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:20:08.711455+00:00"}
+{"monotonic_ns": 27730733974311, "phase": "sample", "processes": "519485, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:20:09.725809+00:00"}
+{"monotonic_ns": 27731748719438, "phase": "sample", "processes": "519485, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:20:10.740546+00:00"}
+{"monotonic_ns": 27732764094982, "phase": "sample", "processes": "519485, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:20:11.755928+00:00"}
+{"monotonic_ns": 27733779642287, "phase": "sample", "processes": "519485, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:20:12.771472+00:00"}
+{"monotonic_ns": 27734795771432, "phase": "sample", "processes": "519485, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:20:13.787605+00:00"}
+{"monotonic_ns": 27735810619836, "phase": "sample", "processes": "519485, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:20:14.802454+00:00"}
+{"monotonic_ns": 27736827947099, "phase": "sample", "processes": "519485, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:20:15.819772+00:00"}
+{"monotonic_ns": 27737843092566, "phase": "sample", "processes": "519485, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:20:16.834922+00:00"}
+{"monotonic_ns": 27738859944657, "phase": "sample", "processes": "519485, /home/alex/miniconda3/bin/python, 382", "status": "ok", "wall_time_utc": "2026-09-05T02:20:17.851781+00:00"}
+{"monotonic_ns": 27739875296023, "phase": "sample", "processes": "519485, /home/alex/miniconda3/bin/python, 418", "status": "ok", "wall_time_utc": "2026-09-05T02:20:18.867123+00:00"}
+{"monotonic_ns": 27740891792578, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:20:19.883624+00:00"}
+{"monotonic_ns": 27741905719484, "phase": "sample", "processes": "520163, /home/alex/miniconda3/bin/python, 122", "status": "ok", "wall_time_utc": "2026-09-05T02:20:20.897554+00:00"}
+{"monotonic_ns": 27742920093855, "phase": "sample", "processes": "520163, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:20:21.911925+00:00"}
+{"monotonic_ns": 27743935842686, "phase": "sample", "processes": "520163, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:20:22.927673+00:00"}
+{"monotonic_ns": 27744951881770, "phase": "sample", "processes": "520163, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:20:23.943698+00:00"}
+{"monotonic_ns": 27745968703960, "phase": "sample", "processes": "520163, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:20:24.960520+00:00"}
+{"monotonic_ns": 27746983857174, "phase": "sample", "processes": "520163, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:20:25.975686+00:00"}
+{"monotonic_ns": 27747998895660, "phase": "sample", "processes": "520163, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:20:26.990725+00:00"}
+{"monotonic_ns": 27749013971421, "phase": "sample", "processes": "520163, /home/alex/miniconda3/bin/python, 366", "status": "ok", "wall_time_utc": "2026-09-05T02:20:28.005804+00:00"}
+{"monotonic_ns": 27750044162550, "phase": "sample", "processes": "520163, /home/alex/miniconda3/bin/python, 488", "status": "ok", "wall_time_utc": "2026-09-05T02:20:29.035994+00:00"}
+{"monotonic_ns": 27751058879391, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:20:30.050716+00:00"}
+{"monotonic_ns": 27752072633909, "phase": "sample", "processes": "520492, /home/alex/miniconda3/bin/python, 326", "status": "ok", "wall_time_utc": "2026-09-05T02:20:31.064470+00:00"}
+{"monotonic_ns": 27753087854736, "phase": "sample", "processes": "520492, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:20:32.079686+00:00"}
+{"monotonic_ns": 27754103286993, "phase": "sample", "processes": "520492, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:20:33.095114+00:00"}
+{"monotonic_ns": 27755119812058, "phase": "sample", "processes": "520492, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:20:34.111638+00:00"}
+{"monotonic_ns": 27756135330089, "phase": "sample", "processes": "520492, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:20:35.127161+00:00"}
+{"monotonic_ns": 27757150154768, "phase": "sample", "processes": "520492, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:20:36.141979+00:00"}
+{"monotonic_ns": 27758165452748, "phase": "sample", "processes": "520492, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:20:37.157280+00:00"}
+{"monotonic_ns": 27759182408002, "phase": "sample", "processes": "520492, /home/alex/miniconda3/bin/python, 382", "status": "ok", "wall_time_utc": "2026-09-05T02:20:38.174245+00:00"}
+{"monotonic_ns": 27760197182471, "phase": "sample", "processes": "520492, /home/alex/miniconda3/bin/python, 490", "status": "ok", "wall_time_utc": "2026-09-05T02:20:39.189014+00:00"}
+{"monotonic_ns": 27761212316054, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:20:40.204152+00:00"}
+{"monotonic_ns": 27762226755190, "phase": "sample", "processes": "520718, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:20:41.218590+00:00"}
+{"monotonic_ns": 27763242603078, "phase": "sample", "processes": "520718, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:20:42.234430+00:00"}
+{"monotonic_ns": 27764257140218, "phase": "sample", "processes": "520718, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:20:43.248974+00:00"}
+{"monotonic_ns": 27765272953641, "phase": "sample", "processes": "520718, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:20:44.264778+00:00"}
+{"monotonic_ns": 27766289383007, "phase": "sample", "processes": "520718, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:20:45.281209+00:00"}
+{"monotonic_ns": 27767303929553, "phase": "sample", "processes": "520718, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:20:46.295762+00:00"}
+{"monotonic_ns": 27768318755751, "phase": "sample", "processes": "520718, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:20:47.310591+00:00"}
+{"monotonic_ns": 27769337699406, "phase": "sample", "processes": "520718, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:20:48.329535+00:00"}
+{"monotonic_ns": 27770351909998, "phase": "sample", "processes": "520718, /home/alex/miniconda3/bin/python, 418", "status": "ok", "wall_time_utc": "2026-09-05T02:20:49.343746+00:00"}
+{"monotonic_ns": 27771366471523, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:20:50.358309+00:00"}
+{"monotonic_ns": 27772380212073, "phase": "sample", "processes": "520843, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:20:51.372047+00:00"}
+{"monotonic_ns": 27773394775258, "phase": "sample", "processes": "520843, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:20:52.386607+00:00"}
+{"monotonic_ns": 27774409530885, "phase": "sample", "processes": "520843, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:20:53.401362+00:00"}
+{"monotonic_ns": 27775425997636, "phase": "sample", "processes": "520843, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:20:54.417825+00:00"}
+{"monotonic_ns": 27776441750226, "phase": "sample", "processes": "520843, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:20:55.433583+00:00"}
+{"monotonic_ns": 27777457106696, "phase": "sample", "processes": "520843, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:20:56.448938+00:00"}
+{"monotonic_ns": 27778471538289, "phase": "sample", "processes": "520843, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:20:57.463371+00:00"}
+{"monotonic_ns": 27779488215372, "phase": "sample", "processes": "520843, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:20:58.480051+00:00"}
+{"monotonic_ns": 27780503045390, "phase": "sample", "processes": "520843, /home/alex/miniconda3/bin/python, 382", "status": "ok", "wall_time_utc": "2026-09-05T02:20:59.494878+00:00"}
+{"monotonic_ns": 27781518602070, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:21:00.510435+00:00"}
+{"monotonic_ns": 27782532703154, "phase": "sample", "processes": "521290, /home/alex/miniconda3/bin/python, 116", "status": "ok", "wall_time_utc": "2026-09-05T02:21:01.524536+00:00"}
+{"monotonic_ns": 27783548028897, "phase": "sample", "processes": "521290, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:21:02.539860+00:00"}
+{"monotonic_ns": 27784563452870, "phase": "sample", "processes": "521290, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:21:03.555273+00:00"}
+{"monotonic_ns": 27785579813722, "phase": "sample", "processes": "521290, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:21:04.571644+00:00"}
+{"monotonic_ns": 27786594452071, "phase": "sample", "processes": "521290, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:21:05.586285+00:00"}
+{"monotonic_ns": 27787610063735, "phase": "sample", "processes": "521290, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:21:06.601891+00:00"}
+{"monotonic_ns": 27788624941587, "phase": "sample", "processes": "521290, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:21:07.616773+00:00"}
+{"monotonic_ns": 27789640041914, "phase": "sample", "processes": "521290, /home/alex/miniconda3/bin/python, 366", "status": "ok", "wall_time_utc": "2026-09-05T02:21:08.631871+00:00"}
+{"monotonic_ns": 27790664265938, "phase": "sample", "processes": "521290, /home/alex/miniconda3/bin/python, 488", "status": "ok", "wall_time_utc": "2026-09-05T02:21:09.656096+00:00"}
+{"monotonic_ns": 27791679007214, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:21:10.670839+00:00"}
+{"monotonic_ns": 27792693326840, "phase": "sample", "processes": "521538, /home/alex/miniconda3/bin/python, 270", "status": "ok", "wall_time_utc": "2026-09-05T02:21:11.685162+00:00"}
+{"monotonic_ns": 27793709167245, "phase": "sample", "processes": "521538, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:21:12.700997+00:00"}
+{"monotonic_ns": 27794724839394, "phase": "sample", "processes": "521538, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:21:13.716672+00:00"}
+{"monotonic_ns": 27795739577795, "phase": "sample", "processes": "521538, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:21:14.731401+00:00"}
+{"monotonic_ns": 27796755151547, "phase": "sample", "processes": "521538, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:21:15.746984+00:00"}
+{"monotonic_ns": 27797770201606, "phase": "sample", "processes": "521538, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:21:16.762030+00:00"}
+{"monotonic_ns": 27798786768577, "phase": "sample", "processes": "521538, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:21:17.778595+00:00"}
+{"monotonic_ns": 27799802545950, "phase": "sample", "processes": "521538, /home/alex/miniconda3/bin/python, 366", "status": "ok", "wall_time_utc": "2026-09-05T02:21:18.794382+00:00"}
+{"monotonic_ns": 27800817403101, "phase": "sample", "processes": "521538, /home/alex/miniconda3/bin/python, 488", "status": "ok", "wall_time_utc": "2026-09-05T02:21:19.809237+00:00"}
+{"monotonic_ns": 27801832031491, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:21:20.823866+00:00"}
+{"monotonic_ns": 27802846807579, "phase": "sample", "processes": "521918, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:21:21.838632+00:00"}
+{"monotonic_ns": 27803861968620, "phase": "sample", "processes": "521918, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:21:22.853797+00:00"}
+{"monotonic_ns": 27804878398754, "phase": "sample", "processes": "521918, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:21:23.870234+00:00"}
+{"monotonic_ns": 27805894361232, "phase": "sample", "processes": "521918, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:21:24.886188+00:00"}
+{"monotonic_ns": 27806909429676, "phase": "sample", "processes": "521918, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:21:25.901262+00:00"}
+{"monotonic_ns": 27807924961746, "phase": "sample", "processes": "521918, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:21:26.916794+00:00"}
+{"monotonic_ns": 27808941158360, "phase": "sample", "processes": "521918, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:21:27.932984+00:00"}
+{"monotonic_ns": 27809958008840, "phase": "sample", "processes": "521918, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:21:28.949841+00:00"}
+{"monotonic_ns": 27810972677913, "phase": "sample", "processes": "521918, /home/alex/miniconda3/bin/python, 418", "status": "ok", "wall_time_utc": "2026-09-05T02:21:29.964512+00:00"}
+{"monotonic_ns": 27811987013716, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:21:30.978845+00:00"}
+{"monotonic_ns": 27813000981148, "phase": "sample", "processes": "522243, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:21:31.992813+00:00"}
+{"monotonic_ns": 27814015751040, "phase": "sample", "processes": "522243, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:21:33.007584+00:00"}
+{"monotonic_ns": 27815030874935, "phase": "sample", "processes": "522243, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:21:34.022707+00:00"}
+{"monotonic_ns": 27816045832436, "phase": "sample", "processes": "522243, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:21:35.037661+00:00"}
+{"monotonic_ns": 27817061555756, "phase": "sample", "processes": "522243, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:21:36.053381+00:00"}
+{"monotonic_ns": 27818076892513, "phase": "sample", "processes": "522243, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:21:37.068725+00:00"}
+{"monotonic_ns": 27819092756742, "phase": "sample", "processes": "522243, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:21:38.084584+00:00"}
+{"monotonic_ns": 27820110120050, "phase": "sample", "processes": "522243, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:21:39.101956+00:00"}
+{"monotonic_ns": 27821124782895, "phase": "sample", "processes": "522243, /home/alex/miniconda3/bin/python, 382", "status": "ok", "wall_time_utc": "2026-09-05T02:21:40.116618+00:00"}
+{"monotonic_ns": 27822139723055, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:21:41.131557+00:00"}
+{"monotonic_ns": 27823174769637, "phase": "sample", "processes": "522503, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:21:42.166604+00:00"}
+{"monotonic_ns": 27824190638463, "phase": "sample", "processes": "522503, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:21:43.182448+00:00"}
+{"monotonic_ns": 27825284497380, "phase": "sample", "processes": "522503, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:21:44.276321+00:00"}
+{"monotonic_ns": 27826299397219, "phase": "sample", "processes": "522503, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:21:45.291230+00:00"}
+{"monotonic_ns": 27827316283155, "phase": "sample", "processes": "522503, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:21:46.308116+00:00"}
+{"monotonic_ns": 27828331296857, "phase": "sample", "processes": "522503, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:21:47.323128+00:00"}
+{"monotonic_ns": 27829347039768, "phase": "sample", "processes": "522503, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:21:48.338860+00:00"}
+{"monotonic_ns": 27830362449733, "phase": "sample", "processes": "522503, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:21:49.354282+00:00"}
+{"monotonic_ns": 27831377277490, "phase": "sample", "processes": "522503, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:21:50.369084+00:00"}
+{"monotonic_ns": 27832399800484, "phase": "sample", "processes": "522503, /home/alex/miniconda3/bin/python, 366", "status": "ok", "wall_time_utc": "2026-09-05T02:21:51.391632+00:00"}
+{"monotonic_ns": 27833414949574, "phase": "sample", "processes": "522503, /home/alex/miniconda3/bin/python, 488", "status": "ok", "wall_time_utc": "2026-09-05T02:21:52.406782+00:00"}
+{"monotonic_ns": 27834429322456, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:21:53.421157+00:00"}
+{"monotonic_ns": 27835443603442, "phase": "sample", "processes": "522602, /home/alex/miniconda3/bin/python, 166", "status": "ok", "wall_time_utc": "2026-09-05T02:21:54.435420+00:00"}
+{"monotonic_ns": 27836464363970, "phase": "sample", "processes": "522602, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:21:55.456187+00:00"}
+{"monotonic_ns": 27837480847778, "phase": "sample", "processes": "522602, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:21:56.472677+00:00"}
+{"monotonic_ns": 27838496242136, "phase": "sample", "processes": "522602, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:21:57.488066+00:00"}
+{"monotonic_ns": 27839512874482, "phase": "sample", "processes": "522602, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:21:58.504700+00:00"}
+{"monotonic_ns": 27840528313229, "phase": "sample", "processes": "522602, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:21:59.520140+00:00"}
+{"monotonic_ns": 27841544251265, "phase": "sample", "processes": "522602, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:22:00.536083+00:00"}
+{"monotonic_ns": 27842558919033, "phase": "sample", "processes": "522602, /home/alex/miniconda3/bin/python, 382", "status": "ok", "wall_time_utc": "2026-09-05T02:22:01.550756+00:00"}
+{"monotonic_ns": 27843573406744, "phase": "sample", "processes": "522602, /home/alex/miniconda3/bin/python, 490", "status": "ok", "wall_time_utc": "2026-09-05T02:22:02.565239+00:00"}
+{"monotonic_ns": 27844587960865, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:22:03.579797+00:00"}
+{"monotonic_ns": 27845602214303, "phase": "sample", "processes": "522747, /home/alex/miniconda3/bin/python, 346", "status": "ok", "wall_time_utc": "2026-09-05T02:22:04.594048+00:00"}
+{"monotonic_ns": 27846620573448, "phase": "sample", "processes": "522747, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:22:05.612408+00:00"}
+{"monotonic_ns": 27847636242725, "phase": "sample", "processes": "522747, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:22:06.628074+00:00"}
+{"monotonic_ns": 27848651231972, "phase": "sample", "processes": "522747, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:22:07.643065+00:00"}
+{"monotonic_ns": 27849666041654, "phase": "sample", "processes": "522747, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:22:08.657874+00:00"}
+{"monotonic_ns": 27850681547244, "phase": "sample", "processes": "522747, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:22:09.673374+00:00"}
+{"monotonic_ns": 27851696404912, "phase": "sample", "processes": "522747, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:22:10.688237+00:00"}
+{"monotonic_ns": 27852712044653, "phase": "sample", "processes": "522747, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:22:11.703879+00:00"}
+{"monotonic_ns": 27853726818766, "phase": "sample", "processes": "522747, /home/alex/miniconda3/bin/python, 418", "status": "ok", "wall_time_utc": "2026-09-05T02:22:12.718655+00:00"}
+{"monotonic_ns": 27854740761309, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:22:13.732599+00:00"}
+{"monotonic_ns": 27855755015389, "phase": "sample", "processes": "522872, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:22:14.746846+00:00"}
+{"monotonic_ns": 27856769680390, "phase": "sample", "processes": "522872, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:22:15.761508+00:00"}
+{"monotonic_ns": 27857784286137, "phase": "sample", "processes": "522872, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:22:16.776119+00:00"}
+{"monotonic_ns": 27858802179955, "phase": "sample", "processes": "522872, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:22:17.794012+00:00"}
+{"monotonic_ns": 27859816543313, "phase": "sample", "processes": "522872, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:22:18.808376+00:00"}
+{"monotonic_ns": 27860831763420, "phase": "sample", "processes": "522872, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:22:19.823586+00:00"}
+{"monotonic_ns": 27861847729346, "phase": "sample", "processes": "522872, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:22:20.839562+00:00"}
+{"monotonic_ns": 27862862550961, "phase": "sample", "processes": "522872, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:22:21.854385+00:00"}
+{"monotonic_ns": 27863877232030, "phase": "sample", "processes": "522872, /home/alex/miniconda3/bin/python, 382", "status": "ok", "wall_time_utc": "2026-09-05T02:22:22.869066+00:00"}
+{"monotonic_ns": 27864891553213, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:22:23.883387+00:00"}
+{"monotonic_ns": 27865905947138, "phase": "sample", "processes": "523035, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:22:24.897782+00:00"}
+{"monotonic_ns": 27866920055948, "phase": "sample", "processes": "523035, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:22:25.911889+00:00"}
+{"monotonic_ns": 27867936909469, "phase": "sample", "processes": "523035, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:22:26.928733+00:00"}
+{"monotonic_ns": 27868952758719, "phase": "sample", "processes": "523035, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:22:27.944589+00:00"}
+{"monotonic_ns": 27869968161741, "phase": "sample", "processes": "523035, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:22:28.959995+00:00"}
+{"monotonic_ns": 27870985160949, "phase": "sample", "processes": "523035, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:22:29.976993+00:00"}
+{"monotonic_ns": 27872000045202, "phase": "sample", "processes": "523035, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:22:30.991873+00:00"}
+{"monotonic_ns": 27873015212018, "phase": "sample", "processes": "523035, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:22:32.007045+00:00"}
+{"monotonic_ns": 27874031718140, "phase": "sample", "processes": "523035, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:22:33.023555+00:00"}
+{"monotonic_ns": 27875046090404, "phase": "sample", "processes": "523035, /home/alex/miniconda3/bin/python, 418", "status": "ok", "wall_time_utc": "2026-09-05T02:22:34.037921+00:00"}
+{"monotonic_ns": 27876061311612, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:22:35.053137+00:00"}
+{"monotonic_ns": 27877076105105, "phase": "sample", "processes": "524396, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:22:36.067938+00:00"}
+{"monotonic_ns": 27878090751684, "phase": "sample", "processes": "524396, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:22:37.082575+00:00"}
+{"monotonic_ns": 27879106273489, "phase": "sample", "processes": "524396, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:22:38.098107+00:00"}
+{"monotonic_ns": 27880121110688, "phase": "sample", "processes": "524396, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:22:39.112943+00:00"}
+{"monotonic_ns": 27881136939248, "phase": "sample", "processes": "524396, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:22:40.128772+00:00"}
+{"monotonic_ns": 27882151743514, "phase": "sample", "processes": "524396, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:22:41.143568+00:00"}
+{"monotonic_ns": 27883168060797, "phase": "sample", "processes": "524396, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:22:42.159888+00:00"}
+{"monotonic_ns": 27884204244940, "phase": "sample", "processes": "524396, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:22:43.196064+00:00"}
+{"monotonic_ns": 27885238333048, "phase": "sample", "processes": "524396, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:22:44.230157+00:00"}
+{"monotonic_ns": 27886268960873, "phase": "sample", "processes": "524396, /home/alex/miniconda3/bin/python, 366", "status": "ok", "wall_time_utc": "2026-09-05T02:22:45.260787+00:00"}
+{"monotonic_ns": 27887302309433, "phase": "sample", "processes": "524396, /home/alex/miniconda3/bin/python, 366", "status": "ok", "wall_time_utc": "2026-09-05T02:22:46.294138+00:00"}
+{"monotonic_ns": 27888335282925, "phase": "sample", "processes": "524396, /home/alex/miniconda3/bin/python, 488", "status": "ok", "wall_time_utc": "2026-09-05T02:22:47.327108+00:00"}
+{"monotonic_ns": 27889369371728, "phase": "sample", "processes": "524396, /home/alex/miniconda3/bin/python, 488", "status": "ok", "wall_time_utc": "2026-09-05T02:22:48.361200+00:00"}
+{"monotonic_ns": 27890402656315, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:22:49.394483+00:00"}
+{"monotonic_ns": 27891430991570, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:22:50.422820+00:00"}
+{"monotonic_ns": 27892462055905, "phase": "sample", "processes": "525722, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:22:51.453883+00:00"}
+{"monotonic_ns": 27893494010573, "phase": "sample", "processes": "525722, /home/alex/miniconda3/bin/python, 326", "status": "ok", "wall_time_utc": "2026-09-05T02:22:52.485832+00:00"}
+{"monotonic_ns": 27894534973050, "phase": "sample", "processes": "525722, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:22:53.526800+00:00"}
+{"monotonic_ns": 27895570075952, "phase": "sample", "processes": "525722, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:22:54.561895+00:00"}
+{"monotonic_ns": 27896608358197, "phase": "sample", "processes": "525722, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:22:55.600174+00:00"}
+{"monotonic_ns": 27897639417961, "phase": "sample", "processes": "525722, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:22:56.631245+00:00"}
+{"monotonic_ns": 27898673077521, "phase": "sample", "processes": "525722, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:22:57.664892+00:00"}
+{"monotonic_ns": 27899709074747, "phase": "sample", "processes": "525722, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:22:58.700891+00:00"}
+{"monotonic_ns": 27900742767811, "phase": "sample", "processes": "525722, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:22:59.734594+00:00"}
+{"monotonic_ns": 27901776294102, "phase": "sample", "processes": "525722, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:23:00.768108+00:00"}
+{"monotonic_ns": 27902821293229, "phase": "sample", "processes": "525722, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:23:01.813114+00:00"}
+{"monotonic_ns": 27903856084558, "phase": "sample", "processes": "525722, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:23:02.847903+00:00"}
+{"monotonic_ns": 27904891061982, "phase": "sample", "processes": "525722, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:23:03.882889+00:00"}
+{"monotonic_ns": 27905930320729, "phase": "sample", "processes": "525722, /home/alex/miniconda3/bin/python, 382", "status": "ok", "wall_time_utc": "2026-09-05T02:23:04.922147+00:00"}
+{"monotonic_ns": 27906966157040, "phase": "sample", "processes": "525722, /home/alex/miniconda3/bin/python, 382", "status": "ok", "wall_time_utc": "2026-09-05T02:23:05.957987+00:00"}
+{"monotonic_ns": 27908007537989, "phase": "sample", "processes": "525722, /home/alex/miniconda3/bin/python, 490", "status": "ok", "wall_time_utc": "2026-09-05T02:23:06.999360+00:00"}
+{"monotonic_ns": 27909037313909, "phase": "sample", "processes": "525722, /home/alex/miniconda3/bin/python, 490", "status": "ok", "wall_time_utc": "2026-09-05T02:23:08.029142+00:00"}
+{"monotonic_ns": 27910070064709, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:23:09.061889+00:00"}
+{"monotonic_ns": 27911101897205, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:23:10.093723+00:00"}
+{"monotonic_ns": 27912132062569, "phase": "sample", "processes": "526558, /home/alex/miniconda3/bin/python, 82", "status": "ok", "wall_time_utc": "2026-09-05T02:23:11.123889+00:00"}
+{"monotonic_ns": 27913163054593, "phase": "sample", "processes": "526558, /home/alex/miniconda3/bin/python, 124", "status": "ok", "wall_time_utc": "2026-09-05T02:23:12.154882+00:00"}
+{"monotonic_ns": 27914199102344, "phase": "sample", "processes": "526558, /home/alex/miniconda3/bin/python, 290", "status": "ok", "wall_time_utc": "2026-09-05T02:23:13.190915+00:00"}
+{"monotonic_ns": 27915236488895, "phase": "sample", "processes": "526558, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:23:14.228313+00:00"}
+{"monotonic_ns": 27916270076469, "phase": "sample", "processes": "526558, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:23:15.261895+00:00"}
+{"monotonic_ns": 27917310064710, "phase": "sample", "processes": "526558, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:23:16.301889+00:00"}
+{"monotonic_ns": 27918347717530, "phase": "sample", "processes": "526558, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:23:17.339543+00:00"}
+{"monotonic_ns": 27919383081973, "phase": "sample", "processes": "526558, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:23:18.374904+00:00"}
+{"monotonic_ns": 27920426291754, "phase": "sample", "processes": "526558, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:23:19.418116+00:00"}
+{"monotonic_ns": 27921461079598, "phase": "sample", "processes": "526558, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:23:20.452897+00:00"}
+{"monotonic_ns": 27922498083395, "phase": "sample", "processes": "526558, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:23:21.489902+00:00"}
+{"monotonic_ns": 27923537074052, "phase": "sample", "processes": "526558, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:23:22.528894+00:00"}
+{"monotonic_ns": 27924579053932, "phase": "sample", "processes": "526558, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:23:23.570881+00:00"}
+{"monotonic_ns": 27925612506502, "phase": "sample", "processes": "526558, /home/alex/miniconda3/bin/python, 310", "status": "ok", "wall_time_utc": "2026-09-05T02:23:24.604332+00:00"}
+{"monotonic_ns": 27926642232338, "phase": "sample", "processes": "526558, /home/alex/miniconda3/bin/python, 366", "status": "ok", "wall_time_utc": "2026-09-05T02:23:25.634059+00:00"}
+{"monotonic_ns": 27927661060838, "phase": "sample", "processes": "526558, /home/alex/miniconda3/bin/python, 366", "status": "ok", "wall_time_utc": "2026-09-05T02:23:26.652889+00:00"}
+{"monotonic_ns": 27928679515984, "phase": "sample", "processes": "526558, /home/alex/miniconda3/bin/python, 488", "status": "ok", "wall_time_utc": "2026-09-05T02:23:27.671331+00:00"}
+{"monotonic_ns": 27929699065817, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:23:28.690891+00:00"}
+{"monotonic_ns": 27930730274948, "phase": "sample", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:23:29.722102+00:00"}
+{"monotonic_ns": 27931769057915, "phase": "sample", "processes": "526965, /home/alex/miniconda3/bin/python, 96", "status": "ok", "wall_time_utc": "2026-09-05T02:23:30.760885+00:00"}
+{"monotonic_ns": 27932800777335, "phase": "sample", "processes": "526965, /home/alex/miniconda3/bin/python, 126", "status": "ok", "wall_time_utc": "2026-09-05T02:23:31.792599+00:00"}
+{"monotonic_ns": 27933839601773, "phase": "sample", "processes": "526965, /home/alex/miniconda3/bin/python, 358", "status": "ok", "wall_time_utc": "2026-09-05T02:23:32.831418+00:00"}
+{"monotonic_ns": 27934872576617, "phase": "sample", "processes": "526965, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:23:33.864400+00:00"}
+{"monotonic_ns": 27935903346303, "phase": "sample", "processes": "526965, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:23:34.895168+00:00"}
+{"monotonic_ns": 27936940775565, "phase": "sample", "processes": "526965, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:23:35.932593+00:00"}
+{"monotonic_ns": 27937977059944, "phase": "sample", "processes": "526965, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:23:36.968885+00:00"}
+{"monotonic_ns": 27939018220827, "phase": "sample", "processes": "526965, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:23:38.010043+00:00"}
+{"monotonic_ns": 27940046748554, "phase": "sample", "processes": "526965, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:23:39.038566+00:00"}
+{"monotonic_ns": 27941082550015, "phase": "sample", "processes": "526965, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:23:40.074375+00:00"}
+{"monotonic_ns": 27942123064735, "phase": "sample", "processes": "526965, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:23:41.114888+00:00"}
+{"monotonic_ns": 27943165219976, "phase": "sample", "processes": "526965, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:23:42.157022+00:00"}
+{"monotonic_ns": 27944198872354, "phase": "sample", "processes": "526965, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:23:43.190696+00:00"}
+{"monotonic_ns": 27945249290276, "phase": "sample", "processes": "526965, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:23:44.241107+00:00"}
+{"monotonic_ns": 27946282225745, "phase": "sample", "processes": "526965, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:23:45.274049+00:00"}
+{"monotonic_ns": 27947319261421, "phase": "sample", "processes": "526965, /home/alex/miniconda3/bin/python, 378", "status": "ok", "wall_time_utc": "2026-09-05T02:23:46.311086+00:00"}
+{"monotonic_ns": 27948350264275, "phase": "sample", "processes": "526965, /home/alex/miniconda3/bin/python, 384", "status": "ok", "wall_time_utc": "2026-09-05T02:23:47.342090+00:00"}
+{"monotonic_ns": 27949389053497, "phase": "sample", "processes": "526965, /home/alex/miniconda3/bin/python, 418", "status": "ok", "wall_time_utc": "2026-09-05T02:23:48.380881+00:00"}
+{"monotonic_ns": 27950424257143, "phase": "sample", "processes": "526965, /home/alex/miniconda3/bin/python, 500", "status": "ok", "wall_time_utc": "2026-09-05T02:23:49.416080+00:00"}
+{"monotonic_ns": 27951461075153, "phase": "sample", "processes": "526965, /home/alex/miniconda3/bin/python, 500", "status": "ok", "wall_time_utc": "2026-09-05T02:23:50.452900+00:00"}
+{"monotonic_ns": 27952149238442, "phase": "end", "processes": "", "status": "ok", "wall_time_utc": "2026-09-05T02:23:51.141066+00:00"}

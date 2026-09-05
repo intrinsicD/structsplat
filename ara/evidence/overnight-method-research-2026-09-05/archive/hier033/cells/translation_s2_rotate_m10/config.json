@@ -1,0 +1,42 @@
+{
+  "action_family": "rotate",
+  "base_field_sha256": "8e64db010f90b7d07e47331696f49630f086c5835139317eacaa068cdb492420",
+  "cpu": "11th Gen Intel(R) Core(TM) i9-11900KF @ 3.50GHz",
+  "donor": null,
+  "input_field_sha256": "8a4ad7b00c5f4a9433e5f60750e12fd2252859cbea6e6bb5cf2cbe092ceadcf0",
+  "magnitude": 1.0,
+  "numpy": "2.1.3",
+  "platform": "Linux-6.14.0-37-generic-x86_64-with-glibc2.39",
+  "predicted_gain": 5.389714282516556e-13,
+  "recovery": {
+    "adam_multiplier": 1.0,
+    "arm": "adam",
+    "color_limit": 2.0,
+    "damping": 0.01,
+    "max_backtracks": 6,
+    "max_pairs": 65536,
+    "scale_max": 16.0,
+    "scale_min": 0.35,
+    "steps": 20,
+    "trust": [
+      1.0,
+      1.0,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1
+    ]
+  },
+  "request": {
+    "action": "rotate_m10",
+    "cell_id": "translation_s2_rotate_m10",
+    "family": "translation",
+    "seed": 2,
+    "smoke": false
+  },
+  "target_sha256": "eeea41656746445453083cf354718e64a94893da393ef0dc422f5b2d226890d0",
+  "threads": 1,
+  "torch": "2.9.0+cu128"
+}

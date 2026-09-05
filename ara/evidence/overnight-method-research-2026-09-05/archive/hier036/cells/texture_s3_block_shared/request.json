@@ -1,0 +1,7 @@
+{
+  "cell_id": "texture_s3_block_shared",
+  "family": "texture",
+  "method": "block_shared",
+  "seed": 3,
+  "smoke": false
+}

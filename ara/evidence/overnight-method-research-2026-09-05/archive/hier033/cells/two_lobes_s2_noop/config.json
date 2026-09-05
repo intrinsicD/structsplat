@@ -1,0 +1,42 @@
+{
+  "action_family": "noop",
+  "base_field_sha256": "8e64db010f90b7d07e47331696f49630f086c5835139317eacaa068cdb492420",
+  "cpu": "11th Gen Intel(R) Core(TM) i9-11900KF @ 3.50GHz",
+  "donor": null,
+  "input_field_sha256": "8e64db010f90b7d07e47331696f49630f086c5835139317eacaa068cdb492420",
+  "magnitude": 0.0,
+  "numpy": "2.1.3",
+  "platform": "Linux-6.14.0-37-generic-x86_64-with-glibc2.39",
+  "predicted_gain": 0.0,
+  "recovery": {
+    "adam_multiplier": 1.0,
+    "arm": "adam",
+    "color_limit": 2.0,
+    "damping": 0.01,
+    "max_backtracks": 6,
+    "max_pairs": 65536,
+    "scale_max": 16.0,
+    "scale_min": 0.35,
+    "steps": 20,
+    "trust": [
+      1.0,
+      1.0,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1
+    ]
+  },
+  "request": {
+    "action": "noop",
+    "cell_id": "two_lobes_s2_noop",
+    "family": "two_lobes",
+    "seed": 2,
+    "smoke": false
+  },
+  "target_sha256": "ca2d2d62a9db5448ae6a73aa8a10b616b1e3b8324a18aa3615fdde531939ca07",
+  "threads": 1,
+  "torch": "2.9.0+cu128"
+}

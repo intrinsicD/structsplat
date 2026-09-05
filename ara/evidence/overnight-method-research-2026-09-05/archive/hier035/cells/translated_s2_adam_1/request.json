@@ -1,0 +1,7 @@
+{
+  "cell_id": "translated_s2_adam_1",
+  "family": "translated",
+  "method": "adam_1",
+  "seed": 2,
+  "smoke": false
+}

@@ -1,0 +1,38 @@
+{
+  "cuda": "12.8",
+  "execution_profile": "shared_correctness",
+  "gpu": "NVIDIA GeForce RTX 3050",
+  "input_field_sha256": "3753b0edd1d62a477d2378123b15c809f5fa224f635319003cf62b4a70a36b44",
+  "numpy": "2.1.3",
+  "occupancy_after_sha256": "2473b0216120fc784235e5c70d28d54f9fc7433cdc7588a9ea36b3c6971afa29",
+  "occupancy_before_sha256": "07095dadb53222785e5a3c55d659066591cc232c4fcd6ad1a8a7616a984c2298",
+  "request": {
+    "backend": "scatter",
+    "base_bundle": "/home/alex/Documents/structsplat/results/hier031_janelle_c0001_s1200_exact7k_boundary_detail_s0_diagnostic_2026-08-12",
+    "cell_id": "hier031_s0_r1_scatter",
+    "family": "hier031",
+    "repeat": 1,
+    "seed": 0,
+    "smoke": false
+  },
+  "solver": {
+    "allow_unsafe_stage_zero_reconditioning": false,
+    "basis_cache": "scatter",
+    "basis_cache_max_bytes": 268435456,
+    "coefficient_abs_limit": 16.0,
+    "frozen_base_mode": "subtract",
+    "max_iterations": 48,
+    "patch7_rmse_threshold": 0.01,
+    "pixel_rmse_threshold": 0.02,
+    "regularization_center": "input",
+    "ridge": 1e-08,
+    "selection_mode": "transaction",
+    "solver_start": "input",
+    "sse_relative_tolerance": 1e-08,
+    "tolerance": 1e-06,
+    "violation_absolute_tolerance": 1e-09
+  },
+  "target_sha256": "096c479a43017c9a7b542d0868c78cdd84c17e62a206b6f96db4f15f0d72d644",
+  "timing_eligible": false,
+  "torch": "2.9.0+cu128"
+}

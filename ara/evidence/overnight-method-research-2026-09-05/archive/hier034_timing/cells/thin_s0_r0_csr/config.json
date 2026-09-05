@@ -1,0 +1,34 @@
+{
+  "cuda": "12.8",
+  "gpu": "NVIDIA GeForce RTX 3050",
+  "input_field_sha256": "62c716f66b3364fd75bb0d9ade81dacfdd5d1ad616a97361d64b3fafd34e5858",
+  "numpy": "2.1.3",
+  "request": {
+    "backend": "csr",
+    "base_bundle": "/home/alex/Documents/structsplat/results/hier031_janelle_c0001_s1200_exact7k_boundary_detail_s0_diagnostic_2026-08-12",
+    "cell_id": "thin_s0_r0_csr",
+    "family": "thin",
+    "repeat": 0,
+    "seed": 0,
+    "smoke": false
+  },
+  "solver": {
+    "allow_unsafe_stage_zero_reconditioning": false,
+    "basis_cache": "csr",
+    "basis_cache_max_bytes": 268435456,
+    "coefficient_abs_limit": 16.0,
+    "frozen_base_mode": "subtract",
+    "max_iterations": 48,
+    "patch7_rmse_threshold": 0.01,
+    "pixel_rmse_threshold": 0.02,
+    "regularization_center": "input",
+    "ridge": 1e-08,
+    "selection_mode": "transaction",
+    "solver_start": "input",
+    "sse_relative_tolerance": 1e-08,
+    "tolerance": 1e-06,
+    "violation_absolute_tolerance": 1e-09
+  },
+  "target_sha256": "c55c15853e4b68fe9096619c0a26c8de68b402e4309d40ace5ff9978c95c286b",
+  "torch": "2.9.0+cu128"
+}

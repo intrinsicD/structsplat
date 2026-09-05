@@ -10,9 +10,9 @@ Compare parameter-family signals against finite local edits and fixed optimizer 
 - No default change, downstream 3D transfer, sealed images, or quality claim from synthetic cases.
 
 ## Acceptance criteria
-- [ ] Analytic sums and curvature match renderer/autograd.
-- [ ] Freeze fixtures, candidate bank, controls, recovery, metrics, gates, and source digest.
-- [ ] Distinct prospective review and clean immutable run with portable raw artifacts.
+- [x] Analytic sums and curvature match renderer/autograd.
+- [x] Freeze fixtures, candidate bank, controls, recovery, metrics, gates, and source digest.
+- [x] Distinct prospective review and clean immutable run with portable raw artifacts.
 - [ ] Independent audit, synchronized task/docs/ARA, full verification.
 
 ## Interfaces touched
@@ -29,7 +29,7 @@ HIER-031/032, ADR-0006
 
 ### Handoff log
 The finite protocol is prospectively approved at the digest below. Frozen-source execution
-has finished; the distinct artifact audit is in progress. This handoff envelope was recorded
+had finished; the distinct artifact audit was in progress when this entry was recorded. This handoff envelope was recorded
 while replay review was underway, not before that review request; no disposition was promoted.
 
 ### Handoff
@@ -52,6 +52,34 @@ fixed count, donor costs, work counters, complete artifacts and frozen protocol 
 No default change, sealed/natural-image access, selective rerun, artifact repair, push or merge.
 #### Recommended next action
 Finish the distinct scientific audit, then bind its bounded findings into the claim/evidence ledger.
+
+### Handoff
+
+#### Objective
+Review the final evidence/claim/documentation integration for this completed bounded assay.
+#### Changes
+No post-freeze numerical change. Added the independent audit receipt, explicitly partial tracked
+archive, scoped ARA findings and morning handoff; kept all maintained defaults unchanged.
+#### Evidence
+ara/evidence/overnight-method-research-2026-09-05/run.md and archive/archive_manifest.json;
+docs/research/2026-09-05-overnight-findings.md; ARA C68–C72 as applicable.
+The exact staged integration tree and final full-gate result are bound at review dispatch.
+#### Assumptions
+Each claim retains its own frozen protocol, source, data, comparator and resource scope.
+The two cache profiles are not independent numerical confirmation.
+#### Uncertainties
+Generalization, meaningful visual improvement, isolated speed, accepted-update cache utility,
+baseline repeat mechanism and the unrun gradient-rescue design remain unresolved.
+#### Review focus
+Check that the ledger faithfully records your distinct audits, preserves nominal failed/passing
+gates, and includes numerical-polish, rollback, within-baseline variability and contention caveats.
+Review the archive helper's immutable-input and sidecar fixes; do not rerun optimization.
+#### Protected actions not taken
+No default change, new formal matrix, selective rerun, original-artifact edit, foreign-process
+termination, sealed-data access, push or merge.
+#### Recommended next action
+Accept or require a bounded correction to the integrated record. Retire this task only after
+the distinct verdict and full verification; keep future hypotheses explicitly unrun.
 
 ## Notes
 Design: docs/research/2026-08-12-hier-pixel-gradient-anatomy.md.

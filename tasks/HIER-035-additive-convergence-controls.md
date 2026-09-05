@@ -10,9 +10,9 @@ Compare Adam, diagonal curvature scaling, and local Gauss–Newton at fixed coun
 - No maintained defaults, count growth, official native-method or general image-quality claim.
 
 ## Acceptance criteria
-- [ ] Checked derivatives; frozen objectives, fixtures, arms, step bounds, and work accounting.
-- [ ] Strong Adam controls, fixed terminal convention, all failures preserved.
-- [ ] Prospective review, clean immutable run, portable curves and raw artifacts.
+- [x] Checked derivatives; frozen objectives, fixtures, arms, step bounds, and work accounting.
+- [x] Strong Adam controls, fixed terminal convention, all failures preserved.
+- [x] Prospective review, clean immutable run, portable curves and raw artifacts.
 - [ ] Independent audit, synchronized evidence and docs, full verification.
 
 ## Interfaces touched
@@ -28,7 +28,7 @@ HIER-033, ADR-0006
 - Reviewed revision: 6feb630e2a9bb44260a4618dc6a2d1cfbcd67fa4
 
 ### Handoff log
-Design in preparation; no formal outcome exists.
+Historical initial entry: design in preparation; no formal outcome existed at that point.
 
 ### Handoff
 
@@ -54,6 +54,34 @@ No default change, sealed-image access, selective rerun, artifact repair, push o
 Record the completed distinct audit and its scope in ARA before promoting any task conclusion.
 This structured envelope is recorded after the artifact review request and audit, not as a
 retrospective claim that the handoff preceded them. Prospective protocol approval did precede execution.
+
+### Handoff
+
+#### Objective
+Review the final evidence/claim/documentation integration for this completed bounded assay.
+#### Changes
+No post-freeze numerical change. Added the independent audit receipt, explicitly partial tracked
+archive, scoped ARA findings and morning handoff; kept all maintained defaults unchanged.
+#### Evidence
+ara/evidence/overnight-method-research-2026-09-05/run.md and archive/archive_manifest.json;
+docs/research/2026-09-05-overnight-findings.md; ARA C68–C72 as applicable.
+The exact staged integration tree and final full-gate result are bound at review dispatch.
+#### Assumptions
+Each claim retains its own frozen protocol, source, data, comparator and resource scope.
+The two cache profiles are not independent numerical confirmation.
+#### Uncertainties
+Generalization, meaningful visual improvement, isolated speed, accepted-update cache utility,
+baseline repeat mechanism and the unrun gradient-rescue design remain unresolved.
+#### Review focus
+Check that the ledger faithfully records your distinct audits, preserves nominal failed/passing
+gates, and includes numerical-polish, rollback, within-baseline variability and contention caveats.
+Review the archive helper's immutable-input and sidecar fixes; do not rerun optimization.
+#### Protected actions not taken
+No default change, new formal matrix, selective rerun, original-artifact edit, foreign-process
+termination, sealed-data access, push or merge.
+#### Recommended next action
+Accept or require a bounded correction to the integrated record. Retire this task only after
+the distinct verdict and full verification; keep future hypotheses explicitly unrun.
 
 ## Notes
 Overnight research authorized September 5, 2026.

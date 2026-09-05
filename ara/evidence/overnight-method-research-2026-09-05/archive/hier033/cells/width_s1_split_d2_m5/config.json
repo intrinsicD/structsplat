@@ -1,0 +1,42 @@
+{
+  "action_family": "split",
+  "base_field_sha256": "72aeaf511dd6fb8080e3abd1c6668bf7aca0cad986b84f5d6f1b1ce7b9a3684f",
+  "cpu": "11th Gen Intel(R) Core(TM) i9-11900KF @ 3.50GHz",
+  "donor": 2,
+  "input_field_sha256": "fcde0531f66a6b6abe34bf38f9797207a838530ab1d8c0543a2b5c3d33db1c7e",
+  "magnitude": 0.5,
+  "numpy": "2.1.3",
+  "platform": "Linux-6.14.0-37-generic-x86_64-with-glibc2.39",
+  "predicted_gain": -2.6193894882453606e-05,
+  "recovery": {
+    "adam_multiplier": 1.0,
+    "arm": "adam",
+    "color_limit": 2.0,
+    "damping": 0.01,
+    "max_backtracks": 6,
+    "max_pairs": 65536,
+    "scale_max": 16.0,
+    "scale_min": 0.35,
+    "steps": 20,
+    "trust": [
+      1.0,
+      1.0,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1
+    ]
+  },
+  "request": {
+    "action": "split_d2_m5",
+    "cell_id": "width_s1_split_d2_m5",
+    "family": "width",
+    "seed": 1,
+    "smoke": false
+  },
+  "target_sha256": "fff92b2579192731835635471e64bb41f1db3927af8f75d7f0fb9bc403b977fc",
+  "threads": 1,
+  "torch": "2.9.0+cu128"
+}

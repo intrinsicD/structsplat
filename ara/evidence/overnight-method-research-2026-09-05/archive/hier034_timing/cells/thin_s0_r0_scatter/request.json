@@ -1,0 +1,9 @@
+{
+  "backend": "scatter",
+  "base_bundle": "/home/alex/Documents/structsplat/results/hier031_janelle_c0001_s1200_exact7k_boundary_detail_s0_diagnostic_2026-08-12",
+  "cell_id": "thin_s0_r0_scatter",
+  "family": "thin",
+  "repeat": 0,
+  "seed": 0,
+  "smoke": false
+}

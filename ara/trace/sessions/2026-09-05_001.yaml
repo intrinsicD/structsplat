@@ -1,0 +1,79 @@
+session:
+  id: "2026-09-05_001"
+  date: "2026-09-05"
+  started: "2026-09-05T01:22+02:00"
+  last_turn: "2026-09-05T05:22+02:00"
+  turn_count: 1
+  summary: "Four simpler-first research routes produced five independently audited matrices; numerical-polish and rollback caveats prevent default promotion, and the simple gradient-rescue design remains unrun."
+
+events_logged:
+  - {turn: 1, type: decision, id: N314, routing: direct, provenance: user, summary: "Authorized overnight literature, multiple designs, implementation and experiments with a simpler-first preference."}
+  - {turn: 1, type: experiment, id: N315, routing: direct, provenance: ai-executed, summary: "HIER-035 completes local curvature versus strong Adam controls with mixed procedural terminal gates."}
+  - {turn: 1, type: pivot, id: N316, routing: direct, provenance: ai-executed, summary: "Froze a coupling/cap factorial before attributing HIER-035 failures to missing cross-Gaussian terms."}
+  - {turn: 1, type: experiment, id: N317, routing: direct, provenance: ai-executed, summary: "HIER-033 completes the count-funded action bank, recovery controls and cancellation counterexamples."}
+  - {turn: 1, type: dead_end, id: N318, routing: direct, provenance: ai-executed, summary: "The frozen mixed selector misses its joint low-regret gate; no general controller refutation follows."}
+  - {turn: 1, type: experiment, id: N319, routing: direct, provenance: ai-executed, summary: "HIER-036 validates conditional overlap coupling benefits but no texture preference over strongest Adam."}
+  - {turn: 1, type: experiment, id: N320, routing: direct, provenance: ai-executed, summary: "Both approved cache profiles complete; raw replay, checkpoint, memory and occupancy evidence is independently audited."}
+  - {turn: 1, type: dead_end, id: N321, routing: direct, provenance: ai-executed, summary: "No general interchangeable or useful accepted-solve cache claim survives; passing cases return the input."}
+  - {turn: 1, type: decision, id: N322, routing: direct, provenance: ai-executed, summary: "Keep maintained defaults unchanged and bind only narrow observed findings to the retained experimental tools."}
+  - {turn: 1, type: question, id: N323, routing: direct, provenance: ai-suggested, summary: "Preserve an independently critiqued but unrun projected-gradient rescue versus deeper-backtracking design."}
+  - {turn: 1, type: claim, id: O177, routing: crystallized, provenance: ai-suggested, summary: "C68 records the observed negative finite-selector gate via artifact commitment."}
+  - {turn: 1, type: claim, id: O178, routing: crystallized, provenance: ai-suggested, summary: "C69 records scoped cancellation and uncovered-support counterexamples via artifact commitment."}
+  - {turn: 1, type: claim, id: O179, routing: crystallized, provenance: ai-suggested, summary: "C70 records mixed local-curvature gates and numerical-polish limits via artifact commitment."}
+  - {turn: 1, type: claim, id: O180, routing: crystallized, provenance: ai-suggested, summary: "C71 records conditional coupling effects and texture failures via artifact commitment."}
+  - {turn: 1, type: claim, id: O181, routing: crystallized, provenance: ai-suggested, summary: "C72 records cache parity failures, rollback qualifications and descriptive timing via artifact commitment."}
+  - {turn: 1, type: heuristic, id: O182, routing: staged, provenance: ai-suggested, summary: "Keep projected-gradient rescue untested; no executable approval or result exists."}
+  - {turn: 1, type: observation, id: O183, routing: staged, provenance: ai-suggested, summary: "Keep unimplemented portfolio directions and novelty judgments tentative."}
+
+ai_actions:
+  - turn: 1
+    action: "Searched primary splatting/optimization and cross-domain literature, produced the audited simpler-first portfolio, and obtained distinct prospective source-digest approvals."
+    provenance: ai-executed
+    files_changed: ["docs/research/2026-09-05-overnight-research-portfolio.md", "tasks/HIER-033-pixel-gradient-operator-oracle.md", "tasks/HIER-034-fixed-geometry-basis-cache.md", "tasks/HIER-035-additive-convergence-controls.md", "tasks/HIER-036-dense-coupling-oracle.md"]
+  - turn: 1
+    action: "Implemented bounded owned basis caches, a pixel-gradient/Jacobian reference, local curvature controls, a bounded dense factorial oracle, strict report contracts and focused tests."
+    provenance: ai-executed
+    files_changed: ["src/structsplat/additive_basis.py", "src/structsplat/contraction_refinement.py", "src/structsplat/pixel_gradient.py", "benchmarks/hier_additive_controls.py", "benchmarks/hier_coupling_oracle.py", "benchmarks/hier_research_report.py", "scripts/check_report_bundle.py"]
+  - turn: 1
+    action: "Executed five immutable formal matrices from five reviewed clean source commits; retained dirty wiring smokes and failed diagnostics without rescue or overwrite."
+    provenance: ai-executed
+    files_changed: ["scripts/experiments/hier033_operator_oracle.py", "scripts/experiments/hier034_basis_cache.py", "scripts/experiments/hier034_shared_cache.py", "scripts/experiments/hier035_convergence.py", "scripts/experiments/hier036_coupling.py"]
+  - turn: 1
+    action: "Obtained distinct raw/field/metric/work/visual audits, checked every complete report, and recorded both foreign-GPU episodes plus the limits of point-sampled occupancy."
+    provenance: ai-executed
+    files_changed: ["ara/evidence/overnight-method-research-2026-09-05/run.md"]
+  - turn: 1
+    action: "Created a hash-checked explicitly partial archive, tested immutable-input protection and timing-sidecar preservation, and browser-inspected the archive and native coupling comparisons."
+    provenance: ai-executed
+    files_changed: ["scripts/experiments/overnight_evidence_archive.py", "tests/test_overnight_evidence_archive.py", "ara/evidence/overnight-method-research-2026-09-05/archive/", "ara/evidence/overnight-method-research-2026-09-05/hier036_visual_qa.png"]
+  - turn: 1
+    action: "Completed the 2163-test portable gate and every structural checker before final ledger integration; recorded scoped claims, unrun suggestions and the morning handoff without a default change."
+    provenance: ai-executed
+    files_changed: ["ara/logic/claims.md", "ara/staging/observations.yaml", "ara/trace/exploration_tree.yaml", "docs/research/2026-09-05-overnight-findings.md"]
+
+claims_touched:
+  - {id: C68, action: crystallized, turn: 1}
+  - {id: C69, action: crystallized, turn: 1}
+  - {id: C70, action: crystallized, turn: 1}
+  - {id: C71, action: crystallized, turn: 1}
+  - {id: C72, action: crystallized, turn: 1}
+
+key_context:
+  - turn: 1
+    excerpt: "User: continue the research over night; explore and design multiple ways to improve convergence, quality, performance or efficiency; recent publications, design, implementation and experiments are allowed; prefer simpler solutions unless complexity is required."
+  - turn: 1
+    excerpt: "All positive interpretations remain scoped: precision-limit polishing is not demonstrated visual improvement, completed rollback calls are not accepted refinements, and shared-workstation ratios are not isolated speed."
+  - turn: 1
+    excerpt: "No foreign process was stopped; no maintained default, held-out access, selective repeat, original-bundle repair, push or merge was performed."
+
+open_threads:
+  - "Create and prospectively approve a new task before implementing the unrun GN6-plus-gradient6 versus GN12 texture rescue design."
+  - "Diagnose baseline coefficient-solver repeat sensitivity before another cache assay; prospectively distinguish accepted-update utility from rollback timing."
+  - "Keep broader operator routing and downstream3D transfer open: HIER-033's finite mixed selector failed and does not settle every gradient controller."
+  - "Obtain the remaining distinct HIER-031/ADR-0033 review and disjoint mask/image evidence before generalizing exposed exact-count topology results."
+  - "Native-resolution/count scaling and complete-rate or whole-pipeline evidence remain separate from tonight's bounded tests."
+  - "Prioritize only a bounded next test among the unrun representability, donor-recipient, image-space and scheduling proposals; no established novelty claim exists."
+
+ai_suggestions_pending:
+  - "Test the simplest projected-gradient rescue with complete trial work and separate exposure strata before adding optimizer machinery."
+  - "Treat the broader research portfolio as a hypothesis menu, not a ranked set of demonstrated improvements."

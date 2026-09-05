@@ -1,0 +1,7 @@
+{
+  "action": "split_d1_m10",
+  "cell_id": "support_gap_s1_split_d1_m10",
+  "family": "support_gap",
+  "seed": 1,
+  "smoke": false
+}

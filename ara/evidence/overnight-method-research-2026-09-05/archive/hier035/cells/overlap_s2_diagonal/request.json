@@ -1,0 +1,7 @@
+{
+  "cell_id": "overlap_s2_diagonal",
+  "family": "overlap",
+  "method": "diagonal",
+  "seed": 2,
+  "smoke": false
+}

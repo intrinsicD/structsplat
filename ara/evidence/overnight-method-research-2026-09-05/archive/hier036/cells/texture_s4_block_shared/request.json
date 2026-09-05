@@ -1,0 +1,7 @@
+{
+  "cell_id": "texture_s4_block_shared",
+  "family": "texture",
+  "method": "block_shared",
+  "seed": 4,
+  "smoke": false
+}

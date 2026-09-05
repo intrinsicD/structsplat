@@ -167,3 +167,10 @@ sessions:
     events_count: 19
     claims_touched: []
     open_threads: 6
+  - id: "2026-09-05_001"
+    date: "2026-09-05"
+    summary: "Four simpler-first routes produced five independently audited matrices; numerical-polish and rollback caveats prevent default promotion, and gradient rescue remains unrun."
+    turn_count: 1
+    events_count: 17
+    claims_touched: [C68, C69, C70, C71, C72]
+    open_threads: 6

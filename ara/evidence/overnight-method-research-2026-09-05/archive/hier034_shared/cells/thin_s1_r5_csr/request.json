@@ -1,0 +1,9 @@
+{
+  "backend": "csr",
+  "base_bundle": "/home/alex/Documents/structsplat/results/hier031_janelle_c0001_s1200_exact7k_boundary_detail_s0_diagnostic_2026-08-12",
+  "cell_id": "thin_s1_r5_csr",
+  "family": "thin",
+  "repeat": 5,
+  "seed": 1,
+  "smoke": false
+}

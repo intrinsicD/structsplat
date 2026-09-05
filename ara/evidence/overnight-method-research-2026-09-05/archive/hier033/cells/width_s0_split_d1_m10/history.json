@@ -1,0 +1,215 @@
+{
+  "checkpoints": [
+    {
+      "accepted": true,
+      "elapsed_seconds": 0.0006104189997131471,
+      "forward_evaluations": 1,
+      "gradient_evaluations": 0,
+      "iteration": 0,
+      "line_search_trials": 0,
+      "objective": 9.741898975335062e-05,
+      "psnr": 37.10326382762966
+    },
+    {
+      "accepted": true,
+      "elapsed_seconds": 0.002249589997518342,
+      "forward_evaluations": 2,
+      "gradient_evaluations": 1,
+      "iteration": 1,
+      "line_search_trials": 0,
+      "objective": 2.7270492864772677e-05,
+      "psnr": 42.6327701723719
+    },
+    {
+      "accepted": true,
+      "elapsed_seconds": 0.0037363720002758782,
+      "forward_evaluations": 3,
+      "gradient_evaluations": 2,
+      "iteration": 2,
+      "line_search_trials": 0,
+      "objective": 1.6266489183180965e-05,
+      "psnr": 44.87676175609465
+    },
+    {
+      "accepted": true,
+      "elapsed_seconds": 0.005185961999814026,
+      "forward_evaluations": 4,
+      "gradient_evaluations": 3,
+      "iteration": 3,
+      "line_search_trials": 0,
+      "objective": 3.351091800141148e-05,
+      "psnr": 41.73783679231676
+    },
+    {
+      "accepted": true,
+      "elapsed_seconds": 0.006647280999459326,
+      "forward_evaluations": 5,
+      "gradient_evaluations": 4,
+      "iteration": 4,
+      "line_search_trials": 0,
+      "objective": 3.615959212766029e-05,
+      "psnr": 41.407464812524246
+    },
+    {
+      "accepted": true,
+      "elapsed_seconds": 0.008076772999629611,
+      "forward_evaluations": 6,
+      "gradient_evaluations": 5,
+      "iteration": 5,
+      "line_search_trials": 0,
+      "objective": 2.3353308279183693e-05,
+      "psnr": 43.30621591998277
+    },
+    {
+      "accepted": true,
+      "elapsed_seconds": 0.009499518997472478,
+      "forward_evaluations": 7,
+      "gradient_evaluations": 6,
+      "iteration": 6,
+      "line_search_trials": 0,
+      "objective": 9.195315215038136e-06,
+      "psnr": 47.35403382909258
+    },
+    {
+      "accepted": true,
+      "elapsed_seconds": 0.01088303399956203,
+      "forward_evaluations": 8,
+      "gradient_evaluations": 7,
+      "iteration": 7,
+      "line_search_trials": 0,
+      "objective": 3.242719913032488e-06,
+      "psnr": 51.88060565831894
+    },
+    {
+      "accepted": true,
+      "elapsed_seconds": 0.012290198999835411,
+      "forward_evaluations": 9,
+      "gradient_evaluations": 8,
+      "iteration": 8,
+      "line_search_trials": 0,
+      "objective": 5.815041276946431e-06,
+      "psnr": 49.34417202505181
+    },
+    {
+      "accepted": true,
+      "elapsed_seconds": 0.01376691000041319,
+      "forward_evaluations": 10,
+      "gradient_evaluations": 9,
+      "iteration": 9,
+      "line_search_trials": 0,
+      "objective": 1.1019849807780702e-05,
+      "psnr": 46.56794328885277
+    },
+    {
+      "accepted": true,
+      "elapsed_seconds": 0.015245649999997113,
+      "forward_evaluations": 11,
+      "gradient_evaluations": 10,
+      "iteration": 10,
+      "line_search_trials": 0,
+      "objective": 1.3341225894691888e-05,
+      "psnr": 45.737742665966536
+    },
+    {
+      "accepted": true,
+      "elapsed_seconds": 0.016679565000231378,
+      "forward_evaluations": 12,
+      "gradient_evaluations": 11,
+      "iteration": 11,
+      "line_search_trials": 0,
+      "objective": 1.1338976037222892e-05,
+      "psnr": 46.44396166839314
+    },
+    {
+      "accepted": true,
+      "elapsed_seconds": 0.018125958999007707,
+      "forward_evaluations": 13,
+      "gradient_evaluations": 12,
+      "iteration": 12,
+      "line_search_trials": 0,
+      "objective": 6.982658305787481e-06,
+      "psnr": 48.5494921384044
+    },
+    {
+      "accepted": true,
+      "elapsed_seconds": 0.01956368999890401,
+      "forward_evaluations": 14,
+      "gradient_evaluations": 13,
+      "iteration": 13,
+      "line_search_trials": 0,
+      "objective": 3.359912625455763e-06,
+      "psnr": 51.72642020629453
+    },
+    {
+      "accepted": true,
+      "elapsed_seconds": 0.021068250000098487,
+      "forward_evaluations": 15,
+      "gradient_evaluations": 14,
+      "iteration": 14,
+      "line_search_trials": 0,
+      "objective": 2.603162329251063e-06,
+      "psnr": 52.83468753437752
+    },
+    {
+      "accepted": true,
+      "elapsed_seconds": 0.022585503000300378,
+      "forward_evaluations": 16,
+      "gradient_evaluations": 15,
+      "iteration": 15,
+      "line_search_trials": 0,
+      "objective": 4.621052084985422e-06,
+      "psnr": 50.342291407525494
+    },
+    {
+      "accepted": true,
+      "elapsed_seconds": 0.024061190997599624,
+      "forward_evaluations": 17,
+      "gradient_evaluations": 16,
+      "iteration": 16,
+      "line_search_trials": 0,
+      "objective": 7.2475536398997065e-06,
+      "psnr": 48.38778566038374
+    },
+    {
+      "accepted": true,
+      "elapsed_seconds": 0.025610856999264797,
+      "forward_evaluations": 18,
+      "gradient_evaluations": 17,
+      "iteration": 17,
+      "line_search_trials": 0,
+      "objective": 8.093086762528401e-06,
+      "psnr": 47.90855808032761
+    },
+    {
+      "accepted": true,
+      "elapsed_seconds": 0.02704527699825121,
+      "forward_evaluations": 19,
+      "gradient_evaluations": 18,
+      "iteration": 18,
+      "line_search_trials": 0,
+      "objective": 6.551754268002696e-06,
+      "psnr": 48.82612404053096
+    },
+    {
+      "accepted": true,
+      "elapsed_seconds": 0.028500992997578578,
+      "forward_evaluations": 20,
+      "gradient_evaluations": 19,
+      "iteration": 19,
+      "line_search_trials": 0,
+      "objective": 3.994128292106325e-06,
+      "psnr": 50.97547993961819
+    },
+    {
+      "accepted": true,
+      "elapsed_seconds": 0.029959437997604255,
+      "forward_evaluations": 21,
+      "gradient_evaluations": 20,
+      "iteration": 20,
+      "line_search_trials": 0,
+      "objective": 2.2691081085213227e-06,
+      "psnr": 53.43114816597498
+    }
+  ],
+  "nominal_iterations": 20
+}

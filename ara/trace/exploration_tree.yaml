@@ -6340,3 +6340,153 @@ tree:
       - "ara/evidence/hier-pixel-gradient-anatomy-2026-08-12/check.py"
     also_depends_on: [N312]
     status: resolved
+  - id: N314
+    type: decision
+    title: "Authorize simpler-first overnight method research"
+    provenance: user
+    timestamp: "2026-09-05T05:22+02:00"
+    choice: >
+      Explore convergence, quality, performance and efficiency using recent primary publications,
+      multiple designs, implementation and reproducible experiments. Prefer simpler controls;
+      do not infer permission for a push, merge, foreign-process termination or default promotion.
+    alternatives: ["Implement only the existing next task", "Pursue added complexity without simple killing controls"]
+    evidence:
+      - "ara/evidence/overnight-method-research-2026-09-05/run.md"
+      - "docs/research/2026-09-05-overnight-research-portfolio.md"
+    also_depends_on: [N312, N313]
+    status: resolved
+  - id: N315
+    type: experiment
+    title: "Compare local curvature against a three-rate Adam envelope"
+    provenance: ai-executed
+    timestamp: "2026-09-05T05:22+02:00"
+    result: >
+      HIER-035 completes60 clean-source cells. Diagonal/block controls pass translated and
+      anisotropic terminal gates near numerical precision, but lose every overlap and texture
+      condition to strongest Adam. Extra derivative/trial work is charged; timing is descriptive.
+    evidence:
+      - "ara/evidence/overnight-method-research-2026-09-05/run.md"
+    also_depends_on: [N314]
+    status: resolved
+  - id: N316
+    type: pivot
+    title: "Intervene on cross-Gaussian coupling without confounding trust caps"
+    provenance: ai-executed
+    timestamp: "2026-09-05T05:22+02:00"
+    trigger: >
+      HIER-035's family-dependent outcome leaves cross-Gaussian coupling and cap semantics
+      unresolved. Freeze HIER-036's bounded dense2x2 factorial before outcomes, retaining strong
+      Adam controls and separate exposed/additional procedural strata.
+    from: "Local diagonal/block controls without an isolated coupling intervention"
+    to: "Prospectively reviewed dense coupling/cap factorial"
+    evidence:
+      - "ara/evidence/overnight-method-research-2026-09-05/run.md"
+    also_depends_on: [N315]
+    status: resolved
+  - id: N317
+    type: experiment
+    title: "Execute the finite count-funded pixel-gradient action oracle"
+    provenance: ai-executed
+    timestamp: "2026-09-05T05:22+02:00"
+    result: >
+      HIER-033 completes270 cells over18 constructed N3 conditions and15 finite actions.
+      The mixed selector has joint low regret13/18, below its80percent gate. Nine cancellation
+      counterexamples favor continuous edits; support-gap births expose existing-row blindness.
+      Immediate and equally recovered rankings differ; no downstream3D inference follows.
+    evidence:
+      - "ara/evidence/overnight-method-research-2026-09-05/run.md"
+    also_depends_on: [N312, N313, N314]
+    status: resolved
+  - id: N318
+    type: dead_end
+    title: "Reject the frozen mixed selector as a reliable finite-bank router"
+    provenance: ai-executed
+    timestamp: "2026-09-05T05:22+02:00"
+    hypothesis: >
+      The frozen signed/absolute/curvature plus residual selector meets its joint immediate and
+      recovered low-regret gate on at least80percent of the constructed count-funded bank.
+    failure_mode: "Joint gate is13/18, not the required15/18; width, rotation and two-lobe failures remain."
+    lesson: "Keep exact finite trials, no-op and equal recovery; do not equate cancellation with split or claim every gradient controller is refuted."
+    evidence:
+      - "ara/evidence/overnight-method-research-2026-09-05/run.md"
+    also_depends_on: [N317]
+    status: resolved
+  - id: N319
+    type: experiment
+    title: "Audit the full versus block coupling and cap factorial"
+    provenance: ai-executed
+    timestamp: "2026-09-05T05:22+02:00"
+    result: >
+      HIER-036 completes84 clean-source cells. Coupling helps realizable overlap under both caps;
+      large gains are numerical polishing. Shared-cap texture gain exists only on exposed
+      conditions, and every full-curvature texture endpoint loses to strongest Adam. Rejected
+      trials dominate some traces; the ultimate failure mechanism remains unresolved.
+    evidence:
+      - "ara/evidence/overnight-method-research-2026-09-05/run.md"
+    also_depends_on: [N315, N316]
+    status: resolved
+  - id: N320
+    type: experiment
+    title: "Complete and audit both frozen cache profiles"
+    provenance: ai-executed
+    timestamp: "2026-09-05T05:22+02:00"
+    result: >
+      HIER-034 completes180 shared-correctness and180 separately preserved original timing cells.
+      Each profile passes interchangeability in6/20 backend/workload records, all rollback-to-input
+      irregular cases. Other workloads fail; natural streaming repeats themselves fail pixel parity.
+      Original nominal1.691–2.009x passing ratios concern rollback calls under observed contention;
+      shared timing remains categorically ineligible.
+    evidence:
+      - "ara/evidence/overnight-method-research-2026-09-05/run.md"
+    also_depends_on: [N314]
+    status: resolved
+  - id: N321
+    type: dead_end
+    title: "Reject a general interchangeable or useful accepted-solve cache claim"
+    provenance: ai-executed
+    timestamp: "2026-09-05T05:22+02:00"
+    hypothesis: >
+      The tested cache backends can be treated as general drop-in replacements and their passing
+      frozen time predicates establish acceleration of useful accepted coefficient refinements.
+    failure_mode: "All passing calls return checkpoint0; natural paired and within-streaming local parity fail."
+    lesson: "Distinguish nominal gate passes from accepted-update utility; diagnose baseline variability and qualify resource contention before a new assay."
+    evidence:
+      - "ara/evidence/overnight-method-research-2026-09-05/run.md"
+    also_depends_on: [N320]
+    status: resolved
+  - id: N322
+    type: decision
+    title: "Keep defaults unchanged and retain only bounded experimental tools"
+    provenance: ai-executed
+    timestamp: "2026-09-05T05:22+02:00"
+    choice: >
+      Retain the checked pixel-gradient reference, opt-in cache, local optimizer controls and
+      memory-bounded dense oracle as experimental tools. Record the observed narrow findings,
+      including numerical-polish, rollback and baseline-variability caveats; select no new default,
+      general optimizer, isolated speed result, held-out gain or3D-transfer method.
+    alternatives: ["Promote near-ceiling optimizer gains", "Call rollback timing a useful solver win", "Relax failed gates after outcomes"]
+    evidence:
+      - "ara/evidence/overnight-method-research-2026-09-05/run.md"
+      - "O177"
+      - "O178"
+      - "O179"
+      - "O180"
+      - "O181"
+    also_depends_on: [N315, N317, N319, N320]
+    status: resolved
+  - id: N323
+    type: question
+    title: "Test a simple projected-gradient rescue before adding solver complexity"
+    provenance: ai-suggested
+    timestamp: "2026-09-05T05:22+02:00"
+    description: >
+      An independently critiqued but unrun54-cell texture design compares three Adam rates,
+      GN6, GN12 and GN6 plus six projected-gradient rescue trials, separating exposed0–5 from
+      additional6–8 conditions. Match worst-case trial ceilings, not claimed realized compute;
+      require both GN12 and Adam gates in both strata. A new task and exact executable approval
+      remain mandatory. Broader portfolio candidates remain hypotheses, not novelty claims.
+    evidence:
+      - "ara/evidence/overnight-method-research-2026-09-05/run.md"
+      - "docs/research/2026-09-05-overnight-research-portfolio.md"
+    also_depends_on: [N319, N322]
+    status: open
