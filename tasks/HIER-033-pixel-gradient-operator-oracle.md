@@ -23,19 +23,20 @@ HIER-031/032, ADR-0006
 
 ## Agent workflow
 - Driver: codex-root
-- Reviewer: pending
+- Reviewer: codex-overnight-protocol-reviewer
 - Turn: driver
 - Reviewed revision: pending
 
 ### Handoff log
-Protocol in preparation; no formal outcome exists.
+The finite protocol is prospectively approved at the digest below. Formal outcomes have not
+been accessed; clean-source execution and independent results review remain pending.
 
 ## Notes
 Design: docs/research/2026-08-12-hier-pixel-gradient-anatomy.md.
 
-## Experiment design in preparation
+## Frozen protocol
 
-The planned bounded assay uses six procedural defects (translation, width, rotation, RGB,
+The bounded assay uses six procedural defects (translation, width, rotation, RGB,
 two lobes, and residual outside current finite support), seeds0/1/2, 64x64 images and three
 initial Gaussians. This is mechanism evidence, not a synthetic-to-natural quality claim.
 
@@ -53,5 +54,85 @@ state for every trial, and preserve all recovered states. The central question i
 gradient cancellation identifies an edit family, not whether an unrestricted candidate search
 can improve training loss. CPU reference execution avoids the occupied GPU and has no speed claim.
 
-These choices are a design draft until bound by an executable protocol, a clean source commit
-and a distinct prospective approval. No formal run is authorized by this draft alone.
+Executable authority is PROTOCOL in scripts/experiments/hier033_operator_oracle.py together
+with the exact source hashes in SOURCES. Recompute using --print-protocol-digest. Formal command:
+python scripts/experiments/hier033_operator_oracle.py results/hier033_operator_oracle_2026-09-05
+--approved-protocol-digest EXACT_DIGEST. The task's distinct prospective approval must be
+committed with clean source before launch. --smoke is translation condition77, all15 actions,
+two recovery updates and preserved diagnostic source; it cannot establish an outcome.
+
+- Primary hypothesis/null: local packet scores identify low-regret edits in this finite atlas.
+  Null: more than20% of conditions exceed10% normalized regret either immediately or after
+  recovery. Positive selection requires all18 cases/all270 cells complete and integrity-valid,
+  and at least80% of the same cases have regret<=0.1 jointly at both measurement phases. Separate
+  per-phase fractions are descriptive and cannot replace this intersection gate. Regret is the unrestricted
+  finite oracle's gain minus the predicted choice's gain, divided by max(base_objective,1e-8).
+  Stable ties use the frozen bank order. No policy/default or broader quality conclusion follows.
+- Conditions0/1/2 deterministically vary parent angle0/0.25/0.5radians and donor cost; they are not
+  independent random samples. All families and exact target/field formulas are source-bound.
+  No natural or sealed image is used. Condition77 has a distinct angle and is wiring-only.
+- CPU float32 reference additive renderer, 3sigma C0 fade, constant signed RGB, no mask,
+  alpha/filter/affine terms. CPU is i9-11900KF, one torch thread. Images64x64; every trial and
+  terminal field has exactly3 rows. Raw objective0.5 mean squared RGB error; PSNR floor MSE1e-12;
+  MS-SSIM/LPIPS score display-clamped output. No speed claim on the shared CPU.
+- Continuous candidates solve parent-only move/scale/rotation/RGB local GN groups, damping0.01
+  times maximum scaled group diagonal (floor1e-12), trust units(2,2,.1,.1,.1,.1,.1,.1), cap maximum
+  group trust ratio and try multipliers0.5/1. Split candidates use the least-eigenvalue position
+  direction, displacements0.5/1 times the parent's minimum scale, half RGB and unchanged scales;
+  remove donor1 or2. Birth candidates replace donor1 or2 with a1.6px atom at the row-major maximum
+  residual-energy pixel, initialized by signed peak residual divided by its C0 peak weight.
+- Scores are local approximations, not full finite oracle evaluations: continuous quadratic
+  gain; split curvature plus exact linear donor-removal cost; single-pixel birth gain proxy minus
+  donor cost. Finite support changes and donor/birth interactions can invalidate these scores.
+  Record their failures instead of silently rescoring or switching candidates after the trial.
+- Privileged unrestricted, continuous-only(+no-op), and split-only(+no-op) finite oracles are
+  references, not official/native deployable baselines. They all derive from the same bank.
+  Secondary falsification: position activity>1e-8, coherence<.01, and best continuous immediate
+  gain exceeding every funded split(+no-op) by>1e-8 is a cancellation-to-split counterexample.
+  This does not refute any published 3D theorem outside these additive equations and budgets.
+- Recovery is the frozen ControlConfig: fresh-state Adam20 updates per candidate, parameter
+  rates0.1/0.03/0.03/0.03, betas.9/.999, eps1e-8, means inside canvas, scales[.35,16], RGB[-2,2],
+  terminal state only. Recover no-op identically. Row forward/gradient counters are recovery-only
+  (21/20 formal). Separate fields count2 additional renders per cell (immediate and cold), and6
+  shared renders per case (two target-generation renders, three warmup-fit renders, one proposal
+  base render). Shared gradient work is two warmup backwards and one analytic pixel packet.
+  Completed formal cases therefore invoke351 Gaussian renders; partial-error work is not fully
+  reconstructible from successful rows and is not represented as zero. Per-row total_seconds is
+  complete recovery time, not the entire case pipeline. Perceptual networks are separate work.
+  report proposal_seconds once per case (duplicated row metadata must not be summed15 times).
+- One fresh worker per case, deterministic bank order, two-update condition77 warmup,
+  600second case timeout. Preserve partial successes and explicit errors; any incomplete case
+  prevents a positive whole-atlas verdict. No repeated cells, threshold rescue or in-place repair.
+- Artifacts per cell: original and edited starting field, terminal field, raw base/immediate/final
+  renders and target, exact source/input/config bindings, complete history/progress, target/
+  immediate/final/error images and iteration/time curves. Per-case signed/absolute/Gram/split
+  packet is saved. Native cold-decoded parameters/count must be exact and reference pixel max
+  error<=1e-7. Portable index.html plus tidy JSON/JSONL/CSV and every decision predicate are required.
+
+### Protocol review
+
+#### Reviewer
+codex-overnight-protocol-reviewer
+
+#### Verdict
+Approved
+
+#### Protocol digest
+bfa19a882ccf107d6f82626cf1aee5b232f0e13fbf8c8bd8c39ecfdeba3ecd59
+
+#### Digest scope
+Canonical executable PROTOCOL plus every source hash in SOURCES, including the finite bank,
+recovery fitter, analytic packet, renderer/field, metrics, report and artifact checker.
+Independently recomputed after the joint-case decision and render-ledger corrections.
+
+#### Outcomes accessed
+No
+
+#### Review focus
+Count-funded donor deletion, deterministic ties, frozen predictor approximations, identical
+recovery, saved-state integrity, complete matrix, same-case joint regret gate, and explicit
+shared/proposal/recovery/replay work accounting. Independent focused verification:35 tests
+passed. The reviewer had previously audited HIER-035, but accessed no HIER-033 smoke or formal
+outcomes before this approval. Conclusions remain confined to this finite procedural mixed
+gradient/curvature/residual-birth selector; no unrestricted split theorem, 3D, natural-image,
+speed, or default claim is authorized.

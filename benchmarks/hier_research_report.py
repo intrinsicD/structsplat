@@ -228,6 +228,112 @@ def _check_protocol_identity(root, manifest, problems):
         expected = {f"{f}_s{s}_{method}" for f, s in workloads for method in protocol["arms"]}
         if expected != set(manifest["expected_cells"]) or len(expected) != len(manifest["expected_cells"]):
             problems.append("declared matrix disagrees with frozen convergence protocol")
+    elif manifest.get("task") == "HIER-033":
+        protocol = manifest["protocol"]
+        workloads = [(f, s) for f in protocol["families"] for s in protocol["seeds"]]
+        if manifest.get("diagnostic"):
+            workloads = [("translation", 77)]
+        expected = {f"{f}_s{s}_{action}" for f, s in workloads for action in protocol["actions"]}
+        if expected != set(manifest["expected_cells"]) or len(expected) != len(manifest["expected_cells"]):
+            problems.append("declared matrix disagrees with frozen operator protocol")
+
+
+def _validate_oracle_cell(root, row, protocol, diagnostic, problems):
+    from scripts.check_report_bundle import _finite
+
+    directory = root / "cells" / row["cell_id"]
+    config = json.loads((directory / "config.json").read_text())
+    request = json.loads((directory / "request.json").read_text())
+    if config.get("request") != request or any(
+        row.get(key) != request.get(key) for key in ("cell_id", "family", "seed", "action", "smoke")
+    ) or any(config.get(key) != row.get(key) for key in ("action_family", "donor", "magnitude", "predicted_gain")):
+        problems.append(f"operator row/request/config mismatch: {row['cell_id']}")
+    expected = dict(protocol["recovery"])
+    expected["steps"] = 2 if diagnostic else expected["steps"]
+    if config.get("recovery") != expected:
+        problems.append(f"resolved operator recovery differs: {row['cell_id']}")
+    history = json.loads((directory / "history.json").read_text())
+    trace = history["checkpoints"]
+    horizon = expected["steps"]
+    if (not isinstance(trace, list) or not trace or not _finite(trace) or len(trace) != horizon + 1
+            or [h["iteration"] for h in trace] != list(range(horizon + 1))
+            or history["nominal_iterations"] != horizon
+            or row["iterations_run"] != row["selected_iteration"] or row["iterations_run"] != horizon
+            or row["gradient_evaluations"] != horizon):
+        problems.append(f"operator recovery work mismatch: {row['cell_id']}")
+        return
+    if (any(a["elapsed_seconds"] > b["elapsed_seconds"] for a, b in zip(trace, trace[1:]))
+            or trace[-1]["elapsed_seconds"] > row["total_seconds"] + 1e-6):
+        problems.append(f"operator temporal trace mismatch: {row['cell_id']}")
+    if (row["forward_evaluations"] != horizon + 1
+            or trace[-1]["forward_evaluations"] != row["forward_evaluations"]
+            or [h["gradient_evaluations"] for h in trace] != list(range(horizon + 1))):
+        problems.append(f"operator recovery counters mismatch: {row['cell_id']}")
+    ledger = protocol["render_work_accounting"]
+    extra = sum(ledger["extra_per_cell_renders"].values())
+    if (row.get("counter_scope") != "recovery only"
+            or row.get("extra_cell_render_evaluations") != extra
+            or row.get("total_cell_render_evaluations") != horizon + 1 + extra
+            or row.get("shared_case_render_evaluations") != sum(ledger["shared_per_case_renders"].values())):
+        problems.append(f"operator extra-render accounting mismatch: {row['cell_id']}")
+    target = np.load(directory / "target.npy", allow_pickle=False)
+    for name, key in (("base_reconstruction.npy", "base_objective"),
+                      ("immediate_reconstruction.npy", "immediate_objective"),
+                      ("reconstruction.npy", "terminal_objective")):
+        raw = np.load(directory / name, allow_pickle=False)
+        if (list(target.shape) != protocol["shape"] + [3] or raw.shape != target.shape
+                or not np.isfinite(raw).all() or not np.isfinite(target).all()
+                or np.any(target < 0) or np.any(target > 1)):
+            problems.append(f"invalid operator raw image: {row['cell_id']}")
+        value = float(0.5 * np.square(raw.astype(np.float64) - target.astype(np.float64)).mean())
+        if not math.isclose(value, row[key], rel_tol=1e-6, abs_tol=1e-12):
+            problems.append(f"operator raw objective mismatch: {row['cell_id']}")
+    if (abs(row["psnr"] + 10 * math.log10(max(2 * row["terminal_objective"], 1e-12))) > 1e-6
+            or abs(row["immediate_gain"] - row["base_objective"] + row["immediate_objective"]) > 1e-10
+            or abs(row["recovered_gain"] - row["base_objective"] + row["terminal_objective"]) > 1e-10
+            or abs(trace[-1]["psnr"] - row["psnr"]) > 1e-3):
+        problems.append(f"operator objective/gain/trace mismatch: {row['cell_id']}")
+    if (not math.isclose(trace[0]["objective"], row["immediate_objective"], rel_tol=1e-5, abs_tol=1e-12)
+            or not math.isclose(trace[-1]["objective"], row["terminal_objective"], rel_tol=1e-5, abs_tol=1e-12)):
+        problems.append(f"operator recovery endpoint mismatch: {row['cell_id']}")
+    for name in ("base_field", "input_field", "target"):
+        extension = ".npy" if name == "target" else ".npz"
+        if sha256(directory / (name + extension)) != config[name + "_sha256"]:
+            problems.append(f"operator source binding mismatch: {row['cell_id']}")
+    fields = []
+    n = protocol["n_gaussians"]
+    for name in ("base_field.npz", "input_field.npz", "field.npz"):
+        with np.load(directory / name, allow_pickle=False) as field:
+            values = []
+            for key, shape in (("means", (n, 2)), ("log_scales", (n, 2)),
+                               ("rotations", (n,)), ("colors", (n, 3))):
+                if field[key].shape != shape or not np.isfinite(field[key]).all():
+                    problems.append(f"operator serialized count/field mismatch: {row['cell_id']}")
+                    return
+                values.append(field[key].reshape(n, -1))
+            fields.append(np.concatenate(values, 1))
+    base, edited, _final = fields
+    action = row["action_family"]
+    if row["n_gaussians"] != n or action != row["action"].split("_")[0]:
+        problems.append(f"operator count/action identity mismatch: {row['cell_id']}")
+    if action in ("split", "birth"):
+        donor = row["donor"]
+        if donor not in protocol["donors"] or f"_d{donor}" not in row["action"]:
+            problems.append(f"operator donor identity mismatch: {row['cell_id']}")
+        elif action == "birth":
+            keep = [i for i in range(n) if i != donor]
+            if not np.array_equal(base[keep], edited[keep]):
+                problems.append(f"birth changed non-donor rows: {row['cell_id']}")
+        elif (not np.array_equal(edited[2], base[2 if donor == 1 else 1])
+              or not np.allclose(edited[:2, 5:].sum(0), base[0, 5:], rtol=0, atol=1e-7)
+              or not np.array_equal(edited[:2, 2:5], np.repeat(base[0:1, 2:5], 2, axis=0))):
+            problems.append(f"split failed donor/color/geometry contract: {row['cell_id']}")
+    elif not np.array_equal(base if action == "noop" else base[1:],
+                            edited if action == "noop" else edited[1:]):
+        problems.append(f"continuous edit changed untouched rows: {row['cell_id']}")
+    for key in ("lpips", "cold_render_max_abs", "position_activity", "position_coherence", "proposal_seconds"):
+        if isinstance(row.get(key), bool) or not isinstance(row.get(key), (int, float)) or row[key] < 0:
+            problems.append(f"invalid operator {key}: {row['cell_id']}")
 
 
 def _validate_convergence_cell(root, row, protocol, diagnostic, problems):
@@ -373,6 +479,8 @@ def validate_bundle(root, *, allow_dirty=False, allow_error_cells=False):
                             problems.append(f"invalid {key}: {row['cell_id']}")
                 elif manifest["task"] == "HIER-035":
                     _validate_convergence_cell(root, row, manifest["protocol"], manifest["diagnostic"], problems)
+                elif manifest["task"] == "HIER-033":
+                    _validate_oracle_cell(root, row, manifest["protocol"], manifest["diagnostic"], problems)
             for name in row.get("artifacts", {}).values():
                 if name not in files or (root / name).resolve() not in linked:
                     problems.append(f"unexposed or unhashed artifact: {name}")

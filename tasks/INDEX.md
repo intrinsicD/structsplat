@@ -126,6 +126,7 @@ replay-valid; do not rewrite those task bytes merely to duplicate this table.
 | HIER-033 | Pixel-gradient operator oracle | in-progress — analytic reference and finite-action protocol in preparation; no formal result | HIER-031/032, ADR-0006 |
 | HIER-034 | Fixed-geometry basis cache | in-progress — bounded cache and paired projection protocol in preparation; defaults unchanged | HIER-031/032/014, ADR-0006 |
 | HIER-035 | Additive convergence controls | in-progress — continuous optimizer comparisons in preparation; no formal result | HIER-033, ADR-0006 |
+| HIER-036 | Dense cross-Gaussian coupling oracle | in-progress — matched coupling and trust-cap factorial design; no formal result | HIER-033/035, ADR-0006 |
 | BENCH-021 | Additive convergence portfolio | todo — successive-halving composition gate for initializer/loss/stage and FIT-044/045/046/047 | BENCH-020, INIT-010, FIT-044/045/046/047/048/049, BENCH-002/004 |
 | COMP-013 | Observation Field V2 codec | todo — complete bytes, target-rate control, cold decode/query, strict versioning | CORE-013, BENCH-020, COMP-002/004/008/009, BENCH-002 |
 | PORT-006 | Additive end-to-end acceleration | todo — reference parity plus representative conversion speed, not kernel timing alone | BENCH-020/021, FIT-046/047, ADR-0011/0024 |
