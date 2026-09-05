@@ -169,16 +169,19 @@ preference over strongest Adam. Near-ceiling overlap/easy-fixture gains are nume
 The projected-gradient rescue design remains unrun. The task-scoped evidence packager preserves
 an explicitly partial, hash-bound archive without modifying any complete original report.
 
-The [code-driven follow-up](research/2026-09-05-code-driven-portfolio.md) proposes two bounded,
+The completed [code-driven follow-up](research/2026-09-05-code-driven-findings.md) contains three
 default-off investigations: FIT-050 tests a fixed-geometry normalized color ray with actual-render
 revalidation; PORT-007 tests same-call coverage and tail-statistic reuse in quality evaluation.
 FIT-051's separate `actual_color_ray` module evaluates every trial with the maintained renderer,
 including streaming gradient/Jacobi/CG proposals and a native color VJP. Streaming proposals are
 explicitly approximate across backends; only actual images enter the unchanged reference gate.
 The native VJP requests cloned color coefficients only, but charges the entire existing backward
-invocation; it is not a specialized kernel. The task files own the prospective protocols. None
-changes the normalized equation, training backward, maintained schedule, or default policy;
-results and promotion remain pending.
+invocation; it is not a specialized kernel. Historical task revisions own the frozen protocols.
+All214 cells and independent audits are complete: actual-render CG backtracking yields small
+gains, while component reuse timing does not survive exact-gate and pipeline A/A requirements.
+ADR-0034/C73–C75 retain only these bounded observations. No normalized equation, training
+backward, maintained schedule or default changes. A post-run validator cache reuses immutable
+mask geometry within one check, never raw images, quality vectors or gate decisions.
 
 The frozen C0001/C0004 diagnostic rejects the full composition. Projection alone is safe under its
 frozen SSE/maximum-normalized-violation transaction but adds only `+0.0109/+0.0044 dB`. The

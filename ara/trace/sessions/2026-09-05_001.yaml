@@ -2,9 +2,9 @@ session:
   id: "2026-09-05_001"
   date: "2026-09-05"
   started: "2026-09-05T01:22+02:00"
-  last_turn: "2026-09-05T05:55+02:00"
-  turn_count: 1
-  summary: "Four simpler-first research routes produced five independently audited matrices; numerical-polish and rollback caveats prevent default promotion, and the simple gradient-rescue design remains unrun."
+  last_turn: "2026-09-05T12:43+02:00"
+  turn_count: 2
+  summary: "Five overnight matrices plus three code-driven studies are independently audited. The214 new cells show small actual-render backtracking progress and component timing observations, but all new utility/promotion gates fail; defaults stay unchanged."
 
 events_logged:
   - {turn: 1, type: decision, id: N314, routing: direct, provenance: user, summary: "Authorized overnight literature, multiple designs, implementation and experiments with a simpler-first preference."}
@@ -24,6 +24,24 @@ events_logged:
   - {turn: 1, type: claim, id: O181, routing: crystallized, provenance: ai-suggested, summary: "C72 records cache parity failures, rollback qualifications and descriptive timing via artifact commitment."}
   - {turn: 1, type: heuristic, id: O182, routing: staged, provenance: ai-suggested, summary: "Keep projected-gradient rescue untested; no executable approval or result exists."}
   - {turn: 1, type: observation, id: O183, routing: staged, provenance: ai-suggested, summary: "Keep unimplemented portfolio directions and novelty judgments tentative."}
+
+  - {turn: 2, type: decision, id: N324, routing: direct, provenance: user, summary: "Authorize original code-derived ideas, implementation and experiments"}
+  - {turn: 2, type: decision, id: N325, routing: direct, provenance: ai-executed, summary: "Select simpler color transactions and same-call quality reuse"}
+  - {turn: 2, type: experiment, id: N326, routing: direct, provenance: ai-executed, summary: "Complete the 48-cell normalized color-ray assay"}
+  - {turn: 2, type: dead_end, id: N327, routing: direct, provenance: ai-executed, summary: "Reject useful one-transaction FIT-050 improvement in this implementation"}
+  - {turn: 2, type: experiment, id: N328, routing: direct, provenance: ai-executed, summary: "Complete and independently audit the 110-cell quality-reuse factorial"}
+  - {turn: 2, type: pivot, id: N329, routing: direct, provenance: ai-executed, summary: "Use actual-render trials and a native color-gradient control"}
+  - {turn: 2, type: decision, id: N330, routing: direct, provenance: ai-executed, summary: "Freeze canonical CPU reporting after pre-run backend mismatch"}
+  - {turn: 2, type: experiment, id: N331, routing: direct, provenance: ai-executed, summary: "Complete the 56-cell actual-render color follow-up"}
+  - {turn: 2, type: decision, id: N332, routing: direct, provenance: ai-executed, summary: "Retain experimental tools without promoting any code-driven candidate"}
+  - {turn: 2, type: dead_end, id: N333, routing: direct, provenance: ai-executed, summary: "Reject a drop-in or end-to-end acceleration claim for PORT-007"}
+  - {turn: 2, type: dead_end, id: N334, routing: direct, provenance: ai-executed, summary: "Reject useful-scale one-transaction actual-render refinement"}
+  - {turn: 2, type: question, id: N335, routing: direct, provenance: ai-suggested, summary: "Can null-gain stability and rejected work be improved without weakening safety?"}
+  - {turn: 2, type: claim, id: O184, routing: crystallized, provenance: ai-suggested, summary: "C73 bounds the negative FIT-050 utility and pre-direction compatibility obstruction."}
+  - {turn: 2, type: claim, id: O185, routing: crystallized, provenance: ai-suggested, summary: "C74 preserves descriptive component ratios and failed parity/pipeline gates."}
+  - {turn: 2, type: claim, id: O186, routing: crystallized, provenance: ai-suggested, summary: "C75 records small actual-render backtracking progress without useful-scale promotion."}
+  - {turn: 2, type: heuristic, id: O187, routing: staged, provenance: ai-suggested, summary: "Keep a baseline stability/rejected-work diagnostic as an unrun suggestion."}
+  - {turn: 2, type: observation, id: O188, routing: staged, provenance: ai-suggested, summary: "Keep broader designs and novelty judgments tentative; old HIER rescue remains unrun."}
 
 ai_actions:
   - turn: 1
@@ -56,12 +74,40 @@ ai_actions:
     provenance: ai-executed
     files_changed: ["tasks/done/HIER-033-pixel-gradient-operator-oracle.md", "tasks/done/HIER-034-fixed-geometry-basis-cache.md", "tasks/done/HIER-035-additive-convergence-controls.md", "tasks/done/HIER-036-dense-coupling-oracle.md", "tasks/INDEX.md", "tasks/SESSION-BRIEF.md"]
 
+  - turn: 2
+    action: "Inspected code in independent lanes, audited primary prior art and froze simpler color-ray and same-call quality-reuse protocols before formal outcomes."
+    provenance: ai-executed
+    files_changed: ["docs/research/2026-09-05-code-driven-portfolio.md", "src/structsplat/color_ray.py", "src/structsplat/safe_schedule.py", "src/structsplat/cuda_render.py"]
+  - turn: 2
+    action: "Executed FIT-050 and PORT-007 from clean e2bf6ae; isolated a fresh actual-render/native-gradient follow-up, fixed canonical reporting before outcomes, then executed all56 FIT-051 cells from clean8de8004."
+    provenance: ai-executed
+    files_changed: ["src/structsplat/actual_color_ray.py", "scripts/experiments/fit050_color_ray.py", "scripts/experiments/port007_quality_reuse.py", "scripts/experiments/fit051_actual_color_ray.py", "benchmarks/fit051_controls.py"]
+  - turn: 2
+    action: "Obtained distinct full source/raw/field/metric/gate/work CPU and GPU audits for all214 cells; original and geometry-cached PORT checkers both completed without allowances. Browser-opened all complete reports and clicked native/raw links."
+    provenance: ai-executed
+    files_changed: ["ara/evidence/code-driven-method-research-2026-09-05/run.md", "benchmarks/hier_research_report.py", "tests/test_port_quality_replay_cache.py"]
+  - turn: 2
+    action: "Packaged a hash-checked explicitly partial214-row archive and byte-preserved browser evidence. A corrected snapshot-omission wording generated a new archive; the earlier package and its QA receipt remain recoverable, original reports unchanged."
+    provenance: ai-executed
+    files_changed: ["scripts/experiments/overnight_evidence_archive.py", "scripts/experiments/code_driven_archive_qa.py", "ara/evidence/code-driven-method-research-2026-09-05/archive/", "ara/evidence/code-driven-method-research-2026-09-05/browser/"]
+  - turn: 2
+    action: "Recorded narrow findings and ADR-0034 without promoting defaults. Acknowledged and explicitly retired DOCS-004's missed cross-task deadline, leaving all unimplemented style/correctness-triage stages as backlog and verification unchanged; this is AI-authored workflow disposition, not a user waiver."
+    provenance: ai-executed
+    files_changed: ["docs/adr/0034-keep-code-driven-refinements-experimental.md", "docs/research/2026-09-05-code-driven-findings.md", "tasks/DOCS-004-lint-format-ratchet.md", "README.md", "docs/architecture.md"]
+  - turn: 2
+    action: "Recorded Accepted distinct outcome verdicts and retired FIT-050/PORT-007/FIT-051 with source-bound receipts; synchronized Index/brief. Final integrated tree048423f25fa1f9ead882698de889d4e4e5cbb2b8 was independently Accepted; full portable gate2447passed and allstructural checks pass, with74 focused final-code passes and all3 historical identities checked. Only disclosed review/verification metadata follows that verdict before local fast-forward integration."
+    provenance: ai-executed
+    files_changed: ["tasks/done/FIT-050-safe-color-ray.md", "tasks/done/PORT-007-joint-render-coverage.md", "tasks/done/FIT-051-actual-render-color-ray.md", "tasks/INDEX.md", "tasks/SESSION-BRIEF.md"]
+
 claims_touched:
   - {id: C68, action: crystallized, turn: 1}
   - {id: C69, action: crystallized, turn: 1}
   - {id: C70, action: crystallized, turn: 1}
   - {id: C71, action: crystallized, turn: 1}
   - {id: C72, action: crystallized, turn: 1}
+  - {id: C73, action: crystallized, turn: 2}
+  - {id: C74, action: crystallized, turn: 2}
+  - {id: C75, action: crystallized, turn: 2}
 
 key_context:
   - turn: 1
@@ -71,7 +117,15 @@ key_context:
   - turn: 1
     excerpt: "No foreign process was stopped; no maintained default, held-out access, selective repeat, original-bundle repair, push or merge was performed."
 
+  - turn: 2
+    excerpt: "User: create your own ideas, look at the code and identify where we can improve, design the experiments and run them."
+  - turn: 2
+    excerpt: "All214 new cells completed and every original report checker passed. Small actualCG backtracking gains miss utility, while component timing does not establish a validated pipeline speedup."
+  - turn: 2
+    excerpt: "Original negative outcomes and reporting contracts are preserved; no threshold rescue, held-out access, default change or foreign-process termination occurred."
+
 open_threads:
+  - "Isolate null-gain decision sensitivity and rejected-trial work in a new bounded diagnostic before selecting a remedy or another pipeline speed claim."
   - "Create and prospectively approve a new task before implementing the unrun GN6-plus-gradient6 versus GN12 texture rescue design."
   - "Diagnose baseline coefficient-solver repeat sensitivity before another cache assay; prospectively distinguish accepted-update utility from rollback timing."
   - "Keep broader operator routing and downstream3D transfer open: HIER-033's finite mixed selector failed and does not settle every gradient controller."
@@ -80,5 +134,6 @@ open_threads:
   - "Prioritize only a bounded next test among the unrun representability, donor-recipient, image-space and scheduling proposals; no established novelty claim exists."
 
 ai_suggestions_pending:
+  - "Consider the baseline stability/rejected-work diagnostic; cause and safe remedy remain unproved and no successor protocol is approved."
   - "Test the simplest projected-gradient rescue with complete trial work and separate exposure strata before adding optimizer machinery."
   - "Treat the broader research portfolio as a hypothesis menu, not a ranked set of demonstrated improvements."

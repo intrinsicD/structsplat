@@ -1585,3 +1585,48 @@ reference renderer is memory-bound. See `ara/evidence/core005-render-checkpoint-
 - **Dependencies**: []
 - **Tags**: basis-cache, pcg, rollback, reproducibility, local-parity, contention, no-default
 - **From staging**: O181
+
+## C73: The normalized color-ray assay is utility-negative and compatibility-limited
+
+- **Statement**: In FIT-050's48-cell exposed COCO4x2/max-side512/N2000 protocol, every non-noop utility gate fails. Twenty-one of24 ray transactions abort the frozen2e-5 parent-basis compatibility check before any direction or fraction is evaluated; legacy CG gains only0.004216dB median over four image-level seed means. This establishes a limitation of this tested implementation, not general ineffectiveness of line search, gradients or Jacobi scaling.
+- **Status**: supported bounded negative utility and compatibility result
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: Independent source-bound reconstruction changes the abort counts, timing of preflight versus proposal, utility predicates, raw/field replay or parent pairing.
+- **Proof**: [`ara/evidence/code-driven-method-research-2026-09-05/run.md`,
+  `ara/evidence/code-driven-method-research-2026-09-05/archive/fit050/decision.json`,
+  `ara/evidence/code-driven-method-research-2026-09-05/archive/archive_manifest.json`,
+  `docs/adr/0034-keep-code-driven-refinements-experimental.md`]
+- **Dependencies**: []
+- **Tags**: normalized-color, compatibility, fixed-geometry, utility, no-default
+- **From staging**: O184
+
+## C74: Same-call coverage reuse has component timing value but fails the frozen interchangeability gates
+
+- **Statement**: PORT-007's110-cell development factorial observes median image-level component ratios10.2484x coverage,1.00283x shared tail and10.4008x both. Every frozen primary component/pipeline promotion gate fails. Null-gain reasons flip in legacy A/B20of160 comparisons and all six legacy pipeline trajectories differ; four timing and three quality pairs fail. Candidate RGB differences lie within observed legacy repeat variability. These component-only descriptive observations establish neither a validated execution-equivalent pipeline speedup nor a reuse-specific cause of divergence.
+- **Status**: supported bounded negative interchangeability with descriptive component observations
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: All raw quality/reason/coverage, A/A trajectory and work predicates or image-level timing ratios do not reproduce from the complete frozen artifact matrix.
+- **Proof**: [`ara/evidence/code-driven-method-research-2026-09-05/run.md`,
+  `ara/evidence/code-driven-method-research-2026-09-05/archive/port007/summary.json`,
+  `ara/evidence/code-driven-method-research-2026-09-05/archive/archive_manifest.json`,
+  `docs/adr/0034-keep-code-driven-refinements-experimental.md`]
+- **Dependencies**: []
+- **Tags**: coverage, tail-statistics, common-subexpression, baseline-variability, timing-scope, no-default
+- **From staging**: O185
+
+## C75: Actual-render CG backtracking makes small safe progress but misses useful-scale improvement
+
+- **Statement**: FIT-051's56-cell exposed COCO4x2 follow-up selects all eight actualCG parents, including three half-step and one1/16-step rescues after within-transaction full-step CVaR rejection. Its median image-level PSNR gain0.005293dB misses the frozen0.1dB utility threshold; every non-noop arm fails utility. Native and streaming gradients choose the same7of8 fractions with essentially identical0.001220dB medians. Separately executed CG directions are not bit-identical, and accepted CVaR may increase within existing numerical slack. This is small tolerance-safe progress, not established perceptual utility, native-gradient superiority, speed or generalization.
+- **Status**: supported bounded small-progress and negative-utility result
+- **Provenance**: ai-suggested
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: Recomputation changes actual full-versus-fraction trial reasons, selected replay, utility gates, native/streaming direction comparisons, CPU-scored metrics, work accounting or protected-field invariants.
+- **Proof**: [`ara/evidence/code-driven-method-research-2026-09-05/run.md`,
+  `ara/evidence/code-driven-method-research-2026-09-05/archive/fit051/decision.json`,
+  `ara/evidence/code-driven-method-research-2026-09-05/archive/archive_manifest.json`,
+  `docs/adr/0034-keep-code-driven-refinements-experimental.md`]
+- **Dependencies**: []
+- **Tags**: actual-render, cg, backtracking, native-vjp, numerical-slack, utility, no-default
+- **From staging**: O186

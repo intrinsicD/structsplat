@@ -439,3 +439,10 @@ paths were the live source location when the historical runs were produced.
   No maintained default changes. Evidence and audit:
   `ara/evidence/overnight-method-research-2026-09-05/run.md`; explicitly partial portable archive:
   `ara/evidence/overnight-method-research-2026-09-05/archive/index.html`.
+- `code-driven-method-research-2026-09-05`: Three separately frozen clean-source studies,
+  all214 cells and distinct raw CPU/GPU/work audits complete. Color-ray compatibility limits,
+  small actual-render backtracking gains and descriptive coverage component timings do not pass
+  the frozen utility/promotion gates. Baseline null/pipeline repeat variability remains unresolved;
+  defaults unchanged (ADR-0034, C73–C75). Full scope and audit:
+  `ara/evidence/code-driven-method-research-2026-09-05/run.md`; partial archive and browser receipts
+  are siblings there, with exact omissions and original source/protocol bindings.

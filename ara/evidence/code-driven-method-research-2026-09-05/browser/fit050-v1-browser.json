@@ -1,0 +1,21 @@
+{
+  "report": "/home/alex/Documents/structsplat/results/code-driven-2026-09-05/fit050-v1/index.html",
+  "overview": {
+    "title": "FIT-050 — Safeguarded normalized color rays",
+    "rows": 48,
+    "sections": 48,
+    "images": 192,
+    "broken": [],
+    "links": 1062
+  },
+  "native": {
+    "url": "file:///home/alex/Documents/structsplat/results/code-driven-2026-09-05/fit050-v1/cells/coco000000000009_s0_noop/reconstruction.png",
+    "width": 512,
+    "height": 384
+  },
+  "raw": {
+    "url": "file:///home/alex/Documents/structsplat/results/code-driven-2026-09-05/fit050-v1/metrics.json",
+    "length": 180824,
+    "prefix": "[\n  {\n    \"accepted\": false,\n    \"artifacts\": {\n      \"config.json\": \"cells/coco000000000009_s0_noop/config.json\",\n     "
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "adam_fit": {},
+  "cold_quality": {
+    "boundary_hole_fraction": 0.0,
+    "boundary_mse": 0.0004954320029355586,
+    "boundary_psnr_db": 33.05015943149036,
+    "cvar99_mse": 0.017662735655903816,
+    "finite": true,
+    "foreground_mse": 0.0004954320029355586,
+    "foreground_psnr_db": 33.05015943149036,
+    "interior_hole_fraction": 0.0014105902519077063,
+    "n_gaussians": 2000,
+    "outside_coverage_max": 0.0,
+    "outside_max_abs": 0.0,
+    "p99_mse": 0.009198915213346481
+  },
+  "parent_history": "../../parents/coco000000000030_s1/history.json",
+  "reporting_quality": {
+    "boundary_hole_fraction": 0.0,
+    "boundary_mse": 0.0004954320029355586,
+    "boundary_psnr_db": 33.05015943149036,
+    "cvar99_mse": 0.017662737518548965,
+    "finite": true,
+    "foreground_mse": 0.0004954320029355586,
+    "foreground_psnr_db": 33.05015943149036,
+    "interior_hole_fraction": 0.0014105902519077063,
+    "n_gaussians": 2000,
+    "outside_coverage_max": 0.0,
+    "outside_max_abs": 0.0,
+    "p99_mse": 0.00919891893863678
+  },
+  "reporting_work": {
+    "coverage_passes": 2,
+    "gaussian_renders": 2,
+    "quality_evaluations": 2
+  },
+  "transaction": {
+    "accepted": true,
+    "arm": "legacy_cg32",
+    "candidate_metrics": {
+      "boundary_hole_fraction": 0.0,
+      "boundary_mse": 0.0004954320029355586,
+      "boundary_psnr_db": 33.05015943149036,
+      "cvar99_mse": 0.017662737518548965,
+      "finite": true,
+      "foreground_mse": 0.0004954320029355586,
+      "foreground_psnr_db": 33.05015943149036,
+      "interior_hole_fraction": 0.0014105902519077063,
+      "n_gaussians": 2000,
+      "outside_coverage_max": 0.0,
+      "outside_max_abs": 0.0,
+      "p99_mse": 0.00919891893863678
+    },
+    "candidate_reasons": [],
+    "coefficients_changed": true,
+    "counts": {
+      "basis_apply_calls": 33,
+      "basis_denominator_passes": 1,
+      "basis_transpose_calls": 34,
+      "gaussian_renders": 2,
+      "gradient_evaluations": 0,
+      "quality_evaluations": 2,
+      "raw_coverage_passes": 2
+    },
+    "foreground_mse_improved": true,
+    "legacy_cg": {
+      "basis_apply_calls": 33,
+      "basis_transpose_calls": 34,
+      "denominator_calls": 1,
+      "iterations": 32,
+      "normal_matvec_calls": 33,
+      "relative_residual": 4.2469589971005917e-05
+    },
+    "noncolor_changed_fields": [],
+    "parent_metrics": {
+      "boundary_hole_fraction": 0.0,
+      "boundary_mse": 0.0004975086194463074,
+      "boundary_psnr_db": 33.031993906056115,
+      "cvar99_mse": 0.017692137509584427,
+      "finite": true,
+      "foreground_mse": 0.0004975086194463074,
+      "foreground_psnr_db": 33.031993906056115,
+      "interior_hole_fraction": 0.0014105902519077063,
+      "n_gaussians": 2000,
+      "outside_coverage_max": 0.0,
+      "outside_max_abs": 0.0,
+      "p99_mse": 0.009203941561281681
+    },
+    "quality_coverage_backend": "reference",
+    "quality_tail_backend": "reference",
+    "rollback_reason": null,
+    "selected_alpha": 1.0,
+    "selected_fraction": 1.0,
+    "selected_metrics": {
+      "boundary_hole_fraction": 0.0,
+      "boundary_mse": 0.0004954320029355586,
+      "boundary_psnr_db": 33.05015943149036,
+      "cvar99_mse": 0.017662737518548965,
+      "finite": true,
+      "foreground_mse": 0.0004954320029355586,
+      "foreground_psnr_db": 33.05015943149036,
+      "interior_hole_fraction": 0.0014105902519077063,
+      "n_gaussians": 2000,
+      "outside_coverage_max": 0.0,
+      "outside_max_abs": 0.0,
+      "p99_mse": 0.00919891893863678
+    },
+    "transaction_seconds": 2.0973065759972087,
+    "trials": []
+  }
+}

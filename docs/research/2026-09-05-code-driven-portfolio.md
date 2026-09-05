@@ -1,5 +1,11 @@
 # Research Portfolio: code-driven convergence and evaluation cost
 
+Post-run disposition: the [completed findings](2026-09-05-code-driven-findings.md) record
+FIT-050/PORT-007 plus the separately frozen FIT-051 follow-up, all214 cells and independent
+audits. Every utility/promotion gate is negative; small backtracking and component timing
+observations remain bounded. Preserve the prospective designs below as design history, not
+as current unrun status. Other portfolio proposals remain untested; no default or novelty claim.
+
 Repository: StructSplat, normalized constant-color 2D fields. Cutoff: 2026-09-05.
 Scope: hypotheses and experiment designs, not outcome or novelty claims. Two bounded tasks
 are selected: FIT-050 and PORT-007. No new renderer equation, default, external compute purchase,

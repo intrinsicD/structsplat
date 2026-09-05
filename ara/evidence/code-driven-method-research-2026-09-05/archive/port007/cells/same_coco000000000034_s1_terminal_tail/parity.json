@@ -1,0 +1,514 @@
+{
+  "checks": [
+    {
+      "changed_decision_equal": true,
+      "finite": true,
+      "hole_mask_equal": true,
+      "max_replay_rgb_error": 5.364418029785156e-07,
+      "max_rgb_error": 4.172325134277344e-07,
+      "null_decision_equal": true,
+      "pass": true,
+      "round": 0
+    },
+    {
+      "changed_decision_equal": true,
+      "finite": true,
+      "hole_mask_equal": true,
+      "max_replay_rgb_error": 3.5762786865234375e-07,
+      "max_rgb_error": 4.172325134277344e-07,
+      "null_decision_equal": true,
+      "pass": true,
+      "round": 1
+    },
+    {
+      "changed_decision_equal": true,
+      "finite": true,
+      "hole_mask_equal": true,
+      "max_replay_rgb_error": 4.172325134277344e-07,
+      "max_rgb_error": 3.5762786865234375e-07,
+      "null_decision_equal": false,
+      "pass": false,
+      "round": 2
+    },
+    {
+      "changed_decision_equal": true,
+      "finite": true,
+      "hole_mask_equal": true,
+      "max_replay_rgb_error": 4.172325134277344e-07,
+      "max_rgb_error": 3.5762786865234375e-07,
+      "null_decision_equal": true,
+      "pass": true,
+      "round": 3
+    },
+    {
+      "changed_decision_equal": true,
+      "finite": true,
+      "hole_mask_equal": true,
+      "max_replay_rgb_error": 2.980232238769531e-07,
+      "max_rgb_error": 3.5762786865234375e-07,
+      "null_decision_equal": true,
+      "pass": true,
+      "round": 4
+    },
+    {
+      "changed_decision_equal": true,
+      "finite": true,
+      "hole_mask_equal": true,
+      "max_replay_rgb_error": 3.5762786865234375e-07,
+      "max_rgb_error": 3.5762786865234375e-07,
+      "null_decision_equal": true,
+      "pass": true,
+      "round": 5
+    },
+    {
+      "changed_decision_equal": true,
+      "finite": true,
+      "hole_mask_equal": true,
+      "max_replay_rgb_error": 3.5762786865234375e-07,
+      "max_rgb_error": 3.5762786865234375e-07,
+      "null_decision_equal": true,
+      "pass": true,
+      "round": 6
+    },
+    {
+      "changed_decision_equal": true,
+      "finite": true,
+      "hole_mask_equal": true,
+      "max_replay_rgb_error": 3.5762786865234375e-07,
+      "max_rgb_error": 3.5762786865234375e-07,
+      "null_decision_equal": true,
+      "pass": true,
+      "round": 7
+    },
+    {
+      "changed_decision_equal": true,
+      "finite": true,
+      "hole_mask_equal": true,
+      "max_replay_rgb_error": 2.980232238769531e-07,
+      "max_rgb_error": 3.5762786865234375e-07,
+      "null_decision_equal": false,
+      "pass": false,
+      "round": 8
+    },
+    {
+      "changed_decision_equal": true,
+      "finite": true,
+      "hole_mask_equal": true,
+      "max_replay_rgb_error": 3.5762786865234375e-07,
+      "max_rgb_error": 3.5762786865234375e-07,
+      "null_decision_equal": true,
+      "pass": true,
+      "round": 9
+    }
+  ],
+  "decisions": [
+    {
+      "changed": {
+        "accepted": false,
+        "reasons": [
+          "interior_holes_regressed"
+        ]
+      },
+      "changed_control": {
+        "accepted": false,
+        "reasons": [
+          "interior_holes_regressed"
+        ]
+      },
+      "changed_direction": "initial_to_terminal",
+      "null": {
+        "accepted": false,
+        "reasons": [
+          "no_material_gain"
+        ]
+      },
+      "null_control": {
+        "accepted": false,
+        "reasons": [
+          "no_material_gain"
+        ]
+      },
+      "round": 0
+    },
+    {
+      "changed": {
+        "accepted": false,
+        "reasons": [
+          "interior_holes_regressed"
+        ]
+      },
+      "changed_control": {
+        "accepted": false,
+        "reasons": [
+          "interior_holes_regressed"
+        ]
+      },
+      "changed_direction": "initial_to_terminal",
+      "null": {
+        "accepted": false,
+        "reasons": [
+          "no_material_gain"
+        ]
+      },
+      "null_control": {
+        "accepted": false,
+        "reasons": [
+          "no_material_gain"
+        ]
+      },
+      "round": 1
+    },
+    {
+      "changed": {
+        "accepted": false,
+        "reasons": [
+          "interior_holes_regressed"
+        ]
+      },
+      "changed_control": {
+        "accepted": false,
+        "reasons": [
+          "interior_holes_regressed"
+        ]
+      },
+      "changed_direction": "initial_to_terminal",
+      "null": {
+        "accepted": true,
+        "reasons": []
+      },
+      "null_control": {
+        "accepted": false,
+        "reasons": [
+          "no_material_gain"
+        ]
+      },
+      "round": 2
+    },
+    {
+      "changed": {
+        "accepted": false,
+        "reasons": [
+          "interior_holes_regressed"
+        ]
+      },
+      "changed_control": {
+        "accepted": false,
+        "reasons": [
+          "interior_holes_regressed"
+        ]
+      },
+      "changed_direction": "initial_to_terminal",
+      "null": {
+        "accepted": false,
+        "reasons": [
+          "no_material_gain"
+        ]
+      },
+      "null_control": {
+        "accepted": false,
+        "reasons": [
+          "no_material_gain"
+        ]
+      },
+      "round": 3
+    },
+    {
+      "changed": {
+        "accepted": false,
+        "reasons": [
+          "interior_holes_regressed"
+        ]
+      },
+      "changed_control": {
+        "accepted": false,
+        "reasons": [
+          "interior_holes_regressed"
+        ]
+      },
+      "changed_direction": "initial_to_terminal",
+      "null": {
+        "accepted": false,
+        "reasons": [
+          "no_material_gain"
+        ]
+      },
+      "null_control": {
+        "accepted": false,
+        "reasons": [
+          "no_material_gain"
+        ]
+      },
+      "round": 4
+    },
+    {
+      "changed": {
+        "accepted": false,
+        "reasons": [
+          "interior_holes_regressed"
+        ]
+      },
+      "changed_control": {
+        "accepted": false,
+        "reasons": [
+          "interior_holes_regressed"
+        ]
+      },
+      "changed_direction": "initial_to_terminal",
+      "null": {
+        "accepted": false,
+        "reasons": [
+          "no_material_gain"
+        ]
+      },
+      "null_control": {
+        "accepted": false,
+        "reasons": [
+          "no_material_gain"
+        ]
+      },
+      "round": 5
+    },
+    {
+      "changed": {
+        "accepted": false,
+        "reasons": [
+          "interior_holes_regressed"
+        ]
+      },
+      "changed_control": {
+        "accepted": false,
+        "reasons": [
+          "interior_holes_regressed"
+        ]
+      },
+      "changed_direction": "initial_to_terminal",
+      "null": {
+        "accepted": false,
+        "reasons": [
+          "no_material_gain"
+        ]
+      },
+      "null_control": {
+        "accepted": false,
+        "reasons": [
+          "no_material_gain"
+        ]
+      },
+      "round": 6
+    },
+    {
+      "changed": {
+        "accepted": false,
+        "reasons": [
+          "interior_holes_regressed"
+        ]
+      },
+      "changed_control": {
+        "accepted": false,
+        "reasons": [
+          "interior_holes_regressed"
+        ]
+      },
+      "changed_direction": "initial_to_terminal",
+      "null": {
+        "accepted": false,
+        "reasons": [
+          "no_material_gain"
+        ]
+      },
+      "null_control": {
+        "accepted": false,
+        "reasons": [
+          "no_material_gain"
+        ]
+      },
+      "round": 7
+    },
+    {
+      "changed": {
+        "accepted": false,
+        "reasons": [
+          "interior_holes_regressed"
+        ]
+      },
+      "changed_control": {
+        "accepted": false,
+        "reasons": [
+          "interior_holes_regressed"
+        ]
+      },
+      "changed_direction": "initial_to_terminal",
+      "null": {
+        "accepted": true,
+        "reasons": []
+      },
+      "null_control": {
+        "accepted": false,
+        "reasons": [
+          "no_material_gain"
+        ]
+      },
+      "round": 8
+    },
+    {
+      "changed": {
+        "accepted": false,
+        "reasons": [
+          "interior_holes_regressed"
+        ]
+      },
+      "changed_control": {
+        "accepted": false,
+        "reasons": [
+          "interior_holes_regressed"
+        ]
+      },
+      "changed_direction": "initial_to_terminal",
+      "null": {
+        "accepted": false,
+        "reasons": [
+          "no_material_gain"
+        ]
+      },
+      "null_control": {
+        "accepted": false,
+        "reasons": [
+          "no_material_gain"
+        ]
+      },
+      "round": 9
+    }
+  ],
+  "quality_deltas": [
+    {
+      "boundary_hole_fraction": 0.0,
+      "boundary_mse": 0.0,
+      "boundary_psnr_db": 0.0,
+      "cvar99_mse": 1.4901161193847656e-08,
+      "foreground_mse": 0.0,
+      "foreground_psnr_db": 0.0,
+      "interior_hole_fraction": 0.0,
+      "n_gaussians": 0,
+      "outside_coverage_max": 0.0,
+      "outside_max_abs": 0.0,
+      "p99_mse": -3.725290298461914e-08
+    },
+    {
+      "boundary_hole_fraction": 0.0,
+      "boundary_mse": 0.0,
+      "boundary_psnr_db": 0.0,
+      "cvar99_mse": 1.4901161193847656e-08,
+      "foreground_mse": 0.0,
+      "foreground_psnr_db": 0.0,
+      "interior_hole_fraction": 0.0,
+      "n_gaussians": 0,
+      "outside_coverage_max": 0.0,
+      "outside_max_abs": 0.0,
+      "p99_mse": -3.725290298461914e-08
+    },
+    {
+      "boundary_hole_fraction": 0.0,
+      "boundary_mse": 0.0,
+      "boundary_psnr_db": 0.0,
+      "cvar99_mse": -1.4901161193847656e-08,
+      "foreground_mse": 0.0,
+      "foreground_psnr_db": 0.0,
+      "interior_hole_fraction": 0.0,
+      "n_gaussians": 0,
+      "outside_coverage_max": 0.0,
+      "outside_max_abs": 0.0,
+      "p99_mse": -7.450580596923828e-09
+    },
+    {
+      "boundary_hole_fraction": 0.0,
+      "boundary_mse": 0.0,
+      "boundary_psnr_db": 0.0,
+      "cvar99_mse": 0.0,
+      "foreground_mse": 0.0,
+      "foreground_psnr_db": 0.0,
+      "interior_hole_fraction": 0.0,
+      "n_gaussians": 0,
+      "outside_coverage_max": 0.0,
+      "outside_max_abs": 0.0,
+      "p99_mse": -1.4901161193847656e-08
+    },
+    {
+      "boundary_hole_fraction": 0.0,
+      "boundary_mse": 0.0,
+      "boundary_psnr_db": 0.0,
+      "cvar99_mse": 1.4901161193847656e-08,
+      "foreground_mse": 0.0,
+      "foreground_psnr_db": 0.0,
+      "interior_hole_fraction": 0.0,
+      "n_gaussians": 0,
+      "outside_coverage_max": 0.0,
+      "outside_max_abs": 0.0,
+      "p99_mse": 4.470348358154297e-08
+    },
+    {
+      "boundary_hole_fraction": 0.0,
+      "boundary_mse": 0.0,
+      "boundary_psnr_db": 0.0,
+      "cvar99_mse": 1.4901161193847656e-08,
+      "foreground_mse": 0.0,
+      "foreground_psnr_db": 0.0,
+      "interior_hole_fraction": 0.0,
+      "n_gaussians": 0,
+      "outside_coverage_max": 0.0,
+      "outside_max_abs": 0.0,
+      "p99_mse": -7.450580596923828e-09
+    },
+    {
+      "boundary_hole_fraction": 0.0,
+      "boundary_mse": 0.0,
+      "boundary_psnr_db": 0.0,
+      "cvar99_mse": 0.0,
+      "foreground_mse": 0.0,
+      "foreground_psnr_db": 0.0,
+      "interior_hole_fraction": 0.0,
+      "n_gaussians": 0,
+      "outside_coverage_max": 0.0,
+      "outside_max_abs": 0.0,
+      "p99_mse": 1.4901161193847656e-08
+    },
+    {
+      "boundary_hole_fraction": 0.0,
+      "boundary_mse": 0.0,
+      "boundary_psnr_db": 0.0,
+      "cvar99_mse": 0.0,
+      "foreground_mse": 0.0,
+      "foreground_psnr_db": 0.0,
+      "interior_hole_fraction": 0.0,
+      "n_gaussians": 0,
+      "outside_coverage_max": 0.0,
+      "outside_max_abs": 0.0,
+      "p99_mse": -1.4901161193847656e-08
+    },
+    {
+      "boundary_hole_fraction": 0.0,
+      "boundary_mse": 0.0,
+      "boundary_psnr_db": 0.0,
+      "cvar99_mse": -2.9802322387695312e-08,
+      "foreground_mse": 0.0,
+      "foreground_psnr_db": 0.0,
+      "interior_hole_fraction": 0.0,
+      "n_gaussians": 0,
+      "outside_coverage_max": 0.0,
+      "outside_max_abs": 0.0,
+      "p99_mse": -2.2351741790771484e-08
+    },
+    {
+      "boundary_hole_fraction": 0.0,
+      "boundary_mse": 0.0,
+      "boundary_psnr_db": 0.0,
+      "cvar99_mse": 0.0,
+      "foreground_mse": 0.0,
+      "foreground_psnr_db": 0.0,
+      "interior_hole_fraction": 0.0,
+      "n_gaussians": 0,
+      "outside_coverage_max": 0.0,
+      "outside_max_abs": 0.0,
+      "p99_mse": -1.4901161193847656e-08
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "cg_endpoint_colors": null,
+  "cold_denominator": "cold_denominator",
+  "cold_render": "cold_render",
+  "diagonal": "diagonal",
+  "direction": "direction",
+  "direction_render": "direction_render",
+  "gradient": "gradient",
+  "native_gradient_render": null,
+  "parent_denominator": "parent_denominator",
+  "parent_render": "parent_render",
+  "replay_denominator": "replay_denominator",
+  "replay_render": "replay_render",
+  "reporting_denominator": "reporting_denominator",
+  "reporting_render": "reporting_render",
+  "trial_denominators": [
+    "trial_denominators_0"
+  ],
+  "trial_renders": [
+    "trial_renders_0"
+  ]
+}

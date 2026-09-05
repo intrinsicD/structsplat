@@ -1,0 +1,11 @@
+{
+  "cell_id": "coco000000000009_s0_native_gradient_ray",
+  "image_id": 9,
+  "method": "native_gradient_ray",
+  "parent_field_sha256": "cb6ab940dc00cb3a1a3f399120123071f16f8aef32ce249432d6a9a2da0a7af4",
+  "parent_id": "coco000000000009_s0",
+  "parent_optimizer_sha256": "f8372e2088562f4268aec895dec8fe84a47a5da34e623dcff4a4c7fea9b8aee1",
+  "seed": 0,
+  "smoke": false,
+  "target_sha256": "914d88f4f07f55c2f7ba0c473059119c5eb5ed5dfb83febfbe12856373654213"
+}

@@ -1,0 +1,113 @@
+{
+  "adam_fit": {},
+  "cold_quality": {
+    "boundary_hole_fraction": 0.0,
+    "boundary_mse": 0.006736390292644501,
+    "boundary_psnr_db": 21.715727586474447,
+    "cvar99_mse": 0.10435181111097336,
+    "finite": true,
+    "foreground_mse": 0.006736390292644501,
+    "foreground_psnr_db": 21.715727586474447,
+    "interior_hole_fraction": 0.01173020526766777,
+    "n_gaussians": 2000,
+    "outside_coverage_max": 0.0,
+    "outside_max_abs": 0.0,
+    "p99_mse": 0.061149414628744125
+  },
+  "parent_history": "../../parents/coco000000000025_s0/history.json",
+  "reporting_quality": {
+    "boundary_hole_fraction": 0.0,
+    "boundary_mse": 0.006736390292644501,
+    "boundary_psnr_db": 21.715727586474447,
+    "cvar99_mse": 0.10435181111097336,
+    "finite": true,
+    "foreground_mse": 0.006736390292644501,
+    "foreground_psnr_db": 21.715727586474447,
+    "interior_hole_fraction": 0.01173020526766777,
+    "n_gaussians": 2000,
+    "outside_coverage_max": 0.0,
+    "outside_max_abs": 0.0,
+    "p99_mse": 0.06114943325519562
+  },
+  "reporting_work": {
+    "coverage_passes": 2,
+    "gaussian_renders": 2,
+    "quality_evaluations": 2
+  },
+  "transaction": {
+    "accepted": false,
+    "arm": "legacy_cg32",
+    "candidate_metrics": {
+      "boundary_hole_fraction": 0.0,
+      "boundary_mse": 0.006728605832904577,
+      "boundary_psnr_db": 21.72074912269291,
+      "cvar99_mse": 0.1043720617890358,
+      "finite": true,
+      "foreground_mse": 0.006728605832904577,
+      "foreground_psnr_db": 21.72074912269291,
+      "interior_hole_fraction": 0.01173020526766777,
+      "n_gaussians": 2000,
+      "outside_coverage_max": 0.0,
+      "outside_max_abs": 0.0,
+      "p99_mse": 0.06107861176133156
+    },
+    "candidate_reasons": [
+      "cvar99_mse_regressed"
+    ],
+    "coefficients_changed": false,
+    "counts": {
+      "basis_apply_calls": 33,
+      "basis_denominator_passes": 1,
+      "basis_transpose_calls": 34,
+      "gaussian_renders": 2,
+      "gradient_evaluations": 0,
+      "quality_evaluations": 2,
+      "raw_coverage_passes": 2
+    },
+    "foreground_mse_improved": false,
+    "legacy_cg": {
+      "basis_apply_calls": 33,
+      "basis_transpose_calls": 34,
+      "denominator_calls": 1,
+      "iterations": 32,
+      "normal_matvec_calls": 33,
+      "relative_residual": 0.00016353503451682627
+    },
+    "noncolor_changed_fields": [],
+    "parent_metrics": {
+      "boundary_hole_fraction": 0.0,
+      "boundary_mse": 0.006736390292644501,
+      "boundary_psnr_db": 21.715727586474447,
+      "cvar99_mse": 0.10435181856155396,
+      "finite": true,
+      "foreground_mse": 0.006736390292644501,
+      "foreground_psnr_db": 21.715727586474447,
+      "interior_hole_fraction": 0.01173020526766777,
+      "n_gaussians": 2000,
+      "outside_coverage_max": 0.0,
+      "outside_max_abs": 0.0,
+      "p99_mse": 0.061149436980485916
+    },
+    "quality_coverage_backend": "reference",
+    "quality_tail_backend": "reference",
+    "rollback_reason": "candidate_rejected",
+    "selected_alpha": 0.0,
+    "selected_fraction": 0.0,
+    "selected_metrics": {
+      "boundary_hole_fraction": 0.0,
+      "boundary_mse": 0.006736390292644501,
+      "boundary_psnr_db": 21.715727586474447,
+      "cvar99_mse": 0.10435181856155396,
+      "finite": true,
+      "foreground_mse": 0.006736390292644501,
+      "foreground_psnr_db": 21.715727586474447,
+      "interior_hole_fraction": 0.01173020526766777,
+      "n_gaussians": 2000,
+      "outside_coverage_max": 0.0,
+      "outside_max_abs": 0.0,
+      "p99_mse": 0.061149436980485916
+    },
+    "transaction_seconds": 1.4666112920021988,
+    "trials": []
+  }
+}

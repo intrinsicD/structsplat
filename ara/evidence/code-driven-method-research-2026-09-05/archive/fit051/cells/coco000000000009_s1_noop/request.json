@@ -1,0 +1,11 @@
+{
+  "cell_id": "coco000000000009_s1_noop",
+  "image_id": 9,
+  "method": "noop",
+  "parent_field_sha256": "4cf04cf51a886ae45815d2c35ed3feb0e73c6c10a22dd7fdef627e928741ca0e",
+  "parent_id": "coco000000000009_s1",
+  "parent_optimizer_sha256": "507b5200309db0ef22bd936f49ae1ee5d4bfbd2f852282a03a133e662d99580e",
+  "seed": 1,
+  "smoke": false,
+  "target_sha256": "914d88f4f07f55c2f7ba0c473059119c5eb5ed5dfb83febfbe12856373654213"
+}

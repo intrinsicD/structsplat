@@ -1,0 +1,193 @@
+{
+  "archive_qa": {
+    "archive_manifest_sha256": "8b4bc5e09a9f48bff3225f86874ea723ac15f5e70caeafc6720202bbc5b9a2f2",
+    "bundles": {
+      "fit050": {
+        "copied_files": 312,
+        "omitted_files": 337,
+        "original_bundle": "/home/alex/Documents/structsplat/results/code-driven-2026-09-05/fit050-v1",
+        "original_manifest_sha256": "5c5629df090b7946f1ee85ab98d988921998096888261c40192e7cd3a7a4f427",
+        "protocol_digest": "edad3bb041fb2e34697a101f729402bf12470c411a5abe2567a91be04a027153",
+        "rows": 48,
+        "source_commit": "e2bf6ae6e06ca8050d9aa8a93d713679a0c9c150",
+        "source_files_checked": 62
+      },
+      "fit051": {
+        "copied_files": 418,
+        "omitted_files": 550,
+        "original_bundle": "/home/alex/Documents/structsplat/results/code-driven-2026-09-05/fit051-v1",
+        "original_manifest_sha256": "50d79665049e731639b65d4e4afdb0bcb2b79c273320f1ab00072d1563956340",
+        "protocol_digest": "e1c3a421cef3e546f8135d405ee1315b76c47e11f9286b8ea68170930ee32010",
+        "rows": 56,
+        "source_commit": "8de800406e608d7c7a47cc3dfc56217ed69bbb53",
+        "source_files_checked": 61
+      },
+      "port007": {
+        "copied_files": 708,
+        "omitted_files": 1599,
+        "original_bundle": "/home/alex/Documents/structsplat/results/code-driven-2026-09-05/port007-v1",
+        "original_manifest_sha256": "1bc6d61284e8ff33bee8c1c7f9344eeda0ad1a5d86bfcb1be713fa731ebd6b52",
+        "protocol_digest": "730b7704c78e61de6c8d213cc2a013b455516fc73d668b4899564b7b1dea507c",
+        "rows": 110,
+        "source_commit": "e2bf6ae6e06ca8050d9aa8a93d713679a0c9c150",
+        "source_files_checked": 60
+      }
+    },
+    "copied_files_checked": 1438,
+    "generated_files_checked": 5,
+    "html_pages_checked": 4,
+    "local_html_links_checked": 19,
+    "status": "passed",
+    "total_rows": 214
+  },
+  "archive_qa_history": [
+    {
+      "archive_manifest_sha256": "dde5a89b2f57b18ed90ebd9083d290b4fcbd074ea52923e5ac2d3e3bb02b936c",
+      "bundles": {
+        "fit050": {
+          "copied_files": 312,
+          "omitted_files": 337,
+          "original_bundle": "/home/alex/Documents/structsplat/results/code-driven-2026-09-05/fit050-v1",
+          "original_manifest_sha256": "5c5629df090b7946f1ee85ab98d988921998096888261c40192e7cd3a7a4f427",
+          "protocol_digest": "edad3bb041fb2e34697a101f729402bf12470c411a5abe2567a91be04a027153",
+          "rows": 48,
+          "source_commit": "e2bf6ae6e06ca8050d9aa8a93d713679a0c9c150",
+          "source_files_checked": 62
+        },
+        "fit051": {
+          "copied_files": 418,
+          "omitted_files": 550,
+          "original_bundle": "/home/alex/Documents/structsplat/results/code-driven-2026-09-05/fit051-v1",
+          "original_manifest_sha256": "50d79665049e731639b65d4e4afdb0bcb2b79c273320f1ab00072d1563956340",
+          "protocol_digest": "e1c3a421cef3e546f8135d405ee1315b76c47e11f9286b8ea68170930ee32010",
+          "rows": 56,
+          "source_commit": "8de800406e608d7c7a47cc3dfc56217ed69bbb53",
+          "source_files_checked": 61
+        },
+        "port007": {
+          "copied_files": 708,
+          "omitted_files": 1599,
+          "original_bundle": "/home/alex/Documents/structsplat/results/code-driven-2026-09-05/port007-v1",
+          "original_manifest_sha256": "1bc6d61284e8ff33bee8c1c7f9344eeda0ad1a5d86bfcb1be713fa731ebd6b52",
+          "protocol_digest": "730b7704c78e61de6c8d213cc2a013b455516fc73d668b4899564b7b1dea507c",
+          "rows": 110,
+          "source_commit": "e2bf6ae6e06ca8050d9aa8a93d713679a0c9c150",
+          "source_files_checked": 60
+        }
+      },
+      "copied_files_checked": 1438,
+      "generated_files_checked": 5,
+      "html_pages_checked": 4,
+      "local_html_links_checked": 19,
+      "status": "passed",
+      "total_rows": 214
+    },
+    {
+      "archive_manifest_sha256": "8b4bc5e09a9f48bff3225f86874ea723ac15f5e70caeafc6720202bbc5b9a2f2",
+      "bundles": {
+        "fit050": {
+          "copied_files": 312,
+          "omitted_files": 337,
+          "original_bundle": "/home/alex/Documents/structsplat/results/code-driven-2026-09-05/fit050-v1",
+          "original_manifest_sha256": "5c5629df090b7946f1ee85ab98d988921998096888261c40192e7cd3a7a4f427",
+          "protocol_digest": "edad3bb041fb2e34697a101f729402bf12470c411a5abe2567a91be04a027153",
+          "rows": 48,
+          "source_commit": "e2bf6ae6e06ca8050d9aa8a93d713679a0c9c150",
+          "source_files_checked": 62
+        },
+        "fit051": {
+          "copied_files": 418,
+          "omitted_files": 550,
+          "original_bundle": "/home/alex/Documents/structsplat/results/code-driven-2026-09-05/fit051-v1",
+          "original_manifest_sha256": "50d79665049e731639b65d4e4afdb0bcb2b79c273320f1ab00072d1563956340",
+          "protocol_digest": "e1c3a421cef3e546f8135d405ee1315b76c47e11f9286b8ea68170930ee32010",
+          "rows": 56,
+          "source_commit": "8de800406e608d7c7a47cc3dfc56217ed69bbb53",
+          "source_files_checked": 61
+        },
+        "port007": {
+          "copied_files": 708,
+          "omitted_files": 1599,
+          "original_bundle": "/home/alex/Documents/structsplat/results/code-driven-2026-09-05/port007-v1",
+          "original_manifest_sha256": "1bc6d61284e8ff33bee8c1c7f9344eeda0ad1a5d86bfcb1be713fa731ebd6b52",
+          "protocol_digest": "730b7704c78e61de6c8d213cc2a013b455516fc73d668b4899564b7b1dea507c",
+          "rows": 110,
+          "source_commit": "e2bf6ae6e06ca8050d9aa8a93d713679a0c9c150",
+          "source_files_checked": 60
+        }
+      },
+      "copied_files_checked": 1438,
+      "generated_files_checked": 5,
+      "html_pages_checked": 4,
+      "local_html_links_checked": 19,
+      "status": "passed",
+      "total_rows": 214
+    }
+  ],
+  "copied_files": {
+    "fit050-v1-browser.json": "4540d26005e1f19ee573d78e4f377e12763b7ec567c961b8f6e05c265bf365a5",
+    "fit050-v1-native.png": "a6116dd11ca851ede78f12bc787d1329a4d6ddc0329c3ab58f593520c499d077",
+    "fit050-v1-overview.png": "8620f57193f92970ced3a257324b3551b9366ffb05cea1f0a4e4856121b97454",
+    "fit051-v1-browser.json": "a2a816dedc66a9a9e64ef5a7cd5c7f26f2dde6d99119d1f937d35fc71ffa3097",
+    "fit051-v1-native.png": "a3f1f271e4c4db6037ec9f0f2069d5759c23b32e2f2930931b59d5a4aaf66e0e",
+    "fit051-v1-overview.png": "b24358afbaacdc5a033a6f38076c528736f485f2b6b61bd8799634da1da45483",
+    "port007-v1-browser.json": "3da85ad80ec49b13bfc8b1150a8ffc6ac8c4021587c39283c2fb007010dc0e4d",
+    "port007-v1-native.png": "6947468e5ac3bf6734c3fd020ca3323d48e7e79105129d373e4e7c6848ad8a77",
+    "port007-v1-overview.png": "f89b266b12eadd2787d76d12109722891dad63edf37262ea2d434a41c63d16ea",
+    "review.mjs": "13abf4b277588deeeb056f3c8517bb02da3b04b9fe68615d80da375e82fba3d4"
+  },
+  "generated_files": {
+    "inventory-35e784595488.json": "35e784595488c274444a6b982b9de27396af3850f785563da2dc119d5370e7b3",
+    "packager.py": "ce095cd7a7f2930ee9aa65ccd527c623da51d6e1ac58a00a33ec80fa7b933d3f",
+    "qa-packager-cf47498b71a2.py": "cf47498b71a2bc3d60e713f619d0e82d9bb3e3fb900fd151e4529e5fc876f49d"
+  },
+  "latest_qa_script_sha256": "cf47498b71a2bc3d60e713f619d0e82d9bb3e3fb900fd151e4529e5fc876f49d",
+  "optional_fit051_curve_screenshots": [],
+  "packager_source_sha256": "ce095cd7a7f2930ee9aa65ccd527c623da51d6e1ac58a00a33ec80fa7b933d3f",
+  "previous_inventory": {
+    "path": "inventory-35e784595488.json",
+    "sha256": "35e784595488c274444a6b982b9de27396af3850f785563da2dc119d5370e7b3"
+  },
+  "receipt_bindings": {
+    "fit050": {
+      "original_manifest_sha256": "5c5629df090b7946f1ee85ab98d988921998096888261c40192e7cd3a7a4f427",
+      "original_report_sha256": "865725b734899f4785be35f0ac35f5b67407185f5f8d73f47993da22ec1f1aab",
+      "protocol_digest": "edad3bb041fb2e34697a101f729402bf12470c411a5abe2567a91be04a027153",
+      "source_commit": "e2bf6ae6e06ca8050d9aa8a93d713679a0c9c150"
+    },
+    "fit051": {
+      "original_manifest_sha256": "50d79665049e731639b65d4e4afdb0bcb2b79c273320f1ab00072d1563956340",
+      "original_report_sha256": "6bfff01a3f20ba26045926278b730faf120aeeb55f2db357f80366ffe9ac3281",
+      "protocol_digest": "e1c3a421cef3e546f8135d405ee1315b76c47e11f9286b8ea68170930ee32010",
+      "source_commit": "8de800406e608d7c7a47cc3dfc56217ed69bbb53"
+    },
+    "port007": {
+      "original_manifest_sha256": "1bc6d61284e8ff33bee8c1c7f9344eeda0ad1a5d86bfcb1be713fa731ebd6b52",
+      "original_report_sha256": "25a22152b1e29175295812bfaf7b647541df8a37b99a0a4aa6254346ca741b7c",
+      "protocol_digest": "730b7704c78e61de6c8d213cc2a013b455516fc73d668b4899564b7b1dea507c",
+      "source_commit": "e2bf6ae6e06ca8050d9aa8a93d713679a0c9c150"
+    }
+  },
+  "refresh_reproduce": [
+    "python",
+    "/tmp/structsplat-native-ray.Xm6s9q/scripts/experiments/code_driven_archive_qa.py",
+    "/tmp/structsplat-native-ray.Xm6s9q/ara/evidence/code-driven-method-research-2026-09-05/archive",
+    "--browser-out",
+    "/tmp/structsplat-native-ray.Xm6s9q/ara/evidence/code-driven-method-research-2026-09-05/browser",
+    "--refresh-browser-inventory"
+  ],
+  "reproduce": [
+    "python",
+    "/tmp/structsplat-native-ray.Xm6s9q/scripts/experiments/code_driven_archive_qa.py",
+    "/tmp/structsplat-native-ray.Xm6s9q/ara/evidence/code-driven-method-research-2026-09-05/archive",
+    "--repository",
+    "/tmp/structsplat-native-ray.Xm6s9q",
+    "--browser-source",
+    "/tmp/structsplat-report-review.csTXNo",
+    "--browser-out",
+    "NEW_DIRECTORY"
+  ],
+  "schema": "structsplat.code-driven.browser-evidence.v1",
+  "scope": "Byte-preserved prior browser JSON receipts and screenshots, not a new browser review or image edit. Chrome profile/cache omitted. No scientific conclusions are added; original report bundles remain authoritative.",
+  "source_directory": "/tmp/structsplat-report-review.csTXNo"
+}

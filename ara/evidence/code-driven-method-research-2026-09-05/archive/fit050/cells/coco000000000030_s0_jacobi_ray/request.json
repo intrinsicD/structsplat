@@ -1,0 +1,11 @@
+{
+  "cell_id": "coco000000000030_s0_jacobi_ray",
+  "image_id": 30,
+  "method": "jacobi_ray",
+  "parent_field_sha256": "00da077aa51ae4b02556ed37d1c310f29f97cd8c867ea7871419124052adcf8c",
+  "parent_id": "coco000000000030_s0",
+  "parent_optimizer_sha256": "a156fc7cb2ea990b745660004b1c032dbfc0c68d93de2062d823643ddedbd9fd",
+  "seed": 0,
+  "smoke": false,
+  "target_sha256": "f24fa88987cdf1ab933ceb910f3d418bf93ef98360799b4854fa32ffa53c562f"
+}

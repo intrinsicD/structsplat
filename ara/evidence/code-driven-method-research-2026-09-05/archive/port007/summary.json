@@ -1,0 +1,600 @@
+{
+  "candidates": {
+    "both": {
+      "component_speed_pass": false,
+      "pipeline_images": [
+        {
+          "image": 9,
+          "pairs": [
+            {
+              "aa_and_candidate_trajectory_equal": false,
+              "aa_speed_ratio": 0.9553328243097262,
+              "psnr_gain_db": 0.04486814456003785,
+              "quality_pass": true,
+              "reference_rgb_and_finite_pass": true,
+              "seed": 0
+            },
+            {
+              "aa_and_candidate_trajectory_equal": false,
+              "aa_speed_ratio": 1.07699908765246,
+              "psnr_gain_db": -0.028711701975716153,
+              "quality_pass": false,
+              "reference_rgb_and_finite_pass": true,
+              "seed": 1
+            },
+            {
+              "aa_and_candidate_trajectory_equal": false,
+              "aa_speed_ratio": 1.267168878341348,
+              "psnr_gain_db": -0.036842850585177445,
+              "quality_pass": false,
+              "reference_rgb_and_finite_pass": true,
+              "seed": 2
+            }
+          ],
+          "speed_ratio": 1.0348585014936533
+        },
+        {
+          "image": 25,
+          "pairs": [
+            {
+              "aa_and_candidate_trajectory_equal": false,
+              "aa_speed_ratio": 1.3587804156014753,
+              "psnr_gain_db": 0.09254093191442792,
+              "quality_pass": false,
+              "reference_rgb_and_finite_pass": true,
+              "seed": 0
+            },
+            {
+              "aa_and_candidate_trajectory_equal": false,
+              "aa_speed_ratio": 1.1000871336878786,
+              "psnr_gain_db": -0.011373654532459199,
+              "quality_pass": true,
+              "reference_rgb_and_finite_pass": true,
+              "seed": 1
+            },
+            {
+              "aa_and_candidate_trajectory_equal": false,
+              "aa_speed_ratio": 0.8411215323243759,
+              "psnr_gain_db": 0.1357977678015594,
+              "quality_pass": false,
+              "reference_rgb_and_finite_pass": true,
+              "seed": 2
+            }
+          ],
+          "speed_ratio": 1.149653072420911
+        }
+      ],
+      "pipeline_quality_pass": false,
+      "pipeline_speed_pass": false,
+      "pipeline_timing_eligible": false,
+      "pipeline_trajectory_pass": false,
+      "role": "primary",
+      "same_state_correctness_pass": false,
+      "same_state_images": [
+        {
+          "aa_pairs": [
+            {
+              "seed": 0,
+              "speed_ratio": 0.9986624559052577,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 0,
+              "speed_ratio": 0.9959419924865953,
+              "state": "terminal",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 0.9985915379317012,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 0.9997736658447292,
+              "state": "terminal",
+              "timing_stable": true
+            }
+          ],
+          "aa_speed_ratio": 0.9986269969184794,
+          "image": 9,
+          "speed_ratio": 11.269216768513093
+        },
+        {
+          "aa_pairs": [
+            {
+              "seed": 0,
+              "speed_ratio": 0.9995142859336898,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 0,
+              "speed_ratio": 1.0005394554867757,
+              "state": "terminal",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 0.9999481850240817,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 0.9951202697830748,
+              "state": "terminal",
+              "timing_stable": true
+            }
+          ],
+          "aa_speed_ratio": 0.9997312354788858,
+          "image": 25,
+          "speed_ratio": 5.162844739815728
+        },
+        {
+          "aa_pairs": [
+            {
+              "seed": 0,
+              "speed_ratio": 0.9978449367013966,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 0,
+              "speed_ratio": 1.0069961279850443,
+              "state": "terminal",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 0.9996351211065826,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 1.0003248709209407,
+              "state": "terminal",
+              "timing_stable": true
+            }
+          ],
+          "aa_speed_ratio": 0.9999799960137616,
+          "image": 30,
+          "speed_ratio": 10.911124289843004
+        },
+        {
+          "aa_pairs": [
+            {
+              "seed": 0,
+              "speed_ratio": 1.0004995471210543,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 0,
+              "speed_ratio": 0.9987859812481741,
+              "state": "terminal",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 1.0016609590544028,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 1.0039355706030895,
+              "state": "terminal",
+              "timing_stable": true
+            }
+          ],
+          "aa_speed_ratio": 1.0010802530877285,
+          "image": 34,
+          "speed_ratio": 9.890411184493036
+        }
+      ],
+      "same_state_timing_eligible": true
+    },
+    "coverage": {
+      "component_speed_pass": false,
+      "pipeline_images": [
+        {
+          "image": 9,
+          "pairs": [
+            {
+              "aa_and_candidate_trajectory_equal": false,
+              "aa_speed_ratio": 0.9553328243097262,
+              "psnr_gain_db": 0.047047273783903165,
+              "quality_pass": true,
+              "reference_rgb_and_finite_pass": true,
+              "seed": 0
+            },
+            {
+              "aa_and_candidate_trajectory_equal": false,
+              "aa_speed_ratio": 1.07699908765246,
+              "psnr_gain_db": 0.006085129154033808,
+              "quality_pass": false,
+              "reference_rgb_and_finite_pass": true,
+              "seed": 1
+            },
+            {
+              "aa_and_candidate_trajectory_equal": false,
+              "aa_speed_ratio": 1.267168878341348,
+              "psnr_gain_db": -0.006365582235687839,
+              "quality_pass": false,
+              "reference_rgb_and_finite_pass": true,
+              "seed": 2
+            }
+          ],
+          "speed_ratio": 0.9726615452407363
+        },
+        {
+          "image": 25,
+          "pairs": [
+            {
+              "aa_and_candidate_trajectory_equal": false,
+              "aa_speed_ratio": 1.3587804156014753,
+              "psnr_gain_db": 0.1126114917975265,
+              "quality_pass": false,
+              "reference_rgb_and_finite_pass": true,
+              "seed": 0
+            },
+            {
+              "aa_and_candidate_trajectory_equal": false,
+              "aa_speed_ratio": 1.1000871336878786,
+              "psnr_gain_db": -0.015681836917501357,
+              "quality_pass": true,
+              "reference_rgb_and_finite_pass": true,
+              "seed": 1
+            },
+            {
+              "aa_and_candidate_trajectory_equal": false,
+              "aa_speed_ratio": 0.8411215323243759,
+              "psnr_gain_db": 0.14061447781530134,
+              "quality_pass": true,
+              "reference_rgb_and_finite_pass": true,
+              "seed": 2
+            }
+          ],
+          "speed_ratio": 1.3040368397603088
+        }
+      ],
+      "pipeline_quality_pass": false,
+      "pipeline_speed_pass": false,
+      "pipeline_timing_eligible": false,
+      "pipeline_trajectory_pass": false,
+      "role": "explanatory predeclared",
+      "same_state_correctness_pass": false,
+      "same_state_images": [
+        {
+          "aa_pairs": [
+            {
+              "seed": 0,
+              "speed_ratio": 0.9986624559052577,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 0,
+              "speed_ratio": 0.9959419924865953,
+              "state": "terminal",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 0.9985915379317012,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 0.9997736658447292,
+              "state": "terminal",
+              "timing_stable": true
+            }
+          ],
+          "aa_speed_ratio": 0.9986269969184794,
+          "image": 9,
+          "speed_ratio": 11.066972544390204
+        },
+        {
+          "aa_pairs": [
+            {
+              "seed": 0,
+              "speed_ratio": 0.9995142859336898,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 0,
+              "speed_ratio": 1.0005394554867757,
+              "state": "terminal",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 0.9999481850240817,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 0.9951202697830748,
+              "state": "terminal",
+              "timing_stable": true
+            }
+          ],
+          "aa_speed_ratio": 0.9997312354788858,
+          "image": 25,
+          "speed_ratio": 5.072624306462797
+        },
+        {
+          "aa_pairs": [
+            {
+              "seed": 0,
+              "speed_ratio": 0.9978449367013966,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 0,
+              "speed_ratio": 1.0069961279850443,
+              "state": "terminal",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 0.9996351211065826,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 1.0003248709209407,
+              "state": "terminal",
+              "timing_stable": true
+            }
+          ],
+          "aa_speed_ratio": 0.9999799960137616,
+          "image": 30,
+          "speed_ratio": 10.766650369979528
+        },
+        {
+          "aa_pairs": [
+            {
+              "seed": 0,
+              "speed_ratio": 1.0004995471210543,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 0,
+              "speed_ratio": 0.9987859812481741,
+              "state": "terminal",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 1.0016609590544028,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 1.0039355706030895,
+              "state": "terminal",
+              "timing_stable": true
+            }
+          ],
+          "aa_speed_ratio": 1.0010802530877285,
+          "image": 34,
+          "speed_ratio": 9.730157218943308
+        }
+      ],
+      "same_state_timing_eligible": true
+    },
+    "tail": {
+      "component_speed_pass": false,
+      "pipeline_images": [
+        {
+          "image": 9,
+          "pairs": [
+            {
+              "aa_and_candidate_trajectory_equal": false,
+              "aa_speed_ratio": 0.9553328243097262,
+              "psnr_gain_db": 0.02133516076735731,
+              "quality_pass": true,
+              "reference_rgb_and_finite_pass": true,
+              "seed": 0
+            },
+            {
+              "aa_and_candidate_trajectory_equal": false,
+              "aa_speed_ratio": 1.07699908765246,
+              "psnr_gain_db": -0.11026450199213045,
+              "quality_pass": false,
+              "reference_rgb_and_finite_pass": true,
+              "seed": 1
+            },
+            {
+              "aa_and_candidate_trajectory_equal": false,
+              "aa_speed_ratio": 1.267168878341348,
+              "psnr_gain_db": -0.07333220861790934,
+              "quality_pass": false,
+              "reference_rgb_and_finite_pass": true,
+              "seed": 2
+            }
+          ],
+          "speed_ratio": 1.0411911425263534
+        },
+        {
+          "image": 25,
+          "pairs": [
+            {
+              "aa_and_candidate_trajectory_equal": false,
+              "aa_speed_ratio": 1.3587804156014753,
+              "psnr_gain_db": 0.2311451295295086,
+              "quality_pass": false,
+              "reference_rgb_and_finite_pass": true,
+              "seed": 0
+            },
+            {
+              "aa_and_candidate_trajectory_equal": false,
+              "aa_speed_ratio": 1.1000871336878786,
+              "psnr_gain_db": -0.018335876240769267,
+              "quality_pass": true,
+              "reference_rgb_and_finite_pass": true,
+              "seed": 1
+            },
+            {
+              "aa_and_candidate_trajectory_equal": false,
+              "aa_speed_ratio": 0.8411215323243759,
+              "psnr_gain_db": -0.007145109303611008,
+              "quality_pass": false,
+              "reference_rgb_and_finite_pass": true,
+              "seed": 2
+            }
+          ],
+          "speed_ratio": 1.2944172906173157
+        }
+      ],
+      "pipeline_quality_pass": false,
+      "pipeline_speed_pass": false,
+      "pipeline_timing_eligible": false,
+      "pipeline_trajectory_pass": false,
+      "role": "explanatory predeclared",
+      "same_state_correctness_pass": false,
+      "same_state_images": [
+        {
+          "aa_pairs": [
+            {
+              "seed": 0,
+              "speed_ratio": 0.9986624559052577,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 0,
+              "speed_ratio": 0.9959419924865953,
+              "state": "terminal",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 0.9985915379317012,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 0.9997736658447292,
+              "state": "terminal",
+              "timing_stable": true
+            }
+          ],
+          "aa_speed_ratio": 0.9986269969184794,
+          "image": 9,
+          "speed_ratio": 1.0026150440252752
+        },
+        {
+          "aa_pairs": [
+            {
+              "seed": 0,
+              "speed_ratio": 0.9995142859336898,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 0,
+              "speed_ratio": 1.0005394554867757,
+              "state": "terminal",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 0.9999481850240817,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 0.9951202697830748,
+              "state": "terminal",
+              "timing_stable": true
+            }
+          ],
+          "aa_speed_ratio": 0.9997312354788858,
+          "image": 25,
+          "speed_ratio": 1.0030373388180656
+        },
+        {
+          "aa_pairs": [
+            {
+              "seed": 0,
+              "speed_ratio": 0.9978449367013966,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 0,
+              "speed_ratio": 1.0069961279850443,
+              "state": "terminal",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 0.9996351211065826,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 1.0003248709209407,
+              "state": "terminal",
+              "timing_stable": true
+            }
+          ],
+          "aa_speed_ratio": 0.9999799960137616,
+          "image": 30,
+          "speed_ratio": 1.002463192263429
+        },
+        {
+          "aa_pairs": [
+            {
+              "seed": 0,
+              "speed_ratio": 1.0004995471210543,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 0,
+              "speed_ratio": 0.9987859812481741,
+              "state": "terminal",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 1.0016609590544028,
+              "state": "initial",
+              "timing_stable": true
+            },
+            {
+              "seed": 1,
+              "speed_ratio": 1.0039355706030895,
+              "state": "terminal",
+              "timing_stable": true
+            }
+          ],
+          "aa_speed_ratio": 1.0010802530877285,
+          "image": 34,
+          "speed_ratio": 1.003127989577176
+        }
+      ],
+      "same_state_timing_eligible": true
+    }
+  },
+  "complete": true,
+  "primary_arm": "both"
+}

@@ -1,0 +1,21 @@
+{
+  "report": "/home/alex/Documents/structsplat/results/code-driven-2026-09-05/port007-v1/index.html",
+  "overview": {
+    "title": "PORT-007: shared quality measurements",
+    "rows": 110,
+    "sections": 110,
+    "images": 500,
+    "broken": [],
+    "links": 1916
+  },
+  "native": {
+    "url": "file:///home/alex/Documents/structsplat/results/code-driven-2026-09-05/port007-v1/cells/same_coco000000000009_s0_initial_legacy_a/reconstruction.png",
+    "width": 512,
+    "height": 384
+  },
+  "raw": {
+    "url": "file:///home/alex/Documents/structsplat/results/code-driven-2026-09-05/port007-v1/metrics.json",
+    "length": 297463,
+    "prefix": "[\n  {\n    \"artifacts\": {\n      \"config.json\": \"cells/same_coco000000000009_s0_initial_legacy_a/config.json\",\n      \"curv"
+  }
+}

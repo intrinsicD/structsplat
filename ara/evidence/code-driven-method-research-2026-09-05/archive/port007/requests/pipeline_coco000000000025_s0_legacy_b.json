@@ -1,0 +1,9 @@
+{
+  "bundle_root": "/home/alex/Documents/structsplat/results/code-driven-2026-09-05/port007-v1",
+  "cell_id": "pipeline_coco000000000025_s0_legacy_b",
+  "group_id": "pipeline_coco000000000025_s0_legacy_b",
+  "image": 25,
+  "kind": "pipeline",
+  "method": "legacy_b",
+  "seed": 0
+}

@@ -2766,3 +2766,78 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O184
+    timestamp: "2026-09-05T12:25+02:00"
+    provenance: ai-suggested
+    content: >
+      FIT-050's 48-cell protocol fails every utility gate; 21/24 ray transactions abort parent-basis compatibility before directions are evaluated. This does not refute line search or preconditioning generally.
+    context: >
+      User-authorized code-derived research; complete clean-source protocols and independent
+      audits are preserved in ara/evidence/code-driven-method-research-2026-09-05/run.md.
+      Interpretation is AI-derived, not user-affirmed; unrun proposals are not empirical findings.
+    potential_type: claim
+    bound_to: [N326, N327, N332]
+    promoted: true
+    promoted_to: "logic/claims.md:C73"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O185
+    timestamp: "2026-09-05T12:25+02:00"
+    provenance: ai-suggested
+    content: >
+      PORT-007 observes component ratios 10.2484x coverage and 10.4008x both, but every frozen primary component/pipeline promotion gate fails. Null-state decisions vary in legacy repeats and all six pipeline A/A trajectories diverge, preventing a causal pipeline-speed or reuse-specific-defect conclusion.
+    context: >
+      User-authorized code-derived research; complete clean-source protocols and independent
+      audits are preserved in ara/evidence/code-driven-method-research-2026-09-05/run.md.
+      Interpretation is AI-derived, not user-affirmed; unrun proposals are not empirical findings.
+    potential_type: claim
+    bound_to: [N328, N333, N332]
+    promoted: true
+    promoted_to: "logic/claims.md:C74"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O186
+    timestamp: "2026-09-05T12:25+02:00"
+    provenance: ai-suggested
+    content: >
+      FIT-051 actual-render CG accepts all eight parents, rescuing four rejected full trials with smaller fractions, but median gain 0.005293dB misses 0.1dB utility. Native and streaming gradients give essentially identical small gains. Separately executed CG directions differ, and existing numerical slack permits tiny CVaR increases.
+    context: >
+      User-authorized code-derived research; complete clean-source protocols and independent
+      audits are preserved in ara/evidence/code-driven-method-research-2026-09-05/run.md.
+      Interpretation is AI-derived, not user-affirmed; unrun proposals are not empirical findings.
+    potential_type: claim
+    bound_to: [N331, N334, N332]
+    promoted: true
+    promoted_to: "logic/claims.md:C75"
+    crystallized_via: artifact-commitment
+    stale: false
+  - id: O187
+    timestamp: "2026-09-05T12:25+02:00"
+    provenance: ai-suggested
+    content: >
+      Before adding optimizer complexity, a bounded diagnostic could isolate null-gain decision sensitivity and rejected-trial work. The observed instability does not yet identify a cause, safe numerical remedy, or successful convergence intervention.
+    context: >
+      User-authorized code-derived research; complete clean-source protocols and independent
+      audits are preserved in ara/evidence/code-driven-method-research-2026-09-05/run.md.
+      Interpretation is AI-derived, not user-affirmed; unrun proposals are not empirical findings.
+    potential_type: heuristic
+    bound_to: [N328, N331, N335]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O188
+    timestamp: "2026-09-05T12:25+02:00"
+    provenance: ai-suggested
+    content: >
+      The code-derived portfolio retains unimplemented representability, image-space, robust-objective and scheduling candidates as tentative designs. Known line search, preconditioning and common-subexpression reuse do not establish novelty; the earlier HIER projected-GN rescue remains unrun and distinct.
+    context: >
+      User-authorized code-derived research; complete clean-source protocols and independent
+      audits are preserved in ara/evidence/code-driven-method-research-2026-09-05/run.md.
+      Interpretation is AI-derived, not user-affirmed; unrun proposals are not empirical findings.
+    potential_type: unknown
+    bound_to: [N325, N335]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

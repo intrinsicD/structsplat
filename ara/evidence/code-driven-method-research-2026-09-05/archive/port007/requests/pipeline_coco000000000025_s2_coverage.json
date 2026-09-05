@@ -1,0 +1,9 @@
+{
+  "bundle_root": "/home/alex/Documents/structsplat/results/code-driven-2026-09-05/port007-v1",
+  "cell_id": "pipeline_coco000000000025_s2_coverage",
+  "group_id": "pipeline_coco000000000025_s2_coverage",
+  "image": 25,
+  "kind": "pipeline",
+  "method": "coverage",
+  "seed": 2
+}

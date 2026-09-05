@@ -1,0 +1,11 @@
+{
+  "cell_id": "coco000000000034_s1_adam32",
+  "image_id": 34,
+  "method": "adam32",
+  "parent_field_sha256": "23a05caaa99b2516d6eea7ac9c6224a3d2f808fa89d1729f8755e3701ae3536e",
+  "parent_id": "coco000000000034_s1",
+  "parent_optimizer_sha256": "7f87714cffce8d381ad66e31024c9977f28d65b04b60294f575f49551f69b9cb",
+  "seed": 1,
+  "smoke": false,
+  "target_sha256": "1885ed269e0c882fadc488c3e461adacb474b1c811f3bb3b40445d3a013225f5"
+}

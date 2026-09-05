@@ -169,8 +169,8 @@ sessions:
     open_threads: 6
   - id: "2026-09-05_001"
     date: "2026-09-05"
-    summary: "Four simpler-first routes produced five independently audited matrices; numerical-polish and rollback caveats prevent default promotion, and gradient rescue remains unrun."
-    turn_count: 1
-    events_count: 17
-    claims_touched: [C68, C69, C70, C71, C72]
-    open_threads: 6
+    summary: "Five overnight matrices and three code-driven studies audited;214 new cells show tiny safe backtracking and component timing observations but no passed utility/promotion gate. Defaults unchanged."
+    turn_count: 2
+    events_count: 34
+    claims_touched: [C68, C69, C70, C71, C72, C73, C74, C75]
+    open_threads: 7

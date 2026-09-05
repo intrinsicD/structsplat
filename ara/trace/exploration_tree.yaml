@@ -6491,3 +6491,159 @@ tree:
       - "docs/research/2026-09-05-overnight-research-portfolio.md"
     also_depends_on: [N319, N322]
     status: open
+  - id: N324
+    type: decision
+    title: "Authorize original code-derived ideas, implementation and experiments"
+    provenance: user
+    timestamp: "2026-09-05T12:25+02:00"
+    choice: >
+      Inspect the current code, create multiple improvement ideas, design experiments and run them. This records the user's implementation/research authority, not authorship of AI interpretations.
+    alternatives: []
+    evidence:
+      - "ara/evidence/code-driven-method-research-2026-09-05/run.md"
+    also_depends_on: [N314, N322]
+    status: resolved
+  - id: N325
+    type: decision
+    title: "Select simpler color transactions and same-call quality reuse"
+    provenance: ai-executed
+    timestamp: "2026-09-05T12:25+02:00"
+    choice: >
+      Independent code-reading and prior-art lanes select safeguarded fixed-geometry RGB steps and repeated coverage/tail work for bounded controls. Retain broader designs as hypotheses and downgrade novelty labels.
+    alternatives: []
+    evidence:
+      - "ara/evidence/code-driven-method-research-2026-09-05/run.md"
+    also_depends_on: [N324]
+    status: resolved
+  - id: N326
+    type: experiment
+    title: "Complete the 48-cell normalized color-ray assay"
+    provenance: ai-executed
+    timestamp: "2026-09-05T12:25+02:00"
+    result: >
+      FIT-050 completes all eight parents and six arms from source e2bf6ae. All utility gates fail; 21/24 rays abort compatibility before proposal/trials. Independent complete raw/field/gate/GPU replay passes.
+    evidence:
+      - "ara/evidence/code-driven-method-research-2026-09-05/run.md"
+    also_depends_on: [N325]
+    status: resolved
+  - id: N327
+    type: dead_end
+    title: "Reject useful one-transaction FIT-050 improvement in this implementation"
+    provenance: ai-executed
+    timestamp: "2026-09-05T12:25+02:00"
+    hypothesis: >
+      One safeguarded normalized color transaction meets the frozen 0.1dB utility threshold on the prescribed real-image parents.
+    failure_mode: >
+      Every non-noop arm fails utility; seven of eight parent basis images fail compatibility before any ray is tested.
+    lesson: >
+      Keep compatibility failure distinct from a failed direction or line search; preserve this protocol and test a new actual-render mechanism separately.
+    evidence:
+      - "ara/evidence/code-driven-method-research-2026-09-05/run.md"
+    also_depends_on: [N326]
+    status: resolved
+  - id: N328
+    type: experiment
+    title: "Complete and independently audit the 110-cell quality-reuse factorial"
+    provenance: ai-executed
+    timestamp: "2026-09-05T12:25+02:00"
+    result: >
+      PORT-007 completes 80 same-state and 30 instrumented pipeline cells from e2bf6ae. Coverage/both component ratios are10.2484/10.4008x descriptively, but every frozen primary component/pipeline promotion gate fails. Legacy null decisions and all six pipeline A/A trajectories vary; complete frozen and optimized report checkers both pass.
+    evidence:
+      - "ara/evidence/code-driven-method-research-2026-09-05/run.md"
+    also_depends_on: [N325, N326]
+    status: resolved
+  - id: N329
+    type: pivot
+    title: "Use actual-render trials and a native color-gradient control"
+    provenance: ai-executed
+    timestamp: "2026-09-05T12:25+02:00"
+    trigger: >
+      FIT-050 compatibility preflight prevents most ray directions from being tested; do not widen its tolerance or reinterpret that negative.
+    from: >
+      Cross-backend interpolated candidate images
+    to: >
+      New isolated FIT-051 protocol with actual field renders for every fraction and a native color VJP
+    evidence:
+      - "ara/evidence/code-driven-method-research-2026-09-05/run.md"
+    also_depends_on: [N326, N327]
+    status: resolved
+  - id: N330
+    type: decision
+    title: "Freeze canonical CPU reporting after pre-run backend mismatch"
+    provenance: ai-executed
+    timestamp: "2026-09-05T12:25+02:00"
+    choice: >
+      Procedural pre-run tests reject CPU/CUDA LPIPS equivalence at the unchanged reporting tolerance. FIT-051 uses one detached CPU float32 scorer for every endpoint and curve point before any formal outcomes, leaving native CUDA safety decisions unchanged.
+    alternatives: []
+    evidence:
+      - "ara/evidence/code-driven-method-research-2026-09-05/run.md"
+    also_depends_on: [N329]
+    status: resolved
+  - id: N331
+    type: experiment
+    title: "Complete the 56-cell actual-render color follow-up"
+    provenance: ai-executed
+    timestamp: "2026-09-05T12:25+02:00"
+    result: >
+      FIT-051 completes all seven arms on the same eight source-bound parents from clean8de8004. ActualCG accepts8/8 including four smaller-step rescues, median+0.005293dB; every utility gate fails. Native/streaming gradients have essentially identical+0.001220dB medians. Independent full CPU/GPU/raw/work audit passes.
+    evidence:
+      - "ara/evidence/code-driven-method-research-2026-09-05/run.md"
+    also_depends_on: [N329, N330]
+    status: resolved
+  - id: N332
+    type: decision
+    title: "Retain experimental tools without promoting any code-driven candidate"
+    provenance: ai-executed
+    timestamp: "2026-09-05T12:25+02:00"
+    choice: >
+      ADR-0034 depends on O184–O186 and their complete audited evidence: close FIT-050/PORT-007/FIT-051 as valid bounded negative-utility assays, preserve small backtracking and component-only observations, and keep all maintained defaults and safety thresholds unchanged.
+    alternatives: []
+    evidence:
+      - "ara/evidence/code-driven-method-research-2026-09-05/run.md"
+      - "docs/adr/0034-keep-code-driven-refinements-experimental.md"
+      - "O184"
+      - "O185"
+      - "O186"
+    also_depends_on: [N326, N328, N331]
+    status: resolved
+  - id: N333
+    type: dead_end
+    title: "Reject a drop-in or end-to-end acceleration claim for PORT-007"
+    provenance: ai-executed
+    timestamp: "2026-09-05T12:25+02:00"
+    hypothesis: >
+      Same-call quality reuse is decision-interchangeable and establishes execution-equivalent complete-pipeline acceleration under the frozen protocol.
+    failure_mode: >
+      All formal candidate gates fail. Even legacy null comparisons flip and legacy pipeline A/A trajectories diverge in all six pairs; four timing and three quality pairs fail.
+    lesson: >
+      Component work removal is not a validated pipeline speedup. Baseline jitter prevents assigning divergence specifically to reuse; do not weaken exact decision gates retrospectively.
+    evidence:
+      - "ara/evidence/code-driven-method-research-2026-09-05/run.md"
+    also_depends_on: [N328]
+    status: resolved
+  - id: N334
+    type: dead_end
+    title: "Reject useful-scale one-transaction actual-render refinement"
+    provenance: ai-executed
+    timestamp: "2026-09-05T12:25+02:00"
+    hypothesis: >
+      Actual-render fractional color proposals or native gradients meet the unchanged 0.1dB utility gate on the prescribed parents.
+    failure_mode: >
+      Every non-noop arm fails utility; actualCG median gain is only0.005293dB and native VJP has no quality advantage over streaming gradient.
+    lesson: >
+      Record the four real within-transaction backtracking rescues, nonidentical independent CG directions and numerical CVaR slack without promoting tiny gains or rejecting every possible optimizer.
+    evidence:
+      - "ara/evidence/code-driven-method-research-2026-09-05/run.md"
+    also_depends_on: [N331]
+    status: resolved
+  - id: N335
+    type: question
+    title: "Can null-gain stability and rejected work be improved without weakening safety?"
+    provenance: ai-suggested
+    timestamp: "2026-09-05T12:25+02:00"
+    description: >
+      The pipeline shows baseline null-decision sensitivity and 51892 attempted versus8952 accepted updates. A new bounded diagnostic could isolate the cause before implementing a remedy. No cause, safe fix, successor protocol or result is established; the older projected-GN rescue and broader portfolio remain unrun.
+    evidence:
+      - "ara/evidence/code-driven-method-research-2026-09-05/run.md"
+    also_depends_on: [N328, N331, N332]
+    status: open

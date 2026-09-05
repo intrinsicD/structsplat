@@ -1,0 +1,1162 @@
+{
+  "complete_matrix": true,
+  "data_role": "already exposed COCO development parents; new mechanism after FIT-050's recorded compatibility aborts; original outcome untouched",
+  "default_promotion": false,
+  "problems": [],
+  "records": [
+    {
+      "complete_matrix": true,
+      "median_image_averaged_gain_db": 0.0042157833512384,
+      "method": "legacy_cg32",
+      "pairs": [
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": 5.5556057532157865e-09,
+              "transaction_seconds_ratio": 0.9880074909024532
+            },
+            "adam32": {
+              "gain_db": -0.006038649682594155,
+              "transaction_seconds_ratio": 13.313538431460115
+            },
+            "legacy_cg32": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            }
+          },
+          "gain_db": 0.013557062874003378,
+          "image_id": 9,
+          "lpips_difference": -6.778538227081299e-05,
+          "ms_ssim_difference": 0.00028145313262939453,
+          "seed": 0
+        },
+        {
+          "accepted": false,
+          "coefficients_changed": false,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.0005541042966932253,
+              "transaction_seconds_ratio": 0.9437253458762472
+            },
+            "adam32": {
+              "gain_db": 1.0504543013212242e-08,
+              "transaction_seconds_ratio": 13.933809589148456
+            },
+            "legacy_cg32": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            }
+          },
+          "gain_db": 1.839800845004902e-08,
+          "image_id": 9,
+          "lpips_difference": 0.0,
+          "ms_ssim_difference": -5.960464477539063e-08,
+          "seed": 1
+        },
+        {
+          "accepted": false,
+          "coefficients_changed": false,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.0037658205446646775,
+              "transaction_seconds_ratio": 0.9772711714931421
+            },
+            "adam32": {
+              "gain_db": -4.1888625901265186e-10,
+              "transaction_seconds_ratio": 10.131168546932432
+            },
+            "legacy_cg32": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            }
+          },
+          "gain_db": -3.135358639383412e-09,
+          "image_id": 25,
+          "lpips_difference": 0.0,
+          "ms_ssim_difference": 1.1920928955078125e-07,
+          "seed": 0
+        },
+        {
+          "accepted": false,
+          "coefficients_changed": false,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.003293687505824039,
+              "transaction_seconds_ratio": 0.9876615787575531
+            },
+            "adam32": {
+              "gain_db": 5.508631772954686e-09,
+              "transaction_seconds_ratio": 9.512372780903615
+            },
+            "legacy_cg32": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            }
+          },
+          "gain_db": 6.621846182497393e-09,
+          "image_id": 25,
+          "lpips_difference": 0.0,
+          "ms_ssim_difference": -5.960464477539063e-08,
+          "seed": 1
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": 1.053470420231406e-06,
+              "transaction_seconds_ratio": 0.9849552217479788
+            },
+            "adam32": {
+              "gain_db": 0.005306091252521128,
+              "transaction_seconds_ratio": 13.440348679523229
+            },
+            "legacy_cg32": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            }
+          },
+          "gain_db": 0.005306121274848863,
+          "image_id": 30,
+          "lpips_difference": -2.9966235160827637e-05,
+          "ms_ssim_difference": 1.895427703857422e-05,
+          "seed": 0
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": 9.413589339146711e-07,
+              "transaction_seconds_ratio": 0.9879719483806113
+            },
+            "adam32": {
+              "gain_db": 0.018165786185058153,
+              "transaction_seconds_ratio": 12.7078551723771
+            },
+            "legacy_cg32": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            }
+          },
+          "gain_db": 0.018165764676474794,
+          "image_id": 30,
+          "lpips_difference": -3.5181641578674316e-05,
+          "ms_ssim_difference": 3.7729740142822266e-05,
+          "seed": 1
+        },
+        {
+          "accepted": false,
+          "coefficients_changed": false,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.0017881923464706517,
+              "transaction_seconds_ratio": 0.9671719014329055
+            },
+            "adam32": {
+              "gain_db": 4.7549697512749844e-09,
+              "transaction_seconds_ratio": 10.671738721522006
+            },
+            "legacy_cg32": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            }
+          },
+          "gain_db": 3.0605349365941947e-09,
+          "image_id": 34,
+          "lpips_difference": 0.0,
+          "ms_ssim_difference": 0.0,
+          "seed": 0
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -4.2632848362700315e-09,
+              "transaction_seconds_ratio": 0.9866552122970584
+            },
+            "adam32": {
+              "gain_db": 0.003306058700104586,
+              "transaction_seconds_ratio": 11.271333873760275
+            },
+            "legacy_cg32": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            }
+          },
+          "gain_db": 0.003306049072406836,
+          "image_id": 34,
+          "lpips_difference": -0.00019603967666625977,
+          "ms_ssim_difference": 0.00019174814224243164,
+          "seed": 1
+        }
+      ],
+      "passes_utility_gate": false
+    },
+    {
+      "complete_matrix": true,
+      "median_image_averaged_gain_db": 0.00529267288751889,
+      "method": "actual_cg_ray",
+      "pairs": [
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            },
+            "adam32": {
+              "gain_db": -0.006038655238199908,
+              "transaction_seconds_ratio": 13.47513916043231
+            },
+            "legacy_cg32": {
+              "gain_db": -5.5556057532157865e-09,
+              "transaction_seconds_ratio": 1.01213807507329
+            }
+          },
+          "gain_db": 0.013557057318397625,
+          "image_id": 9,
+          "lpips_difference": -7.107853889465332e-05,
+          "ms_ssim_difference": 0.0002823472023010254,
+          "seed": 0
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            },
+            "adam32": {
+              "gain_db": 0.0005541148012362385,
+              "transaction_seconds_ratio": 14.764687257828113
+            },
+            "legacy_cg32": {
+              "gain_db": 0.0005541042966932253,
+              "transaction_seconds_ratio": 1.059630330338857
+            }
+          },
+          "gain_db": 0.0005541226947016753,
+          "image_id": 9,
+          "lpips_difference": -9.372830390930176e-06,
+          "ms_ssim_difference": 1.1861324310302734e-05,
+          "seed": 1
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            },
+            "adam32": {
+              "gain_db": 0.0037658201257784185,
+              "transaction_seconds_ratio": 10.366793621317342
+            },
+            "legacy_cg32": {
+              "gain_db": 0.0037658205446646775,
+              "transaction_seconds_ratio": 1.0232574429389247
+            }
+          },
+          "gain_db": 0.003765817409306038,
+          "image_id": 25,
+          "lpips_difference": -0.00024086236953735352,
+          "ms_ssim_difference": 0.0001550912857055664,
+          "seed": 0
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            },
+            "adam32": {
+              "gain_db": 0.003293693014455812,
+              "transaction_seconds_ratio": 9.631206665819558
+            },
+            "legacy_cg32": {
+              "gain_db": 0.003293687505824039,
+              "transaction_seconds_ratio": 1.012492559706502
+            }
+          },
+          "gain_db": 0.0032936941276702214,
+          "image_id": 25,
+          "lpips_difference": -6.461143493652344e-05,
+          "ms_ssim_difference": 0.00012820959091186523,
+          "seed": 1
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            },
+            "adam32": {
+              "gain_db": 0.0053050377821008965,
+              "transaction_seconds_ratio": 13.64564437322433
+            },
+            "legacy_cg32": {
+              "gain_db": -1.053470420231406e-06,
+              "transaction_seconds_ratio": 1.015274580935082
+            }
+          },
+          "gain_db": 0.0053050678044286315,
+          "image_id": 30,
+          "lpips_difference": -2.87666916847229e-05,
+          "ms_ssim_difference": 1.913309097290039e-05,
+          "seed": 0
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            },
+            "adam32": {
+              "gain_db": 0.018164844826124238,
+              "transaction_seconds_ratio": 12.862566789681221
+            },
+            "legacy_cg32": {
+              "gain_db": -9.413589339146711e-07,
+              "transaction_seconds_ratio": 1.0121744869771898
+            }
+          },
+          "gain_db": 0.01816482331754088,
+          "image_id": 30,
+          "lpips_difference": -3.3915042877197266e-05,
+          "ms_ssim_difference": 3.74913215637207e-05,
+          "seed": 1
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            },
+            "adam32": {
+              "gain_db": 0.001788197101440403,
+              "transaction_seconds_ratio": 11.03396273786633
+            },
+            "legacy_cg32": {
+              "gain_db": 0.0017881923464706517,
+              "transaction_seconds_ratio": 1.0339423617647063
+            }
+          },
+          "gain_db": 0.0017881954070055883,
+          "image_id": 34,
+          "lpips_difference": -2.4020671844482422e-05,
+          "ms_ssim_difference": 8.565187454223633e-05,
+          "seed": 0
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            },
+            "adam32": {
+              "gain_db": 0.0033060629633894223,
+              "transaction_seconds_ratio": 11.423781816871145
+            },
+            "legacy_cg32": {
+              "gain_db": 4.2632848362700315e-09,
+              "transaction_seconds_ratio": 1.0135252796890144
+            }
+          },
+          "gain_db": 0.003306053335691672,
+          "image_id": 34,
+          "lpips_difference": -0.0001951456069946289,
+          "ms_ssim_difference": 0.00019186735153198242,
+          "seed": 1
+        }
+      ],
+      "passes_utility_gate": false
+    },
+    {
+      "complete_matrix": true,
+      "median_image_averaged_gain_db": 0.0012195526743346008,
+      "method": "actual_gradient_ray",
+      "pairs": [
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.011221274259774816,
+              "transaction_seconds_ratio": 0.06273467337571959
+            },
+            "adam32": {
+              "gain_db": -0.017259929497974724,
+              "transaction_seconds_ratio": 0.8453584539220892
+            },
+            "legacy_cg32": {
+              "gain_db": -0.01122127981538057,
+              "transaction_seconds_ratio": 0.06349615155085239
+            }
+          },
+          "gain_db": 0.002335783058622809,
+          "image_id": 9,
+          "lpips_difference": 4.538893699645996e-05,
+          "ms_ssim_difference": 0.00013214349746704102,
+          "seed": 0
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": 0.0008085173809000423,
+              "transaction_seconds_ratio": 0.0597131724621625
+            },
+            "adam32": {
+              "gain_db": 0.0013626321821362808,
+              "transaction_seconds_ratio": 0.8816463165765831
+            },
+            "legacy_cg32": {
+              "gain_db": 0.0013626216775932676,
+              "transaction_seconds_ratio": 0.06327388866166239
+            }
+          },
+          "gain_db": 0.0013626400756017176,
+          "image_id": 9,
+          "lpips_difference": -5.558133125305176e-06,
+          "ms_ssim_difference": 4.476308822631836e-05,
+          "seed": 1
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.002963535387081606,
+              "transaction_seconds_ratio": 0.08901418866066947
+            },
+            "adam32": {
+              "gain_db": 0.0008022847386968124,
+              "transaction_seconds_ratio": 0.9227917232141668
+            },
+            "legacy_cg32": {
+              "gain_db": 0.0008022851575830714,
+              "transaction_seconds_ratio": 0.09108443107419968
+            }
+          },
+          "gain_db": 0.000802282022224432,
+          "image_id": 25,
+          "lpips_difference": -5.1140785217285156e-05,
+          "ms_ssim_difference": 2.3663043975830078e-05,
+          "seed": 0
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.0031343514844621723,
+              "transaction_seconds_ratio": 0.11898420482712287
+            },
+            "adam32": {
+              "gain_db": 0.0001593415299936396,
+              "transaction_seconds_ratio": 1.1459614666582256
+            },
+            "legacy_cg32": {
+              "gain_db": 0.00015933602136186664,
+              "transaction_seconds_ratio": 0.12047062211005638
+            }
+          },
+          "gain_db": 0.00015934264320804914,
+          "image_id": 25,
+          "lpips_difference": -5.424022674560547e-06,
+          "ms_ssim_difference": 6.556510925292969e-06,
+          "seed": 1
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.0036417772386769798,
+              "transaction_seconds_ratio": 0.06192142007879041
+            },
+            "adam32": {
+              "gain_db": 0.0016632605434239167,
+              "transaction_seconds_ratio": 0.8449576774802064
+            },
+            "legacy_cg32": {
+              "gain_db": -0.003642830709097211,
+              "transaction_seconds_ratio": 0.06286724382139912
+            }
+          },
+          "gain_db": 0.0016632905657516517,
+          "image_id": 30,
+          "lpips_difference": -4.604458808898926e-06,
+          "ms_ssim_difference": 2.562999725341797e-06,
+          "seed": 0
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.005657257156997275,
+              "transaction_seconds_ratio": 0.06328365416097446
+            },
+            "adam32": {
+              "gain_db": 0.012507587669126963,
+              "transaction_seconds_ratio": 0.8139902283406218
+            },
+            "legacy_cg32": {
+              "gain_db": -0.00565819851593119,
+              "transaction_seconds_ratio": 0.06405410018442624
+            }
+          },
+          "gain_db": 0.012507566160543604,
+          "image_id": 30,
+          "lpips_difference": -1.8998980522155762e-06,
+          "ms_ssim_difference": 1.3768672943115234e-05,
+          "seed": 1
+        },
+        {
+          "accepted": false,
+          "coefficients_changed": false,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.0017881939376067635,
+              "transaction_seconds_ratio": 0.10763058840382986
+            },
+            "adam32": {
+              "gain_db": 3.163833639518998e-09,
+              "transaction_seconds_ratio": 1.1875919019024865
+            },
+            "legacy_cg32": {
+              "gain_db": -1.5911361117559863e-09,
+              "transaction_seconds_ratio": 0.11128382477238084
+            }
+          },
+          "gain_db": 1.4693988248382084e-09,
+          "image_id": 34,
+          "lpips_difference": -5.960464477539063e-08,
+          "ms_ssim_difference": 5.960464477539063e-08,
+          "seed": 0
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.0021262672419766204,
+              "transaction_seconds_ratio": 0.06371783205448447
+            },
+            "adam32": {
+              "gain_db": 0.0011797957214128019,
+              "transaction_seconds_ratio": 0.727898611234469
+            },
+            "legacy_cg32": {
+              "gain_db": -0.002126262978691784,
+              "transaction_seconds_ratio": 0.06457963355419902
+            }
+          },
+          "gain_db": 0.0011797860937150517,
+          "image_id": 34,
+          "lpips_difference": -0.00014644861221313477,
+          "ms_ssim_difference": 3.612041473388672e-05,
+          "seed": 1
+        }
+      ],
+      "passes_utility_gate": false
+    },
+    {
+      "complete_matrix": true,
+      "median_image_averaged_gain_db": 0.0016598440811712578,
+      "method": "actual_jacobi_ray",
+      "pairs": [
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.008835555104344195,
+              "transaction_seconds_ratio": 0.0783954804552359
+            },
+            "adam32": {
+              "gain_db": -0.014874210342544103,
+              "transaction_seconds_ratio": 1.056390008683255
+            },
+            "legacy_cg32": {
+              "gain_db": -0.008835560659949948,
+              "transaction_seconds_ratio": 0.07934705068240819
+            }
+          },
+          "gain_db": 0.00472150221405343,
+          "image_id": 9,
+          "lpips_difference": -1.9177794456481934e-05,
+          "ms_ssim_difference": 0.00013113021850585938,
+          "seed": 0
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.00042400298596945163,
+              "transaction_seconds_ratio": 0.1302931466166247
+            },
+            "adam32": {
+              "gain_db": 0.00013011181526678683,
+              "transaction_seconds_ratio": 1.923737561632809
+            },
+            "legacy_cg32": {
+              "gain_db": 0.00013010131072377362,
+              "transaction_seconds_ratio": 0.13806256999026317
+            }
+          },
+          "gain_db": 0.00013011970873222367,
+          "image_id": 9,
+          "lpips_difference": -1.4156103134155273e-06,
+          "ms_ssim_difference": 3.933906555175781e-06,
+          "seed": 1
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.0033904045690142937,
+              "transaction_seconds_ratio": 0.1267455355091227
+            },
+            "adam32": {
+              "gain_db": 0.00037541555676412486,
+              "transaction_seconds_ratio": 1.313944809046424
+            },
+            "legacy_cg32": {
+              "gain_db": 0.00037541597565038387,
+              "transaction_seconds_ratio": 0.12969331256898958
+            }
+          },
+          "gain_db": 0.0003754128402917445,
+          "image_id": 25,
+          "lpips_difference": -1.7642974853515625e-05,
+          "ms_ssim_difference": 1.1563301086425781e-05,
+          "seed": 0
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.0020491492146135215,
+              "transaction_seconds_ratio": 0.1048680205380378
+            },
+            "adam32": {
+              "gain_db": 0.0012445437998422904,
+              "transaction_seconds_ratio": 1.0100055784372521
+            },
+            "legacy_cg32": {
+              "gain_db": 0.0012445382912105174,
+              "transaction_seconds_ratio": 0.10617809054591193
+            }
+          },
+          "gain_db": 0.0012445449130567,
+          "image_id": 25,
+          "lpips_difference": -5.048513412475586e-05,
+          "ms_ssim_difference": 4.172325134277344e-05,
+          "seed": 1
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.0031594146460278694,
+              "transaction_seconds_ratio": 0.08081231898609435
+            },
+            "adam32": {
+              "gain_db": 0.002145623136073027,
+              "transaction_seconds_ratio": 1.102736165859808
+            },
+            "legacy_cg32": {
+              "gain_db": -0.0031604681164481008,
+              "transaction_seconds_ratio": 0.08204669329299913
+            }
+          },
+          "gain_db": 0.002145653158400762,
+          "image_id": 30,
+          "lpips_difference": 6.765127182006836e-06,
+          "ms_ssim_difference": 3.5762786865234375e-06,
+          "seed": 0
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.003981018343083065,
+              "transaction_seconds_ratio": 0.07809343488210668
+            },
+            "adam32": {
+              "gain_db": 0.014183826483041173,
+              "transaction_seconds_ratio": 1.0044820220067183
+            },
+            "legacy_cg32": {
+              "gain_db": -0.0039819597020169795,
+              "transaction_seconds_ratio": 0.07904418238808292
+            }
+          },
+          "gain_db": 0.014183804974457814,
+          "image_id": 30,
+          "lpips_difference": -4.868954420089722e-05,
+          "ms_ssim_difference": 1.9848346710205078e-05,
+          "seed": 1
+        },
+        {
+          "accepted": false,
+          "coefficients_changed": false,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.0017881933273642403,
+              "transaction_seconds_ratio": 0.12416350225349904
+            },
+            "adam32": {
+              "gain_db": 3.7740761626992025e-09,
+              "transaction_seconds_ratio": 1.3700154572680905
+            },
+            "legacy_cg32": {
+              "gain_db": -9.80893588575782e-10,
+              "transaction_seconds_ratio": 0.12837790476496022
+            }
+          },
+          "gain_db": 2.079641348018413e-09,
+          "image_id": 34,
+          "lpips_difference": 0.0,
+          "ms_ssim_difference": 5.960464477539063e-08,
+          "seed": 0
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.0015183010134336428,
+              "transaction_seconds_ratio": 0.08190876340847962
+            },
+            "adam32": {
+              "gain_db": 0.0017877619499557795,
+              "transaction_seconds_ratio": 0.93570784206819
+            },
+            "legacy_cg32": {
+              "gain_db": -0.0015182967501488065,
+              "transaction_seconds_ratio": 0.08301660234256061
+            }
+          },
+          "gain_db": 0.0017877523222580294,
+          "image_id": 34,
+          "lpips_difference": -0.00018453598022460938,
+          "ms_ssim_difference": 0.0001004338264465332,
+          "seed": 1
+        }
+      ],
+      "passes_utility_gate": false
+    },
+    {
+      "complete_matrix": true,
+      "median_image_averaged_gain_db": 0.0012195485431751862,
+      "method": "native_gradient_ray",
+      "pairs": [
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.011221265789444601,
+              "transaction_seconds_ratio": 0.037263047431183166
+            },
+            "adam32": {
+              "gain_db": -0.01725992102764451,
+              "transaction_seconds_ratio": 0.5021247496769828
+            },
+            "legacy_cg32": {
+              "gain_db": -0.011221271345050354,
+              "transaction_seconds_ratio": 0.03771534909836243
+            }
+          },
+          "gain_db": 0.002335791528953024,
+          "image_id": 9,
+          "lpips_difference": 4.538893699645996e-05,
+          "ms_ssim_difference": 0.00013208389282226562,
+          "seed": 0
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": 0.0008084978291620359,
+              "transaction_seconds_ratio": 0.035721749250378756
+            },
+            "adam32": {
+              "gain_db": 0.0013626126303982744,
+              "transaction_seconds_ratio": 0.5274204559843982
+            },
+            "legacy_cg32": {
+              "gain_db": 0.0013626021258552612,
+              "transaction_seconds_ratio": 0.037851848958460665
+            }
+          },
+          "gain_db": 0.0013626205238637112,
+          "image_id": 9,
+          "lpips_difference": -5.558133125305176e-06,
+          "ms_ssim_difference": 4.464387893676758e-05,
+          "seed": 1
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.0029635332921742474,
+              "transaction_seconds_ratio": 0.0646331433471776
+            },
+            "adam32": {
+              "gain_db": 0.0008022868336041711,
+              "transaction_seconds_ratio": 0.6700384581772101
+            },
+            "legacy_cg32": {
+              "gain_db": 0.0008022872524904301,
+              "transaction_seconds_ratio": 0.06613634499053793
+            }
+          },
+          "gain_db": 0.0008022841171317907,
+          "image_id": 25,
+          "lpips_difference": -5.1081180572509766e-05,
+          "ms_ssim_difference": 2.3663043975830078e-05,
+          "seed": 0
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.003134352192525114,
+              "transaction_seconds_ratio": 0.09026185206461437
+            },
+            "adam32": {
+              "gain_db": 0.00015934082193069798,
+              "transaction_seconds_ratio": 0.8693305512739329
+            },
+            "legacy_cg32": {
+              "gain_db": 0.00015933531329892503,
+              "transaction_seconds_ratio": 0.09138945364075103
+            }
+          },
+          "gain_db": 0.00015934193514510753,
+          "image_id": 25,
+          "lpips_difference": -5.424022674560547e-06,
+          "ms_ssim_difference": 6.496906280517578e-06,
+          "seed": 1
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.003641770282001744,
+              "transaction_seconds_ratio": 0.03750930362978335
+            },
+            "adam32": {
+              "gain_db": 0.0016632675000991526,
+              "transaction_seconds_ratio": 0.5118386180193161
+            },
+            "legacy_cg32": {
+              "gain_db": -0.0036428237524219753,
+              "transaction_seconds_ratio": 0.03808224252389505
+            }
+          },
+          "gain_db": 0.0016632975224268876,
+          "image_id": 30,
+          "lpips_difference": -4.604458808898926e-06,
+          "ms_ssim_difference": 2.6226043701171875e-06,
+          "seed": 0
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.005657245858046167,
+              "transaction_seconds_ratio": 0.04100668390724926
+            },
+            "adam32": {
+              "gain_db": 0.01250759896807807,
+              "transaction_seconds_ratio": 0.5274512105803396
+            },
+            "legacy_cg32": {
+              "gain_db": -0.005658187216980082,
+              "transaction_seconds_ratio": 0.0415059192464558
+            }
+          },
+          "gain_db": 0.012507577459494712,
+          "image_id": 30,
+          "lpips_difference": -1.9073486328125e-06,
+          "ms_ssim_difference": 1.3828277587890625e-05,
+          "seed": 1
+        },
+        {
+          "accepted": false,
+          "coefficients_changed": false,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.0017881963500094855,
+              "transaction_seconds_ratio": 0.08500242356148058
+            },
+            "adam32": {
+              "gain_db": 7.514309174894152e-10,
+              "transaction_seconds_ratio": 0.9379135742057076
+            },
+            "legacy_cg32": {
+              "gain_db": -4.003538833785569e-09,
+              "transaction_seconds_ratio": 0.08788760657288114
+            }
+          },
+          "gain_db": -9.430038971913746e-10,
+          "image_id": 34,
+          "lpips_difference": -5.960464477539063e-08,
+          "ms_ssim_difference": 5.960464477539063e-08,
+          "seed": 0
+        },
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.0021262702728037652,
+              "transaction_seconds_ratio": 0.038019102134040667
+            },
+            "adam32": {
+              "gain_db": 0.001179792690585657,
+              "transaction_seconds_ratio": 0.4343219276526207
+            },
+            "legacy_cg32": {
+              "gain_db": -0.002126266009518929,
+              "transaction_seconds_ratio": 0.03853332112392877
+            }
+          },
+          "gain_db": 0.001179783062887907,
+          "image_id": 34,
+          "lpips_difference": -0.00014644861221313477,
+          "ms_ssim_difference": 3.606081008911133e-05,
+          "seed": 1
+        }
+      ],
+      "passes_utility_gate": false
+    },
+    {
+      "complete_matrix": true,
+      "median_image_averaged_gain_db": 1.7276216013328849e-09,
+      "method": "adam32",
+      "pairs": [
+        {
+          "accepted": true,
+          "coefficients_changed": true,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": 0.006038655238199908,
+              "transaction_seconds_ratio": 0.07421073638603655
+            },
+            "adam32": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            },
+            "legacy_cg32": {
+              "gain_db": 0.006038649682594155,
+              "transaction_seconds_ratio": 0.07511151187553439
+            }
+          },
+          "gain_db": 0.019595712556597533,
+          "image_id": 9,
+          "lpips_difference": -0.0013433843851089478,
+          "ms_ssim_difference": 0.00031566619873046875,
+          "seed": 0
+        },
+        {
+          "accepted": false,
+          "coefficients_changed": false,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.0005541148012362385,
+              "transaction_seconds_ratio": 0.06772916910040261
+            },
+            "adam32": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            },
+            "legacy_cg32": {
+              "gain_db": -1.0504543013212242e-08,
+              "transaction_seconds_ratio": 0.07176788182743593
+            }
+          },
+          "gain_db": 7.893465436836777e-09,
+          "image_id": 9,
+          "lpips_difference": 1.4901161193847656e-08,
+          "ms_ssim_difference": 0.0,
+          "seed": 1
+        },
+        {
+          "accepted": false,
+          "coefficients_changed": false,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.0037658201257784185,
+              "transaction_seconds_ratio": 0.09646184119491777
+            },
+            "adam32": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            },
+            "legacy_cg32": {
+              "gain_db": 4.1888625901265186e-10,
+              "transaction_seconds_ratio": 0.0987052969622922
+            }
+          },
+          "gain_db": -2.7164723803707602e-09,
+          "image_id": 25,
+          "lpips_difference": 0.0,
+          "ms_ssim_difference": 1.1920928955078125e-07,
+          "seed": 0
+        },
+        {
+          "accepted": false,
+          "coefficients_changed": false,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.003293693014455812,
+              "transaction_seconds_ratio": 0.10382914983528764
+            },
+            "adam32": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            },
+            "legacy_cg32": {
+              "gain_db": -5.508631772954686e-09,
+              "transaction_seconds_ratio": 0.10512624168888031
+            }
+          },
+          "gain_db": 1.1132144095427066e-09,
+          "image_id": 25,
+          "lpips_difference": 0.0,
+          "ms_ssim_difference": 0.0,
+          "seed": 1
+        },
+        {
+          "accepted": false,
+          "coefficients_changed": false,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.0053050377821008965,
+              "transaction_seconds_ratio": 0.07328345753771905
+            },
+            "adam32": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            },
+            "legacy_cg32": {
+              "gain_db": -0.005306091252521128,
+              "transaction_seconds_ratio": 0.0744028316410816
+            }
+          },
+          "gain_db": 3.002232773496871e-08,
+          "image_id": 30,
+          "lpips_difference": 0.0,
+          "ms_ssim_difference": -1.1920928955078125e-07,
+          "seed": 0
+        },
+        {
+          "accepted": false,
+          "coefficients_changed": false,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.018164844826124238,
+              "transaction_seconds_ratio": 0.07774498017007253
+            },
+            "adam32": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            },
+            "legacy_cg32": {
+              "gain_db": -0.018165786185058153,
+              "transaction_seconds_ratio": 0.07869148541869497
+            }
+          },
+          "gain_db": -2.150858335880912e-08,
+          "image_id": 30,
+          "lpips_difference": 0.0,
+          "ms_ssim_difference": 1.1920928955078125e-07,
+          "seed": 1
+        },
+        {
+          "accepted": false,
+          "coefficients_changed": false,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.001788197101440403,
+              "transaction_seconds_ratio": 0.09062927107486073
+            },
+            "adam32": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            },
+            "legacy_cg32": {
+              "gain_db": -4.7549697512749844e-09,
+              "transaction_seconds_ratio": 0.09370544258015527
+            }
+          },
+          "gain_db": -1.6944348146807897e-09,
+          "image_id": 34,
+          "lpips_difference": -5.960464477539063e-08,
+          "ms_ssim_difference": 0.0,
+          "seed": 0
+        },
+        {
+          "accepted": false,
+          "coefficients_changed": false,
+          "comparators": {
+            "actual_cg_ray": {
+              "gain_db": -0.0033060629633894223,
+              "transaction_seconds_ratio": 0.08753668583928624
+            },
+            "adam32": {
+              "gain_db": 0.0,
+              "transaction_seconds_ratio": 1.0
+            },
+            "legacy_cg32": {
+              "gain_db": -0.003306058700104586,
+              "transaction_seconds_ratio": 0.08872064399831198
+            }
+          },
+          "gain_db": -9.62769775014749e-09,
+          "image_id": 34,
+          "lpips_difference": 0.0,
+          "ms_ssim_difference": 0.0,
+          "seed": 1
+        }
+      ],
+      "passes_utility_gate": false
+    }
+  ],
+  "speed_claim": false,
+  "timing_eligible": true
+}

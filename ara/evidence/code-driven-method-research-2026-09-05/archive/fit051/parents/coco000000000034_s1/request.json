@@ -1,0 +1,16 @@
+{
+  "arm_order": [
+    "noop",
+    "legacy_cg32",
+    "actual_cg_ray",
+    "actual_gradient_ray",
+    "actual_jacobi_ray",
+    "native_gradient_ray",
+    "adam32"
+  ],
+  "image_id": 34,
+  "parent_id": "coco000000000034_s1",
+  "root": "/home/alex/Documents/structsplat/results/code-driven-2026-09-05/fit051-v1",
+  "seed": 1,
+  "smoke": false
+}

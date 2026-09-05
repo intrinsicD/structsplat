@@ -1,0 +1,15 @@
+{
+  "arm_order": [
+    "gradient_ray",
+    "jacobi_ray",
+    "adam32",
+    "noop",
+    "legacy_cg32",
+    "cg_ray"
+  ],
+  "image_id": 25,
+  "parent_id": "coco000000000025_s1",
+  "root": "/home/alex/Documents/structsplat/results/code-driven-2026-09-05/fit050-v1",
+  "seed": 1,
+  "smoke": false
+}

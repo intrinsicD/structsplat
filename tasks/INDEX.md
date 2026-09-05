@@ -13,9 +13,6 @@ replay-valid; do not rewrite those task bytes merely to duplicate this table.
 
 | ID | Title | Status | Depends on |
 |----|-------|--------|-----------|
-| FIT-051 | Actual-render color transactions | in-progress — fresh renderer-native/actual-trial mechanism; exact protocol and outcomes pending | FIT-050, ADR-0003/0011 |
-| FIT-050 | Safeguarded normalized color-ray refinement | in-progress — code-derived design; executable review and outcomes pending | ADR-0003/0011 |
-| PORT-007 | Same-call coverage and tail quality evaluation | in-progress — code-derived reuse; exact gate parity and complete-cost experiments pending | ADR-0003/0011/0025 |
 | ABL-001 | Init-strategy x budget sweep (the core experiment + fitness) | partial | INIT-003/004, BENCH-001 |
 | ABL-002 | Full stage-combination search | partial | CORE, INIT, FIT, HIER, BENCH |
 | GEN-001 | Generative 2D Gaussians via SDS distillation (no dataset) | todo | CORE-001, ADR-0006 |
@@ -140,7 +137,7 @@ replay-valid; do not rewrite those task bytes merely to duplicate this table.
 | BENCH-024 | Temporal field-reuse killing test | todo — same-camera warm-start/shared-geometry/delta opportunity only | CORE-014, COMP-013/014, BENCH-022/025, BENCH-002 |
 | BENCH-025 | Structured-codec necessity gate | todo — test whether seed-generated local structure beats the complete direct codec at usable cold-query cost | BENCH-020, COMP-008/009/013, CORE-013, BENCH-002 |
 | COMP-014 | Seed-structured Field V2 codec (conditional) | todo — implement one SGI-controlled grammar only after a positive BENCH-025 verdict; otherwise close without code | BENCH-025, COMP-013, CORE-013, BENCH-020, COMP-008/009 |
-| DOCS-004 | Staged lint/format ratchet (widen `select`, adopt `ruff format`) | todo — Stage 1/2 due before the next results-bearing task closes; see the task's Expiry section | DOCS-003 |
+| DOCS-004 | Staged lint/format ratchet (widen `select`, adopt `ruff format`) | todo — expired results-closure dependency retired with missed deadline acknowledged 2026-09-05; all stages, including correctness triage, remain explicit backlog | DOCS-003 |
 | DOCS-006 | Repository-native experiment workflow skill | in-progress | DOCS-005, BENCH-002/003 |
 | DOCS-007 | 2D Gaussian image-field state-of-the-art review | in-review — producer literature artifact complete at report blob `40b771e`; distinct scientific review required | BENCH-005/007, COMP-013, BENCH-025 |
 
@@ -170,6 +167,9 @@ fine-detail confirmation.
 
 | ID | Title | Path |
 |----|-------|------|
+| FIT-050 | Safeguarded normalized color-ray refinement (bounded utility negative; C73) | `done/FIT-050-safe-color-ray.md` |
+| PORT-007 | Same-call quality reuse (component observations, parity negative; C74) | `done/PORT-007-joint-render-coverage.md` |
+| FIT-051 | Actual-render color transactions (small progress, utility negative; C75) | `done/FIT-051-actual-render-color-ray.md` |
 | CORE-001 | Differentiable reference rasterizer (normalized weighted sum) | `done/CORE-001-reference-rasterizer.md` |
 | CORE-002 | RS Gaussian parameterization + conics | `done/CORE-002-rs-gaussian-params.md` |
 | CORE-003 | Edge-aware render support window (off-image support + tile waste) | `done/CORE-003-render-support-clamp.md` |

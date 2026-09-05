@@ -29,10 +29,11 @@ The [overnight findings and handoff](docs/research/2026-09-05-overnight-findings
 independently audited mixed/negative results, numerical-polish and rollback caveats, and an
 unrun simple-fallback design (ARA C68–C72). No maintained pipeline or default is promoted.
 
-The follow-up [code-driven portfolio](docs/research/2026-09-05-code-driven-portfolio.md)
-selects guarded color refinement (FIT-050) and same-call quality-measurement reuse (PORT-007)
-for bounded experiments. FIT-051 adds a separate actual-render transaction and renderer-native
-color-gradient comparison. These active investigations do not authorize a default change.
+The follow-up [code-driven findings](docs/research/2026-09-05-code-driven-findings.md) report
+214 completed cells across guarded color refinement (FIT-050/051) and quality-measurement reuse
+(PORT-007). Small actual-render backtracking gains and large component timing ratios miss the
+frozen utility/parity gates; baseline pipeline variability prevents an end-to-end speed claim.
+The experimental implementations remain opt-in; defaults are unchanged (ADR-0034, ARA C73–C75).
 
 > This is a PyTorch **research reference** with an opt-in exact CUDA extension for the same
 > normalized/additive equations. The remaining production port is a tiled CUDA/Vulkan/RHI path

@@ -1,0 +1,11 @@
+{"utc": "2026-09-05T08:23:35.765252+00:00", "owned_worker_pid": 959613, "ok": true, "processes": [], "foreign_pids": []}
+{"utc": "2026-09-05T08:23:36.785054+00:00", "owned_worker_pid": 959613, "ok": true, "processes": [{"pid": 959613, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "96"}], "foreign_pids": []}
+{"utc": "2026-09-05T08:23:37.800826+00:00", "owned_worker_pid": 959613, "ok": true, "processes": [{"pid": 959613, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "106"}], "foreign_pids": []}
+{"utc": "2026-09-05T08:23:38.816193+00:00", "owned_worker_pid": 959613, "ok": true, "processes": [{"pid": 959613, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "126"}], "foreign_pids": []}
+{"utc": "2026-09-05T08:23:39.831166+00:00", "owned_worker_pid": 959613, "ok": true, "processes": [{"pid": 959613, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "146"}], "foreign_pids": []}
+{"utc": "2026-09-05T08:23:40.846406+00:00", "owned_worker_pid": 959613, "ok": true, "processes": [{"pid": 959613, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "148"}], "foreign_pids": []}
+{"utc": "2026-09-05T08:23:41.860987+00:00", "owned_worker_pid": 959613, "ok": true, "processes": [{"pid": 959613, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "166"}], "foreign_pids": []}
+{"utc": "2026-09-05T08:23:42.875654+00:00", "owned_worker_pid": 959613, "ok": true, "processes": [{"pid": 959613, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "454"}], "foreign_pids": []}
+{"utc": "2026-09-05T08:23:43.890161+00:00", "owned_worker_pid": 959613, "ok": true, "processes": [{"pid": 959613, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "454"}], "foreign_pids": []}
+{"utc": "2026-09-05T08:23:44.908090+00:00", "owned_worker_pid": 959613, "ok": true, "processes": [{"pid": 959613, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "454"}], "foreign_pids": []}
+{"utc": "2026-09-05T08:23:45.926390+00:00", "owned_worker_pid": 959613, "ok": true, "processes": [{"pid": 959613, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "454"}], "foreign_pids": []}

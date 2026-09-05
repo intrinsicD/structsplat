@@ -1,0 +1,2305 @@
+[
+  {
+    "accepted": true,
+    "accepted_steps": 0,
+    "attempted_steps": 0,
+    "before": {
+      "finite": true,
+      "n_gaussians": 455
+    },
+    "candidate": {
+      "finite": true,
+      "n_gaussians": 455
+    },
+    "event": "initial_safe_state",
+    "global_accepted_steps": 0,
+    "global_attempted_steps": 0,
+    "metadata": {},
+    "phase": "initialization",
+    "reasons": [],
+    "selected": {
+      "finite": true,
+      "n_gaussians": 455
+    }
+  },
+  {
+    "accepted": true,
+    "accepted_steps": 0,
+    "attempted_steps": 0,
+    "before": {
+      "finite": true,
+      "n_gaussians": 455
+    },
+    "candidate": {
+      "finite": true,
+      "n_gaussians": 455
+    },
+    "event": "fixed_geometry_least_squares",
+    "global_accepted_steps": 0,
+    "global_attempted_steps": 0,
+    "metadata": {
+      "basis_apply_calls": 33,
+      "basis_transpose_calls": 34,
+      "denominator_calls": 1,
+      "iterations": 32,
+      "normal_matvec_calls": 33
+    },
+    "phase": "color_solve",
+    "reasons": [],
+    "selected": {
+      "finite": true,
+      "n_gaussians": 455
+    }
+  },
+  {
+    "accepted": true,
+    "accepted_steps": 25,
+    "attempted_steps": 25,
+    "before": {
+      "finite": true,
+      "n_gaussians": 455
+    },
+    "candidate": {
+      "finite": true,
+      "n_gaussians": 455
+    },
+    "event": "global_fit",
+    "global_accepted_steps": 25,
+    "global_attempted_steps": 25,
+    "metadata": {
+      "backtracking_attempts": [
+        {
+          "accepted": true,
+          "accepted_steps": 25,
+          "attempt": 1,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 455
+          },
+          "reasons": [],
+          "steps": 25
+        }
+      ],
+      "block": 1,
+      "checkpoint_candidates": [
+        {
+          "accepted": true,
+          "color_solved": false,
+          "iter": 25,
+          "metrics": {
+            "finite": true,
+            "n_gaussians": 455
+          },
+          "reasons": [],
+          "solve_stats": null
+        }
+      ],
+      "event_color_solve_applied": false,
+      "event_color_solve_enabled": false,
+      "pareto_checkpoint_every": 25,
+      "pareto_safe_checkpoints": true,
+      "phase_step_start": 0,
+      "selected_from_pareto_checkpoint": false,
+      "selected_iter": 25,
+      "trainable_rows": 455
+    },
+    "phase": "bootstrap",
+    "reasons": [],
+    "selected": {
+      "finite": true,
+      "n_gaussians": 455
+    }
+  },
+  {
+    "accepted": false,
+    "accepted_steps": 0,
+    "attempted_steps": 6,
+    "before": {
+      "finite": true,
+      "n_gaussians": 455
+    },
+    "candidate": {
+      "finite": true,
+      "n_gaussians": 455
+    },
+    "event": "global_fit",
+    "global_accepted_steps": 25,
+    "global_attempted_steps": 31,
+    "metadata": {
+      "backtracking_attempts": [
+        {
+          "accepted": false,
+          "accepted_steps": 0,
+          "attempt": 1,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 455
+          },
+          "reasons": [
+            "boundary_mse_regressed"
+          ],
+          "steps": 6
+        }
+      ],
+      "block": 2,
+      "checkpoint_candidates": [
+        {
+          "accepted": false,
+          "color_solved": false,
+          "iter": 6,
+          "metrics": {
+            "finite": true,
+            "n_gaussians": 455
+          },
+          "reasons": [
+            "boundary_mse_regressed"
+          ],
+          "solve_stats": null
+        }
+      ],
+      "event_color_solve_applied": false,
+      "event_color_solve_enabled": false,
+      "pareto_checkpoint_every": 25,
+      "pareto_safe_checkpoints": true,
+      "phase_step_start": 25,
+      "selected_from_pareto_checkpoint": false,
+      "selected_iter": null,
+      "trainable_rows": 455
+    },
+    "phase": "bootstrap",
+    "reasons": [
+      "boundary_mse_regressed"
+    ],
+    "selected": {
+      "finite": true,
+      "n_gaussians": 455
+    }
+  },
+  {
+    "accepted": true,
+    "accepted_steps": 0,
+    "attempted_steps": 0,
+    "before": {
+      "finite": true,
+      "n_gaussians": 455
+    },
+    "candidate": {
+      "finite": true,
+      "n_gaussians": 455
+    },
+    "event": "phase_end",
+    "global_accepted_steps": 25,
+    "global_attempted_steps": 31,
+    "metadata": {
+      "phase_steps": 31,
+      "refinement_policy": "global",
+      "stale_blocks": 1,
+      "target_gaussians": 455,
+      "termination_reason": "deterministic_fixed_point"
+    },
+    "phase": "bootstrap",
+    "reasons": [],
+    "selected": {
+      "finite": true,
+      "n_gaussians": 455
+    }
+  },
+  {
+    "accepted": true,
+    "accepted_steps": 25,
+    "attempted_steps": 25,
+    "before": {
+      "finite": true,
+      "n_gaussians": 455
+    },
+    "candidate": {
+      "finite": true,
+      "n_gaussians": 455
+    },
+    "event": "global_fit",
+    "global_accepted_steps": 50,
+    "global_attempted_steps": 56,
+    "metadata": {
+      "backtracking_attempts": [
+        {
+          "accepted": true,
+          "accepted_steps": 25,
+          "attempt": 1,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 455
+          },
+          "reasons": [],
+          "steps": 25
+        }
+      ],
+      "block": 1,
+      "checkpoint_candidates": [
+        {
+          "accepted": true,
+          "color_solved": false,
+          "iter": 25,
+          "metrics": {
+            "finite": true,
+            "n_gaussians": 455
+          },
+          "reasons": [],
+          "solve_stats": null
+        }
+      ],
+      "event_color_solve_applied": false,
+      "event_color_solve_enabled": false,
+      "pareto_checkpoint_every": 25,
+      "pareto_safe_checkpoints": true,
+      "phase_step_start": 0,
+      "selected_from_pareto_checkpoint": false,
+      "selected_iter": 25,
+      "trainable_rows": 455
+    },
+    "phase": "coverage_growth",
+    "reasons": [],
+    "selected": {
+      "finite": true,
+      "n_gaussians": 455
+    }
+  },
+  {
+    "accepted": true,
+    "accepted_steps": 50,
+    "attempted_steps": 80,
+    "before": {
+      "finite": true,
+      "n_gaussians": 455
+    },
+    "candidate": {
+      "finite": true,
+      "n_gaussians": 727
+    },
+    "event": "coverage_birth",
+    "global_accepted_steps": 100,
+    "global_attempted_steps": 136,
+    "metadata": {
+      "attempts": [
+        {
+          "accepted": true,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 727
+          },
+          "kind": "coverage_birth",
+          "metadata": {
+            "covariance_rule": "local residual support scale + local structure tensor",
+            "finite_peaks": 2781,
+            "hole_births": 193,
+            "recovery": {
+              "checkpoint_candidates": [
+                {
+                  "accepted": true,
+                  "color_solved": false,
+                  "iter": 25,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 727
+                  },
+                  "reasons": [],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": true,
+                  "color_solved": false,
+                  "iter": 50,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 727
+                  },
+                  "reasons": [],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": true,
+                  "color_solved": false,
+                  "iter": 75,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 727
+                  },
+                  "reasons": [],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": true,
+                  "color_solved": false,
+                  "iter": 80,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 727
+                  },
+                  "reasons": [],
+                  "solve_stats": null
+                }
+              ],
+              "event_color_solve_applied": false,
+              "event_color_solve_enabled": false,
+              "pareto_checkpoint_every": 25,
+              "pareto_safe_checkpoints": true,
+              "selected_from_pareto_checkpoint": true,
+              "selected_iter": 50,
+              "trainable_rows": 272
+            },
+            "recovery_neighborhood": {
+              "neighbor_backend": "disabled",
+              "neighbor_count": 0,
+              "seed_rows": 272,
+              "trainable_rows": 272
+            },
+            "selected": 272,
+            "site_mode": "coverage"
+          },
+          "minimum_gain_per_row": null,
+          "proposed": 272,
+          "reasons": [],
+          "requested": 272,
+          "safe_gate_accepted": true
+        }
+      ],
+      "minimum_gain_per_row": null,
+      "winner_count": 272,
+      "winner_metadata": {
+        "covariance_rule": "local residual support scale + local structure tensor",
+        "finite_peaks": 2781,
+        "hole_births": 193,
+        "recovery": {
+          "checkpoint_candidates": [
+            {
+              "accepted": true,
+              "color_solved": false,
+              "iter": 25,
+              "metrics": {
+                "finite": true,
+                "n_gaussians": 727
+              },
+              "reasons": [],
+              "solve_stats": null
+            },
+            {
+              "accepted": true,
+              "color_solved": false,
+              "iter": 50,
+              "metrics": {
+                "finite": true,
+                "n_gaussians": 727
+              },
+              "reasons": [],
+              "solve_stats": null
+            },
+            {
+              "accepted": true,
+              "color_solved": false,
+              "iter": 75,
+              "metrics": {
+                "finite": true,
+                "n_gaussians": 727
+              },
+              "reasons": [],
+              "solve_stats": null
+            },
+            {
+              "accepted": true,
+              "color_solved": false,
+              "iter": 80,
+              "metrics": {
+                "finite": true,
+                "n_gaussians": 727
+              },
+              "reasons": [],
+              "solve_stats": null
+            }
+          ],
+          "event_color_solve_applied": false,
+          "event_color_solve_enabled": false,
+          "pareto_checkpoint_every": 25,
+          "pareto_safe_checkpoints": true,
+          "selected_from_pareto_checkpoint": true,
+          "selected_iter": 50,
+          "trainable_rows": 272
+        },
+        "recovery_neighborhood": {
+          "neighbor_backend": "disabled",
+          "neighbor_count": 0,
+          "seed_rows": 272,
+          "trainable_rows": 272
+        },
+        "selected": 272,
+        "site_mode": "coverage"
+      },
+      "winner_requested_count": 272
+    },
+    "phase": "coverage_growth",
+    "reasons": [],
+    "selected": {
+      "finite": true,
+      "n_gaussians": 727
+    }
+  },
+  {
+    "accepted": true,
+    "accepted_steps": 0,
+    "attempted_steps": 0,
+    "before": {
+      "finite": true,
+      "n_gaussians": 727
+    },
+    "candidate": {
+      "finite": true,
+      "n_gaussians": 727
+    },
+    "event": "phase_end",
+    "global_accepted_steps": 100,
+    "global_attempted_steps": 136,
+    "metadata": {
+      "phase_steps": 25,
+      "refinement_policy": "global",
+      "stale_blocks": 0,
+      "target_gaussians": 727,
+      "termination_reason": "metric_target"
+    },
+    "phase": "coverage_growth",
+    "reasons": [],
+    "selected": {
+      "finite": true,
+      "n_gaussians": 727
+    }
+  },
+  {
+    "accepted": false,
+    "accepted_steps": 0,
+    "attempted_steps": 41,
+    "before": {
+      "finite": true,
+      "n_gaussians": 727
+    },
+    "candidate": {
+      "finite": true,
+      "n_gaussians": 727
+    },
+    "event": "global_fit",
+    "global_accepted_steps": 100,
+    "global_attempted_steps": 177,
+    "metadata": {
+      "backtracking_attempts": [
+        {
+          "accepted": false,
+          "accepted_steps": 0,
+          "attempt": 1,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 727
+          },
+          "reasons": [
+            "boundary_mse_regressed",
+            "cvar99_mse_regressed",
+            "interior_holes_regressed"
+          ],
+          "steps": 25
+        },
+        {
+          "accepted": false,
+          "accepted_steps": 0,
+          "attempt": 2,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 727
+          },
+          "reasons": [
+            "boundary_mse_regressed",
+            "cvar99_mse_regressed"
+          ],
+          "steps": 16
+        }
+      ],
+      "block": 1,
+      "checkpoint_candidates": [
+        {
+          "accepted": false,
+          "color_solved": false,
+          "iter": 16,
+          "metrics": {
+            "finite": true,
+            "n_gaussians": 727
+          },
+          "reasons": [
+            "boundary_mse_regressed",
+            "cvar99_mse_regressed"
+          ],
+          "solve_stats": null
+        }
+      ],
+      "event_color_solve_applied": false,
+      "event_color_solve_enabled": false,
+      "pareto_checkpoint_every": 25,
+      "pareto_safe_checkpoints": true,
+      "phase_step_start": 0,
+      "selected_from_pareto_checkpoint": false,
+      "selected_iter": null,
+      "trainable_rows": 727
+    },
+    "phase": "detail_growth",
+    "reasons": [
+      "boundary_mse_regressed",
+      "cvar99_mse_regressed"
+    ],
+    "selected": {
+      "finite": true,
+      "n_gaussians": 727
+    }
+  },
+  {
+    "accepted": true,
+    "accepted_steps": 25,
+    "attempted_steps": 240,
+    "before": {
+      "finite": true,
+      "n_gaussians": 727
+    },
+    "candidate": {
+      "finite": true,
+      "n_gaussians": 909
+    },
+    "event": "coverage_birth",
+    "global_accepted_steps": 125,
+    "global_attempted_steps": 417,
+    "metadata": {
+      "attempts": [
+        {
+          "accepted": true,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 909
+          },
+          "kind": "detail_birth",
+          "metadata": {
+            "covariance_rule": "local residual support scale + local structure tensor",
+            "finite_peaks": 2979,
+            "hole_births": 151,
+            "recovery": {
+              "checkpoint_candidates": [
+                {
+                  "accepted": true,
+                  "color_solved": false,
+                  "iter": 25,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 909
+                  },
+                  "reasons": [],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": true,
+                  "color_solved": false,
+                  "iter": 50,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 909
+                  },
+                  "reasons": [],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": true,
+                  "color_solved": false,
+                  "iter": 75,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 909
+                  },
+                  "reasons": [],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": true,
+                  "color_solved": false,
+                  "iter": 80,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 909
+                  },
+                  "reasons": [],
+                  "solve_stats": null
+                }
+              ],
+              "event_color_solve_applied": false,
+              "event_color_solve_enabled": false,
+              "pareto_checkpoint_every": 25,
+              "pareto_safe_checkpoints": true,
+              "selected_from_pareto_checkpoint": false,
+              "selected_iter": 80,
+              "trainable_rows": 182
+            },
+            "recovery_neighborhood": {
+              "neighbor_backend": "disabled",
+              "neighbor_count": 0,
+              "seed_rows": 182,
+              "trainable_rows": 182
+            },
+            "selected": 182,
+            "site_mode": "detail"
+          },
+          "minimum_gain_per_row": null,
+          "proposed": 182,
+          "reasons": [],
+          "requested": 182,
+          "safe_gate_accepted": true
+        },
+        {
+          "accepted": true,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 855
+          },
+          "kind": "moment_preserving_split",
+          "metadata": {
+            "detail_tail_only": false,
+            "mass_rule": "opacity divided by 2*axis_shrink (integrated raw mass preserving)",
+            "parents": 128,
+            "recovery": {
+              "checkpoint_candidates": [
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 25,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 855
+                  },
+                  "reasons": [
+                    "boundary_mse_regressed",
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": true,
+                  "color_solved": false,
+                  "iter": 50,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 855
+                  },
+                  "reasons": [],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": true,
+                  "color_solved": false,
+                  "iter": 75,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 855
+                  },
+                  "reasons": [],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 80,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 855
+                  },
+                  "reasons": [
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                }
+              ],
+              "event_color_solve_applied": false,
+              "event_color_solve_enabled": false,
+              "pareto_checkpoint_every": 25,
+              "pareto_safe_checkpoints": true,
+              "selected_from_pareto_checkpoint": true,
+              "selected_iter": 75,
+              "trainable_rows": 256
+            },
+            "recovery_neighborhood": {
+              "neighbor_backend": "disabled",
+              "neighbor_count": 0,
+              "seed_rows": 256,
+              "trainable_rows": 256
+            }
+          },
+          "minimum_gain_per_row": null,
+          "proposed": 128,
+          "reasons": [],
+          "requested": 128,
+          "safe_gate_accepted": true
+        },
+        {
+          "accepted": true,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 909
+          },
+          "kind": "coverage_birth",
+          "metadata": {
+            "covariance_rule": "local residual support scale + local structure tensor",
+            "finite_peaks": 2884,
+            "hole_births": 182,
+            "recovery": {
+              "checkpoint_candidates": [
+                {
+                  "accepted": true,
+                  "color_solved": false,
+                  "iter": 25,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 909
+                  },
+                  "reasons": [],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": true,
+                  "color_solved": false,
+                  "iter": 50,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 909
+                  },
+                  "reasons": [],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": true,
+                  "color_solved": false,
+                  "iter": 75,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 909
+                  },
+                  "reasons": [],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": true,
+                  "color_solved": false,
+                  "iter": 80,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 909
+                  },
+                  "reasons": [],
+                  "solve_stats": null
+                }
+              ],
+              "event_color_solve_applied": false,
+              "event_color_solve_enabled": false,
+              "pareto_checkpoint_every": 25,
+              "pareto_safe_checkpoints": true,
+              "selected_from_pareto_checkpoint": true,
+              "selected_iter": 25,
+              "trainable_rows": 182
+            },
+            "recovery_neighborhood": {
+              "neighbor_backend": "disabled",
+              "neighbor_count": 0,
+              "seed_rows": 182,
+              "trainable_rows": 182
+            },
+            "selected": 182,
+            "site_mode": "coverage"
+          },
+          "minimum_gain_per_row": null,
+          "proposed": 182,
+          "reasons": [],
+          "requested": 182,
+          "safe_gate_accepted": true
+        }
+      ],
+      "minimum_gain_per_row": null,
+      "winner_count": 182,
+      "winner_metadata": {
+        "covariance_rule": "local residual support scale + local structure tensor",
+        "finite_peaks": 2884,
+        "hole_births": 182,
+        "recovery": {
+          "checkpoint_candidates": [
+            {
+              "accepted": true,
+              "color_solved": false,
+              "iter": 25,
+              "metrics": {
+                "finite": true,
+                "n_gaussians": 909
+              },
+              "reasons": [],
+              "solve_stats": null
+            },
+            {
+              "accepted": true,
+              "color_solved": false,
+              "iter": 50,
+              "metrics": {
+                "finite": true,
+                "n_gaussians": 909
+              },
+              "reasons": [],
+              "solve_stats": null
+            },
+            {
+              "accepted": true,
+              "color_solved": false,
+              "iter": 75,
+              "metrics": {
+                "finite": true,
+                "n_gaussians": 909
+              },
+              "reasons": [],
+              "solve_stats": null
+            },
+            {
+              "accepted": true,
+              "color_solved": false,
+              "iter": 80,
+              "metrics": {
+                "finite": true,
+                "n_gaussians": 909
+              },
+              "reasons": [],
+              "solve_stats": null
+            }
+          ],
+          "event_color_solve_applied": false,
+          "event_color_solve_enabled": false,
+          "pareto_checkpoint_every": 25,
+          "pareto_safe_checkpoints": true,
+          "selected_from_pareto_checkpoint": true,
+          "selected_iter": 25,
+          "trainable_rows": 182
+        },
+        "recovery_neighborhood": {
+          "neighbor_backend": "disabled",
+          "neighbor_count": 0,
+          "seed_rows": 182,
+          "trainable_rows": 182
+        },
+        "selected": 182,
+        "site_mode": "coverage"
+      },
+      "winner_requested_count": 182
+    },
+    "phase": "detail_growth",
+    "reasons": [],
+    "selected": {
+      "finite": true,
+      "n_gaussians": 909
+    }
+  },
+  {
+    "accepted": true,
+    "accepted_steps": 0,
+    "attempted_steps": 0,
+    "before": {
+      "finite": true,
+      "n_gaussians": 909
+    },
+    "candidate": {
+      "finite": true,
+      "n_gaussians": 909
+    },
+    "event": "phase_end",
+    "global_accepted_steps": 125,
+    "global_attempted_steps": 417,
+    "metadata": {
+      "phase_steps": 41,
+      "refinement_policy": "global",
+      "stale_blocks": 0,
+      "target_gaussians": 909,
+      "termination_reason": "metric_target"
+    },
+    "phase": "detail_growth",
+    "reasons": [],
+    "selected": {
+      "finite": true,
+      "n_gaussians": 909
+    }
+  },
+  {
+    "accepted": false,
+    "accepted_steps": 0,
+    "attempted_steps": 41,
+    "before": {
+      "finite": true,
+      "n_gaussians": 909
+    },
+    "candidate": {
+      "finite": true,
+      "n_gaussians": 909
+    },
+    "event": "global_fit",
+    "global_accepted_steps": 125,
+    "global_attempted_steps": 458,
+    "metadata": {
+      "backtracking_attempts": [
+        {
+          "accepted": false,
+          "accepted_steps": 0,
+          "attempt": 1,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 909
+          },
+          "reasons": [
+            "boundary_mse_regressed",
+            "cvar99_mse_regressed",
+            "interior_holes_regressed",
+            "boundary_holes_regressed"
+          ],
+          "steps": 25
+        },
+        {
+          "accepted": false,
+          "accepted_steps": 0,
+          "attempt": 2,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 909
+          },
+          "reasons": [
+            "boundary_mse_regressed",
+            "cvar99_mse_regressed",
+            "interior_holes_regressed",
+            "boundary_holes_regressed"
+          ],
+          "steps": 16
+        }
+      ],
+      "block": 1,
+      "checkpoint_candidates": [
+        {
+          "accepted": false,
+          "color_solved": false,
+          "iter": 16,
+          "metrics": {
+            "finite": true,
+            "n_gaussians": 909
+          },
+          "reasons": [
+            "boundary_mse_regressed",
+            "cvar99_mse_regressed",
+            "interior_holes_regressed",
+            "boundary_holes_regressed"
+          ],
+          "solve_stats": null
+        }
+      ],
+      "event_color_solve_applied": false,
+      "event_color_solve_enabled": false,
+      "pareto_checkpoint_every": 25,
+      "pareto_safe_checkpoints": true,
+      "phase_step_start": 0,
+      "selected_from_pareto_checkpoint": false,
+      "selected_iter": null,
+      "trainable_rows": 909
+    },
+    "phase": "boundary_closure",
+    "reasons": [
+      "boundary_mse_regressed",
+      "cvar99_mse_regressed",
+      "interior_holes_regressed",
+      "boundary_holes_regressed"
+    ],
+    "selected": {
+      "finite": true,
+      "n_gaussians": 909
+    }
+  },
+  {
+    "accepted": true,
+    "accepted_steps": 50,
+    "attempted_steps": 160,
+    "before": {
+      "finite": true,
+      "n_gaussians": 909
+    },
+    "candidate": {
+      "finite": true,
+      "n_gaussians": 1000
+    },
+    "event": "boundary_birth",
+    "global_accepted_steps": 175,
+    "global_attempted_steps": 618,
+    "metadata": {
+      "attempts": [
+        {
+          "accepted": true,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 1000
+          },
+          "kind": "boundary_birth",
+          "metadata": {
+            "covariance_rule": "local residual support scale + local structure tensor",
+            "finite_peaks": 220,
+            "hole_births": 91,
+            "recovery": {
+              "checkpoint_candidates": [
+                {
+                  "accepted": true,
+                  "color_solved": false,
+                  "iter": 25,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": true,
+                  "color_solved": false,
+                  "iter": 50,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": true,
+                  "color_solved": false,
+                  "iter": 75,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": true,
+                  "color_solved": false,
+                  "iter": 80,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [],
+                  "solve_stats": null
+                }
+              ],
+              "event_color_solve_applied": false,
+              "event_color_solve_enabled": false,
+              "pareto_checkpoint_every": 25,
+              "pareto_safe_checkpoints": true,
+              "selected_from_pareto_checkpoint": true,
+              "selected_iter": 50,
+              "trainable_rows": 91
+            },
+            "recovery_neighborhood": {
+              "neighbor_backend": "disabled",
+              "neighbor_count": 0,
+              "seed_rows": 91,
+              "trainable_rows": 91
+            },
+            "selected": 91,
+            "site_mode": "boundary"
+          },
+          "minimum_gain_per_row": null,
+          "proposed": 91,
+          "reasons": [],
+          "requested": 91,
+          "safe_gate_accepted": true
+        },
+        {
+          "accepted": true,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 1000
+          },
+          "kind": "detail_birth",
+          "metadata": {
+            "covariance_rule": "local residual support scale + local structure tensor",
+            "finite_peaks": 2999,
+            "hole_births": 72,
+            "recovery": {
+              "checkpoint_candidates": [
+                {
+                  "accepted": true,
+                  "color_solved": false,
+                  "iter": 25,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": true,
+                  "color_solved": false,
+                  "iter": 50,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": true,
+                  "color_solved": false,
+                  "iter": 75,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": true,
+                  "color_solved": false,
+                  "iter": 80,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [],
+                  "solve_stats": null
+                }
+              ],
+              "event_color_solve_applied": false,
+              "event_color_solve_enabled": false,
+              "pareto_checkpoint_every": 25,
+              "pareto_safe_checkpoints": true,
+              "selected_from_pareto_checkpoint": true,
+              "selected_iter": 25,
+              "trainable_rows": 91
+            },
+            "recovery_neighborhood": {
+              "neighbor_backend": "disabled",
+              "neighbor_count": 0,
+              "seed_rows": 91,
+              "trainable_rows": 91
+            },
+            "selected": 91,
+            "site_mode": "detail"
+          },
+          "minimum_gain_per_row": null,
+          "proposed": 91,
+          "reasons": [],
+          "requested": 91,
+          "safe_gate_accepted": true
+        }
+      ],
+      "minimum_gain_per_row": null,
+      "winner_count": 91,
+      "winner_metadata": {
+        "covariance_rule": "local residual support scale + local structure tensor",
+        "finite_peaks": 220,
+        "hole_births": 91,
+        "recovery": {
+          "checkpoint_candidates": [
+            {
+              "accepted": true,
+              "color_solved": false,
+              "iter": 25,
+              "metrics": {
+                "finite": true,
+                "n_gaussians": 1000
+              },
+              "reasons": [],
+              "solve_stats": null
+            },
+            {
+              "accepted": true,
+              "color_solved": false,
+              "iter": 50,
+              "metrics": {
+                "finite": true,
+                "n_gaussians": 1000
+              },
+              "reasons": [],
+              "solve_stats": null
+            },
+            {
+              "accepted": true,
+              "color_solved": false,
+              "iter": 75,
+              "metrics": {
+                "finite": true,
+                "n_gaussians": 1000
+              },
+              "reasons": [],
+              "solve_stats": null
+            },
+            {
+              "accepted": true,
+              "color_solved": false,
+              "iter": 80,
+              "metrics": {
+                "finite": true,
+                "n_gaussians": 1000
+              },
+              "reasons": [],
+              "solve_stats": null
+            }
+          ],
+          "event_color_solve_applied": false,
+          "event_color_solve_enabled": false,
+          "pareto_checkpoint_every": 25,
+          "pareto_safe_checkpoints": true,
+          "selected_from_pareto_checkpoint": true,
+          "selected_iter": 50,
+          "trainable_rows": 91
+        },
+        "recovery_neighborhood": {
+          "neighbor_backend": "disabled",
+          "neighbor_count": 0,
+          "seed_rows": 91,
+          "trainable_rows": 91
+        },
+        "selected": 91,
+        "site_mode": "boundary"
+      },
+      "winner_requested_count": 91
+    },
+    "phase": "boundary_closure",
+    "reasons": [],
+    "selected": {
+      "finite": true,
+      "n_gaussians": 1000
+    }
+  },
+  {
+    "accepted": true,
+    "accepted_steps": 0,
+    "attempted_steps": 0,
+    "before": {
+      "finite": true,
+      "n_gaussians": 1000
+    },
+    "candidate": {
+      "finite": true,
+      "n_gaussians": 1000
+    },
+    "event": "phase_end",
+    "global_accepted_steps": 175,
+    "global_attempted_steps": 618,
+    "metadata": {
+      "diagnostics": {
+        "band_pixels": 4876,
+        "hole_component_pixels": 1537,
+        "hole_components": 102,
+        "largest_hole_component": 79,
+        "largest_residual_component": 41,
+        "residual_component_pixels": 1212,
+        "residual_components": 135
+      },
+      "phase_steps": 41,
+      "refinement_policy": "global",
+      "stale_blocks": 0,
+      "target_gaussians": 1000,
+      "termination_reason": "metric_target"
+    },
+    "phase": "boundary_closure",
+    "reasons": [],
+    "selected": {
+      "finite": true,
+      "n_gaussians": 1000
+    }
+  },
+  {
+    "accepted": false,
+    "accepted_steps": 0,
+    "attempted_steps": 41,
+    "before": {
+      "finite": true,
+      "n_gaussians": 1000
+    },
+    "candidate": {
+      "finite": true,
+      "n_gaussians": 1000
+    },
+    "event": "global_fit",
+    "global_accepted_steps": 175,
+    "global_attempted_steps": 659,
+    "metadata": {
+      "backtracking_attempts": [
+        {
+          "accepted": false,
+          "accepted_steps": 0,
+          "attempt": 1,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 1000
+          },
+          "reasons": [
+            "boundary_mse_regressed",
+            "cvar99_mse_regressed",
+            "interior_holes_regressed",
+            "boundary_holes_regressed"
+          ],
+          "steps": 25
+        },
+        {
+          "accepted": false,
+          "accepted_steps": 0,
+          "attempt": 2,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 1000
+          },
+          "reasons": [
+            "boundary_mse_regressed",
+            "cvar99_mse_regressed"
+          ],
+          "steps": 16
+        }
+      ],
+      "block": 1,
+      "checkpoint_candidates": [
+        {
+          "accepted": false,
+          "color_solved": false,
+          "iter": 16,
+          "metrics": {
+            "finite": true,
+            "n_gaussians": 1000
+          },
+          "reasons": [
+            "boundary_mse_regressed",
+            "cvar99_mse_regressed"
+          ],
+          "solve_stats": null
+        }
+      ],
+      "event_color_solve_applied": false,
+      "event_color_solve_enabled": false,
+      "pareto_checkpoint_every": 25,
+      "pareto_safe_checkpoints": true,
+      "phase_step_start": 0,
+      "selected_from_pareto_checkpoint": false,
+      "selected_iter": null,
+      "trainable_rows": 1000
+    },
+    "phase": "redistribution",
+    "reasons": [
+      "boundary_mse_regressed",
+      "cvar99_mse_regressed"
+    ],
+    "selected": {
+      "finite": true,
+      "n_gaussians": 1000
+    }
+  },
+  {
+    "accepted": false,
+    "accepted_steps": 0,
+    "attempted_steps": 560,
+    "before": {
+      "finite": true,
+      "n_gaussians": 1000
+    },
+    "candidate": null,
+    "event": "auction",
+    "global_accepted_steps": 175,
+    "global_attempted_steps": 1219,
+    "metadata": {
+      "attempts": [
+        {
+          "kind": "merge_rebirth",
+          "requested": 64,
+          "status": "no_proposal"
+        },
+        {
+          "accepted": false,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 1000
+          },
+          "gain": null,
+          "gain_per_row": null,
+          "kind": "prune_rebirth",
+          "metadata": {
+            "count_neutral": true,
+            "covariance_rule": "local residual support scale + local structure tensor",
+            "finite_peaks": 2997,
+            "hole_births": 54,
+            "recovery": {
+              "checkpoint_candidates": [
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 25,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "foreground_mse_regressed",
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 50,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "foreground_mse_regressed",
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 75,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "foreground_mse_regressed",
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 80,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "foreground_mse_regressed",
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                }
+              ],
+              "event_color_solve_applied": false,
+              "event_color_solve_enabled": false,
+              "pareto_checkpoint_every": 25,
+              "pareto_safe_checkpoints": true,
+              "selected_from_pareto_checkpoint": false,
+              "selected_iter": null,
+              "trainable_rows": 64
+            },
+            "recovery_neighborhood": {
+              "neighbor_backend": "disabled",
+              "neighbor_count": 0,
+              "seed_rows": 64,
+              "trainable_rows": 64
+            },
+            "selected": 64,
+            "site_mode": "detail"
+          },
+          "minimum_gain_per_row": null,
+          "proposed": 64,
+          "reasons": [
+            "foreground_mse_regressed",
+            "cvar99_mse_regressed"
+          ],
+          "requested": 64,
+          "safe_gate_accepted": false
+        },
+        {
+          "accepted": false,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 1000
+          },
+          "gain": null,
+          "gain_per_row": null,
+          "kind": "prune_rebirth",
+          "metadata": {
+            "count_neutral": true,
+            "covariance_rule": "local residual support scale + local structure tensor",
+            "finite_peaks": 2997,
+            "hole_births": 30,
+            "recovery": {
+              "checkpoint_candidates": [
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 25,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "foreground_mse_regressed",
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 50,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "foreground_mse_regressed",
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 75,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "foreground_mse_regressed",
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 80,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "foreground_mse_regressed",
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                }
+              ],
+              "event_color_solve_applied": false,
+              "event_color_solve_enabled": false,
+              "pareto_checkpoint_every": 25,
+              "pareto_safe_checkpoints": true,
+              "selected_from_pareto_checkpoint": false,
+              "selected_iter": null,
+              "trainable_rows": 32
+            },
+            "recovery_neighborhood": {
+              "neighbor_backend": "disabled",
+              "neighbor_count": 0,
+              "seed_rows": 32,
+              "trainable_rows": 32
+            },
+            "selected": 32,
+            "site_mode": "detail"
+          },
+          "minimum_gain_per_row": null,
+          "proposed": 32,
+          "reasons": [
+            "foreground_mse_regressed",
+            "cvar99_mse_regressed"
+          ],
+          "requested": 32,
+          "safe_gate_accepted": false
+        },
+        {
+          "accepted": false,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 1000
+          },
+          "gain": null,
+          "gain_per_row": null,
+          "kind": "prune_rebirth",
+          "metadata": {
+            "count_neutral": true,
+            "covariance_rule": "local residual support scale + local structure tensor",
+            "finite_peaks": 2997,
+            "hole_births": 16,
+            "recovery": {
+              "checkpoint_candidates": [
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 25,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "foreground_mse_regressed",
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 50,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "foreground_mse_regressed",
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 75,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "foreground_mse_regressed",
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 80,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "foreground_mse_regressed",
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                }
+              ],
+              "event_color_solve_applied": false,
+              "event_color_solve_enabled": false,
+              "pareto_checkpoint_every": 25,
+              "pareto_safe_checkpoints": true,
+              "selected_from_pareto_checkpoint": false,
+              "selected_iter": null,
+              "trainable_rows": 16
+            },
+            "recovery_neighborhood": {
+              "neighbor_backend": "disabled",
+              "neighbor_count": 0,
+              "seed_rows": 16,
+              "trainable_rows": 16
+            },
+            "selected": 16,
+            "site_mode": "detail"
+          },
+          "minimum_gain_per_row": null,
+          "proposed": 16,
+          "reasons": [
+            "foreground_mse_regressed",
+            "cvar99_mse_regressed"
+          ],
+          "requested": 16,
+          "safe_gate_accepted": false
+        },
+        {
+          "accepted": false,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 1000
+          },
+          "gain": null,
+          "gain_per_row": null,
+          "kind": "prune_rebirth",
+          "metadata": {
+            "count_neutral": true,
+            "covariance_rule": "local residual support scale + local structure tensor",
+            "finite_peaks": 2997,
+            "hole_births": 8,
+            "recovery": {
+              "checkpoint_candidates": [
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 25,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 50,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 75,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 80,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                }
+              ],
+              "event_color_solve_applied": false,
+              "event_color_solve_enabled": false,
+              "pareto_checkpoint_every": 25,
+              "pareto_safe_checkpoints": true,
+              "selected_from_pareto_checkpoint": false,
+              "selected_iter": null,
+              "trainable_rows": 8
+            },
+            "recovery_neighborhood": {
+              "neighbor_backend": "disabled",
+              "neighbor_count": 0,
+              "seed_rows": 8,
+              "trainable_rows": 8
+            },
+            "selected": 8,
+            "site_mode": "detail"
+          },
+          "minimum_gain_per_row": null,
+          "proposed": 8,
+          "reasons": [
+            "cvar99_mse_regressed"
+          ],
+          "requested": 8,
+          "safe_gate_accepted": false
+        },
+        {
+          "accepted": false,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 1000
+          },
+          "gain": null,
+          "gain_per_row": null,
+          "kind": "funded_split",
+          "metadata": {
+            "count_neutral": true,
+            "donors": 32,
+            "mass_rule": "opacity divided by 2*axis_shrink",
+            "parents": 32,
+            "recovery": {
+              "checkpoint_candidates": [
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 25,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "cvar99_mse_regressed",
+                    "interior_holes_regressed"
+                  ],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 50,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "boundary_mse_regressed",
+                    "cvar99_mse_regressed",
+                    "interior_holes_regressed"
+                  ],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 75,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "cvar99_mse_regressed",
+                    "interior_holes_regressed"
+                  ],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 80,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                }
+              ],
+              "event_color_solve_applied": false,
+              "event_color_solve_enabled": false,
+              "pareto_checkpoint_every": 25,
+              "pareto_safe_checkpoints": true,
+              "selected_from_pareto_checkpoint": false,
+              "selected_iter": null,
+              "trainable_rows": 64
+            },
+            "recovery_neighborhood": {
+              "neighbor_backend": "disabled",
+              "neighbor_count": 0,
+              "seed_rows": 64,
+              "trainable_rows": 64
+            }
+          },
+          "minimum_gain_per_row": null,
+          "proposed": 32,
+          "reasons": [
+            "cvar99_mse_regressed"
+          ],
+          "requested": 32,
+          "safe_gate_accepted": false
+        },
+        {
+          "accepted": false,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 1000
+          },
+          "gain": null,
+          "gain_per_row": null,
+          "kind": "funded_split",
+          "metadata": {
+            "count_neutral": true,
+            "donors": 16,
+            "mass_rule": "opacity divided by 2*axis_shrink",
+            "parents": 16,
+            "recovery": {
+              "checkpoint_candidates": [
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 25,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "cvar99_mse_regressed",
+                    "interior_holes_regressed"
+                  ],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 50,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 75,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 80,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                }
+              ],
+              "event_color_solve_applied": false,
+              "event_color_solve_enabled": false,
+              "pareto_checkpoint_every": 25,
+              "pareto_safe_checkpoints": true,
+              "selected_from_pareto_checkpoint": false,
+              "selected_iter": null,
+              "trainable_rows": 32
+            },
+            "recovery_neighborhood": {
+              "neighbor_backend": "disabled",
+              "neighbor_count": 0,
+              "seed_rows": 32,
+              "trainable_rows": 32
+            }
+          },
+          "minimum_gain_per_row": null,
+          "proposed": 16,
+          "reasons": [
+            "cvar99_mse_regressed"
+          ],
+          "requested": 16,
+          "safe_gate_accepted": false
+        },
+        {
+          "accepted": false,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 1000
+          },
+          "gain": null,
+          "gain_per_row": null,
+          "kind": "funded_split",
+          "metadata": {
+            "count_neutral": true,
+            "donors": 8,
+            "mass_rule": "opacity divided by 2*axis_shrink",
+            "parents": 8,
+            "recovery": {
+              "checkpoint_candidates": [
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 25,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "cvar99_mse_regressed",
+                    "interior_holes_regressed"
+                  ],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 50,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "cvar99_mse_regressed",
+                    "interior_holes_regressed"
+                  ],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 75,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                },
+                {
+                  "accepted": false,
+                  "color_solved": false,
+                  "iter": 80,
+                  "metrics": {
+                    "finite": true,
+                    "n_gaussians": 1000
+                  },
+                  "reasons": [
+                    "cvar99_mse_regressed"
+                  ],
+                  "solve_stats": null
+                }
+              ],
+              "event_color_solve_applied": false,
+              "event_color_solve_enabled": false,
+              "pareto_checkpoint_every": 25,
+              "pareto_safe_checkpoints": true,
+              "selected_from_pareto_checkpoint": false,
+              "selected_iter": null,
+              "trainable_rows": 16
+            },
+            "recovery_neighborhood": {
+              "neighbor_backend": "disabled",
+              "neighbor_count": 0,
+              "seed_rows": 16,
+              "trainable_rows": 16
+            }
+          },
+          "minimum_gain_per_row": null,
+          "proposed": 8,
+          "reasons": [
+            "cvar99_mse_regressed"
+          ],
+          "requested": 8,
+          "safe_gate_accepted": false
+        }
+      ]
+    },
+    "phase": "redistribution",
+    "reasons": [
+      "no_safe_topology_trial"
+    ],
+    "selected": {
+      "finite": true,
+      "n_gaussians": 1000
+    }
+  },
+  {
+    "accepted": true,
+    "accepted_steps": 0,
+    "attempted_steps": 0,
+    "before": {
+      "finite": true,
+      "n_gaussians": 1000
+    },
+    "candidate": {
+      "finite": true,
+      "n_gaussians": 1000
+    },
+    "event": "phase_end",
+    "global_accepted_steps": 175,
+    "global_attempted_steps": 1219,
+    "metadata": {
+      "phase_steps": 41,
+      "refinement_policy": "global",
+      "stale_blocks": 1,
+      "target_gaussians": 1000,
+      "termination_reason": "deterministic_fixed_point"
+    },
+    "phase": "redistribution",
+    "reasons": [],
+    "selected": {
+      "finite": true,
+      "n_gaussians": 1000
+    }
+  },
+  {
+    "accepted": false,
+    "accepted_steps": 0,
+    "attempted_steps": 0,
+    "before": {
+      "finite": true,
+      "n_gaussians": 1000
+    },
+    "candidate": {
+      "finite": true,
+      "n_gaussians": 1000
+    },
+    "event": "fixed_geometry_least_squares",
+    "global_accepted_steps": 175,
+    "global_attempted_steps": 1219,
+    "metadata": {
+      "basis_apply_calls": 33,
+      "basis_transpose_calls": 34,
+      "denominator_calls": 1,
+      "iterations": 32,
+      "normal_matvec_calls": 33
+    },
+    "phase": "pre_polish_color_solve",
+    "reasons": [
+      "cvar99_mse_regressed"
+    ],
+    "selected": {
+      "finite": true,
+      "n_gaussians": 1000
+    }
+  },
+  {
+    "accepted": true,
+    "accepted_steps": 0,
+    "attempted_steps": 0,
+    "before": {
+      "finite": true,
+      "n_gaussians": 1000
+    },
+    "candidate": {
+      "finite": true,
+      "n_gaussians": 1000
+    },
+    "event": "phase_end",
+    "global_accepted_steps": 175,
+    "global_attempted_steps": 1219,
+    "metadata": {
+      "activated_rows": 0,
+      "batch_rows": 128,
+      "configured_max_rows": 0,
+      "end_n": 1000,
+      "start_n": 1000,
+      "termination_reason": "disabled",
+      "wave_budget": 0,
+      "waves_accepted": 0,
+      "waves_attempted": 0
+    },
+    "phase": "detail_tail",
+    "reasons": [],
+    "selected": {
+      "finite": true,
+      "n_gaussians": 1000
+    }
+  },
+  {
+    "accepted": false,
+    "accepted_steps": 0,
+    "attempted_steps": 41,
+    "before": {
+      "finite": true,
+      "n_gaussians": 1000
+    },
+    "candidate": {
+      "finite": true,
+      "n_gaussians": 1000
+    },
+    "event": "global_fit",
+    "global_accepted_steps": 175,
+    "global_attempted_steps": 1260,
+    "metadata": {
+      "backtracking_attempts": [
+        {
+          "accepted": false,
+          "accepted_steps": 0,
+          "attempt": 1,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 1000
+          },
+          "reasons": [
+            "boundary_mse_regressed",
+            "cvar99_mse_regressed",
+            "interior_holes_regressed"
+          ],
+          "steps": 25
+        },
+        {
+          "accepted": false,
+          "accepted_steps": 0,
+          "attempt": 2,
+          "candidate": {
+            "finite": true,
+            "n_gaussians": 1000
+          },
+          "reasons": [
+            "cvar99_mse_regressed"
+          ],
+          "steps": 16
+        }
+      ],
+      "block": 1,
+      "checkpoint_candidates": [
+        {
+          "accepted": false,
+          "color_solved": false,
+          "iter": 16,
+          "metrics": {
+            "finite": true,
+            "n_gaussians": 1000
+          },
+          "reasons": [
+            "cvar99_mse_regressed"
+          ],
+          "solve_stats": null
+        }
+      ],
+      "event_color_solve_applied": false,
+      "event_color_solve_enabled": false,
+      "pareto_checkpoint_every": 25,
+      "pareto_safe_checkpoints": true,
+      "phase_step_start": 0,
+      "selected_from_pareto_checkpoint": false,
+      "selected_iter": null,
+      "trainable_rows": 1000
+    },
+    "phase": "safe_polish",
+    "reasons": [
+      "cvar99_mse_regressed"
+    ],
+    "selected": {
+      "finite": true,
+      "n_gaussians": 1000
+    }
+  },
+  {
+    "accepted": true,
+    "accepted_steps": 0,
+    "attempted_steps": 0,
+    "before": {
+      "finite": true,
+      "n_gaussians": 1000
+    },
+    "candidate": {
+      "finite": true,
+      "n_gaussians": 1000
+    },
+    "event": "phase_end",
+    "global_accepted_steps": 175,
+    "global_attempted_steps": 1260,
+    "metadata": {
+      "phase_steps": 41,
+      "refinement_policy": "global",
+      "stale_blocks": 1,
+      "target_gaussians": 1000,
+      "termination_reason": "deterministic_fixed_point"
+    },
+    "phase": "safe_polish",
+    "reasons": [],
+    "selected": {
+      "finite": true,
+      "n_gaussians": 1000
+    }
+  }
+]

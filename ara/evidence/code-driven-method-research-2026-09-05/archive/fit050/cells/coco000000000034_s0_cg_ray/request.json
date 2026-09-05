@@ -1,0 +1,11 @@
+{
+  "cell_id": "coco000000000034_s0_cg_ray",
+  "image_id": 34,
+  "method": "cg_ray",
+  "parent_field_sha256": "8398e3af4b486a0809d5941356669f1332b4e5944e156c31f7eee1007c2f8c74",
+  "parent_id": "coco000000000034_s0",
+  "parent_optimizer_sha256": "84d55622630608ca5eca73e2c7cc0d0d0b9d81bb806eb382d04c001e02b7b74c",
+  "seed": 0,
+  "smoke": false,
+  "target_sha256": "1885ed269e0c882fadc488c3e461adacb474b1c811f3bb3b40445d3a013225f5"
+}

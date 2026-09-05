@@ -1,0 +1,15 @@
+{"utc": "2026-09-05T08:23:58.125673+00:00", "owned_worker_pid": 959749, "ok": true, "processes": [], "foreign_pids": []}
+{"utc": "2026-09-05T08:23:59.145589+00:00", "owned_worker_pid": 959749, "ok": true, "processes": [{"pid": 959749, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "96"}], "foreign_pids": []}
+{"utc": "2026-09-05T08:24:00.160463+00:00", "owned_worker_pid": 959749, "ok": true, "processes": [{"pid": 959749, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "106"}], "foreign_pids": []}
+{"utc": "2026-09-05T08:24:01.175483+00:00", "owned_worker_pid": 959749, "ok": true, "processes": [{"pid": 959749, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "126"}], "foreign_pids": []}
+{"utc": "2026-09-05T08:24:02.190487+00:00", "owned_worker_pid": 959749, "ok": true, "processes": [{"pid": 959749, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "146"}], "foreign_pids": []}
+{"utc": "2026-09-05T08:24:03.205727+00:00", "owned_worker_pid": 959749, "ok": true, "processes": [{"pid": 959749, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "146"}], "foreign_pids": []}
+{"utc": "2026-09-05T08:24:04.220747+00:00", "owned_worker_pid": 959749, "ok": true, "processes": [{"pid": 959749, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "174"}], "foreign_pids": []}
+{"utc": "2026-09-05T08:24:05.235799+00:00", "owned_worker_pid": 959749, "ok": true, "processes": [{"pid": 959749, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "462"}], "foreign_pids": []}
+{"utc": "2026-09-05T08:24:06.250043+00:00", "owned_worker_pid": 959749, "ok": true, "processes": [{"pid": 959749, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "462"}], "foreign_pids": []}
+{"utc": "2026-09-05T08:24:07.268214+00:00", "owned_worker_pid": 959749, "ok": true, "processes": [{"pid": 959749, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "462"}], "foreign_pids": []}
+{"utc": "2026-09-05T08:24:08.287159+00:00", "owned_worker_pid": 959749, "ok": true, "processes": [{"pid": 959749, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "462"}], "foreign_pids": []}
+{"utc": "2026-09-05T08:24:09.306133+00:00", "owned_worker_pid": 959749, "ok": true, "processes": [{"pid": 959749, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "486"}], "foreign_pids": []}
+{"utc": "2026-09-05T08:24:10.324716+00:00", "owned_worker_pid": 959749, "ok": true, "processes": [{"pid": 959749, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "486"}], "foreign_pids": []}
+{"utc": "2026-09-05T08:24:11.343002+00:00", "owned_worker_pid": 959749, "ok": true, "processes": [{"pid": 959749, "name": "/home/alex/miniconda3/bin/python", "memory_mib": "486"}], "foreign_pids": []}
+{"utc": "2026-09-05T08:24:12.357992+00:00", "owned_worker_pid": 959749, "ok": true, "processes": [{"pid": 959749, "name": "[No data]", "memory_mib": "486"}], "foreign_pids": []}

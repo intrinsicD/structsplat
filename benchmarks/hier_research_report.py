@@ -23,6 +23,8 @@ from PIL import Image
 
 SCHEMA = "structsplat.hier_research.report.v1"
 TASKS = {"HIER-033", "HIER-034", "HIER-035", "HIER-036", "FIT-050", "PORT-007", "FIT-051"}
+# Historical protocol receipt paths, resolved at each recorded source commit. Retiring a task
+# under tasks/done must not rewrite these bindings in already immutable experiment manifests.
 TASK_PATHS = {
     "HIER-033": "tasks/HIER-033-pixel-gradient-operator-oracle.md",
     "HIER-034": "tasks/HIER-034-fixed-geometry-basis-cache.md",
@@ -567,6 +569,36 @@ def _validate_shared_cache_scope(root, manifest, rows, problems):
 
 
 
+def _port_quality_replayer():
+    """Create one validator-call-local geometry cache; always recompute raw quality.
+
+    CPU/float32 and the constructor's default min_scale are fixed here, as in the uncached
+    replay. No image, denominator, target, count, quality scalar or decision is retained.
+    """
+    from structsplat.fit import _MaskConstraint
+    from structsplat.safe_schedule import _quality_from_render
+    import torch
+
+    constraints = {}
+
+    def quality_from_arrays(rgb, den, target, mask, cfg, count):
+        if den.shape != target.shape[:2] or rgb.shape != target.shape or mask.shape != den.shape:
+            raise ValueError("PORT-007 quality array shape mismatch")
+        key = (mask.shape, mask.dtype, mask.tobytes(order="C"), cfg.sigma_cutoff,
+               cfg.mask_margin, cfg.aa_dilation, cfg.mask_cap_mode, cfg.mask_undercoverage_band)
+        if key not in constraints:
+            # Own the mask backing any geometry tensor; caller mutation must not corrupt an
+            # entry whose immutable byte key could be requested again later in this call.
+            constraints[key] = _MaskConstraint.from_mask(
+                mask.copy(), "cpu", torch.float32, cfg.sigma_cutoff, cfg.mask_margin,
+                aa_dilation=cfg.aa_dilation, cap_mode=cfg.mask_cap_mode,
+                undercoverage_band=cfg.mask_undercoverage_band)
+        return _quality_from_render(torch.from_numpy(rgb), torch.from_numpy(target),
+            torch.from_numpy(den), torch.from_numpy(mask), constraints[key], .05, count).to_dict()
+
+    return quality_from_arrays
+
+
 def _validate_port_artifacts(root, rows, protocol, problems):
     """Reconstruct PORT-007 decisions from retained arrays/records, not success flags."""
     from dataclasses import asdict, replace
@@ -577,9 +609,8 @@ def _validate_port_artifacts(root, rows, protocol, problems):
     from scripts.experiments.port007_quality_reuse import decision, ellipse_mask, load_image
     from structsplat.safe_schedule import CommitTolerances
     from structsplat.pipeline import PipelineConfig, build_fit_config, build_schedule
-    from structsplat.fit import _MaskConstraint
-    from structsplat.safe_schedule import _quality_from_render
-    import torch
+
+    quality_from_arrays = _port_quality_replayer()
 
     def read(path):
         return json.loads(path.read_text())
@@ -598,15 +629,6 @@ def _validate_port_artifacts(root, rows, protocol, problems):
     def metric_close(first, second):
         return math.isclose(first, second, rel_tol=protocol["artifact_metric_rtol"],
                             abs_tol=protocol["artifact_metric_atol"])
-
-    def quality_from_arrays(rgb, den, target, mask, cfg, count):
-        if den.shape != target.shape[:2] or rgb.shape != target.shape or mask.shape != den.shape:
-            raise ValueError("PORT-007 quality array shape mismatch")
-        constraint = _MaskConstraint.from_mask(mask, "cpu", torch.float32, cfg.sigma_cutoff,
-            cfg.mask_margin, aa_dilation=cfg.aa_dilation, cap_mode=cfg.mask_cap_mode,
-            undercoverage_band=cfg.mask_undercoverage_band)
-        return _quality_from_render(torch.from_numpy(rgb), torch.from_numpy(target),
-            torch.from_numpy(den), torch.from_numpy(mask), constraint, .05, count).to_dict()
 
     def check_quality(actual, stored, label):
         check(set(actual) == set(stored), label + " complete quality keys")

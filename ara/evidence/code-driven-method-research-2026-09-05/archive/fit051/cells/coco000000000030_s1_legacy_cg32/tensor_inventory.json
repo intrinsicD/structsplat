@@ -1,0 +1,10 @@
+{
+  "candidate_denominator": "candidate_denominator",
+  "candidate_render": "candidate_render",
+  "cold_denominator": "cold_denominator",
+  "cold_render": "cold_render",
+  "parent_denominator": "parent_denominator",
+  "parent_render": "parent_render",
+  "reporting_denominator": "reporting_denominator",
+  "reporting_render": "reporting_render"
+}
