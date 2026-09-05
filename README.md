@@ -23,6 +23,10 @@ repository as an interpretable causal substrate for new representation, ownershi
 codec hypotheses rather than as an established SOTA codec. `structsplat` is a **placeholder name**
 — rename freely (see the `structsplat-docs-sync` skill).
 
+The [September research portfolio](docs/research/2026-09-05-overnight-research-portfolio.md)
+organizes the default-off HIER-033/034/035 gradient, color-operator caching, and convergence
+experiments. It records hypotheses and controls, not a promoted pipeline improvement.
+
 > This is a PyTorch **research reference** with an opt-in exact CUDA extension for the same
 > normalized/additive equations. The remaining production port is a tiled CUDA/Vulkan/RHI path
 > (`tasks/PORT-001-cuda-rasterizer.md`, ADR-0011).

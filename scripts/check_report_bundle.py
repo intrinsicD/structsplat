@@ -2894,6 +2894,13 @@ def check_bundle(
     if not isinstance(manifest, dict):
         problems.append("manifest.json must contain an object")
         return problems
+    if manifest.get("schema") == "structsplat.hier_research.report.v1":
+        repository_text = str(REPOSITORY_ROOT)
+        if repository_text not in sys.path:
+            sys.path.insert(0, repository_text)
+        from benchmarks.hier_research_report import validate_bundle
+
+        return validate_bundle(root, allow_dirty=allow_dirty, allow_error_cells=allow_error_cells)
     if manifest.get("schema") in HIER005_REPORT_SCHEMAS:
         _check_hier005_bundle(root, manifest, problems)
         return problems

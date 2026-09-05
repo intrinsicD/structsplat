@@ -131,6 +131,15 @@ contraction refinement neither implements FIT-046's general variable-projection 
 selects Field V2 semantics. HIER-010's exact-7k exposed-view report remains diagnostic and prices
 its extra first pass explicitly.
 
+HIER-034 adds an explicitly opt-in `CoefficientProjectionConfig.basis_cache`: `off` preserves
+streaming; `scatter` owns detached finite-support triplets; `csr` stores both sparse directions.
+`structsplat.additive_basis` caches only a fixed-geometry, fixed-mask linear RGB operator and must
+be rebuilt after support, geometry, mask, or row changes. Its byte ceiling bounds retained
+tensors, not construction workspace. Reduction-order differences are audited separately from
+timing. HIER-033's `structsplat.pixel_gradient` is a diagnostic C0-faded direct-additive Jacobian,
+local Gram, and split-Hessian reference; it is not a maintained renderer or topology policy.
+These experiments do not change rendering or fitting defaults.
+
 The frozen C0001/C0004 diagnostic rejects the full composition. Projection alone is safe under its
 frozen SSE/maximum-normalized-violation transaction but adds only `+0.0109/+0.0044 dB`. The
 350-leaf residual reserve followed by projection loses

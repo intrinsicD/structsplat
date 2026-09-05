@@ -220,6 +220,8 @@ class CoefficientProjectionConfig:
     frozen_base_mode: FrozenBaseMode = "subtract"
     allow_unsafe_stage_zero_reconditioning: bool = False
     selection_mode: ProjectionSelectionMode = "transaction"
+    basis_cache: Literal["off", "scatter", "csr"] = "off"
+    basis_cache_max_bytes: int = 268435456
 
     def __post_init__(self) -> None:
         for name in (
@@ -246,6 +248,11 @@ class CoefficientProjectionConfig:
             raise TypeError("allow_unsafe_stage_zero_reconditioning must be bool")
         if self.selection_mode not in ("transaction", "bounded_intermediate"):
             raise ValueError("selection_mode must be 'transaction' or 'bounded_intermediate'")
+        if self.basis_cache not in ("off", "scatter", "csr"):
+            raise ValueError("basis_cache must be off, scatter, or csr")
+        object.__setattr__(self, "basis_cache_max_bytes", _integer(
+            self.basis_cache_max_bytes, "basis_cache_max_bytes"
+        ))
 
 
 @dataclass(frozen=True)
@@ -294,6 +301,10 @@ class CoefficientProjectionResult:
     maintained_render_parity_max_abs: float
     elapsed_seconds: float
     selection_mode: ProjectionSelectionMode
+    basis_cache: str = "off"
+    basis_cache_bytes: int = 0
+    basis_cache_build_seconds: float = 0.0
+    basis_cache_nnz: int = 0
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "reconstruction_raw", _readonly(self.reconstruction_raw))
@@ -438,8 +449,24 @@ def project_contracted_coefficients(
         )
         return local, px, py, weights
 
+    cache = None
+    if cfg.basis_cache != "off":
+        from .additive_basis import CachedAdditiveBasis
+
+        def cache_triplets():
+            for start, end in _flat_tile_slices(tile_elements, budget):
+                local, px, py, weights = tile_values(start, end)
+                yield local, py * width + px, weights
+
+        cache = CachedAdditiveBasis(
+            cache_triplets(), rows=int(trainable_ids.numel()), pixels=height * width,
+            reference=means, mode=cfg.basis_cache, max_bytes=cfg.basis_cache_max_bytes,
+        )
+
     def basis_apply(values):
         calls["forward"] += 1
+        if cache is not None:
+            return cache.apply(values).view(height, width, 3)
         out = torch.zeros(height * width, 3, device=torch_device, dtype=dtype)
         for start, end in _flat_tile_slices(tile_elements, budget):
             local, px, py, weights = tile_values(start, end)
@@ -453,6 +480,8 @@ def project_contracted_coefficients(
 
     def basis_transpose(image):
         calls["transpose"] += 1
+        if cache is not None:
+            return cache.transpose(image.reshape(-1, 3))
         out = torch.zeros(trainable_ids.numel(), 3, device=torch_device, dtype=dtype)
         flat_image = image.reshape(-1, 3)
         for start, end in _flat_tile_slices(tile_elements, budget):
@@ -463,6 +492,8 @@ def project_contracted_coefficients(
         return out
 
     def diagonal_values():
+        if cache is not None:
+            return cache.normal_diagonal()
         diagonal = torch.zeros(trainable_ids.numel(), device=torch_device, dtype=dtype)
         for start, end in _flat_tile_slices(tile_elements, budget):
             local, _px, _py, weights = tile_values(start, end)
@@ -717,6 +748,10 @@ def project_contracted_coefficients(
         maintained_render_parity_max_abs=parity,
         elapsed_seconds=time.perf_counter() - started,
         selection_mode=cfg.selection_mode,
+        basis_cache=cfg.basis_cache,
+        basis_cache_bytes=0 if cache is None else cache.resident_bytes,
+        basis_cache_build_seconds=0.0 if cache is None else cache.build_seconds,
+        basis_cache_nnz=0 if cache is None else cache.nnz,
     )
 
 

@@ -35,6 +35,9 @@ IntrinsicEngine as an RHI pass.
   keep masked and unmasked execution identical outside boundary-specific work, and power the sole
   conversion CLI (`scripts/convert.py`) plus three report-producing evaluation workflows.
 - `pyramid.py` (torch) — progressive densification driven by residual structure tensor.
+- `additive_basis.py` (lazy torch) — HIER-034 opt-in, bounded fixed-geometry RGB basis cache;
+  `pixel_gradient.py` (torch) — HIER-033 diagnostic additive pixel Jacobians and local curvature.
+  Neither changes maintained defaults; cached operators are invalid after geometry/support edits.
 - `codec.py` / `cli.py` (torch at command time) — native NPZ and self-describing SSPL1 persistence;
   `fit`/`image-to-gaussians2d` saves native fields, while `render`/`gaussians2d-to-image`
   reconstructs NPZ or SSPL1 with optional display-referred error metrics and read-only
