@@ -28,8 +28,8 @@ HIER-033/035, ADR-0006
 ## Agent workflow
 - Driver: codex-root
 - Reviewer: codex-overnight-protocol-reviewer
-- Turn: driver
-- Reviewed revision: protocol-sha256:524da500f133c294248bd0e8f2f20a54271d79163d48b935d8366704ce78ea1e
+- Turn: reviewer
+- Reviewed revision: 4cd0331bdbb357df295a271e62736024feafdea9
 
 ### Handoff log
 Design reviewed independently before implementation. Executable approval and outcomes pending.
@@ -55,6 +55,29 @@ No formal execution before approval, default change, sealed access, artifact rep
 #### Recommended next action
 Independently recompute source digest and approve or reject prospectively; then finish full
 verification and clean-source commit before any formal run.
+
+### Handoff
+
+#### Objective
+Independently audit the completed coupling/cap factorial and its separate Adam comparisons.
+#### Changes
+No post-approval numerical change; executed the exact approved clean source.
+#### Evidence
+results/hier036_coupling_2026-09-05, source4cd0331bdbb357df295a271e62736024feafdea9
+and approved digest524da500f133c294248bd0e8f2f20a54271d79163d48b935d8366704ce78ea1e.
+The source checkpoint passed2146portable tests and all structural gates; frozen bundle checker passes.
+#### Assumptions
+FixedN16 procedural fixtures; exposed and additional conditions reported separately.
+#### Uncertainties
+Practical visual benefit near precision limits, nonlinear texture behavior, scalability and timing.
+#### Review focus
+Regenerate inputs and matrices/updates; cold replay, uncapped raw scoring, both cap conventions,
+separate coupling/Adam gates, full work/occupancy evidence and native artifact interpretation.
+#### Protected actions not taken
+No default change, matrix-limit increase, selective repeat, held-out access, artifact repair,
+foreign-process termination, push or merge.
+#### Recommended next action
+Return a distinct scientific verdict and bind only its scoped findings into ARA.
 
 ## Frozen protocol
 Executable authority: PROTOCOL plus every SOURCES hash in

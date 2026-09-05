@@ -492,6 +492,67 @@ def _validate_coupling_cell(root, row, protocol, diagnostic, problems):
                 problems.append(f"coupling parameter bounds violated: {row['cell_id']}/{name}")
 
 
+def _validate_shared_cache_scope(root, manifest, rows, problems):
+    protocol = manifest["protocol"]
+    if (protocol.get("timing_eligible") is not False
+            or protocol.get("execution_profile") != "shared_correctness"):
+        problems.append("shared cache protocol must forbid timing eligibility")
+    decision = json.loads((root / "decision.json").read_text())
+    if (decision.get("timing_eligible") is not False
+            or decision.get("performance_disposition") != protocol["performance_disposition"]):
+        problems.append("shared cache performance disposition mismatch")
+    records = decision["records"]
+    identities = [(r["family"], r["seed"], r["backend"]) for r in records]
+    expected = {(r["family"], r["seed"], b) for r in rows for b in ("scatter", "csr")}
+    if len(identities) != len(expected) or set(identities) != expected:
+        problems.append("shared cache decision coverage mismatch")
+    for record in records:
+        if (record.get("timing_eligible") is not False or record.get("passes_speed_gate") is not False
+                or record.get("passes_interchangeability_gate") != record.get("integrity_eligible")):
+            problems.append("shared cache decision promotes speed or changes numerical eligibility")
+    log = [json.loads(line) for line in (root / "gpu_occupancy.jsonl").read_text().splitlines()]
+    if not log:
+        problems.append("shared cache occupancy monitor is empty")
+        return
+    if log[0].get("phase") != "start" or log[-1].get("phase") != "end":
+        problems.append("shared cache occupancy monitor lacks start/end")
+    def valid_snapshot(value):
+        return (isinstance(value, dict) and isinstance(value.get("wall_time_utc"), str)
+                and isinstance(value.get("monotonic_ns"), int) and value["monotonic_ns"] > 0
+                and ((value.get("status") == "ok" and isinstance(value.get("processes"), str))
+                     or (value.get("status") == "error" and isinstance(value.get("error"), str))))
+    if (any(not valid_snapshot(item) for item in log)
+            or any(a["monotonic_ns"] > b["monotonic_ns"] for a, b in zip(log, log[1:]))):
+        problems.append("shared cache occupancy monitor malformed or nonmonotonic")
+        return
+    for row in rows:
+        if row.get("timing_eligible") is not False or row.get("execution_profile") != "shared_correctness":
+            problems.append(f"shared cache row timing eligibility mismatch: {row['cell_id']}")
+        if row["cell_id"] != f"{row['family']}_s{row['seed']}_r{row['repeat']}_{row['backend']}":
+            problems.append(f"shared cache encoded cell identity mismatch: {row['cell_id']}")
+        if row["status"] != "ok":
+            continue
+        directory = root / "cells" / row["cell_id"]
+        config = json.loads((directory / "config.json").read_text())
+        expected_solver = dict(protocol["solver"])
+        expected_solver.update(basis_cache=row["backend"],
+                               max_iterations=3 if manifest["diagnostic"] else protocol["solver"]["max_iterations"])
+        if (config.get("timing_eligible") is not False or config.get("execution_profile") != "shared_correctness"
+                or config.get("solver") != expected_solver):
+            problems.append(f"shared cache config scope/solver mismatch: {row['cell_id']}")
+        snapshots = []
+        for label in ("before", "after"):
+            path = directory / f"occupancy_{label}.json"
+            snapshot = json.loads(path.read_text())
+            snapshots.append(snapshot)
+            if not valid_snapshot(snapshot) or sha256(path) != config[f"occupancy_{label}_sha256"]:
+                problems.append(f"shared cache worker occupancy mismatch: {row['cell_id']}/{label}")
+        if (snapshots[0]["monotonic_ns"] > snapshots[1]["monotonic_ns"]
+                or snapshots[0]["monotonic_ns"] < log[0]["monotonic_ns"]
+                or snapshots[1]["monotonic_ns"] > log[-1]["monotonic_ns"]):
+            problems.append(f"shared cache occupancy interval mismatch: {row['cell_id']}")
+
+
 def validate_bundle(root, *, allow_dirty=False, allow_error_cells=False):
     """Validate immutable bytes, full matrix, finite rows, links, and clean source identity."""
     from scripts.check_report_bundle import _check_html, _check_repository_identity, _finite
@@ -518,6 +579,8 @@ def validate_bundle(root, *, allow_dirty=False, allow_error_cells=False):
             problems.append("metric rows differ from frozen complete cell matrix")
         if [json.loads(line) for line in (root / "metrics.jsonl").read_text().splitlines()] != rows:
             problems.append("JSON and JSONL rows disagree")
+        if manifest["protocol"].get("execution_profile") == "shared_correctness":
+            _validate_shared_cache_scope(root, manifest, rows, problems)
         with (root / "metrics.csv").open(newline="") as stream:
             reader = csv.DictReader(stream)
             fields = sorted({key for row in rows for key in row})

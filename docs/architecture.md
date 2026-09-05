@@ -140,6 +140,11 @@ timing. HIER-033's `structsplat.pixel_gradient` is a diagnostic C0-faded direct-
 local Gram, and split-Hessian reference; it is not a maintained renderer or topology policy.
 These experiments do not change rendering or fitting defaults.
 
+HIER-034 also has a separately frozen shared-resource correctness profile. It keeps the same
+projection/matrix/numerical gates, records worker and parent-monitor GPU occupancy, and makes
+timing eligibility unconditionally false. Its elapsed times cannot authorize acceleration;
+the original exclusive-resource timing source is retained for a separate future run.
+
 HIER-035's task-scoped `benchmarks.hier_additive_controls` compares parameter-group Adam with
 diagonal and local-block Gauss–Newton updates under explicit bounds and charged backtracking.
 It returns the exact terminal step and complete work trace, not a best checkpoint. This is a

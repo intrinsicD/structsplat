@@ -24,12 +24,36 @@ HIER-031/032/014, ADR-0006
 - Driver: codex-root
 - Reviewer: codex-overnight-protocol-reviewer
 - Turn: driver
-- Reviewed revision: pending
+- Reviewed revision: protocol-sha256:9e3dc020572b724646f0f323a73d9457839f31a1c674b2ae799031787b2ff439
 
 ### Handoff log
 Protocol and implementation are prospectively approved at the digest below. The clean source
 checkpoint is4b2c79f2a97e0bde5109d11ab717edd5881a1ca1. Formal timing remains unlaunched while an
 unrelated GPU workload is active; no other process was stopped and no speed claim is made.
+
+### Handoff
+
+#### Objective
+Prospectively review the shared-resource correctness amendment before any formal cache outcome.
+#### Changes
+Separate shared-profile driver, externally sampled worker occupancy, explicit timing eligibility,
+retained numerical interchangeability gates and report checks for resource/decision bindings.
+#### Evidence
+The exact source digest above;63focused tests pass, including original cache/projection regressions.
+The original exclusive-resource source/protocol remains preserved and unrun.
+#### Assumptions
+Shared-GPU execution is permitted only for numerical agreement and descriptive resource evidence.
+#### Uncertainties
+Acceleration remains unassessed; shared-resource failures cannot establish intrinsic infeasibility.
+#### Review focus
+No numerical/matrix/limit change, no possible speed promotion, complete occupancy provenance,
+separate numerical eligibility, exact source/input bindings and preserved errors.
+#### Protected actions not taken
+No formal execution before amended approval, foreign-process termination, default change,
+selective rerun, in-place repair, push or merge.
+#### Recommended next action
+Approve or reject the amended digest prospectively; require full verification and clean source
+before launching the separately named immutable shared-correctness bundle.
 
 ## Notes
 Overnight research authorized September 5, 2026.
@@ -80,6 +104,31 @@ Recompute with: python scripts/experiments/hier034_basis_cache.py --print-protoc
 ## Design sources
 docs/research/2026-09-05-overnight-research-portfolio.md records the research alternatives.
 
+## Prospective shared-resource amendment
+
+The occupied GPU prevents an exclusive-resource timing interpretation. Before any formal
+HIER-034 outcome exists, narrow the next run to correctness/parity and descriptive resource
+telemetry. Preserve the original timing protocol/source at4b2c79f2a97e0bde5109d11ab717edd5881a1ca1
+and /tmp/structsplat-overnight-VmVXmg/source; it remains unrun.
+
+The amended executable authority will be PROTOCOL plus SOURCES in
+`scripts/experiments/hier034_shared_cache.py`, with a new distinct prospective digest approval.
+Keep all180cells, six permutations, inputs,48-step solver, numerical/checkpoint/count gates,
+256MiB retained ceiling,600second timeout, warmup and error policy unchanged. Record GPU
+occupancy before/after every worker plus a parent-process monitor throughout the matrix.
+All elapsed times and ratios are descriptive; timing eligibility and every speed gate must
+be false irrespective of the measured ratio. Performance disposition is inconclusive due to
+shared-GPU contention, not a refuted speed hypothesis. Numerical interchangeability keeps
+the original six-complete-pair gates. Shared-resource OOM/timeouts do not prove intrinsic
+cache infeasibility. No foreign process is stopped, and no selective repeat is permitted.
+
+New immutable output: results/hier034_shared_correctness_2026-09-05. Native inputs and
+base-bundle path remain the original hash-bound HIER-031 lineage. Formal command:
+python scripts/experiments/hier034_shared_cache.py results/hier034_shared_correctness_2026-09-05
+--base-bundle results/hier031_janelle_c0001_s1200_exact7k_boundary_detail_s0_diagnostic_2026-08-12
+--approved-protocol-digest EXACT_DIGEST. Diagnostic smoke stays smooth77, three backends,
+three iterations; it cannot establish a formal outcome.
+
 ### Protocol review
 
 #### Reviewer
@@ -107,3 +156,30 @@ Approval is prospective and workload-specific, not a result or default approval.
 intermediate digest 24bb46bdc7153e8bda77d2210cdf1b620eb48acc7fa9505d20efe0df009d4a9a was not
 approved because decision and provenance gates were incomplete; the corrections above close
 those issues. Post-run independent evidence audit remains required.
+
+### Protocol review
+
+#### Reviewer
+codex-overnight-protocol-reviewer
+
+#### Verdict
+Approved
+
+#### Protocol digest
+9e3dc020572b724646f0f323a73d9457839f31a1c674b2ae799031787b2ff439
+
+#### Digest scope
+Shared-profile executable PROTOCOL plus all SOURCES: wrapper, original driver, numerical
+implementations, report and checker. The11bound numerical implementation files independently
+match the original preserved source byte-for-byte; matrix, solver, inputs and limits are unchanged.
+
+#### Outcomes accessed
+No
+
+#### Review focus
+Independent63focused tests passed. Timing gates are unconditionally false; numerical
+interchangeability stays separate. Occupancy hashes/intervals and decision coverage are checked;
+monitoring ends before manifest sealing. Failed workers killed by timeout/SIGKILL can lack
+their after-snapshot: retain that as explicitly partial telemetry, never complete coverage.
+Performance is inconclusive regardless of descriptive ratios. Full verification, clean source
+and an independent post-run audit remain required. No blocking corrections identified.

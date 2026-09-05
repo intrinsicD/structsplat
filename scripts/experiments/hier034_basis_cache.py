@@ -236,7 +236,7 @@ def checkpoint_agreement(base, candidate):
     return disagreements
 
 
-def speed_gate(pairs):
+def speed_gate(pairs, *, timing_eligible=True):
     ratios = [p["paired_speedup"] for p in pairs if "paired_speedup" in p]
     median = statistics.median(ratios) if ratios else None
     eligible = (len(pairs) == len(ratios) == PROTOCOL["repetitions"]
@@ -245,10 +245,13 @@ def speed_gate(pairs):
             "speedup_min": min(ratios) if ratios else None,
             "speedup_max": max(ratios) if ratios else None,
             "integrity_eligible": eligible,
-            "passes_speed_gate": eligible and median >= PROTOCOL["required_median_speedup"]}
+            "passes_interchangeability_gate": eligible,
+            "timing_eligible": timing_eligible,
+            "descriptive_ratio_threshold_passed": eligible and median >= PROTOCOL["required_median_speedup"],
+            "passes_speed_gate": timing_eligible and eligible and median >= PROTOCOL["required_median_speedup"]}
 
 
-def analyze_bundle(root, rows):
+def analyze_bundle(root, rows, *, timing_eligible=True):
     """Recompute the preregistered decisions from saved states and raw float images."""
     from structsplat.observation_field import load_observation_field
 
@@ -308,9 +311,12 @@ def analyze_bundle(root, rows):
                               "checkpoint_disagreements": decisions,
                               "paired_speedup": base["total_seconds"] / candidate["total_seconds"]})
             records.append({"family": family, "seed": seed, "backend": backend, "pairs": pairs,
-                            **speed_gate(pairs)})
+                            **speed_gate(pairs, timing_eligible=timing_eligible)})
     decision = {"scope": "workload-specific exposed/synthetic projection only",
-                "records": records, "default_promotion": False}
+                "records": records, "default_promotion": False,
+                "timing_eligible": timing_eligible,
+                "performance_disposition": ("workload-specific timing assay" if timing_eligible else
+                                            "inconclusive—shared-GPU contention")}
     write_json(root / "decision.json", decision)
     return decision
 
