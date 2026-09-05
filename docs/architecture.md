@@ -140,6 +140,12 @@ timing. HIER-033's `structsplat.pixel_gradient` is a diagnostic C0-faded direct-
 local Gram, and split-Hessian reference; it is not a maintained renderer or topology policy.
 These experiments do not change rendering or fitting defaults.
 
+HIER-035's task-scoped `benchmarks.hier_additive_controls` compares parameter-group Adam with
+diagonal and local-block Gauss–Newton updates under explicit bounds and charged backtracking.
+It returns the exact terminal step and complete work trace, not a best checkpoint. This is a
+procedural additive convergence assay; shared-workstation times are descriptive, not a speed
+claim or a replacement for the maintained fitter.
+
 The frozen C0001/C0004 diagnostic rejects the full composition. Projection alone is safe under its
 frozen SSE/maximum-normalized-violation transaction but adds only `+0.0109/+0.0044 dB`. The
 350-leaf residual reserve followed by projection loses

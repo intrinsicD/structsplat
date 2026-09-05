@@ -10,6 +10,7 @@ import hashlib
 import html
 import json
 import itertools
+import math
 import re
 from pathlib import Path
 import subprocess
@@ -219,6 +220,78 @@ def _check_protocol_identity(root, manifest, problems):
                     for r in range(repeats) for b in protocol["backends"]}
         if expected != set(manifest["expected_cells"]) or len(expected) != len(manifest["expected_cells"]):
             problems.append("declared matrix disagrees with frozen executable protocol")
+    elif manifest.get("task") == "HIER-035":
+        protocol = manifest["protocol"]
+        workloads = [(f, s) for f in protocol["families"] for s in protocol["seeds"]]
+        if manifest.get("diagnostic"):
+            workloads = [("translated", 77)]
+        expected = {f"{f}_s{s}_{method}" for f, s in workloads for method in protocol["arms"]}
+        if expected != set(manifest["expected_cells"]) or len(expected) != len(manifest["expected_cells"]):
+            problems.append("declared matrix disagrees with frozen convergence protocol")
+
+
+def _validate_convergence_cell(root, row, protocol, diagnostic, problems):
+    from scripts.check_report_bundle import _finite
+
+    directory = root / "cells" / row["cell_id"]
+    config = json.loads((directory / "config.json").read_text())
+    request = json.loads((directory / "request.json").read_text())
+    if config.get("request") != request or any(
+        row.get(key) != request.get(key) for key in ("cell_id", "family", "seed", "method", "smoke")
+    ):
+        problems.append(f"convergence row/request/config mismatch: {row['cell_id']}")
+    expected = dict(protocol["config"])
+    expected.update(arm="adam" if row["method"].startswith("adam") else row["method"],
+                    adam_multiplier=protocol["adam_multipliers"].get(row["method"], 1.0),
+                    steps=3 if diagnostic else protocol["config"]["steps"])
+    if config.get("control") != expected:
+        problems.append(f"resolved convergence config differs: {row['cell_id']}")
+    history = json.loads((directory / "history.json").read_text())
+    trace = history["checkpoints"]
+    horizon = expected["steps"]
+    if not isinstance(trace, list) or not trace:
+        problems.append(f"missing convergence trace: {row['cell_id']}")
+        return
+    if (not _finite(trace) or len(trace) != horizon + 1
+            or [r["iteration"] for r in trace] != list(range(horizon + 1))
+            or history["nominal_iterations"] != horizon
+            or row["iterations_run"] != row["selected_iteration"] or row["iterations_run"] != horizon
+            or row["gradient_evaluations"] != horizon):
+        problems.append(f"convergence terminal/work mismatch: {row['cell_id']}")
+    for first, second in zip(trace, trace[1:]):
+        if any(first[key] > second[key] for key in
+               ("elapsed_seconds", "forward_evaluations", "gradient_evaluations")):
+            problems.append(f"convergence trace work/time decreases: {row['cell_id']}")
+            break
+    if trace[-1]["elapsed_seconds"] > row["total_seconds"] + 1e-6:
+        problems.append(f"convergence trace exceeds total time: {row['cell_id']}")
+    if (abs(trace[-1]["psnr"] - row["psnr"]) > 1e-3
+            or abs(trace[0]["psnr"] - row["initial_psnr"]) > 1e-3):
+        problems.append(f"convergence trace/row scoring mismatch: {row['cell_id']}")
+    target = np.load(directory / "target.npy", allow_pickle=False)
+    raw = np.load(directory / "reconstruction.npy", allow_pickle=False)
+    if (list(target.shape) != protocol["shape"] + [3] or raw.shape != target.shape
+            or not np.isfinite(target).all() or not np.isfinite(raw).all()
+            or np.any(target < 0) or np.any(target > 1)):
+        problems.append(f"invalid convergence raw image: {row['cell_id']}")
+    mse = float(np.square(raw.astype(np.float64) - target.astype(np.float64)).mean())
+    if (not math.isclose(mse, row["raw_mse"], rel_tol=1e-6, abs_tol=1e-12)
+            or abs(-10 * math.log10(max(mse, 1e-12)) - row["psnr"]) > 1e-6):
+        problems.append(f"convergence raw image/metric mismatch: {row['cell_id']}")
+    for name, config_key in (("target.npy", "target_sha256"), ("input_field.npz", "input_field_sha256")):
+        if sha256(directory / name) != config[config_key]:
+            problems.append(f"convergence input hash mismatch: {row['cell_id']}")
+    with np.load(directory / "field.npz", allow_pickle=False) as field:
+        n = protocol["n_gaussians"]
+        for name, shape in (("means", (n, 2)), ("log_scales", (n, 2)),
+                            ("rotations", (n,)), ("colors", (n, 3))):
+            if field[name].shape != shape or not np.isfinite(field[name]).all():
+                problems.append(f"convergence serialized count/field mismatch: {row['cell_id']}")
+    if row["n_gaussians"] != protocol["n_gaussians"]:
+        problems.append(f"convergence row count mismatch: {row['cell_id']}")
+    for key in ("lpips", "cold_render_max_abs"):
+        if isinstance(row.get(key), bool) or not isinstance(row.get(key), (int, float)) or row[key] < 0:
+            problems.append(f"invalid convergence {key}: {row['cell_id']}")
 
 
 def validate_bundle(root, *, allow_dirty=False, allow_error_cells=False):
@@ -298,6 +371,8 @@ def validate_bundle(root, *, allow_dirty=False, allow_error_cells=False):
                     for key in ("cold_render_max_abs", "maintained_parity_max_abs", "raw_sse", "cache_bytes"):
                         if isinstance(row.get(key), bool) or not isinstance(row.get(key), (int, float)) or row[key] < 0:
                             problems.append(f"invalid {key}: {row['cell_id']}")
+                elif manifest["task"] == "HIER-035":
+                    _validate_convergence_cell(root, row, manifest["protocol"], manifest["diagnostic"], problems)
             for name in row.get("artifacts", {}).values():
                 if name not in files or (root / name).resolve() not in linked:
                     problems.append(f"unexposed or unhashed artifact: {name}")

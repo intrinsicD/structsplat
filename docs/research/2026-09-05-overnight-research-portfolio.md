@@ -359,6 +359,8 @@ Primary sources (concise paraphrases above; no borrowed numerical speed claims):
 - [LocoADC](https://arxiv.org/abs/2607.17896): locality-aware density control.
 - [TurboGS](https://arxiv.org/abs/2606.15924): sparse supervision, error-guided density and hybrid optimization; identified in the fresh search.
 - [AbsGS](https://arxiv.org/abs/2404.10484): gradient-collision prior art, already in the repository's Aug12 research context.
+- [Gradient-Direction-Aware Density Control](https://arxiv.org/abs/2508.09239): direction-aware density-control prior art, rechecked in the fresh search.
+- [SteepGS, CVPR 2025](https://openaccess.thecvf.com/content/CVPR2025/html/Wang_Steepest_Descent_Density_Control_for_Compact_3D_Gaussian_Splatting_CVPR_2025_paper.html): splitting matrices, saddle-point conditions and two-offspring directions are established prior art; our additive oracle is not a new splitting theorem.
 - [Nuisance-parameter estimation](https://arxiv.org/abs/1206.6532): variable-projection foundation.
 - [DBToaster](https://arxiv.org/abs/1207.0137): incremental materialized-view maintenance.
 - [Futamura, partial evaluation](https://fi.ftmr.info/PE-Museum/PE-memo.PDF): specializing computation with static inputs.
