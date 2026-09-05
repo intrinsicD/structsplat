@@ -6348,8 +6348,9 @@ tree:
     choice: >
       Explore convergence, quality, performance and efficiency using recent primary publications,
       multiple designs, implementation and reproducible experiments. Prefer simpler controls;
-      do not infer permission for a push, merge, foreign-process termination or default promotion.
-    alternatives: ["Implement only the existing next task", "Pursue added complexity without simple killing controls"]
+      complexity is acceptable when it is required. This records the user's research direction,
+      not user authorship of the later method interpretations or workflow restrictions.
+    alternatives: []
     evidence:
       - "ara/evidence/overnight-method-research-2026-09-05/run.md"
       - "docs/research/2026-09-05-overnight-research-portfolio.md"

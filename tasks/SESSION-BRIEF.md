@@ -35,10 +35,6 @@ unless the owning task says so.
 - `HIER-029` — Janelle full-resolution HIER-028 mask diagnostic (in-review; `tasks/HIER-029-janelle-full-resolution-mask-diagnostic.md`)
 - `HIER-030` — Janelle 7k capacity and contained-mask diagnostic (in-review; `tasks/HIER-030-janelle-7k-contained-mask-diagnostic.md`)
 - `HIER-031` — Exact-7k masked boundary and thin-detail allocation (in-review; `tasks/HIER-031-exact7k-masked-boundary-detail-allocation.md`)
-- `HIER-033` — Pixel-gradient operator oracle (in-review; `tasks/HIER-033-pixel-gradient-operator-oracle.md`)
-- `HIER-034` — Fixed-geometry basis cache (in-review; `tasks/HIER-034-fixed-geometry-basis-cache.md`)
-- `HIER-035` — Additive convergence controls (in-review; `tasks/HIER-035-additive-convergence-controls.md`)
-- `HIER-036` — Dense cross-Gaussian coupling oracle (in-review; `tasks/HIER-036-dense-coupling-oracle.md`)
 - `CORE-016` — Codec-native dual-plane Gaussian observation field (in-review; `tasks/CORE-016-codec-native-dual-plane-field.md`)
 - `CORE-017` — Visibility-ordered alpha-shell surface lift (in-review; `tasks/CORE-017-visibility-ordered-alpha-shell-lift.md`)
 - `CORE-018` — Occlusion-aware ray-posterior surface lift (in-review; `tasks/CORE-018-occlusion-aware-ray-posterior-lift.md`)
@@ -96,6 +92,6 @@ unless the owning task says so.
 
 ## Ledger summary
 
-- 131 active-table outcomes
-- 46 retired tasks
+- 127 active-table outcomes
+- 50 retired tasks
 - 51 active-table rows already carrying a closed/non-actionable disposition

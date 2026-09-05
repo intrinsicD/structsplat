@@ -94,3 +94,10 @@ All five full reports pass the maintained bundle checker. The final packager/sou
 post-run audits recompute the decisive metrics, saved-field replays, gates and work accounting.
 No failed formal cell was selectively repeated, no immutable bundle was repaired, and no foreign
 process was stopped. Work is on local branch `research/overnight-2026-09-05`; no push or merge.
+
+The distinct integrated review accepted all four tasks for retirement, not method promotion.
+Its verdicts are recorded in the retired
+[HIER-033](../../tasks/done/HIER-033-pixel-gradient-operator-oracle.md),
+[HIER-034](../../tasks/done/HIER-034-fixed-geometry-basis-cache.md),
+[HIER-035](../../tasks/done/HIER-035-additive-convergence-controls.md), and
+[HIER-036](../../tasks/done/HIER-036-dense-coupling-oracle.md) task records.

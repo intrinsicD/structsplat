@@ -2,7 +2,7 @@ session:
   id: "2026-09-05_001"
   date: "2026-09-05"
   started: "2026-09-05T01:22+02:00"
-  last_turn: "2026-09-05T05:22+02:00"
+  last_turn: "2026-09-05T05:55+02:00"
   turn_count: 1
   summary: "Four simpler-first research routes produced five independently audited matrices; numerical-polish and rollback caveats prevent default promotion, and the simple gradient-rescue design remains unrun."
 
@@ -50,6 +50,11 @@ ai_actions:
     action: "Completed the 2163-test portable gate and every structural checker before final ledger integration; recorded scoped claims, unrun suggestions and the morning handoff without a default change."
     provenance: ai-executed
     files_changed: ["ara/logic/claims.md", "ara/staging/observations.yaml", "ara/trace/exploration_tree.yaml", "docs/research/2026-09-05-overnight-findings.md"]
+
+  - turn: 1
+    action: "Recorded the distinct Accepted integrated-review verdict for cb97dce plus disclosed workflow/provenance diffs, and retired HIER-033 through HIER-036 with no method/default promotion. Reviewer independently checked 6039 archive hashes, 1397 links, all five source/protocol bindings and five structural gates; final producer verification remains a commit prerequisite."
+    provenance: ai-executed
+    files_changed: ["tasks/done/HIER-033-pixel-gradient-operator-oracle.md", "tasks/done/HIER-034-fixed-geometry-basis-cache.md", "tasks/done/HIER-035-additive-convergence-controls.md", "tasks/done/HIER-036-dense-coupling-oracle.md", "tasks/INDEX.md", "tasks/SESSION-BRIEF.md"]
 
 claims_touched:
   - {id: C68, action: crystallized, turn: 1}

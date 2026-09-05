@@ -12,7 +12,7 @@ Compare streaming, cached scatter, and sparse operators with build cost, memory,
 ## Acceptance criteria
 - [x] Bounded immutable cache and forward/transpose oracle tests.
 - [x] Frozen protocol, distinct prospective review, and clean-source evidence.
-- [ ] Portable report, independent audit, synchronized docs/ARA, full verification.
+- [x] Portable report, independent audit, synchronized docs/ARA, full verification.
 
 ## Interfaces touched
 `additive_basis.py`, `contraction_refinement.py`, tests and task-scoped experiment.
@@ -23,8 +23,8 @@ HIER-031/032/014, ADR-0006
 ## Agent workflow
 - Driver: codex-root
 - Reviewer: codex-overnight-protocol-reviewer
-- Turn: reviewer
-- Reviewed revision: 50396b6e06a3ff668fbea641ab6ae20c52ecaf1f
+- Turn: none
+- Reviewed revision: cb97dce4e0c4b927f7a9228f42afc570d210dcc1
 
 ### Handoff log
 Historical entry at the original freeze: protocol and implementation are prospectively approved at the digest below. The clean source
@@ -97,7 +97,8 @@ archive, scoped ARA findings and morning handoff; kept all maintained defaults u
 #### Evidence
 ara/evidence/overnight-method-research-2026-09-05/run.md and archive/archive_manifest.json;
 docs/research/2026-09-05-overnight-findings.md; ARA C68–C72 as applicable.
-The exact staged integration tree and final full-gate result are bound at review dispatch.
+Integration commitcb97dce4e0c4b927f7a9228f42afc570d210dcc1; full gate2163passed,26skipped,514deselected,
+all structural checks clean. Only this workflow binding was appended after that checkpoint.
 #### Assumptions
 Each claim retains its own frozen protocol, source, data, comparator and resource scope.
 The two cache profiles are not independent numerical confirmation.
@@ -114,6 +115,49 @@ termination, sealed-data access, push or merge.
 #### Recommended next action
 Accept or require a bounded correction to the integrated record. Retire this task only after
 the distinct verdict and full verification; keep future hypotheses explicitly unrun.
+
+### Review
+
+#### Verdict
+Accepted
+
+#### Self-reviewed
+No
+
+#### Correctness
+Distinct reviewer codex-overnight-protocol-reviewer accepted this completed bounded research
+task for retirement, not method/default promotion. Reviewed integration commit
+cb97dce4e0c4b927f7a9228f42afc570d210dcc1, tree
+6b82818bd1633b84444911c90d2117bf8cb212a9, plus the four disclosed task workflow-binding
+diffs and N314 provenance correction.
+C72 preserves all parity failures and nominal timing predicates. Passing records are rollback
+calls, not accepted refinements. Streaming repeat variability, both foreign-GPU episodes and the
+shared profile's categorical timing ineligibility remain explicit.
+
+#### Evidence quality
+The review independently reproduced all 6,039 archive hashes, 1,397 contained HTML links,
+the exact copied/omitted partition and complete 6,040-file inventory; all five original
+manifest/source/protocol/cell-count bindings match. Five packager tests and all five structural
+checkers passed independently. Earlier distinct numerical audits provide the replay evidence.
+The 2,163-test full gate was producer-run, not rerun by the reviewer. The archive is explicitly
+partial; no original immutable artifact was repaired.
+
+#### Simplicity
+Implementations remain bounded experimental tools with maintained defaults unchanged.
+O182/O183 and the proposed gradient rescue remain unpromoted, unimplemented and unrun.
+
+#### Missing cases
+Accepted-update cache utility, baseline-repeat mechanisms and continuous hardware exclusivity
+remain unresolved. Freeze a new accepted-update utility gate before another cache assay.
+
+#### Required changes
+No scientific, numerical-code or artifact correction required. Routine closure: record this
+verdict, complete the acceptance checklist, retire the task, synchronize Index/session brief,
+and pass the final repository verification gate before committing.
+
+#### Optional improvements
+Future documentation cleanup may improve number/unit spacing. Future assays require their own
+frozen scope and exact prospective approval; no further experiment is authorized by this verdict.
 
 ## Notes
 Overnight research authorized September 5, 2026.

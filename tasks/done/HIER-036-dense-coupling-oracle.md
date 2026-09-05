@@ -17,7 +17,7 @@ separate comparisons against the strongest Adam control.
 - [x] Bound the dense oracle and test Jacobian, Gram, update, ownership, and work semantics.
 - [x] Freeze executable protocol and obtain distinct prospective digest approval.
 - [x] Clean immutable complete run, native artifacts/curves, and independent results audit.
-- [ ] Synchronize task/docs/ARA and pass the full verification gate.
+- [x] Synchronize task/docs/ARA and pass the full verification gate.
 
 ## Interfaces touched
 Task-scoped benchmark oracle, experiment driver, focused tests, and portable report validator.
@@ -28,8 +28,8 @@ HIER-033/035, ADR-0006
 ## Agent workflow
 - Driver: codex-root
 - Reviewer: codex-overnight-protocol-reviewer
-- Turn: reviewer
-- Reviewed revision: 4cd0331bdbb357df295a271e62736024feafdea9
+- Turn: none
+- Reviewed revision: cb97dce4e0c4b927f7a9228f42afc570d210dcc1
 
 ### Handoff log
 Historical initial entry: design reviewed before implementation; executable approval and outcomes were then pending.
@@ -89,7 +89,8 @@ archive, scoped ARA findings and morning handoff; kept all maintained defaults u
 #### Evidence
 ara/evidence/overnight-method-research-2026-09-05/run.md and archive/archive_manifest.json;
 docs/research/2026-09-05-overnight-findings.md; ARA C68–C72 as applicable.
-The exact staged integration tree and final full-gate result are bound at review dispatch.
+Integration commitcb97dce4e0c4b927f7a9228f42afc570d210dcc1; full gate2163passed,26skipped,514deselected,
+all structural checks clean. Only this workflow binding was appended after that checkpoint.
 #### Assumptions
 Each claim retains its own frozen protocol, source, data, comparator and resource scope.
 The two cache profiles are not independent numerical confirmation.
@@ -106,6 +107,49 @@ termination, sealed-data access, push or merge.
 #### Recommended next action
 Accept or require a bounded correction to the integrated record. Retire this task only after
 the distinct verdict and full verification; keep future hypotheses explicitly unrun.
+
+### Review
+
+#### Verdict
+Accepted
+
+#### Self-reviewed
+No
+
+#### Correctness
+Distinct reviewer codex-overnight-protocol-reviewer accepted this completed bounded research
+task for retirement, not method/default promotion. Reviewed integration commit
+cb97dce4e0c4b927f7a9228f42afc570d210dcc1, tree
+6b82818bd1633b84444911c90d2117bf8cb212a9, plus the four disclosed task workflow-binding
+diffs and N314 provenance correction.
+C71 retains cap-specific and exposure-stratum scope. Conditional overlap coupling gains do not
+establish texture optimizer preference; the ultimate texture failure cause remains unestablished.
+Precision-limit polishing is not demonstrated visual improvement.
+
+#### Evidence quality
+The review independently reproduced all 6,039 archive hashes, 1,397 contained HTML links,
+the exact copied/omitted partition and complete 6,040-file inventory; all five original
+manifest/source/protocol/cell-count bindings match. Five packager tests and all five structural
+checkers passed independently. Earlier distinct numerical audits provide the replay evidence.
+The 2,163-test full gate was producer-run, not rerun by the reviewer. The archive is explicitly
+partial; no original immutable artifact was repaired.
+
+#### Simplicity
+Implementations remain bounded experimental tools with maintained defaults unchanged.
+O182/O183 and the proposed gradient rescue remain unpromoted, unimplemented and unrun.
+
+#### Missing cases
+Natural-image transfer, scalable dense alternatives and standalone-gradient synergy remain
+unresolved. Any fallback assay needs a new task and prospective executable approval.
+
+#### Required changes
+No scientific, numerical-code or artifact correction required. Routine closure: record this
+verdict, complete the acceptance checklist, retire the task, synchronize Index/session brief,
+and pass the final repository verification gate before committing.
+
+#### Optional improvements
+Future documentation cleanup may improve number/unit spacing. Future assays require their own
+frozen scope and exact prospective approval; no further experiment is authorized by this verdict.
 
 ## Frozen protocol
 Executable authority: PROTOCOL plus every SOURCES hash in
