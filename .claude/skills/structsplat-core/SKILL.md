@@ -1,6 +1,6 @@
 ---
 name: structsplat-core
-description: Load at the start of any StructSplat work session. Repo map, invariants, naming, and the layered architecture (structure-tensor init -> anisotropic blue-noise sampling -> RS Gaussians -> normalized renderer -> fit -> pyramid). Use when orienting in the codebase, deciding where code belongs, or before editing any module.
+description: Load at the start of any StructSplat work session. Repo map, invariants, naming, and the layered architecture (structure-tensor init → anisotropic blue-noise sampling → RS Gaussians → normalized renderer → fit → pyramid). Use when orienting in the codebase, deciding where code belongs, or before editing any module.
 ---
 
 # StructSplat — core conventions
@@ -35,6 +35,10 @@ IntrinsicEngine as an RHI pass.
   keep masked and unmasked execution identical outside boundary-specific work, and power the sole
   conversion CLI (`scripts/convert.py`) plus three report-producing evaluation workflows.
 - `pyramid.py` (torch) — progressive densification driven by residual structure tensor.
+- `color_ray.py` / `actual_color_ray.py` (torch) — FIT-050/051 opt-in, fixed-geometry color
+  transactions. FIT-050 uses guarded image interpolation; FIT-051 renders every trial and
+  compares streaming proposals with a native color VJP. Both preserve reference quality gates
+  and exact rollback; neither is called by the maintained pipeline.
 - `additive_basis.py` (lazy torch) — HIER-034 opt-in, bounded fixed-geometry RGB basis cache;
   `pixel_gradient.py` (torch) — HIER-033 diagnostic additive pixel Jacobians and local curvature.
   Neither changes maintained defaults; cached operators are invalid after geometry/support edits.

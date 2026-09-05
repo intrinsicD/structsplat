@@ -31,7 +31,8 @@ unrun simple-fallback design (ARA C68–C72). No maintained pipeline or default 
 
 The follow-up [code-driven portfolio](docs/research/2026-09-05-code-driven-portfolio.md)
 selects guarded color refinement (FIT-050) and same-call quality-measurement reuse (PORT-007)
-for bounded experiments. These active investigations do not authorize a default change.
+for bounded experiments. FIT-051 adds a separate actual-render transaction and renderer-native
+color-gradient comparison. These active investigations do not authorize a default change.
 
 > This is a PyTorch **research reference** with an opt-in exact CUDA extension for the same
 > normalized/additive equations. The remaining production port is a tiled CUDA/Vulkan/RHI path

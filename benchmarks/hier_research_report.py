@@ -22,7 +22,7 @@ from PIL import Image
 
 
 SCHEMA = "structsplat.hier_research.report.v1"
-TASKS = {"HIER-033", "HIER-034", "HIER-035", "HIER-036", "FIT-050", "PORT-007"}
+TASKS = {"HIER-033", "HIER-034", "HIER-035", "HIER-036", "FIT-050", "PORT-007", "FIT-051"}
 TASK_PATHS = {
     "HIER-033": "tasks/HIER-033-pixel-gradient-operator-oracle.md",
     "HIER-034": "tasks/HIER-034-fixed-geometry-basis-cache.md",
@@ -30,6 +30,7 @@ TASK_PATHS = {
     "HIER-036": "tasks/HIER-036-dense-coupling-oracle.md",
     "FIT-050": "tasks/FIT-050-safe-color-ray.md",
     "PORT-007": "tasks/PORT-007-joint-render-coverage.md",
+    "FIT-051": "tasks/FIT-051-actual-render-color-ray.md",
 }
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -838,13 +839,14 @@ def validate_bundle(root, *, allow_dirty=False, allow_error_cells=False):
             problems.append("JSON and JSONL rows disagree")
         if manifest["protocol"].get("execution_profile") == "shared_correctness":
             _validate_shared_cache_scope(root, manifest, rows, problems)
-        if manifest["task"] in {"FIT-050", "PORT-007"}:
+        if manifest["task"] in {"FIT-050", "PORT-007", "FIT-051"}:
             from importlib import import_module
             module = import_module({
                 "FIT-050": "scripts.experiments.fit050_color_ray",
+                "FIT-051": "scripts.experiments.fit051_actual_color_ray",
                 "PORT-007": "benchmarks.port007_controls",
             }[manifest["task"]])
-            if manifest["task"] == "FIT-050":
+            if manifest["task"] in {"FIT-050", "FIT-051"}:
                 module.validate_rows(rows, manifest["protocol"], problems,
                                      diagnostic=manifest["diagnostic"])
                 module.validate_artifacts(root, rows, manifest["protocol"], problems,

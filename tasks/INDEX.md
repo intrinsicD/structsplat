@@ -13,6 +13,7 @@ replay-valid; do not rewrite those task bytes merely to duplicate this table.
 
 | ID | Title | Status | Depends on |
 |----|-------|--------|-----------|
+| FIT-051 | Actual-render color transactions | in-progress — fresh renderer-native/actual-trial mechanism; exact protocol and outcomes pending | FIT-050, ADR-0003/0011 |
 | FIT-050 | Safeguarded normalized color-ray refinement | in-progress — code-derived design; executable review and outcomes pending | ADR-0003/0011 |
 | PORT-007 | Same-call coverage and tail quality evaluation | in-progress — code-derived reuse; exact gate parity and complete-cost experiments pending | ADR-0003/0011/0025 |
 | ABL-001 | Init-strategy x budget sweep (the core experiment + fitness) | partial | INIT-003/004, BENCH-001 |
