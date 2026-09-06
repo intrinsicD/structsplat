@@ -6647,3 +6647,409 @@ tree:
       - "ara/evidence/code-driven-method-research-2026-09-05/run.md"
     also_depends_on: [N328, N331, N332]
     status: open
+  - id: N336
+    type: question
+    title: "Does the practical plateau reflect method maturity or the wrong research questions?"
+    provenance: user
+    timestamp: "2026-09-05T13:05+02:00"
+    description: >
+      The user asks whether the prolonged absence of practical improvements means the method
+      is already very good, or whether search directions and questions are misplaced. Assess
+      the existing evidence; this is not authority for new experiments or changed safeguards.
+    evidence:
+      - "docs/research/2026-09-05-code-driven-findings.md"
+      - "docs/research/2026-09-05-overnight-findings.md"
+      - "docs/additive_field_v2.md"
+    also_depends_on: [N324, N328, N331, N335]
+    status: open
+  - id: N337
+    type: question
+    title: "Which useful outcomes are feasible, without assuming the desired target is attainable?"
+    provenance: user-revised
+    timestamp: "2026-09-05T13:38+02:00"
+    description: >
+      The user accepts asking what prevents the desired outcome but warns that the question
+      can overconstrain research because that outcome may be infeasible. Assess attainable
+      outcomes and conditional limits without assuming a fixed target or representation must
+      succeed. This framing does not select an experiment, relax a gate or abandon the method.
+    evidence:
+      - "docs/additive_field_v2.md"
+      - "ara/evidence/hier031-exact7k-masked-boundary-detail-2026-08-12/run.md"
+      - "docs/research/2026-09-05-code-driven-findings.md"
+    also_depends_on: [N336, N335]
+    status: open
+  - id: N338
+    type: decision
+    title: "Reaffirm the original goal: dome images become 2D Gaussian training observations for 3DGS"
+    provenance: user
+    timestamp: "2026-09-05T14:19+02:00"
+    choice: >
+      The user states that StructSplat and realtime-gs have always served one primary goal:
+      convert calibrated multi-image dome captures, with and without masks, to 2D Gaussian
+      splats, then infer or learn a shared 3D Gaussian scene without using the source images
+      during reconstruction training. Multi-pixel support and the relation to projected 3D
+      Gaussians motivate the representation. Conversion convergence, quality and efficiency
+      are means to that goal, not a standalone image-codec objective. This is clarification
+      of existing intent, not a new pivot, proof of feasibility or authority to delete images.
+    alternatives: []
+    evidence:
+      - "ara/trace/sessions/2026-09-05_001.yaml"
+      - "docs/additive_field_v2.md"
+    also_depends_on: [N336, N337]
+    status: resolved
+  - id: N339
+    type: decision
+    title: "Confirm image-free 3D reconstruction as the governing research goal"
+    provenance: user
+    timestamp: "2026-09-05T14:51+02:00"
+    choice: >
+      The user explicitly affirms the central question: what the 2D Gaussian fields must preserve
+      and how reconstruction should exploit their spatial support and geometry to recover a good
+      shared 3D scene efficiently. Carry forward calibrated masked/unmasked dome observations,
+      image-free reconstruction training, and downstream quality/convergence plus complete
+      conversion-and-training cost as the research objective and selection criterion.
+      This confirms N338; no particular experiment or mechanism is selected.
+    alternatives: []
+    evidence:
+      - "ara/trace/sessions/2026-09-05_001.yaml"
+      - "ara/logic/problem.md"
+      - "ara/logic/solution/heuristics.md"
+    also_depends_on: [N338]
+    status: resolved
+  - id: N340
+    type: question
+    title: "Reuse the current pipeline, work backward from 3D, or change the formulation?"
+    provenance: user
+    timestamp: "2026-09-05T15:02+02:00"
+    description: >
+      The user asks how to achieve the confirmed goal and whether to use existing work, proceed
+      backward from 3D to 2D, or take another route. Compare directions and recommend a first test;
+      the question does not itself select a new method or a formal experiment protocol.
+    evidence:
+      - "ara/logic/problem.md"
+      - "ara/trace/sessions/2026-09-05_001.yaml"
+    also_depends_on: [N338, N339]
+    status: open
+  - id: N341
+    type: question
+    title: "Has reconstruction from image-plane Gaussian observations already been published?"
+    provenance: user
+    timestamp: "2026-09-05T15:36+02:00"
+    description: >
+      The user requests a literature search for the affirmed 2D-observation-to-3D reconstruction
+      goal. Primary-source search finds direct modern G2SR and older Gaussian-space model fitting;
+      the broad idea has prior art. The exact general compact-only dome workflow and practical
+      quality/cost advantage remain unestablished. This resolves the bounded literature inquiry,
+      not the research objective or a method-selection decision.
+    evidence:
+      - "https://arxiv.org/abs/2607.14470"
+      - "https://pages.iai.uni-bonn.de/gall_juergen/download/jgall_SoG_iccv11.pdf"
+      - "https://pmc.ncbi.nlm.nih.gov/articles/PMC6979538/"
+      - "ara/staging/observations.yaml"
+    also_depends_on: [N339, N340]
+    status: resolved
+  - id: N342
+    type: decision
+    title: "Center the literature and method discussion on the existing tomography approach"
+    provenance: user-revised
+    timestamp: "2026-09-05T16:05+02:00"
+    choice: >
+      The user corrects the preceding emphasis: realtime-gs already uses tomography, and that
+      should be the focus here. Prioritize reconstruction from Gaussian projection fields,
+      Gaussian back-projection/fusion, forward-model fidelity and tomographic inversion.
+      The AI's earlier correspondence-preserving-converter recommendation is not adopted by
+      this correction. Preserve the existing image-free reconstruction goal and complete cost
+      criterion; no new method, experiment or task takeover is selected.
+    alternatives: []
+    evidence:
+      - "ara/logic/problem.md"
+      - "ara/trace/sessions/2026-09-05_001.yaml"
+      - "ara/staging/observations.yaml"
+    also_depends_on: [N339, N341]
+    status: resolved
+  - id: N343
+    type: question
+    title: "Assess existing tomography operators against the literature before choosing another method"
+    provenance: user
+    timestamp: "2026-09-05T22:19+02:00"
+    description: >
+      The user says yes please to assessing the existing beam and field-loss formulations,
+      then asks to continue during the work. Completed a bounded code/literature assessment,
+      existing CPU correctness tests and deterministic algebra probes. The assessment identifies
+      a representation-dependent RGB weight, source-footprint restrictions and distinctions
+      between CI fusion, additive projection and visibility-aware reconstruction. No next
+      reconstruction method or formal experiment was selected.
+    evidence:
+      - "ara/staging/tomography-method-assessment-2026-09-05/assessment.md"
+      - "ara/staging/tomography-method-assessment-2026-09-05/algebra_checks.json"
+      - "ara/staging/tomography-method-assessment-2026-09-05/verification.json"
+    also_depends_on: [N342, N340, N339]
+    status: resolved
+  - id: N344
+    type: decision
+    title: "Authorize and implement the recommended tomography corrections in realtime-gs"
+    provenance: user-revised
+    timestamp: "2026-09-05T23:20+02:00"
+    choice: >
+      The user requests the recommended fixes. Implement the RGB normalization correction and
+      controlled soft source-footprint path, retaining existing covariance repair and explicit
+      operator semantics. CPU and public-pipeline contracts pass; practical quality and complete
+      cost remain open. The full CPU suite retains two frozen-protocol failures, fully diagnosed
+      in the sibling receipt; no historical experiment protocol was rewritten.
+    alternatives: []
+    evidence:
+      - "../realtime-gs/ara/evidence/tables/20260905_tomography_contract_checks.md"
+      - "../realtime-gs/ara/evidence/tables/20260905_tomography_contract_checks.json"
+    also_depends_on: [N343, N342]
+    status: resolved
+  - id: N345
+    type: question
+    title: "Choose the next evidence step after the tomography corrections"
+    provenance: user
+    timestamp: "2026-09-05T23:29+02:00"
+    description: >
+      The user asks how to continue. Recommend a bounded, preregistered reconstruction study
+      using the existing converter and tomography paths. First compare hard, tethered-soft and
+      untethered source footprints from identical field-refit geometry; use Beam plus covariance
+      repair and native compact training as a separate practical reference. No experiment is
+      executed or newly approved by this advisory turn.
+    evidence:
+      - "../realtime-gs/ara/evidence/tables/20260905_tomography_contract_checks.md"
+      - "../realtime-gs/src/rtgs/lift/field_lifter.py"
+      - "../realtime-gs/src/rtgs/carrier_pipeline.py"
+    also_depends_on: [N344, N343, N342]
+    status: resolved
+  - id: N346
+    type: decision
+    title: Select a captured-person reference and sequential tomography comparison
+    provenance: user-revised
+    timestamp: 2026-09-06T01:12+02:00
+    choice: The user requests a detailed modest-size female Gaussian capture before the source-constraint
+      comparison, then a maskless repetition and another capture, preserving all old evidence. RTGS-016
+      prepares this selected sequence with fixed draft parameters; this direction is not an independent
+      protocol review or a measured efficacy result.
+    alternatives: []
+    evidence:
+    - ../realtime-gs/ara/evidence/tables/20260906_tomography_review_packet.md
+    - ../realtime-gs/ara/evidence/tables/20260906_haelyn_acquisition.json
+    - ../realtime-gs/ara/evidence/tables/20260906_historical_protocol_preservation.json
+    also_depends_on:
+    - N345
+    status: resolved
+  - id: N347
+    type: experiment
+    title: Captured-reference preparation and historical-protocol preflight; comparison unrun
+    provenance: ai-executed
+    timestamp: 2026-09-06T01:12+02:00
+    result: Downloaded/imported a 58,614,278-byte, 357,398-Gaussian, degree-2-SH Haelyn person model
+      and inspected its 16-view orbit. Prepared 16 masked, 16 fresh maskless and 15 second-capture
+      compact views. Full CPU and focused worker/Beam/history/report fixture checks pass; all 1,703
+      historical files remain byte-identical. Exact draft source/input bindings exist. No real reconstruction
+      comparison or results audit has run. Reviewer-agent authorization remains pending; automatic
+      approval review rejected clearing the draft blocker, which was retained.
+    evidence:
+    - ../realtime-gs/ara/evidence/tables/20260906_tomography_review_packet.md
+    - ../realtime-gs/ara/evidence/tables/20260906_haelyn_acquisition.json
+    - ../realtime-gs/ara/evidence/tables/20260906_historical_protocol_preservation.json
+    - ../realtime-gs/ara/evidence/tables/20260906_tomography_preflight/receipt.json
+    also_depends_on:
+    - N346
+    status: resolved
+  - id: N348
+    type: decision
+    title: Authorize Fable 5.1 independent review with a maximum effort ceiling
+    provenance: user
+    timestamp: 2026-09-06T02:47+02:00
+    choice: The user authorizes Claude Code review using Fable 5.1 with effort at most max and offers a
+      watched folder for communication. The existing CLI is used with that exact model, no fallback and
+      no nested agents.
+    alternatives: []
+    evidence:
+    - ../realtime-gs/experiments/reviews/20260906_tomography_source_constraints_haelyn_dome_PROTOCOL_REVIEW.md
+    also_depends_on:
+    - N347
+    status: resolved
+  - id: N349
+    type: experiment
+    title: Independent protocol rejection repaired and exact revised digest approved
+    provenance: ai-executed
+    timestamp: 2026-09-06T02:47+02:00
+    result: 'Preserved the first Fable rejection verbatim. Fixed relative run-path aggregation, receipt-last
+      success, fail-first publication and retry preservation, fatal placement/proxy guards, alpha declarations
+      and frozen warmup counts. Corrected the reviewer inference about masked metric windows: all 47 sealed
+      exports are full-canvas. Forty-four focused tests and the complete repository gate pass. Rehashed
+      all 1703 historical files unchanged. Second Fable review independently recomputed source/input/protocol
+      bindings and approved protocol 3b0b25fbb0721b138cfcb42ddfeddbc5dc7f0e883ab53dbea8d2c045931600e7 with
+      outcome access none.'
+    evidence:
+    - ../realtime-gs/experiments/reviews/20260906_tomography_source_constraints_haelyn_dome_PROTOCOL_REVIEW_V1_REJECTED.md
+    - ../realtime-gs/experiments/reviews/20260906_tomography_source_constraints_haelyn_dome_PROTOCOL_REVIEW.md
+    - ../realtime-gs/experiments/reviews/20260906_tomography_source_constraints_haelyn_dome_DRIVER_RESPONSE_R1.md
+    - ../realtime-gs/ara/evidence/tables/20260906_tomography_revision1_preflight/receipt.json
+    also_depends_on:
+    - N348
+    status: resolved
+  - id: N350
+    type: experiment
+    title: Start the locked captured-reference comparison; full result pending
+    provenance: ai-executed
+    timestamp: 2026-09-06T02:47+02:00
+    result: Initialized the approved task with a development lock and preserved 149 source/evidence files
+      plus the exact binary development-state record. Warmup passed without fallback or heldout access.
+      At this checkpoint 1 of 36 measured cells completed; first masked-Haelyn hard seed accepted 100 proxy
+      steps and passed input guards. The coordinator continues masked Haelyn, maskless Haelyn, then the
+      second dome capture. No comparison is complete, no quality effect is promoted, and actual report/browser
+      validation remains. Automatic approval review rejected a planned external Claude audit watcher over
+      potentially private dome-derived outputs; the command did not execute. Complete local results and
+      a concrete review packet before additional sharing approval or a demonstrably safe alternative.
+    evidence:
+    - ../realtime-gs/ara/evidence/tables/20260906_tomography_running_checkpoint.json
+    - ../realtime-gs/runs/20260906_tomography_source_constraints_haelyn_dome/task.lock.json
+    - ../realtime-gs/runs/20260906_tomography_source_constraints_haelyn_dome/source_snapshot.json
+    - ../realtime-gs/runs/20260906_tomography_source_constraints_haelyn_dome/coordinator.log
+    also_depends_on:
+    - N349
+    status: resolved
+  - id: N351
+    type: experiment
+    title: Validate completed hard baselines and distinguish native quality from viewer display
+    provenance: ai-executed
+    timestamp: 2026-09-06T03:26+02:00
+    result: All three masked-Haelyn hard seeds completed. Saved-model hashes, finite histories, input boundary
+      receipts and source/input seals validate. A first-training-camera diagnostic on completed hard seed
+      90601 uses only compact calibration and the 2D teacher; no optimizer, raw RGB or mask access. Native
+      rendering reproduces sparse elongated splats seen in WebGL while the teacher shows a recognizable
+      person. The median 3D axis standard-deviation ratio grows from 1.194656 at initialization to 6.226715
+      after proxy optimization. WebGL2 rendered non-background splats and an actual orbit changed the camera
+      with zero client errors during the gesture. These are partial, single-baseline diagnostics, not the
+      final representative report or a constraint-mode effect. The soft arm is running; source, data and
+      budgets remain frozen.
+    evidence:
+    - ../realtime-gs/runs/20260906_tomography_source_constraints_haelyn_dome/diagnostics/hard_90601/diagnostic_receipt.json
+    - ../realtime-gs/runs/20260906_tomography_source_constraints_haelyn_dome/diagnostics/hard_90601/native_teacher_endpoints.png
+    - ../realtime-gs/runs/20260906_tomography_source_constraints_haelyn_dome/diagnostics/hard_90601/native_display_diagnostic.json
+    - ../realtime-gs/runs/20260906_tomography_source_constraints_haelyn_dome/diagnostics/hard_90601/saved_geometry_diagnostic.json
+    - ../realtime-gs/runs/20260906_tomography_source_constraints_haelyn_dome/diagnostics/hard_90601/browser_diagnostic.json
+    - ../realtime-gs/ara/evidence/tables/20260906_tomography_partial_hard_diagnostic/diagnostic_receipt.json
+    also_depends_on:
+    - N350
+    status: resolved
+  - id: N352
+    type: experiment
+    title: Check completed Haelyn comparisons and separate pixel-error gains from reconstruction detail
+    provenance: ai-executed
+    timestamp: 2026-09-06T11:22+02:00
+    result: 'Both 12-cell Haelyn phases completed. Recomputed paired final teacher-MSE reductions for free
+      versus hard: medians 69.92% masked, 69.88% unmasked, all three seed pairs improve. Median external
+      equal-view PSNR: masked hard 12.96 dB, free 17.67 dB; unmasked hard 13.11 dB, free 17.64 dB. External
+      SSIM falls (masked 0.524 to 0.428; unmasked 0.527 to 0.422). Inspected fixed first-seed/first-held-out
+      masked previews: free is a blurred silhouette, hard and soft remain sparse. Checked 224 saved-model
+      hashes for 32 completed cells, input access receipts, entry/exit bindings and same initial models
+      for causal arms. Source/protocol/data seals remain exact. Dome free has two completed seeds, final
+      seed running; Beam pending. No frozen source, input or setting changed.'
+    evidence:
+    - ../realtime-gs/ara/evidence/tables/20260906_tomography_completed_haelyn_checkpoint.json
+    - ../realtime-gs/runs/20260906_tomography_source_constraints_haelyn_dome/diagnostics/completed_haelyn_phases/README.md
+    - ../realtime-gs/runs/20260906_tomography_source_constraints_haelyn_dome/diagnostics/completed_haelyn_phases/checkpoint_source.py
+    also_depends_on:
+    - N350
+    status: resolved
+  - id: N353
+    type: experiment
+    title: Complete all frozen cells and validate the producer; independent audit still pending
+    provenance: ai-executed
+    timestamp: 2026-09-06T23:30+02:00
+    result: 'All 36 cells and all three report-only phases completed with exit 0. Locally verified 252 saved
+      models, 149 source archive entries, 1703 preserved historical files, all compact input guards, causal
+      initial equality, seed-level aggregate differences and time ratios, and 396 external MSE-to-PSNR transformations.
+      Source/protocol/data seals remain exact. Dome free improves final teacher MSE in all three seeds (median
+      paired reduction 32.2743%); soft worsens it in all three (median reduction -9.3075%). Median dome
+      foreground PSNR hard/free is 12.5882/14.5764 dB. Inspected fixed dome hard/free previews: both lack
+      detail; full-frame metrics include unmodeled room background. Producer validation reports only missing
+      canonical AUDIT.md and AUDIT.json. Prepared a 90-file, 16056173-byte review manifest including 12
+      dome previews; did not invoke the external reviewer.'
+    evidence:
+    - ../realtime-gs/ara/evidence/tables/20260906_tomography_completed_study_validation.json
+    - ../realtime-gs/runs/20260906_tomography_source_constraints_haelyn_dome/diagnostics/completed_study/README.md
+    - ../realtime-gs/runs/20260906_tomography_source_constraints_haelyn_dome/run_receipt.json
+    - ../realtime-gs/.scratch/rtgs016/claude_results_audit/PAYLOAD.md
+    also_depends_on:
+    - N350
+    status: resolved
+  - id: N354
+    type: decision
+    title: Authorize the concrete Fable results-review payload including dome previews
+    provenance: user
+    timestamp: 2026-09-07T00:06+02:00
+    choice: The user explicitly answered yes, i approve to Fable 5.1 at effort max reviewing the prepared
+      outputs including 12 dome-derived previews. This resolves the prior automatic payload-sharing rejection
+      for that scope. Raw full-resolution dome photographs/masks, full Gaussian archives and unrelated outcomes
+      remain excluded from reviewer context.
+    alternatives: []
+    evidence:
+    - ../realtime-gs/ara/evidence/tables/20260907_tomography_final_handoff/review_authorization.json
+    - ../realtime-gs/.scratch/rtgs016/claude_results_audit/payload_manifest.json
+    also_depends_on:
+    - N350
+    status: resolved
+  - id: N355
+    type: experiment
+    title: Independent results audit confirms numerical evidence and narrows interpretation
+    provenance: ai-executed
+    timestamp: 2026-09-07T00:06+02:00
+    result: Fable 5.1, effort max, returned accepted_with_limits after independent protocol/source/data/model/aggregate/guard
+      checks and 53 focused tests. Placement and proxy models are byte-identical across seeds; final variation
+      comes only from native refinement. Free lowers teacher/RGB MSE but has large drift and blurred previews;
+      soft loses on the dome. Empty black-background predictions score misleadingly high SSIM. Dome free
+      accepted 69/100 proxy steps; timing is descriptive with concurrent diagnostics. Full Markdown/JSON
+      saved verbatim. All reviewer assistant messages are Fable, but the CLI model-usage record additionally
+      logs a 24-output-token Haiku call of unestablished internal purpose. Preserve that discrepancy; no
+      alternate reviewer was selected.
+    evidence:
+    - ../realtime-gs/benchmarks/results/20260906_tomography_source_constraints_haelyn_dome_AUDIT.md
+    - ../realtime-gs/benchmarks/results/20260906_tomography_source_constraints_haelyn_dome_AUDIT.json
+    - ../realtime-gs/ara/evidence/tables/20260907_tomography_final_handoff/reviewer_provenance.json
+    also_depends_on:
+    - N354
+    status: resolved
+  - id: N356
+    type: decision
+    title: Retain descriptive MSE evidence with explicit deterministic-proxy and visual-quality limits
+    provenance: ai-executed
+    timestamp: 2026-09-07T00:06+02:00
+    choice: Commit the audited bounded interpretation to the shared report and realtime-gs C43. Three native-refinement
+      seeds are not independent placement/proxy replications. MSE reductions do not establish detailed reconstruction,
+      mask causality, physical geometry, convergence, performance or a default change. The user approval
+      concerns payload sharing, not scientific endorsement.
+    alternatives: []
+    evidence:
+    - O216
+    - ../realtime-gs/benchmarks/results/20260906_tomography_source_constraints_haelyn_dome_AUDIT.json
+    - ../realtime-gs/runs/20260906_tomography_source_constraints_haelyn_dome/report_presentation_receipt.json
+    also_depends_on:
+    - N355
+    status: resolved
+  - id: N357
+    type: experiment
+    title: Generate the shared report and pass real browser, orbit and bundle checks
+    provenance: ai-executed
+    timestamp: 2026-09-07T00:06+02:00
+    result: Shared renderer generated index.html/README/manifest from preserved measurements and post-audit
+      presentation metadata. Original producer metrics retained verbatim. Byte-identical HTTP copies repair
+      seven outward evidence links without changing frozen code or originals. The first browser pass failed
+      only on missing favicon; its screenshots and browser-specific failure receipt are retained, and a
+      transparent icon fixes the asset. The repeated real Chrome 149 WebGL2/SwiftShader smoke has visible
+      splats (6974 non-background pixels in UI-free crop), an actual orbit, and zero client errors; 433
+      expanded report targets returned HTTP 200. Contract, check-run and check_results_bundle --no-previews
+      passed; all 36 actual previews remain inventoried. Chart labels now wrap without changing numbers.
+      Task reaches Calibrated; full repository gate is recorded separately in the final handoff receipt
+      before yielding.
+    evidence:
+    - ../realtime-gs/runs/20260906_tomography_source_constraints_haelyn_dome/index.html
+    - ../realtime-gs/runs/20260906_tomography_source_constraints_haelyn_dome/viewer_smoke.json
+    - ../realtime-gs/runs/20260906_tomography_source_constraints_haelyn_dome/browser_final_links.json
+    - ../realtime-gs/ara/evidence/tables/20260907_tomography_final_handoff/viewer_smoke.json
+    - ../realtime-gs/docs/tasks/RTGS-016-captured-reference-tomography.md
+    also_depends_on:
+    - N356
+    status: resolved

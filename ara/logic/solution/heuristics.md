@@ -243,3 +243,19 @@
   `docs/adr/0033-fixed-certified-micro-row-reserve.md`,
   `ara/evidence/hier031-exact7k-masked-boundary-detail-2026-08-12/run.md`]
 - **From staging**: O166
+
+## H19: Prioritize Image-Free 3D Reconstruction Utility
+
+- **Rationale**: Develop 2D Gaussian observations for calibrated masked/unmasked dome captures
+  that support learning a shared 3D Gaussian scene without source images during reconstruction
+  training. Judge improvements by downstream quality, convergence and complete conversion-plus-
+  training cost; use 2D fit and storage metrics as component diagnostics. Determine which spatial
+  support and geometry the fields must preserve and how reconstruction can exploit them.
+  This is an affirmed research priority, not proof of a Gaussian-geometry advantage or selection
+  of a particular method, surrogate or experiment.
+- **Provenance**: user-revised
+- **Crystallized via**: verbal-affirmation
+- **Sensitivity**: high
+- **Code ref**: [`benchmarks/stage1_downstream_objective.py`,
+  `tasks/BENCH-019-stage1-downstream-objective.md`, `ara/logic/problem.md`]
+- **From staging**: O196

@@ -1,0 +1,114 @@
+{
+  "scope": "CPU deterministic algebra verification; no scene data, optimization run or performance claim",
+  "python": "3.12.9 | packaged by Anaconda, Inc. | (main, Feb  6 2025, 18:56:27) [GCC 11.2.0]",
+  "torch": "2.9.0+cu128",
+  "device": "cpu",
+  "dtype": "torch.float64",
+  "repository": "/home/alex/Documents/realtime-gs",
+  "commit": "2ebe52cc28a1b0e812a6c436d49225fac4ee943f",
+  "repository_status_before": "",
+  "source_sha256": {
+    "src/rtgs/lift/beam_fusion.py": "db238b6ab980667e6744f063743f122cb5249f6164ccd0b114d2513cdaf71cad",
+    "src/rtgs/lift/field_loss.py": "59ac1cebbd9daad528573811d593058eb79ed1bec25aa89e20a5adb5f8efaef8",
+    "src/rtgs/lift/field_refit.py": "26c3a810ad2da7d987dc18025189651c887c15685e6a3010878038807da90922",
+    "src/rtgs/lift/inverse_projection_fiber.py": "4e9bd0c62954b2361d2cb79491d97cdfbad29c7c2dd23be0e5f5bff7e75cdd8b",
+    "src/rtgs/lift/field_visibility.py": "e57b0cd73c6d82864151afeab59662807c2961b5ae16d4e72768b24c896a73df",
+    "src/rtgs/optim/compact_trainer.py": "89bad9ac5af58c753855e5c61e0b75a9d86b4ad13f208a79cbf4a5d17d2d021d"
+  },
+  "rgb_split": {
+    "plain_density_l2": 0.16622148882085042,
+    "split_density_l2": 0.16622148882085042,
+    "plain_rgb_l2": 0.11500432472717392,
+    "split_rgb_l2": 0.11500432472717392,
+    "current_rgb_objective": -0.7051775127786047,
+    "split_rgb_objective": -1.4103550255572095,
+    "current_rgb_mean_gradient": [
+      [
+        0.151614960972703,
+        0.056314128361289684
+      ]
+    ],
+    "split_rgb_mean_gradient": [
+      [
+        0.303229921945406,
+        0.11262825672257937
+      ]
+    ],
+    "gradient_norm_ratio": 2,
+    "original_coefficient_energy": 0.35840000000000005,
+    "split_coefficient_energy": 0.17920000000000003,
+    "original_field_energy": 1.125946807046582,
+    "split_field_energy": 1.125946807046582
+  },
+  "ci_orthographic_algebra": {
+    "longitudinal_standard_deviation": 1000,
+    "true_covariance": [
+      [
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        1
+      ]
+    ],
+    "ci_covariance": [
+      [
+        1.499999250000375,
+        0,
+        0
+      ],
+      [
+        0,
+        1.499999250000375,
+        0
+      ],
+      [
+        0,
+        0,
+        1.499999250000375
+      ]
+    ],
+    "analytic_scalar": 1.499999250000375,
+    "infinite_longitudinal_variance_limit": 1.5
+  },
+  "line_integral_peak": {
+    "3d_covariance": [
+      [
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        4,
+        0
+      ],
+      [
+        0,
+        0,
+        9
+      ]
+    ],
+    "central_3d_density": 1,
+    "x_y_z_view_peaks": [
+      2.5066282746310002,
+      5.0132565492620005,
+      7.519884823893001
+    ]
+  },
+  "normalized_gauge": {
+    "epsilon": 1e-08,
+    "density_scale": 2,
+    "maximum_color_change": 3.000000026176508e-09,
+    "qualification": "An illustrative epsilon, not a measured current-artifact regime; exact only as epsilon approaches zero."
+  },
+  "assertions_passed": true
+}

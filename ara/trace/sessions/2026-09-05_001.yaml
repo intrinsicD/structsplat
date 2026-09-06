@@ -2,11 +2,40 @@ session:
   id: "2026-09-05_001"
   date: "2026-09-05"
   started: "2026-09-05T01:22+02:00"
-  last_turn: "2026-09-05T12:43+02:00"
-  turn_count: 2
-  summary: "Five overnight matrices plus three code-driven studies are independently audited. The214 new cells show small actual-render backtracking progress and component timing observations, but all new utility/promotion gates fail; defaults stay unchanged."
+  last_turn: "2026-09-05T23:29+02:00"
+  turn_count: 13
+  summary: "Recommended a bounded tomography reconstruction study using existing fields, matched source-constraint arms and a separate Beam/native-compact reference. No new experiment or method outcome was selected or produced."
 
 events_logged:
+  - {turn: 13, type: question, id: N345, routing: direct, provenance: user, summary: "Ask how to continue after the tomography corrections."}
+  - {turn: 13, type: heuristic, id: O212, routing: staged, provenance: ai-suggested, summary: "Recommend matched source-constraint study and separate practical Beam reference."}
+  - {turn: 12, type: decision, id: N344, routing: direct, provenance: user-revised, summary: "User authorizes and receives tomography implementation fixes."}
+  - {turn: 12, type: observation, id: O211, routing: staged, provenance: ai-executed, summary: "Record bounded tests and remaining frozen-protocol verification conflicts."}
+  - {turn: 11, type: question, id: N343, routing: direct, provenance: user, summary: "Authorize and continue the assessment of existing tomography operators against the literature."}
+  - {turn: 11, type: architecture, id: O207, routing: staged, provenance: ai-suggested, summary: "Separate Beam initialization, anchored analytic proxy refit and compact sampled rendering objectives."}
+  - {turn: 11, type: observation, id: O208, routing: staged, provenance: ai-executed, summary: "Verify exact target splitting doubles the refitter RGB gradient without changing either field."}
+  - {turn: 11, type: observation, id: O209, routing: staged, provenance: ai-executed, summary: "Verify CI fusion differs from exact covariance inversion in an orthographic algebra control."}
+  - {turn: 11, type: heuristic, id: O210, routing: staged, provenance: ai-suggested, summary: "Recommend objective invariance correction then a matched source-footprint-constraint assessment."}
+  - {turn: 10, type: decision, id: N342, routing: direct, provenance: user-revised, summary: "Focus research on the tomography approach already used in realtime-gs."}
+  - {turn: 10, type: observation, id: O203, routing: staged, provenance: ai-suggested, summary: "Inspect existing beam-fusion and additive analytic-field-loss mechanisms and their limits."}
+  - {turn: 10, type: observation, id: O204, routing: staged, provenance: ai-suggested, summary: "Find Gaussian-dictionary tomographic inversion and verify restricted random-mixture reconstruction prior art."}
+  - {turn: 10, type: observation, id: O205, routing: staged, provenance: ai-suggested, summary: "Verify corrected/exact Gaussian CT projection and scalable reconstruction sources without transferring CT gains to RGB."}
+  - {turn: 10, type: heuristic, id: O206, routing: staged, provenance: ai-suggested, summary: "Prioritize projection semantics and whole-field tomographic inversion under explicit visibility assumptions."}
+  - {turn: 9, type: question, id: N341, routing: direct, provenance: user, summary: "Request and complete a bounded primary-source literature search on 2D Gaussian observations for 3D reconstruction."}
+  - {turn: 9, type: observation, id: O200, routing: staged, provenance: ai-suggested, summary: "Verify direct G2SR prior art, preprint status and geometry/appearance limitations."}
+  - {turn: 9, type: observation, id: O201, routing: staged, provenance: ai-suggested, summary: "Verify older Gaussian-overlap 3D fitting and distinguish image encoders, image-feature reconstruction and 3D surfels."}
+  - {turn: 9, type: architecture, id: O202, routing: staged, provenance: ai-suggested, summary: "Consider retaining correspondences during permitted RGB conversion; no strict arbitrary-field novelty or practical advantage claim."}
+  - {turn: 8, type: question, id: N340, routing: direct, provenance: user, summary: "Ask whether to reuse current work, work backward from 3D, or take another route."}
+  - {turn: 8, type: heuristic, id: O197, routing: staged, provenance: ai-suggested, summary: "Reuse the pipeline and investigate the render/refit/reconstruct bridge, acknowledging existing reverse tests."}
+  - {turn: 8, type: heuristic, id: O198, routing: staged, provenance: ai-suggested, summary: "Propose a matched supervision-by-initialization diagnostic with separate source controls."}
+  - {turn: 8, type: architecture, id: O199, routing: staged, provenance: ai-suggested, summary: "Keep group/field geometry, joint conversion and learned inversion conditional on observed failure."}
+  - {turn: 7, type: decision, id: N339, routing: direct, provenance: user, summary: "Affirm the central reconstruction goal and downstream evaluation priority."}
+  - {turn: 7, type: heuristic, id: O196, routing: crystallized, provenance: user-revised, summary: "Crystallize only the affirmed research priority as H19 via verbal affirmation."}
+  - {turn: 6, type: heuristic, id: O194, routing: staged, provenance: ai-suggested, summary: "Separate teacher agreement from source-reference reconstruction quality."}
+  - {turn: 6, type: observation, id: O195, routing: staged, provenance: ai-suggested, summary: "Recover accepted sibling exporter/predictor receipts missing from the local BENCH-019 handoff."}
+  - {turn: 3, type: question, id: N336, routing: direct, provenance: user, summary: "Question whether practical stagnation reflects method quality or misplaced research directions."}
+  - {turn: 3, type: observation, id: O189, routing: staged, provenance: ai-suggested, summary: "No optimality inference from narrow failed updates; strategic bottleneck gap remains an interpretation."}
+  - {turn: 3, type: heuristic, id: O190, routing: staged, provenance: ai-suggested, summary: "Propose application/headroom-first diagnostics without selecting a roadmap or relaxing old gates."}
   - {turn: 1, type: decision, id: N314, routing: direct, provenance: user, summary: "Authorized overnight literature, multiple designs, implementation and experiments with a simpler-first preference."}
   - {turn: 1, type: experiment, id: N315, routing: direct, provenance: ai-executed, summary: "HIER-035 completes local curvature versus strong Adam controls with mixed procedural terminal gates."}
   - {turn: 1, type: pivot, id: N316, routing: direct, provenance: ai-executed, summary: "Froze a coupling/cap factorial before attributing HIER-035 failures to missing cross-Gaussian terms."}
@@ -43,7 +72,54 @@ events_logged:
   - {turn: 2, type: heuristic, id: O187, routing: staged, provenance: ai-suggested, summary: "Keep a baseline stability/rejected-work diagnostic as an unrun suggestion."}
   - {turn: 2, type: observation, id: O188, routing: staged, provenance: ai-suggested, summary: "Keep broader designs and novelty judgments tentative; old HIER rescue remains unrun."}
 
+  - {turn: 4, type: question, id: N337, routing: direct, provenance: user-revised, summary: "Ask which useful outcomes are attainable without presupposing the desired goal is feasible."}
+  - {turn: 4, type: observation, id: O191, routing: staged, provenance: ai-suggested, summary: "Distinguish conditional representability and identifiability limits from unresolved headroom and downstream utility."}
+  - {turn: 4, type: heuristic, id: O192, routing: staged, provenance: ai-suggested, summary: "Propose a feasibility map without fixing the outcome, representation or next experiment."}
+
+  - {turn: 5, type: decision, id: N338, routing: direct, provenance: user, summary: "Reaffirm original dome-capture to 2D Gaussian observations to image-free 3DGS training goal."}
+  - {turn: 5, type: heuristic, id: O193, routing: staged, provenance: ai-suggested, summary: "Distinguish Gaussian supervision from guaranteed component correspondence; prioritize retained reconstruction evidence and downstream cost."}
+
 ai_actions:
+  - turn: 13
+    action: "Checked current reconstruction paths and R2-Gaussian projection semantics; recommended a bounded next study without running it."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 12
+    action: "Implemented RTGS-015 in realtime-gs; validated objective/geometry/persistence contracts and preserved historical experiment records."
+    provenance: ai-executed
+    files_changed: ["../realtime-gs/src/rtgs/lift/field_refit.py", "../realtime-gs/src/rtgs/lift/inverse_projection_fiber.py", "../realtime-gs/src/rtgs/lift/field_lifter.py", "../realtime-gs/src/rtgs/cli.py"]
+  - turn: 11
+    action: "Read the tomography implementation and historical claim boundaries, reopened primary projection literature, ran 37 existing CPU correctness tests and an isolated deterministic algebra worksheet. Archived a self-reviewed staged assessment with exact outputs, commands, source hashes and artifact hashes. Sibling stayed clean; no reconstruction run, source change, task takeover, claim promotion or commit."
+    provenance: ai-executed
+    files_changed: ["ara/staging/tomography-method-assessment-2026-09-05/", "ara/staging/observations.yaml", "ara/trace/exploration_tree.yaml", "ara/trace/sessions/2026-09-05_001.yaml", "ara/trace/sessions/session_index.yaml", "ara/trace/pm_reasoning_log.yaml"]
+  - turn: 10
+    action: "Completed tomography-focused source research and read-only sibling operator inspection. Recorded the user's correction in problem.md and the ledger. No runtime source, sibling files, claim statuses, task authority or historical evidence changed; no experiment, numerical replay or commit."
+    provenance: ai-executed
+    files_changed: ["ara/logic/problem.md", "ara/staging/observations.yaml", "ara/trace/exploration_tree.yaml", "ara/trace/sessions/2026-09-05_001.yaml", "ara/trace/sessions/session_index.yaml", "ara/trace/pm_reasoning_log.yaml"]
+  - turn: 9
+    action: "Searched primary papers and official sources through 2026-09-05; reconciled the existing sibling literature review dated 2026-08-04. Verified direct and adjacent methods and staged their implications. Only research-ledger files updated; no source code, sibling state, task ownership, defaults, original evidence or claims changed."
+    provenance: ai-executed
+    files_changed: ["ara/staging/observations.yaml", "ara/trace/exploration_tree.yaml", "ara/trace/sessions/2026-09-05_001.yaml", "ara/trace/sessions/session_index.yaml", "ara/trace/pm_reasoning_log.yaml"]
+  - turn: 8
+    action: "Used research-ideation and experiment guidance for the bounded direction comparison; inspected sibling ideal-projection tests, inverse-fiber code and positive/negative claims. Queried primary 3DGS, Gaussian-mixture registration and MVSplat sources. Distinguished geometry-only projection from renderer-complete observations and existing synthetic refit tests from the proposed matched attribution matrix. No source edit, experiment execution, task takeover or new quantitative result."
+    provenance: ai-executed
+    files_changed: ["ara/staging/observations.yaml", "ara/trace/exploration_tree.yaml", "ara/trace/sessions/2026-09-05_001.yaml", "ara/trace/sessions/session_index.yaml", "ara/trace/pm_reasoning_log.yaml"]
+  - turn: 7
+    action: "Made the user-confirmed objective explicit in ara/logic/problem.md while retaining the earlier component questions. Extracted a scoped O196 from the affirmed formulation and crystallized H19; left O193's bundled technical interpretations and O194/O195 unpromoted. Updated session continuity only; no code, task-state, default or experiment change."
+    provenance: ai-executed
+    files_changed: ["ara/logic/problem.md", "ara/logic/solution/heuristics.md", "ara/staging/observations.yaml", "ara/trace/exploration_tree.yaml", "ara/trace/sessions/2026-09-05_001.yaml", "ara/trace/sessions/session_index.yaml", "ara/trace/pm_reasoning_log.yaml"]
+  - turn: 6
+    action: "Recovered the primary session: last user request is N338, with no later unfinished experiment request found. Preserved five pre-existing dirty ledger files and commit f863ab4. Rechecked partial archive: 214 rows, 1438 copied files and all generated hashes/links pass. Original experiments were not rerun."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 6
+    action: "Inspected sibling training/evaluation seams and accepted BENCH-019 receipts read-only. Four existing CPU tests pass: test_type_and_manifest_have_no_rgb_or_image_members, test_camera_projection_and_teacher_query_survive_bundle_round_trip, test_from_scene_keeps_training_calibration_but_drops_rgb_references, and test_fresh_process_strict_bundle_training_denies_rgb_scene_and_source_access. PYTHONDONTWRITEBYTECODE=1, CUDA_VISIBLE_DEVICES empty, OMP/MKL threads 1, pytest cache disabled, temporary outputs in /tmp. Saved only provisional ledger findings; no source/default/task-status change or formal experiment."
+    provenance: ai-executed
+    files_changed: ["ara/staging/observations.yaml", "ara/trace/sessions/2026-09-05_001.yaml", "ara/trace/sessions/session_index.yaml", "ara/trace/pm_reasoning_log.yaml"]
+  - turn: 3
+    action: "Read-only strategy audit: checked code-level acceptance rules and late-stage color scope, current task/objective gaps and historical results; recalculated hash-bound FIT051 gains and PORT work totals. Consulted the primary convex-optimization text and obtained an independent strategic critique. No new numerical experiment, method edit, gate change, task selection or commit."
+    provenance: ai-executed
+    files_changed: []
   - turn: 1
     action: "Searched primary splatting/optimization and cross-domain literature, produced the audited simpler-first portfolio, and obtained distinct prospective source-digest approvals."
     provenance: ai-executed
@@ -99,6 +175,16 @@ ai_actions:
     provenance: ai-executed
     files_changed: ["tasks/done/FIT-050-safe-color-ray.md", "tasks/done/PORT-007-joint-render-coverage.md", "tasks/done/FIT-051-actual-render-color-ray.md", "tasks/INDEX.md", "tasks/SESSION-BRIEF.md"]
 
+  - turn: 4
+    action: "Assessed existing design, code and evidence for conditional support limits, additive identifiability, acceptance constraints, actual-rate tradeoffs and unresolved downstream validity. No new numerical run, method edit, gate change, task selection or commit; recorded only this turn's research framing and tentative interpretation."
+    provenance: ai-executed
+    files_changed: ["ara/staging/observations.yaml", "ara/trace/exploration_tree.yaml", "ara/trace/sessions/2026-09-05_001.yaml", "ara/trace/sessions/session_index.yaml", "ara/trace/pm_reasoning_log.yaml"]
+
+  - turn: 5
+    action: "Read both repository guides and the compact-only reconstruction input/trainer seam; verified the source-code query-target versus 3D point-render loss. Consulted indexed official projection text; full PDF fetch failed on size. Reframed prior analysis around the user's original goal, with no run, source edit, default change, task takeover or sibling write."
+    provenance: ai-executed
+    files_changed: ["ara/staging/observations.yaml", "ara/trace/exploration_tree.yaml", "ara/trace/sessions/2026-09-05_001.yaml", "ara/trace/sessions/session_index.yaml", "ara/trace/pm_reasoning_log.yaml"]
+
 claims_touched:
   - {id: C68, action: crystallized, turn: 1}
   - {id: C69, action: crystallized, turn: 1}
@@ -110,6 +196,22 @@ claims_touched:
   - {id: C75, action: crystallized, turn: 2}
 
 key_context:
+  - {turn: 13, excerpt: "User: ok now how should we continue?"}
+  - {turn: 12, excerpt: "User: ok please fix these points as recommended"}
+  - turn: 11
+    excerpt: "User: yes please, then continue. Authorization refers to assessing existing beam and field-loss formulations against tomography papers before choosing another reconstruction mechanism."
+  - turn: 10
+    excerpt: "User: i am using a tomography approach in realtime-gs so that should be the focus here. The correction changes the literature priority; it does not endorse the preceding optical-flow/correspondence recommendation."
+  - turn: 9
+    excerpt: "User: make a literature research and see if people have already published something on this. The search verifies close direct prior art; compact correspondence preservation is an AI recommendation, not an adopted interface."
+  - turn: 8
+    excerpt: "User: how do we do that; should we use what we have, go backwards from 3D to 2D, or another way? AI recommends reuse plus backward-generated attribution, not a new unreviewed implementation or another idealized inversion claim."
+  - turn: 7
+    excerpt: "User: yes, that is the central goal. Affirmation refers to what 2D Gaussian observations must preserve and how reconstruction should exploit their support and geometry for an efficient shared 3D scene, with downstream quality and complete cost judging progress."
+  - turn: 6
+    excerpt: "User: continue with the last task, my computer just crashed. Recovered the completed experiment handoff followed by N338. Optional task-identity question received no reply before handoff; continued the read-only pipeline assessment and boundary checks."
+  - turn: 3
+    excerpt: "User: does the absence of real improvement mean the method is already very good, or are we searching in the wrong directions and asking the wrong questions?"
   - turn: 1
     excerpt: "User: continue the research over night; explore and design multiple ways to improve convergence, quality, performance or efficiency; recent publications, design, implementation and experiments are allowed; prefer simpler solutions unless complexity is required."
   - turn: 1
@@ -124,7 +226,18 @@ key_context:
   - turn: 2
     excerpt: "Original negative outcomes and reporting contracts are preserved; no threshold rescue, held-out access, default change or foreign-process termination occurred."
 
+  - turn: 4
+    excerpt: "User: asking what prevents the outcome we actually want may be too constraining because that outcome might not be feasible, but let us ask the question."
+
+  - turn: 5
+    excerpt: "User: the goal all along was to infer/learn a 3D Gaussian representation from 2D Gaussian splats and drop the images completely during training; StructSplat converts multi-image dome captures with and without masks for realtime-gs."
+
 open_threads:
+  - "N344: objective correction and optional source-footprint relaxation are implemented. A matched calibrated quality/complete-cost comparison and frozen-protocol lifecycle remain open; CPU contracts do not settle them."
+  - "N340: decide whether to select and freeze the proposed known-scene supervision-by-initialization diagnostic; backward synthesis is proposed as evidence generation, not an adopted production encoder."
+  - "Reconcile BENCH-019's stale exporter/collector handoff with accepted RTGS-009/010 records before duplicate implementation; inventory current matched fields before a new execution plan."
+  - "N338/N339 confirm the governing image-free 3D reconstruction objective (H19). Determine what the observations must preserve and how to exploit their spatial support and geometry; feasibility and mechanism remain open."
+  - "Measure conversion information loss versus downstream inference/optimization limits and complete costs; global maturity and the cause of the practical plateau remain unestablished."
   - "Isolate null-gain decision sensitivity and rejected-trial work in a new bounded diagnostic before selecting a remedy or another pipeline speed claim."
   - "Create and prospectively approve a new task before implementing the unrun GN6-plus-gradient6 versus GN12 texture rescue design."
   - "Diagnose baseline coefficient-solver repeat sensitivity before another cache assay; prospectively distinguish accepted-update utility from rollback timing."
@@ -134,6 +247,13 @@ open_threads:
   - "Prioritize only a bounded next test among the unrun representability, donor-recipient, image-space and scheduling proposals; no established novelty claim exists."
 
 ai_suggestions_pending:
+  - "O212: use matched hard/tethered/untethered footprint arms and separate Beam/native-compact reference; proposal only, no protocol or experiment executed."
+  - "O210/O211: the objective correction and optional relaxation are now implemented under user authorization. A formal matched comparison remains unrun. O202 correspondence conversion remains historical unadopted advice."
+  - "Reuse current components for O198's source-versus-field / controlled-versus-lifted initialization matrix; only then select a conversion, inference or geometry-interface change."
+  - "Separate teacher-relative error from source-reference reconstruction quality with matched controls and external reporting; no new protocol is frozen or approved."
+  - "Test whether Gaussian support and geometry supply downstream value beyond queried colors; no particular mechanism or next protocol has been selected."
+  - "Refine the objective/headroom audit into a feasibility map; the user adopted the broader question with a feasibility caveat, not a specific study or the AI's causal diagnosis."
+  - "Consider a bounded objective/headroom/bottleneck audit rather than another local-variant batch; do not treat diagnostic stability or acceptance rate as the end goal."
   - "Consider the baseline stability/rejected-work diagnostic; cause and safe remedy remain unproved and no successor protocol is approved."
   - "Test the simplest projected-gradient rescue with complete trial work and separate exposure strata before adding optimizer machinery."
   - "Treat the broader research portfolio as a hypothesis menu, not a ranked set of demonstrated improvements."

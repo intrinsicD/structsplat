@@ -1,5 +1,7 @@
 # StructSplat
 
+[7 September work handoff: restore reports and inputs](docs/WORK_HANDOFF_2026-09-07.md).
+
 **Hierarchical, feature-aware, anisotropic blue-noise 2D Gaussian image representation.**
 
 A single image is encoded as a set of oriented 2D Gaussians and rendered by a sorting-free,

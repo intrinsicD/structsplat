@@ -1,0 +1,12 @@
+{
+  "scope": "Advisory CPU correctness assessment; not a reconstruction benchmark",
+  "review": "Provisionally accepted (self-reviewed); no independent review asserted",
+  "pytest_command": "PYTHONDONTWRITEBYTECODE=1 CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 /home/alex/Documents/realtime-gs/.venv/bin/python -m pytest -q -p no:cacheprovider tests/test_beam_fusion.py tests/test_field_loss.py tests/test_field_refit.py tests/test_beam_covariance_refit.py tests/test_inverse_projection_fiber.py::test_covariance_projection_design_has_rank_five_then_six",
+  "pytest_workdir": "/home/alex/Documents/realtime-gs",
+  "pytest_exit_code": 0,
+  "pytest_raw_output": ".....................................                                    [100%]\n",
+  "passed_test_indicators": 37,
+  "algebra_command": "PYTHONDONTWRITEBYTECODE=1 CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 /home/alex/Documents/realtime-gs/.venv/bin/python /tmp/structsplat_tomography_audit_20260905.py",
+  "algebra_exit_code": 0,
+  "publication_or_quality_claim": false
+}

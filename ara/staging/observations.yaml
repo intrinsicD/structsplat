@@ -2841,3 +2841,699 @@ observations:
     promoted_to: null
     crystallized_via: null
     stale: false
+  - id: O189
+    timestamp: "2026-09-05T13:05+02:00"
+    provenance: ai-suggested
+    content: >
+      Recent bounded negative updates do not certify global method quality or exhaustion of
+      useful headroom. The latest color assays target one constrained late-stage transaction
+      at fixed geometry; compatibility failures and baseline repeat instability further limit
+      interpretation. A strategic emphasis on bottleneck-identifying questions appears more
+      warranted than inferring that the method is already excellent, but this is not a measured
+      causal diagnosis of the research plateau. Broader representation experiments also exist.
+    context: >
+      Read-only strategy assessment requested by the user. Rechecked code, project objectives,
+      task priorities, prior audits and hash-bound scalar rows; a distinct reviewer independently
+      assessed the inference. No new fit, global optimum bound or external ranking was produced.
+    potential_type: unknown
+    bound_to: [N336, N326, N328, N331]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O190
+    timestamp: "2026-09-05T13:05+02:00"
+    provenance: ai-suggested
+    content: >
+      Proposed strategy: choose the primary application and endpoint objective, then estimate
+      conditional optimization headroom, stepwise-policy restrictions, geometry/representation
+      limits and complete runtime shares before selecting another method. Use replicated
+      baselines and strong simple controls. A future separately frozen diagnostic may compare
+      stepwise acceptance with endpoint evaluation while preserving hard validity constraints;
+      it must not rewrite old negative gates or assume that more accepted steps means quality.
+      Small implementation changes are not necessarily the simplest scientific solution.
+    context: >
+      AI recommendation, not user-selected roadmap. Boyd/Vandenberghe Convex Optimization
+      sections1.2 and4.7 support the standard conditional least-squares and multiobjective
+      distinctions (https://web.stanford.edu/~boyd/cvxbook/bv_cvxbook.pdf). They provide no
+      StructSplat headroom result. O187/N335 remain relevant diagnostics, not proven remedies.
+    potential_type: heuristic
+    bound_to: [N336, N335, N328, N331]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O191
+    timestamp: "2026-09-05T13:38+02:00"
+    provenance: ai-suggested
+    content: >
+      The current evidence separates conditional infeasibility from unmeasured headroom.
+      HIER-031's exposed mask has ten pixels in three components with no admissible ordinary
+      center under its scale and containment rules; this is not a general Gaussian ceiling.
+      The additive scalar-times-RGB ambiguity prevents RGB fitting alone from uniquely defining
+      structural mass, and formal downstream-objective validation remains open. Recent fixed-
+      geometry one-transaction gains and baseline pipeline variability do not certify an
+      optimum or identify the dominant runtime cause. Competing image, topology, rate and
+      downstream objectives may matter more than a locally better update, but that strategic
+      ranking remains an inference rather than a new causal result.
+    context: >
+      Read-only reassessment of docs/additive_field_v2.md, safe_schedule.py acceptance rules,
+      HIER-031 and BENCH-007 evidence, latest code-driven findings and BENCH-019/020 status.
+      No new experiment, mathematical global bound or independent outcome audit this turn.
+    potential_type: unknown
+    bound_to: [N337, N336, N328, N331]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O192
+    timestamp: "2026-09-05T13:38+02:00"
+    provenance: ai-suggested
+    content: >
+      In response to the user's feasibility correction, map reachable quality, runtime and
+      downstream utility under explicit constraints before insisting on a fixed target.
+      Separate optimization headroom, representation limits and transfer validity; use
+      matched simple controls and permit a finding that a different representation or narrower
+      application is preferable. This revises the emphasis of O190 without affirming its whole
+      proposed roadmap. No particular study, relaxation or replacement is selected.
+    context: >
+      AI diagnostic recommendation following user-revised question N337, not a demonstrated
+      remedy or an adopted implementation plan. Existing exposed data and stopped routes keep
+      their original access and promotion restrictions.
+    potential_type: heuristic
+    bound_to: [N337, N336]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O193
+    timestamp: "2026-09-05T14:19+02:00"
+    provenance: ai-suggested
+    content: >
+      The clarified goal calls for a Gaussian observation interface supporting compact-only
+      3D reconstruction, not a standalone codec win. Reading realtime-gs shows that its compact
+      trainer already queries frozen 2D field colors and compares them to point-rendered 3D
+      colors, without source-image input. This code inspection is not a new quality or speed
+      result. Individual projected Gaussian footprints do not imply that arbitrary independent
+      per-view decompositions have one-to-one shared 3D correspondences; using the aggregate
+      fields as supervision does not require unique structural mass for every teacher row.
+      The earlier identifiability caveat therefore does not refute the user's actual goal.
+      Research should distinguish information lost in conversion from failure to exploit the
+      retained multi-view evidence, with downstream quality and complete resource cost primary.
+    context: >
+      User clarification N338 and read-only sibling inspection of CLAUDE.md, README.md,
+      src/rtgs/data/reconstruction_inputs.py and src/rtgs/optim/compact_trainer.py at
+      /home/alex/Documents/realtime-gs. Official 3DGS indexed paper text supports only the
+      standard affine-approximation projection distinction, not a StructSplat feasibility
+      result (https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/3d_gaussian_splatting_low.pdf;
+      full web fetch exceeded the tool size limit). No independent audit, experiment, changed
+      default or sibling write occurred. Point-query supervision is the inspected mechanism,
+      not an assumption that the user excludes future direct Gaussian-space objectives.
+    potential_type: heuristic
+    bound_to: [N338, N337, N336]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O194
+    timestamp: "2026-09-05T14:40+02:00"
+    provenance: ai-suggested
+    content: >
+      The inspected compact trainer learns frozen field-query colors and evaluates its internal
+      pixel/area risks against those teachers. Teacher agreement alone cannot separate conversion
+      information loss from source-reference reconstruction error. A next diagnostic should keep
+      source-reference reporting outside the image-free worker and match initialization, renderer,
+      samples, objective and budget when isolating supervision effects. This is a measurement
+      suggestion, not an observed dominant bottleneck or an approved experiment protocol.
+    context: >
+      Crash-recovery read-only inspection at realtime-gs commit
+      2ebe52cc28a1b0e812a6c436d49225fac4ee943f: src/rtgs/data/reconstruction_inputs.py and
+      src/rtgs/optim/compact_trainer.py (target line 1635, squared loss 1674, evaluation 2114).
+      Four existing CPU input/round-trip/source-reference/fresh-process denial tests passed.
+      Synthetic checks establish only the exercised boundary, not calibrated quality or speed.
+      No assertion about every external report and no sibling edit follows.
+    potential_type: heuristic
+    bound_to: [N338, N337, N336]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O195
+    timestamp: "2026-09-05T14:40+02:00"
+    provenance: ai-suggested
+    content: >
+      BENCH-019's local handoff is stale about external implementation review and the predictor
+      collector. Archived realtime-gs RTGS-009 and RTGS-010 record distinct acceptance of
+      implementations 2b9be15096bad9016432eb5d667d34deb3c42b48 and
+      1056300707f84a8767545bb83461efc6b0f14649. Their scope is evidence plumbing; sibling C34
+      excludes downstream predictor validity and records missing matched fields and Karate mask
+      policy. Reconcile these receipts before duplicate exporter/collector work. Current complete
+      field-family availability was not re-inventoried and no formal BENCH-019 result was recovered.
+    context: >
+      Compared tasks/BENCH-019-stage1-downstream-objective.md, tasks/INDEX.md and
+      docs/additive_field_v2.md with /home/alex/Documents/realtime-gs/docs/tasks/
+      RTGS-009-structsplat-bench019-exporter.md and
+      RTGS-010-bench019-source-adapters-and-predictors.md plus sibling ara/logic/claims.md C34
+      at 2ebe52cc28a1b0e812a6c436d49225fac4ee943f. No new acceptance or task transition is
+      asserted; RTGS-014's human-turn record remains untouched.
+    potential_type: unknown
+    bound_to: [N338]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O196
+    timestamp: "2026-09-05T14:51+02:00"
+    provenance: user-revised
+    content: >
+      The governing goal is to convert calibrated dome captures, with and without masks, into
+      2D Gaussian observations and learn a shared 3D Gaussian scene from the fields and calibration
+      alone. Determine what the observations must preserve and how reconstruction should exploit
+      their spatial support and geometry. Downstream quality, convergence and complete conversion-
+      plus-training cost judge useful progress; 2D fitting metrics serve as component diagnostics.
+    context: >
+      The user explicitly replied "yes, that is the central goal" to the immediately preceding
+      formulation of this research question and evaluation priority. Extracted only the affirmed
+      objective from O193's broader mixed interpretation. No empirical geometry benefit, current
+      bottleneck diagnosis, one-to-one correspondence assumption, specific protocol or new method
+      is endorsed by this affirmation.
+    potential_type: heuristic
+    bound_to: [N338, N339]
+    promoted: true
+    promoted_to: "logic/solution/heuristics.md:H19"
+    crystallized_via: verbal-affirmation
+    stale: false
+  - id: O197
+    timestamp: "2026-09-05T15:02+02:00"
+    provenance: ai-suggested
+    content: >
+      Recommend retaining the current fitter, semantic adapters, compact trainer and geometric
+      controls while using known 3D scenes to investigate the entire render/refit/reconstruct
+      path. Ideal projection inversion is already covered by sibling Splat-SfM, Beam, surfel and
+      rank-aware tests; related synthetic render/refit and re-componentization studies also exist.
+      The new contribution should be a matched attribution comparison, not another ideal inversion
+      success or a relabelled retry of the failed raw-fragment transport route. Per-view fitted
+      components are observations whose cross-view structural meaning must be tested, not assumed.
+    context: >
+      Read-only realtime-gs at 2ebe52cc28a1b0e812a6c436d49225fac4ee943f: tests/test_splat_sfm.py,
+      tests/test_beam_covariance_refit.py, src/rtgs/lift/inverse_projection_fiber.py,
+      docs/EXPERIMENTS.md (2026-07-15 confidence attribution, 2026-07-18 fiber failure,
+      2026-07-21 Splat-SfM/Beam) and ara/logic/claims.md C22/C23/C35/C37. Existing tests and raw
+      experiments were inspected, not rerun. C22 is scoped to a completed root of an incomplete
+      consumed experiment; C35 is exact-synthetic development evidence. No broad causal or
+      Gaussian-lifting impossibility claim follows.
+    potential_type: heuristic
+    bound_to: [N340, N339]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O198
+    timestamp: "2026-09-05T15:02+02:00"
+    provenance: ai-suggested
+    content: >
+      Proposed first attribution test: construct small known 3D scenes, render source views, fit
+      them with the existing 2D converter, then cross source-color versus fitted-field supervision
+      with a frozen perturbed-known-3D initialization versus the existing field-derived lift.
+      Reuse each initialization byte-for-byte across teacher arms. Match cameras, pixel-center
+      samples/proposal weights, rendering/filter/mask conventions, loss, optimizer, topology/count,
+      stopping rules and seeds; keep the source-color control in a separate worker and the
+      field-only worker free of source RGB. Report on unseen source-rendered views and geometry
+      where it is defined, plus complete conversion/lift/training cost. A field-specific deficit
+      implicates the teacher/conversion interface in the tested regime; a lift-specific deficit
+      implicates initialization; an interaction cannot be assigned to either alone. Failure of
+      the source control invalidates a conversion-only conclusion. Numerical gates, scene bank,
+      capacity/horizon, source/profile bindings and protocol review remain unfrozen.
+    context: >
+      AI recommendation under N340, extending O194's measurement distinction. Ideal raw projected
+      primitives are a separate geometry sanity control: their normalized/additive field equation
+      must not be relabelled as the alpha-composited 3D source renderer. Ground-truth-derived
+      initialization is privileged diagnostic information, not a deployable method. Parameter
+      recovery is scored only in identifiable constructed cases; general scene success uses held-
+      out rendering and defined surface/depth measures. A shared generator/solver can be too easy,
+      so passing this test would still require an independent scene generator and calibrated dome
+      development evidence. Nothing was implemented, frozen, run or selected by the user.
+    potential_type: heuristic
+    bound_to: [N340, N339]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O199
+    timestamp: "2026-09-05T15:02+02:00"
+    provenance: ai-suggested
+    content: >
+      Keep alternatives conditional on attribution: if field supervision works while component
+      lifting fails, investigate field/group constraints that tolerate different per-view
+      decompositions; if the converted targets introduce a material deficit, investigate conversion
+      fidelity or joint multi-view observation fitting. A learned inverse could later use backward-
+      generated examples, but training only on exact projected primitives would omit the fitted-
+      field mismatch. Direct Gaussian-mixture overlap objectives are known for additive mixtures;
+      their closed form does not automatically implement normalized fields or visibility-ordered
+      alpha compositing. A joint encoder must charge its reconstruction work upstream rather than
+      hide it as free preprocessing. No novelty, learned-model need or practical advantage is claimed.
+    context: >
+      Bounded source-backed route comparison, not a commissioned full research portfolio. Primary
+      sources consulted: original 3DGS paper/project (local-affine projection and visibility-ordered
+      alpha compositing), https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/ and indexed
+      3d_gaussian_splatting_low.pdf; Jian/Vemuri Gaussian-mixture registration author manuscript,
+      https://pmc.ncbi.nlm.nih.gov/articles/PMC2630186/ (indexed full text; direct open hit a CAPTCHA);
+      MVSplat author project, https://donydchen.github.io/mvsplat/ (image-feature cost-volume geometry,
+      not evidence for direct fitted-field input). Search date 2026-09-05. Existing field-mass and
+      exact-fiber failures remain closed; these alternatives are unrun hypotheses.
+    potential_type: architecture
+    bound_to: [N340, N339]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O200
+    timestamp: "2026-09-05T15:36+02:00"
+    provenance: ai-suggested
+    content: >
+      G2SR (Gao, Sze, Karaman; arXiv 2607.14470, submitted 2026-07-16) is direct modern prior
+      art: a learned reference-image 2D Gaussian detector, RGB optical-flow affine tracking,
+      then geometric optimization of thin 3D Gaussian surfels against corresponding projected
+      2D targets using Hellinger distance. Its geometric backend does not use a pixel rendering
+      loss. It evaluates 2-3 posed views, fixes small normal thickness and uses view-independent
+      color. Rendering results explicitly lose fine texture and coverage; metrics are computed
+      over each method's own valid pixels. This is a preprint, not verified venue acceptance or
+      project-reproduced evidence. Generic 2D Gaussian observation lifting is not a new claim.
+    context: >
+      Search 2026-09-05; verified abstract and full primary HTML at
+      https://arxiv.org/abs/2607.14470 and https://arxiv.org/html/2607.14470v1,
+      especially sections III and IV-D/Table III. Rediscovered this paper in the existing sibling
+      docs/LITERATURE_REVIEW_2D_TO_3D_GAUSSIANS.md (cutoff 2026-08-04), read-only at
+      2ebe52cc28a1b0e812a6c436d49225fac4ee943f; do not present it as absent from earlier notes.
+      Public author code was not located in this search; that is not evidence that none exists.
+    potential_type: unknown
+    bound_to: [N341, N339]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O201
+    timestamp: "2026-09-05T15:36+02:00"
+    provenance: ai-suggested
+    content: >
+      Stoll et al., Fast Articulated Motion Tracking using a Sums of Gaussians Body Model
+      (ICCV 2011), represents images with color-coherent 2D Gaussian sums and a person-specific
+      skeletal body with 3D Gaussians, then optimizes analytical model-to-image overlap without
+      requiring silhouettes. Robertini et al., Multi-view Performance Capture of Surface Details
+      (IJCV 2016), uses Image Gaussians and projected Surface Gaussians for smooth closed-form
+      similarity and mesh refinement along supplied normals. These are direct precursors to
+      Gaussian-space 3D fitting, with strong skeleton/mesh priors; neither establishes arbitrary
+      modern radiance-field recovery or our strict source-access contract. GaussianImage and
+      Image-GS address the image-representation stage; MVSplat consumes image features; standard
+      2DGS represents planar disks already embedded in 3D. These categories must remain distinct.
+    context: >
+      Verified primary full text at
+      https://pages.iai.uni-bonn.de/gall_juergen/download/jgall_SoG_iccv11.pdf and
+      https://pmc.ncbi.nlm.nih.gov/articles/PMC6979538/; primary abstracts/projects at
+      https://arxiv.org/abs/2403.08551, https://arxiv.org/abs/2407.01866,
+      https://donydchen.github.io/mvsplat/ and https://surfsplatting.github.io/.
+      Also inspected restricted deprojection/tomography and cryo-EM literature via
+      https://arxiv.org/abs/astro-ph/0201430, https://arxiv.org/abs/0909.0349 and
+      https://www.nature.com/articles/s41592-021-01220-5 (publisher abstract accessible).
+      Different linear-projection physics and structural priors do not establish RGB alpha-
+      compositing equivalence. Search covered Gaussian fields, correspondences, image-free
+      reconstruction, pre-fitted observations, GaussianImage successors and recent 2026 work;
+      primary-source verification, not an exhaustive citation census or numerical reproduction.
+    potential_type: unknown
+    bound_to: [N341, N339]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O202
+    timestamp: "2026-09-05T15:36+02:00"
+    provenance: ai-suggested
+    content: >
+      The user's boundary permits RGB during conversion; do not exclude G2SR merely because its
+      frontend consumes images. Proposed refinement: preserve compact cross-view tracks, affine
+      correspondence/confidence and optional foreground support alongside 2D fields and calibrated
+      cameras, then initialize geometry and refine using only the retained observations. Joint
+      conversion and any image-based matcher must pay their actual total time, storage and memory.
+      This may be a better-supported next candidate than demanding independently fitted component
+      identity, but it changes the current observation interface and has not been selected or
+      demonstrated. Distinguish source-image-free training with queried field colors from a fully
+      primitive-space objective; closed-form Gaussian overlap does not implement the maintained
+      normalized renderer or visibility-ordered alpha compositing. A current-fitter versus
+      correspondence-preserving converter comparison could complement O198's attribution test.
+    context: >
+      AI inference from O200/O201 and the user boundary N338/N339. The broad concept has prior art;
+      no exact verified paper was located for general independently pre-fitted fields as sole
+      observations plus high-quality complete dome radiance-field training. Failure to locate
+      that conjunction is not proof of novelty, and independent fitting is not a user requirement.
+      No task takeover, interface change, benchmark, new training run or protocol approval follows.
+      Known-3D backward synthesis remains an unrun diagnostic recommendation, not a replacement
+      production encoder or evidence that useful information survives image fitting.
+    potential_type: architecture
+    bound_to: [N341, N340, N339]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O203
+    timestamp: "2026-09-05T16:05+02:00"
+    provenance: ai-suggested
+    content: >
+      Read-only inspection confirms a tomographic initialization path in realtime-gs:
+      beam_fusion.py constructs elongated Gaussian beams from compact image-plane splats,
+      seeds from gated center-ray pairs and color agreement, uses equal-weight covariance
+      intersection, and folds in nearest gated contributors. It is an RGB-free initializer
+      with contributor lineage, not a demonstrated exact inverse of a global ray transform.
+      field_loss.py already supplies decomposition-invariant whole-plane additive Gaussian
+      density and RGB-numerator losses; its own contract excludes exact normalized/faded/
+      finite-support rendered RGB. These are the existing seams for the tomography-focused
+      literature comparison; do not propose either mechanism as wholly absent or infer measured
+      downstream advantage from the module documentation.
+    context: >
+      Inspected /home/alex/Documents/realtime-gs/src/rtgs/lift/beam_fusion.py (module contract,
+      _beam_precisions, _ci_fuse and bounded pair seeding), src/rtgs/lift/field_loss.py, and
+      docs/PAPER_PLAN_beam_fusion.md. The paper plan distinguishes compact-only supervision
+      from the optional Beam initialization hypothesis. Source read-only; no tests or experiment
+      rerun and no acceptance of every covariance/physical-density assertion in comments.
+    potential_type: unknown
+    bound_to: [N342, N339]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O204
+    timestamp: "2026-09-05T16:05+02:00"
+    provenance: ai-suggested
+    content: >
+      Focused search adds Joint Gaussian dictionary learning and tomographic reconstruction,
+      Zickert, Oktem and Yarman (Inverse Problems 38, 105010, 2022;
+      doi:10.1088/1361-6420/ac8bee): nonnegative Gaussian dictionaries for parallel-beam
+      tomographic inversion, Gaussian-specific filtered-backprojection initialization with
+      an approximate anisotropic Riesz-potential treatment, and simulated proof-of-concept
+      evaluation. This is particularly relevant to direct reconstruction in a Gaussian
+      representation and how an observation dictionary relates to the unknown-object dictionary.
+      Panaretos (Annals of Statistics 2009) and Panaretos/Konis (Annals of Applied Statistics
+      2011; arXiv posting 2012) supply restricted radial-mixture recovery from random projected
+      profiles, including component-label/weight assumptions; they are not general anonymous
+      anisotropic-field inversion or calibrated RGB-visibility results.
+    context: >
+      Search date 2026-09-05. Zickert metadata and abstract verified from the indexed author-
+      institution record https://kth.diva-portal.org/smash/person.jsf?pid=authority-person%3A70121.
+      The original-paper text is indexed at the ResearchGate manuscript record; publisher DOI
+      and PDF opens failed/robots-blocked, and direct KTH opening failed. Do not claim a local
+      PDF download, full publisher access or numerical reproduction. Primary statistical reprints
+      accessed at https://arxiv.org/pdf/0909.0349 and https://arxiv.org/pdf/1202.6475.
+      Newly found Motion-Enabled Tomography via Gaussian Mixture Models, arXiv:2605.18210,
+      is adjacent dynamic-model work whose abstract reports only a simulated 2D five-Gaussian
+      validation; it is not evidence of a solved 3D dome pipeline.
+    potential_type: unknown
+    bound_to: [N342, N341]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O205
+    timestamp: "2026-09-05T16:05+02:00"
+    provenance: ai-suggested
+    content: >
+      R2-Gaussian (NeurIPS 2024) rectifies covariance-dependent Gaussian projection amplitudes
+      for CT and sums contributions under the X-ray line-integral model. Radioactive 3D Gaussian
+      Ray Tracing for Tomographic Reconstruction (arXiv 2602.01057, February 2026) evaluates
+      analytical Gaussian ray integrals instead of local-affine footprint projection. FaCT-GS
+      (arXiv 2604.01844, April 2026) addresses rasterization/voxelization scaling and volumetric
+      warm starts. These are relevant forward-operator, inversion and systems sources, but raw
+      detector projections are not independent fitted 2D observation fields, and CT metrics do
+      not establish RGB reconstruction gains. The exact-ray preprint's prose describes R2 as
+      alpha compositing, which conflicts with R2's primary Eq.7/section4.2.1; use R2 itself as
+      the authority for its additive operator.
+    context: >
+      Primary full HTML inspected at https://arxiv.org/html/2405.20693v2,
+      https://arxiv.org/html/2602.01057v1 and https://arxiv.org/html/2604.01844v1;
+      FaCT author project https://papieta.github.io/fact-gs/ also found. No new venue acceptance
+      was verified for the two 2026 preprints. These sources were already in the sibling August
+      review; this turn refocuses and verifies them rather than claiming first discovery.
+    potential_type: unknown
+    bound_to: [N342, N341]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O206
+    timestamp: "2026-09-05T16:05+02:00"
+    provenance: ai-suggested
+    content: >
+      Proposed tomography focus: define the projection operator and the physical or observational
+      meaning of each retained field, then assess inversion by reprojection agreement over full
+      fields and downstream reconstruction. In an additive parallel-ray model, projected mixtures
+      and their whole-plane L2 overlaps admit Gaussian algebra without preassigned one-to-one
+      matches. That closure does not extend automatically to perspective rays, visibility-ordered
+      RGB, normalized color division or finite support. Compare Gaussian-aware filtered-back-
+      projection and iterative field-consistency mechanisms with existing beam proposals only
+      under an explicit matched operator; covariance-intersection fusion alone does not establish
+      inversion of that operator. Retain masked support as evidence rather than line-integral
+      radiance. This is a scoped research question, not a diagnosis of current failure or a new
+      approved experimental protocol.
+    context: >
+      AI inference from O203-O205 under explicit user focus N342. It supersedes the priority of
+      O202's correspondence-preserving conversion suggestion for this discussion, without denying
+      G2SR's adjacent relevance or claiming that tomography eliminates every data association
+      issue. O202 remains unpromoted historical advice. Existing backward-generated controls and
+      failed source-field proxy routes must be inspected before any new test is selected.
+    potential_type: heuristic
+    bound_to: [N342, N340, N339]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O207
+    timestamp: "2026-09-05T22:19+02:00"
+    provenance: ai-suggested
+    content: >
+      The current tomography-related code contains several distinct paths: Beam Fusion proposals;
+      placement plus exact source-projection fibers and whole-field additive proxy refit; and a
+      separate compact trainer comparing sampled student rendering to native compact-teacher
+      colors. The field refitter's projected peak is field_masses times center visibility times
+      view gain, not a physical Gaussian line-integral coefficient. Its visibility is block-fixed
+      at centers, its gains are solved from density only, and each continuous primitive preserves
+      a chosen source footprint and source color. A good normalized RGB fit does not identify
+      the denominator as a common physical density; finite epsilon qualifies the approximate
+      scale ambiguity. These distinctions should guide tomography assessment rather than a
+      generic correspondence-tracking redesign.
+    context: >
+      Read-only sibling revision 2ebe52cc28a1b0e812a6c436d49225fac4ee943f. Findings and exact
+      source anchors in ara/staging/tomography-method-assessment-2026-09-05/assessment.md.
+      Existing 37 CPU tests pass; this verifies bounded mechanics, not physical interpretation,
+      full projected-field quality or dome reconstruction. Source hashes and raw test receipt
+      retained. R2-Gaussian section4.2.1 was reopened; Zickert/Oktem/Yarman 2022, random tomography
+      and exact-ray/FaCT sources retain the prior turn's scope/access qualifications.
+    potential_type: architecture
+    bound_to: [N343, N342, N339]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O208
+    timestamp: "2026-09-05T22:19+02:00"
+    provenance: ai-executed
+    content: >
+      A deterministic CPU float64 counterexample confirms that field_refit.py's
+      _variable_field_objective divides the RGB term by the sum of squared component RGB
+      coefficients, which changes under an exact colocated half-weight split. For one target
+      versus two identical half-weight copies, both underlying fields and unweighted L2 terms
+      remain identical, while the isolated RGB mean gradient doubles exactly. The field_l2
+      helper is correct in this case; the defect is the composite objective's normalization,
+      and does not apply automatically to the separate Beam-to-compact trainer path. A fixed
+      componentization-independent weight or cached target-field-energy normalization would
+      preserve this invariant; no replacement normalization or patch was selected or applied.
+    context: >
+      Executed original source, without monkeypatching, using the retained
+      ara/staging/tomography-method-assessment-2026-09-05/algebra_checks.py; JSON records source
+      hashes, Python3.12.9, torch2.9.0+cu128, CPU float64 and exact outputs. Gradient norm ratio2.0
+      is an algebra/code counterexample, not a doubled Adam step or observed reconstruction loss.
+      The 37 existing tests, including helper-level split invariance, pass. Treat this as a
+      staged scoped audit finding, not a promoted cause of the practical plateau or a change to
+      historical experimental dispositions. Self-review is provisional, not independent acceptance.
+    potential_type: unknown
+    bound_to: [N343, N342]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O209
+    timestamp: "2026-09-05T22:19+02:00"
+    provenance: ai-executed
+    content: >
+      For three perpendicular orthographic projections of an isotropic covariance s^2 I,
+      beams with transverse variance s^2 and longitudinal variance L^2 return
+      Sigma_CI = 3/(2/s^2 + 1/L^2) I under the imported equal-weight precision-average rule.
+      As L grows this approaches 1.5 s^2 I although those ideal projections identify s^2 I.
+      The CPU algebra probe with s=1 and L=1000 returns diagonal1.499999250000375. A naive
+      precision product is also not the inverse, approaching0.5 s^2 I in the same control.
+      This establishes the fusion-versus-inversion distinction for that operator, not a measured
+      dome error or a reason to discard Beam initialization. Existing covariance-repair and
+      rank-aware controls already address shape recovery; the scope of C23/C35 remains intact.
+    context: >
+      Retained worksheet calls _ci_fuse directly with analytically constructed precision
+      matrices. It does not execute the full perspective Beam pipeline or its clipping/gating.
+      The same worksheet verifies a line-integral peak law for diag(1,4,9) and a finite-epsilon
+      normalized-color example. All are deterministic algebra checks, not a new reconstruction
+      experiment. Raw receipts at ara/staging/tomography-method-assessment-2026-09-05/.
+      CI uncertainty-consistency claims for arbitrary physical footprint covariances were not
+      established; the existing test is a limited isotropic fixture, not a general proof.
+    potential_type: unknown
+    bound_to: [N343, N342]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O210
+    timestamp: "2026-09-05T22:19+02:00"
+    provenance: ai-suggested
+    content: >
+      Recommended order: prepare the narrow objective-weighting correction and a regression
+      check on the composite loss; retain existing Beam and covariance repairs as controls;
+      then isolate hard source-footprint equality versus a controlled relaxation under the same
+      declared objective, frozen observations, shared initialization, capacity and optimizer.
+      Distinguish an additive ray-integral control from the EWA/visibility appearance proxy.
+      Evaluate native compact-rendered color error alongside proxy-field error, and retain a
+      separate source-RGB control/evaluator for attribution. Known-generator diagnostics must
+      acknowledge existing ideal and re-componentized studies; calibrated development evidence
+      is still necessary for practical claims. Charge conversion, initializer, target-energy
+      preprocessing, training and memory. No next protocol, relaxed constraint or method is
+      selected merely by the user's authorization to complete this assessment.
+    context: >
+      Proposal in ara/staging/tomography-method-assessment-2026-09-05/assessment.md, responding
+      to N343. This narrows O206 and complements O198; it does not retry C22's failed raw-fragment
+      transport or reverse C37's refuted association gate. The implementation defects and
+      deliberate modeling restrictions are distinct. Whole-field matching and source-image-free
+      color supervision already exist and are not new contributions of this proposal.
+    potential_type: heuristic
+    bound_to: [N343, N342, N340, N339]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O211
+    timestamp: "2026-09-05T23:20+02:00"
+    provenance: ai-executed
+    content: >
+      Implemented the user-selected subset of O210 in realtime-gs RTGS-015: cached target-field
+      RGB energy, explicit legacy replay, optional fixed-topology source-footprint coordinates,
+      actual source drift and saved-state diagnostics, and corrected CI/proxy semantics. Hard
+      geometry retains its old optimizer API. Deterministic contracts and a compact calibrated
+      execution smoke pass; the complete CPU suite has 1987 passed, 24 skipped and two preserved
+      frozen-protocol checks failing. The source-binding drift predates this patch, while new
+      config keys explain the other frozen digest mismatch. No quality/speed effect is claimed.
+    context: >
+      User said 'ok please fix these points as recommended'. Sibling C42 binds only CPU contracts;
+      no formal comparison was selected, no old result was overwritten and no commit was made.
+      The old O208 bug evidence remains a valid observation of the pre-fix implementation.
+    potential_type: architecture
+    bound_to: [N344, N343]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O212
+    timestamp: "2026-09-05T23:29+02:00"
+    provenance: ai-suggested
+    content: >
+      Recommended next step is a bounded reconstruction study with frozen current 2D observations.
+      Reuse known-3D projection checks as an operator preflight, then compare hard source geometry,
+      soft geometry with one predeclared tether, and soft geometry with zero tether on an existing
+      development capture with three paired seeds and fixed topology. Match initialization, count,
+      fields, cameras, optimization schedules and objective weights. Zero tether releases source
+      footprint geometry only; depth, SH and visibility restrictions remain explicit.
+      Beam plus renderer-aware covariance repair and native compact training is a practical
+      reference, not an identical-initialization constraint ablation. Evaluate actual rendered
+      compact-teacher color and externally held-out source RGB, including pre/post identical
+      compact refinement and complete costs. Raw images never enter the reconstruction workers.
+      Use validation for choices and held-out views for reporting only. Repeat the selected
+      approach without masks and on a separate capture before broader adoption.
+    context: >
+      An improvement in analytic proxy loss alone is insufficient. If relaxed geometry improves
+      native and held-out appearance, it motivates further testing of that route; if proxy and
+      appearance disagree, inspect the forward/visibility model before tuning the converter.
+      The R2-Gaussian primary paper was rechecked: its additive X-ray projection and covariance
+      amplitude factor do not establish a forward law for opaque RGB dome images. Current code
+      keeps Beam/carrier and field-refit initialization separate. Resolve historical protocol
+      lifecycle checks and freeze a new prospective contract before official execution.
+    potential_type: heuristic
+    bound_to: [N345, N344, N343, N342]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O213
+    timestamp: 2026-09-06T01:12+02:00
+    provenance: ai-executed
+    content: Prepared Haelyn views are controlled renders of a real captured Gaussian representation,
+      not physical density or independent photograph ground truth. CPU contracts and compact-input
+      preparation establish neither a relaxed-footprint quality gain nor full-workflow performance.
+      Actual masked/maskless/second-capture effects remain unmeasured pending prospective review.
+    context: RTGS-016 sealed the inputs and draft protocol while preserving the explicit review gate
+      and historical evidence.
+    potential_type: constraint
+    bound_to:
+    - N346
+    - N347
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O214
+    timestamp: 2026-09-06T03:26+02:00
+    provenance: ai-executed
+    content: In the frozen masked-Haelyn hard baseline (seed 90601), the first training compact teacher
+      is recognizable while the saved native reconstruction is sparse and streak-like. The same limitation
+      is visible with the exact Torch point renderer, so it is not solely a browser display problem. Proxy-stage
+      anisotropy increases, but no attribution to hard constraints, carrier count, budget, or the general
+      tomography method follows before the paired arms and remaining captures finish.
+    context: Post-fit local diagnostic of existing endpoints, with no retuning, optimizer run or raw image
+      access; full comparison and independent results audit remain pending.
+    potential_type: claim
+    bound_to:
+    - N351
+    - N350
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O215
+    timestamp: 2026-09-06T11:22+02:00
+    provenance: ai-suggested
+    content: In the completed bounded Haelyn screen, free source footprints improve final teacher and external
+      RGB MSE across paired seeds, but lower SSIM and the inspected blurred silhouette prevent treating
+      the MSE gain as detailed reconstruction success. The masked/maskless comparison is also coupled to
+      initial geometry and carrier count (217 versus 256). Dome is incomplete; soft loses to hard in all
+      three dome seeds. No production default, physical-truth, general maskless-robustness or performance
+      conclusion follows.
+    context: User requested progress. Local partial checkpoint only; full producer and distinct results
+      audit remain pending. Raw summaries and fixed previews preserved without tuning.
+    potential_type: claim
+    bound_to:
+    - N352
+    - N350
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+  - id: O216
+    timestamp: 2026-09-06T23:30+02:00
+    provenance: ai-suggested
+    content: 'The completed development screen consistently favors free over hard source footprints for
+      final teacher MSE in all nine paired seeds across masked Haelyn, maskless Haelyn and the dome capture.
+      The selected soft tether is not a consistent improvement: it loses on the dome. RGB foreground metrics
+      support free-arm error gains, but inspected blurred reconstructions and Haelyn SSIM losses leave detailed
+      image-free reconstruction unresolved. Fixed 217/256-carrier capacity and finite budgets do not identify
+      why detail is poor.'
+    context: Local arithmetic and integrity verification of completed producer output; independent results
+      audit and final browser/report contract remain pending. User requested status, not a default change
+      or a new experiment.
+    potential_type: claim
+    bound_to:
+    - N353
+    - N350
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
