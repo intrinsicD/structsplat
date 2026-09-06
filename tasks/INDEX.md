@@ -140,6 +140,7 @@ replay-valid; do not rewrite those task bytes merely to duplicate this table.
 | DOCS-004 | Staged lint/format ratchet (widen `select`, adopt `ruff format`) | todo — expired results-closure dependency retired with missed deadline acknowledged 2026-09-05; all stages, including correctness triage, remain explicit backlog | DOCS-003 |
 | DOCS-006 | Repository-native experiment workflow skill | in-progress | DOCS-005, BENCH-002/003 |
 | DOCS-007 | 2D Gaussian image-field state-of-the-art review | in-review — producer literature artifact complete at report blob `40b771e`; distinct scientific review required | BENCH-005/007, COMP-013, BENCH-025 |
+| DOCS-008 | Reproducible CPU verification environment | in-review — provisional self-review; hosted confirmation pending | DOCS-003 |
 
 ## Proposed Additive Observation Field V2 execution order (2026-08-03)
 

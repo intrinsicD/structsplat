@@ -43,6 +43,7 @@ The experimental implementations remain opt-in; defaults are unchanged (ADR-0034
 
 ## Install
 ```bash
+pip install torch==2.9.0 --index-url https://download.pytorch.org/whl/cpu  # CI CPU environment
 pip install -e .                 # torch, numpy, pillow, imageio
 pip install -e ".[metrics]"      # optional: lpips, pytorch-msssim
 pip install -e ".[gen]"          # optional: diffusers text-to-Gaussian generation

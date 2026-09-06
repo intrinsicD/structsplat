@@ -41,6 +41,7 @@ unless the owning task says so.
 - `CORE-019` — Calibrated coherent-depth fusion (in-review; `tasks/CORE-019-calibrated-coherent-depth-fusion.md`)
 - `DOCS-006` — Repository-native experiment workflow skill (in-progress; `tasks/DOCS-006-experiment-workflow-skill.md`)
 - `DOCS-007` — 2D Gaussian image-field state-of-the-art review (in-review; `tasks/DOCS-007-2d-gaussian-sota-review.md`)
+- `DOCS-008` — Reproducible CPU verification environment (in-review; `tasks/DOCS-008-cpu-verification-environment.md`)
 
 ## Actionable with no open recorded task dependency
 
@@ -92,6 +93,6 @@ unless the owning task says so.
 
 ## Ledger summary
 
-- 127 active-table outcomes
+- 128 active-table outcomes
 - 53 retired tasks
 - 51 active-table rows already carrying a closed/non-actionable disposition
