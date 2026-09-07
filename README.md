@@ -1,6 +1,6 @@
 # StructSplat
 
-[7 September work handoff: restore reports and inputs](docs/WORK_HANDOFF_2026-09-07.md).
+[7 September work handoff: code sync and local results](docs/WORK_HANDOFF_2026-09-07.md).
 
 **Hierarchical, feature-aware, anisotropic blue-noise 2D Gaussian image representation.**
 
