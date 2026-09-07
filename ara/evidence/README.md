@@ -446,3 +446,8 @@ paths were the live source location when the historical runs were produced.
   defaults unchanged (ADR-0034, C73–C75). Full scope and audit:
   `ara/evidence/code-driven-method-research-2026-09-05/run.md`; partial archive and browser receipts
   are siblings there, with exact omissions and original source/protocol bindings.
+
+- `bench019-local-stage-20260907`: Prospective two-phase protocol and independently audited
+  local CUDA comparison. Contained frame means improve but fail the all-seed materiality rule;
+  uncontained loses all six pairs. One capture leaves the general surrogate question unavailable
+  (C78). See `ara/evidence/bench019-local-stage-20260907/results-audit.md` and `decision.json`.

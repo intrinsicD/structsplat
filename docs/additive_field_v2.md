@@ -704,27 +704,33 @@ are never merged into one unlabeled table.
 No production implementation proceeds past this gate if BENCH-020 is negative or unavailable.
 
 BENCH-019's measurement substrate is implemented default-off in
-`benchmarks.stage1_downstream_objective`: clean-source/prospective protocol sealing, a passive
-realtime-gs row boundary, semantic and downstream-factor digest checks, A/A replay, within-frame
-rank correlations, leave-one-frame-out diagnostics, capture-cluster bootstrap, fail-closed
-missing cells, and a portable report/checker contract. This is plumbing, not an outcome. The
-formal protocol and result remain open until a distinct reviewer approves the exact digest.
+`benchmarks.stage1_downstream_objective`: prospective protocol sealing, exact semantic and
+downstream-factor bindings, A/A replay, within-frame ranks, leave-one-frame-out diagnostics,
+capture-cluster bootstrap, fail-closed missing cells, and portable reports. The local RTGS-019
+executor has now completed a separately reviewed two-phase development comparison (C78;
+[protocol and results audit](../ara/evidence/bench019-local-stage-20260907/results-audit.md)).
 
-The external realtime-gs driver checkpoint `d3e76fe` supplies the matching passive row exporter:
-exact additive/normalized semantic preservation, family/A-A invariant downstream factors, sealed
-JSON-pointer metrics, six artifact descriptors, explicit error rows, and receipt-required stable
-assembly. Its calibrated diagnostic intentionally stopped before downstream execution and passed
-the StructSplat row validator. The checkpoint and its 3+3 source portfolio remain pending distinct
-implementation review, so neither is an accepted formal executor yet.
+The 2026-09-07 run fitted complete matched native-additive, normalized, and contained-normalized
+families on eight training views for each of Stage frames 00008 and 00009: 512 2D rows/view,
+then a fixed 256-row FieldSweep lift and 1,000 RGB-refinement updates over three paired seeds.
+Held-out reporting used three other cameras. All 18 primary cells and both A/A checks completed;
+independent CUDA replay reproduced all 54 primary held-out views. Contained-minus-native mean
+foreground PSNR improved by 0.896715 and 0.312826 dB, but frame 9 seed 19001 regressed by
+0.238384 dB, failing the frozen requirement that every seed improve. Uncontained normalized
+fields lost 2.852263 and 2.708337 dB on the frame means. Neither family passes the full rule.
 
-The currently available matched-field data cannot support the general-surrogate branch. Stage
-`frame_00008` has two complete 26-view families while the mask-contained family was 13/26 at the
-portfolio snapshot; `frame_00009` lacks the matched three-family set. The other acquired source
-groups have no matched families. Before a general BENCH-019 decision, freeze the source adapters
-and predictor collector, finish matched development production across independently reviewable
-capture groups, and preserve the confirmation lock. A comparison restricted to the supplied
-Stage frame remains useful as an explicitly workload-specific pipeline comparison, but it cannot
-relax the general promotion gate.
+Family-dependent unsupported-midpoint fallback constrains attribution to Stage-1 fidelity or
+compositor equations. The inspected 256-row previews remain blurred. This result permits no
+new default, detailed-reconstruction, speed, or general-memory claim. Historical 11k production
+portfolio gaps do not describe this newly completed 512-row comparison.
+
+The two frames still share one exposed capture, below the frozen minimum of three independent
+capture groups. The authoritative decision is `question_unavailable`, with no selected Stage-1
+predictor; one-capture bootstrap endpoints provide no generalization uncertainty. The report's
+`claim_ready` manifest flag means complete prospective export, not scientific promotion.
+BENCH-019 remains partial for its broader surrogate question. Later representation/loss gates
+still require downstream evaluation; a general surrogate decision needs a new prospective,
+independently reviewed multi-capture protocol while preserving the confirmation lock.
 
 ### Gate B — select the convergence recipe
 

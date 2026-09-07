@@ -46,16 +46,17 @@ surrogates.
 
 - [x] A committed protocol manifest and adapter bind all fields, pixels, masks, cameras, commits,
       environments, seeds, schedules, metrics, and split roles before outcome access.
-- [ ] A/A replay proves the adapter cannot change source field semantics or downstream config;
+- [x] A/A replay proves the adapter cannot change source field semantics or downstream config;
       normalized and additive inputs are labelled and queried through their exact equations.
-- [ ] The report contains paired field-family rankings, rank correlations, leave-one-frame-out
-      diagnostics, frame-cluster uncertainty, missing/error cells, and representative downstream
+- [x] The report contains paired field-family rankings, rank correlations, leave-one-frame-out
+      diagnostics, capture-cluster uncertainty diagnostics (explicitly degenerate for this one-capture run),
+      missing/error cells, and representative downstream
       visuals; no view is treated as an independent replicate.
-- [ ] The decision is explicit: select one validated Stage-1 objective/surrogate, require downstream
+- [x] The decision is explicit: select one validated Stage-1 objective/surrogate, require downstream
       evaluation in every later gate, or record the question unavailable. No post-hoc metric blend.
-- [ ] A portable report bundle passes `scripts/check_report_bundle.py`; a distinct results audit
+- [x] A portable report bundle passes `scripts/check_report_bundle.py`; a distinct results audit
       recomputes the rankings and decision from raw rows.
-- [ ] Outcome recorded in ARA, `docs/additive_field_v2.md`, and the Index with exact scope.
+- [x] Outcome recorded in ARA, `docs/additive_field_v2.md`, and the Index with exact scope.
 - [x] `./scripts/verify.sh` passes (1,520 passed, 4 skipped on 2026-08-03).
 
 ## Interfaces touched
@@ -112,8 +113,8 @@ BENCH-001/002, CORE-012
 
 - Driver: Codex-bench019-driver
 - Reviewer: Codex-cross-repo-review
-- Turn: driver
-- Reviewed revision: RTGS `f165d35` and StructSplat `6ff898e`; exact generated-input design approved below
+- Turn: none
+- Reviewed revision: StructSplat `3ada860` plus metadata/evidence draft SHA-256 `2c17aa09c99a7d1179767d904cad22548706992fa153f316880788881a946d3d` before this Review append; executable source remains the approved RTGS `f165d35` / StructSplat `6ff898e` envelope
 
 ### Handoff log
 
@@ -128,7 +129,7 @@ No claim-bearing downstream execution is authorized until a distinct reviewer ap
 frozen protocol digest; the user's requested same-data production comparison remains the final
 promotion gate.
 
-## Notes
+### Notes
 
 ### Local development execution opened (2026-09-07)
 
@@ -190,3 +191,93 @@ No
 
 #### Review focus
 Exact source/input provenance, 48 cold field contracts, common targets/cameras/samples, training/held-out isolation, unchanged scientific choices, A/A and missing policies, shared resource accounting, capture insufficiency, and staged publication before any downstream outcome.
+
+### Local development result (2026-09-07)
+
+The completed, independently audited local comparison is recorded as C78 and in
+[the numeric evidence and audit](../ara/evidence/bench019-local-stage-20260907/results-audit.md).
+All 18 primary cells and both A/A checks passed execution; cold CUDA replay reproduced 18 final
+models across 54 held-out views. The 19-row portable export contains the primary matrix plus
+native A/A; the additional contained A/A is retained in the local 20-cell audit.
+Contained frame means improve, but a negative frame-9 paired seed fails the frozen materiality
+rule. Uncontained normalized loses all six seed pairs. Family-dependent initializer fallback
+limits mechanism attribution, and the representative fixed-capacity reconstructions remain blurred.
+
+The report includes paired rankings, correlations, leave-one-frame-out diagnostics and capture
+bootstrap outputs. With one capture, uncertainty endpoints are degenerate and are not evidence
+of generalization. The explicit decision is `question_unavailable`, `selected_predictor=null`.
+The manifest completeness label is not scientific promotion. The checked local acceptance items
+above concern this unavailable-question disposition; the Index remains partial for the broader
+multi-capture surrogate goal. No objective or production default is selected.
+
+### Handoff
+
+#### Objective
+Record the completed local BENCH-019 development experiment and its unavailable general-surrogate decision.
+#### Changes
+Append immutable numeric/audit evidence, C78, current field-design status and the partial Index disposition. Executable sources and frozen protocols are unchanged.
+#### Evidence
+The evidence directory retains both prospective protocol seals, original producer result, independent audit summaries, raw portable rows, analysis and decision. Detailed CPU/CUDA/rank/geometry receipts remain linked under the canonical run audit directory. The maintained StructSplat report checker passed. Final report/browser and verification receipts are recorded separately at closeout.
+#### Assumptions
+The comparison includes each fitting family's initialization/schedule and interaction with the fixed initializer; it does not isolate compositor equations.
+#### Uncertainties
+One exposed capture, small fixed capacity, blurred previews, family-dependent midpoint fallback and heterogeneous GPU/JIT timing prohibit broader promotion.
+#### Review focus
+Exact numeric/scientific scope, immutable protocol and result provenance, unavailable-question disposition, claim evidence and final delivery checks.
+#### Protected actions not taken
+No historical artifact overwrite, source-image/model upload, confirmation access, outcome-guided rerun, threshold adjustment, default change or push. Existing foreign GPU work was preserved.
+#### Recommended next action
+Independently review the final metadata and gate receipts; retain partial general-surrogate status after accepting this bounded development result.
+
+
+### Review
+
+#### Verdict
+Accepted
+
+#### Self-reviewed
+No
+
+#### Correctness
+Codex-cross-repo-review accepts the bounded local result and its unavailable general-surrogate
+disposition. C78, field-design documentation and the partial Index preserve the failed complete
+materiality rule, one negative contained frame-9 seed, uncontained losses, initializer-fallback
+attribution limit, one-capture scope and no-default/no-speed boundary. The original scientific
+settings and executable sources are unchanged. The corrected acceptance wording describes the
+actual capture-cluster bootstrap, including its degenerate one-capture endpoints.
+
+#### Evidence quality
+All 11 copied protocol/result/audit artifacts were independently checked byte-for-byte against
+their canonical originals. The existing results audit independently recomputed 20 cells and
+60 per-view metric records, reproduced 54 held-out views from 18 cold-loaded saved models on
+RTX 4090, and verified all 20 saved ray/bounds/midpoint records plus ranks and LOFO statistics.
+The StructSplat portable report checker passed. Both representative contact sheets were inspected;
+the small-capacity final reconstructions are visibly blurred. The reviewed metadata draft is
+bound above and itemized in `/tmp/structsplat-rtgs-collab/structsplat-final-metadata-review.json`.
+The source commits, protocol seals and canonical result audit remain the numerical authorities.
+
+#### Simplicity
+The change copies immutable evidence and records a bounded claim/disposition. It introduces
+no executable behavior, new protocol, tuned threshold or competing outcome authority.
+
+#### Missing cases
+The general multi-capture surrogate question remains open and the task remains partial.
+Uncontended performance, high-capacity reconstruction and pure compositor attribution are
+outside this result. Final whole-repository verification and the shared RTGS/browser delivery
+gates require separate closeout receipts; their completion is not asserted by this Review.
+
+#### Required changes
+None for the reviewed metadata and bounded scientific acceptance. Preserve the partial Index
+and record successful final verification/browser/bundle receipts before delivery closeout.
+
+#### Optional improvements
+No additional experiment is requested or authorized. A later general claim would require its
+own prospective multi-capture protocol and independent review.
+
+### Delivery authorization (2026-09-07)
+
+The user explicitly authorizes committing this completed work, merging both repositories into
+main and pushing them for continuation at home. Earlier no-push statements describe the prior
+scope; source images, masks, generated models and capture archives remain local. The tracked
+[home handoff](../ara/evidence/bench019-local-stage-20260907/CONTINUE_AT_HOME.md) identifies the
+code, numeric evidence, completed checks, local-only artifacts and unresolved scientific scope.

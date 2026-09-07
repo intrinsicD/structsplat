@@ -1,0 +1,25 @@
+{
+  "base_commit": "3ada86049863a6a7293cf22f47a31f9f728a9445",
+  "copied_evidence_files_verified": 11,
+  "executable_changes": false,
+  "full_gate_browser_delivery": "pending separate completion receipts",
+  "reviewed_files_sha256": {
+    "ara/evidence/README.md": "5868a3219dde32e1fa8a11cf4817c361b504f391d28508fb09a1d5c8cee9f866",
+    "ara/evidence/bench019-local-stage-20260907/analysis.json": "ed64bcc73bd117b54b2389343a1bd23d26382078ba7f21d40417fe1f1f2b9ff6",
+    "ara/evidence/bench019-local-stage-20260907/decision.json": "f98de05acd64aa85fcc5cb56767d5a49cce4b43235543311bc3fe6176fb5d0a3",
+    "ara/evidence/bench019-local-stage-20260907/result.json": "75617482de2d4569396775da350ae236b9627f9f078b72ebfcbdb74b3f96badf",
+    "ara/evidence/bench019-local-stage-20260907/results-audit.json": "9c91716dd7db3f26f2b824d288ff35bf16afad16df22a716185545f46ace3183",
+    "ara/evidence/bench019-local-stage-20260907/results-audit.md": "f154520a5e350d43421821c6b42977c4fd98c869e12ca55847e856b7f753a31a",
+    "ara/evidence/bench019-local-stage-20260907/rows.jsonl": "25b2d271aadedcfa0049d0da0b8ab9aa4a2ae57b89e4301bc95006e2569eb26d",
+    "ara/evidence/bench019-local-stage-20260907/structsplat.results-audit.json": "ddfc9f899979b14f98818f9590d7420e214412a9148cb0fd1c5a7c6f4d6156c5",
+    "ara/logic/claims.md": "9e014fe9f5e4a954df022067070234bb1c72badf0499e3f0c1680958bb242388",
+    "docs/additive_field_v2.md": "56a0f69dbfe405bc6b55f5d2ed97343e47a8d60c23918548813b8a711158d26a",
+    "tasks/BENCH-019-stage1-downstream-objective.md": "f2aca4b23bc755305479bc24562c9416574c26cd56d522ad22366c0d60e27c80",
+    "tasks/INDEX.md": "8cdd0d00ba1e6f99397215baf31400f4a8a11d24a91d58635173b2024fe79c77",
+    "tasks/SESSION-BRIEF.md": "6b65ad78e0126cefec6d4fe8803d17617df3cf08c0e30f3424c1c1851eb5eb24"
+  },
+  "reviewed_metadata_sha256": "2c17aa09c99a7d1179767d904cad22548706992fa153f316880788881a946d3d",
+  "reviewer": "Codex-cross-repo-review",
+  "scope": "Bounded local development result only; general BENCH019 remains partial. This snapshot precedes reviewer field updates and Review append.",
+  "verdict": "Accepted"
+}

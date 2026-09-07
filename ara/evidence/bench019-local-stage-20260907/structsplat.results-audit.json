@@ -1,0 +1,40 @@
+{
+  "canonical_rtgs_audit": {
+    "path": "/home/alex/Documents/realtime-gs/benchmarks/results/20260907_bench019_local_stage_frames00008_00009_AUDIT.json",
+    "sha256": "9c91716dd7db3f26f2b824d288ff35bf16afad16df22a716185545f46ace3183"
+  },
+  "checks": {
+    "all_binary_counts_exact": true,
+    "cpu_cells": 20,
+    "cuda_cold_models": 18,
+    "cuda_cold_views": 54,
+    "local_rows": 20,
+    "maximum_metric_replay_deltas": {
+      "alpha_iou": 0.0,
+      "exterior_leakage": 0.0,
+      "foreground_psnr": 3.552713678800501e-15
+    },
+    "portable_rows": 19,
+    "raw_view_records": 60,
+    "saved_initializer_geometry_cells": 20,
+    "struct_portable_checker": "passed"
+  },
+  "decision": "question_unavailable",
+  "design_sha256": "00b85f3b7eab01d82c4e96215052670260535b7017d4791454562213223f41b6",
+  "general_scope_gate_passed": false,
+  "limitations": [
+    "Manifest claim_ready means complete prospective export, not scientific promotion; decision remains question_unavailable.",
+    "Two frames are from one capture; capture bootstrap is degenerate.",
+    "LOFO is a descriptive held-out-frame rank agreement for a fixed predictor, not a learned cross-validation model.",
+    "The minimum three capture groups is unmet; no surrogate chosen and no general hypothesis refuted."
+  ],
+  "protocol_sha256": "6782f55f4d1f787409beae30e6b39e8e25e87b9fc51f4a5143c07d1a6d22e06b",
+  "raw_export_rows_sha256": "25b2d271aadedcfa0049d0da0b8ab9aa4a2ae57b89e4301bc95006e2569eb26d",
+  "report_analysis_sha256": "ed64bcc73bd117b54b2389343a1bd23d26382078ba7f21d40417fe1f1f2b9ff6",
+  "report_manifest_sha256": "e80e1584e27e7efb3100b6fbbd58fb966f9c2e2f7c86494a01550b503b7409fd",
+  "reviewer": "Codex-cross-repo-review",
+  "schema": "structsplat.bench019.independent_results_audit.v1",
+  "scientific_choice_changes": false,
+  "selected_predictor": null,
+  "verdict": "accepted_for_bounded_development"
+}

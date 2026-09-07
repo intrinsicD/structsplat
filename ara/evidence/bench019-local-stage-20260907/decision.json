@@ -1,0 +1,36 @@
+{
+  "gates": {
+    "boundary_mae": {
+      "bootstrap_lower": -1.0,
+      "bootstrap_pass": false,
+      "lofo_pass": false,
+      "lofo_top1_agreement": 0.0,
+      "passed": false,
+      "spearman": -1.0,
+      "spearman_pass": false
+    },
+    "foreground_psnr": {
+      "bootstrap_lower": -1.0,
+      "bootstrap_pass": false,
+      "lofo_pass": false,
+      "lofo_top1_agreement": 0.0,
+      "passed": false,
+      "spearman": -1.0,
+      "spearman_pass": false
+    },
+    "support_iou": {
+      "bootstrap_lower": 0.7500000000000001,
+      "bootstrap_pass": true,
+      "lofo_pass": true,
+      "lofo_top1_agreement": 1.0,
+      "passed": false,
+      "spearman": 0.7500000000000001,
+      "spearman_pass": false
+    }
+  },
+  "no_posthoc_metric_blend": true,
+  "primary_response": "heldout_foreground_psnr",
+  "reason": "capture/frame/family scope is below the preregistered minimum",
+  "selected_predictor": null,
+  "state": "question_unavailable"
+}

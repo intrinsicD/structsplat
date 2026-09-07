@@ -1666,3 +1666,28 @@ reference renderer is memory-bound. See `ara/evidence/core005-render-checkpoint-
 - **Dependencies**: []
 - **Tags**: CPU-contract, artifact-identity, path-replacement, verification-portability
 - **From staging**: []
+
+## C78: The local downstream comparison has mixed containment gains and cannot select a general surrogate
+
+- **Statement**: BENCH-019's two exposed Stage frames share one capture. At 512 2D rows per
+  training view, fixed 256-row SH0 initialization/refinement and 1,000 RGB updates, contained
+  normalized minus native additive mean foreground PSNR is +0.896715/+0.312826 dB. Frame 9
+  seed 19001 loses 0.238384 dB, so the frozen all-seed materiality rule fails. Uncontained
+  normalized loses all six pairs, with frame means -2.852263/-2.708337 dB. All 18 primary
+  cells and two A/A checks completed; independent cold CUDA replay reproduced 54 held-out
+  views. Family-dependent midpoint fallback constrains mechanism attribution. The general
+  surrogate decision is unavailable with one capture; no predictor or default is selected.
+- **Status**: supported bounded development comparison with unavailable general surrogate
+- **Provenance**: ai-executed
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: Recomputing sealed raw scores, paired signs and materiality,
+  A/A, source/input/configuration identities, saved-model replay or capture-scope gates
+  changes the cited values or dispositions. A completeness flag does not override the decision.
+- **Proof**: [`ara/evidence/bench019-local-stage-20260907/results-audit.md`,
+  `ara/evidence/bench019-local-stage-20260907/results-audit.json`,
+  `ara/evidence/bench019-local-stage-20260907/structsplat.results-audit.json`,
+  `ara/evidence/bench019-local-stage-20260907/rows.jsonl`,
+  `ara/evidence/bench019-local-stage-20260907/decision.json`]
+- **Dependencies**: []
+- **Tags**: downstream, paired-seeds, containment, fixed-capacity, one-capture, no-default
+- **From staging**: []

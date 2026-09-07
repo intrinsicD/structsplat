@@ -7,7 +7,6 @@ unless the owning task says so.
 
 ## Work in progress
 
-- `BENCH-019` — Stage-1 downstream-objective validity (in-progress; `tasks/BENCH-019-stage1-downstream-objective.md`)
 - `CORE-013` — Observation Field V2 semantic contract (in-review; `tasks/CORE-013-observation-field-v2-contract.md`)
 - `HIER-005` — Implicit pixel-field contraction (in-progress; `tasks/HIER-005-implicit-pixel-contraction.md`)
 - `HIER-006` — Parent-preserving progressive residual quadtree (in-progress; `tasks/HIER-006-progressive-residual-quadtree.md`)
@@ -55,6 +54,7 @@ unless the owning task says so.
 - `COMP-003` — Compression-ratio ladder (scale ranges → planes → LSQ → VQ → entropy) (partial; `tasks/COMP-003-compression-ladder.md`)
 - `ABL-005` — Fitter-knob influence pass at the fair regime (partial; `tasks/ABL-005-fitter-knob-influence-fair-regime.md`)
 - `BENCH-017` — Screen the full-frame pipeline arm against the plain-fit path (todo; `tasks/BENCH-017-full-frame-arm-screen.md`)
+- `BENCH-019` — Stage-1 downstream-objective validity (partial; `tasks/BENCH-019-stage1-downstream-objective.md`)
 - `DOCS-004` — Staged lint/format ratchet (widen `select`, adopt `ruff format`) (todo; `tasks/DOCS-004-lint-format-ratchet.md`)
 
 ## Open tracks with actionable recorded dependencies

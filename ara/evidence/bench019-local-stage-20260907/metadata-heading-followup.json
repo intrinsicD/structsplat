@@ -1,0 +1,12 @@
+{
+  "correctness": "Protocol review, Handoff and Review are now nested within Agent workflow, as required by the workflow checker. Scientific choices, evidence references and dispositions are unchanged.",
+  "current_task_sha256": "788cd1dad344b62fd7a308c16f448c74a272fb05a5bbcbba068890167c544f11",
+  "date_utc": "2026-09-07T12:38:32.511124+00:00",
+  "exact_delta": "One heading changes from ## Notes to ### Notes; no other bytes changed.",
+  "full_gate": "New complete verify run pending; previous test run had one workflow metadata failure.",
+  "previous_review_inventory": "Historical pre-review snapshot remains valid; this receipt binds the sole later structural correction.",
+  "previous_task_sha256": "54dee115df8fdf8cf12dc5b043d0a03f1c64b569897f40d1fc2c33c07f309015",
+  "reviewer": "Codex-cross-repo-review",
+  "schema": "independent.bench019.metadata_review_followup.v1",
+  "verdict": "Accepted"
+}
