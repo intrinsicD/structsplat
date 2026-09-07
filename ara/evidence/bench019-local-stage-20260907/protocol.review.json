@@ -1,0 +1,9 @@
+{
+  "design_sha256": "00b85f3b7eab01d82c4e96215052670260535b7017d4791454562213223f41b6",
+  "driver": "Codex-bench019-driver",
+  "notes": "Independent exact-envelope approval after validating the approved RTGS task, both clean source commits and live source inventories, all 144 generated input files, 48 cold field archives and their complete semantic digests, raw-source descriptor indexes, shared training targets/masks/crops/cameras/samples, and all frozen scientific settings. Stage-1 predictors were checked only for finite values and frozen provenance; no ranking, selection or tuning occurred. No downstream outcomes exist or were accessed. Finalization/publication must follow the registered staging, metadata-only commit and clean-source sequence. Details: structsplat.independent-checks.json and structsplat.independent-review-notes.md.",
+  "outcome_accessed": false,
+  "reviewer": "Codex-cross-repo-review",
+  "schema": "structsplat.bench019.protocol_review.v1",
+  "verdict": "approved"
+}

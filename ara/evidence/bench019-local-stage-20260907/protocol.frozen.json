@@ -1,0 +1,379 @@
+{
+  "aa_replay": {
+    "family_id": "native_additive",
+    "frame_id": "frame_00008",
+    "initializer": "field_sweep",
+    "metric_abs_tolerance": {
+      "boundary_mae": 0.0,
+      "foreground_psnr": 0.0,
+      "heldout_alpha_iou": 0.01,
+      "heldout_foreground_psnr": 0.05,
+      "support_iou": 0.0
+    },
+    "primary_replicate": "primary",
+    "replay_replicate": "aa",
+    "seed": 19001
+  },
+  "analysis": {
+    "bootstrap_replicates": 1000,
+    "bootstrap_seed": 192019,
+    "minimum_bootstrap_lower": 0.0,
+    "minimum_capture_groups": 3,
+    "minimum_family_count": 3,
+    "minimum_frames": 2,
+    "minimum_lofo_top1_agreement": 0.67,
+    "minimum_spearman": 0.8,
+    "missing_policy": "fail_closed",
+    "selection_priority": [
+      "foreground_psnr",
+      "boundary_mae",
+      "support_iou"
+    ]
+  },
+  "captures": [
+    {
+      "frames": [
+        {
+          "cameras": {
+            "bytes": 3179,
+            "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/protocol/raw_indices/frame_00008.cameras.json",
+            "sha256": "98a1f6b10997481b67443975d0d360d6092fc2825b4aba322828bd367827d8c4"
+          },
+          "families": [
+            {
+              "field_manifest": {
+                "bytes": 1603,
+                "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/inputs/frame_00008/native_additive/manifest.json",
+                "sha256": "0022c32a6db248168d67b95be6358569cee633aa9714e91bbd607e0b9a512f7e"
+              },
+              "id": "native_additive",
+              "semantics": {
+                "alpha_policy": "packed_binary_source_mask_training_only",
+                "blend_mode": "additive",
+                "coordinate_convention": "half_integer_pixel_centers",
+                "equation": "additive_sum",
+                "provider": "native",
+                "semantic_digest": "25fcc4f96af02593e332dbd90e7974274f61598188b08d803525dadad417c68a"
+              },
+              "stage1_metrics": {
+                "bytes": 28771,
+                "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/inputs/frame_00008/native_additive/stage1_metrics.json",
+                "sha256": "7653ebb05f46a29ddb31d94f5f2511d40be38a7b2cb903d1164ac5242ac9530f"
+              }
+            },
+            {
+              "field_manifest": {
+                "bytes": 1610,
+                "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/inputs/frame_00008/structsplat_normalized/manifest.json",
+                "sha256": "40bb3e71e548a8513d68dfb2ec26fc421a131b89cd9a51f6e77cd984cdf9884e"
+              },
+              "id": "structsplat_normalized",
+              "semantics": {
+                "alpha_policy": "packed_binary_source_mask_training_only",
+                "blend_mode": "normalized",
+                "coordinate_convention": "half_integer_pixel_centers",
+                "equation": "normalized_weighted_sum",
+                "provider": "structsplat",
+                "semantic_digest": "23efc909c50d327a2c048f8ca034c09ea9889a9564c06d8f8ac1ad063318810a"
+              },
+              "stage1_metrics": {
+                "bytes": 73959,
+                "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/inputs/frame_00008/structsplat_normalized/stage1_metrics.json",
+                "sha256": "902f9eebf22b56a33086748ae5776d5337058bb672129940821f4a63f7f5f578"
+              }
+            },
+            {
+              "field_manifest": {
+                "bytes": 1609,
+                "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/inputs/frame_00008/structsplat_contained/manifest.json",
+                "sha256": "0c05076806f5e6d128fd95392f0f803f16c0acad4717068fa7c25e9a128736e8"
+              },
+              "id": "structsplat_contained",
+              "semantics": {
+                "alpha_policy": "packed_binary_source_mask_training_only",
+                "blend_mode": "normalized",
+                "coordinate_convention": "half_integer_pixel_centers",
+                "equation": "normalized_weighted_sum",
+                "provider": "structsplat",
+                "semantic_digest": "a7244f0852b90d5b0221d08307e0b45a282715792fa3f98386c9da68a27ac686"
+              },
+              "stage1_metrics": {
+                "bytes": 73878,
+                "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/inputs/frame_00008/structsplat_contained/stage1_metrics.json",
+                "sha256": "c5237cfd7959f58b31947cffd692035cad407ea040d3b56ed6507681984d732b"
+              }
+            }
+          ],
+          "id": "frame_00008",
+          "masks": {
+            "bytes": 6138,
+            "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/protocol/raw_indices/frame_00008.masks.json",
+            "sha256": "3b93f6dd4a2fd8c9e32431aa2c61f241436c106e3420d116a3034084d061f5bb"
+          },
+          "pixels": {
+            "bytes": 6098,
+            "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/protocol/raw_indices/frame_00008.pixels.json",
+            "sha256": "db5d5ed3838977eafb3d4a089c7aaeaf6bb98bbf93f3fea87c5dad6941dc0c19"
+          },
+          "split": {
+            "heldout": [
+              "C0014",
+              "C0028",
+              "C1001"
+            ],
+            "train": [
+              "C0001",
+              "C0009",
+              "C0018",
+              "C0019",
+              "C0025",
+              "C0030",
+              "C1002",
+              "C1004"
+            ]
+          }
+        },
+        {
+          "cameras": {
+            "bytes": 3179,
+            "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/protocol/raw_indices/frame_00009.cameras.json",
+            "sha256": "d0e259dd65d511ccc20fa7441efdb436cfd51e90049d83ed0e70e7db2b7e43b9"
+          },
+          "families": [
+            {
+              "field_manifest": {
+                "bytes": 1603,
+                "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/inputs/frame_00009/native_additive/manifest.json",
+                "sha256": "fb68054b28a62f02d929d1c8d460533ebfeea6872c0c3ba494f319bb982947f6"
+              },
+              "id": "native_additive",
+              "semantics": {
+                "alpha_policy": "packed_binary_source_mask_training_only",
+                "blend_mode": "additive",
+                "coordinate_convention": "half_integer_pixel_centers",
+                "equation": "additive_sum",
+                "provider": "native",
+                "semantic_digest": "7af057fb9788169362357ca4873086098a82a305f6d769babdc0211701503ca4"
+              },
+              "stage1_metrics": {
+                "bytes": 28774,
+                "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/inputs/frame_00009/native_additive/stage1_metrics.json",
+                "sha256": "7b48d99b8b921fa19cb41c125bf8c6023e9c2f1956d780f24012682937ab74c6"
+              }
+            },
+            {
+              "field_manifest": {
+                "bytes": 1610,
+                "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/inputs/frame_00009/structsplat_normalized/manifest.json",
+                "sha256": "b29fe3934fb2488ffe086b510dfb8e71a3f573e19ea22d6bff1ca67535c490ed"
+              },
+              "id": "structsplat_normalized",
+              "semantics": {
+                "alpha_policy": "packed_binary_source_mask_training_only",
+                "blend_mode": "normalized",
+                "coordinate_convention": "half_integer_pixel_centers",
+                "equation": "normalized_weighted_sum",
+                "provider": "structsplat",
+                "semantic_digest": "ce45820a63dd43baffc37e65abd58f7f1d24901c9ace72ff90061d41720fb09e"
+              },
+              "stage1_metrics": {
+                "bytes": 73957,
+                "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/inputs/frame_00009/structsplat_normalized/stage1_metrics.json",
+                "sha256": "3642b903b39caf25cb40be39452e38a5a84a377f849302ef9f950670624c0e1b"
+              }
+            },
+            {
+              "field_manifest": {
+                "bytes": 1609,
+                "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/inputs/frame_00009/structsplat_contained/manifest.json",
+                "sha256": "131b9cc4640ff741896317f247dd636ac4640187a68303977e90c7f5d6b88990"
+              },
+              "id": "structsplat_contained",
+              "semantics": {
+                "alpha_policy": "packed_binary_source_mask_training_only",
+                "blend_mode": "normalized",
+                "coordinate_convention": "half_integer_pixel_centers",
+                "equation": "normalized_weighted_sum",
+                "provider": "structsplat",
+                "semantic_digest": "db32fcc112ff4b541f336e37f69286c5ff6151f97d42db01632fd2465da25afe"
+              },
+              "stage1_metrics": {
+                "bytes": 73896,
+                "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/inputs/frame_00009/structsplat_contained/stage1_metrics.json",
+                "sha256": "35a10eb8b6e760676a9e173ca2fead6f9067caf56f3603b7deff0132cc5fc9c6"
+              }
+            }
+          ],
+          "id": "frame_00009",
+          "masks": {
+            "bytes": 6139,
+            "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/protocol/raw_indices/frame_00009.masks.json",
+            "sha256": "2c0adad806135d60da9d4fa21801c483f824ba7b03eaa407dec49ed5ff6780d3"
+          },
+          "pixels": {
+            "bytes": 6098,
+            "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/protocol/raw_indices/frame_00009.pixels.json",
+            "sha256": "65dc38dd3a3d4a1d59db58fee39882f6a4659bee314d8c3ee0216d1abe56b783"
+          },
+          "split": {
+            "heldout": [
+              "C0014",
+              "C0028",
+              "C1001"
+            ],
+            "train": [
+              "C0001",
+              "C0009",
+              "C0018",
+              "C0019",
+              "C0025",
+              "C0030",
+              "C1002",
+              "C1004"
+            ]
+          }
+        }
+      ],
+      "id": "stage_with_fabric"
+    }
+  ],
+  "claim_scope": "workload_specific",
+  "design_sha256": "00b85f3b7eab01d82c4e96215052670260535b7017d4791454562213223f41b6",
+  "downstream": {
+    "command": [
+      "/home/alex/Documents/realtime-gs/.venv/bin/python",
+      "scripts/experiments/20260907_bench019_local_stage_frames00008_00009.py",
+      "run",
+      "--task",
+      "experiments/tasks/20260907_bench019_local_stage_frames00008_00009.json",
+      "--run-dir",
+      "runs/20260907_bench019_local_stage_frames00008_00009"
+    ],
+    "dataset_manifest": {
+      "bytes": 18958,
+      "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/generated_inputs.json",
+      "sha256": "c69aaf7b641a4944bf0eb9e8ead363dc63a73ae0e2e5c2301391d4ce761e1d62"
+    },
+    "environment": {
+      "bytes": 454,
+      "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/environment.json",
+      "sha256": "1fe169f18c3bddb89f5989123b391b4a769bad314dc9f3859eec09f4b137ce6b"
+    },
+    "initializers": [
+      "field_sweep"
+    ],
+    "outcome_root": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/downstream",
+    "result_schema": "structsplat.bench019.cell.v1",
+    "schedule_config": {
+      "bytes": 74149,
+      "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/gaussians.config.json",
+      "sha256": "4742b86bdfd4f21b228d6452ce43701372e9c8c44fd24894dc1bc8134a22d364"
+    },
+    "seeds": [
+      19001,
+      19002,
+      19003
+    ],
+    "task_manifest": {
+      "bytes": 74149,
+      "path": "/home/alex/Documents/realtime-gs/experiments/tasks/20260907_bench019_local_stage_frames00008_00009.json",
+      "sha256": "8a1f27a7b259b496df28e41b0ebd218536dab40920278f6908865a45dcfae6f0"
+    },
+    "working_directory": "/home/alex/Documents/realtime-gs"
+  },
+  "driver": "Codex-bench019-driver",
+  "predictors": [
+    {
+      "direction": "higher",
+      "name": "foreground_psnr"
+    },
+    {
+      "direction": "lower",
+      "name": "boundary_mae"
+    },
+    {
+      "direction": "higher",
+      "name": "support_iou"
+    }
+  ],
+  "protocol_sha256": "6782f55f4d1f787409beae30e6b39e8e25e87b9fc51f4a5143c07d1a6d22e06b",
+  "repositories": [
+    {
+      "branch": "bench/019-local-development",
+      "commit": "6ff898e8682cc7d932d540b818b3f0d6a4a0e529",
+      "dirty": false,
+      "environment": {
+        "bytes": 454,
+        "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/environment.json",
+        "sha256": "1fe169f18c3bddb89f5989123b391b4a769bad314dc9f3859eec09f4b137ce6b"
+      },
+      "name": "structsplat",
+      "root": "/home/alex/Documents/structsplat",
+      "status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "branch": "bench/019-local-development",
+      "commit": "f165d353ff9e9174c1ac1c936ed7855cc7a25abb",
+      "dirty": false,
+      "environment": {
+        "bytes": 454,
+        "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/environment.json",
+        "sha256": "1fe169f18c3bddb89f5989123b391b4a769bad314dc9f3859eec09f4b137ce6b"
+      },
+      "name": "realtime-gs",
+      "root": "/home/alex/Documents/realtime-gs",
+      "status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "responses": [
+    {
+      "direction": "higher",
+      "name": "heldout_foreground_psnr",
+      "primary": true
+    },
+    {
+      "direction": "higher",
+      "name": "heldout_alpha_iou",
+      "primary": false
+    },
+    {
+      "direction": "lower",
+      "name": "heldout_exterior_leakage",
+      "primary": false
+    },
+    {
+      "direction": "lower",
+      "name": "field_bytes",
+      "primary": false
+    },
+    {
+      "direction": "lower",
+      "name": "wall_seconds",
+      "primary": false
+    },
+    {
+      "direction": "lower",
+      "name": "peak_cuda_allocated_bytes",
+      "primary": false
+    },
+    {
+      "direction": "lower",
+      "name": "final_gaussians",
+      "primary": false
+    }
+  ],
+  "review": {
+    "artifact": {
+      "bytes": 1000,
+      "path": "/home/alex/Documents/realtime-gs/runs/20260907_bench019_local_stage_frames00008_00009/protocol/structsplat.independent-review.json",
+      "sha256": "c89d86575d747794f0dfbb2a244834f171be34e4625c84f018bdf1c54ccd812d"
+    },
+    "design_sha256": "00b85f3b7eab01d82c4e96215052670260535b7017d4791454562213223f41b6",
+    "driver": "Codex-bench019-driver",
+    "reviewer": "Codex-cross-repo-review",
+    "verdict": "approved"
+  },
+  "schema": "structsplat.bench019.protocol.v1",
+  "state": "frozen",
+  "task_id": "BENCH-019-local-stage-20260907"
+}

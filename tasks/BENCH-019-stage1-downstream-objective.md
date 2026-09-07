@@ -44,7 +44,7 @@ surrogates.
 
 ## Acceptance criteria
 
-- [ ] A committed protocol manifest and adapter bind all fields, pixels, masks, cameras, commits,
+- [x] A committed protocol manifest and adapter bind all fields, pixels, masks, cameras, commits,
       environments, seeds, schedules, metrics, and split roles before outcome access.
 - [ ] A/A replay proves the adapter cannot change source field semantics or downstream config;
       normalized and additive inputs are labelled and queried through their exact equations.
@@ -113,7 +113,7 @@ BENCH-001/002, CORE-012
 - Driver: Codex-bench019-driver
 - Reviewer: Codex-cross-repo-review
 - Turn: driver
-- Reviewed revision: pending current RTGS-019 source/protocol review
+- Reviewed revision: RTGS `f165d35` and StructSplat `6ff898e`; exact generated-input design approved below
 
 ### Handoff log
 
@@ -161,3 +161,32 @@ surrogate and default decisions remain open; one capture cannot establish cross-
 This is the first gate. A positive image-metric correlation permits a cheap later objective; a
 negative result is equally actionable because it prevents optimizing an attractive but irrelevant
 Stage-1 score.
+
+### Local generated-input freeze (2026-09-07)
+
+All six matched training-only field families completed under the approved RTGS protocol.
+The independently approved [frozen protocol](../ara/evidence/bench019-local-stage-20260907/protocol.frozen.json)
+and [review](../ara/evidence/bench019-local-stage-20260907/protocol.review.md) bind the generated
+inputs before any downstream outcome. This commit changes protocol/task metadata only;
+the production source envelopes remain unchanged. A/A and the paired matrix are next.
+The general surrogate question remains open and this run remains within-capture development.
+
+### Protocol review
+
+#### Reviewer
+Codex-cross-repo-review
+
+#### Verdict
+Approved
+
+#### Protocol digest
+00b85f3b7eab01d82c4e96215052670260535b7017d4791454562213223f41b6
+
+#### Digest scope
+BENCH-019 local Stage phase-two design, computed by benchmarks.stage1_downstream_objective.design_digest from the exact reviewed/finalized protocol. The digest excludes only lifecycle/review seals (state, design_sha256, protocol_sha256, review) and binds all scientific settings, clean source provenance, generated field/metric descriptors, raw-source indexes and immutable RTGS task/schedule. The committed frozen copy and independent review are retained under ara/evidence/bench019-local-stage-20260907/; the identical run copies remain under the canonical RTGS run/protocol directory.
+
+#### Outcomes accessed
+No
+
+#### Review focus
+Exact source/input provenance, 48 cold field contracts, common targets/cameras/samples, training/held-out isolation, unchanged scientific choices, A/A and missing policies, shared resource accounting, capture insufficiency, and staged publication before any downstream outcome.
