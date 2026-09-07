@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import importlib.util
+import math
 import os
 from pathlib import Path
 import subprocess
@@ -110,6 +112,33 @@ def test_prefilter_rejects_non_diagonally_dominant_kernel_at_config_boundary() -
         )
 
 
+@pytest.mark.parametrize("sigma", [1e-200, 1e-30, 1e30, 1e200])
+def test_lattice_rejects_sigma_with_unrepresentable_float32_variance(sigma: float) -> None:
+    with pytest.raises(ValueError, match="squared must be in the float32 normal range"):
+        _config(lattice_sigma_px=sigma)
+
+
+@pytest.mark.parametrize("variance", [np.finfo(np.float32).tiny, np.finfo(np.float32).max])
+def test_lattice_variance_limits_preserve_constant_appearance(variance: float) -> None:
+    image = np.full((8, 8, 3), [0.2, 0.4, 0.8], dtype=np.float32)
+    packet = build_codec_native_field(
+        image,
+        config=_config(appearance_codec="webp_lossless", lattice_sigma_px=math.sqrt(float(variance))),
+    )
+    expected = image[0, 0]
+    np.testing.assert_allclose(packet.query_appearance([[2.5, 2.5]])[0], expected, atol=1e-7)
+
+    if importlib.util.find_spec("rtgs") is not None:
+        torch = pytest.importorskip("torch")
+        from structsplat.realtime_gs_adapter import make_realtime_gs_view
+
+        color, alpha, valid = make_realtime_gs_view(packet).query_backend.query_appearance(
+            torch.tensor([[3.0, 3.0]])
+        )
+        assert alpha.item() and valid.item()
+        np.testing.assert_allclose(color.numpy()[0], expected, atol=1e-7)
+
+
 def test_lossless_webp_is_exact_and_constant_field_query_is_reproducing() -> None:
     image, _mask = _fixture()
     config = _config(
@@ -150,6 +179,128 @@ def test_query_rejects_malformed_points_and_zeroes_outside_boundary() -> None:
     assert result.valid.tolist() == [True, False, True, False]
     assert np.all(result.color[[1, 3]] == 0.0)
     assert np.all(result.structural_density[[1, 3]] == 0.0)
+
+
+@pytest.mark.parametrize("sigma", [0.01, 0.02, 0.05])
+def test_narrow_lattice_preserves_constant_appearance_and_crop_gating(sigma: float) -> None:
+    image = np.full((8, 8, 3), [0.2, 0.4, 0.8], dtype=np.float32)
+    mask = np.ones((8, 8), dtype=bool)
+    mask[0, 0] = False
+    packet = build_codec_native_field(
+        image,
+        config=_config(appearance_codec="webp_lossless", lattice_sigma_px=sigma),
+        mask=mask,
+    )
+    points = np.asarray([
+        [2.5, 2.5], [0.0, 0.0], [-0.5, 3.5], [7.49, 3.5],
+        [-0.51, 0.0], [7.5, 3.0], [40.0, 40.0],
+    ])
+    expected_valid = np.asarray([True, True, True, True, False, False, False])
+    expected_alpha = np.asarray([True, False, True, True, False, False, False])
+    expected = np.zeros((len(points), 3), dtype=np.float32)
+    expected[expected_alpha] = image[0, 0]
+
+    result = packet.query(points, chunk_size=2)
+    np.testing.assert_allclose(result.color, expected, atol=1e-7)
+    np.testing.assert_array_equal(result.valid, expected_valid)
+    np.testing.assert_array_equal(result.alpha, expected_alpha)
+    assert np.all(result.structural_density[~expected_alpha] == 0.0)
+    assert packet.query_appearance(np.empty((0, 2))).shape == (0, 3)
+
+
+@pytest.mark.parametrize("sigma", [0.01, 0.02, 0.05])
+def test_narrow_realtime_queries_preserve_appearance_alpha_and_structure(sigma: float) -> None:
+    pytest.importorskip("rtgs")
+    torch = pytest.importorskip("torch")
+    from structsplat.realtime_gs_adapter import make_realtime_gs_view
+
+    image = np.full((8, 8, 3), [0.2, 0.4, 0.8], dtype=np.float32)
+    mask = np.ones((8, 8), dtype=bool)
+    mask[0, 0] = False
+    transform = CanvasCropTransform(32, 24, 5, 7, 8, 8)
+    packet = build_codec_native_field(
+        image,
+        config=_config(appearance_codec="webp_lossless", lattice_sigma_px=sigma),
+        mask=mask,
+        canvas_crop=transform,
+    )
+    backend = make_realtime_gs_view(packet).query_backend
+    local = np.asarray([
+        [2.5, 2.5], [0.0, 0.0], [-0.5, 3.5], [7.49, 3.5],
+        [-0.51, 0.0], [7.5, 3.0], [40.0, 40.0],
+    ], dtype=np.float32)
+    offset = np.asarray([5.5, 7.5], dtype=np.float32)
+    native = torch.from_numpy(local + offset)
+    expected = packet.query(native.numpy().astype(np.float64) - offset)
+    result = backend.query(native)
+    color, alpha, valid = backend.query_appearance(native)
+
+    np.testing.assert_allclose(result.color.numpy(), expected.color, atol=1e-7)
+    np.testing.assert_array_equal(result.valid.numpy(), expected.valid)
+    np.testing.assert_array_equal(alpha.numpy(), expected.alpha)
+    torch.testing.assert_close(color, result.color)
+    torch.testing.assert_close(valid, result.valid)
+    np.testing.assert_allclose(result.weight_sum.numpy(), expected.structural_density, atol=2e-6)
+    torch.testing.assert_close(backend.query_weight_sum(native), result.weight_sum)
+    assert result.weight_sum[0] > 0.0
+    empty_color, empty_alpha, empty_valid = backend.query_appearance(torch.empty((0, 2)))
+    assert empty_color.shape == (0, 3)
+    assert empty_alpha.shape == empty_valid.shape == (0,)
+
+
+@pytest.mark.parametrize("sigma,prefilter_steps", [(0.01, 0), (0.05, 0), (0.25, 0), (0.5, 16)])
+def test_realtime_lattice_midpoint_has_closed_form_coordinate_gradient(
+    sigma: float, prefilter_steps: int,
+) -> None:
+    pytest.importorskip("rtgs")
+    torch = pytest.importorskip("torch")
+    from structsplat.realtime_gs_adapter import make_realtime_gs_view
+
+    image = np.asarray([
+        [[0.0, 1.0, 0.2], [1.0, 0.0, 0.8]],
+        [[0.1, 0.2, 0.3], [0.7, 0.9, 0.4]],
+    ], dtype=np.float32)
+    packet = build_codec_native_field(
+        image,
+        config=_config(
+            appearance_codec="webp_lossless", structural_count=4,
+            lattice_sigma_px=sigma, lattice_prefilter_steps=prefilter_steps,
+        ),
+    )
+    backend = make_realtime_gs_view(packet).query_backend
+    # All four lattice sites have equal distance at the exact crop midpoint (0.5, 0.5).
+    native = torch.tensor([[1.0, 1.0]], requires_grad=True)
+    color, alpha, valid = backend.query_appearance(native)
+    color.sum().backward()
+    coefficients = packet.appearance_coefficients.astype(np.float64)
+    expected_color = coefficients.mean(axis=(0, 1))
+    expected_gradient = np.asarray([
+        (coefficients[:, 1].sum() - coefficients[:, 0].sum()) / (8.0 * sigma**2),
+        (coefficients[1].sum() - coefficients[0].sum()) / (8.0 * sigma**2),
+    ])
+
+    assert alpha.item() and valid.item()
+    np.testing.assert_allclose(color.detach().numpy()[0], expected_color, atol=2e-7)
+    np.testing.assert_allclose(native.grad.numpy()[0], expected_gradient, rtol=3e-6, atol=2e-6)
+
+
+def test_realtime_appearance_outside_float32_range_has_finite_zero_gradients() -> None:
+    pytest.importorskip("rtgs")
+    torch = pytest.importorskip("torch")
+    from structsplat.realtime_gs_adapter import make_realtime_gs_view
+
+    image, _mask = _fixture()
+    packet = build_codec_native_field(image, config=_config(lattice_sigma_px=0.01))
+    points = np.asarray([[1e300, -1e300], [-1e300, 1e300]], dtype=np.float64)
+    with np.errstate(over="raise", invalid="raise", divide="raise"):
+        np.testing.assert_array_equal(packet.query_appearance(points), np.zeros((2, 3)))
+    native = torch.tensor(points, requires_grad=True)
+    color, alpha, valid = make_realtime_gs_view(packet).query_backend.query_appearance(native)
+    color.sum().backward()
+
+    assert not bool(alpha.any()) and not bool(valid.any())
+    torch.testing.assert_close(color, torch.zeros_like(color))
+    torch.testing.assert_close(native.grad, torch.zeros_like(native))
 
 
 def test_alpha_gates_both_planes_and_canvas_coordinates() -> None:

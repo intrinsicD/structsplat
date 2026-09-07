@@ -133,6 +133,7 @@ class CodecNativeFieldConfig:
     ``lattice_sigma_px`` is intentionally small: the decoded raster supplies the coefficients and
     the Gaussian lattice supplies a continuous extension without materially blurring pixel-center
     replay.  A radius of two already drops less than machine-relevant mass at the default sigma.
+    Its squared value must be a finite normal float32 value, matching the optional query adapter.
     """
 
     appearance_codec: AppearanceCodec = "webp"
@@ -157,6 +158,9 @@ class CodecNativeFieldConfig:
             raise ValueError("appearance_quality must be <= 100")
         object.__setattr__(self, "appearance_quality", quality)
         sigma = _finite_float(self.lattice_sigma_px, "lattice_sigma_px", positive=True)
+        variance_limits = np.finfo(np.float32)
+        if not math.sqrt(variance_limits.tiny) <= sigma <= math.sqrt(variance_limits.max):
+            raise ValueError("lattice_sigma_px squared must be in the float32 normal range")
         object.__setattr__(self, "lattice_sigma_px", sigma)
         radius = _strict_int(self.lattice_radius_px, "lattice_radius_px", minimum=1)
         if radius > 16:
@@ -645,6 +649,15 @@ class CodecNativeField:
         for start in range(0, points.shape[0], chunk):
             end = min(start + chunk, points.shape[0])
             local = points[start:end]
+            valid = (
+                (local[:, 0] >= -0.5)
+                & (local[:, 0] < width - 0.5)
+                & (local[:, 1] >= -0.5)
+                & (local[:, 1] < height - 0.5)
+            )
+            # Outside rows return zero; use a safe placeholder before integer indexing and
+            # distance arithmetic so they cannot create an empty stencil or overflow.
+            local = np.where(valid[:, None], local, 0.0)
             base_x = np.floor(local[:, 0]).astype(np.int64)[:, None]
             base_y = np.floor(local[:, 1]).astype(np.int64)[:, None]
             raw_x = base_x + offsets_x
@@ -654,15 +667,12 @@ class CodecNativeField:
             gather_y = raw_y.clip(0, height - 1)
             dx = local[:, None, 0] - raw_x
             dy = local[:, None, 1] - raw_y
-            weights = np.exp(-0.5 * (dx * dx + dy * dy) / sigma2) * present
+            distance2 = dx * dx + dy * dy
+            nearest_distance2 = np.where(present, distance2, np.inf).min(axis=1, keepdims=True)
+            # A common Gaussian factor cancels in the normalized ratio. Remove it before
+            # exponentiation so narrow kernels retain weight even halfway between pixels.
+            weights = np.exp(-0.5 * (distance2 - nearest_distance2) / sigma2) * present
             denominator = weights.sum(axis=1)
-            valid = (
-                (local[:, 0] >= -0.5)
-                & (local[:, 0] < width - 0.5)
-                & (local[:, 1] >= -0.5)
-                & (local[:, 1] < height - 0.5)
-                & (denominator > np.finfo(np.float64).tiny)
-            )
             values = self.appearance_coefficients[gather_y, gather_x]
             color = (weights[..., None] * values).sum(axis=1)
             color /= np.maximum(denominator[:, None], np.finfo(np.float64).tiny)

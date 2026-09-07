@@ -270,28 +270,53 @@ def _read_regular_fd(descriptor: int, name: str) -> tuple[bytes, os.stat_result]
     return payload, before
 
 
-def _read_artifact_file(
-    root_descriptor: int,
-    relative_path: str | os.PathLike[str],
-    name: str,
-) -> OpenedArtifact:
-    parts = _relative_parts(relative_path, name)
+def _open_artifact_parent(root_descriptor: int, parts: tuple[str, ...]) -> int:
+    """Walk validated relative components from the retained root without following links."""
     directory = os.dup(root_descriptor)
     try:
         for component in parts[:-1]:
             next_directory = os.open(component, _directory_flags(), dir_fd=directory)
             os.close(directory)
             directory = next_directory
+        return directory
+    except Exception:
+        os.close(directory)
+        raise
+
+
+def _read_artifact_file(
+    root_descriptor: int,
+    relative_path: str | os.PathLike[str],
+    name: str,
+) -> OpenedArtifact:
+    parts = _relative_parts(relative_path, name)
+    directory = None
+    try:
+        directory = _open_artifact_parent(root_descriptor, parts)
         flags = os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW | os.O_NONBLOCK
         descriptor = os.open(parts[-1], flags, dir_fd=directory)
         try:
             payload, opened_stat = _read_regular_fd(descriptor, name)
+            # A pathname or ancestor can be replaced without changing the opened inode's
+            # timestamps. Rewalk from the original root and compare identity without ever
+            # opening replacement bytes. This check observes the path at the end of this read.
+            try:
+                checked_directory = _open_artifact_parent(root_descriptor, parts)
+                try:
+                    path_stat = os.stat(parts[-1], dir_fd=checked_directory, follow_symlinks=False)
+                finally:
+                    os.close(checked_directory)
+            except OSError as exc:
+                raise DecodeWorkerError(f"{name} path changed while its opened bytes were read") from exc
+            if _stable_stat_identity(path_stat) != _stable_stat_identity(opened_stat):
+                raise DecodeWorkerError(f"{name} path changed while its opened bytes were read")
         finally:
             os.close(descriptor)
     except OSError as exc:
         raise DecodeWorkerError(f"unsafe or unavailable {name}: {exc}") from exc
     finally:
-        os.close(directory)
+        if directory is not None:
+            os.close(directory)
     return OpenedArtifact(
         relative_path=PurePosixPath(*parts).as_posix(),
         payload=payload,

@@ -242,7 +242,10 @@ def test_rank_deficient_reproduction_design_is_diagnostic_total_and_rejected() -
     diagnostics = core.diagnose_reproduction_design(collinear)
     assert diagnostics.rank == 1
     assert not diagnostics.accepted
-    assert math.isfinite(diagnostics.condition_number)
+    # LAPACK may return either an exact null singular value (+inf condition) or a tiny
+    # positive residue. Both must diagnose severe ill-conditioning and reject this design.
+    assert not math.isnan(diagnostics.condition_number)
+    assert diagnostics.condition_number >= 1.0 / (len(collinear) * torch.finfo(collinear.dtype).eps)
     with pytest.raises(ValueError, match="rank deficient"):
         core.solve_reproduction_design_qr(
             collinear, torch.ones((17, 3), dtype=torch.float64)

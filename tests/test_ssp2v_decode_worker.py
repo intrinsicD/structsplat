@@ -590,6 +590,11 @@ def test_opened_descriptor_rejects_path_swap_and_in_place_mutation(
     monkeypatch.setattr(worker.os, "read", real_read)
     mutating_path = tmp_path / "mutating.bin"
     mutating_path.write_bytes(b"a" * ((1 << 20) + 16))
+    # Writes can share one filesystem timestamp tick. Backdate the fixture before opening
+    # it so the real in-place write below changes mtime without depending on elapsed time.
+    initial_stat = mutating_path.stat()
+    os.utime(mutating_path, ns=(initial_stat.st_atime_ns, 0))
+    before_mutation = mutating_path.stat()
     root_descriptor = worker._open_artifact_root(tmp_path)
     mutated = False
 
@@ -611,6 +616,60 @@ def test_opened_descriptor_rejects_path_swap_and_in_place_mutation(
             worker._read_artifact_file(root_descriptor, "mutating.bin", "blob")
     finally:
         os.close(root_descriptor)
+    after_mutation = mutating_path.stat()
+    assert mutated
+    assert after_mutation.st_ino == before_mutation.st_ino
+    assert after_mutation.st_size == before_mutation.st_size
+    assert after_mutation.st_mtime_ns != before_mutation.st_mtime_ns
+    assert mutating_path.read_bytes() == b"a" * (1 << 20) + b"b" * 16
+
+
+@pytest.mark.parametrize("replacement", ["regular", "symlink", "missing"])
+@pytest.mark.parametrize("swapped_component", ["leaf", "parent"])
+def test_artifact_path_swap_is_rejected_when_opened_stat_does_not_change(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, replacement: str, swapped_component: str,
+) -> None:
+    parent = tmp_path / "nested"
+    parent.mkdir()
+    path = parent / "blob.bin"
+    moved = parent / "opened-original.bin" if swapped_component == "leaf" else tmp_path / "moved"
+    original = b"same-bytes-do-not-imply-same-path-identity"
+    path.write_bytes(original)
+    before = path.stat()
+    real_read = worker.os.read
+    swapped = False
+
+    def swapping_read(descriptor: int, count: int) -> bytes:
+        nonlocal swapped
+        chunk = real_read(descriptor, count)
+        if chunk and not swapped:
+            swapped = True
+            (path if swapped_component == "leaf" else parent).rename(moved)
+            if replacement == "regular":
+                if swapped_component == "parent":
+                    parent.mkdir()
+                path.write_bytes(original)
+            elif replacement == "symlink":
+                if swapped_component == "leaf":
+                    path.symlink_to("opened-original.bin")
+                else:
+                    parent.symlink_to("moved", target_is_directory=True)
+        return chunk
+
+    root_descriptor = worker._open_artifact_root(tmp_path)
+    try:
+        with monkeypatch.context() as patch:
+            patch.setattr(worker.os, "read", swapping_read)
+            # Simulate unchanged descriptor metadata even if this filesystem changes ctime
+            # on rename. The final path identity must be checked independently.
+            patch.setattr(worker.os, "fstat", lambda _descriptor: before)
+            with pytest.raises(worker.DecodeWorkerError, match="changed while"):
+                worker._read_artifact_file(root_descriptor, "nested/blob.bin", "blob")
+    finally:
+        os.close(root_descriptor)
+    assert swapped
+    original_path = moved if swapped_component == "leaf" else moved / "blob.bin"
+    assert original_path.read_bytes() == original
 
 
 def test_native_load_uses_verified_opened_bytes_and_module_binds_before_load(

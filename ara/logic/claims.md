@@ -1630,3 +1630,39 @@ reference renderer is memory-bound. See `ara/evidence/core005-render-checkpoint-
 - **Dependencies**: []
 - **Tags**: actual-render, cg, backtracking, native-vjp, numerical-slack, utility, no-default
 - **From staging**: O186
+
+## C76: Codec-native lattice queries retain narrow-kernel appearance on CPU fixtures
+
+- **Statement**: CORE-020 removes a common Gaussian factor before normalized appearance
+  evaluation. Synthetic CPU fixtures preserve constant midpoint colors, crop/alpha gating,
+  independent structural density, signed prefilter replay, and analytic midpoint coordinate
+  gradients across NumPy and the optional realtime-gs adapter. Configuration rejects squared
+  sigmas outside the finite normal float32 range. This is a numerical query contract, with no
+  reconstruction-quality, speed, CUDA-parity, or maintained-default claim.
+- **Status**: supported CPU contract
+- **Provenance**: ai-executed
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: The cited constant, narrow-sigma, crop/alpha, prefilter, derivative,
+  variance-boundary or extreme-outside-coordinate regression fixtures fail their assertions.
+- **Proof**: [`tests/test_codec_native_field.py`]
+- **Dependencies**: []
+- **Tags**: CPU-contract, normalized-query, underflow, cross-repository, no-default
+- **From staging**: []
+
+## C77: Artifact reads recheck root-relative identity after reading
+
+- **Statement**: CORE-021's development decode worker rewalks a validated relative path from its
+  original root descriptor without following symlinks, then compares the current leaf stat with
+  the opened file. Synthetic CPU fixtures reject leaf/parent replacement, removal and symlink
+  substitution even when the original descriptor's stat snapshot is unchanged. The existing
+  opened-byte mutation checks remain active. This is a check at the end of reading, not a lock
+  against later filesystem changes or a new historical replay result.
+- **Status**: supported CPU contract
+- **Provenance**: ai-executed
+- **Crystallized via**: artifact-commitment
+- **Falsification criteria**: A cited replacement control is accepted, replacement bytes are read,
+  existing in-place mutation/no-follow tests regress, or rejected singular designs become accepted.
+- **Proof**: [`tests/test_ssp2v_decode_worker.py`, `tests/test_affine_carrier_core.py`]
+- **Dependencies**: []
+- **Tags**: CPU-contract, artifact-identity, path-replacement, verification-portability
+- **From staging**: []

@@ -122,6 +122,14 @@ class CodecNativeObservationBackend:
         work_xy = xy.to(device=self._appearance.device, dtype=self._appearance.dtype)
         height, width = self._appearance.shape[:2]
         local = work_xy - self._origin
+        valid = (
+            (local[:, 0] >= -0.5)
+            & (local[:, 0] < width - 0.5)
+            & (local[:, 1] >= -0.5)
+            & (local[:, 1] < height - 0.5)
+        )
+        # Keep outside queries out of unsafe integer conversions and empty-stencil reductions.
+        local = torch.where(valid[:, None], local, torch.zeros_like(local))
         base_x = torch.floor(local[:, 0]).to(torch.long)[:, None]
         base_y = torch.floor(local[:, 1]).to(torch.long)[:, None]
         raw_x = base_x + self._offset_x
@@ -131,16 +139,13 @@ class CodecNativeObservationBackend:
         gather_y = raw_y.clamp(0, height - 1)
         dx = local[:, None, 0] - raw_x
         dy = local[:, None, 1] - raw_y
-        weights = torch.exp(-0.5 * (dx.square() + dy.square()) / self._sigma2)
+        distance2 = dx.square() + dy.square()
+        nearest_distance2 = distance2.masked_fill(~present, float("inf")).amin(dim=1, keepdim=True)
+        # The common factor cancels from normalized colors. Shifting before exp preserves
+        # constant reproduction and coordinate gradients when raw float32 weights underflow.
+        weights = torch.exp(-0.5 * (distance2 - nearest_distance2) / self._sigma2)
         weights = weights * present.to(weights)
         denominator = weights.sum(dim=1)
-        valid = (
-            (local[:, 0] >= -0.5)
-            & (local[:, 0] < width - 0.5)
-            & (local[:, 1] >= -0.5)
-            & (local[:, 1] < height - 0.5)
-            & (denominator > torch.finfo(work_xy.dtype).tiny)
-        )
         values = self._appearance[gather_y, gather_x]
         color = (weights[..., None] * values).sum(dim=1)
         color = color / denominator[:, None].clamp_min(torch.finfo(work_xy.dtype).tiny)

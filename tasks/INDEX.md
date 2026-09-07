@@ -168,6 +168,8 @@ fine-detail confirmation.
 
 | ID | Title | Path |
 |----|-------|------|
+| CORE-020 | Stable codec-native observation queries | `done/CORE-020-stable-codec-native-query.md` |
+| CORE-021 | Portable verification corrections | `done/CORE-021-portable-verification-corrections.md` |
 | FIT-050 | Safeguarded normalized color-ray refinement (bounded utility negative; C73) | `done/FIT-050-safe-color-ray.md` |
 | PORT-007 | Same-call quality reuse (component observations, parity negative; C74) | `done/PORT-007-joint-render-coverage.md` |
 | FIT-051 | Actual-render color transactions (small progress, utility negative; C75) | `done/FIT-051-actual-render-color-ray.md` |

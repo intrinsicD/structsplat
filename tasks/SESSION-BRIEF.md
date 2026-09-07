@@ -94,5 +94,5 @@ unless the owning task says so.
 ## Ledger summary
 
 - 128 active-table outcomes
-- 53 retired tasks
+- 55 retired tasks
 - 51 active-table rows already carrying a closed/non-actionable disposition

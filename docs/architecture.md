@@ -359,6 +359,12 @@ presented to realtime-gs only as a pair: structural `GaussianObservationField` p
 appearance `ObservationQueryBackend`. Neither plane enters the maintained StructSplat pipeline,
 and the realtime-gs checkout is not modified.
 
+CORE-020 stabilizes the packet's normalized appearance query by cancelling the common Gaussian
+factor before exponentiation. Narrow kernels therefore retain the tested midpoint appearance and
+independent structural support. Its NumPy/torch CPU fixtures cover crop/alpha boundaries and
+coordinate gradients; squared sigma must fit the finite normal float32 range used by the adapter
+(ARA C76). The packet schema and maintained conversion defaults are unchanged.
+
 The exposed C0001 development pilot survives only its narrow systems killing test. The selected
 complete packet is 3,896,344 bytes and is exact below display quantization at decoded pixel
 centers; its paired backend has NumPy/torch parity and drives a synthetic two-view CompactCarve
