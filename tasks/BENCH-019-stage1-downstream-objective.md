@@ -110,10 +110,10 @@ BENCH-001/002, CORE-012
 
 ## Agent workflow
 
-- Driver: codex
-- Reviewer: pending-distinct
+- Driver: Codex-bench019-driver
+- Reviewer: Codex-cross-repo-review
 - Turn: driver
-- Reviewed revision: pending (external driver checkpoint `d3e76fe` is not yet accepted)
+- Reviewed revision: pending current RTGS-019 source/protocol review
 
 ### Handoff log
 
@@ -129,6 +129,34 @@ frozen protocol digest; the user's requested same-data production comparison rem
 promotion gate.
 
 ## Notes
+
+### Local development execution opened (2026-09-07)
+
+The user authorized local checkpointing and execution of the proposed end-to-end comparison,
+including Claude design review and separate implementation/results agents, and confirmed local
+CUDA hardware. CORE-020/021 are checkpointed at 31e2084; realtime-gs RTGS-018 is checkpointed at
+75e0d26. The accepted RTGS-009/010 exporter, adapters, and predictor implementations are available;
+their earlier checkpoint-pending descriptions above are preserved as dated history.
+
+RTGS-019 owns the new executor and one experiment contract:
+`experiments/tasks/20260907_bench019_local_stage_frames00008_00009.json` in realtime-gs.
+It specifies a workload-specific two-frame development comparison with newly fitted fixed-count
+families because the reusable historical bundles have unequal counts across these frames.
+Existing source pixels, masks, field bundles, historical protocols and rejected lift routes remain
+unchanged. New input preparation uses training views only and records the exact family equations.
+
+The plan has two distinct prospective boundaries. The initial RTGS task binds raw source inputs,
+production settings, the fixed downstream design and implemented clean sources before fitting.
+Phase 1 publishes generated fields and task-owned supported predictors below its canonical
+`inputs/` directory. Before any downstream execution, this task's existing prepare-review/finalize
+lifecycle binds those realized hashes plus the immutable RTGS task bytes; its outcome root is the
+still-empty canonical `downstream/` subdirectory. A distinct reviewer approves that exact digest.
+No ready task is edited and no field is regenerated in response to downstream outcomes.
+
+The current RTX 4090 environment passes the local CUDA preflight recorded under
+`/tmp/structsplat-rtgs-collab/cuda-preflight/`; this establishes execution readiness only. Existing
+foreign GPU work is preserved, and any contended timing is descriptive. The original general
+surrogate and default decisions remain open; one capture cannot establish cross-capture validity.
 
 This is the first gate. A positive image-metric correlation permits a cheap later objective; a
 negative result is equally actionable because it prevents optimizing an attractive but irrelevant
